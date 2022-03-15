@@ -1,0 +1,58 @@
+{
+    "name": "@openharmony/test_framework",
+    "version": "3.1",
+    "description": "test framwork",
+    "publishAs": "code-segment",
+    "segment": {
+       "destPath": "test/thruster/uitest"
+    },
+    "scripts": {
+    },
+    "author": {},
+    "repository": "",
+    "license": "Apache License 2.0",
+    "component": {
+      "name": "test_framework",
+      "subsystem": "test",
+      "syscap": [ "SystemCapability.Test.UiTest" ],
+      "adapted_system_type": [ 
+        "standard"
+      ],
+      "features": [],
+      "rom": "500KB",
+      "ram": "100KB",
+      "deps": {
+        "components": [
+          "utils_base",
+          "ces_standard",
+          "ability_manager",
+          "appexecfwk_base",
+          "appexecfwk_core",
+          "cesfwk_innerkits",
+          "ipc_core",
+          "libhilog",
+          "libmmi-client",
+          "samgr_proxy",
+          "want",
+          "accessibility",
+          "ability_runtime",
+         "napi",
+         "libdm",
+          "image_native",
+          "libwm"
+        ],
+        "third_party": [
+          "libpng"
+        ]
+      },
+      "build": {
+        "sub_component": [
+            "//test/thruster/uitest:uitest_server",
+            "//test/thruster/uitest:uitest_client"
+        ],
+    "test": [
+      "//test/thruster/uitest:uitestkit_test"
+    ]
+      }
+    }
+  }
