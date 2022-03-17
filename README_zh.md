@@ -1,26 +1,25 @@
-
-
 # Hypium使用介绍
 
 ## 简介
-​    Hypium测试框架支持App的单元测试和UI测试，应用开发者可以使用Hypium测试应用内接口逻辑以及相应的界面UI。
-
-​    JsUnit单元测试框架(JS/TS)提供单元测试用例执行能力，提供用例编写基础接口，生成对应报告，用于测试系统或app接口。
-​    UiTest OpenHarmony应用UI测试框架，提供稳定的UI触控/检视能力和简洁易用的用例编写API，用于FA界面/控件的自动化测试。
+ Hypium是适用于OpenHarmony的自动化测试框架，包含单元测试框架(JsUnit)和Ui测试框架(UiTest)。
+ 
+ 单元测试框架(JsUnit)提供单元测试用例执行能力，提供用例编写基础接口，生成对应报告，用于测试系统或app接口。
+ 
+ Ui测试框架(UiTest)通过简洁易用的API提供界面控件查找、操作能力，支持用户开发基于界面操作的自动化测试脚本。
 
 ## 目录
 
 ```
 hypium 
-  |-----jsunit  js/ts单元测试框架
-  |-----uitest  ui界面测试框架
+  |-----jsunit  单元测试框架
+  |-----uitest  Ui测试框架
 ```
 ## 约束限制
 > **说明:**
 >
 > 本模块首批接口从API version 8开始支持。后续版本的新增接口，采用上角标单独标记接口的起始版本。
 
-## 单元测试功能特性
+## 单元测试框架功能特性
 
 | No.  | 特性     | 功能说明                           |
 | ---- | -------- | ---------------------------------- |
@@ -76,7 +75,7 @@ export default async function abilityTest() {
 
 ####  断言库
 
-断言功能列表
+断言功能列表：
 
 
 | No.  | API              | 功能说明                                                     |
@@ -123,13 +122,13 @@ export default async function abilityTest() {
 ```
 ### 使用方式
 
-  JsUnit测试框架以npm包形式发布至官网，集成至sdk，开发者可以下载Deveco Studio使用，使用指南参见IDE 文档。
+  单元测试框架以npm包形式发布至官网，集成至sdk，开发者可以下载Deveco Studio使用，使用指南参见IDE 文档。
 
-## UITest功能特性
+## UI测试框架功能特性
 
 | No.  | 特性        | 功能说明                                                     |
 | ---- | ----------- | ------------------------------------------------------------ |
-| 1    | UiDriver    | UI测试的入口，提供控件查找，控件存在性检查以及按键注入能力   |
+| 1    | UiDriver    | Ui测试的入口，提供控件查找，控件存在性检查以及按键注入能力   |
 | 2    | By          | 类用于描述目标控件特征(文本、id、类型等)，`UiDriver`根据`By`描述的控件特征信息来完成控件查找 |
 | 3    | UiComponent | UiDriver`查找返回的控件对象，提供控件属性查询，控件，滑动查找等触控/检视能力 |
 
@@ -140,9 +139,9 @@ import {UiDriver,BY,UiCOmponent,MatchPattern} from '@ohos.uitest'
 ```
 
 > 注意事项
-> 1. `By`类提供的接口全部为同步接口, 使用者可以以`builder`模式链式调用其接口构造控件筛选条件
-> 2. `UiDrivier`和`UiComponent`类提供的接口全部为异步接口(`Promise`形式)，**需以`await`方式调用**
-> 3. UI测试用例均需以**异步**用例方式编写，需遵循JsUnit测试框架异步用例编写规范
+> 1. `By`类提供的接口全部为同步接口, 使用者可以以`builder`模式链式调用其接口构造控件筛选条件。
+> 2. `UiDrivier`和`UiComponent`类提供的接口全部为异步接口(`Promise`形式)，**需以`await`方式调用**。
+> 3. UI测试用例均需以**异步**用例方式编写，需遵循JsUnit测试框架异步用例编写规范。
 
    
 
@@ -172,15 +171,15 @@ export default async function abilityTest() {
 }
 ```
 
-### UIDrvier使用说明
+### UiDriver使用说明
 
-`UiDriver`类作为uitest测试框架的总入口，提供控件查找，按键注入，坐标点击/滑动/手势，截图等能力
+`UiDriver`类作为uitest测试框架的总入口，提供控件查找，按键注入，坐标单击/滑动/手势，截图等能力
 
 | No.  | API                                                          | 功能描述               |
 | ---- | ------------------------------------------------------------ | ---------------------- |
 | 1    | create():Promise<UiDriver>                                   | 静态方法，构造UiDriver |
 | 2    | findComponent(b:By):Promise<UiComponent>                     | 查找匹配控件           |
-| 3    | pressBack():Promise<void>                                    | 点击BACK键             |
+| 3    | pressBack():Promise<void>                                    | 单击BACK键             |
 | 4    | click(x:number, y:number):Promise<void>                      | 基于坐标点的点击       |
 | 5    | swipe(x1:number, y1:number, x2:number, y2:number):Promise<void> | 基于坐标点的滑动       |
 | 6    | assertComponentExist(b:By):Promise<void>                     | 断言匹配的控件存在     |
@@ -193,12 +192,12 @@ export default async function abilityTest() {
 import {BY,UiDriver,UiComponent} from '@ohos.uitest'
 
 export default async function abilityTest() {
-  describe('uiTestDemo', function() {
-    it('uitest_demo0', 0, async function(done) {
+  describe('UiTestDemo', function() {
+    it('Uitest_demo0', 0, async function(done) {
       try{
         // create UiDriver
         let driver = await UiDriver.create()
-        // assert text 'hello' exists on current UI
+        // assert text 'hello' exists on current Ui
         await assertComponentExist(BY.text('hello'))
       } finally {
         done()
@@ -210,7 +209,7 @@ export default async function abilityTest() {
 
 ### By使用说明
 
-UiTest框架通过`By`类提供了丰富的控件特征描述API，用来匹配查找要操作/检视的目标控件。`By`提供的API能力具有以下特点:
+Ui测试框架通过`By`类提供了丰富的控件特征描述API，用来匹配查找要操作/检视的目标控件。`By`提供的API能力具有以下特点:
 
 - 支持单属性匹配和多属性组合匹配，例如同时指定目标控件text和id
 - 控件属性支持多种匹配模式(等于，包含，`STARTS_WITH`，`ENDS_WITH`)
@@ -245,7 +244,7 @@ let button = await driver.findComponent(BY.id(Id_button))
 let button = await driver.findComponent(BY.id(Id_button).enabled(true))
 ```
 
-通过`By.id(x).enabled(y)`来对目标控件的多个属性进行指定
+通过`By.id(x).enabled(y)`来对目标控件的多个属性进行指定：
 
 **示例代码3**: 查找文本中包含`hello`的控件, 适用于控件属性取值不能完全确定的场景:
 
@@ -270,13 +269,13 @@ let switch = await driver.findComponent(BY.id(Id_switch).isAfter(BY.text("Item3_
 
 ### UiComponent使用说明
 
-`UiComponent`类代表了UI界面上的一个控件，一般是通过`UiDriver.findComponent(by)`方法查找到的。通过该类的实例，用户可以进行控件属性获取，控件点击，滑动查找，文本注入等操作。
+`UiComponent`类代表了Ui界面上的一个控件，一般是通过`UiDriver.findComponent(by)`方法查找到的。通过该类的实例，用户可以进行控件属性获取，控件单击，滑动查找，文本注入等操作。
 
 `UiComponent`包含的常用API:
 
 | No.  | API                               | 功能描述                                     |
 | ---- | --------------------------------- | -------------------------------------------- |
-| 1    | click():Promise<void>             | 点击该控件                                   |
+| 1    | click():Promise<void>             | 单击该控件                                   |
 | 2    | inputText(t:string):Promise<void> | 向控件中输入文本(适用于文本框控件)           |
 | 3    | scrollSearch(s:By):Promise<bool>  | 在该控件上滑动查找目标控件(适用于List等控件) |
 | 4    | getText():Promise<string>         | 获取控件text                                 |
@@ -286,7 +285,7 @@ let switch = await driver.findComponent(BY.id(Id_switch).isAfter(BY.text("Item3_
 
 `UiComponent`完整的API列表请参考其API文档。
 
-**示例代码1**: 控件点击
+**示例代码1**: 单击控件：
 
 ```javascript
 let button = await driver.findComponent(BY.id(Id_button))
@@ -300,23 +299,23 @@ let component = await driver.findComponent(BY.id(Id_title))
 expect(component != null).assertTrue()
 ```
 
-**示例代码3**: 在ListContainer控件中滑动查找text为`Item3_3`的子控件:
+**示例代码3**: 在List控件中滑动查找text为`Item3_3`的子控件:
 
 ```javascript
-let listContainer = await driver.findComponent(BY.id(Id_list))
-let found = await listContainer.scrollSearch(BY.text("Item3_3"))
+let list = await driver.findComponent(BY.id(Id_list))
+let found = await list.scrollSearch(BY.text("Item3_3"))
 expect(found).assertTrue()
 ```
 
-**示例代码4**: 向输入框控件中输入文本
+**示例代码4**: 向输入框控件中输入文本：
 
 ```javascript
-let editText = await driver.findComponent(BY.type('Input'))
+let editText = await driver.findComponent(BY.type('InputText'))
 await editText.inputText("user_name")
 ```
 ### 推送UiTest至设备
 
-> UiTest框架暂时不随版本编译，使用时需自行编译后推送至OpenHarmony设备。后续随版本编译后，直接使用版本即可
+> Ui测试框架暂时不随版本编译，使用时需自行编译后推送至OpenHarmony设备。后续随版本编译后，直接使用版本即可。
 
 #### 构建方式
 
@@ -332,4 +331,3 @@ hdc_std file send uitest /system/bin/uitest
 hdc_std file send libuitest.z.so /system/lib/module/libuitest.z.so
 hdc_std shell chmod +x /system/bin/uitest
 ```
-
