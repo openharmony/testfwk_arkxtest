@@ -257,9 +257,6 @@ let switch = await driver.findComponent(By.id(Id_switch).isAfter(By.text("Item3_
 
 通过`By.isAfter`方法，指定位于目标控件前面的特征控件属性，通过该特征控件进行相对定位。一般地，特征控件为某个具有全局唯一特征的控件(例如例如具有唯一的id或者唯一的text)。
 
-<img src="img/使用isAfter进行相对定位.png" />
-
-​                                                             **使用使用By.isAfter进行控件相对定位**
 
 类似的，可以使用`By.isBefore`控件指定位于目标控件后面的特征控件属性，实现相对定位。
 
@@ -284,7 +281,8 @@ let switch = await driver.findComponent(By.id(Id_switch).isAfter(By.text("Item3_
 **示例代码1**: 控件点击
 
 ```javascript
-let button = await driver.findComponent(By.id(Id_button)).click()
+let button = await driver.findComponent(By.id(Id_button))
+await button.click()
 ```
 
 **示例代码2**: 通过get接口获取控件属性后，可以使用JS单元测试框架提供的assert*接口对其进行断言检查:

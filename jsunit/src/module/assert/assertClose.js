@@ -17,7 +17,7 @@ function assertClose (actualValue, expected) {
   if (actualValue === null && expected[0] === null) {
     throw new Error('actualValue and expected can not be both null!!!')
   }
-  let result = false
+  let result
   let diff = Math.abs(expected[0] - actualValue)
   let actualAbs = Math.abs(actualValue)
   if ((actualAbs - 0) === 0) {
