@@ -1,24 +1,28 @@
 
 
-id: Hypium使用介绍
+# Hypium使用介绍
 
-# 简介
+## 简介
 ​    Hypium测试框架支持App的单元测试和UI测试，应用开发者可用使用Hypium测试应用内接口逻辑以及相应的界面UI测试
 
 ​    JsUnit 单元测试(JS/TS)提供基础单元测试用例执行能力，提供用例编写基础接口，生成对应报告，用于测试系统或者app接口。
 ​    UiTest OpenHarmony应用UI测试框架，提供稳定的UI触控/检视能力和简洁易用的用例编写API，用于FA界面/控件的自动化测试。
 
-# 目录
+## 目录
 
 ```
 hypium 
-  |-----jsunit
-  |-----uitest
+  |-----jsunit  js/ts 单元测试框架
+  |-----uitest  ui界面测试接口
 ```
+## 约束限制
+> **说明:**
+>
+> 本模块首批接口从头API version 8开始支持。后续版本的新增接口，采用上角标单独标记接口的起始版本。
 
 ## 单元测试功能特性
 
-| NO   | 特性     | 功能说明                           |
+| No.  | 特性     | 功能说明                           |
 | ---- | -------- | ---------------------------------- |
 | 1    | 基础流程 | 支持基础用例编写及执行             |
 | 2    | 断言库   | 判断用例实际期望值与预期值是否相符 |
@@ -29,7 +33,7 @@ hypium
 
 测试用例采用业内通用语法，describe 代表一个测试套， it 代表一条用例。
 
-| NO   | API        | 功能说明                                                     |
+| No.  | API        | 功能说明                                                     |
 | ---- | ---------- | ------------------------------------------------------------ |
 | 1    | describe   | 定义一个测试套，支持两个参数： 测试套名称和测试套函数； describe 支持嵌套， 每个 describe 内均可以定义 beforeAll 、beforeEach 、afterEach 和 afterA |
 | 2    | beforeAll  | 在测试套内定义一个预置条件，在所有测试用例开始前执行且仅执行一次，支持一个参数：预置动作函数 |
@@ -43,30 +47,29 @@ hypium
 
 ```javascript
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from 'hypium/index'
+import demo from '@ohos.bundle'
 
-describe('appInfoTest', function () {
-  beforeAll(function () {
-    console.info('beforeAll called')
+export default async function abilityTest() {
+  describe('ActsAbilityTest', function () {
+    it('String_assertContain_success', 0, function () {
+      let a = 'abc'
+      let b = 'b'
+      expect(a).assertContain(b)
+      expect(a).assertEqual(a)
+    })
+    it('getBundleInfo_0100', 0, async function () {
+      const NAME1 = "com.example.MyApplicationStage"
+      await demo.getBundleInfo(NAME1,
+        demo.BundleFlag.GET_BUNDLE_WITH_ABILITIES | demo.BundleFlag.GET_BUNDLE_WITH_REQUESTED_PERMISSION)
+        .then((value) => {
+          console.info(value.appId)
+        })
+        .catch((err) => {
+          console.info(err.code);
+        })
+    })
   })
-
-  afterAll(function () {
-    console.info('afterAll called')
-  })
-
-  beforeEach(function () {
-    console.info('beforeEach called')
-  })
-
-  afterEach(function () {
-    console.info('afterEach called')
-  })
-
-  it('app_info_test_001', DEFAULT, function () {
-    var info = app.getInfo()
-    expect(info.versionCode).assertEqual('1')
-    console.info('testCase001')
-  })
-})
+}
 ```
 
 
@@ -76,7 +79,7 @@ describe('appInfoTest', function () {
 断言功能列表
 
 
-| NO   | API              | 功能说明                                                     |
+| No.  | API              | 功能说明                                                     |
 | :--- | :--------------- | ------------------------------------------------------------ |
 | 1    | assertClose      | 检验 actualvalue 和 expectvalue(0) 的接近程度是否为 expectValue(1) |
 | 2    | assertContain    | 检验 actualvalue中是否包含 expectvalue                       |
@@ -94,33 +97,37 @@ describe('appInfoTest', function () {
 示例代码：
 
 ```javascript
-import { describe, it, expect } from 'deccjsunit/index'
-
-describe('assertClose', function () {
-  it('assertBeClose success', 0, function () {
-    let a = 100
-    let b = 0.1
-    expect(a).assertClose(99, b)
+import { describe, it, expect } from 'hypium/index'
+export default async function abilityTest() {
+  describe('assertClose', function () {
+    it('assertBeClose success', 0, function () {
+      let a = 100
+      let b = 0.1
+      expect(a).assertClose(99, b)
+    })
+    it('assertBeClose fail', 0, function () {
+      let a = 100
+      let b = 0.1
+      expect(a).assertClose(1, b)
+    })
+    it('assertBeClose fail', 0, function () {
+      let a = 100
+      let b = 0.1
+      expect(a).assertClose(null, b)
+    })
+    it('assertBeClose fail', 0, function () {
+      expect(null).assertClose(null, 0)
+    })
   })
-  it('assertBeClose fail', 0, function () {
-    let a = 100
-    let b = 0.1
-    expect(a).assertClose(1, b)
-  })
-  it('assertBeClose fail', 0, function () {
-    let a = 100
-    let b = 0.1
-    expect(a).assertClose(null, b)
-  })
-  it('assertBeClose fail', 0, function () {
-    expect(null).assertClose(null, 0)
-  })
-})
+}
 ```
+### 使用方式
+
+ jsunit测试框架npm包发布至官网，集成至sdk，开发者可以下载Deveco Studio 使用，使用指南建IDE 文档。
 
 ## UITest功能特性
 
-| NO   | 特性        | 功能说明                                                     |
+| No.  | 特性        | 功能说明                                                     |
 | ---- | ----------- | ------------------------------------------------------------ |
 | 1    | UiDriver    | UI测试的入口，提供控件查找，控件存在性检查以及按键注入能力   |
 | 2    | By          | 类用于描述目标控件特征(文本、id、类型等)，`UiDriver`根据`By`描述的控件特征信息来完成控件查找 |
@@ -132,13 +139,10 @@ describe('assertClose', function () {
 import {UiDriver,BY,UiCOmponent,MatchPattern} from '@ohos.uitest'
 ```
 
-> {注意事项!!}
-
-1. `By`类提供的接口全部为同步接口, 使用者可以以`builder`模式链式调用其接口构造控件筛选条件
-
-2. `UiDrivier`和`UiComponent`类提供的接口全部为异步接口(`Promise`形式)，**需以`await`方式调用**
-
-3. UI测试用例均需以**异步**用例方式编写，需遵循JSUnit测试框架异步用例编写规范
+> 注意事项
+> 1. `By`类提供的接口全部为同步接口, 使用者可以以`builder`模式链式调用其接口构造控件筛选条件
+> 2. `UiDrivier`和`UiComponent`类提供的接口全部为异步接口(`Promise`形式)，**需以`await`方式调用**
+> 3. UI测试用例均需以**异步**用例方式编写，需遵循JSUnit测试框架异步用例编写规范
 
    
 
@@ -192,7 +196,7 @@ describe('uiTestDemo', function() {
             // create UiDriver
             let driver = await UiDriver.create()
             // assert text 'hello' exists on current UI
-            await assertComponentExist(By.text('hello'))
+            await assertComponentExist(BY.text('hello'))
         } finally {
             done()
         }
@@ -228,13 +232,13 @@ UiTest框架通过`By`类提供了丰富的控件特征描述API，用以匹配�
 **示例代码1**: 查找id为`Id_button`的控件:
 
 ```javascript
-let button = await driver.findComponent(By.id(Id_button))
+let button = await driver.findComponent(BY.id(Id_button))
 ```
 
  **示例代码2**：查找id为`Id_button`并且状态为`enabled`的控件, 适用于无法通过单一属性定位的场景:
 
 ```javascript
-let button = await driver.findComponent(By.id(Id_button).enabled(true))
+let button = await driver.findComponent(BY.id(Id_button).enabled(true))
 ```
 
 通过`By.id(x).enabled(y)`来对目标控件的多个属性进行指定
@@ -242,17 +246,17 @@ let button = await driver.findComponent(By.id(Id_button).enabled(true))
 **示例代码3**: 查找文本中包含`hello`的控件, 适用于控件属性取值不能完全确定的场景:
 
 ```javascript
-let txt = await driver.findComponent(By.text("hello", ValuePattern.CONTAINS))
+let txt = await driver.findComponent(BY.text("hello", MatchPattern.CONTAINS))
 ```
 
-通过向`By.text()`方法传入第二个参数`ValuePattern.CONTAINS`来指定文本匹配规则；默认规则为`ValuePattern.EQUALS`，即目标控件text属性必须严格等于给定值。
+通过向`By.text()`方法传入第二个参数`MatchPattern.CONTAINS`来指定文本匹配规则；默认规则为`MatchPattern.EQUALS`，即目标控件text属性必须严格等于给定值。
 
 ####  控件相对定位
 
 **示例代码1**: 查找位于文本控件`Item3_3`后面的，id为`ResourceTable.Id_switch`的Switch控件:
 
 ```javascript
-let switch = await driver.findComponent(By.id(Id_switch).isAfter(By.text("Item3_3")))
+let switch = await driver.findComponent(BY.id(Id_switch).isAfter(BY.text("Item3_3")))
 ```
 
 通过`By.isAfter`方法，指定位于目标控件前面的特征控件属性，通过该特征控件进行相对定位。一般地，特征控件为某个具有全局唯一特征的控件(例如例如具有唯一的id或者唯一的text)。
@@ -281,32 +285,47 @@ let switch = await driver.findComponent(By.id(Id_switch).isAfter(By.text("Item3_
 **示例代码1**: 控件点击
 
 ```javascript
-let button = await driver.findComponent(By.id(Id_button))
+let button = await driver.findComponent(BY.id(Id_button))
 await button.click()
 ```
 
 **示例代码2**: 通过get接口获取控件属性后，可以使用JS单元测试框架提供的assert*接口对其进行断言检查:
 
 ```javascript
-let component = await driver.findComponent(By.id(Id_title))
+let component = await driver.findComponent(BY.id(Id_title))
 expect(component != null).assertTrue()
 ```
 
 **示例代码3**: 在ListContainer控件中滑动查找text为`Item3_3`的子控件:
 
 ```javascript
-let listContainer = await driver.findComponent(By.id(Id_list))
-let found = await listContainer.scrollSearch(By.text("Item3_3"))
+let listContainer = await driver.findComponent(BY.id(Id_list))
+let found = await listContainer.scrollSearch(BY.text("Item3_3"))
 expect(found).assertTrue()
 ```
 
 **示例代码4**: 向输入框控件中输入文本
 
 ```javascript
-let editText = await driver.findComponent(By.type('Input'))
+let editText = await driver.findComponent(BY.type('Input'))
 await editText.inputText("user_name")
 ```
+### 推送UiTest至设备
 
-> **说明:**
->
-> 本模块首批接口从头API version 8开始支持。后续版本的新增接口，采用上角标单独标记接口的起始版本。
+> UiTest框架暂时不随版本编译，使用时需自行编译后推送至OpenHarmony设备,后续随版本编译后，可以直接使用版本即可
+
+#### 构建方式
+
+```shell
+./build.sh --product-name rk3568 --build-target uitestkit
+```
+#### 推送方式
+
+```shell
+hdc_std target mount
+hdc_std shell mount -o rw,remount /
+hdc_std file send uitest /system/bin/uitest
+hdc_std file send libuitest.z.so /system/lib/module/libuitest.z.so
+hdc_std shell chmod +x /system/bin/uitest
+```
+
