@@ -120,7 +120,7 @@ export default async function abilityTest() {
 ```
 ### 使用方式
 
-  单元测试框架以npm包形式发布至官网([npm (npmjs.com)](https://www.npmjs.com/))，集成至sdk，开发者可以下载Deveco Studio使用，使用指南参见IDE文档。
+  单元测试框架以npm包形式发布至官网([https://www.npmjs.com/](https://www.npmjs.com/))，集成至sdk，开发者可以下载Deveco Studio使用，使用指南参见IDE文档。
 
 ## Ui测试框架功能特性
 
