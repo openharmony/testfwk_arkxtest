@@ -62,7 +62,7 @@ export default async function abilityTest() {
           console.info(value.appId)
         })
         .catch((err) => {
-          console.info(err.code);
+          console.info(err.code)
         })
     })
   })
@@ -184,7 +184,7 @@ export default async function abilityTest() {
 | 7    | delayMs(t:number):Promise<void>                              | 延时                   |
 | 8    | screenCap(s:path):Promise<void>                              | 截屏                   |
 
-其中assertComponentExist接口是断言API，用于断言当前界面存在目标控件; 如果控件不存在，该API将抛出JS异常，使当前测试用例失败。
+其中assertComponentExist接口是断言API，用于断言当前界面存在目标控件；如果控件不存在，该API将抛出JS异常，使当前测试用例失败。
 
 ```javascript
 import {BY,UiDriver,UiComponent} from '@ohos.uitest'
@@ -207,7 +207,7 @@ export default async function abilityTest() {
 
 ### By使用说明
 
-Ui测试框架通过`By`类提供了丰富的控件特征描述API，用来匹配查找要操作/检视的目标控件。`By`提供的API能力具有以下特点：
+Ui测试框架通过`By`类提供了丰富的控件特征描述API，用来匹配查找要操作或检视的目标控件。`By`提供的API能力具有以下特点：
 
 - 支持匹配单属性和匹配多属性组合，例如同时指定目标控件text和id。
 - 控件属性支持多种匹配模式(等于，包含，`STARTS_WITH`，`ENDS_WITH`)。
@@ -250,7 +250,7 @@ let button = await driver.findComponent(BY.id(Id_button).enabled(true))
 let txt = await driver.findComponent(BY.text("hello", MatchPattern.CONTAINS))
 ```
 
-通过向`By.text()`方法传入第二个参数`MatchPattern.CONTAINS`来指定文本匹配规则；默认规则是MatchPattern.EQUALS`，即目标控件text属性必须严格等于给定值。
+通过向`By.text()`方法传入第二个参数`MatchPattern.CONTAINS`来指定文本匹配规则；默认规则是`MatchPattern.EQUALS`，即目标控件text属性必须严格等于给定值。
 
 ####  控件相对定位
 
@@ -294,7 +294,7 @@ await button.click()
 
 ```javascript
 let component = await driver.findComponent(BY.id(Id_title))
-expect(component != null).assertTrue()
+expect(component !== null).assertTrue()
 ```
 
 **示例代码3**：在List控件中滑动查找text是`Item3_3`的子控件。
