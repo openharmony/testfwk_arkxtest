@@ -112,8 +112,8 @@ ohos_executable("uitest_server") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "hiviewdfx_hilog_native:libhilog",
-    "ipc:ipc_core",
     "input:libmmi-client",
+    "ipc:ipc_core",
     "samgr_standard:samgr_proxy",
   ]
 
