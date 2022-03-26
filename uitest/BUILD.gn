@@ -36,6 +36,8 @@ ohos_static_library("uitest_core") {
     "${source_root}/core/widget_matcher.cpp",
     "${source_root}/core/widget_selector.cpp",
   ]
+  include_dirs =
+      [ "//base/hiviewdfx/hilog/interfaces/native/innerkits/include" ]
   external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
   defines = [ "LOG_TAG=\"UiTestKit_Base\"" ]
 }
@@ -47,6 +49,8 @@ common_external_deps = [
   "hiviewdfx_hilog_native:libhilog",
   "ipc:ipc_core",
 ]
+hilog_include_dirs =
+    [ "//base/hiviewdfx/hilog/interfaces/native/innerkits/include" ]
 
 accessibility_include_dirs = [
   "//base/accessibility/frameworks/aafwk/include",
@@ -83,6 +87,7 @@ ohos_executable("uitest_server") {
     "${source_root}/connection",
   ]
   include_dirs += accessibility_include_dirs
+  include_dirs += hilog_include_dirs
 
   # static link the uitest_core as server end
   deps = [
@@ -168,6 +173,7 @@ ohos_shared_library("uitest_client") {
     ":uitest_exporter_abc",
     ":uitest_exporter_js",
   ]
+  include_dirs += hilog_include_dirs
   subsystem_name = "test"
   part_name = "arkXtest"
   output_name = "uitest"
@@ -201,6 +207,7 @@ ohos_unittest("uitest_core_unittest") {
     "${source_root}/core",
     "${source_root}/connection",
   ]
+  include_dirs += hilog_include_dirs
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   use_exceptions = true
