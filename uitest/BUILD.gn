@@ -112,8 +112,8 @@ ohos_executable("uitest_server") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "hiviewdfx_hilog_native:libhilog",
+    "input:libmmi-client",
     "ipc:ipc_core",
-    "multimodalinput_base:libmmi-client",
     "samgr_standard:samgr_proxy",
   ]
 
@@ -125,7 +125,7 @@ ohos_executable("uitest_server") {
     "window_manager:libwm",
   ]
 
-  subsystem_name = "arkXtest"
+  subsystem_name = "test"
   part_name = "arkXtest"
   output_name = "uitest"
   install_enable = false
@@ -168,7 +168,7 @@ ohos_shared_library("uitest_client") {
     ":uitest_exporter_abc",
     ":uitest_exporter_js",
   ]
-  subsystem_name = "arkXtest"
+  subsystem_name = "test"
   part_name = "arkXtest"
   output_name = "uitest"
   external_deps = common_external_deps
@@ -206,7 +206,7 @@ ohos_unittest("uitest_core_unittest") {
   use_exceptions = true
   module_out_path = "uitestkit/unittest"
   testonly = true
-  subsystem_name = "arkXtest"
+  subsystem_name = "test"
   part_name = "arkXtest"
 }
 
