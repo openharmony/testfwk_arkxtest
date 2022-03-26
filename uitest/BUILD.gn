@@ -14,7 +14,7 @@
 import("//ark/ts2abc/ts2panda/ts2abc_config.gni")
 import("//build/ohos.gni")
 
-source_root = "//test/thruster/uitest"
+source_root = "//test/arkXtest/uitest"
 
 config("uitest_common_configs") {
   include_dirs = [ "//third_party/json/single_include/nlohmann" ]
@@ -125,10 +125,10 @@ ohos_executable("uitest_server") {
     "window_manager:libwm",
   ]
 
-  subsystem_name = "test"
-  part_name = "test_framework"
+  subsystem_name = "arkXtest"
+  part_name = "arkXtest"
   output_name = "uitest"
-  install_enable = true
+  install_enable = false
   external_deps += common_external_deps
   defines = [ "LOG_TAG=\"UiTestKit_Server\"" ]
 }
@@ -168,8 +168,8 @@ ohos_shared_library("uitest_client") {
     ":uitest_exporter_abc",
     ":uitest_exporter_js",
   ]
-  subsystem_name = "test"
-  part_name = "test_framework"
+  subsystem_name = "arkXtest"
+  part_name = "arkXtest"
   output_name = "uitest"
   external_deps = common_external_deps
   external_deps += [ "napi:ace_napi" ]
@@ -206,8 +206,8 @@ ohos_unittest("uitest_core_unittest") {
   use_exceptions = true
   module_out_path = "uitestkit/unittest"
   testonly = true
-  subsystem_name = "test"
-  part_name = "test_framework"
+  subsystem_name = "arkXtest"
+  part_name = "arkXtest"
 }
 
 group("uitestkit") {

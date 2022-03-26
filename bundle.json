@@ -1,5 +1,5 @@
 {
-    "name": "@openharmony/test_framework",
+    "name": "@openharmony/arkXtest",
     "version": "3.1",
     "description": "test framwork",
     "publishAs": "code-segment",
@@ -12,8 +12,8 @@
     "repository": "",
     "license": "Apache License 2.0",
     "component": {
-      "name": "test_framework",
-      "subsystem": "test",
+      "name": "arkXtest",
+      "subsystem": "arkXtest",
       "syscap": [ "SystemCapability.Test.UiTest" ],
       "adapted_system_type": [ 
         "standard"
@@ -36,8 +36,8 @@
           "want",
           "accessibility",
           "ability_runtime",
-         "napi",
-         "libdm",
+          "napi",
+          "libdm",
           "image_native",
           "libwm"
         ],
@@ -47,11 +47,11 @@
       },
       "build": {
         "sub_component": [
-            "//test/thruster/uitest:uitest_server",
-            "//test/thruster/uitest:uitest_client"
+            "//test/arkXtest/uitest:uitest_server",
+            "//test/arkXtest/uitest:uitest_client"
         ],
     "test": [
-      "//test/thruster/uitest:uitestkit_test"
+      "//test/arkXtest/uitest:uitestkit_test"
     ]
       }
     }
