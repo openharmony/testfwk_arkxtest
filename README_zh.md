@@ -1,7 +1,7 @@
 # OpenHarmony自动化测试框架使用介绍
 
 ## 简介
- arkXtest是适用于OpenHarmony的自动化测试框架，包含单元测试框架(JsUnit)和Ui测试框架(UiTest)。
+ OpenHarmony的自动化测试框架，包含单元测试框架(JsUnit)和Ui测试框架(UiTest)。
 
  单元测试框架(JsUnit)提供单元测试用例执行能力，提供用例编写基础接口，生成对应报告，用于测试系统或应用接口。
 
