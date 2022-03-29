@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,10 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#include "gtest/gtest.h"
 #include "ui_driver.h"
 #include "ui_model.h"
-#include "gtest/gtest.h"
 
 using namespace OHOS::uitest;
 using namespace std;
@@ -42,19 +41,20 @@ public:
         return frameIndex_;
     }
 
-    string GetDomTextOfCurrentWindow() const override
+    void GetCurrentUiDom(nlohmann::json& out) const override
     {
         uint32_t newIndex = frameIndex_;
         frameIndex_++;
         if (newIndex >= mockDomFrames_.size()) {
-            return mockDomFrames_.at(mockDomFrames_.size() - 1);
+            out = nlohmann::json::parse(mockDomFrames_.at(mockDomFrames_.size() - 1));
+        } else {
+            out = nlohmann::json::parse(mockDomFrames_.at(newIndex));
         }
-        return mockDomFrames_.at(newIndex);
     }
 
-    void InjectTouchEvent(const TouchEvent &event) const override
+    void InjectTouchEventSequence(const vector<TouchEvent> &events) const override
     {
-        touch_event_records.push_back(event);
+        touch_event_records = events; // copy-construct
     }
 
     bool IsWorkable() const override
@@ -108,6 +108,7 @@ TEST_F(UiDriverTest, normalInteraction)
 "attributes": {
 "index": "0",
 "resource-id": "id1",
+"bounds": "[0,0][100,100]",
 "text": ""
 },
 "children": [
@@ -115,6 +116,7 @@ TEST_F(UiDriverTest, normalInteraction)
 "attributes": {
 "index": "0",
 "resource-id": "id4",
+"bounds": "[0,0][50,50]",
 "text": "USB"
 },
 "children": []
@@ -122,7 +124,7 @@ TEST_F(UiDriverTest, normalInteraction)
 ]
 }
 )";
-    controller_->SetDomFrames({mockDom0});
+    controller_->SetDomFrames( {mockDom0} );
 
     auto error = ApiCallErr(NO_ERROR);
     auto selector = WidgetSelector();
@@ -147,12 +149,14 @@ TEST_F(UiDriverTest, retrieveWidgetFailure)
 {
     constexpr auto mockDom0 = R"({
 "attributes": {
-"text": ""
+"text": "",
+"bounds": "[0,0][100,100]"
 },
 "children": [
 {
 "attributes": {
-"text": "USB"
+"text": "USB",
+"bounds": "[0,0][50,50]"
 },
 "children": []
 }
@@ -161,19 +165,21 @@ TEST_F(UiDriverTest, retrieveWidgetFailure)
 )";
     constexpr auto mockDom1 = R"({
 "attributes": {
-"text": ""
+"text": "",
+"bounds": "[0,0][100,100]"
 },
 "children": [
 {
 "attributes": {
-"text": "WYZ"
+"text": "WYZ",
+"bounds": "[0,0][50,50]"
 },
 "children": []
 }
 ]
 }
 )";
-    controller_->SetDomFrames({mockDom0});
+    controller_->SetDomFrames( {mockDom0} );
 
     auto error = ApiCallErr(NO_ERROR);
     auto selector = WidgetSelector();
@@ -185,7 +191,7 @@ TEST_F(UiDriverTest, retrieveWidgetFailure)
     ASSERT_EQ(1, images.size());
 
     // mock another dom on which the target widget is missing, and perform click
-    controller_->SetDomFrames({mockDom1});
+    controller_->SetDomFrames( {mockDom1} );
     error = ApiCallErr(NO_ERROR);
     driver_->PerformWidgetOperate(*images.at(0), WidgetOp::CLICK, error);
 
@@ -201,6 +207,7 @@ TEST_F(UiDriverTest, scrollSearchRetrieveSubjectWidgetFailed)
 "attributes": {
 "index": "0",
 "resource-id": "id1",
+"bounds": "[0,0][100,100]",
 "text": ""
 },
 "children": [
@@ -208,6 +215,7 @@ TEST_F(UiDriverTest, scrollSearchRetrieveSubjectWidgetFailed)
 "attributes": {
 "index": "0",
 "resource-id": "id4",
+"bounds": "[0,0][50,50]",
 "text": "USB"
 },
 "children": []
@@ -215,7 +223,7 @@ TEST_F(UiDriverTest, scrollSearchRetrieveSubjectWidgetFailed)
 ]
 })";
     constexpr auto mockDom1 = R"({"attributes":{"index":"0","resource-id":"id1","text":""},"children":[]})";
-    controller_->SetDomFrames({mockDom0});
+    controller_->SetDomFrames( {mockDom0} );
 
     auto error = ApiCallErr(NO_ERROR);
     auto scrollWidgetSelector = WidgetSelector();
@@ -227,7 +235,7 @@ TEST_F(UiDriverTest, scrollSearchRetrieveSubjectWidgetFailed)
     ASSERT_EQ(1, images.size());
 
     // mock another dom on which the scroll-widget is missing, and perform scroll-search
-    controller_->SetDomFrames({mockDom1});
+    controller_->SetDomFrames( {mockDom1} );
     error = ApiCallErr(NO_ERROR);
     auto targetWidgetSelector = WidgetSelector();
     ASSERT_EQ(nullptr, driver_->ScrollSearch(*images.at(0), targetWidgetSelector, error, 0));
@@ -243,6 +251,7 @@ TEST_F(UiDriverTest, scrollSearchTargetWidgetNotExist)
 "attributes": {
 "index": "0",
 "resource-id": "id1",
+"bounds": "[0,0][100,100]",
 "text": ""
 },
 "children": [
@@ -250,6 +259,7 @@ TEST_F(UiDriverTest, scrollSearchTargetWidgetNotExist)
 "attributes": {
 "index": "0",
 "resource-id": "id4",
+"bounds": "[0,0][50,50]",
 "text": "USB"
 },
 "children": []
@@ -257,7 +267,7 @@ TEST_F(UiDriverTest, scrollSearchTargetWidgetNotExist)
 ]
 }
 )";
-    controller_->SetDomFrames({mockDom});
+    controller_->SetDomFrames( {mockDom} );
 
     auto error = ApiCallErr(NO_ERROR);
     auto scrollWidgetSelector = WidgetSelector();
@@ -293,7 +303,7 @@ TEST_F(UiDriverTest, scrollSearchCheckSubjectWidget)
 ]
 }
 )";
-    controller_->SetDomFrames({mockDom});
+    controller_->SetDomFrames( {mockDom} );
 
     auto error = ApiCallErr(NO_ERROR);
     auto scrollWidgetSelector = WidgetSelector();
@@ -339,18 +349,18 @@ TEST_F(UiDriverTest, scrollSearchCheckDirection)
 {
     constexpr auto mockDom = R"({
 "attributes": {
-"bounds": "[0,1200][0,2000]",
+"bounds": "[0,0][100,100]",
 "text": ""
 },
 "children": [
 {
 "attributes": {
-"bounds": "[0,600][200,1000]",
+"bounds": "[0,0][50,50]",
 "text": "USB"
 },
 "children": []
 }]})";
-    controller_->SetDomFrames({mockDom});
+    controller_->SetDomFrames( {mockDom} );
 
     auto error = ApiCallErr(NO_ERROR);
     auto scrollWidgetSelector = WidgetSelector();
@@ -382,9 +392,6 @@ TEST_F(UiDriverTest, scrollSearchCheckDirection)
             ASSERT_LT(touch_event_records.at(idx).point_.py_, touch_event_records.at(idx + 1).point_.py_);
         } else if (idx > maxCyEventIndex) {
             ASSERT_GT(touch_event_records.at(idx).point_.py_, touch_event_records.at(idx + 1).point_.py_);
-        } else {
-            // the direction-turning point  (800-->1000 ===> 1000-->800)
-            ASSERT_EQ(touch_event_records.at(idx).point_.py_, touch_event_records.at(idx + 1).point_.py_);
         }
     }
 }
@@ -399,32 +406,32 @@ TEST_F(UiDriverTest, scrollSearchCheckCount_targetNotExist)
     // mocked widget text
     const vector<string> domFrameSet[4] = {
         {
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
         },
         {
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
         },
         {
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
         },
         {
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
         }
     };
 
@@ -457,32 +464,32 @@ TEST_F(UiDriverTest, scrollSearchCheckCount_targetExist)
     auto error = ApiCallErr(NO_ERROR);
     const vector<string> domFrameSet[4] = {
         {
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})"
         },
         {
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"XYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"XYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})"
         },
         {
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
         },
         {
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"XYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,100][0,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"XYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
         }
     };
 
@@ -513,7 +520,7 @@ TEST_F(UiDriverTest, widget2Image)
 {
     constexpr auto mockDom = R"({
 "attributes": {
-"bounds": "[0,1200][0,2000]",
+"bounds": "[0,0][100,100]",
 "index": "0",
 "resource-id": "id1",
 "text": ""
@@ -521,7 +528,7 @@ TEST_F(UiDriverTest, widget2Image)
 "children": [
 {
 "attributes": {
-"bounds": "[0,600][200,1000]",
+"bounds": "[0,0][100,100]",
 "hashcode": "888",
 "index": "0",
 "resource-id": "id4",
@@ -532,7 +539,7 @@ TEST_F(UiDriverTest, widget2Image)
 ]
 }
 )";
-    controller_->SetDomFrames({mockDom});
+    controller_->SetDomFrames( {mockDom} );
 
     auto error = ApiCallErr(NO_ERROR);
     auto selector = WidgetSelector();
@@ -551,14 +558,16 @@ TEST_F(UiDriverTest, updateWidgetImage)
 {
     constexpr auto mockDom0 = R"({
 "attributes": {
+"bounds": "[0,0][100,100]",
 "text": ""},
 "children": [
 {
 "attributes": {
+"bounds": "[0,0][50,50]",
 "hashcode": "12345",
 "text": "USB"},
 "children": []}]})";
-    controller_->SetDomFrames({mockDom0});
+    controller_->SetDomFrames( {mockDom0} );
 
     auto error = ApiCallErr(NO_ERROR);
     auto selector = WidgetSelector();
@@ -572,14 +581,16 @@ TEST_F(UiDriverTest, updateWidgetImage)
     // mock new UI
     constexpr auto mockDom1 = R"({
 "attributes": {
+"bounds": "[0,0][100,100]",
 "text": ""},
 "children": [
 {
 "attributes": {
+"bounds": "[0,0][50,50]",
 "hashcode": "12345",
 "text": "WYZ"},
 "children": []}]})";
-    controller_->SetDomFrames({mockDom1});
+    controller_->SetDomFrames( {mockDom1} );
     // we should be able to refresh WidgetImage on the new UI
     driver_->UpdateWidgetImage(*images.at(0), error);
     ASSERT_EQ(NO_ERROR, error.code_);
@@ -588,14 +599,16 @@ TEST_F(UiDriverTest, updateWidgetImage)
     // mock new UI
     constexpr auto mockDom2 = R"({
 "attributes": {
+"bounds": "[0,0][100,100]",
 "text": ""},
 "children": [
 {
 "attributes": {
+"bounds": "[0,0][50,50]",
 "hashcode": "23456",
 "text": "ZL"},
 "children": []}]})";
-    controller_->SetDomFrames({mockDom2});
+    controller_->SetDomFrames( {mockDom2} );
     // we should not be able to refresh WidgetImage on the new UI since its gone (hashcode and attributes changed)
     driver_->UpdateWidgetImage(*images.at(0), error);
     ASSERT_EQ(WIDGET_LOST, error.code_);

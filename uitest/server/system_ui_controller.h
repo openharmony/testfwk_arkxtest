@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,7 +19,6 @@
 #include "ui_controller.h"
 
 namespace OHOS::uitest {
-
     /**The default UiController of ohos, which is effective for all apps.*/
     class SysUiController final : public UiController {
     public:
@@ -27,13 +26,13 @@ namespace OHOS::uitest {
 
         ~SysUiController();
 
-        std::string GetDomTextOfCurrentWindow() const override;
+        void GetCurrentUiDom(nlohmann::json& out) const override;
 
         void WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const override;
 
-        void InjectTouchEvent(const TouchEvent &event) const override;
+        void InjectTouchEventSequence(const std::vector<TouchEvent> &events) const override;
 
-        void InjectKeyEvent(const KeyEvent &event) const override;
+        void InjectKeyEventSequence(const std::vector<KeyEvent> &events) const override;
 
         void PutTextToClipboard(std::string_view text) const override;
 

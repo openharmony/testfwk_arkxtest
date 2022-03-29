@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-#include "common_utilities.hpp"
-#include "ipc_transactors.h"
 #include "gtest/gtest.h"
+#include "common_utilities_hpp.h"
+#include "ipc_transactors.h"
 
 using namespace OHOS::uitest;
 using namespace std;
@@ -62,7 +62,7 @@ protected:
 
 TEST_F(MessageTransceiverTest, checkMessageContent)
 {
-    auto message = TransactionMessage{};
+    auto message = TransactionMessage {};
     transceiver_.EmitCall("a", "b", "c");
     transceiver_.GetLastEmittedMessage(message);
     ASSERT_EQ(TransactionType::CALL, message.type_);
@@ -90,7 +90,7 @@ TEST_F(MessageTransceiverTest, checkMessageContent)
 
 TEST_F(MessageTransceiverTest, enqueueDequeueMessage)
 {
-    auto message = TransactionMessage{};
+    auto message = TransactionMessage {};
     // case1: no message in queue, polling timeout, check status and delayed time
     uint64_t startMs = GetCurrentMillisecond();
     auto status = transceiver_.PollCallReply(message, pollTimeoutMs_);
@@ -98,7 +98,7 @@ TEST_F(MessageTransceiverTest, enqueueDequeueMessage)
     ASSERT_EQ(MessageTransceiver::PollStatus::ABORT_WAIT_TIMEOUT, status);
     ASSERT_NEAR(pollTimeoutMs_, endMs - startMs, TIME_DIFF_TOLERANCE_MS) << "Incorrect polling time";
     // case2: message in queue, should return immediately
-    auto tempMessage = TransactionMessage{.id_ = 1234, .type_=CALL};
+    auto tempMessage = TransactionMessage {.id_ = 1234, .type_=CALL};
     transceiver_.OnReceiveMessage(tempMessage);
     startMs = GetCurrentMillisecond();
     status = transceiver_.PollCallReply(message, pollTimeoutMs_);
@@ -121,7 +121,7 @@ TEST_F(MessageTransceiverTest, enqueueDequeueMessage)
 
 TEST_F(MessageTransceiverTest, checkMessageFilter)
 {
-    auto message = TransactionMessage{.type_=CALL};
+    auto message = TransactionMessage {.type_=CALL};
     // without filter, message should be accepted
     transceiver_.OnReceiveMessage(message);
     auto status = transceiver_.PollCallReply(message, pollTimeoutMs_);
@@ -138,9 +138,9 @@ TEST_F(MessageTransceiverTest, checkMessageFilter)
 
 TEST_F(MessageTransceiverTest, checkAnwserHandshakeAtomatically)
 {
-    auto handshake = TransactionMessage{.id_=1234, .type_=HANDSHAKE};
+    auto handshake = TransactionMessage {.id_=1234, .type_=HANDSHAKE};
     transceiver_.OnReceiveMessage(handshake);
-    auto emitted = TransactionMessage{};
+    auto emitted = TransactionMessage {};
     transceiver_.GetLastEmittedMessage(emitted);
     // should emit ack automatically on receiving handshake
     ASSERT_EQ(TransactionType::ACK, emitted.type_);
@@ -149,7 +149,7 @@ TEST_F(MessageTransceiverTest, checkAnwserHandshakeAtomatically)
 
 TEST_F(MessageTransceiverTest, immediateExitHandling)
 {
-    auto message = TransactionMessage{.type_=TransactionType::EXIT};
+    auto message = TransactionMessage {.type_=TransactionType::EXIT};
     // EXIT-message comes at sometime before timeout, should end polling and return it
     constexpr uint64_t delayMs = 10;
     asyncWork_ = async(launch::async, [this, delayMs, message]() {
@@ -167,7 +167,7 @@ TEST_F(MessageTransceiverTest, immediateConnectionDiedHandling)
 {
     transceiver_.ScheduleCheckConnection(false);
     // connection died before timeout, should end polling and return it
-    auto message = TransactionMessage{};
+    auto message = TransactionMessage {};
     const uint64_t startMs = GetCurrentMillisecond();
     auto status = transceiver_.PollCallReply(message, WATCH_DOG_TIMEOUT_MS * 2);
     const uint64_t endMs = GetCurrentMillisecond();
@@ -180,11 +180,11 @@ TEST_F(MessageTransceiverTest, checkScheduleHandshake)
 {
     transceiver_.ScheduleCheckConnection(false);
     // connection died before timeout, should end polling and return it
-    auto message = TransactionMessage{};
+    auto message = TransactionMessage {};
     constexpr uint64_t handshakeDelayMs = 1000;
     asyncWork_ = async(launch::async, [this, handshakeDelayMs, message]() {
         this_thread::sleep_for(chrono::milliseconds(handshakeDelayMs));
-        auto handshake = TransactionMessage{.type_=TransactionType::HANDSHAKE};
+        auto handshake = TransactionMessage {.type_=TransactionType::HANDSHAKE};
         this->transceiver_.OnReceiveMessage(handshake);
     });
     const uint64_t startMs = GetCurrentMillisecond();
@@ -206,7 +206,7 @@ TEST_F(MessageTransceiverTest, ensureConnected)
     static constexpr uint64_t incomingDelayMs = 60;
     asyncWork_ = async(launch::async, [this]() {
         this_thread::sleep_for(chrono::milliseconds(incomingDelayMs));
-        auto message = TransactionMessage{.type_=TransactionType::ACK};
+        auto message = TransactionMessage {.type_=TransactionType::ACK};
         this->transceiver_.OnReceiveMessage(message);
     });
     const uint64_t startMs = GetCurrentMillisecond();
@@ -216,7 +216,6 @@ TEST_F(MessageTransceiverTest, ensureConnected)
 }
 
 class DummyServer : public TransactionServer {
-
 public:
     bool Initialize() override
     {
@@ -270,18 +269,18 @@ TEST_F(TransactionServerTest, checkRunLoop)
     auto transceiver = reinterpret_cast<DummyTransceiver *>(server_.GetTransceiver());
     for (size_t idx = 0; idx < testSetSize; idx++) {
         // inject call message
-        auto call = TransactionMessage{.id_=ids.at(idx), .type_=TransactionType::CALL, .apiId_=apis.at(idx)};
+        auto call = TransactionMessage {.id_=ids.at(idx), .type_=TransactionType::CALL, .apiId_=apis.at(idx)};
         transceiver->OnReceiveMessage(call);
         // check the emitted reply message corresponding to the inject call, after a short interval
         this_thread::sleep_for(chrono::milliseconds(TIME_DIFF_TOLERANCE_MS));
-        auto reply = TransactionMessage{};
+        auto reply = TransactionMessage {};
         transceiver->GetLastEmittedMessage(reply);
         ASSERT_EQ(TransactionType::REPLY, reply.type_);
         ASSERT_EQ(ids.at(idx), reply.id_);
         ASSERT_EQ(expectedReply.at(idx), reply.resultParcel_); // check the replied result
     }
     // request exit, should end loop immediately with success code
-    auto terminate = TransactionMessage{.type_=TransactionType::EXIT};
+    auto terminate = TransactionMessage {.type_=TransactionType::EXIT};
     const uint64_t startMs = GetCurrentMillisecond();
     transceiver->OnReceiveMessage(terminate);
     auto exitCode = asyncWork_.get();
@@ -307,7 +306,6 @@ TEST_F(TransactionServerTest, checkExitLoopWhenConnectionDied)
 }
 
 class DummyClient : public TransactionClient {
-
 public:
 
     MessageTransceiver *GetTransceiver()
@@ -333,7 +331,7 @@ protected:
     {
         if (asyncWork_.valid()) {
             // do this to ensure asyncWork_ terminates normally
-            auto terminate = TransactionMessage{.type_=TransactionType::EXIT};
+            auto terminate = TransactionMessage {.type_=TransactionType::EXIT};
             client_.GetTransceiver()->OnReceiveMessage(terminate);
             asyncWork_.get();
         }
@@ -362,7 +360,7 @@ TEST_F(TransactionClientTest, checkInvokeApi)
         ASSERT_EQ(apis.at(idx), message.apiId_);
         // inject reply and check invocation result
         auto mockResult = mockReplies.at(idx);
-        auto reply = TransactionMessage{.id_=message.id_, .type_=TransactionType::REPLY, .resultParcel_= mockResult};
+        auto reply = TransactionMessage {.id_=message.id_, .type_=TransactionType::REPLY, .resultParcel_= mockResult};
         transceiver->OnReceiveMessage(reply);
         this_thread::sleep_for(chrono::milliseconds(TIME_DIFF_TOLERANCE_MS));
         const uint64_t startMs = GetCurrentMillisecond();

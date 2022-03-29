@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef UI_ACTION_H
 #define UI_ACTION_H
 
@@ -25,12 +24,12 @@
 
 namespace OHOS::uitest {
     // frequently used keys.
-    static constexpr int32_t KEYCODE_NONE = 0;
-    static constexpr int32_t KEYCODE_BACK = 2;
-    static constexpr int32_t KEYCODE_CTRL = 2072;
-    static constexpr int32_t KEYCODE_V = 2038;
-    static constexpr char KEYNAME_BACK[] = "Back";
-    static constexpr char KEYNAME_PASTE[] = "Paste";
+    constexpr int32_t KEYCODE_NONE = 0;
+    constexpr int32_t KEYCODE_BACK = 2;
+    constexpr int32_t KEYCODE_CTRL = 2072;
+    constexpr int32_t KEYCODE_V = 2038;
+    constexpr char KEYNAME_BACK[] = "Back";
+    constexpr char KEYNAME_PASTE[] = "Paste";
 
     enum ActionStage : uint8_t {
         DOWN = 0, MOVE = 1, UP = 2
@@ -47,8 +46,6 @@ namespace OHOS::uitest {
     struct KeyEvent {
         ActionStage stage_;
         int32_t code_;
-        int32_t ctrlKey_;
-        uint32_t downTimeOffsetMs_;
         uint32_t holdMs_;
     };
 
@@ -60,7 +57,7 @@ namespace OHOS::uitest {
         uint32_t clickHoldMs_ = 200;
         uint32_t longClickHoldMs_ = 1500;
         uint32_t doubleClickIntervalMs_ = 200;
-        uint32_t keyHoldMs_ = 200;
+        uint32_t keyHoldMs_ = 100;
         uint32_t swipeVelocityPps_ = 600;
         uint32_t uiSteadyThresholdMs_ = 1000;
         uint32_t waitUiSteadyMaxMs_ = 3000;
@@ -130,8 +127,14 @@ namespace OHOS::uitest {
 
         void ComputeEvents(std::vector<KeyEvent> &recv, const UiDriveOptions &opt) const override
         {
-            recv.push_back(KeyEvent{ActionStage::DOWN, kCode, kCtrlCode, 0, opt.keyHoldMs_});
-            recv.push_back(KeyEvent{ActionStage::UP, kCode, kCtrlCode, opt.keyHoldMs_, 0});
+            if (kCtrlCode != KEYCODE_NONE) {
+                recv.push_back(KeyEvent {ActionStage::DOWN, kCtrlCode,  0});
+            }
+            recv.push_back(KeyEvent {ActionStage::DOWN, kCode, opt.keyHoldMs_});
+            recv.push_back(KeyEvent {ActionStage::UP, kCode, 0});
+            if (kCtrlCode != KEYCODE_NONE) {
+                recv.push_back(KeyEvent {ActionStage::UP, kCtrlCode, 0});
+            }
         }
 
         std::string Describe() const override
@@ -154,8 +157,8 @@ namespace OHOS::uitest {
 
         void ComputeEvents(std::vector<KeyEvent> &recv, const UiDriveOptions &opt) const override
         {
-            recv.push_back(KeyEvent{ActionStage::DOWN, code_, KEYCODE_NONE, 0, opt.keyHoldMs_});
-            recv.push_back(KeyEvent{ActionStage::UP, code_, KEYCODE_NONE, opt.keyHoldMs_, 0});
+            recv.push_back(KeyEvent {ActionStage::DOWN, code_, opt.keyHoldMs_});
+            recv.push_back(KeyEvent {ActionStage::UP, code_, 0});
         }
 
         std::string Describe() const override
@@ -166,9 +169,6 @@ namespace OHOS::uitest {
     private:
         const int32_t code_;
     };
-
-    /**Component KeyEvent sequence to perform typing the characters represented by the codes (with control keys).*/
-    void ComputeCharsTypingEvents(const std::vector<std::pair<int32_t, int32_t>> &codes, std::vector<KeyEvent> &recv);
 
     using Back = NamedPlainKey<KEYNAME_BACK, KEYCODE_BACK>;
     using Paste = NamedPlainKey<KEYNAME_PASTE, KEYCODE_V, KEYCODE_CTRL>;

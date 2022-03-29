@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,7 +19,7 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
 
-    static constexpr auto NEST_USAGE_ERROR = "Nesting By usage like 'By.before(By.after(...))' is not supported";
+    static constexpr auto NEST_USAGE_ERROR = "Nesting By usage like 'BY.before(BY.after(...))' is not supported";
 
     void WidgetSelector::AddMatcher(const WidgetAttrMatcher &matcher)
     {

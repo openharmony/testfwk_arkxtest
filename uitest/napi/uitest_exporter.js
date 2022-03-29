@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -54,7 +54,7 @@ function exportUiTestLifeCycleMethods() {
   globalThis.teardownUiTestEnvironment = function () {
     if (uitest.uitestSetupDone === true) {
       console.info('UiTestKit_lifecycle, disposal uitest')
-      uitestMod.teardown()
+      uitest.teardown()
     }
   }
 }
@@ -62,8 +62,15 @@ function exportUiTestLifeCycleMethods() {
 function requireUiTest() {
   console.info('UiTestKit_exporter: Start running uitest_exporter')
   exportUiTestLifeCycleMethods()
-  console.info('UiTestKit_exporter: End running uitest_exporter')
-  return globalThis.requireInternal('uitest')
+  let module = undefined
+  try {
+    module = globalThis.requireInternal('uitest')
+  } catch (error) {
+    console.error(`UiTestKit_exporter: Run exporter failed: ${JSON.stringify(error)}`)
+  } finally {
+    console.debug('UiTestKit_exporter: UiTest module=' + module)
+  }
+  return module
 }
 
 export default requireUiTest()

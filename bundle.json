@@ -47,8 +47,7 @@
       },
       "build": {
         "sub_component": [
-            "//test/arkXtest/uitest:uitest_server",
-            "//test/arkXtest/uitest:uitest_client"
+            "//test/arkXtest/uitest:uitestkit"
         ],
     "test": [
       "//test/arkXtest/uitest:uitestkit_test"

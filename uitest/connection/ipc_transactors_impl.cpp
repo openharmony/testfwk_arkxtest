@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -43,7 +43,6 @@ namespace OHOS::uitest {
     TransactionTransceiverImpl::TransactionTransceiverImpl(string_view token, bool asServer)
         : asServer_(asServer), token_(token) {}
 
-
     bool TransactionTransceiverImpl::Initialize()
     {
         const auto event = string(asServer_ ? ACTION_CALL : ACTION_REPLY) + token_;
@@ -52,7 +51,7 @@ namespace OHOS::uitest {
         CommonEventSubscribeInfo info(matchingSkills);
         subscriber_ = make_shared<CommonEventForwarder>(info, [this](const CommonEventData &event) {
             auto &want = event.GetWant();
-            auto message = TransactionMessage{};
+            auto message = TransactionMessage {};
             message.id_ = want.GetLongParam("id", -1);
             message.type_ = static_cast<TransactionType>(want.GetIntParam("type", TransactionType::INVALID));
             message.apiId_ = want.GetStringParam("apiId");
@@ -158,7 +157,7 @@ namespace OHOS::uitest {
     /**Exported transaction client api-calling function.*/
     string TransactionClientFunc(string_view apiId, string_view caller, string_view params)
     {
-        DCHECK(sClient != nullptr && sSetupCalled.load(), "TransactionEnv is not ready");
+        DCHECK(sClient != nullptr && sSetupCalled.load());
         return sClient->InvokeApi(apiId, caller, params);
     }
 

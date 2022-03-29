@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,25 +48,25 @@ namespace OHOS::uitest {
 
     static void DecomposeClick(vector<TouchEvent> &recv, const Point &point, const UiDriveOptions &options)
     {
-        recv.push_back(TouchEvent{ActionStage::DOWN, point, 0, options.clickHoldMs_});
-        recv.push_back(TouchEvent{ActionStage::UP, point, options.clickHoldMs_, 0});
+        recv.push_back(TouchEvent {ActionStage::DOWN, point, 0, options.clickHoldMs_});
+        recv.push_back(TouchEvent {ActionStage::UP, point, options.clickHoldMs_, 0});
     }
 
     static void DecomposeLongClick(vector<TouchEvent> &recv, const Point &point, const UiDriveOptions &options)
     {
         // should sleep after touch-down to make long-click duration
-        recv.push_back(TouchEvent{ActionStage::DOWN, point, 0, options.longClickHoldMs_});
-        recv.push_back(TouchEvent{ActionStage::UP, point, options.longClickHoldMs_, 0});
+        recv.push_back(TouchEvent {ActionStage::DOWN, point, 0, options.longClickHoldMs_});
+        recv.push_back(TouchEvent {ActionStage::UP, point, options.longClickHoldMs_, 0});
     }
 
     static void DecomposeDoubleClick(vector<TouchEvent> &recv, const Point &point, const UiDriveOptions &options)
     {
         const auto msInterval = options.doubleClickIntervalMs_;
-        recv.push_back(TouchEvent{ActionStage::DOWN, point, 0, options.clickHoldMs_});
-        recv.push_back(TouchEvent{ActionStage::UP, point, options.clickHoldMs_, msInterval});
+        recv.push_back(TouchEvent {ActionStage::DOWN, point, 0, options.clickHoldMs_});
+        recv.push_back(TouchEvent {ActionStage::UP, point, options.clickHoldMs_, msInterval});
 
-        recv.push_back(TouchEvent{ActionStage::DOWN, point, 0, options.clickHoldMs_});
-        recv.push_back(TouchEvent{ActionStage::UP, point, options.clickHoldMs_, 0});
+        recv.push_back(TouchEvent {ActionStage::DOWN, point, 0, options.clickHoldMs_});
+        recv.push_back(TouchEvent {ActionStage::UP, point, options.clickHoldMs_, 0});
     }
 
     static void DecomposeComputeSwipe(vector<TouchEvent> &recv, const Point &from, const Point &to, bool drag,
@@ -82,14 +82,14 @@ namespace OHOS::uitest {
         }
         constexpr auto steps = 50;
         const uint32_t intervalMs = timeCostMs / steps + 1;
-        recv.push_back(TouchEvent{ActionStage::DOWN, {from.px_, from.py_}, 0, intervalMs});
+        recv.push_back(TouchEvent {ActionStage::DOWN, {from.px_, from.py_}, 0, intervalMs});
         for (auto step = 1; step < steps; step++) {
             const int32_t pointX = from.px_ + (distanceX * step) / steps;
             const int32_t pointY = from.py_ + (distanceY * step) / steps;
             const uint32_t timeOffsetMs = (timeCostMs * step) / steps;
-            recv.push_back(TouchEvent{ActionStage::MOVE, {pointX, pointY}, timeOffsetMs, intervalMs});
+            recv.push_back(TouchEvent {ActionStage::MOVE, {pointX, pointY}, timeOffsetMs, intervalMs});
         }
-        recv.push_back(TouchEvent{ActionStage::UP, {to.px_, to.py_}, timeCostMs, intervalMs});
+        recv.push_back(TouchEvent {ActionStage::UP, {to.px_, to.py_}, timeCostMs, intervalMs});
         if (drag) {
             // drag needs longPressDown firstly
             recv.at(0).holdMs_ += options.longClickHoldMs_;
@@ -101,7 +101,7 @@ namespace OHOS::uitest {
 
     void GenericClick::Decompose(vector<TouchEvent> &recv, const Point &point, const UiDriveOptions &options) const
     {
-        DCHECK(type_ >= PointerOp::CLICK_P && type_ <= PointerOp::DOUBLE_CLICK_P, "Invalid click type");
+        DCHECK(type_ >= PointerOp::CLICK_P && type_ <= PointerOp::DOUBLE_CLICK_P);
         switch (type_) {
             case CLICK_P:
                 DecomposeClick(recv, point, options);
@@ -123,19 +123,10 @@ namespace OHOS::uitest {
     void GenericSwipe::Decompose(vector<TouchEvent> &recv, const Point &fromPoint, const Point &toPoint,
                                  const UiDriveOptions &options) const
     {
-        DCHECK(type_ >= PointerOp::SWIPE_P && type_ <= PointerOp::DRAG_P, "Invalid swipe type");
+        DCHECK(type_ >= PointerOp::SWIPE_P && type_ <= PointerOp::DRAG_P);
         DecomposeComputeSwipe(recv, fromPoint, toPoint, type_ == PointerOp::DRAG_P, options);
         for (auto &event:recv) {
             event.flags_ = type_;
-        }
-    }
-
-    void ComputeCharsTypingEvents(const vector<pair<int32_t, int32_t>> &codes, vector<KeyEvent> &recv)
-    {
-        static constexpr uint32_t holdMs = 50;
-        for (auto &pair:codes) {
-            recv.push_back(KeyEvent{ActionStage::DOWN, pair.first, pair.second, 0, holdMs});
-            recv.push_back(KeyEvent{ActionStage::UP, pair.first, pair.second, holdMs, holdMs});
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,31 +14,56 @@
  */
 
 #include <algorithm>
-#include "ui_model.h"
-#include "dom_parser.h"
 #include "common_defines.h"
+#include "ui_model.h"
 
 namespace OHOS::uitest {
     using namespace std;
+    using namespace nlohmann;
 
     static constexpr auto ROOT_HIERARCHY = "ROOT";
+
+    string Rect::ToStr() const
+    {
+        stringstream os;
+        os << "Rect<";
+        os << "xLeft=" <<left_ << ",xRight=" << right_ << ",yTop=" << top_ << ",yButton=" << bottom_;
+        os << ">";
+        return os.str();
+    }
 
     void Rect::ComputeOverlappingDimensions(const Rect &other, int32_t &width, int32_t& height) const
     {
         if (left_ >= other.right_ || right_ <= other.left_) {
             width = 0;
         } else {
-            vector<int32_t> px = {left_, right_, other.left_, other.right_};
+            array<int32_t, INDEX_FOUR> px = {left_, right_, other.left_, other.right_};
             sort(px.begin(), px.end());
             width = px[INDEX_TWO] - px[INDEX_ONE];
         }
         if (top_ >= other.bottom_ || bottom_ <= other.top_) {
             height = 0;
         } else {
-            vector<int32_t> py = {top_, bottom_, other.top_, other.bottom_};
+            array<int32_t, INDEX_FOUR> py = {top_, bottom_, other.top_, other.bottom_};
             sort(py.begin(), py.end());
             height = py[INDEX_TWO] - py[INDEX_ONE];
         }
+    }
+
+    bool Rect::ComputeIntersection(const Rect & other, Rect & result) const
+    {
+        if (left_ >= other.right_ || right_ <= other.left_) {
+            return false;
+        }
+        if (top_ >= other.bottom_ || bottom_ <= other.top_) {
+            return false;
+        }
+        array<int32_t, INDEX_FOUR> px = {left_, right_, other.left_, other.right_};
+        array<int32_t, INDEX_FOUR> py = {top_, bottom_, other.top_, other.bottom_};
+        sort(px.begin(), px.end());
+        sort(py.begin(), py.end());
+        result = {px[INDEX_ONE], px[INDEX_TWO], py[INDEX_ONE], py[INDEX_TWO]};
+        return true;
     }
 
     bool Widget::HasAttr(string_view name) const
@@ -69,20 +94,17 @@ namespace OHOS::uitest {
 
     void Widget::SetBounds(int32_t cl, int32_t cr, int32_t ct, int32_t cb)
     {
-        bounds_ = Rect{cl, cr, ct, cb};
+        bounds_ = Rect {cl, cr, ct, cb};
     }
 
-    string Widget::ToStr(bool ignoreBounds) const
+    string Widget::ToStr() const
     {
         stringstream os;
-        os << "Widget<";
+        os << "Widget{bounds=" << bounds_.ToStr() << ",";
         for (auto &pair:attributes_) {
-            if (ignoreBounds && pair.first == ATTR_NAMES[UiAttr::BOUNDS]) {
-                continue;
-            }
             os << pair.first << "='" << pair.second << "',";
         }
-        os << ">";
+        os << "}";
         return os.str();
     }
 
@@ -93,35 +115,10 @@ namespace OHOS::uitest {
         }
     }
 
-    /**
-     * Dom visitor to collect dom-widget attributes.
-     * */
-    class WidgetAttrCollector : public DomNodeVisitor {
+    class WidgetHierarchyBuilder {
     public:
-        void Visit(string_view tag, string_view hierarchy, const map<string, string> &attributes) override
-        {
-            widgetAttrDict_.insert(make_pair(hierarchy, attributes));
-            visitationTrace_.emplace_back(hierarchy);
-        }
 
-        void OnDomParseError(string_view message) override
-        {
-            domError_ = domError_ + "; " + string(message);
-        }
-
-        map<string, map<string, string>> widgetAttrDict_;
-        vector<string> visitationTrace_;
-        string domError_;
-    };
-
-    class WidgetHierarchyBuilder : public NodeHierarchyBuilder {
-    public:
-        string BuildForRootWidget() const override
-        {
-            return string(ROOT_HIERARCHY);
-        }
-
-        string Build(string_view parentWidgetHierarchy, uint32_t childIndex) const override
+        static string Build(string_view parentWidgetHierarchy, uint32_t childIndex)
         {
             return string(parentWidgetHierarchy) + string(hierarchySeparator_) + to_string(childIndex);
         }
@@ -156,13 +153,12 @@ namespace OHOS::uitest {
 
         static bool CheckIsDescendantHierarchyOfRoot(string_view hierarchy, string_view hierarchyRoot)
         {
-            // child not hierarchy must startswith parent node hierarchy
+            // child node hierarchy must startswith parent node hierarchy
             return hierarchy.find(hierarchyRoot) == 0;
         }
 
     private:
         static constexpr auto hierarchySeparator_ = ",";
-
     };
 
     static void SetWidgetBounds(Widget &widget, string_view boundsStr)
@@ -171,31 +167,36 @@ namespace OHOS::uitest {
         int32_t val = -1;
         int32_t integers[4];
         int32_t index = 0;
-
+        bool negative = false;
         static constexpr int32_t FACTOR = 10;
         for (char ch : boundsStr) {
-            if (ch >= '0' && ch <= '9') {
+            if (ch == '-') {
+                DCHECK(val == -1); // should be a start of a number
+                negative = true;
+            } else if (ch >= '0' && ch <= '9') {
                 val = max(val, 0); // ensure accumulation
                 val = val * FACTOR + (ch - '0');
             } else if (val >= 0) {
-                DCHECK(index < INDEX_FOUR, "Illegal boundStr, more than 4 integers");
-                integers[index] = val;
-                // after harvest, rest accumulation and increase ptrIdx
+                DCHECK(index < INDEX_FOUR);
+                integers[index] = val * (negative ? -1 : 1);
+                // after harvest, rest variables and increase ptrIdx
                 index++;
                 val = -1;
+                negative = false;
             }
         }
 
-        DCHECK(index == INDEX_FOUR, "Illegal boundStr, less than 4 integers");
+        DCHECK(index == INDEX_FOUR);
         widget.SetBounds(integers[INDEX_ZERO], integers[INDEX_TWO], integers[INDEX_ONE], integers[INDEX_THREE]);
     }
 
     static void SetWidgetAttributes(Widget &widget, const map<string, string> &attributes)
     {
         for (auto &item:attributes) {
-            widget.SetAttr(item.first, item.second);
             if (item.first == ATTR_NAMES[UiAttr::BOUNDS]) {
                 SetWidgetBounds(widget, item.second);
+            } else {
+                widget.SetAttr(item.first, item.second);
             }
         }
     }
@@ -210,8 +211,8 @@ namespace OHOS::uitest {
 
     void WidgetTree::DfsTraverseFronts(WidgetVisitor &visitor, const Widget &pivot) const
     {
-        DCHECK(widgetsConstructed_, "Illegal state, widgets not constructed yet");
-        DCHECK(CheckIsMyNode(pivot), "Cannot traverse widget which dose not belongs to current tree");
+        DCHECK(widgetsConstructed_);
+        DCHECK(CheckIsMyNode(pivot));
         auto root = GetRootWidget();
         if (root == nullptr) {
             return;
@@ -223,15 +224,15 @@ namespace OHOS::uitest {
                 break;
             }
             auto widget = widgetMap_.find(hierarchy);
-            DCHECK(widget != widgetMap_.end(), "Failed to get widget by hierarchy id");
+            DCHECK(widget != widgetMap_.end());
             visitor.Visit(widget->second);
         }
     }
 
     void WidgetTree::DfsTraverseRears(WidgetVisitor &visitor, const Widget &pivot) const
     {
-        DCHECK(widgetsConstructed_, "Illegal state, widgets not constructed yet");
-        DCHECK(CheckIsMyNode(pivot), "Cannot traverse widget which dose not belongs to current tree");
+        DCHECK(widgetsConstructed_);
+        DCHECK(CheckIsMyNode(pivot));
         auto root = GetRootWidget();
         if (root == nullptr) {
             return;
@@ -249,15 +250,15 @@ namespace OHOS::uitest {
                 continue;
             }
             auto widget = widgetMap_.find(hierarchy);
-            DCHECK(widget != widgetMap_.end(), "Failed to get widget by hierarchy id");
+            DCHECK(widget != widgetMap_.end());
             visitor.Visit(widget->second);
         }
     }
 
     void WidgetTree::DfsTraverseDescendants(WidgetVisitor &visitor, const Widget &root) const
     {
-        DCHECK(widgetsConstructed_, "Illegal state, widgets not constructed yet");
-        DCHECK(CheckIsMyNode(root), "Cannot traverse widget which dose not belongs to current tree");
+        DCHECK(widgetsConstructed_);
+        DCHECK(CheckIsMyNode(root));
         bool traverseStarted = false;
         auto rootHierarchy = root.GetHierarchy();
         for (auto &hierarchy:widgetHierarchyIdDfsOrder_) {
@@ -270,48 +271,79 @@ namespace OHOS::uitest {
             }
             traverseStarted = true;
             auto widget = widgetMap_.find(hierarchy);
-            DCHECK(widget != widgetMap_.end(), "Failed to get widget by hierarchy id");
+            DCHECK(widget != widgetMap_.end());
             visitor.Visit(widget->second);
         }
     }
 
-    bool WidgetTree::ConstructFromDomText(string_view content, stringstream &errReceiver)
+    using NodeVisitor = function<void(string_view, map<string, string>&&)>;
+
+    static void DfsVisitNode(const json &root, NodeVisitor visitor, string_view hierarchy)
     {
-        WidgetAttrCollector visitor;
-        WidgetHierarchyBuilder hierarchyBuilder;
-        DomTreeParser::DfsParse(content, visitor, hierarchyBuilder);
-        if (!visitor.domError_.empty()) {
-            errReceiver << visitor.domError_;
-            return false;
+        DCHECK(visitor != nullptr);
+        auto attributesData = root["attributes"];
+        auto childrenData = root["children"];
+        map<string, string> attributeDict;
+        for (auto &item:attributesData.items()) {
+            attributeDict[item.key()] = item.value();
         }
+        visitor(hierarchy, move(attributeDict));
+        const size_t childCount = childrenData.size();
+        for (size_t idx = 0; idx < childCount; idx++) {
+            auto &child = childrenData.at(idx);
+            auto childHierarchy = WidgetHierarchyBuilder::Build(hierarchy, idx);
+            DfsVisitNode(child, visitor, childHierarchy);
+        }
+    }
 
-        // cached constructed widgets
-        auto findRootAttrs = visitor.widgetAttrDict_.find(string(ROOT_HIERARCHY));
-        DCHECK(findRootAttrs != visitor.widgetAttrDict_.end(), "Root widget not found in the dom tree");
-        Widget root(ROOT_HIERARCHY);
-        root.SetHostTreeId(this->identifier_);
-        SetWidgetAttributes(root, findRootAttrs->second);
-        widgetMap_.insert(make_pair(ROOT_HIERARCHY, move(root)));
-        widgetHierarchyIdDfsOrder_.emplace_back(ROOT_HIERARCHY);
-
-        for (auto it = visitor.visitationTrace_.begin() + 1; it != visitor.visitationTrace_.end(); it++) {
-            auto findWidgetAttrs = visitor.widgetAttrDict_.find(*it);
-            DCHECK(findWidgetAttrs != visitor.widgetAttrDict_.end(), "Visited widget missing attributes");
-            auto parentHierarchy = WidgetHierarchyBuilder::GetParentWidgetHierarchy(*it);
-            DCHECK(!parentHierarchy.empty(), "Non-root widget get parent hierarchy failed");
-            // dfs order ensures parent widget is visited before its children widget
-            auto findParent = widgetMap_.find(parentHierarchy);
-            DCHECK(findParent != widgetMap_.end(), "Find parent widget in constructed widget failed");
-
-            Widget widget(*it);
+    void WidgetTree::ConstructFromDom(const nlohmann::json& dom, bool amendBounds)
+    {
+        DCHECK(!widgetsConstructed_);
+        map<string, map<string, string>> widgetDict;
+        vector<string> visitTrace;
+        auto nodeVisitor = [&widgetDict, &visitTrace](string_view hierarchy, map<string, string>&& attrs) {
+            visitTrace.emplace_back(hierarchy);
+            widgetDict.insert(make_pair(hierarchy, attrs));
+        };
+        DfsVisitNode(dom, nodeVisitor, ROOT_HIERARCHY);
+        for (auto& hierarchy : visitTrace) {
+            auto findWidgetAttrs = widgetDict.find(hierarchy);
+            DCHECK(findWidgetAttrs != widgetDict.end());
+            Widget widget(hierarchy);
             widget.SetHostTreeId(this->identifier_);
             SetWidgetAttributes(widget, findWidgetAttrs->second);
-            widgetMap_.insert(make_pair(*it, move(widget)));
-            widgetHierarchyIdDfsOrder_.emplace_back(*it);
+            auto findParent = widgetMap_.find(WidgetHierarchyBuilder::GetParentWidgetHierarchy(hierarchy));
+            const auto bounds = widget.GetBounds();
+            auto visible = false;
+            if (!amendBounds) {
+                visible = true;
+            } else if (hierarchy == ROOT_HIERARCHY) {
+                visible = (bounds.right_ > bounds.left_) && (bounds.bottom_ > bounds.top_);
+            } else if (findParent == widgetMap_.end()) {
+                visible = false; // parent was discarded
+            } else {
+                // amend bounds, intersect with parent, compute visibility                
+                auto parentBounds = findParent->second.GetBounds();
+                auto newBounds = Rect {0, 0, 0, 0};
+                if (bounds.ComputeIntersection(parentBounds, newBounds)) {
+                    widget.SetBounds(newBounds.left_, newBounds.right_, newBounds.top_, newBounds.bottom_);
+                    visible = (newBounds.right_ > newBounds.left_) && (newBounds.bottom_ > newBounds.top_);
+                } else {
+                    widget.SetBounds(0, 0, 0, 0);
+                    visible = false;
+                }
+            }
+            if (amendBounds && bounds.ToStr().compare(widget.GetBounds().ToStr()) != 0) {
+                LOG_D("Amend bounds %{public}s from %{public}s", widget.ToStr().c_str(), bounds.ToStr().c_str());
+            }
+            if (visible) {
+                widgetMap_.insert(make_pair(hierarchy, move(widget)));
+                widgetHierarchyIdDfsOrder_.emplace_back(hierarchy);
+            } else {
+                LOG_D("Discard invisible node '%{public}s'and its descendants", widget.ToStr().c_str());
+            }
         }
-
         widgetsConstructed_ = true;
-        return true;
     }
 
     const Widget *WidgetTree::GetRootWidget() const
@@ -321,7 +353,7 @@ namespace OHOS::uitest {
 
     const Widget *WidgetTree::GetParentWidget(const Widget &widget) const
     {
-        DCHECK(CheckIsMyNode(widget), "Cannot handle widget which dose not belongs to current tree");
+        DCHECK(CheckIsMyNode(widget));
         if (widget.GetHierarchy() == ROOT_HIERARCHY) {
             return nullptr;
         }
@@ -331,7 +363,7 @@ namespace OHOS::uitest {
 
     const Widget *WidgetTree::GetChildWidget(const Widget &widget, uint32_t index) const
     {
-        DCHECK(CheckIsMyNode(widget), "Cannot handle widget which dose not belongs to current tree");
+        DCHECK(CheckIsMyNode(widget));
         if (index < 0) {
             return nullptr;
         }

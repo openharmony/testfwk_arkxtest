@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,7 +37,7 @@ namespace OHOS::uitest {
 
     /**Enumerates the supported UiComponent attributes.*/
     enum UiAttr : uint8_t {
-        ID, TEXT, TYPE, BOUNDS, ENABLED, FOCUSED, SELECTED, CLICKABLE, LONG_CLICKABLE, SCROLLABLE
+        ID, TEXT, KEY, TYPE, BOUNDS, ENABLED, FOCUSED, SELECTED, CLICKABLE, LONG_CLICKABLE, SCROLLABLE
     };
 
     /**Enumerates the supported By-relative modes.*/
@@ -46,8 +46,8 @@ namespace OHOS::uitest {
     };
 
     /**Supported UiComponent attribute names.*/
-    static constexpr CStr ATTR_NAMES[10] = {"id", "text", "type", "bounds", "enabled", "focused",
-                                            "selected", "clickable", "longClickable", "scrollable"};
+    constexpr CStr ATTR_NAMES[11] = {"id", "text", "key", "type", "bounds", "enabled", "focused",
+                                     "selected", "clickable", "longClickable", "scrollable"};
 
     /**Enumerates all the supported widget operations.*/
     enum WidgetOp : uint8_t {
@@ -65,13 +65,13 @@ namespace OHOS::uitest {
     };
 
     /**Message keys used in the api transactions.*/
-    static constexpr auto KEY_UPDATED_CALLER = "updated_caller";
-    static constexpr auto KEY_RESULT_VALUES = "result_values";
-    static constexpr auto KEY_EXCEPTION = "exception";
-    static constexpr auto KEY_CODE = "code";
-    static constexpr auto KEY_MESSAGE = "message";
-    static constexpr auto KEY_DATA_TYPE = "type";
-    static constexpr auto KEY_DATA_VALUE = "value";
+    constexpr auto KEY_UPDATED_CALLER = "updated_caller";
+    constexpr auto KEY_RESULT_VALUES = "result_values";
+    constexpr auto KEY_EXCEPTION = "exception";
+    constexpr auto KEY_CODE = "code";
+    constexpr auto KEY_MESSAGE = "message";
+    constexpr auto KEY_DATA_TYPE = "type";
+    constexpr auto KEY_DATA_VALUE = "value";
 }
 
 #endif

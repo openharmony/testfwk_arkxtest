@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,9 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include "ui_model.h"
 #include "gtest/gtest.h"
+#include "ui_model.h"
 
 using namespace OHOS::uitest;
 using namespace std;
@@ -59,6 +58,37 @@ TEST(UiModelTest, testRectOverlappingDimensions)
     rect0.ComputeOverlappingDimensions(rect5, dx, dy); // fully contained
     ASSERT_EQ(60, dx);
     ASSERT_EQ(60, dy);
+}
+
+TEST(UiModelTest, testRectIntersection)
+{
+    Rect rect0(100, 200, 300, 400);
+    Rect rect1(0, 100, 0, 100);
+    Rect rect2(200, 300, 400, 500);
+    Rect rect3(100, 150, 200, 350);
+    Rect rect4(150, 250, 350, 450);
+    Rect rect5(120, 180, 320, 380);
+
+    Rect intersection {0, 0, 0, 0};
+    ASSERT_FALSE(rect0.ComputeIntersection(rect1, intersection)); // no overlap
+    ASSERT_FALSE(rect0.ComputeIntersection(rect2, intersection)); // no overlap
+    ASSERT_TRUE(rect0.ComputeIntersection(rect3, intersection)); // x,y-overlap
+    ASSERT_EQ(100, intersection.left_);
+    ASSERT_EQ(150, intersection.right_);
+    ASSERT_EQ(300, intersection.top_);
+    ASSERT_EQ(350, intersection.bottom_);
+    intersection = {0, 0, 0, 0};
+    ASSERT_TRUE(rect0.ComputeIntersection(rect4, intersection)); // x,y-overlap
+    ASSERT_EQ(150, intersection.left_);
+    ASSERT_EQ(200, intersection.right_);
+    ASSERT_EQ(350, intersection.top_);
+    ASSERT_EQ(400, intersection.bottom_);
+    intersection = {0, 0, 0, 0};
+    ASSERT_TRUE(rect0.ComputeIntersection(rect5, intersection)); // fully contained
+    ASSERT_EQ(120, intersection.left_);
+    ASSERT_EQ(180, intersection.right_);
+    ASSERT_EQ(320, intersection.top_);
+    ASSERT_EQ(380, intersection.bottom_);
 }
 
 TEST(UiModelTest, testWidgetAttributes)
@@ -143,57 +173,32 @@ private:
     volatile bool firstWidget_ = true;
 };
 
-TEST(UiModelTest, testConstructWidgetsFromDamagedDom)
-{
-    WidgetTree tree("tree");
-    stringstream errorReceiver;
-    ASSERT_FALSE(tree.ConstructFromDomText("abc", errorReceiver)) << "Construct from damaged dom should fail";
-}
-
-TEST(UiModelTest, testConstructWidgetsFromDom)
-{
-    static constexpr string_view domText = R"({
-"attributes": {
-"index": "0",
-"resource-id": "id0",
-"text": ""},
+    static constexpr string_view DOM_TEXT = R"({
+"attributes": {"resource-id": "id0"},
 "children": [
 {
-"attributes": {
-"index": "0",
-"resource-id": "id00",
-"text": ""},
+"attributes": {"resource-id": "id00"},
 "children": [
 {
-"attributes": {
-"index": "0",
-"resource-id": "id000",
-"text": ""},
+"attributes": {"resource-id": "id000"},
 "children": [
 {
-"attributes": {
-"index": "0",
-"resource-id": "id0000",
-"text": "USB"},
+"attributes": {"resource-id": "id0000"},
 "children": []
 }]}]},
 {
-"attributes": {
-"index": "1",
-"resource-id": "id01",
-"text": ""},
+"attributes": {"resource-id": "id01"},
 "children": [
 {
-"attributes": {
-"index": "0",
-"resource-id": "id010",
-"text": ""},
+"attributes": {"resource-id": "id010"},
 "children": []
 }]}]})";
 
-    stringstream errorReceiver;
+TEST(UiModelTest, testConstructWidgetsFromDomCheckOrder)
+{
+    auto dom = nlohmann::json::parse(DOM_TEXT);
     WidgetTree tree("tree");
-    ASSERT_TRUE(tree.ConstructFromDomText(domText, errorReceiver));
+    tree.ConstructFromDom(dom, false);
 
     // visited the widget tree and check the 'resource-id' attribute
     WidgetAttrVisitor visitor("resource-id");
@@ -206,134 +211,51 @@ class BoundsVisitor : public WidgetVisitor {
 public:
     void Visit(const Widget &widget) override
     {
-        bounds_ = widget.GetBounds();
+        boundsList_.emplace_back(widget.GetBounds());
     }
 
-    Rect bounds_{0, 0, 0, 0};
+    vector<Rect> boundsList_;
 };
 
 TEST(UiModelTest, testConstructWidgetsFromDomCheckBounds)
 {
-    constexpr string_view domText = R"({
-"attributes": {
-"rotation": "0"
-},
-"children": [
-{
-"attributes": {
-"bounds": "[120,960][1437,1518]",
-"index": "0",
-"resource-id": "id4",
-"text": "Use USB to"
-},
-"children": []
-}
-]
-}
-)";
-
-    stringstream errorReceiver;
+    auto dom = nlohmann::json::parse(R"({"attributes":{"bounds":"[0,-50][100,200]"},"children":[]})");
     WidgetTree tree("tree");
-    ASSERT_TRUE(tree.ConstructFromDomText(domText, errorReceiver));
+    tree.ConstructFromDom(dom, false);
     BoundsVisitor visitor;
     tree.DfsTraverse(visitor);
-    Rect bounds = visitor.bounds_;
-    ASSERT_EQ(120, bounds.left_);
-    ASSERT_EQ(1437, bounds.right_);
-    ASSERT_EQ(960, bounds.top_);
-    ASSERT_EQ(1518, bounds.bottom_);
+    auto& bounds = visitor.boundsList_.at(0);
+    ASSERT_EQ(0, bounds.left_);
+    ASSERT_EQ(100, bounds.right_); // check converting negative number
+    ASSERT_EQ(-50, bounds.top_);
+    ASSERT_EQ(200, bounds.bottom_);
 }
 
-TEST(UiModelTest, testGetRelativesNode)
+TEST(UiModelTest, testGetRelativeNode)
 {
-    constexpr string_view domText = R"({
-"attributes": {
-"index": "0",
-"resource-id": "id2",
-"text": "zl"
-},
-"children": [
-{
-"attributes": {
-"index": "0",
-"resource-id": "id4",
-"text": "Use USB to"
-},
-"children": []
-},
-{
-"attributes": {
-"index": "1",
-"resource-id": "id4",
-"text": "WYZ"
-},
-"children": []
-}
-]
-}
-)";
-
-    stringstream errorReceiver;
+    auto dom = nlohmann::json::parse(DOM_TEXT);
     WidgetTree tree("tree");
-    ASSERT_TRUE(tree.ConstructFromDomText(domText, errorReceiver));
+    tree.ConstructFromDom(dom, false);
     BoundsVisitor visitor;
     tree.DfsTraverse(visitor);
 
     auto rootPtr = tree.GetRootWidget();
     ASSERT_TRUE(rootPtr != nullptr) << "Failed to get root node";
     ASSERT_EQ(nullptr, tree.GetParentWidget(*rootPtr)) << "Root node should have no parent";
-    ASSERT_EQ("zl", rootPtr->GetAttr("text", "")) << "Incorrect root node attribute";
+    ASSERT_EQ("id0", rootPtr->GetAttr("resource-id", "")) << "Incorrect root node attribute";
 
     auto child1Ptr = tree.GetChildWidget(*rootPtr, 1);
     ASSERT_TRUE(child1Ptr != nullptr) << "Failed to get child widget of root node at index 1";
-    ASSERT_EQ("WYZ", child1Ptr->GetAttr("text", "")) << "Incorrect child node attribute";
+    ASSERT_EQ("id01", child1Ptr->GetAttr("resource-id", "")) << "Incorrect child node attribute";
 
-    ASSERT_TRUE(tree.GetChildWidget(*rootPtr, 2) == nullptr)
-                                << "Get child widget of root node at index 2 should returns null";
+    ASSERT_TRUE(tree.GetChildWidget(*rootPtr, 2) == nullptr) << "Unexpected child not";
 }
 
 TEST(UiModelTest, testVisitNodesInGivenRoot)
 {
-    constexpr string_view domText = R"({
-"attributes": {
-"index": "0",
-"resource-id": "id2",
-"text": "zl"},
-"children": [
-{
-"attributes": {
-"index": "0",
-"resource-id": "id4",
-"text": "people"},
-"children": [
-{
-"attributes": {
-"index": "0",
-"resource-id": "id4",
-"text": "wlj"},
-"children": [
-{
-"attributes": {
-"index": "0",
-"resource-id": "id4",
-"text": "wyz"},
-"children": []},
-{
-"attributes": {
-"index": "1",
-"resource-id": "id4",
-"text": "meco"},
-"children": []}]}]},
-{
-"attributes": {
-"index": "1",
-"resource-id": "id4",
-"text": "WYZ"},
-"children": []}]})";
-
-    stringstream errorReceiver;
+    auto dom = nlohmann::json::parse(DOM_TEXT);
     WidgetTree tree("tree");
-    ASSERT_TRUE(tree.ConstructFromDomText(domText, errorReceiver));
+    tree.ConstructFromDom(dom, false);
 
     auto rootPtr = tree.GetRootWidget();
     ASSERT_TRUE(rootPtr != nullptr) << "Failed to get root node";
@@ -342,110 +264,36 @@ TEST(UiModelTest, testVisitNodesInGivenRoot)
     auto child0Ptr = tree.GetChildWidget(*rootPtr, 0);
     ASSERT_TRUE(child0Ptr != nullptr) << "Failed to get child widget of root node at index 0";
 
-    WidgetAttrVisitor attrVisitor("text");
+    WidgetAttrVisitor attrVisitor("resource-id");
     tree.DfsTraverseDescendants(attrVisitor, *child0Ptr);
     auto visitedTextSequence = attrVisitor.attrValueSequence_.str();
-    ASSERT_EQ("people,wlj,wyz,meco", visitedTextSequence) << "Incorrect text sequence of node descendants";
+    ASSERT_EQ("id00,id000,id0000", visitedTextSequence) << "Incorrect text sequence of node descendants";
 }
 
 TEST(UiModelTest, testVisitFrontNodes)
 {
-    constexpr string_view domText = R"({
-"attributes": {
-"index": "0",
-"resource-id": "id2",
-"text": "zl"},
-"children": [
-{
-"attributes": {
-"index": "0",
-"resource-id": "id4",
-"text": "people"},
-"children": [
-{
-"attributes": {
-"index": "0",
-"resource-id": "id4",
-"text": "wlj"},
-"children": [
-{
-"attributes": {
-"index": "0",
-"resource-id": "id4",
-"text": "wyz"},
-"children": []},
-{
-"attributes": {
-"index": "1",
-"resource-id": "id4",
-"text": "meco"},
-"children": []}]}]},
-{
-"attributes": {
-"index": "1",
-"resource-id": "id4",
-"text": "WYZ"},
-"children": []}]})";
-
-    stringstream errorReceiver;
+    auto dom = nlohmann::json::parse(DOM_TEXT);
     WidgetTree tree("tree");
-    ASSERT_TRUE(tree.ConstructFromDomText(domText, errorReceiver));
+    tree.ConstructFromDom(dom, false);
 
     auto rootPtr = tree.GetRootWidget();
     ASSERT_TRUE(rootPtr != nullptr) << "Failed to get root node";
     ASSERT_EQ(nullptr, tree.GetParentWidget(*rootPtr)) << "Root node should have no parent";
 
-    auto child0Ptr = tree.GetChildWidget(*rootPtr, 0);
-    ASSERT_TRUE(child0Ptr != nullptr) << "Failed to get child widget of root node at index 0";
+    auto child1Ptr = tree.GetChildWidget(*rootPtr, 1);
+    ASSERT_TRUE(child1Ptr != nullptr) << "Failed to get child widget of root node at index 0";
 
-    WidgetAttrVisitor attrVisitor("text");
-    tree.DfsTraverseFronts(attrVisitor, *child0Ptr);
+    WidgetAttrVisitor attrVisitor("resource-id");
+    tree.DfsTraverseFronts(attrVisitor, *child1Ptr);
     auto visitedTextSequence = attrVisitor.attrValueSequence_.str();
-    ASSERT_EQ("zl", visitedTextSequence) << "Incorrect text sequence of front nodes";
+    ASSERT_EQ("id0,id00,id000,id0000", visitedTextSequence) << "Incorrect text sequence of front nodes";
 }
 
 TEST(UiModelTest, testVisitTearNodes)
 {
-    constexpr string_view domText = R"({
-"attributes": {
-"index": "0",
-"resource-id": "id2",
-"text": "zl"},
-"children": [
-{
-"attributes": {
-"index": "0",
-"resource-id": "id4",
-"text": "people"},
-"children": [
-{
-"attributes": {
-"index": "0",
-"resource-id": "id4",
-"text": "wlj"},
-"children": [
-{
-"attributes": {
-"index": "0",
-"resource-id": "id4",
-"text": "wyz"},
-"children": []},
-{
-"attributes": {
-"index": "1",
-"resource-id": "id4",
-"text": "meco"},
-"children": []}]}]},
-{
-"attributes": {
-"index": "1",
-"resource-id": "id4",
-"text": "WYZ"},
-"children": []}]})";
-
-    stringstream errorReceiver;
+    auto dom = nlohmann::json::parse(DOM_TEXT);
     WidgetTree tree("tree");
-    ASSERT_TRUE(tree.ConstructFromDomText(domText, errorReceiver));
+    tree.ConstructFromDom(dom, false);
 
     auto rootPtr = tree.GetRootWidget();
     ASSERT_TRUE(rootPtr != nullptr) << "Failed to get root node";
@@ -454,8 +302,56 @@ TEST(UiModelTest, testVisitTearNodes)
     auto child0Ptr = tree.GetChildWidget(*rootPtr, 0);
     ASSERT_TRUE(child0Ptr != nullptr) << "Failed to get child widget of root node at index 0";
 
-    WidgetAttrVisitor attrVisitor("text");
+    WidgetAttrVisitor attrVisitor("resource-id");
     tree.DfsTraverseRears(attrVisitor, *child0Ptr);
     auto visitedTextSequence = attrVisitor.attrValueSequence_.str();
-    ASSERT_EQ("wlj,wyz,meco,WYZ", visitedTextSequence) << "Incorrect text sequence of tear nodes";
+    ASSERT_EQ("id000,id0000,id01,id010", visitedTextSequence) << "Incorrect text sequence of tear nodes";
+}
+
+TEST(UiModelTest, testBoundsAndVisibilityCorrection)
+{
+    constexpr string_view domText = R"(
+{"attributes": {"resource-id": "id0","bounds": "[0,0][100,100]"},
+"children": [
+{"attributes": {"resource-id": "id00","bounds": "[0,20][100,80]"},
+"children": [ {"attributes": {"resource-id": "id000","bounds": "[0,10][100,90]"}, "children": []} ]
+},
+{"attributes": {"resource-id": "id01","bounds": "[0,-20][100,100]"},
+"children": [ {"attributes": {"resource-id": "id010","bounds": "[0,-20][100,0]"}, "children": []},
+{"attributes": {"resource-id": "id011","bounds": "[0,-20][100,20]"}, "children": []}]
+}
+]
+})";
+//                  id01 id010 id011
+//                   |    |     |
+//                   |    |     |
+//  id0              |    |     |
+//   |        id000  |          |  
+//   |   id00  |     |          |
+//   |    |    |     |
+//   |    |    |     |
+//   |    |    |     |
+//   |         |     |
+//   |               |
+    auto dom = nlohmann::json::parse(domText);
+    WidgetTree tree("tree");
+    tree.ConstructFromDom(dom, true); // enable bounds amending
+    WidgetAttrVisitor attrVisitor("resource-id");
+    tree.DfsTraverse(attrVisitor);
+    // id010 should be discarded dut to totaly invisible
+    ASSERT_EQ("id0,id00,id000,id01,id011", attrVisitor.attrValueSequence_.str());
+    BoundsVisitor boundsVisitor;
+    tree.DfsTraverse(boundsVisitor);
+    // check revised bounds
+    vector<Rect> expectedBounds = { Rect {0, 100, 0, 100}, Rect {0, 100, 20, 80},
+        Rect {0, 100, 20, 80}, Rect {0, 100, 0, 100}, Rect {0, 100, 0, 20} };
+    ASSERT_EQ(expectedBounds.size(), boundsVisitor.boundsList_.size());
+    for (auto index = 0; index < expectedBounds.size(); index++) {
+        auto& expectedBound = expectedBounds.at(index);
+        auto& actualBound = boundsVisitor.boundsList_.at(index);
+        ASSERT_EQ(expectedBound.left_, actualBound.left_);
+        ASSERT_EQ(expectedBound.right_, actualBound.right_);
+        ASSERT_EQ(expectedBound.top_, actualBound.top_);
+        ASSERT_EQ(expectedBound.bottom_, actualBound.bottom_);
+    }
 }
