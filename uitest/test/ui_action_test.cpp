@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,11 +14,19 @@
  */
 
 #include <cmath>
-#include "ui_action.h"
 #include "gtest/gtest.h"
+#include "ui_action.h"
 
 using namespace OHOS::uitest;
 using namespace std;
+
+static constexpr uint32_t CUSTOM_CLICK_HOLD_MS = 100;
+static constexpr uint32_t CUSTOM_LONGCLICK_HOLD_MS = 200;
+static constexpr uint32_t CUSTOM_DOUBLECLICK_HOLD_MS = 300;
+static constexpr uint32_t CUSTOM_KEY_HOLD_MS = 400;
+static constexpr uint32_t CUSTOM_SWIPE_VELOCITY_PPS = 500;
+static constexpr uint32_t CUSTOM_UI_STEADY_MS = 600;
+static constexpr uint32_t CUSTOM_WAIT_UI_STEADY_MS = 700;
 
 class UiActionTest : public testing::Test {
 public:
@@ -28,13 +36,13 @@ protected:
     {
         Test::SetUp();
         // use custom UiOperationOptions
-        customOptions_.clickHoldMs_ = 100;
-        customOptions_.longClickHoldMs_ = 200;
-        customOptions_.doubleClickIntervalMs_ = 300;
-        customOptions_.keyHoldMs_ = 400;
-        customOptions_.swipeVelocityPps_ = 500;
-        customOptions_.uiSteadyThresholdMs_ = 600;
-        customOptions_.waitUiSteadyMaxMs_ = 700;
+        customOptions_.clickHoldMs_ = CUSTOM_CLICK_HOLD_MS;
+        customOptions_.longClickHoldMs_ = CUSTOM_LONGCLICK_HOLD_MS;
+        customOptions_.doubleClickIntervalMs_ = CUSTOM_DOUBLECLICK_HOLD_MS;
+        customOptions_.keyHoldMs_ = CUSTOM_KEY_HOLD_MS;
+        customOptions_.swipeVelocityPps_ = CUSTOM_SWIPE_VELOCITY_PPS;
+        customOptions_.uiSteadyThresholdMs_ = CUSTOM_UI_STEADY_MS;
+        customOptions_.waitUiSteadyMaxMs_ = CUSTOM_WAIT_UI_STEADY_MS;
     }
     UiDriveOptions customOptions_;
 };
@@ -42,7 +50,7 @@ protected:
 TEST_F(UiActionTest, computeClickAction)
 {
     GenericClick action(PointerOp::CLICK_P);
-    Point point{100, 200};
+    Point point {100, 200};
     vector<TouchEvent> events;
     action.Decompose(events, point, customOptions_);
     ASSERT_EQ(2, events.size()); // up & down
@@ -62,7 +70,7 @@ TEST_F(UiActionTest, computeClickAction)
 TEST_F(UiActionTest, computeLongClickAction)
 {
     GenericClick action(PointerOp::LONG_CLICK_P);
-    Point point{100, 200};
+    Point point {100, 200};
     vector<TouchEvent> events;
     action.Decompose(events, point, customOptions_);
     ASSERT_EQ(2, events.size()); // up & down
@@ -84,7 +92,7 @@ TEST_F(UiActionTest, computeLongClickAction)
 TEST_F(UiActionTest, computeDoubleClickAction)
 {
     GenericClick action(PointerOp::DOUBLE_CLICK_P);
-    Point point{100, 200};
+    Point point {100, 200};
     vector<TouchEvent> events;
     action.Decompose(events, point, customOptions_);
     ASSERT_EQ(4, events.size()); // up-down-interval-up-down
@@ -117,9 +125,9 @@ TEST_F(UiActionTest, computeDoubleClickAction)
 
 TEST_F(UiActionTest, computeSwipeAction)
 {
-    UiDriveOptions opt{};
+    UiDriveOptions opt {};
     opt.swipeVelocityPps_ = 50; // specify the swipe velocity
-    Point point0{0, 0}, point1{100, 200};
+    Point point0 {0, 0}, point1{100, 200};
     GenericSwipe action(PointerOp::SWIPE_P);
     vector<TouchEvent> events;
     action.Decompose(events, point0, point1, opt);
@@ -157,9 +165,9 @@ TEST_F(UiActionTest, computeSwipeAction)
 
 TEST_F(UiActionTest, computeDragAction)
 {
-    UiDriveOptions opt{};
+    UiDriveOptions opt {};
     opt.longClickHoldMs_ = 2000; // specify the long-click duration
-    Point point0{0, 0}, point1{100, 200};
+    Point point0 {0, 0}, point1{100, 200};
     GenericSwipe swipeAction(PointerOp::SWIPE_P);
     GenericSwipe dragAction(PointerOp::DRAG_P);
     vector<TouchEvent> swipeEvents;
@@ -195,14 +203,10 @@ TEST_F(UiActionTest, computeBackKeyAction)
     auto event1 = *events.begin();
     auto event2 = *(events.begin() + 1);
     ASSERT_EQ(KEYCODE_BACK, event1.code_);
-    ASSERT_EQ(KEYCODE_NONE, event1.ctrlKey_); // no control-key
     ASSERT_EQ(ActionStage::DOWN, event1.stage_);
-    ASSERT_EQ(0, event1.downTimeOffsetMs_);
 
     ASSERT_EQ(KEYCODE_BACK, event2.code_);
-    ASSERT_EQ(KEYCODE_NONE, event1.ctrlKey_); // no control-key
     ASSERT_EQ(ActionStage::UP, event2.stage_);
-    ASSERT_EQ(customOptions_.keyHoldMs_, event2.downTimeOffsetMs_);
     ASSERT_EQ(KEYNAME_BACK, keyAction.Describe()); // test the description
 }
 
@@ -211,19 +215,21 @@ TEST_F(UiActionTest, computePasteAction)
     Paste keyAction;
     vector<KeyEvent> events;
     keyAction.ComputeEvents(events, customOptions_);
-    ASSERT_EQ(2, events.size()); // up & down
+    ASSERT_EQ(4, events.size()); // ctrl_down/key_down/key_up/ctrl_up
     auto event1 = *events.begin();
     auto event2 = *(events.begin() + 1);
-    // key: ctrl+v
-    ASSERT_EQ(KEYCODE_V, event1.code_);
-    ASSERT_EQ(KEYCODE_CTRL, event1.ctrlKey_);
+    auto event3 = *(events.begin() + 2);
+    auto event4 = *(events.begin() + 3);
+
+    ASSERT_EQ(KEYCODE_CTRL, event1.code_);
     ASSERT_EQ(ActionStage::DOWN, event1.stage_);
-    ASSERT_EQ(0, event1.downTimeOffsetMs_);
-    // key: ctrl+v
     ASSERT_EQ(KEYCODE_V, event2.code_);
-    ASSERT_EQ(KEYCODE_CTRL, event1.ctrlKey_);
-    ASSERT_EQ(ActionStage::UP, event2.stage_);
-    ASSERT_EQ(customOptions_.keyHoldMs_, event2.downTimeOffsetMs_);
+    ASSERT_EQ(ActionStage::DOWN, event2.stage_);
+
+    ASSERT_EQ(KEYCODE_V, event3.code_);
+    ASSERT_EQ(ActionStage::UP, event3.stage_);
+    ASSERT_EQ(KEYCODE_CTRL, event4.code_);
+    ASSERT_EQ(ActionStage::UP, event4.stage_);
     ASSERT_EQ(KEYNAME_PASTE, keyAction.Describe());
 }
 
@@ -238,40 +244,9 @@ TEST_F(UiActionTest, anonymousSignleKey)
     auto event1 = *events.begin();
     auto event2 = *(events.begin() + 1);
     ASSERT_EQ(keyCode, event1.code_);
-    ASSERT_EQ(KEYCODE_NONE, event1.ctrlKey_); // no control-key
     ASSERT_EQ(ActionStage::DOWN, event1.stage_);
-    ASSERT_EQ(0, event1.downTimeOffsetMs_);
 
     ASSERT_EQ(keyCode, event2.code_);
-    ASSERT_EQ(KEYCODE_NONE, event1.ctrlKey_); // no control-key
     ASSERT_EQ(ActionStage::UP, event2.stage_);
-    ASSERT_EQ(customOptions_.keyHoldMs_, event2.downTimeOffsetMs_);
     ASSERT_EQ(expectedDesc, anonymousKey.Describe());
-}
-
-TEST_F(UiActionTest, computeCharsTypingEvents)
-{
-    vector<pair<int32_t, int32_t>> keyCodes;
-    vector<KeyEvent> events;
-    keyCodes.emplace_back(make_pair('a', KEYCODE_NONE));
-    keyCodes.emplace_back(make_pair('b', 'c'));
-    keyCodes.emplace_back(make_pair('d', KEYCODE_NONE));
-    ComputeCharsTypingEvents(keyCodes, events);
-    ASSERT_EQ(6, events.size());
-    ASSERT_EQ('a', events.at(0).code_);
-    ASSERT_EQ(ActionStage::DOWN, events.at(0).stage_);
-    ASSERT_EQ('a', events.at(1).code_);
-    ASSERT_EQ(ActionStage::UP, events.at(1).stage_);
-    ASSERT_EQ('b', events.at(2).code_);
-    ASSERT_EQ(ActionStage::DOWN, events.at(2).stage_);
-    ASSERT_EQ('c', events.at(2).ctrlKey_);
-    ASSERT_EQ(ActionStage::DOWN, events.at(2).stage_);
-    ASSERT_EQ('b', events.at(3).code_);
-    ASSERT_EQ(ActionStage::UP, events.at(3).stage_);
-    ASSERT_EQ('c', events.at(3).ctrlKey_);
-    ASSERT_EQ(ActionStage::UP, events.at(3).stage_);
-    ASSERT_EQ('d', events.at(4).code_);
-    ASSERT_EQ(ActionStage::DOWN, events.at(4).stage_);
-    ASSERT_EQ('d', events.at(5).code_);
-    ASSERT_EQ(ActionStage::UP, events.at(5).stage_);
 }

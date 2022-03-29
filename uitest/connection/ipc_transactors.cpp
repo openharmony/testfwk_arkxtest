@@ -1,5 +1,5 @@
 /*
- * * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,7 +16,7 @@
 #include "ipc_transactors.h"
 
 #include "common_defines.h"
-#include "common_utilities.hpp"
+#include "common_utilities_hpp.h"
 #include "json.hpp"
 
 namespace OHOS::uitest {
@@ -81,7 +81,7 @@ namespace OHOS::uitest {
         DoEmitMessage(message);
     }
 
-    void MessageTransceiver::SetMessageFilter(function<bool(TransactionType)> filter)
+    void MessageTransceiver::SetMessageFilter(std::function<bool(TransactionType)> filter)
     {
         this->messageFilter_ = move(filter);
     }
@@ -203,7 +203,7 @@ namespace OHOS::uitest {
     bool Transactor::Initialize()
     {
         auto pTransceiver = CreateTransceiver();
-        DCHECK(pTransceiver != nullptr, "Transceiver is null!");
+        DCHECK(pTransceiver != nullptr);
         transceiver_ = move(pTransceiver);
         transceiver_->SetMessageFilter(GetMessageFilter());
         return transceiver_->Initialize();
@@ -213,7 +213,7 @@ namespace OHOS::uitest {
     {
         if (transceiver_ != nullptr) {
             // inject exit message
-            auto terminate = TransactionMessage{.type_=TransactionType::EXIT};
+            auto terminate = TransactionMessage {.type_ = TransactionType::EXIT};
             transceiver_->OnReceiveMessage(terminate);
             transceiver_->Finalize();
         }
@@ -221,15 +221,14 @@ namespace OHOS::uitest {
 
     uint32_t TransactionServer::RunLoop()
     {
-        DCHECK(transceiver_ != nullptr, "Transceiver is null!");
-        DCHECK(callFunc_ != nullptr, "CallFunction is null!");
+        DCHECK(transceiver_ != nullptr && callFunc_ != nullptr);
         while (true) {
             TransactionMessage message;
             auto status = transceiver_->PollCallReply(message, WAIT_TRANSACTION_MS);
             string reply;
             switch (status) {
                 case MessageTransceiver::PollStatus::SUCCESS:
-                    DCHECK(message.type_ == TransactionType::CALL, "Unexpected message type");
+                    DCHECK(message.type_ == TransactionType::CALL);
                     reply = callFunc_(message.apiId_, message.callerParcel_, message.paramsParcel_);
                     transceiver_->EmitReply(message, reply);
                     break;
@@ -258,13 +257,13 @@ namespace OHOS::uitest {
         return data.dump();
     }
 
-    static string CreateResultForConcurrentInvoke(string_view processingApi)
+    static string CreateResultForConcurrentInvoke(string_view processingApi, string_view incomingApi)
     {
         static constexpr string_view msg = "uitest-api dose not allow calling concurrently, current processing:";
         json data;
         json exceptionInfo;
         exceptionInfo[KEY_CODE] = "USAGE_ERROR";
-        exceptionInfo[KEY_MESSAGE] = string(msg) + string(processingApi);
+        exceptionInfo[KEY_MESSAGE] = string(msg) + string(processingApi) + ", incoming: " + string(incomingApi);
         data[KEY_EXCEPTION] = exceptionInfo;
         return data.dump();
     }
@@ -277,7 +276,7 @@ namespace OHOS::uitest {
             return CreateResultForDiedConnection();
         }
         if (!processingApi_.empty()) {
-            return CreateResultForConcurrentInvoke(processingApi_);
+            return CreateResultForConcurrentInvoke(processingApi_, apiId);
         }
         processingApi_ = apiId;
         stateLock.unlock(); // unlock, allow reentry, make it possible to check and reject concurrent usage
@@ -288,7 +287,7 @@ namespace OHOS::uitest {
             string reply;
             switch (status) {
                 case MessageTransceiver::PollStatus::SUCCESS:
-                    DCHECK(message.type_ == TransactionType::REPLY, "Unexpected message type");
+                    DCHECK(message.type_ == TransactionType::REPLY);
                     stateLock.lock();
                     processingApi_.clear();
                     stateLock.unlock();

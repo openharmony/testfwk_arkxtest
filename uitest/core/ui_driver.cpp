@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,9 +28,8 @@ namespace OHOS::uitest {
 
         void Visit(const Widget &widget) override
         {
-            auto attributes = map<string, string>();
-            // snapshot without bounds, to avoid difference caused by negligible position offset
-            receiver_ << widget.ToStr(true) << ";";
+            receiver_ << widget.GetAttr(ATTR_NAMES[UiAttr::TYPE], "") << "/";
+            receiver_ << widget.GetAttr(ATTR_NAMES[UiAttr::TEXT], "") << ";";
         }
 
     private:
@@ -50,13 +49,9 @@ namespace OHOS::uitest {
             return;
         }
         widgetTree_ = make_unique<WidgetTree>("");
-        auto domText = uiController_->GetDomTextOfCurrentWindow();
-        stringstream makeTreeFailure;
-        if (!widgetTree_->ConstructFromDomText(domText, makeTreeFailure)) {
-            LOG_E("Parse dom failed: %{public}s", makeTreeFailure.str().c_str());
-            error = ApiCallErr(INTERNAL_ERROR, "Parse dom failed: " + makeTreeFailure.str());
-            return;
-        }
+        auto domData = json();
+        uiController_->GetCurrentUiDom(domData);
+        widgetTree_->ConstructFromDom(domData, true);
     }
 
     /**Inflate widget-image attributes from the given widget-object and the selector.*/
@@ -92,7 +87,7 @@ namespace OHOS::uitest {
             err = ApiCallErr(WIDGET_LOST, msg.str());
             return nullptr;
         }
-        DCHECK(recv.size() == 1, "Illegal state, find widget by hierarchy, got more than one results!");
+        DCHECK(recv.size() == 1);
         auto &widget = recv.at(0).get();
         // check equality
         WidgetImage newImage = WidgetImage();
@@ -114,9 +109,7 @@ namespace OHOS::uitest {
         vector<TouchEvent> events;
         action.Decompose(events, point, options);
         if (events.empty()) { return; }
-        for (auto &event:events) {
-            controller.InjectTouchEvent(event);
-        }
+        controller.InjectTouchEventSequence(events);
         controller.WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
     }
 
@@ -127,9 +120,7 @@ namespace OHOS::uitest {
         vector<TouchEvent> events;
         action.Decompose(events, point0, point1, options);
         if (events.empty()) { return; }
-        for (auto &event:events) {
-            controller.InjectTouchEvent(event);
-        }
+        controller.InjectTouchEventSequence(events);
         controller.WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
     }
 
@@ -169,9 +160,7 @@ namespace OHOS::uitest {
         vector<KeyEvent> events;
         action.ComputeEvents(events, options);
         if (events.empty()) { return; }
-        for (auto &event:events) {
-            controller.InjectKeyEvent(event);
-        }
+        controller.InjectKeyEventSequence(events);
         controller.WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
     }
 
@@ -238,14 +227,22 @@ namespace OHOS::uitest {
             }
             keyCodes.emplace_back(make_pair(code, ctrlCode));
         }
-        // click on the target widget to gain focus
         InjectWidgetOperate(widget->GetBounds(), WidgetOp::CLICK, *uiController_, options_);
         static constexpr uint32_t focusTimeMs = 200;
+        static constexpr uint32_t typeCharTimeMs = 50;
         DelayMs(focusTimeMs); // short delay to ensure focus gaining
         vector<KeyEvent> events;
-        ComputeCharsTypingEvents(keyCodes, events);
-        for (auto &event:events) {
-            uiController_->InjectKeyEvent(event);
+        for (auto &pair : keyCodes) {
+            if (pair.second != KEYCODE_NONE) {
+                events.emplace_back(KeyEvent {ActionStage::DOWN, pair.second, 0});
+            }
+            events.emplace_back(KeyEvent {ActionStage::DOWN, pair.first, typeCharTimeMs});
+            events.emplace_back(KeyEvent {ActionStage::UP, pair.first, 0});
+            if (pair.second != KEYCODE_NONE) {
+                events.emplace_back(KeyEvent {ActionStage::UP, pair.second, 0});
+            }
+            uiController_->InjectKeyEventSequence(events);
+            events.clear();
         }
         uiController_->WaitForUiSteady(options_.uiSteadyThresholdMs_, options_.waitUiSteadyMaxMs_);
 #endif
@@ -314,14 +311,14 @@ namespace OHOS::uitest {
         if (widgetFrom == nullptr || err.code_ != NO_ERROR) {
             return;
         }
-        auto widgetTo = RetrieveWidget(imgTo, err);
+        auto widgetTo = RetrieveWidget(imgTo, err, false);
         if (widgetTo == nullptr || err.code_ != NO_ERROR) {
             return;
         }
         auto boundsFrom = widgetFrom->GetBounds();
-        auto boundsTo = widgetFrom->GetBounds();
-        auto centerFrom = Point{boundsFrom.GetCenterX(), boundsFrom.GetCenterY()};
-        auto centerTo = Point{boundsTo.GetCenterX(), boundsTo.GetCenterY()};
+        auto boundsTo = widgetTo->GetBounds();
+        auto centerFrom = Point {boundsFrom.GetCenterX(), boundsFrom.GetCenterY()};
+        auto centerTo = Point {boundsTo.GetCenterX(), boundsTo.GetCenterY()};
         InjectGenericSwipe(PointerOp::DRAG_P, centerFrom, centerTo, *uiController_, options_);
     }
 

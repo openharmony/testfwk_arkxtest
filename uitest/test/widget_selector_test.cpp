@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#include "widget_selector.h"
 #include "gtest/gtest.h"
+#include "widget_selector.h"
 
 using namespace OHOS::uitest;
 using namespace std;
@@ -109,12 +109,12 @@ static constexpr auto ATTR_TEXT = "text";
 
 class WidgetSelectorTest : public testing::Test {
 protected:
-    stringstream domErrReceiver_;
     WidgetTree tree_ = WidgetTree("dummy_tree");
 
     void SetUp() override
     {
-        tree_.ConstructFromDomText(DOM_TEXT, domErrReceiver_);
+        auto data = nlohmann::json::parse(DOM_TEXT);
+        tree_.ConstructFromDom(data, false);
     }
 };
 

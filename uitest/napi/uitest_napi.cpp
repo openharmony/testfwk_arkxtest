@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include "json.hpp"
 #include "common_defines.h"
-#include "common_utilities.hpp"
+#include "common_utilities_hpp.h"
 
 namespace OHOS::uitest {
     using namespace nlohmann;
@@ -38,7 +38,7 @@ namespace OHOS::uitest {
     // the name of property that represents the bound UiDriver object of the UiComponent object
     static constexpr char PROP_BOUND_DRIVER[] = "boundUiDriver_";
     /**Supported UiComponent attribute types. Ordered by <code>UiAttr</code> definition.*/
-    static constexpr TypeId ATTR_TYPES[10] = {INT, STRING, STRING, STRING, BOOL, BOOL, BOOL, BOOL, BOOL, BOOL};
+    static constexpr TypeId ATTR_TYPES[11] = {INT, STRING, STRING, STRING, STRING, BOOL, BOOL, BOOL, BOOL, BOOL, BOOL};
     /**Supported By-relative builder native-API names..Ordered by <code>RelMode</code> definition.*/
     static constexpr CStr BY_REL_NAMES_CPP[2] = {"WidgetSelector::AddRearLocator", "WidgetSelector::AddFrontLocator"};
     /**StaticSyncCreator function of 'By', <b>for internal usage only</b> to convert seedBy to new By instance.*/
@@ -443,7 +443,7 @@ namespace OHOS::uitest {
         if constexpr(argc > 0) {
             types = {kArgTypes...};
         }
-        TransactionData tp{.apiId_=kNativeApiId, .returnType_=kReturnType};
+        TransactionData tp {.apiId_ = kNativeApiId, .returnType_ = kReturnType};
         NAPI_CALL(env, ExtractTransactionData(env, info, argc, types, tp));
         return TransactAsync<kReturnMultiple>(env, tp);
     }
@@ -492,19 +492,18 @@ namespace OHOS::uitest {
             *out = in;
             return napi_ok;
         }
-        const bool toString = (outType == TypeId::STRING);
-        static napi_value jsonProp = nullptr;
-        static napi_value toSFunc = nullptr;
-        static napi_value toVFunc = nullptr;
-        if (jsonProp == nullptr || toSFunc == nullptr || toVFunc == nullptr) {
-            napi_value global = nullptr;
-            NAPI_CALL_BASE(env, napi_get_global(env, &global), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_get_named_property(env, global, "JSON", &jsonProp), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_get_named_property(env, jsonProp, "stringify", &toSFunc), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_get_named_property(env, jsonProp, "parse", &toVFunc), NAPI_ERR);
+        napi_value global = nullptr;
+        napi_value jsonProp = nullptr;
+        napi_value jsonFunc = nullptr;
+        NAPI_CALL_BASE(env, napi_get_global(env, &global), NAPI_ERR);
+        NAPI_CALL_BASE(env, napi_get_named_property(env, global, "JSON", &jsonProp), NAPI_ERR);
+        if (outType == TypeId::STRING) {
+            NAPI_CALL_BASE(env, napi_get_named_property(env, jsonProp, "stringify", &jsonFunc), NAPI_ERR);
+        } else {
+            NAPI_CALL_BASE(env, napi_get_named_property(env, jsonProp, "parse", &jsonFunc), NAPI_ERR);
         }
         napi_value argv[1] = {in};
-        NAPI_CALL_BASE(env, napi_call_function(env, jsonProp, toString ? toSFunc : toVFunc, 1, argv, out), NAPI_ERR);
+        NAPI_CALL_BASE(env, napi_call_function(env, jsonProp, jsonFunc, 1, argv, out), NAPI_ERR);
         return napi_ok;
     }
 
@@ -697,15 +696,14 @@ namespace OHOS::uitest {
     template<PointerOp kAction>
     static napi_value SinglePointToucher(napi_env env, napi_callback_info info)
     {
-        static constexpr auto isGenericSwipe = kAction >= PointerOp::SWIPE_P && kAction <= PointerOp::SWIPE_P;
+        static constexpr auto isGenericSwipe = kAction >= PointerOp::SWIPE_P && kAction <= PointerOp::DRAG_P;
         constexpr size_t argC = isGenericSwipe ? 4 : 2;
-        TransactionData tp{};
+        TransactionData tp {};
         NAPI_CALL(env, ExtractTransactionData(env, info, argC,
             {TypeId::INT, TypeId::INT, TypeId::INT, TypeId::INT}, tp));
-        // covert caller provided point coordinates to required rect coordinates
-        if constexpr (isGenericSwipe) { // (x1,y1,x2,y2)==>(x1,x2,y1,y2)
+        if constexpr (isGenericSwipe) {
             tp.apiId_ = "UiDriver::PerformGenericSwipe";
-        } else { // (x,y)==>(x,x,y,y)
+        } else {
             tp.apiId_ = "UiDriver::PerformGenericClick";
         }
         // add action type as 1st parameter (right-shift provided argv, do from right to left to avoid overwriting)
@@ -781,6 +779,7 @@ namespace OHOS::uitest {
         napi_property_descriptor methods[] = {
             DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::ID], ByAttrBuilder<UiAttr::ID>),
             DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::TEXT], ByAttrBuilder<UiAttr::TEXT>),
+            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::KEY], ByAttrBuilder<UiAttr::KEY>),
             DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::TYPE], ByAttrBuilder<UiAttr::TYPE>),
             DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::ENABLED], ByAttrBuilder<UiAttr::ENABLED>),
             DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::FOCUSED], ByAttrBuilder<UiAttr::FOCUSED>),
@@ -808,6 +807,7 @@ namespace OHOS::uitest {
         static constexpr napi_property_descriptor methods[] = {
             DECLARE_NAPI_FUNCTION("getId", ComponentAttrGetter<UiAttr::ID>),
             DECLARE_NAPI_FUNCTION("getText", ComponentAttrGetter<UiAttr::TEXT>),
+            DECLARE_NAPI_FUNCTION("getKey", ComponentAttrGetter<UiAttr::KEY>),
             DECLARE_NAPI_FUNCTION("getType", ComponentAttrGetter<UiAttr::TYPE>),
             DECLARE_NAPI_FUNCTION("isEnabled", ComponentAttrGetter<UiAttr::ENABLED>),
             DECLARE_NAPI_FUNCTION("isFocused", ComponentAttrGetter<UiAttr::FOCUSED>),
@@ -848,6 +848,7 @@ namespace OHOS::uitest {
             DECLARE_NAPI_FUNCTION("longClick", SinglePointToucher<PointerOp::LONG_CLICK_P>),
             DECLARE_NAPI_FUNCTION("doubleClick", SinglePointToucher<PointerOp::DOUBLE_CLICK_P>),
             DECLARE_NAPI_FUNCTION("swipe", SinglePointToucher<PointerOp::SWIPE_P>),
+            DECLARE_NAPI_FUNCTION("drag", SinglePointToucher<PointerOp::DRAG_P>),
         };
         static constexpr size_t num = sizeof(methods) / sizeof(methods[0]);
         static constexpr napi_callback init = JsObjectInitializer<TypeId::DRIVER>;

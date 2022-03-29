@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,9 +25,9 @@
 #include "accessibility_ui_test_ability.h"
 #include "accessibility_ui_test_ability_listener.h"
 #include "display_manager.h"
-#include "system_ui_controller.h"
 #include "input_manager.h"
 #include "png.h"
+#include "system_ui_controller.h"
 
 using namespace std;
 using namespace chrono;
@@ -39,8 +39,6 @@ namespace OHOS::uitest {
     using namespace OHOS::Accessibility;
     using namespace OHOS::Rosen;
     using namespace OHOS::Media;
-
-    constexpr uint32_t MICRO_TO_NANO_FACTOR = 1000;
 
     class UiEventMonitor final : public IAccessibleUITestAbilityListener {
     public:
@@ -71,7 +69,6 @@ namespace OHOS::uitest {
         function<void()> onConnectCallback_ = nullptr;
         function<void()> onDisConnectCallback_ = nullptr;
         atomic<uint64_t> lastEventMillis_ = 0;
-
     };
 
     void UiEventMonitor::SetOnAbilityConnectCallback(function<void()> onConnectCb)
@@ -105,7 +102,7 @@ namespace OHOS::uitest {
 
     void UiEventMonitor::OnAccessibilityEvent(const AccessibilityEventInfo &eventInfo)
     {
-        LOG_W("OnEvent:0x%{public}x", eventInfo.GetEventType()); // FIXME
+        LOG_W("OnEvent:0x%{public}x", eventInfo.GetEventType());
         if ((eventInfo.GetEventType() & EVENT_MASK) > 0) {
             lastEventMillis_.store(GetCurrentMillisecond());
         }
@@ -147,6 +144,7 @@ namespace OHOS::uitest {
     {
         to[ATTR_NAMES[UiAttr::TEXT]] = node.GetContent();
         to[ATTR_NAMES[UiAttr::ID]] = to_string(node.GetAccessibilityId());
+        to[ATTR_NAMES[UiAttr::KEY]] = node.GetInspectorKey();
         to[ATTR_NAMES[UiAttr::TYPE]] = node.GetComponentType();
         to[ATTR_NAMES[UiAttr::ENABLED]] = node.IsEnabled() ? "true" : "false";
         to[ATTR_NAMES[UiAttr::FOCUSED]] = node.IsFocused() ? "true" : "false";
@@ -174,19 +172,12 @@ namespace OHOS::uitest {
         }
     }
 
-    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, const Rect &rootBounds)
+    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to)
     {
-        static constexpr int32_t visibleSizeMin = 10;
-        int32_t xOverlap = 0;
-        int32_t yOverlap = 0;
         const auto rect = from.GetRectInScreen();
-        const auto nodeBounds = Rect{rect.GetLeftTopXScreenPostion(), rect.GetRightBottomXScreenPostion(),
-                                     rect.GetLeftTopYScreenPostion(), rect.GetRightBottomYScreenPostion()};
-        rootBounds.ComputeOverlappingDimensions(nodeBounds, xOverlap, yOverlap);
-        if (xOverlap <= visibleSizeMin || yOverlap <= visibleSizeMin) {
-            // node invisible, skip
-            LOG_W("Child not in root rect!!!");
-        }
+        const auto nodeBounds = Rect {
+            rect.GetLeftTopXScreenPostion(), rect.GetRightBottomXScreenPostion(),
+            rect.GetLeftTopYScreenPostion(), rect.GetRightBottomYScreenPostion()};
         json attributes;
         MarshalAccessibilityNodeAttributes(from, attributes);
         stringstream stream;
@@ -197,13 +188,16 @@ namespace OHOS::uitest {
         to["attributes"] = attributes;
         auto childList = json::array();
         const auto childCount = from.GetChildCount();
-        AccessibilityElementInfo childNode;
+        AccessibilityElementInfo child;
         for (auto index = 0; index < childCount; index++) {
-            auto success = from.GetChild(index, childNode);
+            auto success = from.GetChild(index, child);
             if (success) {
-                auto childParcel = json();
-                MarshallAccessibilityNodeInfo(childNode, childParcel, rootBounds);
-                childList.push_back(childParcel);
+                if (!child.IsVisible()) {
+                    continue;
+                }
+                auto parcel = json();
+                MarshallAccessibilityNodeInfo(child, parcel);
+                childList.push_back(parcel);
             } else {
                 LOG_W("Get Node child at index=%{public}d failed", index);
             }
@@ -211,142 +205,106 @@ namespace OHOS::uitest {
         to["children"] = childList;
     }
 
-    string GetDomTextOfCurrentWindow1()
-    {
-        auto ability = AccessibilityUITestAbility::GetInstance();
-        auto windows = ability->GetWindows();
-        if (windows.empty()) {
-            LOG_W("No root window found");
-            return "{}";
-        } else {
-            LOG_I("WindowCount=%{public}d", windows.size());
-        }
-        for (auto &window:windows) {
-            LOG_I("WindowLayer=%{public}d", window.GetWindowLayer());
-            auto rect = window.GetRectInScreen();
-            LOG_I("WindowPosition=(%{public}d,%{public}d),(%{public}d,%{public}d)",
-                  rect.GetLeftTopXScreenPostion(), rect.GetLeftTopYScreenPostion(),
-                  rect.GetRightBottomXScreenPostion(), rect.GetRightBottomYScreenPostion());
-        }
-
-        auto treeParcel = json();
-        auto windowInfo = windows.at(0);
-        auto rootNode = AccessibilityElementInfo();
-        if (windowInfo.GetRootAccessibilityInfo(rootNode)) {
-            auto rootRect = rootNode.GetRectInScreen();
-            const auto rootBounds = Rect{rootRect.GetLeftTopXScreenPostion(), rootRect.GetRightBottomXScreenPostion(),
-                                         rootRect.GetLeftTopYScreenPostion(), rootRect.GetRightBottomYScreenPostion()};
-            MarshallAccessibilityNodeInfo(rootNode, treeParcel, rootBounds);
-        }
-        return treeParcel.dump();
-    }
-
-    string GetDomTextOfCurrentWindow2()
+    static void GetCurrentUiDom2(nlohmann::json& out)
     {
         auto ability = AccessibilityUITestAbility::GetInstance();
         std::optional<AccessibilityElementInfo> elementInfo;
         ability->GetRootElementInfo(elementInfo);
-        auto treeParcel = json();
         if (elementInfo.has_value()) {
-            const auto rect = elementInfo.value().GetRectInScreen();
-            const auto rootBounds = Rect{rect.GetLeftTopXScreenPostion(), rect.GetRightBottomXScreenPostion(),
-                                         rect.GetLeftTopYScreenPostion(), rect.GetRightBottomYScreenPostion()};
-            MarshallAccessibilityNodeInfo(elementInfo.value(), treeParcel, rootBounds);
+            const auto windowId = elementInfo.value().GetWindowId();
+            const auto windows = ability->GetWindows();
+            for (auto& window:windows) {
+                if (windowId == window.GetWindowId()) {
+                    // apply window bounds as root node bounds
+                    auto windowRect = window.GetRectInScreen();
+                    elementInfo.value().SetRectInScreen(windowRect);
+                    break;
+                }
+            }
+            MarshallAccessibilityNodeInfo(elementInfo.value(), out);
         } else {
             LOG_I("Root node not found");
         }
-        return treeParcel.dump();
     }
 
-    string SysUiController::GetDomTextOfCurrentWindow() const
-    { // TODO:: use cached dom
-        auto at0 = GetDomTextOfCurrentWindow1();
-        LOG_I("TREE0='%{public}s'", at0.c_str());
-        auto at1 = GetDomTextOfCurrentWindow2();
-        LOG_I("TREE1='%{public}s'", at1.c_str());
-        return at1;
+    void SysUiController::GetCurrentUiDom(nlohmann::json& out) const
+    {
+        GetCurrentUiDom2(out);
     }
 
     void SysUiController::WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const
     {
-        this_thread::sleep_for(chrono::milliseconds(idleThresholdMs));
-        // TODO:: depend on AccessibilityService
-        // FIXME  UiEventMonitor::GetInstance()->WaitEventIdle(idleThresholdMs, timeoutMs);
     }
 
-    void SysUiController::InjectTouchEvent(const TouchEvent &te) const
+    void SysUiController::InjectTouchEventSequence(const vector<TouchEvent> &events) const
     {
-        auto event = PointerEvent::Create();
-        PointerEvent::PointerItem item;
-        item.SetPointerId(0);
-        item.SetGlobalX(te.point_.px_);
-        item.SetGlobalY(te.point_.py_);
-        const auto micros = static_cast<int64_t>(GetCurrentMicroseconds());
-        switch (te.stage_) {
-            case ActionStage::DOWN:
-                event->SetPointerAction(PointerEvent::POINTER_ACTION_DOWN);
-                item.SetDownTime(micros);
-                break;
-            case ActionStage::MOVE:
-                event->SetPointerAction(PointerEvent::POINTER_ACTION_MOVE);
-                item.SetDownTime(micros - te.downTimeOffsetMs_ * MICRO_TO_NANO_FACTOR);
-                break;
-            case ActionStage::UP:
-                event->SetPointerAction(PointerEvent::POINTER_ACTION_UP);
-                item.SetDownTime(micros - te.downTimeOffsetMs_ * MICRO_TO_NANO_FACTOR);
-                break;
-        }
-        item.SetPressed(te.stage_ != ActionStage::UP);
-        event->AddPointerItem(item);
-        event->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
-        event->SetPointerId(0);
-        InputManager::GetInstance()->SimulateInputEvent(event);
-        if (te.holdMs_ > 0) {
-            this_thread::sleep_for(chrono::milliseconds(te.holdMs_));
+        for (auto& event:events) {
+            auto pointerEvent = PointerEvent::Create();
+            PointerEvent::PointerItem pinterItem;
+            pinterItem.SetPointerId(0);
+            pinterItem.SetGlobalX(event.point_.px_);
+            pinterItem.SetGlobalY(event.point_.py_);
+            switch (event.stage_) {
+                case ActionStage::DOWN:
+                    pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_DOWN);
+                    break;
+                case ActionStage::MOVE:
+                    pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_MOVE);
+                    break;
+                case ActionStage::UP:
+                    pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_UP);
+                    break;
+            }
+            pinterItem.SetPressed(event.stage_ != ActionStage::UP);
+            pointerEvent->AddPointerItem(pinterItem);
+            pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
+            pointerEvent->SetPointerId(0);
+            InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
+            if (event.holdMs_ > 0) {
+                this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
+            }
         }
     }
 
-    void SysUiController::InjectKeyEvent(const KeyEvent &ke) const
+    void SysUiController::InjectKeyEventSequence(const vector<KeyEvent> &events) const
     {
-        auto event = OHOS::MMI::KeyEvent::Create();
-        event->SetKeyCode(ke.code_);
-        const auto micros = static_cast<int64_t>(GetCurrentMicroseconds());
-        OHOS::MMI::KeyEvent::KeyItem item;
-        OHOS::MMI::KeyEvent::KeyItem itemCtrl;
-        item.SetKeyCode(ke.code_);
-        if (ke.ctrlKey_ != KEYCODE_NONE) {
-            itemCtrl.SetKeyCode(ke.ctrlKey_);
-        }
-        switch (ke.stage_) {
-            case ActionStage::DOWN:
-                event->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_DOWN);
-                item.SetPressed(true);
-                item.SetDownTime(micros);
-                if (ke.ctrlKey_ != KEYCODE_NONE) {
-                    itemCtrl.SetPressed(true);
-                    itemCtrl.SetDownTime(micros - 1 * MICRO_TO_NANO_FACTOR);
-                    event->AddPressedKeyItems(itemCtrl);
+        vector<int32_t> downKeys;
+        for (auto& event:events) {
+            if (event.stage_ == ActionStage::UP) {
+                auto iter = std::find(downKeys.begin(), downKeys.end(), event.code_);
+                if (iter == downKeys.end()) {
+                    LOG_W("Cannot release a not-pressed key: %{public}d", event.code_);
+                    continue;
                 }
-                event->AddPressedKeyItems(item);
-                break;
-            case ActionStage::UP:
-                event->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_UP);
-                item.SetPressed(false);
-                item.SetDownTime(micros - ke.downTimeOffsetMs_ * MICRO_TO_NANO_FACTOR);
-                event->RemoveReleasedKeyItems(item);
-                if (ke.ctrlKey_ != KEYCODE_NONE) {
-                    itemCtrl.SetPressed(false);
-                    itemCtrl.SetDownTime(micros + 1 * MICRO_TO_NANO_FACTOR);
-                    event->RemoveReleasedKeyItems(itemCtrl);
+                downKeys.erase(iter);
+                auto keyEvent = OHOS::MMI::KeyEvent::Create();
+                keyEvent->SetKeyCode(event.code_);
+                keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_UP);
+                OHOS::MMI::KeyEvent::KeyItem keyItem;
+                keyItem.SetKeyCode(event.code_);
+                keyItem.SetPressed(true);
+                keyEvent->AddKeyItem(keyItem);
+                InputManager::GetInstance()->SimulateInputEvent(keyEvent);
+            } else {
+                downKeys.push_back(event.code_);
+                auto keyEvent = OHOS::MMI::KeyEvent::Create();
+                for (auto downKey:downKeys) {
+                    keyEvent->SetKeyCode(downKey);
+                    keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_DOWN);
+                    OHOS::MMI::KeyEvent::KeyItem keyItem;
+                    keyItem.SetKeyCode(downKey);
+                    keyItem.SetPressed(true);
+                    keyEvent->AddKeyItem(keyItem);
                 }
-                break;
-            default:
-                LOG_W("Illegal key action stage: %{public}d", ke.stage_);
-                break;
+                InputManager::GetInstance()->SimulateInputEvent(keyEvent);
+                if (event.holdMs_ > 0) {
+                    this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
+                }
+            }
         }
-        InputManager::GetInstance()->SimulateInputEvent(event);
-        if (ke.holdMs_ > 0) {
-            this_thread::sleep_for(chrono::milliseconds(ke.holdMs_));
+        // check not released keys
+        for (auto downKey:downKeys) {
+            LOG_W("Key event sequence injections done with not-released key: %{public}d", downKey);
         }
     }
 

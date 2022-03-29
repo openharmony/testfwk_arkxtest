@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,13 +16,10 @@
 #ifndef UI_MODEL_H
 #define UI_MODEL_H
 
-#include <string>
-#include <utility>
 #include <vector>
-#include <map>
-#include <memory>
 #include <sstream>
-#include "common_utilities.hpp"
+#include "common_utilities_hpp.h"
+#include "json.hpp"
 
 namespace OHOS::uitest {
     struct Point {
@@ -36,7 +33,7 @@ namespace OHOS::uitest {
         Rect(int32_t left, int32_t right, int32_t top, int32_t bottom)
             : left_(left), right_(right), top_(top), bottom_(bottom)
         {
-            DCHECK(right_ >= left_ && bottom_ >= top_, "Illegal bounds");
+            DCHECK(right_ >= left_ && bottom_ >= top_);
         };
 
         int32_t left_;
@@ -54,13 +51,18 @@ namespace OHOS::uitest {
             return (top_ + bottom_) / 2;
         }
 
+        std::string ToStr() const;
+
         void ComputeOverlappingDimensions(const Rect &other, int32_t &width, int32_t& height) const;
+
+        bool ComputeIntersection(const Rect &other, Rect &result) const;
     };
 
     class Widget;
 
-    static constexpr auto ATTR_HIERARCHY = "hierarchy";
-    static constexpr auto ATTR_HASHCODE = "hashcode";
+    /**Inner used widget attributes.*/
+    constexpr auto ATTR_HIERARCHY = "hierarchy";
+    constexpr auto ATTR_HASHCODE = "hashcode";
 
     class Widget {
     public:
@@ -69,9 +71,6 @@ namespace OHOS::uitest {
         {
             attributes_.insert(std::make_pair(ATTR_HIERARCHY, hierarchy));
         };
-
-        // disable copy and assign, to avoid object slicing
-        DISALLOW_COPY_AND_ASSIGN(Widget);
 
         Widget(Widget &&val) noexcept: hierarchy_(val.hierarchy_), hostTreeId_(val.hostTreeId_),
                                        attributes_(val.attributes_), bounds_(val.bounds_) {}
@@ -100,7 +99,7 @@ namespace OHOS::uitest {
 
         void SetBounds(int32_t cl, int32_t cr, int32_t ct, int32_t cb);
 
-        std::string ToStr(bool ignoreBounds = false) const;
+        std::string ToStr() const;
 
         void DumpAttributes(std::map<std::string, std::string> &receiver) const;
 
@@ -122,20 +121,18 @@ namespace OHOS::uitest {
     class WidgetTree {
     public:
         WidgetTree() = delete;
-        DISALLOW_COPY_AND_ASSIGN(WidgetTree);
 
         ~WidgetTree() {}
 
         explicit WidgetTree(std::string name) : name_(std::move(name)), identifier_(GenerateTreeId()) {}
 
         /**
-         * Construct tree nodes from the given dom content.
+         * Construct tree nodes from the given dom data.
          *
-         * @param content: the dom content text.
-         * @param errReceiver: the dom parsing failure receiver.
-         * @returns true if construction succeed, false otherwise.
+         * @param dom: the dom json data.
+         * @param amendBounds: if or not amend widget bounds and visibility.
          * */
-        bool ConstructFromDomText(std::string_view content, std::stringstream &errReceiver);
+        void ConstructFromDom(const nlohmann::json& dom, bool amendBounds);
 
         void DfsTraverse(WidgetVisitor &visitor) const;
 
