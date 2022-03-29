@@ -150,20 +150,16 @@ import {BY,UiDriver,UiComponent} from '@ohos.uitest'
 
 export default async function abilityTest() {
   describe('uiTestDemo', function() {
-    it('uitest_demo0', 0, async function(done) {
-      try{
-        // create UiDriver
-        let driver = await UiDriver.create()
-        // find component by text
-        let button = await UiDriver.findComponent(BY.text('hello').enabled(true))
-        // click component
-        await button.click()
-        // get and assert component text
-        let content = await button.getText()
-        expect(content).assertEquals('clicked!')
-      } finally {
-        done()
-      }
+    it('uitest_demo0', 0, async function() {
+      // create UiDriver
+      let driver = await UiDriver.create()
+      // find component by text
+      let button = await driver.findComponent(BY.text('hello').enabled(true))
+      // click component
+      await button.click()
+      // get and assert component text
+      let content = await button.getText()
+      expect(content).assertEquals('clicked!')
     })
   })
 }

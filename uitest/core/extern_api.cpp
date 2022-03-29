@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,19 @@ namespace OHOS::uitest {
     using namespace nlohmann;
 
     ApiCallErr g_untrackedApiTransactError = ApiCallErr(NO_ERROR);
+
+    /**Get the readable name of the error enum value.*/
+    string GetErrorName(ErrCode code)
+    {
+        static const std::map<ErrCode, std::string> names = {
+            {NO_ERROR,       "NO_ERROR"},
+            {INTERNAL_ERROR, "INTERNAL_ERROR"},
+            {WIDGET_LOST,    "WIDGET_LOST"},
+            {USAGE_ERROR,    "USAGE_ERROR"}
+        };
+        const auto find = names.find(code);
+        return (find == names.end()) ? "UNKNOWN" : find->second;
+    }
 
     /**Constructor function to register all the ExternAPI creators and functions.*/
     static void __attribute__((constructor)) ApiRegistration()

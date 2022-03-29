@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,6 +22,7 @@
 #include <memory>
 #include <mutex>
 #include <functional>
+#include "json.hpp"
 #include "ui_action.h"
 
 namespace OHOS::uitest {
@@ -39,15 +40,13 @@ namespace OHOS::uitest {
 
         virtual ~UiController() = default;
 
-        DISALLOW_COPY_AND_ASSIGN(UiController);
-
-        virtual std::string GetDomTextOfCurrentWindow() const = 0;
+        virtual void GetCurrentUiDom(nlohmann::json& out) const = 0;
 
         virtual void WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec) const {};
 
-        virtual void InjectTouchEvent(const TouchEvent& event) const {};
+        virtual void InjectTouchEventSequence(const std::vector<TouchEvent>& events) const {};
 
-        virtual void InjectKeyEvent(const KeyEvent& event) const {};
+        virtual void InjectKeyEventSequence(const std::vector<KeyEvent>& events) const {};
 
         virtual void PutTextToClipboard(std::string_view text) const {};
 
