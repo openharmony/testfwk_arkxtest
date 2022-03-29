@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,7 +23,7 @@
 #include <functional>
 #include <list>
 #include "common_defines.h"
-#include "common_utilities.hpp"
+#include "common_utilities_hpp.h"
 #include "json.hpp"
 
 namespace OHOS::uitest {
@@ -37,17 +37,7 @@ namespace OHOS::uitest {
     };
 
     /**Get the readable name of the error enum value.*/
-    static std::string GetErrorName(ErrCode code)
-    {
-        static const std::map<ErrCode, std::string> names = {
-            {NO_ERROR,       "NO_ERROR"},
-            {INTERNAL_ERROR, "INTERNAL_ERROR"},
-            {WIDGET_LOST,    "WIDGET_LOST"},
-            {USAGE_ERROR,    "USAGE_ERROR"}
-        };
-        const auto find = names.find(code);
-        return (find == names.end()) ? "UNKNOWN" : find->second;
-    }
+    std::string GetErrorName(ErrCode code);
 
     /**API invocation error detail wrapper.*/
     class ApiCallErr {
@@ -114,8 +104,6 @@ namespace OHOS::uitest {
      **/
     class ExternApiServer {
     public:
-        // used as singleton, should not be copied and assigned
-        DISALLOW_COPY_AND_ASSIGN(ExternApiServer);
 
         /**
          * Register api invocation  handler.
@@ -152,27 +140,27 @@ namespace OHOS::uitest {
     template<typename T>
     T GetItemValueFromJson(const nlohmann::json &data, uint32_t index)
     {
-        DCHECK(index >= 0 && index < data.size(), "Index out of range");
+        DCHECK(index >= 0 && index < data.size());
         const nlohmann::json item = data.at(index);
         const uint32_t typeId = item[KEY_DATA_TYPE];
         if constexpr(std::is_same<T, bool>::value) {
-            DCHECK(typeId == TypeId::BOOL, "Not bool type");
+            DCHECK(typeId == TypeId::BOOL);
             bool value = item[KEY_DATA_VALUE];
             return value;
         } else if constexpr(std::is_integral<T>::value) {
-            DCHECK(typeId == TypeId::INT, "Not int type");
+            DCHECK(typeId == TypeId::INT);
             T value = item[KEY_DATA_VALUE];
             return value;
         } else if constexpr(std::is_same<T, float>::value) {
-            DCHECK(typeId == TypeId::FLOAT, "Not float type");
+            DCHECK(typeId == TypeId::FLOAT);
             float value = item[KEY_DATA_VALUE];
             return value;
         } else if constexpr(std::is_same<T, std::string>::value) {
-            DCHECK(typeId == TypeId::STRING, "Not string type");
+            DCHECK(typeId == TypeId::STRING);
             std::string value = item[KEY_DATA_VALUE];
             return value;
         } else if constexpr(std::is_same<T, nlohmann::json>::value) {
-            DCHECK(typeId >= TypeId::BY && typeId <= TypeId::OPTIONS, "Not object type");
+            DCHECK(typeId >= TypeId::BY && typeId <= TypeId::OPTIONS);
             nlohmann::json value = item[KEY_DATA_VALUE];
             return value;
         } else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,18 +25,12 @@
 #endif
 
 #ifdef NDEBUG
-#define DCHECK(cond, msg) do { (void)sizeof(cond&&#msg);} while (0)
+#define DCHECK(cond) do { (void)sizeof(cond);} while (0)
 #else
 
 #include <cassert>
 
-#define DCHECK(cond, msg) assert((cond)&&(#msg))
-#endif
-
-#ifndef DISALLOW_COPY_AND_ASSIGN
-#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
-    TypeName(const TypeName &) = delete; \
-    TypeName &operator=(const TypeName &) = delete
+#define DCHECK(cond) assert((cond))
 #endif
 
 namespace OHOS::uitest {
@@ -55,10 +49,10 @@ namespace OHOS::uitest {
     }
 
     // log tag length limit
-    static constexpr uint8_t MAX_LOG_TAG_LEN = 64;
+    constexpr uint8_t MAX_LOG_TAG_LEN = 64;
 
     /**Generates log-tag by fileName and lineNumber, must be 'constexpr' to ensure the efficiency of Logger.*/
-    static constexpr std::array<char, MAX_LOG_TAG_LEN> GenLogTag(std::string_view fp, std::string_view func)
+    constexpr std::array<char, MAX_LOG_TAG_LEN> GenLogTag(std::string_view fp, std::string_view func)
     {
         constexpr uint8_t MAX_CONTENT_LEN = MAX_LOG_TAG_LEN - 1;
         std::array<char, MAX_LOG_TAG_LEN> chars = {0};
@@ -71,17 +65,21 @@ namespace OHOS::uitest {
         for (size_t offSet = pos + 1; offSet < fp.length() && writeCursor < MAX_CONTENT_LEN; offSet++) {
             chars[writeCursor++] = fp[offSet];
         }
-        if (writeCursor < MAX_CONTENT_LEN)
+        if (writeCursor < MAX_CONTENT_LEN) {
             chars[writeCursor++] = ':';
-        if (writeCursor < MAX_CONTENT_LEN)
+        }
+        if (writeCursor < MAX_CONTENT_LEN) {
             chars[writeCursor++] = '(';
+        }
         for (size_t offSet = 0; offSet < func.length() && writeCursor < MAX_CONTENT_LEN; offSet++) {
             chars[writeCursor++] = func[offSet];
         }
-        if (writeCursor < MAX_CONTENT_LEN)
+        if (writeCursor < MAX_CONTENT_LEN) {
             chars[writeCursor++] = ')';
-        if (writeCursor < MAX_CONTENT_LEN)
+        }
+        if (writeCursor < MAX_CONTENT_LEN) {
             chars[writeCursor++] = ']';
+        }
         // record the actual tag-length in the end byte
         chars[MAX_CONTENT_LEN] = writeCursor;
         return chars;

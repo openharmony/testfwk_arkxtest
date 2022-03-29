@@ -18,14 +18,17 @@ source_root = "//test/arkXtest/uitest"
 
 config("uitest_common_configs") {
   include_dirs = [ "//third_party/json/single_include/nlohmann" ]
-  cflags = [ "-D__OHOS__" ]
+  cflags = [
+    "-Wfloat-equal",
+    "-Wformat=2",
+    "-Wshadow",
+  ]
 }
 
 ohos_static_library("uitest_core") {
   use_exceptions = true
   configs = [ ":uitest_common_configs" ]
   sources = [
-    "${source_root}/core/dom_parser.cpp",
     "${source_root}/core/extern_api.cpp",
     "${source_root}/core/extern_api_registration.cpp",
     "${source_root}/core/ui_action.cpp",
@@ -36,10 +39,11 @@ ohos_static_library("uitest_core") {
     "${source_root}/core/widget_matcher.cpp",
     "${source_root}/core/widget_selector.cpp",
   ]
-  include_dirs =
-      [ "//base/hiviewdfx/hilog/interfaces/native/innerkits/include" ]
   external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
-  defines = [ "LOG_TAG=\"UiTestKit_Base\"" ]
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"UiTestKit_Base\"",
+  ]
 }
 
 common_external_deps = [
@@ -49,8 +53,6 @@ common_external_deps = [
   "hiviewdfx_hilog_native:libhilog",
   "ipc:ipc_core",
 ]
-hilog_include_dirs =
-    [ "//base/hiviewdfx/hilog/interfaces/native/innerkits/include" ]
 
 accessibility_include_dirs = [
   "//base/accessibility/frameworks/aafwk/include",
@@ -87,14 +89,9 @@ ohos_executable("uitest_server") {
     "${source_root}/connection",
   ]
   include_dirs += accessibility_include_dirs
-  include_dirs += hilog_include_dirs
 
   # static link the uitest_core as server end
-  deps = [
-    ":uitest_core",
-    ":uitest_exporter_abc",
-    ":uitest_exporter_js",
-  ]
+  deps = [ ":uitest_core" ]
 
   deps += [
     "//foundation/aafwk/standard/frameworks/kits/appkit:app_context",
@@ -133,9 +130,12 @@ ohos_executable("uitest_server") {
   subsystem_name = "test"
   part_name = "arkXtest"
   output_name = "uitest"
-  install_enable = false
+  install_enable = true
   external_deps += common_external_deps
-  defines = [ "LOG_TAG=\"UiTestKit_Server\"" ]
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"UiTestKit_Server\"",
+  ]
 }
 
 ts2abc_gen_abc("gen_uitest_exporter_abc") {
@@ -173,20 +173,21 @@ ohos_shared_library("uitest_client") {
     ":uitest_exporter_abc",
     ":uitest_exporter_js",
   ]
-  include_dirs += hilog_include_dirs
   subsystem_name = "test"
   part_name = "arkXtest"
   output_name = "uitest"
   external_deps = common_external_deps
   external_deps += [ "napi:ace_napi" ]
   relative_install_dir = "module"
-  defines = [ "LOG_TAG=\"UiTestKit_Client\"" ]
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"UiTestKit_Client\"",
+  ]
 }
 
 ohos_unittest("uitest_core_unittest") {
   sources = [
     "${source_root}/test/common_utilities_test.cpp",
-    "${source_root}/test/dom_parser_test.cpp",
     "${source_root}/test/extern_api_test.cpp",
     "${source_root}/test/transaction_connection_test.cpp",
     "${source_root}/test/ui_action_test.cpp",
@@ -203,11 +204,11 @@ ohos_unittest("uitest_core_unittest") {
     "//third_party/googletest:gtest_main",
   ]
   include_dirs = [
+    "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
     "//third_party/json/single_include/nlohmann",
     "${source_root}/core",
     "${source_root}/connection",
   ]
-  include_dirs += hilog_include_dirs
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   use_exceptions = true

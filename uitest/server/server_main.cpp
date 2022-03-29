@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,8 +38,9 @@ namespace OHOS::uitest {
             PrintToConsole("Dump layout failed, cannot connect to AAMS");
             return EXIT_FAILURE;
         }
-        auto dom = controller.GetDomTextOfCurrentWindow();
-        PrintToConsole(dom);
+        auto data = nlohmann::json();
+        controller.GetCurrentUiDom(data);
+        PrintToConsole(data.dump());
         return EXIT_SUCCESS;
     }
 
@@ -61,7 +62,7 @@ namespace OHOS::uitest {
         }
         // set actual api handlerFunc provided by uitest_core
         server.SetCallFunction(ApiTransact);
-        // set UiController provider
+        // set UiController
         auto provider = [](string_view device, list<unique_ptr<UiController>> &receiver) {
             auto controller = make_unique<SysUiController>("sys_ui_controller", device);
             if (controller->ConnectToSysAbility()) {
