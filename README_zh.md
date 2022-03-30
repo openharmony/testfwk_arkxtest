@@ -146,7 +146,8 @@ import {UiDriver,BY,UiCOmponent,MatchPattern} from '@ohos.uitest'
 在测试用例文件中import `By/UiDriver/UiComponent`类，然后调用API接口编写测试用例。
 
 ```javascript
-import {BY,UiDriver,UiComponent} from '@ohos.uitest'
+import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from 'hypium/index'
+import {BY, UiDriver, UiComponent, MatchPattern} from '@ohos.uitest'
 
 export default async function abilityTest() {
   describe('uiTestDemo', function() {
