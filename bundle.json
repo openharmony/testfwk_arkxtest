@@ -4,7 +4,7 @@
     "description": "test framwork",
     "publishAs": "code-segment",
     "segment": {
-       "destPath": "test/thruster/uitest"
+       "destPath": "test/arkXtest/uitest"
     },
     "scripts": {
     },
