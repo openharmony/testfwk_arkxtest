@@ -75,7 +75,7 @@ namespace OHOS::uitest {
             this->priority_ = val;
         }
 
-        static void RegisterControllerProvider(UiControllerProvider provider);
+        static void RegisterControllerProvider(UiControllerProvider func);
 
         static void RegisterController(std::unique_ptr<UiController> controller, Priority priority);
 

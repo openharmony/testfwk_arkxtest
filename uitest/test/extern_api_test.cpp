@@ -48,9 +48,6 @@ public:
     string value_;
 };
 
-// generate a global-unique identifier
-#define GENERATE_UNIQUE_ID(x) string(__PRETTY_FUNCTION__)+string("_")+to_string(__LINE__)
-
 TEST_F(ExternApiTest, readWriteParcelable)
 {
     json container;
@@ -75,9 +72,14 @@ TEST_F(ExternApiTest, readWriteParcelable)
     ASSERT_EQ("zl", val4["value"]);
 }
 
+static string GenerateUniqueId()
+{
+    return to_string(GetCurrentMicroseconds());
+}
+
 TEST_F(ExternApiTest, noInvocationHandler)
 {
-    static auto apiId = GENERATE_UNIQUE_ID();
+    static auto apiId = GenerateUniqueId();
     auto& server = ExternApiServer::Get();
     json caller;
     auto in = json::array();
@@ -90,7 +92,7 @@ TEST_F(ExternApiTest, noInvocationHandler)
 
 TEST_F(ExternApiTest, addRemoveHandler)
 {
-    static auto apiId = GENERATE_UNIQUE_ID();
+    static auto apiId = GenerateUniqueId();
     auto &server = ExternApiServer::Get();
     auto handler = [](string_view fun, json &caller, const json &in, json &out, ApiCallErr &err) {
         if (fun == apiId) {
@@ -114,7 +116,7 @@ TEST_F(ExternApiTest, addRemoveHandler)
 
 TEST_F(ExternApiTest, inOutObjectsTransfer)
 {
-    static auto apiId = GENERATE_UNIQUE_ID();
+    static auto apiId = GenerateUniqueId();
     auto& server = ExternApiServer::Get();
     auto handler = [](string_view fun, json &caller, const json &in, json &out, ApiCallErr &err) {
         if (fun == apiId) {
@@ -145,7 +147,7 @@ TEST_F(ExternApiTest, inOutObjectsTransfer)
 
 TEST_F(ExternApiTest, jsonExceptionDefance)
 {
-    static auto apiId = GENERATE_UNIQUE_ID();
+    static auto apiId = GenerateUniqueId();
     auto& server = ExternApiServer::Get();
     auto handler = [](string_view fun, json &caller, const json &in, json &out, ApiCallErr &err) {
         if (fun == apiId) {
@@ -170,7 +172,7 @@ TEST_F(ExternApiTest, jsonExceptionDefance)
 
 TEST_F(ExternApiTest, apiErrorDeliver)
 {
-    static auto apiId = GENERATE_UNIQUE_ID();
+    static auto apiId = GenerateUniqueId();
     auto& server = ExternApiServer::Get();
     auto handler = [](string_view fun, json &caller, const json &in, json &out, ApiCallErr &err) {
         if (fun == apiId) {
@@ -258,7 +260,7 @@ TEST_F(ExternApiTest, stopDispatchingToRestHandlersAfterHandled)
 
 TEST_F(ExternApiTest, apiTransactE2E)
 {
-    static auto apiId = GENERATE_UNIQUE_ID();
+    static auto apiId = GenerateUniqueId();
     auto& server = ExternApiServer::Get();
     auto handler = [](string_view fun, json &caller, const json &in, json &out, ApiCallErr &err) {
         if (fun != apiId) {
@@ -278,7 +280,7 @@ TEST_F(ExternApiTest, apiTransactE2E)
 
 TEST_F(ExternApiTest, apiTransactE2EFailure)
 {
-    static auto apiId = GENERATE_UNIQUE_ID();
+    static auto apiId = GenerateUniqueId();
     auto &server = ExternApiServer::Get();
     auto handler = [](string_view fun, json &caller, const json &in, json &out, ApiCallErr &err) {
         if (fun != apiId) {

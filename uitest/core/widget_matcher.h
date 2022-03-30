@@ -68,9 +68,6 @@ namespace OHOS::uitest {
 
         explicit WidgetAttrMatcher(std::string_view attr, std::string_view testValue, ValueMatchRule rule);
 
-        /**Copy constructor.*/
-        WidgetAttrMatcher(const WidgetAttrMatcher &from);
-
         bool Matches(const Widget &widget) const override;
 
         std::string Describe() const override;
