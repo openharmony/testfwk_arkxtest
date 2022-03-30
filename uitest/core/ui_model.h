@@ -72,9 +72,6 @@ namespace OHOS::uitest {
             attributes_.insert(std::make_pair(ATTR_HIERARCHY, hierarchy));
         };
 
-        Widget(Widget &&val) noexcept: hierarchy_(val.hierarchy_), hostTreeId_(val.hostTreeId_),
-                                       attributes_(val.attributes_), bounds_(val.bounds_) {}
-
         virtual ~Widget() {}
 
         bool HasAttr(std::string_view name) const;

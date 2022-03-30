@@ -127,7 +127,8 @@ TEST_F(UiActionTest, computeSwipeAction)
 {
     UiDriveOptions opt {};
     opt.swipeVelocityPps_ = 50; // specify the swipe velocity
-    Point point0 {0, 0}, point1{100, 200};
+    Point point0(0, 0);
+    Point point1(100, 200);
     GenericSwipe action(PointerOp::SWIPE_P);
     vector<TouchEvent> events;
     action.Decompose(events, point0, point1, opt);
@@ -167,7 +168,8 @@ TEST_F(UiActionTest, computeDragAction)
 {
     UiDriveOptions opt {};
     opt.longClickHoldMs_ = 2000; // specify the long-click duration
-    Point point0 {0, 0}, point1{100, 200};
+    Point point0(0, 0);
+    Point point1(100, 200);
     GenericSwipe swipeAction(PointerOp::SWIPE_P);
     GenericSwipe dragAction(PointerOp::DRAG_P);
     vector<TouchEvent> swipeEvents;

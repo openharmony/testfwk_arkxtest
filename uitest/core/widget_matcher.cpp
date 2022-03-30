@@ -58,9 +58,6 @@ namespace OHOS::uitest {
     WidgetAttrMatcher::WidgetAttrMatcher(string_view attr, string_view testValue, ValueMatchRule rule)
         : attrName_(attr), testVal_(testValue), matchRule_(rule) {}
 
-    WidgetAttrMatcher::WidgetAttrMatcher(const WidgetAttrMatcher &from)
-        : attrName_(from.attrName_), testVal_(from.testVal_), matchRule_(from.matchRule_) {}
-
     bool WidgetAttrMatcher::Matches(const Widget &widget) const
     {
         if (!widget.HasAttr(attrName_)) {
