@@ -20,8 +20,6 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
 
-    ApiCallErr g_untrackedApiTransactError = ApiCallErr(NO_ERROR);
-
     /**Get the readable name of the error enum value.*/
     string GetErrorName(ErrCode code)
     {
@@ -83,7 +81,6 @@ namespace OHOS::uitest {
     string ApiTransact(string_view funcStr, string_view callerStr, string_view paramsStr)
     {
         LOG_D("Begin to invoke api: %{public}s, params=%{public}s", funcStr.data(), paramsStr.data());
-        g_untrackedApiTransactError = ApiCallErr(NO_ERROR);
         auto error = ApiCallErr(NO_ERROR);
         auto out = json::array();
         json returnData;
@@ -97,9 +94,6 @@ namespace OHOS::uitest {
             error = ApiCallErr(INTERNAL_ERROR, string("Convert transaction parameters failed: ") + ex.what());
         }
 
-        if (error.code_ < g_untrackedApiTransactError.code_) {
-            error = g_untrackedApiTransactError; // apply untracked error
-        }
         if (error.code_ != NO_ERROR) {
             // deliver exception
             LOG_W("Transact on api '%{public}s' failed, caller='%{public}s', params='%{public}s', error='%{public}s'",

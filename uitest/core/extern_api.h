@@ -199,9 +199,6 @@ namespace OHOS::uitest {
     /** Function serving external api-transaction with json-parcel incoming arguments and outgoing results.*/
     std::string ApiTransact(std::string_view func, std::string_view caller, std::string_view params);
 
-    /** Global registration for errors that are not collected via ApiCallErr in-argument. DONT reply on this!*/
-    extern ApiCallErr g_untrackedApiTransactError;
-
     /**Function to register creator and function invoker of all the <b>ExternAPI</b> types.*/
     void RegisterExternApIs();
 }

@@ -62,14 +62,14 @@ namespace OHOS::uitest {
         }
         // set actual api handlerFunc provided by uitest_core
         server.SetCallFunction(ApiTransact);
-        // set UiController
-        auto provider = [](string_view device, list<unique_ptr<UiController>> &receiver) {
+        // set delayed UiController
+        auto controllerProvider = [](string_view device, list<unique_ptr<UiController>> &receiver) {
             auto controller = make_unique<SysUiController>("sys_ui_controller", device);
             if (controller->ConnectToSysAbility()) {
                 receiver.push_back(move(controller));
             }
         };
-        UiController::RegisterControllerProvider(provider);
+        UiController::RegisterControllerProvider(controllerProvider);
         LOG_I("UiTest-daemon running, pid=%{public}d", getpid());
         auto exitCode = server.RunLoop();
         LOG_I("Server exited with code: %{public}d", exitCode);

@@ -26,7 +26,7 @@ namespace OHOS::uitest {
     public:
         std::string GetAttribute(std::string_view attrName, std::string_view defaultValue) const;
 
-        void SetAttributes(const std::map<std::string, std::string> &provider);
+        void SetAttributes(const std::map<std::string, std::string> &source);
 
         void SetSelectionDesc(std::string_view desc);
 

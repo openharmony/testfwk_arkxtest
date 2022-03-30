@@ -36,6 +36,13 @@ public:
         frameIndex_ = 0;
     }
 
+    void SetDomFrame(string_view domFrame)
+    {
+        mockDomFrames_.clear();
+        mockDomFrames_.emplace_back(domFrame);
+        frameIndex_ = 0;
+    }
+
     uint32_t GetConsumedDomFrameCount() const
     {
         return frameIndex_;
@@ -124,7 +131,7 @@ TEST_F(UiDriverTest, normalInteraction)
 ]
 }
 )";
-    controller_->SetDomFrames( {mockDom0} );
+    controller_->SetDomFrame(mockDom0);
 
     auto error = ApiCallErr(NO_ERROR);
     auto selector = WidgetSelector();
@@ -179,7 +186,7 @@ TEST_F(UiDriverTest, retrieveWidgetFailure)
 ]
 }
 )";
-    controller_->SetDomFrames( {mockDom0} );
+    controller_->SetDomFrame(mockDom0);
 
     auto error = ApiCallErr(NO_ERROR);
     auto selector = WidgetSelector();
@@ -191,7 +198,7 @@ TEST_F(UiDriverTest, retrieveWidgetFailure)
     ASSERT_EQ(1, images.size());
 
     // mock another dom on which the target widget is missing, and perform click
-    controller_->SetDomFrames( {mockDom1} );
+    controller_->SetDomFrame(mockDom1);
     error = ApiCallErr(NO_ERROR);
     driver_->PerformWidgetOperate(*images.at(0), WidgetOp::CLICK, error);
 
@@ -223,7 +230,7 @@ TEST_F(UiDriverTest, scrollSearchRetrieveSubjectWidgetFailed)
 ]
 })";
     constexpr auto mockDom1 = R"({"attributes":{"index":"0","resource-id":"id1","text":""},"children":[]})";
-    controller_->SetDomFrames( {mockDom0} );
+    controller_->SetDomFrame(mockDom0);
 
     auto error = ApiCallErr(NO_ERROR);
     auto scrollWidgetSelector = WidgetSelector();
@@ -235,7 +242,7 @@ TEST_F(UiDriverTest, scrollSearchRetrieveSubjectWidgetFailed)
     ASSERT_EQ(1, images.size());
 
     // mock another dom on which the scroll-widget is missing, and perform scroll-search
-    controller_->SetDomFrames( {mockDom1} );
+    controller_->SetDomFrame(mockDom1);
     error = ApiCallErr(NO_ERROR);
     auto targetWidgetSelector = WidgetSelector();
     ASSERT_EQ(nullptr, driver_->ScrollSearch(*images.at(0), targetWidgetSelector, error, 0));
@@ -267,7 +274,7 @@ TEST_F(UiDriverTest, scrollSearchTargetWidgetNotExist)
 ]
 }
 )";
-    controller_->SetDomFrames( {mockDom} );
+    controller_->SetDomFrame(mockDom);
 
     auto error = ApiCallErr(NO_ERROR);
     auto scrollWidgetSelector = WidgetSelector();
@@ -303,7 +310,7 @@ TEST_F(UiDriverTest, scrollSearchCheckSubjectWidget)
 ]
 }
 )";
-    controller_->SetDomFrames( {mockDom} );
+    controller_->SetDomFrame(mockDom);
 
     auto error = ApiCallErr(NO_ERROR);
     auto scrollWidgetSelector = WidgetSelector();
@@ -360,7 +367,7 @@ TEST_F(UiDriverTest, scrollSearchCheckDirection)
 },
 "children": []
 }]})";
-    controller_->SetDomFrames( {mockDom} );
+    controller_->SetDomFrame(mockDom);
 
     auto error = ApiCallErr(NO_ERROR);
     auto scrollWidgetSelector = WidgetSelector();
@@ -539,7 +546,7 @@ TEST_F(UiDriverTest, widget2Image)
 ]
 }
 )";
-    controller_->SetDomFrames( {mockDom} );
+    controller_->SetDomFrame(mockDom);
 
     auto error = ApiCallErr(NO_ERROR);
     auto selector = WidgetSelector();
@@ -567,7 +574,7 @@ TEST_F(UiDriverTest, updateWidgetImage)
 "hashcode": "12345",
 "text": "USB"},
 "children": []}]})";
-    controller_->SetDomFrames( {mockDom0} );
+    controller_->SetDomFrame(mockDom0);
 
     auto error = ApiCallErr(NO_ERROR);
     auto selector = WidgetSelector();
@@ -590,7 +597,7 @@ TEST_F(UiDriverTest, updateWidgetImage)
 "hashcode": "12345",
 "text": "WYZ"},
 "children": []}]})";
-    controller_->SetDomFrames( {mockDom1} );
+    controller_->SetDomFrame(mockDom1);
     // we should be able to refresh WidgetImage on the new UI
     driver_->UpdateWidgetImage(*images.at(0), error);
     ASSERT_EQ(NO_ERROR, error.code_);
@@ -608,7 +615,7 @@ TEST_F(UiDriverTest, updateWidgetImage)
 "hashcode": "23456",
 "text": "ZL"},
 "children": []}]})";
-    controller_->SetDomFrames( {mockDom2} );
+    controller_->SetDomFrame(mockDom2);
     // we should not be able to refresh WidgetImage on the new UI since its gone (hashcode and attributes changed)
     driver_->UpdateWidgetImage(*images.at(0), error);
     ASSERT_EQ(WIDGET_LOST, error.code_);
