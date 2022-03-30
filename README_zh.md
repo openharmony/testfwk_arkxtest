@@ -1,7 +1,7 @@
 # OpenHarmony自动化测试框架使用介绍
 
 ## 简介
- OpenHarmony的自动化测试框架，包含单元测试框架(JsUnit)和Ui测试框架(UiTest)。
+ OpenHarmony自动化测试框架代码部件仓arkXtest，包含单元测试框架(JsUnit)和Ui测试框架(UiTest)。
 
  单元测试框架(JsUnit)提供单元测试用例执行能力，提供用例编写基础接口，生成对应报告，用于测试系统或应用接口。
 
@@ -120,7 +120,7 @@ export default async function abilityTest() {
 ```
 ### 使用方式
 
-  单元测试框架以npm包（hypium）形式发布至官网([https://www.npmjs.com/](https://www.npmjs.com/))，集成至sdk，开发者可以下载Deveco Studio使用，使用指南参见IDE文档。
+  单元测试框架以npm包（hypium）形式发布至官网([https://www.npmjs.com/](https://www.npmjs.com/))，集成至sdk，开发者可以下载Deveco Studio使用，测试工程创建及测试脚本执行使用指南请参见IDE指导文档。
 
 ## Ui测试框架功能特性
 
@@ -133,7 +133,7 @@ export default async function abilityTest() {
 **使用者在测试脚本通过如下方式引入使用：**
 
 ```typescript
-import {UiDriver,BY,UiCOmponent,MatchPattern} from '@ohos.uitest'
+import {UiDriver,BY,UiComponent,MatchPattern} from '@ohos.uitest'
 ```
 
 > 注意事项
@@ -307,6 +307,10 @@ expect(found).assertTrue()
 let editText = await driver.findComponent(BY.type('InputText'))
 await editText.inputText("user_name")
 ```
+### 使用方式
+
+  开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见IDE指导文档。
+
 ### 推送Ui测试框架至设备
 
 > Ui测试框架暂时不随版本编译，使用时需自行编译后推送至OpenHarmony设备。后续随版本编译后，直接使用版本即可。
