@@ -29,9 +29,9 @@ namespace OHOS::uitest {
         return item->second;
     }
 
-    void WidgetImage::SetAttributes(const map<string, string> &provider)
+    void WidgetImage::SetAttributes(const map<string, string> &source)
     {
-        for (auto&[attr, value]:provider) {
+        for (auto&[attr, value]:source) {
             this->attributes_[attr] = value;
         }
     }

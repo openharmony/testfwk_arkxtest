@@ -146,7 +146,7 @@ TEST_F(UiControllerTest, controllerProvider)
     UiController::RegisterControllerProvider(nullptr);
     ASSERT_EQ(nullptr, UiController::GetController("dummy_device"));
 
-    auto provider = [](string_view device, list<unique_ptr<UiController>> &receiver) {
+    auto controllerProvider = [](string_view device, list<unique_ptr<UiController>> &receiver) {
         if (device == "dummy_device") {
             auto controller = make_unique<DummyController>("dummy_controller", "dummy_device");
             controller->SetWorkable(true);
@@ -154,8 +154,8 @@ TEST_F(UiControllerTest, controllerProvider)
         }
     };
 
-    // register provider that provides controller for 'dummy_device' only
-    UiController::RegisterControllerProvider(provider);
+    // register controllerProvider for 'dummy_device' only
+    UiController::RegisterControllerProvider(controllerProvider);
     UiController::InstallForDevice("dummy_device");
     ASSERT_NE(nullptr, UiController::GetController("dummy_device"));
     ASSERT_EQ(nullptr, UiController::GetController("dummy_device_2"));

@@ -23,9 +23,9 @@ namespace OHOS::uitest {
 
     UiController::UiController(string_view name, string_view device) : name_(name), targetDevice_(device) {}
 
-    void UiController::RegisterControllerProvider(UiControllerProvider provider)
+    void UiController::RegisterControllerProvider(UiControllerProvider func)
     {
-        controllerProvider_ = move(provider);
+        controllerProvider_ = move(func);
     }
 
     void UiController::RegisterController(unique_ptr<UiController> controller, Priority priority)
@@ -45,7 +45,7 @@ namespace OHOS::uitest {
         if (!device.empty() && controllerInstalledDevices_.find(name) == controllerInstalledDevices_.end()) {
             // install controller on-demand
             if (controllerProvider_ != nullptr) {
-                LOG_I("Begin to install UiControllers for device '%{public}s' with registered provider", name.c_str());
+                LOG_I("Begin to install UiControllers for device '%{public}s'", name.c_str());
                 auto receiver = list<unique_ptr<UiController>>();
                 controllerProvider_(device, receiver);
                 for (auto &uPtr:receiver) {

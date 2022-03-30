@@ -401,7 +401,7 @@ namespace OHOS::uitest {
         // free/close
         png_write_end(pngStruct, pngInfo);
         png_destroy_write_struct(&pngStruct, &pngInfo);
-        fclose(fp);
+        (void)fclose(fp);
         return true;
     }
 
