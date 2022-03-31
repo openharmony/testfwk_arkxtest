@@ -312,16 +312,16 @@ await editText.inputText("user_name")
 
   开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
 
-### 推送Ui测试框架至设备
+### UI测试框架自构建方式
 
-> Ui测试框架暂时不随版本编译，使用时需自行编译后推送至OpenHarmony设备。后续随版本编译后，直接使用版本即可。
+> Ui测试框架在OpenHarmony-3.1-Release版本中未随版本编译，需手动处理，具体指导请[参考](https://gitee.com/openharmony/arkXtest/blob/OpenHarmony-3.1-Release/README_zh.md#%E6%8E%A8%E9%80%81ui%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E8%87%B3%E8%AE%BE%E5%A4%87)。
 
-#### 构建方式
+#### 构建命令
 
 ```shell
 ./build.sh --product-name rk3568 --build-target uitestkit
 ```
-#### 推送方式
+#### 推送位置
 
 ```shell
 hdc_std target mount
