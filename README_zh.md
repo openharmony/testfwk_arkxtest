@@ -314,8 +314,29 @@ await editText.inputText("user_name")
 
 ### 推送Ui测试框架至设备
 
-> Ui测试框架暂时不随版本编译，使用时需自行编译后推送至OpenHarmony设备。后续随版本编译后，直接使用版本即可。
+> Ui测试框架3.1Release版本暂不随版本编译，使用时需自行编译后推送至OpenHarmony设备。后续随版本编译后，直接使用版本即可。
 
+#### 下载代码
+
+在工程test目录下执行如下命令下载测试框架仓代码。
+
+```shell
+git clone https://gitee.com/openharmony/arkXtest.git -b OpenHarmony-3.1-Release
+```
+#### 编译脚本修改
+
+修改build仓中subsystem_config.json文件，增加如下字段。
+
+```shell
+"arkXtest": {
+    "path": "test/arkXtest",
+    "name": "arkXtest"
+  },
+```
+修改productdefine_common仓中 rk3568.json文件，增加如下字段。
+```shell
+"arkXtest:arkXtest":{},
+```
 #### 构建方式
 
 ```shell
