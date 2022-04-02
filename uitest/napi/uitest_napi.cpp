@@ -259,7 +259,7 @@ namespace OHOS::uitest {
     /**Generate transaction outgoing arguments-data parcel.*/
     static napi_status MarshalTransactionData(napi_env env, TransactionData &tp)
     {
-        LOG_D("Start to marshal transaction parameters, count=%{public}d", tp.argc_);
+        LOG_D("Start to marshal transaction parameters, count=%{public}zu", tp.argc_);
         auto paramList = json::array();
         for (size_t idx = 0; idx < tp.argc_; idx++) {
             json paramItem;
