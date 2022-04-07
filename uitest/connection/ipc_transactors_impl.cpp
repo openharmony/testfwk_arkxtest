@@ -124,7 +124,7 @@ namespace OHOS::uitest {
         transceiver_->ScheduleCheckConnection(true);
         LOG_I("Start checking CS-interaction");
         if (!transceiver_->EnsureConnectionAlive(WAIT_CONNECTION_TIMEOUT_MS)) {
-            LOG_E("Wait CS-interaction timed out in %{public}llu ms", WAIT_CONNECTION_TIMEOUT_MS);
+            LOG_E("Wait CS-interaction timed out in %{public}llu ms", (unsigned long long)WAIT_CONNECTION_TIMEOUT_MS);
             return false;
         }
         LOG_I("Check CS-interaction succeed");
