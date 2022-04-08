@@ -52,7 +52,7 @@ namespace OHOS::uitest {
         subscriber_ = make_shared<CommonEventForwarder>(info, [this](const CommonEventData &event) {
             auto &want = event.GetWant();
             auto message = TransactionMessage {};
-            message.id_ = want.GetLongParam("id", -1);
+            message.id_ = (uint32_t)want.GetIntParam("id", 0);
             message.type_ = static_cast<TransactionType>(want.GetIntParam("type", TransactionType::INVALID));
             message.apiId_ = want.GetStringParam("apiId");
             message.callerParcel_ = want.GetStringParam("callerParcel");
