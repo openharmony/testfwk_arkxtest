@@ -55,10 +55,10 @@ namespace OHOS::uitest {
 
     void ExternApiServer::RemoveHandler(ApiRequstHandler handler)
     {
-        auto newEnd = remove_if(handlers_.begin(), handlers_.end(), [handler](ApiRequstHandler hdl) {
+        auto finder = [handler](ApiRequstHandler hdl) {
             return hdl == handler;
-        });
-        handlers_.erase(newEnd, handlers_.end());
+        };
+        handlers_.erase(remove_if(handlers_.begin(), handlers_.end(), finder), handlers_.end());
     }
 
     void ExternApiServer::Call(string_view apiId, json &caller, const json &in, json &out, ApiCallErr &err) const

@@ -340,12 +340,12 @@ namespace OHOS::uitest {
             {0x7F,   OHOS::MMI::KeyEvent::KEYCODE_DEL}};
         ctrlCode = KEYCODE_NONE;
         if (ch >= 'a' && ch <= 'z') {
-            code = OHOS::MMI::KeyEvent::KEYCODE_A + (ch - 'a');
+            code = OHOS::MMI::KeyEvent::KEYCODE_A + (int32_t)(ch - 'a');
         } else if (ch >= 'A' && ch <= 'Z') {
             ctrlCode = OHOS::MMI::KeyEvent::KEYCODE_SHIFT_LEFT;
-            code = OHOS::MMI::KeyEvent::KEYCODE_A + (ch - 'A');
+            code = OHOS::MMI::KeyEvent::KEYCODE_A + (int32_t)(ch - 'A');
         } else if (ch >= '0' && ch <= '9') {
-            code = OHOS::MMI::KeyEvent::KEYCODE_0 + (ch - '0');
+            code = OHOS::MMI::KeyEvent::KEYCODE_0 + (int32_t)(ch - '0');
         } else {
             auto find = keyMap.find(ch);
             if (find != keyMap.end()) {

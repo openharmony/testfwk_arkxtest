@@ -60,7 +60,7 @@ namespace OHOS::uitest {
         if (pos == std::string_view::npos) {
             pos = 0;
         }
-        int8_t writeCursor = 0;
+        uint8_t writeCursor = 0;
         chars[writeCursor++] = '[';
         for (size_t offSet = pos + 1; offSet < fp.length() && writeCursor < MAX_CONTENT_LEN; offSet++) {
             chars[writeCursor++] = fp[offSet];
