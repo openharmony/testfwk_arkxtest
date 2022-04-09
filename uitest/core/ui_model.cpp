@@ -175,7 +175,7 @@ namespace OHOS::uitest {
                 negative = true;
             } else if (ch >= '0' && ch <= '9') {
                 val = max(val, 0); // ensure accumulation
-                val = val * FACTOR + (ch - '0');
+                val = val * FACTOR + (int32_t)(ch - '0');
             } else if (val >= 0) {
                 DCHECK(index < INDEX_FOUR);
                 integers[index] = val * (negative ? -1 : 1);

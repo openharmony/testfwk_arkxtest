@@ -80,10 +80,10 @@ namespace OHOS::uitest {
             // do not need to execute swipe
             return;
         }
-        constexpr auto steps = 50;
+        constexpr uint16_t steps = 50;
         const uint32_t intervalMs = timeCostMs / steps + 1;
         recv.push_back(TouchEvent {ActionStage::DOWN, {from.px_, from.py_}, 0, intervalMs});
-        for (auto step = 1; step < steps; step++) {
+        for (uint16_t step = 1; step < steps; step++) {
             const int32_t pointX = from.px_ + (distanceX * step) / steps;
             const int32_t pointY = from.py_ + (distanceY * step) / steps;
             const uint32_t timeOffsetMs = (timeCostMs * step) / steps;
