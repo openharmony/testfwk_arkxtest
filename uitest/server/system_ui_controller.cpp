@@ -149,6 +149,8 @@ namespace OHOS::uitest {
         to[ATTR_NAMES[UiAttr::ENABLED]] = node.IsEnabled() ? "true" : "false";
         to[ATTR_NAMES[UiAttr::FOCUSED]] = node.IsFocused() ? "true" : "false";
         to[ATTR_NAMES[UiAttr::SELECTED]] = node.IsSelected() ? "true" : "false";
+        to[ATTR_NAMES[UiAttr::CHECKABLE]] = node.IsCheckable() ? "true" : "false";
+        to[ATTR_NAMES[UiAttr::CHECKED]] = node.IsChecked() ? "true" : "false";
         to[ATTR_NAMES[UiAttr::CLICKABLE]] = "false";
         to[ATTR_NAMES[UiAttr::LONG_CLICKABLE]] = "false";
         to[ATTR_NAMES[UiAttr::SCROLLABLE]] = "false";

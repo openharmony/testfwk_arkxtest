@@ -37,7 +37,7 @@ namespace OHOS::uitest {
 
     /**Enumerates the supported UiComponent attributes.*/
     enum UiAttr : uint8_t {
-        ID, TEXT, KEY, TYPE, BOUNDS, ENABLED, FOCUSED, SELECTED, CLICKABLE, LONG_CLICKABLE, SCROLLABLE
+        ID, TEXT, KEY, TYPE, BOUNDS, ENABLED, FOCUSED, SELECTED, CLICKABLE, LONG_CLICKABLE, SCROLLABLE, CHECKABLE, CHECKED
     };
 
     /**Enumerates the supported By-relative modes.*/
@@ -46,8 +46,8 @@ namespace OHOS::uitest {
     };
 
     /**Supported UiComponent attribute names.*/
-    constexpr CStr ATTR_NAMES[11] = {"id", "text", "key", "type", "bounds", "enabled", "focused",
-                                     "selected", "clickable", "longClickable", "scrollable"};
+    constexpr CStr ATTR_NAMES[13] = {"id", "text", "key", "type", "bounds", "enabled", "focused",
+                                     "selected", "clickable", "longClickable", "scrollable", "checkable", "checked"};
 
     /**Enumerates all the supported widget operations.*/
     enum WidgetOp : uint8_t {
