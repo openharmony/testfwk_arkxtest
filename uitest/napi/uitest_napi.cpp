@@ -38,7 +38,7 @@ namespace OHOS::uitest {
     // the name of property that represents the bound UiDriver object of the UiComponent object
     static constexpr char PROP_BOUND_DRIVER[] = "boundUiDriver_";
     /**Supported UiComponent attribute types. Ordered by <code>UiAttr</code> definition.*/
-    static constexpr TypeId ATTR_TYPES[11] = {INT, STRING, STRING, STRING, STRING, BOOL, BOOL, BOOL, BOOL, BOOL, BOOL};
+    static constexpr TypeId ATTR_TYPES[13] = {INT, STRING, STRING, STRING, STRING, BOOL, BOOL, BOOL, BOOL, BOOL, BOOL, BOOL, BOOL};
     /**Supported By-relative builder native-API names..Ordered by <code>RelMode</code> definition.*/
     static constexpr CStr BY_REL_NAMES_CPP[2] = {"WidgetSelector::AddRearLocator", "WidgetSelector::AddFrontLocator"};
     /**StaticSyncCreator function of 'By', <b>for internal usage only</b> to convert seedBy to new By instance.*/
@@ -787,6 +787,8 @@ namespace OHOS::uitest {
             DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::CLICKABLE], ByAttrBuilder<UiAttr::CLICKABLE>),
             DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::LONG_CLICKABLE], ByAttrBuilder<UiAttr::LONG_CLICKABLE>),
             DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::SCROLLABLE], ByAttrBuilder<UiAttr::SCROLLABLE>),
+            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::CHECKABLE], ByAttrBuilder<UiAttr::CHECKABLE>),
+            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::CHECKED], ByAttrBuilder<UiAttr::CHECKED>),
             DECLARE_NAPI_FUNCTION("isBefore", ByRelBuilder<RelMode::IS_BEFORE>),
             DECLARE_NAPI_FUNCTION("isAfter", ByRelBuilder<RelMode::IS_AFTER>)
         };
@@ -815,6 +817,8 @@ namespace OHOS::uitest {
             DECLARE_NAPI_FUNCTION("isClickable", ComponentAttrGetter<UiAttr::CLICKABLE>),
             DECLARE_NAPI_FUNCTION("isLongClickable", ComponentAttrGetter<UiAttr::LONG_CLICKABLE>),
             DECLARE_NAPI_FUNCTION("isScrollable", ComponentAttrGetter<UiAttr::SCROLLABLE>),
+            DECLARE_NAPI_FUNCTION("isCheckable", ComponentAttrGetter<UiAttr::CHECKABLE>),
+            DECLARE_NAPI_FUNCTION("isChecked", ComponentAttrGetter<UiAttr::CHECKED>),
             DECLARE_NAPI_FUNCTION("click", ComponentToucher<WidgetOp::CLICK>),
             DECLARE_NAPI_FUNCTION("longClick", ComponentToucher<WidgetOp::LONG_CLICK>),
             DECLARE_NAPI_FUNCTION("doubleClick", ComponentToucher<WidgetOp::DOUBLE_CLICK>),
