@@ -98,13 +98,7 @@ ohos_executable("uitest_server") {
     "//foundation/aafwk/standard/frameworks/kits/appkit:appkit_native",
   ]
 
-  external_deps = [
-    "ability_base:want",
-    "ability_runtime:ability_manager",
-    "ability_runtime:runtime",
-    "accessibility:accessibilityclient",
-    "accessibility:accessibleability",
-  ]
+  external_deps = [ "accessibility:accessibleability" ]
   external_deps += [
     "ability_base:want",
     "ability_runtime:ability_context_native",
