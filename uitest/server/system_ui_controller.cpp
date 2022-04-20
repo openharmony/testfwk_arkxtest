@@ -23,7 +23,6 @@
 #include <condition_variable>
 #include "accessibility_event_info.h"
 #include "accessibility_ui_test_ability.h"
-#include "accessibility_ui_test_ability_listener.h"
 #include "display_manager.h"
 #include "input_manager.h"
 #include "png.h"
@@ -40,7 +39,7 @@ namespace OHOS::uitest {
     using namespace OHOS::Rosen;
     using namespace OHOS::Media;
 
-    class UiEventMonitor final : public IAccessibleUITestAbilityListener {
+    class UiEventMonitor final : public AccessibleAbilityListener {
     public:
         virtual ~UiEventMonitor() = default;
 
@@ -54,12 +53,10 @@ namespace OHOS::uitest {
 
         void SetOnAbilityDisConnectCallback(function<void()> onDisConnectCb);
 
-        bool OnKeyPressEvent(const shared_ptr<MMI::KeyEvent> &keyEvent, const int sequence) override
+        bool OnKeyPressEvent(const shared_ptr<MMI::KeyEvent> &keyEvent) override
         {
             return false;
         }
-
-        void OnGestureSimulateResult(const int sequence, const bool completedSuccessfully) override {}
 
         uint64_t GetLastEventMillis();
 
@@ -191,8 +188,9 @@ namespace OHOS::uitest {
         auto childList = json::array();
         const auto childCount = from.GetChildCount();
         AccessibilityElementInfo child;
+        auto ability = AccessibilityUITestAbility::GetInstance();
         for (auto index = 0; index < childCount; index++) {
-            auto success = from.GetChild(index, child);
+            auto success = ability->GetChildElementInfo(index, from, child);
             if (success) {
                 if (!child.IsVisible()) {
                     continue;
@@ -210,20 +208,19 @@ namespace OHOS::uitest {
     static void GetCurrentUiDom2(nlohmann::json& out)
     {
         auto ability = AccessibilityUITestAbility::GetInstance();
-        std::optional<AccessibilityElementInfo> elementInfo;
-        ability->GetRootElementInfo(elementInfo);
-        if (elementInfo.has_value()) {
-            const auto windowId = elementInfo.value().GetWindowId();
+        AccessibilityElementInfo elementInfo {};
+        if (ability->GetRoot(elementInfo)) {
+            const auto windowId = elementInfo.GetWindowId();
             const auto windows = ability->GetWindows();
             for (auto& window:windows) {
                 if (windowId == window.GetWindowId()) {
                     // apply window bounds as root node bounds
                     auto windowRect = window.GetRectInScreen();
-                    elementInfo.value().SetRectInScreen(windowRect);
+                    elementInfo.SetRectInScreen(windowRect);
                     break;
                 }
             }
-            MarshallAccessibilityNodeInfo(elementInfo.value(), out);
+            MarshallAccessibilityNodeInfo(elementInfo, out);
         } else {
             LOG_I("Root node not found");
         }
@@ -427,7 +424,7 @@ namespace OHOS::uitest {
         }
         g_monitorInstance_->SetOnAbilityConnectCallback(onConnectCallback);
         auto ability = AccessibilityUITestAbility::GetInstance();
-        if (!ability->RegisterListener(g_monitorInstance_)) {
+        if (!ability->RegisterAbilityListener(g_monitorInstance_)) {
             LOG_E("Failed to register UiEventMonitor");
             return false;
         }
