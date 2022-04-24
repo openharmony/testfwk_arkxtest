@@ -130,7 +130,7 @@ ohos_executable("uitest_server") {
   subsystem_name = "test"
   part_name = "arkXtest"
   output_name = "uitest"
-  install_enable = false
+  install_enable = true
   external_deps += common_external_deps
   defines = [
     "__OHOS__=1",
