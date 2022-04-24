@@ -24,7 +24,7 @@
       "deps": {
         "components": [
           "utils_base",
-          "ces_standard",
+          "common_event_service",
           "ability_manager",
           "appexecfwk_base",
           "appexecfwk_core",
