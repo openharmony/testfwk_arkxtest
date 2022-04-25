@@ -394,7 +394,7 @@ namespace OHOS::uitest {
         tp.argc_ = NAPI_MAX_ARG_COUNT; // extract as much argument as possible
         void* jsFunc = nullptr;
         NAPI_CALL_BASE(env, napi_get_cb_info(env, info, &(tp.argc_), tp.argv_, &(tp.jsThis_), &jsFunc), NAPI_ERR);
-        if(jsFunc != nullptr) {
+        if (jsFunc != nullptr) {
             g_CalledJsFuncNames.insert(string(reinterpret_cast<const char*>(jsFunc)));
         }
         if (!tp.isStaticApi_) {
@@ -836,7 +836,7 @@ namespace OHOS::uitest {
             DECLARE_NAPI_FUNCTION("delayMs", (GenericAsyncFunc<cppDelay, TypeId::NONE, false, TypeId::INT>)),
             DECLARE_NAPI_FUNCTION("findComponents", (GenericAsyncFunc<cppFinds, TypeId::COMPONENT, true, TypeId::BY>)),
             DECLARE_NAPI_FUNCTION("findComponent", (GenericAsyncFunc<cppFinds, TypeId::COMPONENT, false, TypeId::BY>)),
-            DECLARE_NAPI_FUNCTION("waitForComponent", (GenericAsyncFunc<cppWaitFor, TypeId::COMPONENT, false, TypeId::BY, TypeId::INT>)),
+            DECLARE_NAPI_FUNCTION("waitForComponent", (GenericAsyncFunc<cppWaitFor, COMPONENT, false, BY, INT>)),
             DECLARE_NAPI_FUNCTION("screenCap", (GenericAsyncFunc<cppCap, TypeId::BOOL, false, TypeId::STRING>)),
             DECLARE_NAPI_FUNCTION("assertComponentExist", UiDriverComponentExistAsserter),
             DECLARE_NAPI_FUNCTION("pressBack", UiDriverKeyOperator<UiKey::BACK>),

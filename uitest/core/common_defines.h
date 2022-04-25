@@ -18,7 +18,7 @@
 
 #include <string_view>
 
-namespace OHOS::uitest {                                                                     
+namespace OHOS::uitest {
     constexpr size_t INDEX_ZERO = 0;
     constexpr size_t INDEX_ONE = 1;
     constexpr size_t INDEX_TWO = 2;
@@ -68,7 +68,7 @@ namespace OHOS::uitest {
     };
 
     /**Supported UiComponent attribute types. Ordered by <code>UiAttr</code> definition.*/
-    static constexpr TypeId ATTR_TYPES[] = {
+    constexpr TypeId ATTR_TYPES[] = {
         INT,       // id
         STRING,    // text
         STRING,    // key
