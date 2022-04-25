@@ -27,7 +27,6 @@ function exportUiTestLifeCycleMethods() {
     }
     if (parameter.getSync('persist.ace.testmode.enabled', '0') !== '1') {
       console.warn('UiTestKit_exporter: systemParameter "persist.ace.testmode.enabled" is not set!')
-      return
     }
     let registry = globalThis.requireNapi('application.abilityDelegatorRegistry')
     if (registry == null) {

@@ -49,6 +49,9 @@ namespace OHOS::uitest {
         std::unique_ptr<WidgetImage> ScrollSearch(const WidgetImage &img, const WidgetSelector &selector,
                                                   ApiCallErr &err, int32_t deadZoneSize);
 
+        /**Scroll to the edge by the value of scrollingUp.*/
+        void ScrollToEdge(const WidgetImage &img, bool scrollingUp, ApiCallErr &err, int32_t deadZoneSize);
+		
         /**Drag widget-A to widget-B.*/
         void DragWidgetToAnother(const WidgetImage &imgFrom, const WidgetImage &imgTo, ApiCallErr &err);
 

@@ -17,6 +17,8 @@
 #include <unistd.h>
 #include <memory>
 #include <iostream>
+#include <fstream>
+#include <getopt.h>
 #include "extern_api.h"
 #include "ipc_transactors_impl.h"
 #include "system_ui_controller.h"
@@ -25,14 +27,46 @@ using namespace std;
 using namespace std::chrono;
 
 namespace OHOS::uitest {
-    /**Print to the console of this shell process.*/
+    struct option g_longOptions[] = {
+        {"path", required_argument, nullptr, 'p'},
+    };
+    /* *Print to the console of this shell process. */
     static inline void PrintToConsole(string_view message)
     {
         std::cout << message << std::endl;
     }
 
-    static int32_t DumpLayout()
+    static int32_t GetParam(int32_t argc, char *argv[], string_view optstring, string_view usage,
+        map<char, string> &params)
     {
+        int opt;
+        while ((opt = getopt_long(argc, argv, optstring.data(), g_longOptions, nullptr)) != -1) {
+            switch (opt) {
+                case '?':
+                    PrintToConsole(usage);
+                    return EXIT_FAILURE;
+                    break;
+                default:
+                    params.insert(pair<char, string>(opt, optarg));
+                    break;
+            }
+        }
+        return EXIT_SUCCESS;
+    }
+
+    static int32_t DumpLayout(int32_t argc, char *argv[])
+    {
+        auto ts = to_string(GetCurrentMicroseconds());
+        auto savePath = "/data/local/tmp/layout_" + ts + ".json";
+        map<char, string> params;
+        static constexpr string_view usage = "USAGE: uitestkit dumpLayout -p <path>";
+        if (GetParam(argc, argv, "p:", usage, params) == EXIT_FAILURE) {
+            return EXIT_FAILURE;
+        }
+        auto iter = params.find('p');
+        if (iter != params.end()) {
+            savePath = iter->second;
+        }
         auto controller = SysUiController("sys_ui_controller", "");
         if (!controller.ConnectToSysAbility()) {
             PrintToConsole("Dump layout failed, cannot connect to AAMS");
@@ -40,7 +74,38 @@ namespace OHOS::uitest {
         }
         auto data = nlohmann::json();
         controller.GetCurrentUiDom(data);
-        PrintToConsole(data.dump());
+        ofstream fout;
+        fout.open(savePath, ios::out | ios::binary);
+        if (!fout) {
+            PrintToConsole("Error path:" + savePath);
+            return EXIT_FAILURE;
+        }
+        PrintToConsole("DumpLayout saved to:" + savePath);
+        fout << data.dump();
+        fout.close();
+        return EXIT_SUCCESS;
+    }
+
+    static int32_t ScreenCap(int32_t argc, char *argv[])
+    {
+        auto ts = to_string(GetCurrentMicroseconds());
+        auto savePath = "/data/local/tmp/screenCap_" + ts + ".png";
+        map<char, string> params;
+        static constexpr string_view usage = "USAGE: uitest screenCap -p <path>";
+        if (GetParam(argc, argv, "p:", usage, params) == EXIT_FAILURE) {
+            return EXIT_FAILURE;
+        }
+        auto iter = params.find('p');
+        if (iter != params.end()) {
+            savePath = iter->second;
+        }
+        auto controller = SysUiController("sys_ui_controller", "");
+        stringstream errorRecv;
+        if (!controller.TakeScreenCap(savePath, errorRecv)) {
+            PrintToConsole("ScreenCap failed: " + errorRecv.str());
+            return EXIT_FAILURE;
+        }
+        PrintToConsole("ScreenCap saved to " + savePath);
         return EXIT_SUCCESS;
     }
 
@@ -87,10 +152,12 @@ namespace OHOS::uitest {
         }
         string command(argv[1]);
         if (command == "dumpLayout") {
-            exit(DumpLayout());
+            exit(DumpLayout(argc, argv));
         } else if (command == "start-daemon") {
             string_view token = argc < 3 ? "" : argv[2];
             exit(StartDaemon(token));
+        } else if (command == "screenCap") {
+            exit(ScreenCap(argc, argv));
         } else {
             PrintToConsole("Illegal argument: " + command);
             PrintToConsole(usage);
