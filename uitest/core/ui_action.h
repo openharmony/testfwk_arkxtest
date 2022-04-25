@@ -52,7 +52,7 @@ namespace OHOS::uitest {
     /**
      * Options of the UI manipulation.
      **/
-    class UiDriveOptions : public ExternApi<TypeId::OPTIONS> {
+    class UiDriveOptions : public ExternApi<TypeId::RECT_JSON> {
     public:
         uint32_t clickHoldMs_ = 200;
         uint32_t longClickHoldMs_ = 1500;

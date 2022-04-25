@@ -123,7 +123,7 @@ namespace OHOS::uitest {
     static bool UiDriverHandlerB(string_view function, json &caller, const json &in, json &out, ApiCallErr &err)
     {
         static const set<string_view> uiDriverApis = {"UiDriver::PerformWidgetOperate",
-            "UiDriver::InputText", "UiDriver::ScrollSearch", "UiDriver::GetWidgetAttribute"};
+            "UiDriver::InputText", "UiDriver::ClearText", "UiDriver::ScrollSearch", "UiDriver::GetWidgetAttribute"};
         if (uiDriverApis.find(function) == uiDriverApis.end()) {
             return false;
         }
@@ -140,6 +140,10 @@ namespace OHOS::uitest {
             img.ReadFromParcel(GetItemValueFromJson<json>(in, 0));
             const auto text = GetItemValueFromJson<string>(in, 1);
             driver.InputText(img, text, err);
+        } else if (function == "UiDriver::ClearText") {
+            auto img = WidgetImage();
+            img.ReadFromParcel(GetItemValueFromJson<json>(in, 0));
+            driver.InputText(img, "", err);
         } else if (function == "UiDriver::ScrollSearch") {
             auto img = WidgetImage();
             auto selector = WidgetSelector();
@@ -207,6 +211,38 @@ namespace OHOS::uitest {
         return true;
     }
 
+    static bool UiDriverHandlerD(string_view function, json &caller, const json &in, json &out, ApiCallErr &err)
+    {
+        static const set<string_view> uiDriverApis = {
+            "UiDriver::ScrollToTop", "UiDriver::ScrollToBottom", "UiDriver::WaitForWidget"};
+        if (uiDriverApis.find(function) == uiDriverApis.end()) {
+            return false;
+        }
+
+        auto driver = UiDriver("");
+        static constexpr int32_t scrollDeadZone = 20;
+        driver.ReadFromParcel(caller);
+        if (function == "UiDriver::ScrollToTop") {
+            auto img = WidgetImage();
+            img.ReadFromParcel(GetItemValueFromJson<json>(in, 0));
+            driver.ScrollToEdge(img, true, err, scrollDeadZone);
+        } else if (function == "UiDriver::ScrollToBottom") {
+            auto img = WidgetImage();
+            img.ReadFromParcel(GetItemValueFromJson<json>(in, 0));
+            driver.ScrollToEdge(img, false, err, scrollDeadZone);
+        } else if (function == "UiDriver::WaitForWidget") {
+            auto selector = WidgetSelector();
+            selector.ReadFromParcel(GetItemValueFromJson<json>(in, 0));
+            auto time = GetItemValueFromJson<uint32_t>(in, 1);
+            auto rev = driver.WaitForWidget(selector, time, err);
+            PushBackValueItemIntoJson<WidgetImage>(*rev, out);
+        }
+        // write back updated object meta-data
+        caller.clear();
+        driver.WriteIntoParcel(caller);
+        return true;
+    }
+
     void RegisterExternApIs()
     {
         auto &server = ExternApiServer::Get();
@@ -214,5 +250,6 @@ namespace OHOS::uitest {
         server.AddHandler(UiDriverHandlerA);
         server.AddHandler(UiDriverHandlerB);
         server.AddHandler(UiDriverHandlerC);
+        server.AddHandler(UiDriverHandlerD);
     }
 }
