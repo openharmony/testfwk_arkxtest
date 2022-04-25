@@ -151,7 +151,13 @@ namespace OHOS::uitest {
         to[ATTR_NAMES[UiAttr::CLICKABLE]] = "false";
         to[ATTR_NAMES[UiAttr::LONG_CLICKABLE]] = "false";
         to[ATTR_NAMES[UiAttr::SCROLLABLE]] = "false";
-        to["visible"] = node.IsVisible() ? "true" : "false";
+        const auto bounds = node.GetRectInScreen();
+        const auto rect = Rect(bounds.GetLeftTopXScreenPostion(), bounds.GetRightBottomXScreenPostion(),
+                               bounds.GetLeftTopYScreenPostion(), bounds.GetRightBottomYScreenPostion());
+        stringstream stream;
+        // "[%d,%d][%d,%d]", rect.left, rect.top, rect.right, rect.bottom
+        stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
+        to[ATTR_NAMES[UiAttr::BOUNDS]] = stream.str();
         auto actionList = node.GetActionList();
         for (auto &action :actionList) {
             switch (action.GetActionType()) {
@@ -173,17 +179,8 @@ namespace OHOS::uitest {
 
     static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to)
     {
-        const auto rect = from.GetRectInScreen();
-        const auto nodeBounds = Rect {
-            rect.GetLeftTopXScreenPostion(), rect.GetRightBottomXScreenPostion(),
-            rect.GetLeftTopYScreenPostion(), rect.GetRightBottomYScreenPostion()};
         json attributes;
         MarshalAccessibilityNodeAttributes(from, attributes);
-        stringstream stream;
-        // "[%d,%d][%d,%d]", rect.left, rect.top, rect.right, rect.bottom
-        stream << "[" << nodeBounds.left_ << "," << nodeBounds.top_ << "]"
-               << "[" << nodeBounds.right_ << "," << nodeBounds.bottom_ << "]";
-        attributes[ATTR_NAMES[UiAttr::BOUNDS]] = stream.str();
         to["attributes"] = attributes;
         auto childList = json::array();
         const auto childCount = from.GetChildCount();

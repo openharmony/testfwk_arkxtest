@@ -123,7 +123,7 @@ namespace OHOS::uitest {
     static bool UiDriverHandlerB(string_view function, json &caller, const json &in, json &out, ApiCallErr &err)
     {
         static const set<string_view> uiDriverApis = {"UiDriver::PerformWidgetOperate",
-            "UiDriver::InputText", "UiDriver::ScrollSearch", "UiDriver::GetWidgetAttribute"};
+            "UiDriver::InputText", "UiDriver::ClearText", "UiDriver::ScrollSearch", "UiDriver::GetWidgetAttribute"};
         if (uiDriverApis.find(function) == uiDriverApis.end()) {
             return false;
         }
@@ -140,6 +140,10 @@ namespace OHOS::uitest {
             img.ReadFromParcel(GetItemValueFromJson<json>(in, 0));
             const auto text = GetItemValueFromJson<string>(in, 1);
             driver.InputText(img, text, err);
+        } else if (function == "UiDriver::ClearText") {
+            auto img = WidgetImage();
+            img.ReadFromParcel(GetItemValueFromJson<json>(in, 0));
+            driver.InputText(img, "", err);
         } else if (function == "UiDriver::ScrollSearch") {
             auto img = WidgetImage();
             auto selector = WidgetSelector();
@@ -170,7 +174,7 @@ namespace OHOS::uitest {
     static bool UiDriverHandlerC(string_view function, json &caller, const json &in, json &out, ApiCallErr &err)
     {
         static const set<string_view> uiDriverApis = {"UiDriver::PerformGenericClick", "UiDriver::PerformGenericSwipe",
-            "UiDriver::DragWidgetToAnother", "UiDriver::TakeScreenCap", "UiDriver::DelayMs"};
+            "UiDriver::DragWidgetToAnother", "UiDriver::TakeScreenCap", "UiDriver::DelayMs", "UiDriver::WaitForWidget"};
         if (uiDriverApis.find(function) == uiDriverApis.end()) {
             return false;
         }
@@ -200,6 +204,12 @@ namespace OHOS::uitest {
             PushBackValueItemIntoJson<bool>(err.code_ == NO_ERROR, out);
         } else if (function == "UiDriver::DelayMs") {
             UiDriver::DelayMs(GetItemValueFromJson<uint32_t>(in, 0));
+        } else if (function == "UiDriver::WaitForWidget") {
+            auto selector = WidgetSelector();
+            selector.ReadFromParcel(GetItemValueFromJson<json>(in, 0));
+            auto time = GetItemValueFromJson<uint32_t>(in, 1);
+            auto rev = driver.WaitForWidget(selector, time, err);
+            PushBackValueItemIntoJson<WidgetImage>(*rev, out);
         }
         // write back updated object meta-data
         caller.clear();

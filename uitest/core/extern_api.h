@@ -160,7 +160,7 @@ namespace OHOS::uitest {
             std::string value = item[KEY_DATA_VALUE];
             return value;
         } else if constexpr(std::is_same<T, nlohmann::json>::value) {
-            DCHECK(typeId >= TypeId::BY && typeId <= TypeId::OPTIONS);
+            DCHECK(typeId >= TypeId::BY && typeId <= TypeId::RECT_JSON);
             nlohmann::json value = item[KEY_DATA_VALUE];
             return value;
         } else {
