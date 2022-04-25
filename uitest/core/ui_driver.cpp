@@ -124,37 +124,6 @@ namespace OHOS::uitest {
         controller.WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
     }
 
-    /**Convert WidgetOperation to PointerActions and do injection.*/
-    static void InjectWidgetOperate(const Rect &bounds, WidgetOp operate, const UiController &controller,
-                                    const UiDriveOptions &options)
-    {
-        const int32_t cx = bounds.GetCenterX();
-        const int32_t cy = bounds.GetCenterY();
-        switch (operate) {
-            case WidgetOp::CLICK:
-                InjectGenericClick(PointerOp::CLICK_P, {cx, cy}, controller, options);
-                break;
-            case WidgetOp::LONG_CLICK:
-                InjectGenericClick(PointerOp::LONG_CLICK_P, {cx, cy}, controller, options);
-                break;
-            case WidgetOp::DOUBLE_CLICK:
-                InjectGenericClick(PointerOp::DOUBLE_CLICK_P, {cx, cy}, controller, options);
-                break;
-            case WidgetOp::SWIPE_L2R:
-                InjectGenericSwipe(PointerOp::SWIPE_P, {bounds.left_, cy}, {bounds.right_, cy}, controller, options);
-                break;
-            case WidgetOp::SWIPE_R2L:
-                InjectGenericSwipe(PointerOp::SWIPE_P, {bounds.right_, cy}, {bounds.left_, cy}, controller, options);
-                break;
-            case WidgetOp::SWIPE_T2B:
-                InjectGenericSwipe(PointerOp::SWIPE_P, {cx, bounds.top_}, {cx, bounds.bottom_}, controller, options);
-                break;
-            case WidgetOp::SWIPE_B2T:
-                InjectGenericSwipe(PointerOp::SWIPE_P, {cx, bounds.bottom_}, {cx, bounds.top_}, controller, options);
-                break;
-        }
-    }
-
     static void InjectKeyAction(const KeyAction &action, const UiController &controller, const UiDriveOptions &options)
     {
         vector<KeyEvent> events;
@@ -195,7 +164,25 @@ namespace OHOS::uitest {
         if (widget == nullptr || error.code_ != NO_ERROR) {
             return;
         }
-        InjectWidgetOperate(widget->GetBounds(), type, *uiController_, options_);
+        constexpr int32_t dedZoneSize = 20;
+        const auto bounds = widget->GetBounds();
+        const int32_t cx = bounds.GetCenterX();
+        const int32_t cy = bounds.GetCenterY();
+        switch (type) {
+            case WidgetOp::CLICK:
+                InjectGenericClick(PointerOp::CLICK_P, {cx, cy}, *uiController_, options_);
+                break;
+            case WidgetOp::LONG_CLICK:
+                InjectGenericClick(PointerOp::LONG_CLICK_P, {cx, cy}, *uiController_, options_);
+                break;
+            case WidgetOp::DOUBLE_CLICK:
+                InjectGenericClick(PointerOp::DOUBLE_CLICK_P, {cx, cy}, *uiController_, options_);
+                break;
+            case WidgetOp::SCROLL_TO_TOP:
+            case WidgetOp::SCROLL_TO_BOTTOM:
+                ScrollToEdge(image, type == WidgetOp::SCROLL_TO_TOP, dedZoneSize, error);
+                break;
+        }
     }
 
     void UiDriver::InputText(const WidgetImage &image, string_view text, ApiCallErr &error)
@@ -242,7 +229,8 @@ namespace OHOS::uitest {
                 }
             }
         }
-        InjectWidgetOperate(widget->GetBounds(), WidgetOp::CLICK, *uiController_, options_);
+        const auto center = Point(widget->GetBounds().GetCenterX(), widget->GetBounds().GetCenterY());
+        InjectGenericClick(PointerOp::CLICK_P, center, *uiController_, options_);
         DelayMs(focusTimeMs); // short delay to ensure focus gaining
         uiController_->InjectKeyEventSequence(events);
         events.clear();
@@ -295,18 +283,22 @@ namespace OHOS::uitest {
             }
             prevSnapshot = snapshot;
             // execute scrolling on the scroll_widget without update UI
-            const auto type = scrollingUp ? WidgetOp::SWIPE_T2B : WidgetOp::SWIPE_B2T;
             auto bounds = scrollWidget->GetBounds();
             if (deadZoneSize > 0) {
                 // scroll widget from its deadZone maybe unresponsive
                 bounds.top_ += deadZoneSize;
                 bounds.bottom_ -= deadZoneSize;
             }
-            InjectWidgetOperate(bounds, type, *uiController_, options_);
+            Point topPoint(bounds.GetCenterX(), bounds.top_), bottomPoint(bounds.GetCenterX(), bounds.bottom_);
+            if (scrollingUp) {
+                InjectGenericSwipe(PointerOp::SWIPE_P, topPoint, bottomPoint, *uiController_, options_);
+            } else {
+                InjectGenericSwipe(PointerOp::SWIPE_P, bottomPoint, topPoint, *uiController_, options_);
+            }
         }
     }
 
-    void UiDriver::ScrollToEdge(const WidgetImage &img, bool scrollingUp, ApiCallErr &err, int32_t deadZoneSize)
+    void UiDriver::ScrollToEdge(const WidgetImage &img, bool scrollingUp, int32_t deadZoneSize, ApiCallErr &err)
     {
         string prevSnapshot;
         while (true) {
@@ -325,14 +317,18 @@ namespace OHOS::uitest {
                 return;
             }
             prevSnapshot = snapshot;
-            const auto type = scrollingUp ? WidgetOp::SWIPE_T2B : WidgetOp::SWIPE_B2T;
             auto bounds = scrollWidget->GetBounds();
             if (deadZoneSize > 0) {
                 // scroll widget from its deadZone maybe unresponsive
                 bounds.top_ += deadZoneSize;
                 bounds.bottom_ -= deadZoneSize;
             }
-            InjectWidgetOperate(bounds, type, *uiController_, options_);
+            Point topPoint(bounds.GetCenterX(), bounds.top_), bottomPoint(bounds.GetCenterX(), bounds.bottom_);
+            if (scrollingUp) {
+                InjectGenericSwipe(PointerOp::SWIPE_P, topPoint, bottomPoint, *uiController_, options_);
+            } else {
+                InjectGenericSwipe(PointerOp::SWIPE_P, bottomPoint, topPoint, *uiController_, options_);
+            }
         }
     }
 

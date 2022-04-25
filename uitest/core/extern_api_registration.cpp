@@ -174,7 +174,7 @@ namespace OHOS::uitest {
     static bool UiDriverHandlerC(string_view function, json &caller, const json &in, json &out, ApiCallErr &err)
     {
         static const set<string_view> uiDriverApis = {"UiDriver::PerformGenericClick", "UiDriver::PerformGenericSwipe",
-            "UiDriver::DragWidgetToAnother", "UiDriver::TakeScreenCap", "UiDriver::DelayMs"};
+            "UiDriver::DragWidgetToAnother", "UiDriver::TakeScreenCap", "UiDriver::DelayMs", "UiDriver::WaitForWidget"};
         if (uiDriverApis.find(function) == uiDriverApis.end()) {
             return false;
         }
@@ -204,32 +204,6 @@ namespace OHOS::uitest {
             PushBackValueItemIntoJson<bool>(err.code_ == NO_ERROR, out);
         } else if (function == "UiDriver::DelayMs") {
             UiDriver::DelayMs(GetItemValueFromJson<uint32_t>(in, 0));
-        }
-        // write back updated object meta-data
-        caller.clear();
-        driver.WriteIntoParcel(caller);
-        return true;
-    }
-
-    static bool UiDriverHandlerD(string_view function, json &caller, const json &in, json &out, ApiCallErr &err)
-    {
-        static const set<string_view> uiDriverApis = {
-            "UiDriver::ScrollToTop", "UiDriver::ScrollToBottom", "UiDriver::WaitForWidget"};
-        if (uiDriverApis.find(function) == uiDriverApis.end()) {
-            return false;
-        }
-
-        auto driver = UiDriver("");
-        static constexpr int32_t scrollDeadZone = 20;
-        driver.ReadFromParcel(caller);
-        if (function == "UiDriver::ScrollToTop") {
-            auto img = WidgetImage();
-            img.ReadFromParcel(GetItemValueFromJson<json>(in, 0));
-            driver.ScrollToEdge(img, true, err, scrollDeadZone);
-        } else if (function == "UiDriver::ScrollToBottom") {
-            auto img = WidgetImage();
-            img.ReadFromParcel(GetItemValueFromJson<json>(in, 0));
-            driver.ScrollToEdge(img, false, err, scrollDeadZone);
         } else if (function == "UiDriver::WaitForWidget") {
             auto selector = WidgetSelector();
             selector.ReadFromParcel(GetItemValueFromJson<json>(in, 0));
@@ -250,6 +224,5 @@ namespace OHOS::uitest {
         server.AddHandler(UiDriverHandlerA);
         server.AddHandler(UiDriverHandlerB);
         server.AddHandler(UiDriverHandlerC);
-        server.AddHandler(UiDriverHandlerD);
     }
 }

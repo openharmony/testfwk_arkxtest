@@ -85,7 +85,7 @@ namespace OHOS::uitest {
     };
 
     /**Enumerates all the supported widget operations.*/
-    enum WidgetOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK, SWIPE_L2R, SWIPE_R2L, SWIPE_T2B, SWIPE_B2T };
+    enum WidgetOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK, SCROLL_TO_TOP, SCROLL_TO_BOTTOM };
 
     /**Enumerates all the supported coordinate-based operations.*/
     enum PointerOp : uint8_t { CLICK_P, LONG_CLICK_P, DOUBLE_CLICK_P, SWIPE_P, DRAG_P };
