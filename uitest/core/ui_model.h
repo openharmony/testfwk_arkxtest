@@ -51,11 +51,21 @@ namespace OHOS::uitest {
             return (top_ + bottom_) / 2;
         }
 
-        std::string ToStr() const;
+        inline int32_t GetWidth() const
+        {
+            return right_ - left_;
+        }
+
+        inline int32_t GetHeight() const
+        {
+            return bottom_ - top_;
+        }
 
         void ComputeOverlappingDimensions(const Rect &other, int32_t &width, int32_t& height) const;
 
         bool ComputeIntersection(const Rect &other, Rect &result) const;
+
+        bool CompareTo(const Rect &other) const;
     };
 
     class Widget;
@@ -130,6 +140,13 @@ namespace OHOS::uitest {
          * @param amendBounds: if or not amend widget bounds and visibility.
          * */
         void ConstructFromDom(const nlohmann::json& dom, bool amendBounds);
+
+        /**
+         * Marshal tree nodes hierarchy into the given dom data.
+         *
+         * @param dom: the dom json data.
+         * */
+        void MarshalIntoDom(nlohmann::json& dom) const;
 
         void DfsTraverse(WidgetVisitor &visitor) const;
 

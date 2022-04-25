@@ -80,7 +80,8 @@ namespace OHOS::uitest {
 
     string ApiTransact(string_view funcStr, string_view callerStr, string_view paramsStr)
     {
-        LOG_D("Begin to invoke api: %{public}s, params=%{public}s", funcStr.data(), paramsStr.data());
+        LOG_D("Begin to invoke api '%{public}s', caller=%{public}s, parameters=%{public}s",
+              funcStr.data(), callerStr.data(), paramsStr.data());
         auto error = ApiCallErr(NO_ERROR);
         auto out = json::array();
         json returnData;

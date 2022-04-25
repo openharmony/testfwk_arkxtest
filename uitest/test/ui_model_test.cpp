@@ -31,6 +31,12 @@ TEST(UiModelTest, testRectBase)
 
     ASSERT_EQ(rect.GetCenterX(), (100 + 200) / 2);
     ASSERT_EQ(rect.GetCenterY(), (300 + 400) / 2);
+    ASSERT_EQ(rect.GetHeight(), 400 - 300);
+    ASSERT_EQ(rect.GetWidth(), 200 - 100);
+
+    ASSERT_TRUE(rect.CompareTo(rect));
+    Rect rect1(0, 0, 0, 0);
+    ASSERT_FALSE(rect.CompareTo(rect1));
 }
 
 TEST(UiModelTest, testRectOverlappingDimensions)
@@ -326,7 +332,7 @@ TEST(UiModelTest, testBoundsAndVisibilityCorrection)
 //                   |    |     |
 //                   |    |     |
 //  id0              |    |     |
-//   |        id000  |          |  
+//   |        id000  |          |
 //   |   id00  |     |          |
 //   |    |    |     |
 //   |    |    |     |
@@ -343,8 +349,8 @@ TEST(UiModelTest, testBoundsAndVisibilityCorrection)
     BoundsVisitor boundsVisitor;
     tree.DfsTraverse(boundsVisitor);
     // check revised bounds
-    vector<Rect> expectedBounds = { Rect {0, 100, 0, 100}, Rect {0, 100, 20, 80},
-        Rect {0, 100, 20, 80}, Rect {0, 100, 0, 100}, Rect {0, 100, 0, 20} };
+    vector<Rect> expectedBounds = { Rect(0, 100, 0, 100), Rect(0, 100, 20, 80),
+        Rect(0, 100, 20, 80), Rect(0, 100, 0, 100), Rect(0, 100, 0, 20) };
     ASSERT_EQ(expectedBounds.size(), boundsVisitor.boundsList_.size());
     for (auto index = 0; index < expectedBounds.size(); index++) {
         auto& expectedBound = expectedBounds.at(index);
@@ -354,4 +360,14 @@ TEST(UiModelTest, testBoundsAndVisibilityCorrection)
         ASSERT_EQ(expectedBound.top_, actualBound.top_);
         ASSERT_EQ(expectedBound.bottom_, actualBound.bottom_);
     }
+}
+
+TEST(UiModelTest, testMarshalIntoDom)
+{
+    auto dom = nlohmann::json::parse(DOM_TEXT);
+    WidgetTree tree("tree");
+    tree.ConstructFromDom(dom, false);
+    auto dom1 = nlohmann::json();
+    tree.MarshalIntoDom(dom1);
+    ASSERT_FALSE(dom1.empty());
 }

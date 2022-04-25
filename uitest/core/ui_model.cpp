@@ -23,16 +23,7 @@ namespace OHOS::uitest {
 
     static constexpr auto ROOT_HIERARCHY = "ROOT";
 
-    string Rect::ToStr() const
-    {
-        stringstream os;
-        os << "Rect<";
-        os << "xLeft=" <<left_ << ",xRight=" << right_ << ",yTop=" << top_ << ",yButton=" << bottom_;
-        os << ">";
-        return os.str();
-    }
-
-    void Rect::ComputeOverlappingDimensions(const Rect &other, int32_t &width, int32_t& height) const
+    void Rect::ComputeOverlappingDimensions(const Rect &other, int32_t &width, int32_t &height) const
     {
         if (left_ >= other.right_ || right_ <= other.left_) {
             width = 0;
@@ -50,7 +41,7 @@ namespace OHOS::uitest {
         }
     }
 
-    bool Rect::ComputeIntersection(const Rect & other, Rect & result) const
+    bool Rect::ComputeIntersection(const Rect &other, Rect &result) const
     {
         if (left_ >= other.right_ || right_ <= other.left_) {
             return false;
@@ -64,6 +55,21 @@ namespace OHOS::uitest {
         sort(py.begin(), py.end());
         result = {px[INDEX_ONE], px[INDEX_TWO], py[INDEX_ONE], py[INDEX_TWO]};
         return true;
+    }
+
+    bool Rect::CompareTo(const Rect &other) const
+    {
+        return left_ == other.left_ && right_ == other.right_ && top_ == other.top_ && bottom_ == other.bottom_;
+    }
+
+    static string Rect2JsonStr(const Rect &rect)
+    {
+        json data;
+        data[RECT_ATTR_LT_X] = rect.left_;
+        data[RECT_ATTR_LT_Y] = rect.top_;
+        data[RECT_ATTR_RB_X] = rect.right_;
+        data[RECT_ATTR_RB_Y] = rect.bottom_;
+        return data.dump();
     }
 
     bool Widget::HasAttr(string_view name) const
@@ -94,14 +100,16 @@ namespace OHOS::uitest {
 
     void Widget::SetBounds(int32_t cl, int32_t cr, int32_t ct, int32_t cb)
     {
-        bounds_ = Rect {cl, cr, ct, cb};
+        bounds_ = Rect(cl, cr, ct, cb);
+        // save bounds attribute as structured data
+        SetAttr(ATTR_NAMES[UiAttr::BOUNDS], Rect2JsonStr(bounds_));
     }
 
     string Widget::ToStr() const
     {
         stringstream os;
-        os << "Widget{bounds=" << bounds_.ToStr() << ",";
-        for (auto &pair:attributes_) {
+        os << "Widget{";
+        for (auto &pair : attributes_) {
             os << pair.first << "='" << pair.second << "',";
         }
         os << "}";
@@ -110,14 +118,13 @@ namespace OHOS::uitest {
 
     void Widget::DumpAttributes(map<string, string> &receiver) const
     {
-        for (auto&[attr, value]:attributes_) {
+        for (auto &[attr, value] : attributes_) {
             receiver[attr] = value;
         }
     }
 
     class WidgetHierarchyBuilder {
     public:
-
         static string Build(string_view parentWidgetHierarchy, uint32_t childIndex)
         {
             return string(parentWidgetHierarchy) + string(hierarchySeparator_) + to_string(childIndex);
@@ -192,7 +199,7 @@ namespace OHOS::uitest {
 
     static void SetWidgetAttributes(Widget &widget, const map<string, string> &attributes)
     {
-        for (auto &item:attributes) {
+        for (auto &item : attributes) {
             if (item.first == ATTR_NAMES[UiAttr::BOUNDS]) {
                 SetWidgetBounds(widget, item.second);
             } else {
@@ -218,7 +225,7 @@ namespace OHOS::uitest {
             return;
         }
         auto pivotHierarchy = pivot.GetHierarchy();
-        for (auto &hierarchy:widgetHierarchyIdDfsOrder_) {
+        for (auto &hierarchy : widgetHierarchyIdDfsOrder_) {
             if (hierarchy == pivotHierarchy) {
                 // hit the pivot, finish traversing
                 break;
@@ -239,7 +246,7 @@ namespace OHOS::uitest {
         }
         auto pivotHierarchy = pivot.GetHierarchy();
         bool traverseStarted = false;
-        for (auto &hierarchy:widgetHierarchyIdDfsOrder_) {
+        for (auto &hierarchy : widgetHierarchyIdDfsOrder_) {
             if (hierarchy == pivotHierarchy) {
                 // skip self and start traverse from next one
                 traverseStarted = true;
@@ -261,7 +268,7 @@ namespace OHOS::uitest {
         DCHECK(CheckIsMyNode(root));
         bool traverseStarted = false;
         auto rootHierarchy = root.GetHierarchy();
-        for (auto &hierarchy:widgetHierarchyIdDfsOrder_) {
+        for (auto &hierarchy : widgetHierarchyIdDfsOrder_) {
             if (!WidgetHierarchyBuilder::CheckIsDescendantHierarchyOfRoot(hierarchy, rootHierarchy)) {
                 if (!traverseStarted) {
                     continue; // root node not found yet, skip visiting current widget and go ahead
@@ -276,7 +283,7 @@ namespace OHOS::uitest {
         }
     }
 
-    using NodeVisitor = function<void(string_view, map<string, string>&&)>;
+    using NodeVisitor = function<void(string_view, map<string, string> &&)>;
 
     static void DfsVisitNode(const json &root, NodeVisitor visitor, string_view hierarchy)
     {
@@ -284,7 +291,7 @@ namespace OHOS::uitest {
         auto attributesData = root["attributes"];
         auto childrenData = root["children"];
         map<string, string> attributeDict;
-        for (auto &item:attributesData.items()) {
+        for (auto &item : attributesData.items()) {
             attributeDict[item.key()] = item.value();
         }
         visitor(hierarchy, move(attributeDict));
@@ -296,17 +303,17 @@ namespace OHOS::uitest {
         }
     }
 
-    void WidgetTree::ConstructFromDom(const nlohmann::json& dom, bool amendBounds)
+    void WidgetTree::ConstructFromDom(const nlohmann::json &dom, bool amendBounds)
     {
         DCHECK(!widgetsConstructed_);
         map<string, map<string, string>> widgetDict;
         vector<string> visitTrace;
-        auto nodeVisitor = [&widgetDict, &visitTrace](string_view hierarchy, map<string, string>&& attrs) {
+        auto nodeVisitor = [&widgetDict, &visitTrace](string_view hierarchy, map<string, string> &&attrs) {
             visitTrace.emplace_back(hierarchy);
             widgetDict.insert(make_pair(hierarchy, attrs));
         };
         DfsVisitNode(dom, nodeVisitor, ROOT_HIERARCHY);
-        for (auto& hierarchy : visitTrace) {
+        for (auto &hierarchy : visitTrace) {
             auto findWidgetAttrs = widgetDict.find(hierarchy);
             DCHECK(findWidgetAttrs != widgetDict.end());
             Widget widget(hierarchy);
@@ -314,29 +321,23 @@ namespace OHOS::uitest {
             SetWidgetAttributes(widget, findWidgetAttrs->second);
             auto findParent = widgetMap_.find(WidgetHierarchyBuilder::GetParentWidgetHierarchy(hierarchy));
             const auto bounds = widget.GetBounds();
-            auto visible = false;
-            if (!amendBounds) {
-                visible = true;
-            } else if (hierarchy == ROOT_HIERARCHY) {
-                visible = (bounds.right_ > bounds.left_) && (bounds.bottom_ > bounds.top_);
+            auto newBounds = Rect(0, 0, 0, 0);
+            if (!amendBounds || hierarchy == ROOT_HIERARCHY) {
+                newBounds = bounds;
             } else if (findParent == widgetMap_.end()) {
-                visible = false; // parent was discarded
+                newBounds = Rect(0, 0, 0, 0); // parent was discarded
             } else {
-                // amend bounds, intersect with parent, compute visibility                
+                // amend bounds, intersect with parent, compute visibility
                 auto parentBounds = findParent->second.GetBounds();
-                auto newBounds = Rect {0, 0, 0, 0};
-                if (bounds.ComputeIntersection(parentBounds, newBounds)) {
-                    widget.SetBounds(newBounds.left_, newBounds.right_, newBounds.top_, newBounds.bottom_);
-                    visible = (newBounds.right_ > newBounds.left_) && (newBounds.bottom_ > newBounds.top_);
-                } else {
-                    widget.SetBounds(0, 0, 0, 0);
-                    visible = false;
+                if (!bounds.ComputeIntersection(parentBounds, newBounds)) {
+                    newBounds = Rect(0, 0, 0, 0);
                 }
             }
-            if (amendBounds && bounds.ToStr().compare(widget.GetBounds().ToStr()) != 0) {
-                LOG_D("Amend bounds %{public}s from %{public}s", widget.ToStr().c_str(), bounds.ToStr().c_str());
+            if (!newBounds.CompareTo(bounds)) {
+                widget.SetBounds(newBounds.left_, newBounds.right_, newBounds.top_, newBounds.bottom_);
+                LOG_D("Amend bounds %{public}s from %{public}s", widget.ToStr().c_str(), Rect2JsonStr(bounds).c_str());
             }
-            if (visible) {
+            if (!amendBounds || (newBounds.GetWidth() > 0 && newBounds.GetHeight() > 0)) {
                 widgetMap_.insert(make_pair(hierarchy, move(widget)));
                 widgetHierarchyIdDfsOrder_.emplace_back(hierarchy);
             } else {
@@ -344,6 +345,46 @@ namespace OHOS::uitest {
             }
         }
         widgetsConstructed_ = true;
+    }
+
+    static void DfsMarshalWidget(const WidgetTree& tree, const Widget& root, nlohmann::json& dom)
+    {
+        auto attributesData = json();
+        auto dict = map<string, string>();
+        root.DumpAttributes(dict);
+        for (auto& [name, value] : dict) {
+            if (name == ATTR_HIERARCHY) { // do not expose inner used attributes
+                continue;
+            }
+            attributesData[name] = value;
+        }
+        stringstream stream;
+        auto rect = root.GetBounds();
+        stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
+        attributesData[ATTR_NAMES[UiAttr::BOUNDS]] = stream.str();
+        
+        auto childrenData = json::array();
+        uint32_t childIndex = 0;
+        auto child = tree.GetChildWidget(root, childIndex);
+        while (child != nullptr) {
+            auto childData = json();
+            DfsMarshalWidget(tree, *child, childData);
+            childrenData.emplace_back(childData);
+            childIndex++;
+            child = tree.GetChildWidget(root, childIndex);
+        }
+        
+        dom["attributes"] = attributesData;
+        dom["children"] = childrenData;
+    }
+
+    void WidgetTree::MarshalIntoDom(nlohmann::json& dom) const
+    {
+        DCHECK(widgetsConstructed_);
+        auto root = GetRootWidget();
+        if (root != nullptr) {
+            DfsMarshalWidget(*this, *root, dom);
+        }
     }
 
     const Widget *WidgetTree::GetRootWidget() const
@@ -397,5 +438,4 @@ namespace OHOS::uitest {
     {
         return this->identifier_ == widget.GetHostTreeId();
     }
-} // namespace uitest
-
+} // namespace OHOS::uitest
