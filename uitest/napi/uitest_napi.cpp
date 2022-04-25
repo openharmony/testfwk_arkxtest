@@ -579,7 +579,7 @@ namespace OHOS::uitest {
 
     /**Template for all UiComponent touch functions, which forward invocation to bound UiDriver api, return void.*/
     template<WidgetOp kAction>
-    static napi_value ComponentToucher(napi_env env, napi_callback_info info)
+    static napi_value ComponentOperator(napi_env env, napi_callback_info info)
     {
         TransactionData tp = {.apiId_= "UiDriver::PerformWidgetOperate", .returnType_=TypeId::NONE};
         NAPI_CALL(env, ExtractCallbackInfo(env, info, 0, {}, tp));
@@ -791,8 +791,6 @@ namespace OHOS::uitest {
         static constexpr char cppInput[] = "UiDriver::InputText";
         static constexpr char cppClear[] = "UiDriver::ClearText";
         static constexpr char cppSearch[] = "UiDriver::ScrollSearch";
-        static constexpr char cppToTop[] = "UiDriver::ScrollToTop";
-        static constexpr char cppToBottom[] = "UiDriver::ScrollToBottom";
         static constexpr char cppDragTo[] = "UiDriver::DragWidgetToAnother";
         napi_property_descriptor methods[] = {
             DECLARE_NAPI_FUNCTION("getId", ComponentAttrGetter<UiAttr::ID>),
@@ -808,14 +806,14 @@ namespace OHOS::uitest {
             DECLARE_NAPI_FUNCTION("isCheckable", ComponentAttrGetter<UiAttr::CHECKABLE>),
             DECLARE_NAPI_FUNCTION("isChecked", ComponentAttrGetter<UiAttr::CHECKED>),
             DECLARE_NAPI_FUNCTION("getBounds", ComponentAttrGetter<UiAttr::BOUNDS>),
-            DECLARE_NAPI_FUNCTION("click", ComponentToucher<WidgetOp::CLICK>),
-            DECLARE_NAPI_FUNCTION("longClick", ComponentToucher<WidgetOp::LONG_CLICK>),
-            DECLARE_NAPI_FUNCTION("doubleClick", ComponentToucher<WidgetOp::DOUBLE_CLICK>),
+            DECLARE_NAPI_FUNCTION("click", ComponentOperator<WidgetOp::CLICK>),
+            DECLARE_NAPI_FUNCTION("longClick", ComponentOperator<WidgetOp::LONG_CLICK>),
+            DECLARE_NAPI_FUNCTION("doubleClick", ComponentOperator<WidgetOp::DOUBLE_CLICK>),
+            DECLARE_NAPI_FUNCTION("scrollToTop", (ComponentOperator<WidgetOp::SCROLL_TO_TOP>)),
+            DECLARE_NAPI_FUNCTION("scrollToBottom", (ComponentOperator<WidgetOp::SCROLL_TO_BOTTOM>)),
             DECLARE_NAPI_FUNCTION("inputText", (GenericComponentFunc<cppInput, TypeId::NONE, TypeId::STRING>)),
             DECLARE_NAPI_FUNCTION("clearText", (GenericComponentFunc<cppClear, TypeId::NONE>)),
             DECLARE_NAPI_FUNCTION("scrollSearch", (GenericComponentFunc<cppSearch, TypeId::COMPONENT, TypeId::BY>)),
-            DECLARE_NAPI_FUNCTION("scrollToTop", (GenericComponentFunc<cppToTop, TypeId::NONE>)),
-            DECLARE_NAPI_FUNCTION("scrollToBottom", (GenericComponentFunc<cppToBottom, TypeId::NONE>)),
             DECLARE_NAPI_FUNCTION("dragTo", (GenericComponentFunc<cppDragTo, TypeId::NONE, TypeId::COMPONENT>))
         };
         constexpr size_t num = sizeof(methods) / sizeof(methods[0]);

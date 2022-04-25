@@ -50,7 +50,7 @@ namespace OHOS::uitest {
                                                   ApiCallErr &err, int32_t deadZoneSize);
 
         /**Scroll to the edge by the value of scrollingUp.*/
-        void ScrollToEdge(const WidgetImage &img, bool scrollingUp, ApiCallErr &err, int32_t deadZoneSize);
+        void ScrollToEdge(const WidgetImage &img, bool scrollingUp, int32_t deadZoneSize, ApiCallErr &err);
 		
         /**Drag widget-A to widget-B.*/
         void DragWidgetToAnother(const WidgetImage &imgFrom, const WidgetImage &imgTo, ApiCallErr &err);
