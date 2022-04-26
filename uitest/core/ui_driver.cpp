@@ -199,7 +199,7 @@ namespace OHOS::uitest {
         static constexpr uint32_t typeCharTimeMs = 50;
         vector<KeyEvent> events;
         if (!origText.empty()) {
-            for (int index = 0; index < origText.size(); index++) {
+            for (size_t index = 0; index < origText.size(); index++) {
                 events.emplace_back(KeyEvent {ActionStage::DOWN, 2015, typeCharTimeMs});
                 events.emplace_back(KeyEvent {ActionStage::UP, 2015, 0});
                 events.emplace_back(KeyEvent {ActionStage::DOWN, 2055, typeCharTimeMs});
