@@ -137,9 +137,10 @@ namespace OHOS::uitest {
         UiController::RegisterControllerProvider(controllerProvider);
         LOG_I("UiTest-daemon running, pid=%{public}d", getpid());
         auto exitCode = server.RunLoop();
-        LOG_I("Server exited with code: %{public}d", exitCode);
+        LOG_I("Server exiting with code: %{public}d", exitCode);
         server.Finalize();
-        return exitCode == EXIT_SUCCESS;
+        _Exit(exitCode);
+        return exitCode;
     }
 
     extern "C" int32_t main(int32_t argc, char *argv[])
