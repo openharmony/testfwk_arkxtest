@@ -13,15 +13,6 @@
  * limitations under the License.
  */
 
-/**
- * the actualValue contain expect
- * @param actualValue
- * @param expect: the expect value
- * @example
- *         expect(array).toBeContain(anItem)
- *         expect(String).toBeContain(subString)
- * @returns {{pass: boolean, message: string}}
- */
 function assertContain (actualValue, expect) {
   let result = false
   if (Object.prototype.toString.call(actualValue).indexOf('Array')) {

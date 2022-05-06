@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 function assertClose (actualValue, expected) {
   console.log('expected:' + expected[0] + ',precision:' + expected[1])
   if (actualValue === null && expected[0] === null) {

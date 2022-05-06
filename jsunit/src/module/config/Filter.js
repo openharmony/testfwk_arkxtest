@@ -12,69 +12,70 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 class ClassFilter {
-    constructor(suiteName, itName, params) {
-        this.suiteName = suiteName
-        this.itName = itName
-        this.params = params
-    }
+  constructor(suiteName, itName, params) {
+    this.suiteName = suiteName
+    this.itName = itName
+    this.params = params
+  }
 
-    filterSuite() {
-        return !this.params.split(',').map(item => item.split('#')[0]).map(item => item == this.suiteName).reduce((pre, cur) => pre || cur, false)
-    }
+  filterSuite () {
+    return !this.params.split(',').map(item => item.split('#')[0]).map(item => item == this.suiteName).reduce((pre, cur) => pre || cur, false)
+  }
 
-    filterIt() {
-        let classArray = this.params.split(',') || []
-        let suiteFilterResult = classArray.filter(item => !item.includes('#')).map(item => item == this.suiteName).reduce((pre, cur) => pre || cur, false)
-        let itFilterResult = classArray.filter(item => item.includes('#')).map(item => item == (this.suiteName + '#' + this.itName)).reduce((pre, cur) => pre || cur, false)
-        return !(suiteFilterResult || itFilterResult)
-    }
+  filterIt () {
+    let classArray = this.params.split(',') || []
+    let suiteFilterResult = classArray.filter(item => !item.includes('#')).map(item => item == this.suiteName).reduce((pre, cur) => pre || cur, false)
+    let itFilterResult = classArray.filter(item => item.includes('#')).map(item => item == (this.suiteName + '#' + this.itName)).reduce((pre, cur) => pre || cur, false)
+    return !(suiteFilterResult || itFilterResult)
+  }
 }
 
 class NotClassFilter {
-    constructor(suiteName, itName, params) {
-        this.suiteName = suiteName
-        this.itName = itName
-        this.params = params
-    }
+  constructor(suiteName, itName, params) {
+    this.suiteName = suiteName
+    this.itName = itName
+    this.params = params
+  }
 
-    filterSuite() {
-        return this.params.split(',').map(item => item == this.suiteName).reduce((pre, cur) => pre || cur, false)
-    }
+  filterSuite () {
+    return this.params.split(',').map(item => item == this.suiteName).reduce((pre, cur) => pre || cur, false)
+  }
 
-    filterIt() {
-        return this.params.includes(this.suiteName + '#' + this.itName)
-    }
+  filterIt () {
+    return this.params.includes(this.suiteName + '#' + this.itName)
+  }
 }
 
 class SuiteAndItNameFilter {
-    constructor(suiteName, itName, params) {
-        this.suiteName = suiteName
-        this.itName = itName
-        this.params = params
-    }
+  constructor(suiteName, itName, params) {
+    this.suiteName = suiteName
+    this.itName = itName
+    this.params = params
+  }
 
-    filterSuite() {
-        return !this.params.split(',').map(item => item == this.suiteName).reduce((pre, cur) => pre || cur, false)
-    }
+  filterSuite () {
+    return !this.params.split(',').map(item => item == this.suiteName).reduce((pre, cur) => pre || cur, false)
+  }
 
-    filterIt() {
-        return !this.params.split(',').map(item => item == this.itName).reduce((pre, cur) => pre || cur, false)
-    }
+  filterIt () {
+    return !this.params.split(',').map(item => item == this.itName).reduce((pre, cur) => pre || cur, false)
+  }
 }
 
 
 class TestTypesFilter {
-    constructor(suiteName, itName, fi, params) {
-        this.suiteName = suiteName
-        this.itName = itName
-        this.params = params
-        this.fi = fi
-    }
+  constructor(suiteName, itName, fi, params) {
+    this.suiteName = suiteName
+    this.itName = itName
+    this.params = params
+    this.fi = fi
+  }
 
-    filterIt() {
-        return !((this.params === (this.fi & this.params)) || this.fi === 0)
-    }
+  filterIt () {
+    return !((this.params === (this.fi & this.params)) || this.fi === 0)
+  }
 }
 
-export {ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter}
+export { ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter }

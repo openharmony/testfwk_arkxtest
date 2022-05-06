@@ -13,12 +13,6 @@
  * limitations under the License.
  */
 
-/**
- * fail this it
- * @example
- *         expect(a).toBeFail()
- * @returns {{pass: boolean, message: string}}
- */
 function assertFail () {
   return {
     pass: false,

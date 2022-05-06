@@ -1,5 +1,5 @@
 {
-  "name": "Hypium",
+  "name": "@ohos/hypium",
   "version": "1.0.0-rc",
   "description": "OpenHarmony JSUnit",
   "main": "index.js",

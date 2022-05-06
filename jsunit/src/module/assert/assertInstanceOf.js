@@ -13,12 +13,6 @@
  * limitations under the License.
  */
 
-/**
- * the actualValue to be an instance of the expected class
- * @param actualValue : actualValue
- * @param expected :
-    * @returns {{pass: boolean, message: string}|{pass: boolean}}
- */
 function assertInstanceOf (actualValue, expected) {
   if (Object.prototype.toString.call(actualValue) == '[object ' + expected[0] + ']') {
     return {

@@ -12,8 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 class ReportExtend {
-  constructor (fileModule) {
+  constructor(fileModule) {
     this.id = 'extend'
     this.fileModule = fileModule
   }
