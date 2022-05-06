@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 function processFunc (coreContext, func) {
   let argNames = ((func || '').toString()
     .replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, '')
@@ -41,7 +42,7 @@ function processFunc (coreContext, func) {
 
             let funcType = func(done)
             if (funcType instanceof Promise) {
-              funcType.catch(err => {reject(err)})
+              funcType.catch(err => { reject(err) })
             }
           })
         }
@@ -57,7 +58,7 @@ function processFunc (coreContext, func) {
 
           let funcType = func(done, paramItem)
           if (funcType instanceof Promise) {
-            funcType.catch(err => {reject(err)})
+            funcType.catch(err => { reject(err) })
           }
         })
       }

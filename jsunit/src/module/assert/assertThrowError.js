@@ -13,11 +13,6 @@
  * limitations under the License.
  */
 
-/**
- * expect a function to throw Error
- * @param actualValue
- * @returns {{pass: boolean, message: string}}
- */
 function assertThrowError (actualValue, expected) {
   let result = false
   let err

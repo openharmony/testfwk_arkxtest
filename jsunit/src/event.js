@@ -12,8 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 class SpecEvent {
-  constructor (attr) {
+  constructor(attr) {
     this.id = attr.id
     this.coreContext = attr.context
     this.eventMonitors = []
@@ -37,7 +38,7 @@ class SpecEvent {
 }
 
 class SuiteEvent {
-  constructor (attr) {
+  constructor(attr) {
     this.id = attr.id
     this.suiteContext = attr.coreContext
     this.eventMonitors = []
@@ -61,7 +62,7 @@ class SuiteEvent {
 }
 
 class TaskEvent {
-  constructor (attr) {
+  constructor(attr) {
     this.id = attr.id
     this.coreContext = attr.coreContext
     this.eventMonitors = []
@@ -83,7 +84,7 @@ class TaskEvent {
     }
   }
 
-  incorrectFormat (){
+  incorrectFormat () {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['incorrectFormat']()
     }

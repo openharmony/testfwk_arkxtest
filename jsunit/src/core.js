@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { SuiteService, SpecService, ExpectService, ReportService } from './service'
 import { ConfigService } from './module/config/configService'
 import { SpecEvent, TaskEvent, SuiteEvent } from './event'
@@ -27,7 +28,7 @@ class Core {
     return this.instance
   }
 
-  constructor () {
+  constructor() {
     this.instance = null
     this.services = {
       suite: {},

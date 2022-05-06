@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 const SUITES_KEY = 'suites'
 const SPECS_KEY = 'items'
 const DESCRIBE_KEY = 'describe'
@@ -36,7 +37,7 @@ class ObjectUtils {
 }
 
 class DataDriver {
-  constructor (attr) {
+  constructor(attr) {
     this.id = 'dataDriver'
     this.data = attr.data || {}
   }

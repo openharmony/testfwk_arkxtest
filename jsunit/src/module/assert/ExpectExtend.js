@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import assertNull from './assertNull'
 import assertClose from './assertClose'
 import assertContain from './assertContain'
@@ -24,7 +25,7 @@ import assertInstanceOf from './assertInstanceOf'
 import assertThrowError from './assertThrowError'
 
 class ExpectExtend {
-  constructor (attr) {
+  constructor(attr) {
     this.id = attr.id
     this.matchers = {}
   }

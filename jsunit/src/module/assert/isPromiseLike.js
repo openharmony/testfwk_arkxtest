@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 function isPromiseLike (obj) {
   return !!obj && isFunction_(obj.then)
 }
