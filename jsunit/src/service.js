@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-function processFunc (coreContext, func) {
+function processFunc(coreContext, func) {
   let argNames = ((func || '').toString()
     .replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, '')
     .match(/^(function)?\s*[^\(]*\(\s*([^\)]*)\)/m) || ['', '', ''])[2]
@@ -36,7 +36,7 @@ function processFunc (coreContext, func) {
       } else {
         processedFunc = function () {
           return new Promise((resolve, reject) => {
-            function done () {
+            function done() {
               resolve()
             }
 
@@ -52,7 +52,7 @@ function processFunc (coreContext, func) {
     default: {
       processedFunc = function (paramItem) {
         return new Promise((resolve, reject) => {
-          function done () {
+          function done() {
             resolve()
           }
 
@@ -68,7 +68,7 @@ function processFunc (coreContext, func) {
   return processedFunc
 }
 
-function secureRandomNumber () {
+function secureRandomNumber() {
   return crypto.randomBytes(8).readUInt32LE() / 0xffffffff
 }
 
@@ -79,7 +79,7 @@ class SuiteService {
     this.currentRunningSuite = this.rootSuite
   }
 
-  describe (desc, func) {
+  describe(desc, func) {
     if (this.coreContext.getDefaultService('config').filterSuite(desc)) {
       console.info('filter suite :' + desc)
       return
@@ -98,31 +98,31 @@ class SuiteService {
     this.currentRunningSuite = currentSuiteCache
   }
 
-  beforeAll (func) {
+  beforeAll(func) {
     this.currentRunningSuite.beforeAll.push(processFunc(this.coreContext, func))
   }
 
-  beforeEach (func) {
+  beforeEach(func) {
     this.currentRunningSuite.beforeEach.push(processFunc(this.coreContext, func))
   }
 
-  afterAll (func) {
+  afterAll(func) {
     this.currentRunningSuite.afterAll.push(processFunc(this.coreContext, func))
   }
 
-  afterEach (func) {
+  afterEach(func) {
     this.currentRunningSuite.afterEach.push(processFunc(this.coreContext, func))
   }
 
-  getCurrentRunningSuite () {
+  getCurrentRunningSuite() {
     return this.currentRunningSuite
   }
 
-  setCurrentRunningSuite (suite) {
+  setCurrentRunningSuite(suite) {
     this.currentRunningSuite = suite
   }
 
-  getSummary () {
+  getSummary() {
     let total = 0
     let error = 0
     let failure = 0
@@ -145,11 +145,11 @@ class SuiteService {
     return { total: total, failure: failure, error: error }
   }
 
-  init (coreContext) {
+  init(coreContext) {
     this.coreContext = coreContext
   }
 
-  execute () {
+  execute() {
     if (this.coreContext.getDefaultService('config').filterValid.length !== 0) {
       this.coreContext.fireEvents('task', 'incorrectFormat')
       return
@@ -168,7 +168,7 @@ class SuiteService {
     }
   }
 
-  apis () {
+  apis() {
     const _this = this
     return {
       describe: function (desc, func) {
@@ -202,21 +202,21 @@ SuiteService.Suite = class {
     this.duration = 0
   }
 
-  pushSpec (spec) {
+  pushSpec(spec) {
     this.specs.push(spec)
   }
 
-  removeSpec (desc) {
+  removeSpec(desc) {
     this.specs = this.specs.filter((item, index) => {
       return item.description !== desc
     })
   }
 
-  getSpecsNum () {
+  getSpecsNum() {
     return this.specs.length
   }
 
-  run (coreContext) {
+  run(coreContext) {
     const suiteService = coreContext.getDefaultService('suite')
     suiteService.setCurrentRunningSuite(this)
     if (this.description !== '') {
@@ -248,7 +248,7 @@ SuiteService.Suite = class {
     }
   }
 
-  asyncRun (coreContext) {
+  asyncRun(coreContext) {
     const suiteService = coreContext.getDefaultService('suite')
     suiteService.setCurrentRunningSuite(this)
     return new Promise(async resolve => {
@@ -285,7 +285,7 @@ SuiteService.Suite = class {
     })
   }
 
-  runHookFunc (hookName) {
+  runHookFunc(hookName) {
     if (this[hookName] && this[hookName].length > 0) {
       this[hookName].forEach(func => {
         try {
@@ -297,7 +297,7 @@ SuiteService.Suite = class {
     }
   }
 
-  runAsyncHookFunc (hookName) {
+  runAsyncHookFunc(hookName) {
     if (this[hookName] && this[hookName].length > 0) {
       return new Promise(async resolve => {
         for (let i = 0; i < this[hookName].length; i++) {
@@ -318,19 +318,19 @@ class SpecService {
     this.id = attr.id
   }
 
-  init (coreContext) {
+  init(coreContext) {
     this.coreContext = coreContext
   }
 
-  setCurrentRunningSpec (spec) {
+  setCurrentRunningSpec(spec) {
     this.currentRunningSpec = spec
   }
 
-  getCurrentRunningSpec () {
+  getCurrentRunningSpec() {
     return this.currentRunningSpec
   }
 
-  it (desc, filter, func) {
+  it(desc, filter, func) {
     const configService = this.coreContext.getDefaultService('config')
     const currentSuiteName = this.coreContext.getDefaultService('suite').getCurrentRunningSuite().description
     if (configService.filterDesc(currentSuiteName, desc, filter, this.coreContext)) {
@@ -350,7 +350,7 @@ class SpecService {
     }
   }
 
-  apis () {
+  apis() {
     const _this = this
     return {
       it: function (desc, filter, func) {
@@ -374,7 +374,7 @@ SpecService.Spec = class {
     this.duration = 0
   }
 
-  run (coreContext) {
+  run(coreContext) {
     const specService = coreContext.getDefaultService('spec')
     specService.setCurrentRunningSpec(this)
     coreContext.fireEvents('spec', 'specStart', this)
@@ -404,7 +404,7 @@ SpecService.Spec = class {
     coreContext.fireEvents('spec', 'specDone', this)
   }
 
-  asyncRun (coreContext) {
+  asyncRun(coreContext) {
     const specService = coreContext.getDefaultService('spec')
     specService.setCurrentRunningSpec(this)
     const config = coreContext.getDefaultService('config')
@@ -413,7 +413,7 @@ SpecService.Spec = class {
       coreContext.fireEvents('spec', 'specStart', this)
       let startTime = new Date().getTime()
 
-      function timeoutPromise (param) {
+      function timeoutPromise(param) {
         return new Promise(function (resolve, reject) {
           setTimeout(() => reject(new Error('execute timeout ' + timeout + 'ms')), timeout)
         })
@@ -452,13 +452,13 @@ SpecService.Spec = class {
     })
   }
 
-  filterCheck (coreContext) {
+  filterCheck(coreContext) {
     const specService = coreContext.getDefaultService('spec')
     specService.setCurrentRunningSpec(this)
     return true
   }
 
-  addExpectationResult (expectResult) {
+  addExpectationResult(expectResult) {
     if (expectResult.pass) {
       this.result.passExpects.push(expectResult)
     } else {
@@ -473,16 +473,16 @@ class ExpectService {
     this.matchers = {}
   }
 
-  expect (actualValue) {
+  expect(actualValue) {
     return this.wrapMatchers(actualValue)
   }
 
-  init (coreContext) {
+  init(coreContext) {
     this.coreContext = coreContext
     this.addMatchers(this.basicMatchers())
   }
 
-  addMatchers (matchers) {
+  addMatchers(matchers) {
     for (const matcherName in matchers) {
       if (Object.prototype.hasOwnProperty.call(matchers, matcherName)) {
         this.matchers[matcherName] = matchers[matcherName]
@@ -490,7 +490,7 @@ class ExpectService {
     }
   }
 
-  basicMatchers () {
+  basicMatchers() {
     return {
       assertTrue: function (actualValue) {
         return {
@@ -533,7 +533,7 @@ class ExpectService {
     }
   }
 
-  wrapMatchers (actualValue) {
+  wrapMatchers(actualValue) {
     const _this = this
     const wrappedMatchers = {}
     const specService = _this.coreContext.getDefaultService('spec')
@@ -551,7 +551,7 @@ class ExpectService {
     return wrappedMatchers
   }
 
-  apis () {
+  apis() {
     const _this = this
     return {
       expect: function (actualValue) {
@@ -566,31 +566,31 @@ class ReportService {
     this.id = attr.id
   }
 
-  init (coreContext) {
+  init(coreContext) {
     this.coreContext = coreContext
     this.specService = this.coreContext.getDefaultService('spec')
     this.suiteService = this.coreContext.getDefaultService('suite')
     this.duration = 0
   }
 
-  taskStart () {
+  taskStart() {
     this.taskStartTime = new Date().getTime()
     this.sleep(200)
     console.info('[start] start run suites')
   }
 
-  suiteStart () {
+  suiteStart() {
     this.sleep(200)
     console.info('[suite start]' + this.suiteService.getCurrentRunningSuite().description)
   }
 
-  specStart () {
+  specStart() {
     this.sleep(200)
     console.info('start running case \'' + this.specService.currentRunningSpec.description + '\'')
     this.index = this.index + 1
   }
 
-  specDone () {
+  specDone() {
     this.sleep(200)
     let msg = ''
     let spec = this.specService.currentRunningSpec
@@ -611,12 +611,12 @@ class ReportService {
     this.formatPrint(this.specService.currentRunningSpec.error, msg)
   }
 
-  suiteDone () {
+  suiteDone() {
     this.sleep(200)
     console.info('[suite end]')
   }
 
-  taskDone () {
+  taskDone() {
     let msg = ''
     this.sleep(200)
     this.taskDoneTime = new Date().getTime()
@@ -628,7 +628,7 @@ class ReportService {
     console.info('[end] run suites end')
   }
 
-  incorrectFormat () {
+  incorrectFormat() {
     if (this.coreContext.getDefaultService('config').filterValid.length !== 0) {
       this.coreContext.getDefaultService('config').filterValid.forEach(function (item) {
         console.info('this param ' + item + ' is invalid')
@@ -637,7 +637,7 @@ class ReportService {
     }
   }
 
-  formatPrint (type, msg) {
+  formatPrint(type, msg) {
     switch (type) {
       case 'pass':
         console.info('[pass]' + msg)
@@ -651,7 +651,7 @@ class ReportService {
     }
   }
 
-  sleep (numberMillis) {
+  sleep(numberMillis) {
     var now = new Date()
     var exitTime = now.getTime() + numberMillis
     while (true) {

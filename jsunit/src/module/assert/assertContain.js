@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-function assertContain (actualValue, expect) {
+function assertContain(actualValue, expect) {
   let result = false
   if (Object.prototype.toString.call(actualValue).indexOf('Array')) {
     for (let i in actualValue) {

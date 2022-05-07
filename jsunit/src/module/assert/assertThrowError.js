@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-function assertThrowError (actualValue, expected) {
+function assertThrowError(actualValue, expected) {
   let result = false
   let err
   if (typeof actualValue !== 'function') {

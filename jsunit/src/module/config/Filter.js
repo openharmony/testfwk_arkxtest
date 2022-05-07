@@ -20,11 +20,11 @@ class ClassFilter {
     this.params = params
   }
 
-  filterSuite () {
+  filterSuite() {
     return !this.params.split(',').map(item => item.split('#')[0]).map(item => item == this.suiteName).reduce((pre, cur) => pre || cur, false)
   }
 
-  filterIt () {
+  filterIt() {
     let classArray = this.params.split(',') || []
     let suiteFilterResult = classArray.filter(item => !item.includes('#')).map(item => item == this.suiteName).reduce((pre, cur) => pre || cur, false)
     let itFilterResult = classArray.filter(item => item.includes('#')).map(item => item == (this.suiteName + '#' + this.itName)).reduce((pre, cur) => pre || cur, false)
@@ -39,11 +39,11 @@ class NotClassFilter {
     this.params = params
   }
 
-  filterSuite () {
+  filterSuite() {
     return this.params.split(',').map(item => item == this.suiteName).reduce((pre, cur) => pre || cur, false)
   }
 
-  filterIt () {
+  filterIt() {
     return this.params.includes(this.suiteName + '#' + this.itName)
   }
 }
@@ -55,11 +55,11 @@ class SuiteAndItNameFilter {
     this.params = params
   }
 
-  filterSuite () {
+  filterSuite() {
     return !this.params.split(',').map(item => item == this.suiteName).reduce((pre, cur) => pre || cur, false)
   }
 
-  filterIt () {
+  filterIt() {
     return !this.params.split(',').map(item => item == this.itName).reduce((pre, cur) => pre || cur, false)
   }
 }
@@ -73,7 +73,7 @@ class TestTypesFilter {
     this.fi = fi
   }
 
-  filterIt () {
+  filterIt() {
     return !((this.params === (this.fi & this.params)) || this.fi === 0)
   }
 }

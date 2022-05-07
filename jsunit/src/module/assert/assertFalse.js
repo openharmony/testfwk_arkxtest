@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-function assertFalse (actualValue) {
+function assertFalse(actualValue) {
   return {
     pass: actualValue === false,
     message: 'except false, actualValue is ' + actualValue

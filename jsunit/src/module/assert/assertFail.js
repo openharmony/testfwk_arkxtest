@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-function assertFail () {
+function assertFail() {
   return {
     pass: false,
     message: 'fail '
