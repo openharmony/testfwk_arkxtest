@@ -20,16 +20,16 @@ class OhReport {
     this.index = 0
   }
 
-  init (coreContext) {
+  init(coreContext) {
     this.coreContext = coreContext
     this.suiteService = this.coreContext.getDefaultService('suite')
     this.specService = this.coreContext.getDefaultService('spec')
   }
 
-  taskStart () {
+  taskStart() {
   }
 
-  taskDone () {
+  taskDone() {
     let summary = this.suiteService.getSummary()
     var message = '\n' + 'OHOS_REPORT_RESULT: stream=Tests run: ' + summary.total + ',  Failures: ' + summary.failure
     message += ' \n' + 'OHOS_REPORT_CODE: ' + (summary.failure > 0 ? -1 : 0) + '\n'
@@ -39,7 +39,7 @@ class OhReport {
     });
   }
 
-  incorrectFormat () {
+  incorrectFormat() {
     if (this.coreContext.getDefaultService('config').filterValid.length !== 0) {
       var value = this.coreContext.getDefaultService('config').filterValid
       var message = 'this param ' + value.join(',') + ' is invalid'
@@ -48,7 +48,7 @@ class OhReport {
     }
   }
 
-  suiteStart () {
+  suiteStart() {
     let suiteService = this.coreContext.getDefaultService('suite')
     var message = '\n' + 'OHOS_REPORT_SUM: ' + suiteService.getSummary().total
     message += '\n' + 'OHOS_REPORT_STATUS: class=' + suiteService.getCurrentRunningSuite().description
@@ -57,10 +57,10 @@ class OhReport {
     });
   }
 
-  suiteDone () {
+  suiteDone() {
   }
 
-  specStart () {
+  specStart() {
     let suiteService = this.coreContext.getDefaultService('suite')
     var message = '\n' + 'OHOS_REPORT_STATUS: class=' + suiteService.getCurrentRunningSuite().description
     message += '\n' + 'OHOS_REPORT_STATUS: current=' + (++this.index)
@@ -74,7 +74,7 @@ class OhReport {
     });
   }
 
-  specDone () {
+  specDone() {
     var message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description
     message += '\n' + 'OHOS_REPORT_STATUS: current=' + (this.index)
     message += '\n' + 'OHOS_REPORT_STATUS: id=JS'

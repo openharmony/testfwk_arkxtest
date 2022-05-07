@@ -21,13 +21,13 @@ import OhReport from './src/module/report/OhReport'
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from './src/interface'
 
 class Hypium {
-  static setData (data) {
+  static setData(data) {
     const core = Core.getInstance()
     const dataDriver = new DataDriver({ data })
     core.addService('dataDriver', dataDriver)
   }
 
-  static hypiumTest (abilityDelegator, abilityDelegatorArguments, testsuite) {
+  static hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite) {
     const core = Core.getInstance()
     const expectExtend = new ExpectExtend({
       'id': 'extend'

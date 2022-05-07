@@ -21,7 +21,7 @@ import { SpecEvent, TaskEvent, SuiteEvent } from './event'
  * core service for execute testcase.
  */
 class Core {
-  static getInstance () {
+  static getInstance() {
     if (!this.instance) {
       this.instance = new Core()
     }
@@ -46,7 +46,7 @@ class Core {
     }
   }
 
-  addService (name, service) {
+  addService(name, service) {
     let serviceObj = {}
     if (!this.services[name]) {
       this.services[name] = serviceObj
@@ -56,15 +56,15 @@ class Core {
     serviceObj[service.id] = service
   }
 
-  getDefaultService (name) {
+  getDefaultService(name) {
     return this.services[name].default
   }
 
-  getServices (name) {
+  getServices(name) {
     return this.services[name]
   }
 
-  registerEvent (serviceName, event) {
+  registerEvent(serviceName, event) {
     let eventObj = {}
     if (!this.events[serviceName]) {
       this.events[serviceName] = eventObj
@@ -74,14 +74,14 @@ class Core {
     eventObj[event.id] = event
   }
 
-  unRegisterEvent (serviceName, eventID) {
+  unRegisterEvent(serviceName, eventID) {
     const eventObj = this.events[serviceName]
     if (eventObj) {
       delete eventObj[eventID]
     }
   }
 
-  subscribeEvent (serviceName, serviceObj) {
+  subscribeEvent(serviceName, serviceObj) {
     const eventObj = this.events[serviceName]
     if (eventObj) {
       for (const attr in eventObj) {
@@ -90,7 +90,7 @@ class Core {
     }
   }
 
-  fireEvents (serviceName, eventName) {
+  fireEvents(serviceName, eventName) {
     const eventObj = this.events[serviceName]
     if (!eventObj) {
       return
@@ -100,7 +100,7 @@ class Core {
     }
   }
 
-  addToGlobal (apis) {
+  addToGlobal(apis) {
     if (typeof globalThis !== 'undefined') {
       for (let api in apis) {
         globalThis[api] = apis[api]
@@ -111,7 +111,7 @@ class Core {
     }
   }
 
-  init () {
+  init() {
     this.addService('suite', new SuiteService({ id: 'default' }))
     this.addService('spec', new SpecService({ id: 'default' }))
     this.addService('expect', new ExpectService({ id: 'default' }))
@@ -141,7 +141,7 @@ class Core {
     }
   }
 
-  execute () {
+  execute() {
     const suiteService = this.getDefaultService('suite')
     suiteService.execute()
   }

@@ -30,7 +30,7 @@ class ExpectExtend {
     this.matchers = {}
   }
 
-  extendsMatchers () {
+  extendsMatchers() {
     this.matchers.assertNull = assertNull
     this.matchers.assertClose = assertClose
     this.matchers.assertContain = assertContain
@@ -43,14 +43,14 @@ class ExpectExtend {
     this.matchers.assertThrowError = assertThrowError
   }
 
-  init (coreContext) {
+  init(coreContext) {
     this.coreContext = coreContext
     this.extendsMatchers()
     const expectService = this.coreContext.getDefaultService('expect')
     expectService.addMatchers(this.matchers)
   }
 
-  apis () {
+  apis() {
     return {
       'expect': function (actualValue) {
         return this.coreContext.getDefaultService('expect').expect(actualValue)

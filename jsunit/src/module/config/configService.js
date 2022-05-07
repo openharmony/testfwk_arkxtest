@@ -23,16 +23,16 @@ class ConfigService {
     this.filterValid = []
   }
 
-  init (coreContext) {
+  init(coreContext) {
     this.coreContext = coreContext
   }
 
-  isNormalInteger (str) {
+  isNormalInteger(str) {
     const n = Math.floor(Number(str));
     return n !== Infinity && String(n) === String(str) && n >= 0;
   }
 
-  basicParamValidCheck (params) {
+  basicParamValidCheck(params) {
     let size = params.size
     if (size !== undefined && size !== '' && size !== null) {
       let sizeArray = ["small", "medium", "large"]
@@ -56,7 +56,7 @@ class ConfigService {
     }
   }
 
-  filterParamValidCheck (params) {
+  filterParamValidCheck(params) {
     let timeout = params.timeout
     if (timeout !== undefined && timeout !== '' && timeout !== null) {
       if (!this.isNormalInteger(timeout)) {
@@ -86,7 +86,7 @@ class ConfigService {
     }
   }
 
-  setConfig (params) {
+  setConfig(params) {
     this.basicParamValidCheck(params)
     this.filterParamValidCheck(params)
     try {
@@ -135,7 +135,7 @@ class ConfigService {
     }
   }
 
-  parseParams () {
+  parseParams() {
     if (this.filter != null) {
       return
     }
@@ -161,7 +161,7 @@ class ConfigService {
     console.info('filter params:' + this.filter)
   }
 
-  isCurrentSuite (description) {
+  isCurrentSuite(description) {
     if (this.suite !== undefined && this.suite !== '' && this.suite !== null) {
       let suiteArray = this.suite.split(',')
       return suiteArray.indexOf(description) !== -1;
@@ -169,7 +169,7 @@ class ConfigService {
     return false
   }
 
-  filterSuite (currentSuiteName) {
+  filterSuite(currentSuiteName) {
     let filterArray = []
     if (this.suite !== undefined && this.suite !== '' && this.suite !== null) {
       filterArray.push(new SuiteAndItNameFilter(currentSuiteName, '', this.suite))
@@ -185,7 +185,7 @@ class ConfigService {
     return result
   }
 
-  filterDesc (currentSuiteName, desc, fi, coreContext) {
+  filterDesc(currentSuiteName, desc, fi, coreContext) {
     let filterArray = []
     if (this.itName !== undefined && this.itName !== '' && this.itName !== null) {
       filterArray.push(new SuiteAndItNameFilter(currentSuiteName, desc, this.itName))
@@ -203,19 +203,19 @@ class ConfigService {
     return result
   }
 
-  isRandom () {
+  isRandom() {
     return this.random || false
   }
 
-  setSupportAsync (value) {
+  setSupportAsync(value) {
     this.supportAsync = value
   }
 
-  isSupportAsync () {
+  isSupportAsync() {
     return this.supportAsync
   }
 
-  translateParams (parameters) {
+  translateParams(parameters) {
     const keySet = new Set([
       '-s class', '-s notClass', '-s suite', '-s itName',
       '-s level', '-s testType', '-s size', '-s timeout'
@@ -228,7 +228,7 @@ class ConfigService {
     }
     return targetParams
   }
-  translateParamsToString (parameters) {
+  translateParamsToString(parameters) {
     const keySet = new Set([
       '-s class', '-s notClass', '-s suite', '-s itName',
       '-s level', '-s testType', '-s size', '-s timeout'
@@ -242,7 +242,7 @@ class ConfigService {
     return targetParams.trim()
   }
 
-  execute () {
+  execute() {
   }
 }
 

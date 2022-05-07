@@ -20,17 +20,17 @@ class SpecEvent {
     this.eventMonitors = []
   }
 
-  subscribeEvent (service) {
+  subscribeEvent(service) {
     this.eventMonitors.push(service)
   }
 
-  specStart () {
+  specStart() {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['specStart']()
     }
   }
 
-  specDone () {
+  specDone() {
     for (const monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['specDone']()
     }
@@ -44,17 +44,17 @@ class SuiteEvent {
     this.eventMonitors = []
   }
 
-  subscribeEvent (service) {
+  subscribeEvent(service) {
     this.eventMonitors.push(service)
   }
 
-  suiteStart () {
+  suiteStart() {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['suiteStart']()
     }
   }
 
-  suiteDone () {
+  suiteDone() {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['suiteDone']()
     }
@@ -68,23 +68,23 @@ class TaskEvent {
     this.eventMonitors = []
   }
 
-  subscribeEvent (service) {
+  subscribeEvent(service) {
     this.eventMonitors.push(service)
   }
 
-  taskStart () {
+  taskStart() {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['taskStart']()
     }
   }
 
-  taskDone () {
+  taskDone() {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['taskDone']()
     }
   }
 
-  incorrectFormat () {
+  incorrectFormat() {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['incorrectFormat']()
     }

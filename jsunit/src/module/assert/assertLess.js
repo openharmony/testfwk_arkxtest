@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-function assertLess (actualValue, expected) {
+function assertLess(actualValue, expected) {
   return {
     pass: actualValue < expected[0],
     message: actualValue + ' is not less than ' + expected[0]

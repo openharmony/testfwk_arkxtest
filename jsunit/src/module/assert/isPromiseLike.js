@@ -13,19 +13,19 @@
  * limitations under the License.
  */
 
-function isPromiseLike (obj) {
+function isPromiseLike(obj) {
   return !!obj && isFunction_(obj.then)
 }
 
-function isFunction_ (value) {
+function isFunction_(value) {
   return isA_('Function', value)
 }
 
-function isA_ (typeName, value) {
+function isA_(typeName, value) {
   return getType_(value) === '[object ' + typeName + ']'
 }
 
-function getType_ (value) {
+function getType_(value) {
   return Object.prototype.toString.apply(value)
 }
 

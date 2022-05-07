@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-function assertInstanceOf (actualValue, expected) {
+function assertInstanceOf(actualValue, expected) {
   if (Object.prototype.toString.call(actualValue) == '[object ' + expected[0] + ']') {
     return {
       pass: true

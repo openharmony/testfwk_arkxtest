@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-function assertLarger (actualValue, expected) {
+function assertLarger(actualValue, expected) {
   return {
     pass: actualValue > expected[0],
     message: actualValue + ' is not larger than ' + expected[0]
