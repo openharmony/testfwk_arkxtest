@@ -12,7 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-function assertUndefined (actualValue) {
+
+function assertUndefined(actualValue) {
   return {
     pass: undefined === actualValue,
     message: 'expect Undefined, actualValue is ' + actualValue

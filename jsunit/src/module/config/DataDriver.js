@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 const SUITES_KEY = 'suites'
 const SPECS_KEY = 'items'
 const DESCRIBE_KEY = 'describe'
@@ -20,7 +21,7 @@ const PARAMS_KEY = 'params'
 const STRESS_KEY = 'stress'
 
 class ObjectUtils {
-  static get (object, name, defaultValue) {
+  static get(object, name, defaultValue) {
     let result = defaultValue
     for (const key in object) {
       if (key === name) {
@@ -30,24 +31,24 @@ class ObjectUtils {
     return result
   }
 
-  static has (object, key) {
+  static has(object, key) {
     return Object.prototype.hasOwnProperty.call(object, key)
   }
 }
 
 class DataDriver {
-  constructor (attr) {
+  constructor(attr) {
     this.id = 'dataDriver'
     this.data = attr.data || {}
   }
 
-  init (coreContext) {
+  init(coreContext) {
     this.coreContext = coreContext
     this.suiteService = this.coreContext.getDefaultService('suite')
     this.specService = this.coreContext.getDefaultService('spec')
   }
 
-  getSpecParams () {
+  getSpecParams() {
     let specParams = []
     let suiteDesc = this.suiteService.getCurrentRunningSuite().description
     let specDesc = this.specService.getCurrentRunningSpec().description
@@ -66,7 +67,7 @@ class DataDriver {
     return specParams
   }
 
-  getSuiteParams () {
+  getSuiteParams() {
     let suiteParams = {}
     let suiteDesc = this.suiteService.getCurrentRunningSuite().description
     let suites = ObjectUtils.get(this.data, SUITES_KEY, [])
@@ -79,7 +80,7 @@ class DataDriver {
     return suiteParams
   }
 
-  getSpecStress (specDesc) {
+  getSpecStress(specDesc) {
     let stress = 1
     let suiteDesc = this.suiteService.getCurrentRunningSuite().description
     let suites = ObjectUtils.get(this.data, SUITES_KEY, [])
@@ -98,7 +99,7 @@ class DataDriver {
     return stress
   }
 
-  getSuiteStress (suiteDesc) {
+  getSuiteStress(suiteDesc) {
     let stress = 1
     let suites = ObjectUtils.get(this.data, SUITES_KEY, [])
     for (const suiteItem of suites) {

@@ -12,24 +12,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 class SpecEvent {
-  constructor (attr) {
+  constructor(attr) {
     this.id = attr.id
     this.coreContext = attr.context
     this.eventMonitors = []
   }
 
-  subscribeEvent (service) {
+  subscribeEvent(service) {
     this.eventMonitors.push(service)
   }
 
-  specStart () {
+  specStart() {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['specStart']()
     }
   }
 
-  specDone () {
+  specDone() {
     for (const monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['specDone']()
     }
@@ -37,23 +38,23 @@ class SpecEvent {
 }
 
 class SuiteEvent {
-  constructor (attr) {
+  constructor(attr) {
     this.id = attr.id
     this.suiteContext = attr.coreContext
     this.eventMonitors = []
   }
 
-  subscribeEvent (service) {
+  subscribeEvent(service) {
     this.eventMonitors.push(service)
   }
 
-  suiteStart () {
+  suiteStart() {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['suiteStart']()
     }
   }
 
-  suiteDone () {
+  suiteDone() {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['suiteDone']()
     }
@@ -61,29 +62,29 @@ class SuiteEvent {
 }
 
 class TaskEvent {
-  constructor (attr) {
+  constructor(attr) {
     this.id = attr.id
     this.coreContext = attr.coreContext
     this.eventMonitors = []
   }
 
-  subscribeEvent (service) {
+  subscribeEvent(service) {
     this.eventMonitors.push(service)
   }
 
-  taskStart () {
+  taskStart() {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['taskStart']()
     }
   }
 
-  taskDone () {
+  taskDone() {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['taskDone']()
     }
   }
 
-  incorrectFormat (){
+  incorrectFormat() {
     for (let monitor in this.eventMonitors) {
       this.eventMonitors[monitor]['incorrectFormat']()
     }

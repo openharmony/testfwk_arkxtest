@@ -13,12 +13,7 @@
  * limitations under the License.
  */
 
-/**
- * the actualValue is False
- * @param actualValue
- * @returns {{pass: boolean, message: string}}
- */
-function assertFalse (actualValue) {
+function assertFalse(actualValue) {
   return {
     pass: actualValue === false,
     message: 'except false, actualValue is ' + actualValue

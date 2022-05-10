@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import assertNull from './assertNull'
 import assertClose from './assertClose'
 import assertContain from './assertContain'
@@ -24,12 +25,12 @@ import assertInstanceOf from './assertInstanceOf'
 import assertThrowError from './assertThrowError'
 
 class ExpectExtend {
-  constructor (attr) {
+  constructor(attr) {
     this.id = attr.id
     this.matchers = {}
   }
 
-  extendsMatchers () {
+  extendsMatchers() {
     this.matchers.assertNull = assertNull
     this.matchers.assertClose = assertClose
     this.matchers.assertContain = assertContain
@@ -42,14 +43,14 @@ class ExpectExtend {
     this.matchers.assertThrowError = assertThrowError
   }
 
-  init (coreContext) {
+  init(coreContext) {
     this.coreContext = coreContext
     this.extendsMatchers()
     const expectService = this.coreContext.getDefaultService('expect')
     expectService.addMatchers(this.matchers)
   }
 
-  apis () {
+  apis() {
     return {
       'expect': function (actualValue) {
         return this.coreContext.getDefaultService('expect').expect(actualValue)

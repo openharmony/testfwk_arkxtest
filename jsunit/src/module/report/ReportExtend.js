@@ -12,22 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 class ReportExtend {
-  constructor (fileModule) {
+  constructor(fileModule) {
     this.id = 'extend'
     this.fileModule = fileModule
   }
 
-  init (coreContext) {
+  init(coreContext) {
     this.coreContext = coreContext
     this.suiteService = this.coreContext.getDefaultService('suite')
   }
 
-  taskStart () {
+  taskStart() {
 
   }
 
-  taskDone () {
+  taskDone() {
     const report = {
       tag: 'testsuites',
       name: 'summary_report',
@@ -109,7 +110,7 @@ class ReportExtend {
   }
 }
 
-function json2xml (json) {
+function json2xml(json) {
   let tagName
   let hasChildren = false
   let childrenStr = ''
