@@ -12,21 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import Core from './src/core'
-import Constant from './src/Constant'
+import { DEFAULT, Type, Size, Level } from './src/Constant'
 import DataDriver from './src/module/config/DataDriver'
 import ExpectExtend from './src/module/assert/ExpectExtend'
 import OhReport from './src/module/report/OhReport'
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from './src/interface'
 
 class Hypium {
-  static setData (data) {
+  static setData(data) {
     const core = Core.getInstance()
     const dataDriver = new DataDriver({ data })
     core.addService('dataDriver', dataDriver)
   }
 
-  static hypiumTest (abilityDelegator, abilityDelegatorArguments, testsuite) {
+  static hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite) {
     const core = Core.getInstance()
     const expectExtend = new ExpectExtend({
       'id': 'extend'
@@ -42,7 +43,7 @@ class Hypium {
     core.subscribeEvent('task', ohReport)
     const configService = core.getDefaultService("config")
     let testParameters = configService.translateParams(abilityDelegatorArguments.parameters)
-    console.info('parameters:'+JSON.stringify(testParameters))
+    console.info('parameters:' + JSON.stringify(testParameters))
     configService.setConfig(testParameters)
     testsuite()
     if (Object.prototype.hasOwnProperty.call(globalThis, 'setupUiTestEnvironment')) {
@@ -62,6 +63,13 @@ class Hypium {
 
 export {
   Hypium,
-  Constant,
+  Core,
+  DEFAULT,
+  Type,
+  Size,
+  Level,
+  DataDriver,
+  ExpectExtend,
+  OhReport,
   describe, beforeAll, beforeEach, afterEach, afterAll, it, expect
 }

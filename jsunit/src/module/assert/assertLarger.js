@@ -13,13 +13,7 @@
  * limitations under the License.
  */
 
-/**
- * the actualValue to be larger then expected
- * @param actualValue : actualValue
- * @param expected :
-    * @returns {{pass: boolean, message: string}|{pass: boolean}}
- */
-function assertLarger (actualValue, expected) {
+function assertLarger(actualValue, expected) {
   return {
     pass: actualValue > expected[0],
     message: actualValue + ' is not larger than ' + expected[0]
