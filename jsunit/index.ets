@@ -14,7 +14,7 @@
  */
  
 import Core from './src/core'
-import { DEFAULT, Type, Size, Level } from './src/Constant'
+import { DEFAULT, TestType, Size, Level } from './src/Constant'
 import DataDriver from './src/module/config/DataDriver'
 import ExpectExtend from './src/module/assert/ExpectExtend'
 import OhReport from './src/module/report/OhReport'
@@ -65,7 +65,7 @@ export {
   Hypium,
   Core,
   DEFAULT,
-  Type,
+  TestType,
   Size,
   Level,
   DataDriver,
