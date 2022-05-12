@@ -49,7 +49,8 @@ class ConfigService {
     }
     let testType = params.testType
     if (testType !== undefined && testType !== '' && testType !== null) {
-      let testTypeArray = ["function", "performance", "reliability", "security"]
+      let testTypeArray = ["function", "performance", "power", "reliability", "security",
+      "global", "compatibility", "user", "standard", "safety", "resilience"]
       if (testTypeArray.indexOf(testType) === -1) {
         this.filterValid.push("testType:" + testType)
       }
@@ -104,8 +105,15 @@ class ConfigService {
         testType: {
           'function': 1,
           'performance': 1 << 1,
+          'power': 1 << 2,
           'reliability': 1 << 3,
           'security': 1 << 4,
+          'global': 1 << 5,
+          'compatibility': 1 << 6,
+          'user': 1 << 7,
+          'standard': 1 << 8,
+          'safety': 1 << 9,
+          'resilience': 1 << 10,
         },
         level: {
           '0': 1 << 24,
