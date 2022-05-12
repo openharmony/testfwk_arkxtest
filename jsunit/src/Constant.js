@@ -14,11 +14,11 @@
  */
 
 /**
- * define the testcase type : Type, Size , Level
+ * define the testcase type : TestType, Size , Level
  */
 export const DEFAULT = 0B0000
 
-export class Type {
+export class TestType {
   static FUNCTION = 0B1
   static PERFORMANCE = 0B1 << 1
   static POWER = 0B1 << 2

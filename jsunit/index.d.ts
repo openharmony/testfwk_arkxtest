@@ -15,7 +15,7 @@
 
 export const DEFAULT = 0B0000
 
-export enum Type {
+export enum TestType {
   FUNCTION = 0B1,
   PERFORMANCE = 0B1 << 1,
   POWER = 0B1 << 2,
