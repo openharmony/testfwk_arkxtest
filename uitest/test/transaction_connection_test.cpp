@@ -336,7 +336,7 @@ TEST_F(TransactionTest, checkResultWhenConnectionDied)
         auto call = ApiCallInfo {.apiId_ = "wyz"};
         auto reply = ApiReplyInfo();
         this->client_.InvokeApi(call, reply);
-        return move(reply);
+        return reply;
     });
     // trigger connection timeout by giving no incoming message, should return error result
     uint64_t startMs = GetCurrentMillisecond();
@@ -351,7 +351,7 @@ TEST_F(TransactionTest, checkResultWhenConnectionDied)
         auto call = ApiCallInfo {.apiId_ = "zl"};
         auto reply = ApiReplyInfo();
         this->client_.InvokeApi(call, reply);
-        return move(reply);
+        return reply;
     });
     startMs = GetCurrentMillisecond();
     reply = clientAsyncWork_.get();
@@ -368,7 +368,7 @@ TEST_F(TransactionTest, checkRejectConcurrentInvoke)
         auto call = ApiCallInfo {.apiId_ = "zl"};
         auto reply = ApiReplyInfo();
         this->client_.InvokeApi(call, reply);
-        return move(reply);
+        return reply;
     });
     // give a short delay to ensure concurrence
     this_thread::sleep_for(chrono::milliseconds(TIME_DIFF_TOLERANCE_MS));
