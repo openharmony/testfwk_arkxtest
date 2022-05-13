@@ -130,7 +130,7 @@ namespace OHOS::uitest {
         return WaitEventIdle(idleThresholdMs, timeoutMs - sliceMs);
     }
 
-    SysUiController::SysUiController(string_view name, string_view device) : UiController(name, device) {}
+    SysUiController::SysUiController(string_view name) : UiController(name) {}
 
     SysUiController::~SysUiController()
     {
@@ -139,37 +139,37 @@ namespace OHOS::uitest {
 
     static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to)
     {
-        to[ATTR_NAMES[UiAttr::TEXT]] = node.GetContent();
-        to[ATTR_NAMES[UiAttr::ID]] = to_string(node.GetAccessibilityId());
-        to[ATTR_NAMES[UiAttr::KEY]] = node.GetInspectorKey();
-        to[ATTR_NAMES[UiAttr::TYPE]] = node.GetComponentType();
-        to[ATTR_NAMES[UiAttr::ENABLED]] = node.IsEnabled() ? "true" : "false";
-        to[ATTR_NAMES[UiAttr::FOCUSED]] = node.IsFocused() ? "true" : "false";
-        to[ATTR_NAMES[UiAttr::SELECTED]] = node.IsSelected() ? "true" : "false";
-        to[ATTR_NAMES[UiAttr::CHECKABLE]] = node.IsCheckable() ? "true" : "false";
-        to[ATTR_NAMES[UiAttr::CHECKED]] = node.IsChecked() ? "true" : "false";
-        to[ATTR_NAMES[UiAttr::CLICKABLE]] = "false";
-        to[ATTR_NAMES[UiAttr::LONG_CLICKABLE]] = "false";
-        to[ATTR_NAMES[UiAttr::SCROLLABLE]] = "false";
+        to[ATTR_NAMES[UiAttr::TEXT].data()] = node.GetContent();
+        to[ATTR_NAMES[UiAttr::ID].data()] = to_string(node.GetAccessibilityId());
+        to[ATTR_NAMES[UiAttr::KEY].data()] = node.GetInspectorKey();
+        to[ATTR_NAMES[UiAttr::TYPE].data()] = node.GetComponentType();
+        to[ATTR_NAMES[UiAttr::ENABLED].data()] = node.IsEnabled() ? "true" : "false";
+        to[ATTR_NAMES[UiAttr::FOCUSED].data()] = node.IsFocused() ? "true" : "false";
+        to[ATTR_NAMES[UiAttr::SELECTED].data()] = node.IsSelected() ? "true" : "false";
+        to[ATTR_NAMES[UiAttr::CHECKABLE].data()] = node.IsCheckable() ? "true" : "false";
+        to[ATTR_NAMES[UiAttr::CHECKED].data()] = node.IsChecked() ? "true" : "false";
+        to[ATTR_NAMES[UiAttr::CLICKABLE].data()] = "false";
+        to[ATTR_NAMES[UiAttr::LONG_CLICKABLE].data()] = "false";
+        to[ATTR_NAMES[UiAttr::SCROLLABLE].data()] = "false";
         const auto bounds = node.GetRectInScreen();
         const auto rect = Rect(bounds.GetLeftTopXScreenPostion(), bounds.GetRightBottomXScreenPostion(),
                                bounds.GetLeftTopYScreenPostion(), bounds.GetRightBottomYScreenPostion());
         stringstream stream;
         // "[%d,%d][%d,%d]", rect.left, rect.top, rect.right, rect.bottom
         stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
-        to[ATTR_NAMES[UiAttr::BOUNDS]] = stream.str();
+        to[ATTR_NAMES[UiAttr::BOUNDS].data()] = stream.str();
         auto actionList = node.GetActionList();
         for (auto &action :actionList) {
             switch (action.GetActionType()) {
                 case ACCESSIBILITY_ACTION_CLICK:
-                    to[ATTR_NAMES[UiAttr::CLICKABLE]] = "true";
+                    to[ATTR_NAMES[UiAttr::CLICKABLE].data()] = "true";
                     break;
                 case ACCESSIBILITY_ACTION_LONG_CLICK:
-                    to[ATTR_NAMES[UiAttr::LONG_CLICKABLE]] = "true";
+                    to[ATTR_NAMES[UiAttr::LONG_CLICKABLE].data()] = "true";
                     break;
                 case ACCESSIBILITY_ACTION_SCROLL_FORWARD:
                 case ACCESSIBILITY_ACTION_SCROLL_BACKWARD:
-                    to[ATTR_NAMES[UiAttr::SCROLLABLE]] = "true";
+                    to[ATTR_NAMES[UiAttr::SCROLLABLE].data()] = "true";
                     break;
                 default:
                     break;
@@ -219,7 +219,7 @@ namespace OHOS::uitest {
             }
             MarshallAccessibilityNodeInfo(elementInfo, out);
         } else {
-            LOG_I("Root node not found");
+            LOG_W("Root node not found from AccessibilityUITestAbility");
         }
     }
 

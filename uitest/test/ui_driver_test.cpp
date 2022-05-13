@@ -25,7 +25,7 @@ static vector<TouchEvent> touch_event_records;
 
 class MockController : public UiController {
 public:
-    explicit MockController() : UiController("mock_controller", "") {}
+    explicit MockController() : UiController("mock_controller") {}
 
     ~MockController() = default;
 
@@ -83,17 +83,18 @@ protected:
         auto mockController = make_unique<MockController>();
         controller_ = mockController.get();
         UiController::RegisterController(move(mockController), Priority::MEDIUM);
-        driver_ = make_unique<UiDriver>("");
+        driver_ = make_unique<UiDriver>();
     }
 
     void TearDown() override
     {
         controller_ = nullptr;
-        UiController::RemoveController("mock_controller");
+        UiController::RemoveAllControllers();
     }
 
     MockController *controller_ = nullptr;
     unique_ptr<UiDriver> driver_ = nullptr;
+    UiOpArgs opt_;
 
     ~UiDriverTest() override = default;
 };
@@ -101,10 +102,10 @@ protected:
 TEST_F(UiDriverTest, internalError)
 {
     // give no UiController, should cause internal error
-    UiController::RemoveController("mock_controller");
+    UiController::RemoveAllControllers();
     auto error = ApiCallErr(NO_ERROR);
-    auto image = WidgetImage();
-    driver_->PerformWidgetOperate(image, WidgetOp::CLICK, error);
+    auto key = Back();
+    driver_->TriggerKey(key, opt_, error);
 
     ASSERT_EQ(INTERNAL_ERROR, error.code_);
 }
@@ -124,7 +125,8 @@ TEST_F(UiDriverTest, normalInteraction)
 "index": "0",
 "resource-id": "id4",
 "bounds": "[0,0][50,50]",
-"text": "USB"
+"text": "USB",
+"type": "Text"
 },
 "children": []
 }
@@ -137,18 +139,17 @@ TEST_F(UiDriverTest, normalInteraction)
     auto selector = WidgetSelector();
     auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
     selector.AddMatcher(matcher);
-    vector<unique_ptr<WidgetImage>> images;
-    driver_->FindWidgets(selector, images, error);
+    vector<unique_ptr<Widget>> widgets;
+    driver_->FindWidgets(selector, widgets, error);
 
-    ASSERT_EQ(1, images.size());
+    ASSERT_EQ(1, widgets.size());
+    ASSERT_EQ("NONE", widgets.at(0)->GetHostTreeId()); // should return dettached widget
     // perform interactions
     error = ApiCallErr(NO_ERROR);
-    driver_->PerformWidgetOperate(*images.at(0), WidgetOp::CLICK, error);
+    driver_->OperateWidget(*widgets.at(0), WidgetOp::CLICK, opt_, error);
     ASSERT_EQ(NO_ERROR, error.code_);
     auto key = Back();
-    driver_->TriggerKey(key, error);
-    ASSERT_EQ(NO_ERROR, error.code_);
-    driver_->PerformWidgetOperate(*images.at(0), WidgetOp::CLICK, error);
+    driver_->TriggerKey(key, opt_, error);
     ASSERT_EQ(NO_ERROR, error.code_);
 }
 
@@ -192,15 +193,15 @@ TEST_F(UiDriverTest, retrieveWidgetFailure)
     auto selector = WidgetSelector();
     auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
     selector.AddMatcher(matcher);
-    vector<unique_ptr<WidgetImage>> images;
-    driver_->FindWidgets(selector, images, error);
+    vector<unique_ptr<Widget>> widgets;
+    driver_->FindWidgets(selector, widgets, error);
 
-    ASSERT_EQ(1, images.size());
+    ASSERT_EQ(1, widgets.size());
 
     // mock another dom on which the target widget is missing, and perform click
     controller_->SetDomFrame(mockDom1);
     error = ApiCallErr(NO_ERROR);
-    driver_->PerformWidgetOperate(*images.at(0), WidgetOp::CLICK, error);
+    driver_->OperateWidget(*widgets.at(0), WidgetOp::CLICK, opt_, error);
 
     // retrieve widget failed should be marked as exception
     ASSERT_EQ(WIDGET_LOST, error.code_);
@@ -236,16 +237,16 @@ TEST_F(UiDriverTest, scrollSearchRetrieveSubjectWidgetFailed)
     auto scrollWidgetSelector = WidgetSelector();
     auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
     scrollWidgetSelector.AddMatcher(matcher);
-    vector<unique_ptr<WidgetImage>> images;
-    driver_->FindWidgets(scrollWidgetSelector, images, error);
+    vector<unique_ptr<Widget>> widgets;
+    driver_->FindWidgets(scrollWidgetSelector, widgets, error);
 
-    ASSERT_EQ(1, images.size());
+    ASSERT_EQ(1, widgets.size());
 
     // mock another dom on which the scroll-widget is missing, and perform scroll-search
     controller_->SetDomFrame(mockDom1);
     error = ApiCallErr(NO_ERROR);
     auto targetWidgetSelector = WidgetSelector();
-    ASSERT_EQ(nullptr, driver_->ScrollSearch(*images.at(0), targetWidgetSelector, error, 0));
+    ASSERT_EQ(nullptr, driver_->ScrollSearch(*widgets.at(0), targetWidgetSelector, opt_, error));
     // retrieve scroll widget failed should be marked as exception
     ASSERT_EQ(WIDGET_LOST, error.code_);
     ASSERT_TRUE(error.message_.find(scrollWidgetSelector.Describe()) != string::npos)
@@ -280,16 +281,16 @@ TEST_F(UiDriverTest, scrollSearchTargetWidgetNotExist)
     auto scrollWidgetSelector = WidgetSelector();
     auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
     scrollWidgetSelector.AddMatcher(matcher);
-    vector<unique_ptr<WidgetImage>> images;
-    driver_->FindWidgets(scrollWidgetSelector, images, error);
+    vector<unique_ptr<Widget>> widgets;
+    driver_->FindWidgets(scrollWidgetSelector, widgets, error);
 
-    ASSERT_EQ(1, images.size());
+    ASSERT_EQ(1, widgets.size());
 
     error = ApiCallErr(NO_ERROR);
     auto targetWidgetMatcher = WidgetAttrMatcher(ATTR_TEXT, "wyz", EQ);
     auto targetWidgetSelector = WidgetSelector();
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
-    ASSERT_EQ(nullptr, driver_->ScrollSearch(*images.at(0), targetWidgetSelector, error, 0));
+    ASSERT_EQ(nullptr, driver_->ScrollSearch(*widgets.at(0), targetWidgetSelector, opt_, error));
 }
 
 TEST_F(UiDriverTest, scrollSearchCheckSubjectWidget)
@@ -303,7 +304,8 @@ TEST_F(UiDriverTest, scrollSearchCheckSubjectWidget)
 {
 "attributes": {
 "bounds": "[0,200][600,1000]",
-"text": "USB"
+"text": "USB",
+"type": "List"
 },
 "children": []
 }
@@ -316,7 +318,7 @@ TEST_F(UiDriverTest, scrollSearchCheckSubjectWidget)
     auto scrollWidgetSelector = WidgetSelector();
     auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
     scrollWidgetSelector.AddMatcher(matcher);
-    vector<unique_ptr<WidgetImage>> images;
+    vector<unique_ptr<Widget>> images;
     driver_->FindWidgets(scrollWidgetSelector, images, error);
 
     ASSERT_EQ(1, images.size());
@@ -325,7 +327,8 @@ TEST_F(UiDriverTest, scrollSearchCheckSubjectWidget)
     auto targetWidgetMatcher = WidgetAttrMatcher(ATTR_TEXT, "wyz", EQ);
     auto targetWidgetSelector = WidgetSelector();
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
-    driver_->ScrollSearch(*images.at(0), targetWidgetSelector, error, 0);
+    opt_.scrollWidgetDeadZone_ = 0; // set deadzone to 0 for easy computation
+    driver_->ScrollSearch(*images.at(0), targetWidgetSelector, opt_, error);
     // check the scroll action events, should be acted on the subject node specified by WidgetMatcher
     ASSERT_TRUE(!touch_event_records.empty());
     auto &firstEvent = touch_event_records.at(0);
@@ -363,7 +366,8 @@ TEST_F(UiDriverTest, scrollSearchCheckDirection)
 {
 "attributes": {
 "bounds": "[0,0][50,50]",
-"text": "USB"
+"text": "USB",
+"type": "List"
 },
 "children": []
 }]})";
@@ -373,15 +377,16 @@ TEST_F(UiDriverTest, scrollSearchCheckDirection)
     auto scrollWidgetSelector = WidgetSelector();
     auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
     scrollWidgetSelector.AddMatcher(matcher);
-    vector<unique_ptr<WidgetImage>> images;
-    driver_->FindWidgets(scrollWidgetSelector, images, error);
-    ASSERT_EQ(1, images.size());
+    vector<unique_ptr<Widget>> widgets;
+    driver_->FindWidgets(scrollWidgetSelector, widgets, error);
+    ASSERT_EQ(1, widgets.size());
 
     error = ApiCallErr(NO_ERROR);
     auto targetWidgetMatcher = WidgetAttrMatcher(ATTR_TEXT, "wyz", EQ);
     auto targetWidgetSelector = WidgetSelector();
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
-    driver_->ScrollSearch(*images.at(0), targetWidgetSelector, error, 0);
+    opt_.scrollWidgetDeadZone_ = 0; // set deadzone to 0 for easy computation
+    driver_->ScrollSearch(*widgets.at(0), targetWidgetSelector, opt_, error);
     // check the scroll action events, should be acted on the specified node
     ASSERT_TRUE(!touch_event_records.empty());
     // should scroll-search upward (cy_from<cy_to) then downward (cy_from>cy_to)
@@ -413,32 +418,32 @@ TEST_F(UiDriverTest, scrollSearchCheckCount_targetNotExist)
     // mocked widget text
     const vector<string> domFrameSet[4] = {
         {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})"
         },
         {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})"
         },
         {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WLJ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})"
         },
         {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WLJ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WLJ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})"
         }
     };
 
@@ -446,10 +451,10 @@ TEST_F(UiDriverTest, scrollSearchCheckCount_targetNotExist)
     auto scrollWidgetSelector = WidgetSelector();
     auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
     scrollWidgetSelector.AddMatcher(matcher);
-    vector<unique_ptr<WidgetImage>> images;
-    driver_->FindWidgets(scrollWidgetSelector, images, error);
+    vector<unique_ptr<Widget>> widgets;
+    driver_->FindWidgets(scrollWidgetSelector, widgets, error);
 
-    ASSERT_EQ(1, images.size());
+    ASSERT_EQ(1, widgets.size());
 
     auto targetWidgetMatcher = WidgetAttrMatcher(ATTR_TEXT, "xyz", EQ); // widget that will never be found
     auto targetWidgetSelector = WidgetSelector();
@@ -457,10 +462,11 @@ TEST_F(UiDriverTest, scrollSearchCheckCount_targetNotExist)
 
     const uint32_t expectedSearchCount[] = {3, 4, 5, 5};
     vector<string> domFrames;
+    opt_.scrollWidgetDeadZone_ = 0; // set deadzone to 0 for easy computation
     for (size_t index = 0; index < 4; index++) {
         controller_->SetDomFrames(domFrameSet[index]);
         // check search result
-        ASSERT_EQ(nullptr, driver_->ScrollSearch(*images.at(0), targetWidgetSelector, error, 0));
+        ASSERT_EQ(nullptr, driver_->ScrollSearch(*widgets.at(0), targetWidgetSelector, opt_, error));
         // check scroll-search count
         ASSERT_EQ(expectedSearchCount[index], controller_->GetConsumedDomFrameCount()) << index;
     }
@@ -471,32 +477,32 @@ TEST_F(UiDriverTest, scrollSearchCheckCount_targetExist)
     auto error = ApiCallErr(NO_ERROR);
     const vector<string> domFrameSet[4] = {
         {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})"
         },
         {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"XYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WLJ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"XYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})"
         },
         {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})"
         },
         {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"XYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","id":"100","text":"WYZ"},"children":[]})"
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"XYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WLJ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
+            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})"
         }
     };
 
@@ -504,9 +510,9 @@ TEST_F(UiDriverTest, scrollSearchCheckCount_targetExist)
     auto scrollWidgetSelector = WidgetSelector();
     auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
     scrollWidgetSelector.AddMatcher(matcher);
-    vector<unique_ptr<WidgetImage>> images;
-    driver_->FindWidgets(scrollWidgetSelector, images, error);
-    ASSERT_EQ(1, images.size());
+    vector<unique_ptr<Widget>> widgets;
+    driver_->FindWidgets(scrollWidgetSelector, widgets, error);
+    ASSERT_EQ(1, widgets.size());
 
     auto targetWidgetMatcher = WidgetAttrMatcher(ATTR_TEXT, "WYZ", EQ);
     auto targetWidgetSelector = WidgetSelector();
@@ -517,106 +523,65 @@ TEST_F(UiDriverTest, scrollSearchCheckCount_targetExist)
     for (size_t index = 0; index < 4; index++) {
         controller_->SetDomFrames(domFrameSet[index]);
         // check search result
-        ASSERT_NE(nullptr, driver_->ScrollSearch(*images.at(0), targetWidgetSelector, error, 0));
+        ASSERT_NE(nullptr, driver_->ScrollSearch(*widgets.at(0), targetWidgetSelector, opt_, error));
+        ASSERT_EQ("NONE", widgets.at(0)->GetHostTreeId()); // should return dettached widget
         // check scroll-search count
         ASSERT_EQ(expectedSearchCount[index], controller_->GetConsumedDomFrameCount()) << index;
     }
 }
 
-TEST_F(UiDriverTest, widget2Image)
-{
-    constexpr auto mockDom = R"({
-"attributes": {
-"bounds": "[0,0][100,100]",
-"index": "0",
-"resource-id": "id1",
-"text": ""
-},
-"children": [
-{
-"attributes": {
-"bounds": "[0,0][100,100]",
-"hashcode": "888",
-"index": "0",
-"resource-id": "id4",
-"text": "USB"
-},
-"children": []
-}
-]
-}
-)";
-    controller_->SetDomFrame(mockDom);
-
-    auto error = ApiCallErr(NO_ERROR);
-    auto selector = WidgetSelector();
-    auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
-    selector.AddMatcher(matcher);
-    vector<unique_ptr<WidgetImage>> images;
-    driver_->FindWidgets(selector, images, error);
-
-    ASSERT_EQ(1, images.size());
-    // check attributes are correctly inflated
-    ASSERT_EQ("888", images.at(0)->GetHashCode());
-    ASSERT_TRUE(images.at(0)->GetSelectionDesc().find(selector.Describe()) != string::npos);
-}
-
-TEST_F(UiDriverTest, updateWidgetImage)
+TEST_F(UiDriverTest, getWidgetSnapshot)
 {
     constexpr auto mockDom0 = R"({
-"attributes": {
-"bounds": "[0,0][100,100]",
-"text": ""},
+"attributes": {"bounds": "[0,0][100,100]", "text": ""},
 "children": [
 {
 "attributes": {
 "bounds": "[0,0][50,50]",
 "hashcode": "12345",
-"text": "USB"},
+"text": "USB","type": "Text"},
 "children": []}]})";
     controller_->SetDomFrame(mockDom0);
 
     auto error = ApiCallErr(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher = WidgetAttrMatcher(ATTR_HASHCODE, "12345", EQ);
+    auto matcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HASHCODE], "12345", EQ);
     selector.AddMatcher(matcher);
-    vector<unique_ptr<WidgetImage>> images;
-    driver_->FindWidgets(selector, images, error);
-    ASSERT_EQ(1, images.size());
-    ASSERT_EQ("USB", images.at(0)->GetAttribute(ATTR_TEXT, ""));
+    vector<unique_ptr<Widget>> widgets;
+    driver_->FindWidgets(selector, widgets, error);
+    ASSERT_EQ(1, widgets.size());
+    ASSERT_EQ("USB", widgets.at(0)->GetAttr(ATTR_TEXT, ""));
 
     // mock new UI
     constexpr auto mockDom1 = R"({
-"attributes": {
-"bounds": "[0,0][100,100]",
-"text": ""},
+"attributes": {"bounds": "[0,0][100,100]", "text": ""},
 "children": [
 {
 "attributes": {
 "bounds": "[0,0][50,50]",
 "hashcode": "12345",
-"text": "WYZ"},
+"text": "WYZ","type": "Text"},
 "children": []}]})";
     controller_->SetDomFrame(mockDom1);
     // we should be able to refresh WidgetImage on the new UI
-    driver_->UpdateWidgetImage(*images.at(0), error);
+    auto snapshot = driver_->GetWidgetSnapshot(*widgets.at(0), error);
     ASSERT_EQ(NO_ERROR, error.code_);
-    ASSERT_EQ("WYZ", images.at(0)->GetAttribute(ATTR_TEXT, "")); // attribute should be updated to new value
-
+    ASSERT_NE(nullptr, snapshot);
+    ASSERT_EQ("WYZ", snapshot->GetAttr(ATTR_TEXT, "")); // attribute should be updated to new value
+    ASSERT_EQ("NONE", snapshot->GetHostTreeId()); // snapshot should be detattched
     // mock new UI
     constexpr auto mockDom2 = R"({
-"attributes": {
-"bounds": "[0,0][100,100]",
-"text": ""},
+"attributes": {"bounds": "[0,0][100,100]", "text": ""},
 "children": [
 {
 "attributes": {
 "bounds": "[0,0][50,50]",
 "hashcode": "23456",
-"text": "ZL"},
+"text": "ZL", "type":"Button"},
 "children": []}]})";
     controller_->SetDomFrame(mockDom2);
     // we should not be able to refresh WidgetImage on the new UI since its gone (hashcode and attributes changed)
-    driver_->UpdateWidgetImage(*images.at(0), error);
+    snapshot = driver_->GetWidgetSnapshot(*widgets.at(0), error);
     ASSERT_EQ(WIDGET_LOST, error.code_);
+    ASSERT_EQ(nullptr, snapshot);
 }

@@ -14,8 +14,6 @@
  */
 
 #include "ipc_transactors.h"
-
-#include "common_defines.h"
 #include "common_utilities_hpp.h"
 #include "json.hpp"
 
@@ -30,23 +28,23 @@ namespace OHOS::uitest {
         return increasingMessageId++;
     }
 
-    void MessageTransceiver::EmitCall(string_view apiId, string_view caller, string_view params)
+    void MessageTransceiver::EmitCall(string_view dataParcel)
     {
         TransactionMessage msg = {
-            .apiId_=string(apiId),
-            .callerParcel_=string(caller),
-            .paramsParcel_=string(params)
+            .id_ = NextMessageId(),
+            .type_ = TransactionType::CALL,
+            .dataParcel_ = string(dataParcel)
         };
-        msg.id_ = NextMessageId();
-        msg.type_ = TransactionType::CALL;
         EmitMessage(msg);
     }
 
-    void MessageTransceiver::EmitReply(const TransactionMessage &request, string_view reply)
+    void MessageTransceiver::EmitReply(const TransactionMessage &request, string_view dataParcel)
     {
-        TransactionMessage msg = request; // keep the calling id
-        msg.resultParcel_ = string(reply);
-        msg.type_ = TransactionType::REPLY;
+        TransactionMessage msg = {
+            .id_ = request.id_, // keep the calling id
+            .type_ = TransactionType::REPLY,
+            .dataParcel_ = string(dataParcel)
+        };
         EmitMessage(msg);
     }
 
@@ -219,18 +217,58 @@ namespace OHOS::uitest {
         }
     }
 
+    /** Serialization function: Marshal ApiCallInfo into string.*/
+    static string MarshalApiCall(const ApiCallInfo& call)
+    {
+        auto data = nlohmann::json::array();
+        data.emplace_back(call.apiId_);
+        data.emplace_back(call.callerObjRef_);
+        data.emplace_back(call.paramList_);
+        return data.dump();
+    }
+
+    /** Serialization function: Unmarshal ApiCallInfo from string.*/
+    static void UnmarshalApiCall(ApiCallInfo& call, string_view from)
+    {
+        auto data = nlohmann::json::parse(from);
+        call.apiId_ = data.at(INDEX_ZERO);
+        call.callerObjRef_ = data.at(INDEX_ONE);
+        call.paramList_ = data.at(INDEX_TWO);
+    }
+
+    /** Serialization function: Marshal ApiReplyInfo into string.*/
+    static string MarshalApiReply(const ApiReplyInfo& reply)
+    {
+        auto data = nlohmann::json::array();
+        data.emplace_back(reply.resultValue_);
+        data.emplace_back(reply.exception_.code_);
+        data.emplace_back(reply.exception_.message_);
+        return data.dump();
+    }
+
+    /** Serialization function: Unmarshal ApiReplyInfo from string.*/
+    static void UnmarshalApiReply(ApiReplyInfo& reply, string_view from)
+    {
+        auto data = nlohmann::json::parse(from);
+        reply.resultValue_ = data.at(INDEX_ZERO);
+        reply.exception_.code_ = data.at(INDEX_ONE);
+        reply.exception_.message_ = data.at(INDEX_TWO);
+    }
+
     uint32_t TransactionServer::RunLoop()
     {
         DCHECK(transceiver_ != nullptr && callFunc_ != nullptr);
         while (true) {
             TransactionMessage message;
             auto status = transceiver_->PollCallReply(message, WAIT_TRANSACTION_MS);
-            string reply;
+            auto call = ApiCallInfo();
+            auto reply = ApiReplyInfo();
             switch (status) {
                 case MessageTransceiver::PollStatus::SUCCESS:
                     DCHECK(message.type_ == TransactionType::CALL);
-                    reply = callFunc_(message.apiId_, message.callerParcel_, message.paramsParcel_);
-                    transceiver_->EmitReply(message, reply);
+                    UnmarshalApiCall(call, message.dataParcel_);
+                    callFunc_(call, reply);
+                    transceiver_->EmitReply(message, MarshalApiReply(reply));
                     break;
                 case MessageTransceiver::PollStatus::ABORT_CONNECTION_DIED:
                     return EXIT_CODE_FAILURE;
@@ -242,62 +280,57 @@ namespace OHOS::uitest {
         }
     }
 
-    void TransactionServer::SetCallFunction(function<string(string_view, string_view, string_view)> func)
+    void TransactionServer::SetCallFunction(function<void(const ApiCallInfo&, ApiReplyInfo&)> func)
     {
         callFunc_ = std::move(func);
     }
 
-    static string CreateResultForDiedConnection()
+    static void CreateResultForDiedConnection(ApiReplyInfo& reply)
     {
-        json data;
-        json exceptionInfo;
-        exceptionInfo[KEY_CODE] = "INTERNAL_ERROR";
-        exceptionInfo[KEY_MESSAGE] = "connection with uitest_daemon is dead";
-        data[KEY_EXCEPTION] = exceptionInfo;
-        return data.dump();
+        reply.exception_.code_ = ErrCode::INTERNAL_ERROR;
+        reply.exception_.message_ = "connection with uitest_daemon is dead";
     }
 
-    static string CreateResultForConcurrentInvoke(string_view processingApi, string_view incomingApi)
+    static void CreateResultForConcurrentInvoke(string_view processing, string_view incoming, ApiReplyInfo& reply)
     {
         static constexpr string_view msg = "uitest-api dose not allow calling concurrently, current processing:";
-        json data;
-        json exceptionInfo;
-        exceptionInfo[KEY_CODE] = "USAGE_ERROR";
-        exceptionInfo[KEY_MESSAGE] = string(msg) + string(processingApi) + ", incoming: " + string(incomingApi);
-        data[KEY_EXCEPTION] = exceptionInfo;
-        return data.dump();
+        reply.exception_.code_ = ErrCode::USAGE_ERROR;
+        reply.exception_.message_ = string(msg) + string(processing) + ", incoming: " + string(incoming);
     }
 
-    string TransactionClient::InvokeApi(string_view apiId, string_view caller, string_view params)
+    void TransactionClient::InvokeApi(const ApiCallInfo& call, ApiReplyInfo& reply)
     {
         unique_lock<mutex> stateLock(stateMtx_);
         // return immediately if the cs-connection has died or concurrent invoking occurred
         if (transceiver_ == nullptr || connectionDied_) {
-            return CreateResultForDiedConnection();
+            CreateResultForDiedConnection(reply);
+            return;
         }
         if (!processingApi_.empty()) {
-            return CreateResultForConcurrentInvoke(processingApi_, apiId);
+            CreateResultForConcurrentInvoke(processingApi_, call.apiId_, reply);
+            return;
         }
-        processingApi_ = apiId;
+        processingApi_ = call.apiId_;
         stateLock.unlock(); // unlock, allow reentry, make it possible to check and reject concurrent usage
-        transceiver_->EmitCall(apiId, caller, params);
+        transceiver_->EmitCall(MarshalApiCall(call));
         while (true) {
             TransactionMessage message;
             auto status = transceiver_->PollCallReply(message, WAIT_TRANSACTION_MS);
-            string reply;
             switch (status) {
                 case MessageTransceiver::PollStatus::SUCCESS:
                     DCHECK(message.type_ == TransactionType::REPLY);
                     stateLock.lock();
                     processingApi_.clear();
                     stateLock.unlock();
-                    return message.resultParcel_;
+                    UnmarshalApiReply(reply, message.dataParcel_);
+                    return;
                 case MessageTransceiver::PollStatus::ABORT_CONNECTION_DIED:
                 case MessageTransceiver::PollStatus::ABORT_REQUEST_EXIT:
                     stateLock.lock();
                     connectionDied_ = true;
                     stateLock.unlock();
-                    return CreateResultForDiedConnection();
+                    CreateResultForDiedConnection(reply);
+                    return;
                 default: // continue wait-and-fetch
                     break;
             }

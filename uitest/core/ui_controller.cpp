@@ -19,9 +19,8 @@ namespace OHOS::uitest {
     mutex UiController::controllerAccessMutex_;
     list<unique_ptr<UiController>> UiController::controllers_;
     UiControllerProvider UiController::controllerProvider_;
-    set<string> UiController::controllerInstalledDevices_;
 
-    UiController::UiController(string_view name, string_view device) : name_(name), targetDevice_(device) {}
+    UiController::UiController(string_view name) : name_(name) {}
 
     void UiController::RegisterControllerProvider(UiControllerProvider func)
     {
@@ -30,7 +29,9 @@ namespace OHOS::uitest {
 
     void UiController::RegisterController(unique_ptr<UiController> controller, Priority priority)
     {
-        if (controller == nullptr) { return; }
+        if (controller == nullptr) {
+            return;
+        }
         LOG_I("Add controller '%{public}s', priority=%{public}d", controller->GetName().c_str(), priority);
         controller->SetPriority(priority);
         lock_guard<mutex> guard(controllerAccessMutex_);
@@ -39,29 +40,25 @@ namespace OHOS::uitest {
         controllers_.sort(UiController::Comparator);
     }
 
-    void UiController::InstallForDevice(string_view device)
+    void UiController::InstallFromProvider()
     {
-        string name(device);
-        if (!device.empty() && controllerInstalledDevices_.find(name) == controllerInstalledDevices_.end()) {
+        if (controllers_.empty() && controllerProvider_ != nullptr) {
             // install controller on-demand
-            if (controllerProvider_ != nullptr) {
-                LOG_I("Begin to install UiControllers for device '%{public}s'", name.c_str());
-                auto receiver = list<unique_ptr<UiController>>();
-                controllerProvider_(device, receiver);
-                for (auto &uPtr:receiver) {
-                    const auto priority = uPtr->priority_;
-                    RegisterController(move(uPtr), priority);
-                }
-                controllerInstalledDevices_.insert(move(name));
+            LOG_I("Begin to install UiControllers");
+            auto receiver = list<unique_ptr<UiController>>();
+            controllerProvider_(receiver);
+            for (auto &uPtr : receiver) {
+                const auto priority = uPtr->priority_;
+                RegisterController(move(uPtr), priority);
             }
         }
     }
 
-    const UiController *UiController::GetController(string_view targetDevice)
+    const UiController *UiController::GetController()
     {
         lock_guard<mutex> guard(controllerAccessMutex_);
-        for (auto &ctrl:controllers_) {
-            if (ctrl->targetDevice_ == targetDevice && ctrl->IsWorkable()) {
+        for (auto &ctrl : controllers_) {
+            if (ctrl->IsWorkable()) {
                 return ctrl.get();
             }
         }
@@ -89,6 +86,7 @@ namespace OHOS::uitest {
     void UiController::RemoveAllControllers()
     {
         lock_guard<mutex> guard(controllerAccessMutex_);
+        controllerProvider_ = nullptr;
         controllers_.clear();
     }
-}
+} // namespace OHOS::uitest

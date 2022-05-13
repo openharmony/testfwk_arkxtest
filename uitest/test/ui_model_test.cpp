@@ -21,7 +21,7 @@ using namespace std;
 static constexpr auto ATTR_TEXT = "text";
 static constexpr auto ATTR_ID = "id";
 
-TEST(UiModelTest, testRectBase)
+TEST(RectTest, testRectBase)
 {
     Rect rect(100, 200, 300, 400);
     ASSERT_EQ(100, rect.left_);
@@ -33,40 +33,17 @@ TEST(UiModelTest, testRectBase)
     ASSERT_EQ(rect.GetCenterY(), (300 + 400) / 2);
     ASSERT_EQ(rect.GetHeight(), 400 - 300);
     ASSERT_EQ(rect.GetWidth(), 200 - 100);
-
-    ASSERT_TRUE(rect.CompareTo(rect));
-    Rect rect1(0, 0, 0, 0);
-    ASSERT_FALSE(rect.CompareTo(rect1));
 }
 
-TEST(UiModelTest, testRectOverlappingDimensions)
+TEST(RectAlgorithmTest, testCheckEqual)
 {
-    Rect rect0(100, 200, 300, 400);
-    Rect rect1(0, 100, 0, 100);
-    Rect rect2(200, 300, 400, 500);
-    Rect rect3(100, 150, 200, 350);
-    Rect rect4(150, 250, 350, 450);
-    Rect rect5(120, 180, 320, 380);
-
-    int32_t dx = 0, dy = 0;
-    rect0.ComputeOverlappingDimensions(rect1, dx, dy); // no overlap
-    ASSERT_EQ(0, dx);
-    ASSERT_EQ(0, dy);
-    rect0.ComputeOverlappingDimensions(rect2, dx, dy); // no overlap
-    ASSERT_EQ(0, dx);
-    ASSERT_EQ(0, dy);
-    rect0.ComputeOverlappingDimensions(rect3, dx, dy); // x,y-overlap
-    ASSERT_EQ(50, dx);
-    ASSERT_EQ(50, dy);
-    rect0.ComputeOverlappingDimensions(rect4, dx, dy); // x,y-overlap
-    ASSERT_EQ(50, dx);
-    ASSERT_EQ(50, dy);
-    rect0.ComputeOverlappingDimensions(rect5, dx, dy); // fully contained
-    ASSERT_EQ(60, dx);
-    ASSERT_EQ(60, dy);
+    Rect rect(100, 200, 300, 400);
+    ASSERT_TRUE(RectAlgorithm::CheckEqual(rect, rect));
+    Rect rect1(0, 0, 0, 0);
+    ASSERT_FALSE(RectAlgorithm::CheckEqual(rect, rect1));
 }
 
-TEST(UiModelTest, testRectIntersection)
+TEST(RectAlgorithmTest, testRectIntersection)
 {
     Rect rect0(100, 200, 300, 400);
     Rect rect1(0, 100, 0, 100);
@@ -76,28 +53,79 @@ TEST(UiModelTest, testRectIntersection)
     Rect rect5(120, 180, 320, 380);
 
     Rect intersection {0, 0, 0, 0};
-    ASSERT_FALSE(rect0.ComputeIntersection(rect1, intersection)); // no overlap
-    ASSERT_FALSE(rect0.ComputeIntersection(rect2, intersection)); // no overlap
-    ASSERT_TRUE(rect0.ComputeIntersection(rect3, intersection)); // x,y-overlap
+    ASSERT_FALSE(RectAlgorithm::CheckIntersectant(rect0, rect1));
+    ASSERT_FALSE(RectAlgorithm::CheckIntersectant(rect0, rect2));
+    ASSERT_TRUE(RectAlgorithm::CheckIntersectant(rect0, rect3));
+    ASSERT_FALSE(RectAlgorithm::ComputeIntersection(rect0, rect1, intersection)); // no overlap
+    ASSERT_FALSE(RectAlgorithm::ComputeIntersection(rect0, rect2, intersection)); // no overlap
+    ASSERT_TRUE(RectAlgorithm::ComputeIntersection(rect0, rect3, intersection)); // x,y-overlap
     ASSERT_EQ(100, intersection.left_);
     ASSERT_EQ(150, intersection.right_);
     ASSERT_EQ(300, intersection.top_);
     ASSERT_EQ(350, intersection.bottom_);
     intersection = {0, 0, 0, 0};
-    ASSERT_TRUE(rect0.ComputeIntersection(rect4, intersection)); // x,y-overlap
+    ASSERT_TRUE(RectAlgorithm::CheckIntersectant(rect0, rect4));
+    ASSERT_TRUE(RectAlgorithm::ComputeIntersection(rect0, rect4, intersection)); // x,y-overlap
     ASSERT_EQ(150, intersection.left_);
     ASSERT_EQ(200, intersection.right_);
     ASSERT_EQ(350, intersection.top_);
     ASSERT_EQ(400, intersection.bottom_);
     intersection = {0, 0, 0, 0};
-    ASSERT_TRUE(rect0.ComputeIntersection(rect5, intersection)); // fully contained
+    ASSERT_TRUE(RectAlgorithm::CheckIntersectant(rect0, rect5));
+    ASSERT_TRUE(RectAlgorithm::ComputeIntersection(rect0, rect5, intersection)); // fully contained
     ASSERT_EQ(120, intersection.left_);
     ASSERT_EQ(180, intersection.right_);
     ASSERT_EQ(320, intersection.top_);
     ASSERT_EQ(380, intersection.bottom_);
 }
 
-TEST(UiModelTest, testWidgetAttributes)
+TEST(RectAlgorithmTest, testPointInRect)
+{
+    auto rect = Rect(10, 20, 10, 20);
+    // x not in section
+    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(5, 15)));
+    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(10, 15)));
+    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(25, 15)));
+    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(20, 15)));
+    // y not in section
+    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(15, 5)));
+    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(15, 10)));
+    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(15, 25)));
+    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(15, 20)));
+    // x and y not in section
+    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(5, 5)));
+    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(25, 25)));
+    // x and y in section
+    ASSERT_TRUE(RectAlgorithm::IsInnerPoint(rect, Point(15, 15)));
+}
+
+TEST(RectAlgorithmTest, testPointOnRectEdge)
+{
+    auto rect = Rect(10, 20, 10, 20);
+    // on corner
+    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(10, 10)));
+    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(10, 20)));
+    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(20, 10)));
+    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(20, 20)));
+    // on edge
+    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(10, 15)));
+    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(15, 10)));
+    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(20, 15)));
+    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(15, 20)));
+    // in rect
+    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(15, 15)));
+    // out of rect
+    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(5, 10)));
+    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(25, 10)));
+    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(10, 5)));
+    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(10, 25)));
+    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(5, 15)));
+    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(25, 15)));
+    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(15, 5)));
+    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(15, 25)));
+}
+
+TEST(WidgetTest, testAttributes)
 {
     Widget widget("hierarchy");
     // get not-exist attribute, should return default value
@@ -111,7 +139,7 @@ TEST(UiModelTest, testWidgetAttributes)
  * its hosting tree. We must ensure that the move-created widget be same as the
  * moved one (No any attribute/filed should be lost during moving).
  * */
-TEST(UiModelTest, testWidgetSafeMovable)
+TEST(WidgetTest, testSafeMovable)
 {
     Widget widget("hierarchy");
     widget.SetAttr(ATTR_TEXT, "wyz");
@@ -131,7 +159,7 @@ TEST(UiModelTest, testWidgetSafeMovable)
     ASSERT_EQ(4, bounds.bottom_);
 }
 
-TEST(UiModelTest, testWidgetToStr)
+TEST(WidgetTest, testToStr)
 {
     Widget widget("hierarchy");
 
@@ -200,7 +228,7 @@ private:
 "children": []
 }]}]})";
 
-TEST(UiModelTest, testConstructWidgetsFromDomCheckOrder)
+TEST(WidgetTreeTest, testConstructWidgetsFromDomCheckOrder)
 {
     auto dom = nlohmann::json::parse(DOM_TEXT);
     WidgetTree tree("tree");
@@ -223,7 +251,7 @@ public:
     vector<Rect> boundsList_;
 };
 
-TEST(UiModelTest, testConstructWidgetsFromDomCheckBounds)
+TEST(WidgetTreeTest, testConstructWidgetsFromDomCheckBounds)
 {
     auto dom = nlohmann::json::parse(R"({"attributes":{"bounds":"[0,-50][100,200]"},"children":[]})");
     WidgetTree tree("tree");
@@ -237,7 +265,7 @@ TEST(UiModelTest, testConstructWidgetsFromDomCheckBounds)
     ASSERT_EQ(200, bounds.bottom_);
 }
 
-TEST(UiModelTest, testGetRelativeNode)
+TEST(WidgetTreeTest, testGetRelativeNode)
 {
     auto dom = nlohmann::json::parse(DOM_TEXT);
     WidgetTree tree("tree");
@@ -257,7 +285,7 @@ TEST(UiModelTest, testGetRelativeNode)
     ASSERT_TRUE(tree.GetChildWidget(*rootPtr, 2) == nullptr) << "Unexpected child not";
 }
 
-TEST(UiModelTest, testVisitNodesInGivenRoot)
+TEST(WidgetTreeTest, testVisitNodesInGivenRoot)
 {
     auto dom = nlohmann::json::parse(DOM_TEXT);
     WidgetTree tree("tree");
@@ -276,7 +304,7 @@ TEST(UiModelTest, testVisitNodesInGivenRoot)
     ASSERT_EQ("id00,id000,id0000", visitedTextSequence) << "Incorrect text sequence of node descendants";
 }
 
-TEST(UiModelTest, testVisitFrontNodes)
+TEST(WidgetTreeTest, testVisitFrontNodes)
 {
     auto dom = nlohmann::json::parse(DOM_TEXT);
     WidgetTree tree("tree");
@@ -295,7 +323,7 @@ TEST(UiModelTest, testVisitFrontNodes)
     ASSERT_EQ("id0,id00,id000,id0000", visitedTextSequence) << "Incorrect text sequence of front nodes";
 }
 
-TEST(UiModelTest, testVisitTearNodes)
+TEST(WidgetTreeTest, testVisitTearNodes)
 {
     auto dom = nlohmann::json::parse(DOM_TEXT);
     WidgetTree tree("tree");
@@ -314,7 +342,7 @@ TEST(UiModelTest, testVisitTearNodes)
     ASSERT_EQ("id000,id0000,id01,id010", visitedTextSequence) << "Incorrect text sequence of tear nodes";
 }
 
-TEST(UiModelTest, testBoundsAndVisibilityCorrection)
+TEST(WidgetTreeTest, testBoundsAndVisibilityCorrection)
 {
     constexpr string_view domText = R"(
 {"attributes": {"resource-id": "id0","bounds": "[0,0][100,100]"},
@@ -362,7 +390,7 @@ TEST(UiModelTest, testBoundsAndVisibilityCorrection)
     }
 }
 
-TEST(UiModelTest, testMarshalIntoDom)
+TEST(WidgetTreeTest, testMarshalIntoDom)
 {
     auto dom = nlohmann::json::parse(DOM_TEXT);
     WidgetTree tree("tree");

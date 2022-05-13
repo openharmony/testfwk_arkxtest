@@ -18,6 +18,7 @@
 
 #include <queue>
 #include <future>
+#include "frontend_api_defines.h"
 
 namespace OHOS::uitest {
     enum TransactionType : uint8_t {
@@ -28,10 +29,7 @@ namespace OHOS::uitest {
     struct TransactionMessage {
         uint32_t id_;
         TransactionType type_;
-        std::string apiId_;
-        std::string callerParcel_;
-        std::string paramsParcel_;
-        std::string resultParcel_;
+        std::string dataParcel_;
     };
 
     /**Api request/reply message transceiver.*/
@@ -50,9 +48,9 @@ namespace OHOS::uitest {
 
         void OnReceiveMessage(const TransactionMessage &message);
 
-        void EmitCall(std::string_view apiId, std::string_view caller, std::string_view params);
+        void EmitCall(std::string_view dataParcel);
 
-        void EmitReply(const TransactionMessage &request, std::string_view reply);
+        void EmitReply(const TransactionMessage &request, std::string_view replyParcel);
 
         void EmitHandshake();
 
@@ -118,17 +116,17 @@ namespace OHOS::uitest {
     public:
         uint32_t RunLoop();
 
-        void SetCallFunction(std::function<std::string(std::string_view, std::string_view, std::string_view)> func);
+        void SetCallFunction(std::function<void(const ApiCallInfo&, ApiReplyInfo&)> func);
 
     private:
         // use function pointer here to keep independent from 'core', which are not wanted by the client-side
-        std::function<std::string(std::string_view, std::string_view, std::string_view)> callFunc_;
+        std::function<void(const ApiCallInfo&, ApiReplyInfo&)> callFunc_;
     };
 
     /**Represents the api transaction client.*/
     class TransactionClient : public Transactor {
     public:
-        std::string InvokeApi(std::string_view apiId, std::string_view caller, std::string_view params);
+        void InvokeApi(const ApiCallInfo&, ApiReplyInfo&);
 
         /**Finalize both self side and server side.*/
         void Finalize() override;

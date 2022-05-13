@@ -31,12 +31,12 @@ namespace OHOS::uitest {
     };
 
     class UiController;
-    // Prototype of function that provides UiControllers for given device, used to install controllers on demand.
-    using UiControllerProvider = std::function<void(std::string_view, std::list<std::unique_ptr<UiController>> &)>;
+    // Prototype of function that provides UiControllers, used to install controllers on demand.
+    using UiControllerProvider = std::function<void(std::list<std::unique_ptr<UiController>> &)>;
 
     class UiController {
     public:
-        UiController(std::string_view name, std::string_view device);
+        explicit UiController(std::string_view name);
 
         virtual ~UiController() = default;
 
@@ -83,20 +83,18 @@ namespace OHOS::uitest {
 
         static void RemoveAllControllers();
 
-        /**Install UiControllers for target device.*/
-        static void InstallForDevice(std::string_view device);
+        /**Install UiControllers with registered provider.*/
+        static void InstallFromProvider();
 
-        /**The the currently active UiController instance for the target device, returns null if none is available.*/
-        static const UiController *GetController(std::string_view targetDevice);
+        /**The the currently active UiController, returns null if none is available.*/
+        static const UiController *GetController();
 
     private:
         const std::string name_;
-        const std::string targetDevice_;
         Priority priority_ = Priority::MEDIUM;
         static std::mutex controllerAccessMutex_;
         static std::list<std::unique_ptr<UiController>> controllers_;
         static UiControllerProvider controllerProvider_;
-        static std::set<std::string> controllerInstalledDevices_;
 
         static bool Comparator(const std::unique_ptr<UiController> &c1, const std::unique_ptr<UiController> &c2);
     };

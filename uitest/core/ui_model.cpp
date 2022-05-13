@@ -14,7 +14,6 @@
  */
 
 #include <algorithm>
-#include "common_defines.h"
 #include "ui_model.h"
 
 namespace OHOS::uitest {
@@ -23,52 +22,29 @@ namespace OHOS::uitest {
 
     static constexpr auto ROOT_HIERARCHY = "ROOT";
 
-    void Rect::ComputeOverlappingDimensions(const Rect &other, int32_t &width, int32_t &height) const
+    bool RectAlgorithm::ComputeIntersection(const Rect &ra, const Rect &rb, Rect &result)
     {
-        if (left_ >= other.right_ || right_ <= other.left_) {
-            width = 0;
-        } else {
-            array<int32_t, INDEX_FOUR> px = {left_, right_, other.left_, other.right_};
-            sort(px.begin(), px.end());
-            width = px[INDEX_TWO] - px[INDEX_ONE];
-        }
-        if (top_ >= other.bottom_ || bottom_ <= other.top_) {
-            height = 0;
-        } else {
-            array<int32_t, INDEX_FOUR> py = {top_, bottom_, other.top_, other.bottom_};
-            sort(py.begin(), py.end());
-            height = py[INDEX_TWO] - py[INDEX_ONE];
-        }
-    }
-
-    bool Rect::ComputeIntersection(const Rect &other, Rect &result) const
-    {
-        if (left_ >= other.right_ || right_ <= other.left_) {
+        if (ra.left_ >= rb.right_ || ra.right_ <= rb.left_) {
             return false;
         }
-        if (top_ >= other.bottom_ || bottom_ <= other.top_) {
+        if (ra.top_ >= rb.bottom_ || ra.bottom_ <= rb.top_) {
             return false;
         }
-        array<int32_t, INDEX_FOUR> px = {left_, right_, other.left_, other.right_};
-        array<int32_t, INDEX_FOUR> py = {top_, bottom_, other.top_, other.bottom_};
+        array<int32_t, INDEX_FOUR> px = {ra.left_, ra.right_, rb.left_, rb.right_};
+        array<int32_t, INDEX_FOUR> py = {ra.top_, ra.bottom_, rb.top_, rb.bottom_};
         sort(px.begin(), px.end());
         sort(py.begin(), py.end());
         result = {px[INDEX_ONE], px[INDEX_TWO], py[INDEX_ONE], py[INDEX_TWO]};
         return true;
     }
 
-    bool Rect::CompareTo(const Rect &other) const
-    {
-        return left_ == other.left_ && right_ == other.right_ && top_ == other.top_ && bottom_ == other.bottom_;
-    }
-
     static string Rect2JsonStr(const Rect &rect)
     {
         json data;
-        data[RECT_ATTR_LT_X] = rect.left_;
-        data[RECT_ATTR_LT_Y] = rect.top_;
-        data[RECT_ATTR_RB_X] = rect.right_;
-        data[RECT_ATTR_RB_Y] = rect.bottom_;
+        data["leftX"] = rect.left_;
+        data["topY"] = rect.top_;
+        data["rightX"] = rect.right_;
+        data["bottomY"] = rect.bottom_;
         return data.dump();
     }
 
@@ -329,11 +305,11 @@ namespace OHOS::uitest {
             } else {
                 // amend bounds, intersect with parent, compute visibility
                 auto parentBounds = findParent->second.GetBounds();
-                if (!bounds.ComputeIntersection(parentBounds, newBounds)) {
+                if (!RectAlgorithm::ComputeIntersection(bounds, parentBounds, newBounds)) {
                     newBounds = Rect(0, 0, 0, 0);
                 }
             }
-            if (!newBounds.CompareTo(bounds)) {
+            if (!RectAlgorithm::CheckEqual(newBounds, bounds)) {
                 widget.SetBounds(newBounds.left_, newBounds.right_, newBounds.top_, newBounds.bottom_);
                 LOG_D("Amend bounds %{public}s from %{public}s", widget.ToStr().c_str(), Rect2JsonStr(bounds).c_str());
             }
@@ -353,7 +329,8 @@ namespace OHOS::uitest {
         auto dict = map<string, string>();
         root.DumpAttributes(dict);
         for (auto& [name, value] : dict) {
-            if (name == ATTR_HIERARCHY) { // do not expose inner used attributes
+            if (name == ATTR_NAMES[UiAttr::HASHCODE] || name == ATTR_NAMES[UiAttr::HIERARCHY]) {
+                // do not expose inner used attributes
                 continue;
             }
             attributesData[name] = value;
@@ -361,7 +338,7 @@ namespace OHOS::uitest {
         stringstream stream;
         auto rect = root.GetBounds();
         stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
-        attributesData[ATTR_NAMES[UiAttr::BOUNDS]] = stream.str();
+        attributesData[ATTR_NAMES[UiAttr::BOUNDS].data()] = stream.str();
         
         auto childrenData = json::array();
         uint32_t childIndex = 0;

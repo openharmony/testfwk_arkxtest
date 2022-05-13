@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-#include <extern_api.h>
 #include "gtest/gtest.h"
 #include "widget_matcher.h"
 #include "ui_model.h"

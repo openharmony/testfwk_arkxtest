@@ -19,47 +19,42 @@
 #include <string>
 #include <unistd.h>
 #include "json.hpp"
-#include "common_defines.h"
 #include "common_utilities_hpp.h"
+#include "frontend_api_defines.h"
 
 namespace OHOS::uitest {
     using namespace nlohmann;
     using namespace std;
 
-    static constexpr size_t NAPI_MAX_STRING_ARG_LENGTH = 1024;
+    static constexpr size_t NAPI_MAX_BUF_LEN = 1024;
     static constexpr size_t NAPI_MAX_ARG_COUNT = 8;
+    static constexpr size_t BACKEND_OBJ_CLEAN_THRESHOLD = 20;
     // type of unexpected or napi-internal error
     static constexpr napi_status NAPI_ERR = napi_status::napi_generic_failure;
-    // the name of property that represents the metadata of the native uitest object
-    static constexpr char PROP_METADATA[] = "nativeObjectMetadata_";
-    // the name of property that represents the DataType id of the js uitest object
-    static constexpr char PROP_TYPE_ID[] = "dataType_";
-    // the name of property that represents the bound UiDriver object of the UiComponent object
-    static constexpr char PROP_BOUND_DRIVER[] = "boundUiDriver_";
-    /**mapping from primitive TypeId to napi_valuetype.*/
-    static const map<TypeId, napi_valuetype> PRIMITIVE_TYPE_MAP = {
-        {TypeId::BOOL, napi_boolean}, {TypeId::INT, napi_number},
-        {TypeId::FLOAT, napi_number}, {TypeId::STRING, napi_string}
-    };
-    /**mapping from json TypeId to JsonPropSpec info.*/
-    static const map<TypeId, pair<const JsonPropSpec*, size_t>> JSON_TYPE_SPEC_MAP = {
-        {TypeId::RECT_JSON, {RECT_JSON_PROP_SPECS, sizeof(RECT_JSON_PROP_SPECS) / sizeof(JsonPropSpec)}}
-    };
-    /**Record called js function apis. */
-    static set<string> g_CalledJsFuncNames;
-    /**StaticSyncCreator function of 'By', <b>for internal usage only</b> to convert seedBy to new By instance.*/
-    static napi_callback gInternalByCreator = nullptr;
-    /**The transaction implementer function.*/
-    using TransactFuncProto = string (*)(string_view, string_view, string_view);
+    // the name of property that represents the objectRef of the backend object
+    static constexpr char PROP_BACKEND_OBJ_REF[] = "backendObjRef";
+    /**For dfx usage, records the uncalled js apis. */
+    static set<string> g_unCalledJsFuncNames;
+    /**For gc usage, records the backend objRefs about to delete. */
+    static set<string> g_backendObjsAboutToDelete;
 
     // use external setup/transact/disposal callback functions
     extern bool SetupTransactionEnv(string_view token);
 
-    extern string TransactionClientFunc(string_view apiId, string_view caller, string_view params);
+    extern void TransactionClientFunc(const ApiCallInfo &, ApiReplyInfo &);
 
     extern void DisposeTransactionEnv();
 
-    static TransactFuncProto transactFunc = TransactionClientFunc;
+    static function<void(const ApiCallInfo &, ApiReplyInfo &)> transactFunc = TransactionClientFunc;
+
+    /** Convert js string to cpp string.*/
+    static string JsStrToCppStr(napi_env env, napi_value jsStr)
+    {
+        size_t bufSize = 0;
+        char buf[NAPI_MAX_BUF_LEN] = {0};
+        NAPI_CALL_BASE(env, napi_get_value_string_utf8(env, jsStr, buf, NAPI_MAX_BUF_LEN, &bufSize), "");
+        return string(buf, bufSize);
+    }
 
     /**Lifecycle callback, setup transaction environment, called externally.*/
     static napi_value EnvironmentSetup(napi_env env, napi_callback_info info)
@@ -74,11 +69,7 @@ namespace OHOS::uitest {
         napi_value argv[1] = {0};
         NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &value, nullptr));
         NAPI_ASSERT(env, argc > 0, "Need session token argument!");
-        constexpr size_t bufSize = NAPI_MAX_STRING_ARG_LENGTH;
-        char buf[bufSize] = {0};
-        size_t strLen = 0;
-        NAPI_CALL(env, napi_get_value_string_utf8(env, argv[0], buf, bufSize, &strLen));
-        setUpDone = SetupTransactionEnv(string_view(buf, strLen));
+        setUpDone = SetupTransactionEnv(JsStrToCppStr(env, argv[0]));
         LOG_I("End setup transaction environment, result=%{public}d", setUpDone);
         NAPI_ASSERT(env, setUpDone, "SetupTransactionEnv failed");
         return nullptr;
@@ -94,19 +85,9 @@ namespace OHOS::uitest {
     }
 
     /**Encapsulates the data objects needed in once api transaction.*/
-    struct TransactionData {
-        string_view apiId_;
-        bool isStaticApi_ = false;
-        size_t argc_ = NAPI_MAX_ARG_COUNT;
+    struct TransactionContext {
         napi_value jsThis_ = nullptr;
-        napi_value argv_[NAPI_MAX_ARG_COUNT] = {nullptr};
-        TypeId argTypes_[NAPI_MAX_ARG_COUNT] = {TypeId::NONE};
-        TypeId returnType_ = TypeId::NONE;
-        // custom inspector that evaluates the transaction result value and returns napi_error is any.
-        function<napi_value(napi_env, napi_value)> resultInspector_ = nullptr;
-        // the parcel data fields
-        string jsThisParcel_;
-        string argvParcel_;
+        ApiCallInfo callInfo_;
     };
 
     static napi_value CreateJsException(napi_env env, string_view code, string_view msg)
@@ -119,10 +100,10 @@ namespace OHOS::uitest {
     }
 
     /**Set object constructor function to global as attribute.*/
-    static napi_status MountJsConstructorToGlobal(napi_env env, TypeId id, napi_value function)
+    static napi_status MountJsConstructorToGlobal(napi_env env, string_view typeName, napi_value function)
     {
         NAPI_ASSERT_BASE(env, function != nullptr, "Null constructor function", napi_invalid_arg);
-        string name = "constructor_" + to_string(id);
+        const string name = "constructor_" + string(typeName);
         napi_value global = nullptr;
         NAPI_CALL_BASE(env, napi_get_global(env, &global), NAPI_ERR);
         NAPI_CALL_BASE(env, napi_set_named_property(env, global, name.c_str(), function), NAPI_ERR);
@@ -130,16 +111,15 @@ namespace OHOS::uitest {
     }
 
     /**Get object constructor function from global as attribute.*/
-    static napi_status GetJsConstructorFromGlobal(napi_env env, TypeId id, napi_value* pFunction)
+    static napi_status GetJsConstructorFromGlobal(napi_env env, string_view typeName, napi_value *pFunction)
     {
         NAPI_ASSERT_BASE(env, pFunction != nullptr, "Null constructor receiver", napi_invalid_arg);
-        string name = "constructor_" + to_string(id);
+        const string name = "constructor_" + string(typeName);
         napi_value global = nullptr;
         NAPI_CALL_BASE(env, napi_get_global(env, &global), NAPI_ERR);
         NAPI_CALL_BASE(env, napi_get_named_property(env, global, name.c_str(), pFunction), NAPI_ERR);
         return napi_ok;
     }
-
 
     /**Conversion between value and string, using the builtin JSON methods.*/
     static napi_status ValueStringConvert(napi_env env, napi_value in, napi_value *out, bool stringify)
@@ -162,702 +142,301 @@ namespace OHOS::uitest {
         return napi_ok;
     }
 
-    /**Marshal object into json, throw error and return false if the object cannot be serialized.*/
-    static napi_status MarshalObject(napi_env env, napi_value in, TypeId type, json &out)
+    /**Get the readable name of the error enum value.*/
+    static string GetErrorName(ErrCode code)
     {
-        NAPI_ASSERT_BASE(env, in != nullptr, "Illegal null arguments", napi_invalid_arg);
-        // construct a jsObject
-        napi_value typeValue = nullptr;
-        napi_value jsObjValue = nullptr;
-        NAPI_CALL_BASE(env, napi_create_object(env, &jsObjValue), NAPI_ERR);
-        NAPI_CALL_BASE(env, napi_create_uint32(env, type, &typeValue), NAPI_ERR);
-        NAPI_CALL_BASE(env, napi_set_named_property(env, jsObjValue, KEY_DATA_TYPE, typeValue), NAPI_ERR);
-        napi_value metaValue = in;
-        if (PRIMITIVE_TYPE_MAP.find(type) == PRIMITIVE_TYPE_MAP.end()
-            && JSON_TYPE_SPEC_MAP.find(type) == JSON_TYPE_SPEC_MAP.end()) {
-            NAPI_CALL_BASE(env, napi_get_named_property(env, in, PROP_METADATA, &metaValue), NAPI_ERR);
-        }
-        NAPI_CALL_BASE(env, napi_set_named_property(env, jsObjValue, KEY_DATA_VALUE, metaValue), NAPI_ERR);
-        // stringify jsObject to string
-        napi_value stringValue = nullptr;
-        NAPI_CALL_BASE(env, ValueStringConvert(env, jsObjValue, &stringValue, true), NAPI_ERR);
-        // parse to cpp json
-        size_t len = 0;
-        constexpr size_t bufSize = NAPI_MAX_STRING_ARG_LENGTH;
-        char chars[bufSize] = {0};
-        NAPI_CALL_BASE(env, napi_get_value_string_utf8(env, stringValue, chars, bufSize, &len), NAPI_ERR);
-        out = json::parse(string(chars, len));
-        return napi_ok;
+        static const std::map<ErrCode, std::string> names = {
+            {NO_ERROR, "NO_ERROR"},       {INTERNAL_ERROR, "INTERNAL_ERROR"},
+            {WIDGET_LOST, "WIDGET_LOST"}, {ASSERTION_FAILURE, "ASSERTION_FAILURE"},
+            {USAGE_ERROR, "USAGE_ERROR"},
+        };
+        const auto find = names.find(code);
+        return (find == names.end()) ? "UNKNOWN" : find->second;
     }
 
     /**Unmarshal object from json, throw error and return false if the object cannot be deserialized.*/
-    static napi_status UnmarshalObject(napi_env env, const json &in, napi_value *pOut, const TransactionData &tp)
+    static napi_status UnmarshalObject(napi_env env, const json &in, napi_value *pOut, napi_value jsThis)
     {
-        NAPI_ASSERT_BASE(env, pOut != nullptr && in.contains(KEY_DATA_VALUE), "Illegal arguments", napi_invalid_arg);
-        TypeId type = in[KEY_DATA_TYPE];
-        NAPI_ASSERT_BASE(env, type == tp.returnType_, "Illegal result value type", napi_invalid_arg);
-        // parse to jsObject and apply the 'value' property
-        napi_value stringValue = nullptr;
-        napi_value jsObjValue = nullptr;
-        napi_value metaValue = nullptr;
-        NAPI_CALL_BASE(env, napi_create_string_utf8(env, in.dump().c_str(), NAPI_AUTO_LENGTH, &stringValue), NAPI_ERR);
-        NAPI_CALL_BASE(env, ValueStringConvert(env, stringValue, &jsObjValue, false), NAPI_ERR);
-        NAPI_CALL_BASE(env, napi_get_named_property(env, jsObjValue, KEY_DATA_VALUE, &metaValue), NAPI_ERR);
-        if (PRIMITIVE_TYPE_MAP.find(type) != PRIMITIVE_TYPE_MAP.end()
-            || JSON_TYPE_SPEC_MAP.find(type) != JSON_TYPE_SPEC_MAP.end()) {
-            *pOut = metaValue;
-        } else {
-            // create object instance and bind metadata
-            napi_value constructor;
-            NAPI_CALL_BASE(env, GetJsConstructorFromGlobal(env, type, &constructor), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_new_instance(env, constructor, 0, nullptr, pOut), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_set_named_property(env, *pOut, PROP_METADATA, metaValue), NAPI_ERR);
-            if (type == COMPONENT) {
-                // bind the the UiDriver that find this UiComponent
-                NAPI_CALL_BASE(env, napi_set_named_property(env, *pOut, PROP_BOUND_DRIVER, tp.jsThis_), NAPI_ERR);
+        NAPI_ASSERT_BASE(env, pOut != nullptr, "Illegal arguments", napi_invalid_arg);
+        const auto type = in.type();
+        if (type == nlohmann::detail::value_t::null) { // return null
+            NAPI_CALL_BASE(env, napi_get_null(env, pOut), NAPI_ERR);
+            return napi_ok;
+        }
+        if (type != nlohmann::detail::value_t::string) { // non-string value, convert and return object
+            NAPI_CALL_BASE(env, napi_create_string_utf8(env, in.dump().c_str(), NAPI_AUTO_LENGTH, pOut), NAPI_ERR);
+            NAPI_CALL_BASE(env, ValueStringConvert(env, *pOut, pOut, false), NAPI_ERR);
+            return napi_ok;
+        }
+        const auto cppString = in.get<string>();
+        string frontendTypeName;
+        bool bindJsThis = false;
+        for (const auto &classDef : FRONTEND_CLASS_DEFS) {
+            const auto objRefFormat = string(classDef->name_) + "#";
+            if (cppString.find(objRefFormat) == 0) {
+                frontendTypeName = string(classDef->name_);
+                bindJsThis = classDef->bindUiDriver_;
+                break;
             }
         }
-        return napi_ok;
-    }
-
-    /**Generate transaction outgoing arguments-data parcel.*/
-    static napi_status MarshalTransactionData(napi_env env, TransactionData &tp)
-    {
-        LOG_D("Start to marshal transaction parameters, count=%{public}zu", tp.argc_);
-        auto paramList = json::array();
-        for (size_t idx = 0; idx < tp.argc_; idx++) {
-            json paramItem;
-            NAPI_CALL_BASE(env, MarshalObject(env, tp.argv_[idx], tp.argTypes_[idx], paramItem), NAPI_ERR);
-            paramList.emplace_back(paramItem);
-            // erase parameters which are expected not to be used in the reset transaction procedure
-            tp.argv_[idx] = nullptr;
+        NAPI_CALL_BASE(env, napi_create_string_utf8(env, cppString.c_str(), NAPI_AUTO_LENGTH, pOut), NAPI_ERR);
+        if (frontendTypeName.empty()) { // plain string, return it
+            return napi_ok;
         }
-        tp.argc_ = 0;
-        tp.argvParcel_ = paramList.dump();
-        if (!tp.isStaticApi_ && tp.jsThis_ != nullptr) {
-            json receiverItem;
-            LOG_D("Start to serialize jsThis");
-            napi_value typeProp = nullptr;
-            NAPI_CALL_BASE(env, napi_get_named_property(env, tp.jsThis_, PROP_TYPE_ID, &typeProp), NAPI_ERR);
-            uint32_t id = TypeId::NONE;
-            NAPI_CALL_BASE(env, napi_get_value_uint32(env, typeProp, &id), NAPI_ERR);
-            NAPI_CALL_BASE(env, MarshalObject(env, tp.jsThis_, static_cast<TypeId>(id), receiverItem), NAPI_ERR);
-            tp.jsThisParcel_ = receiverItem[KEY_DATA_VALUE].dump();
-        } else {
-            tp.jsThisParcel_ = "{}";
+        LOG_D("Convert to frondend object: '%{public}s'", frontendTypeName.c_str());
+        // covert to wrapper object and bind the backend objectRef
+        napi_value refValue = *pOut;
+        napi_value constructor = nullptr;
+        NAPI_CALL_BASE(env, GetJsConstructorFromGlobal(env, frontendTypeName, &constructor), NAPI_ERR);
+        NAPI_CALL_BASE(env, napi_new_instance(env, constructor, 0, nullptr, pOut), NAPI_ERR);
+        NAPI_CALL_BASE(env, napi_set_named_property(env, *pOut, PROP_BACKEND_OBJ_REF, refValue), NAPI_ERR);
+        if (bindJsThis) { // bind the jsThis object
+            LOG_D("Bind jsThis");
+            NAPI_ASSERT_BASE(env, jsThis != nullptr, "null jsThis", NAPI_ERR);
+            NAPI_CALL_BASE(env, napi_set_named_property(env, *pOut, "boundObject", jsThis), NAPI_ERR);
         }
         return napi_ok;
     }
 
-    /**Evaluate and convert transaction result-data parcel to object. Return the exception raised during the
+    /**Evaluate and convert transaction reply to object. Return the exception raised during the
      * transaction if any, else return the result object. */
-    template<bool kReturnMultiple = false>
-    static napi_value UnmarshalTransactResult(napi_env env, TransactionData &tp, string_view resultParcel)
+    static napi_value UnmarshalReply(napi_env env, const TransactionContext &ctx, const ApiReplyInfo &reply)
     {
+        LOG_D("Start to Unmarshal transaction result");
+        if (reply.exception_.code_ != ErrCode::NO_ERROR) { // raise error
+            const auto code = GetErrorName(reply.exception_.code_);
+            const auto &message = reply.exception_.message_;
+            LOG_I("ErrorInfo: code='%{public}s', message='%{public}s'", code.c_str(), message.c_str());
+            return CreateJsException(env, code, message);
+        }
+        LOG_D("Start to Unmarshal resutrn value: %{public}s", reply.resultValue_.dump().c_str());
+        const auto resultType = reply.resultValue_.type();
         napi_value result = nullptr;
-        NAPI_CALL(env, napi_get_undefined(env, &result));
-        LOG_D("Start to Unmarshal transaction results: '%{public}s'", resultParcel.data());
-        json reply = json::parse(resultParcel);
-        if (reply.contains(KEY_EXCEPTION)) {
-            json error = reply[KEY_EXCEPTION];
-            string codeStr = error.contains(KEY_CODE) ? error[KEY_CODE] : "unknown";
-            string msgStr = error.contains(KEY_MESSAGE) ? error[KEY_MESSAGE] : "unknown";
-            LOG_D("ErrorInfo: code='%{public}s', message='%{public}s'", codeStr.data(), msgStr.data());
-            return CreateJsException(env, codeStr, msgStr);
+        if (resultType == nlohmann::detail::value_t::null) { // return null
+            NAPI_CALL(env, napi_get_null(env, &result));
+        } else if (resultType == nlohmann::detail::value_t::array) { // return array
+            NAPI_CALL(env, napi_create_array_with_length(env, reply.resultValue_.size(), &result));
+            for (size_t idx = 0; idx < reply.resultValue_.size(); idx++) {
+                napi_value item = nullptr;
+                NAPI_CALL(env, UnmarshalObject(env, reply.resultValue_.at(idx), &item, ctx.jsThis_));
+                NAPI_CALL(env, napi_set_element(env, result, idx, item));
+            }
+        } else { // return single value
+            NAPI_CALL(env, UnmarshalObject(env, reply.resultValue_, &result, ctx.jsThis_));
         }
-        NAPI_ASSERT(env, reply.contains(KEY_UPDATED_CALLER) && reply.contains(KEY_RESULT_VALUES), "Fields missing");
-        if (!tp.isStaticApi_ && tp.jsThis_ != nullptr) {
-            LOG_D("Begin to update jsThis");
-            const string meta = reply[KEY_UPDATED_CALLER].dump();
-            napi_value nValue;
-            NAPI_CALL(env, napi_create_string_utf8(env, meta.c_str(), meta.length(), &nValue));
-            NAPI_CALL(env, ValueStringConvert(env, nValue, &nValue, false));
-            NAPI_CALL(env, napi_set_named_property(env, tp.jsThis_, PROP_METADATA, nValue));
-        }
-        if (tp.returnType_ == TypeId::NONE) {
-            return result;
-        }
-        json resultValues = reply[KEY_RESULT_VALUES];
-        const size_t resultCount = resultValues.size();
-        napi_value objects;
-        NAPI_CALL(env, napi_create_array_with_length(env, resultCount, &objects));
-        LOG_D("Begin to deserialize result, count=%{public}zu", resultCount);
-        for (size_t idx = 0; idx < resultCount; idx++) {
-            napi_value obj = nullptr;
-            NAPI_CALL(env, UnmarshalObject(env, resultValues.at(idx), &obj, tp));
-            NAPI_CALL(env, napi_set_element(env, objects, idx, obj));
-        }
-        if constexpr(kReturnMultiple) {
-            result = objects;
-        } else if (resultCount > 0) {
-            NAPI_CALL(env, napi_get_element(env, objects, 0, &result));
-        }
-        return tp.resultInspector_ != nullptr ? tp.resultInspector_(env, result) : result;
+        return result;
     }
 
     /**Call api with parameters out, wait for and return result value or throw raised exception.*/
-    template<bool kReturnMultiple = false>
-    static napi_value TransactSync(napi_env env, TransactionData &tp)
+    napi_value TransactSync(napi_env env, TransactionContext &ctx)
     {
-        LOG_D("TargetApi=%{public}s", tp.apiId_.data());
-        NAPI_CALL(env, MarshalTransactionData(env, tp));
-        auto resultParcel = transactFunc(tp.apiId_.data(), tp.jsThisParcel_.c_str(), tp.argvParcel_.c_str());
-        auto resultValue = UnmarshalTransactResult<kReturnMultiple>(env, tp, resultParcel);
+        LOG_D("TargetApi=%{public}s", ctx.callInfo_.apiId_.data());
+        auto reply = ApiReplyInfo();
+        transactFunc(ctx.callInfo_, reply);
+        auto resultValue = UnmarshalReply(env, ctx, reply);
         auto isError = false;
         NAPI_CALL(env, napi_is_error(env, resultValue, &isError));
         if (isError) {
             NAPI_CALL(env, napi_throw(env, resultValue));
             NAPI_CALL(env, napi_get_undefined(env, &resultValue)); // return undefined it's error
         }
+        // notify backend objects deleting
+        if (g_backendObjsAboutToDelete.size() >= BACKEND_OBJ_CLEAN_THRESHOLD) {
+            auto gcCall = ApiCallInfo{.apiId_ = "BackendObjectsCleaner"};
+            auto gcReply = ApiReplyInfo();
+            for (auto& ref : g_unCalledJsFuncNames) {
+                gcCall.paramList_.emplace_back(ref);
+            }
+            transactFunc(gcCall, gcReply);
+            g_backendObjsAboutToDelete.clear();
+        }
         return resultValue;
     }
 
     /**Encapsulates the data objects needed for async transaction.*/
-    struct AsyncTransactionData {
-        TransactionData data_;
-        string resultParcel_;
+    struct AsyncTransactionCtx {
+        TransactionContext ctx_;
+        ApiReplyInfo reply_;
         napi_async_work asyncWork_ = nullptr;
         napi_deferred deferred_ = nullptr;
         napi_ref jsThisRef_ = nullptr;
     };
 
     /**Call api with parameters out, return a promise.*/
-    template<bool kReturnMultiple = false>
-    static napi_value TransactAsync(napi_env env, TransactionData &tp)
+    static napi_value TransactAsync(napi_env env, TransactionContext &ctx)
     {
         constexpr uint32_t refCount = 1;
-        LOG_D("TargetApi=%{public}s", tp.apiId_.data());
-        NAPI_CALL(env, MarshalTransactionData(env, tp));
+        LOG_D("TargetApi=%{public}s", ctx.callInfo_.apiId_.data());
         napi_value resName;
         NAPI_CALL(env, napi_create_string_latin1(env, __FUNCTION__, NAPI_AUTO_LENGTH, &resName));
-        auto atd = new AsyncTransactionData();
-        atd->data_ = tp;
+        auto aCtx = new AsyncTransactionCtx();
+        aCtx->ctx_ = ctx;
         napi_value promise;
-        NAPI_CALL(env, napi_create_promise(env, &(atd->deferred_), &promise));
-        NAPI_CALL(env, napi_create_reference(env, tp.jsThis_, refCount, &(atd->jsThisRef_)));
-        napi_create_async_work(env, nullptr, resName,
+        NAPI_CALL(env, napi_create_promise(env, &(aCtx->deferred_), &promise));
+        NAPI_CALL(env, napi_create_reference(env, ctx.jsThis_, refCount, &(aCtx->jsThisRef_)));
+        napi_create_async_work(
+            env, nullptr, resName,
             [](napi_env env, void *data) {
-                auto atd = reinterpret_cast<AsyncTransactionData *>(data);
+                auto aCtx = reinterpret_cast<AsyncTransactionCtx *>(data);
                 // NOT:: use 'auto&' rather than 'auto', or the result will be set to copy-constructed temp-object
-                auto &tp = atd->data_;
-                atd->resultParcel_ = transactFunc(tp.apiId_.data(), tp.jsThisParcel_.c_str(), tp.argvParcel_.c_str());
+                auto &ctx = aCtx->ctx_;
+                transactFunc(ctx.callInfo_, aCtx->reply_);
             },
             [](napi_env env, napi_status status, void *data) {
-                auto atd = reinterpret_cast<AsyncTransactionData *>(data);
-                napi_get_reference_value(env, atd->jsThisRef_, &(atd->data_.jsThis_));
-                auto resultValue = UnmarshalTransactResult<kReturnMultiple>(env, atd->data_, atd->resultParcel_);
-                napi_delete_reference(env, atd->jsThisRef_);
+                auto aCtx = reinterpret_cast<AsyncTransactionCtx *>(data);
+                napi_get_reference_value(env, aCtx->jsThisRef_, &(aCtx->ctx_.jsThis_));
+                auto resultValue = UnmarshalReply(env, aCtx->ctx_, aCtx->reply_);
+                napi_delete_reference(env, aCtx->jsThisRef_);
                 auto isError = false;
                 napi_is_error(env, resultValue, &isError);
                 if (isError) {
-                    napi_reject_deferred(env, atd->deferred_, resultValue);
+                    napi_reject_deferred(env, aCtx->deferred_, resultValue);
                 } else {
-                    napi_resolve_deferred(env, atd->deferred_, resultValue);
+                    napi_resolve_deferred(env, aCtx->deferred_, resultValue);
                 }
-                delete atd;
+                delete aCtx;
             },
-            (void *) atd, &(atd->asyncWork_));
-        napi_queue_async_work(env, atd->asyncWork_);
+            (void *)aCtx, &(aCtx->asyncWork_));
+        napi_queue_async_work(env, aCtx->asyncWork_);
         return promise;
     }
 
-    /** Check json data properties (existance and type).*/
-    static napi_status CheckJsonProps(napi_env env, napi_value value, const pair<const JsonPropSpec*, size_t>& info,
-                                      const map<TypeId, napi_valuetype>& propTypeMap)
+    static napi_status GetBackendObjRefProp(napi_env env, napi_value value, napi_value* pOut)
     {
-        NAPI_ASSERT_BASE(env, value = nullptr, "Null argument", napi_invalid_arg);
-        const JsonPropSpec* specs = info.first;
-        size_t propCount = info.second;
-        if (specs == nullptr || propCount == 0) {
+        napi_valuetype type = napi_undefined;
+        NAPI_CALL_BASE(env, napi_typeof(env, value, &type), NAPI_ERR);
+        if (type != napi_object) {
+            *pOut = nullptr;
             return napi_ok;
         }
-        bool hasProp = false;
-        napi_value propValue = nullptr;
-        napi_valuetype jsType = napi_undefined;
-        for (size_t idx = 0; idx < propCount; idx++) {
-            const auto& spec = specs[idx];
-            NAPI_CALL_BASE(env, napi_has_named_property(env, value, spec.name_.data(), &hasProp), NAPI_ERR);
-            NAPI_ASSERT_BASE(env, hasProp || !spec.required_, "Required prop missing", napi_invalid_arg);
-            NAPI_CALL_BASE(env, napi_get_named_property(env, value, spec.name_.data(), &propValue), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_typeof(env, propValue, &jsType), NAPI_ERR);
-            auto find = propTypeMap.find(spec.type_);
-            NAPI_ASSERT_BASE(env, find != propTypeMap.end(), "Illegal property type", napi_invalid_arg);
-            NAPI_ASSERT_BASE(env, find->second == jsType, "Illegal property type", napi_invalid_arg);
+        bool hasRef = false;
+        NAPI_CALL_BASE(env, napi_has_named_property(env, value, PROP_BACKEND_OBJ_REF, &hasRef), NAPI_ERR);
+        if (!hasRef) {
+            *pOut = nullptr;
+        } else {
+            NAPI_CALL_BASE(env, napi_get_named_property(env, value, PROP_BACKEND_OBJ_REF, pOut), NAPI_ERR);
         }
         return napi_ok;
     }
 
-    /**Extract incoming callback_info arguments and check the data types.*/
-    static napi_status ExtractCallbackInfo(napi_env env, napi_callback_info info, size_t minArgc,
-                                           const vector<TypeId> &argTypes, TransactionData &tp)
+    /**Generic js-api callback.*/
+    static napi_value GenericCallback(napi_env env, napi_callback_info info)
     {
-        tp.argc_ = NAPI_MAX_ARG_COUNT; // extract as much argument as possible
-        void* jsFunc = nullptr;
-        NAPI_CALL_BASE(env, napi_get_cb_info(env, info, &(tp.argc_), tp.argv_, &(tp.jsThis_), &jsFunc), NAPI_ERR);
-        if (jsFunc != nullptr) {
-            g_CalledJsFuncNames.insert(string(reinterpret_cast<const char*>(jsFunc)));
-        }
-        if (!tp.isStaticApi_) {
-            NAPI_ASSERT_BASE(env, tp.jsThis_ != nullptr, "Null jsThis!", napi_invalid_arg);
-        } else {
-            NAPI_CALL_BASE(env, napi_get_undefined(env, &(tp.jsThis_)), NAPI_ERR);
-        }
-        // check argument count and types
-        NAPI_ASSERT_BASE(env, tp.argc_ >= minArgc, "Illegal argument count", napi_invalid_arg);
-        NAPI_ASSERT_BASE(env, argTypes.size() >= tp.argc_, "Illegal argument count", napi_invalid_arg);
-        napi_valuetype valueType;
-        for (size_t idx = 0; idx < tp.argc_; idx++) {
-            tp.argTypes_[idx] = argTypes.at(idx);
-            NAPI_CALL_BASE(env, napi_typeof(env, tp.argv_[idx], &valueType), NAPI_ERR);
-            const bool isNullOrUndefined = valueType == napi_null || valueType == napi_undefined;
-            NAPI_ASSERT_BASE(env, !isNullOrUndefined, "Null argument", napi_invalid_arg);
-            const TypeId dt = argTypes.at(idx);
-            auto findPrimitive = PRIMITIVE_TYPE_MAP.find(dt);
-            auto findJsonSpec = JSON_TYPE_SPEC_MAP.find(dt);
-            if (findPrimitive != PRIMITIVE_TYPE_MAP.end()) {
-                NAPI_ASSERT_BASE(env, valueType == findPrimitive->second, "Illegal argument type", napi_invalid_arg);
-            } else if (findJsonSpec != JSON_TYPE_SPEC_MAP.end()) {
-                NAPI_ASSERT_BASE(env, valueType == napi_object, "Illegal argument type", napi_object_expected);
-                auto& tMap = PRIMITIVE_TYPE_MAP;
-                NAPI_CALL_BASE(env, CheckJsonProps(env, tp.argv_[idx], findJsonSpec->second, tMap), napi_invalid_arg);
-            } else {
-                NAPI_ASSERT_BASE(env, valueType == napi_object, "Illegal argument type", napi_object_expected);
-                // check the typeId property (set during object initialization)
-                napi_value idProp = nullptr;
-                int32_t idValue = TypeId::NONE;
-                NAPI_CALL_BASE(env, napi_get_named_property(env, tp.argv_[idx], PROP_TYPE_ID, &idProp), NAPI_ERR);
-                NAPI_CALL_BASE(env, napi_get_value_int32(env, idProp, &idValue), NAPI_ERR);
-                NAPI_ASSERT_BASE(env, idValue == dt, "Illegal argument type", napi_invalid_arg);
+        // extract callback data
+        TransactionContext ctx;
+        napi_value argv[NAPI_MAX_ARG_COUNT] = {nullptr};
+        auto count = NAPI_MAX_ARG_COUNT;
+        void *pData = nullptr;
+        NAPI_CALL(env, napi_get_cb_info(env, info, &count, argv, &(ctx.jsThis_), &pData));
+        NAPI_ASSERT(env, pData != nullptr, "Null methodDef");
+        auto methodDef = reinterpret_cast<const FrontendMethodDef *>(pData);
+        g_unCalledJsFuncNames.erase(string(methodDef->name_)); // api used
+        // 1. marshal parameters into json-array
+        napi_value paramArray = nullptr;
+        NAPI_CALL(env, napi_create_array_with_length(env, count, &paramArray));
+        for (size_t idx = 0; idx < count; idx++) {
+            napi_value item = nullptr; // convert to backendObjRef if any
+            NAPI_CALL(env, GetBackendObjRefProp(env, argv[idx], &item));
+            if (item == nullptr) {
+                item = argv[idx];
             }
+            NAPI_CALL(env, napi_set_element(env, paramArray, idx, item));
         }
-        return napi_ok;
-    }
-
-    /**Generic template of functions that run asynchronously.*/
-    template<CStr kNativeApiId, TypeId kReturnType, bool kReturnMultiple, TypeId... kArgTypes>
-    static napi_value GenericAsyncFunc(napi_env env, napi_callback_info info)
-    {
-        static_assert(!string_view(kNativeApiId).empty(), "Native function name cannot be empty");
-        constexpr size_t argc = sizeof...(kArgTypes);
-        vector<TypeId> types = {};
-        if constexpr(argc > 0) {
-            types = {kArgTypes...};
+        napi_value jsTempObj = nullptr;
+        NAPI_CALL(env, ValueStringConvert(env, paramArray, &jsTempObj, true));
+        ctx.callInfo_.paramList_ = nlohmann::json::parse(JsStrToCppStr(env, jsTempObj));
+        // 2. marshal jsThis into json (backendObjRef)
+        if (!methodDef->static_) {
+            NAPI_CALL(env, GetBackendObjRefProp(env, ctx.jsThis_, &jsTempObj));
+            ctx.callInfo_.callerObjRef_ = JsStrToCppStr(env, jsTempObj);
         }
-        TransactionData tp {.apiId_ = kNativeApiId, .returnType_ = kReturnType};
-        NAPI_CALL(env, ExtractCallbackInfo(env, info, argc, types, tp));
-        return TransactAsync<kReturnMultiple>(env, tp);
-    }
-
-    /**Template of JS wrapper-object static creator functions.*/
-    template<CStr kNativeApiId, TypeId kReturnType, TypeId... kArgTypes>
-    static napi_value StaticSyncCreator(napi_env env, napi_callback_info info)
-    {
-        static_assert(!string_view(kNativeApiId).empty(), "Native function name cannot be empty");
-        constexpr size_t argc = sizeof...(kArgTypes);
-        vector<TypeId> types = {};
-        if constexpr(argc > 0) {
-            types = {kArgTypes...};
-        }
-        TransactionData tp = {.apiId_=kNativeApiId, .isStaticApi_ = true, .returnType_=kReturnType};
-        if (info == nullptr) {
-            // allow call without arguments
-            tp.argc_ = 0;
-            tp.jsThis_ = nullptr;
+        // 3. fill-in apiId
+        ctx.callInfo_.apiId_ = methodDef->name_;
+        // 4. call out, aync or async
+        if (methodDef->fast_) {
+            return TransactSync(env, ctx);
         } else {
-            NAPI_CALL(env, ExtractCallbackInfo(env, info, argc, types, tp));
+            return TransactAsync(env, ctx);
         }
-        return TransactSync(env, tp);
-    }
-
-    /**Convert global seed-By (for program syntactic sugar purpose) to new By object.*/
-    static napi_status EnsureNonSeedBy(napi_env env, TransactionData &tp)
-    {
-        bool hasProp = false;
-        NAPI_CALL_BASE(env, napi_has_named_property(env, tp.jsThis_, PROP_METADATA, &hasProp), NAPI_ERR);
-        if (!hasProp) { // seed-by is pre-created without metadata
-            NAPI_ASSERT_BASE(env, gInternalByCreator != nullptr, "Static By-Creator is null", NAPI_ERR);
-            LOG_D("Convert seedBy to new instance");
-            tp.jsThis_ = gInternalByCreator(env, nullptr);
-        }
-        return napi_ok;
-    }
-
-    /**Template for plain attribute By-builder functions.*/
-    template<UiAttr kAttr>
-    static napi_value ByAttributeBuilder(napi_env env, napi_callback_info info)
-    {
-        constexpr auto attrName = ATTR_NAMES[kAttr];
-        constexpr auto attrType = ATTR_TYPES[kAttr];
-        // incoming args: testValue, matchPattern(optional)
-        TransactionData tp = {.apiId_= "WidgetSelector::AddMatcher"};
-        NAPI_CALL(env, ExtractCallbackInfo(env, info, 0, {attrType, TypeId::INT}, tp));
-        if (attrType == TypeId::BOOL && tp.argc_ == 0) {
-            // for attribute of type bool, the input-arg is default to true: By.enabled()===By.enabled(true)
-            NAPI_CALL(env, napi_get_boolean(env, true, &(tp.argv_[INDEX_ZERO])));
-            tp.argTypes_[INDEX_ZERO] = TypeId::BOOL;
-            tp.argc_++;
-        }
-        NAPI_ASSERT(env, tp.argc_ >= 1, "Insufficient argument"); // require attribute testValue
-        NAPI_CALL(env, EnsureNonSeedBy(env, tp));
-        if (tp.argc_ == 1) {
-            // fill-in default match pattern
-            NAPI_CALL(env, napi_create_int32(env, ValueMatchRule::EQ, &(tp.argv_[INDEX_TWO])));
-            tp.argTypes_[INDEX_TWO] = TypeId::INT;
-            tp.argc_++;
-        } else {
-            // move match pattern to index2
-            tp.argv_[INDEX_TWO] = tp.argv_[INDEX_ONE];
-            tp.argTypes_[INDEX_TWO] = TypeId::INT;
-        }
-        // move testValue to index1, [convert it from any type to string]
-        if (attrType != TypeId::STRING) {
-            NAPI_CALL(env, ValueStringConvert(env, tp.argv_[INDEX_ZERO], &(tp.argv_[INDEX_ONE]), true));
-        } else {
-            tp.argv_[INDEX_ONE] = tp.argv_[INDEX_ZERO];
-        }
-        tp.argTypes_[INDEX_ONE] = TypeId::STRING;
-        // fill-in attribute name to index0
-        NAPI_CALL(env, napi_create_string_utf8(env, attrName, NAPI_AUTO_LENGTH, &(tp.argv_[INDEX_ZERO])));
-        tp.argTypes_[INDEX_ZERO] = TypeId::STRING;
-        tp.argc_++;
-        TransactSync(env, tp);
-        // return jsThis, which has updated its metaData in the transaction
-        return tp.jsThis_;
-    }
-
-    /**Template for relative By-builder functions.*/
-    template<CStr kNativeApiId>
-    static napi_value ByRelativeBuilder(napi_env env, napi_callback_info info)
-    {
-        // incoming args: relative-By
-        TransactionData tp = {.apiId_=kNativeApiId};
-        NAPI_CALL(env, ExtractCallbackInfo(env, info, 1, {TypeId::BY}, tp));
-        NAPI_CALL(env, EnsureNonSeedBy(env, tp));
-        TransactSync(env, tp);
-        // return jsThis, which has updated its metaData in the transaction
-        return tp.jsThis_;
-    }
-
-    /**Template for all UiComponent-attribute-getter functions, which forward invocation to bound UiDriver api.*/
-    template<UiAttr kAttr>
-    static napi_value ComponentAttrGetter(napi_env env, napi_callback_info info)
-    {
-        constexpr auto attrName = ATTR_NAMES[kAttr];
-        constexpr auto attrType = ATTR_TYPES[kAttr];
-        // retrieve attribute value as string and convert to target type
-        TransactionData tp = {.apiId_= "UiDriver::GetWidgetAttribute", .returnType_=TypeId::STRING};
-        tp.resultInspector_ = [](napi_env env, napi_value result) -> napi_value {
-            napi_valuetype type = napi_null;
-            if (result != nullptr) {
-                NAPI_CALL(env, napi_typeof(env, result, &type));
-            }
-            // convert from string to to json-object
-            if (type == napi_null || type == napi_undefined || attrType == TypeId::STRING) {
-                return result;
-            } else {
-                napi_value convertedResult = result;
-                NAPI_CALL(env, ValueStringConvert(env, result, &convertedResult, false));
-                return convertedResult;
-            }
-        };
-        NAPI_CALL(env, ExtractCallbackInfo(env, info, 0, {}, tp));
-        // get the holding uiDriver which has found and will operate me
-        napi_value uiDriver = nullptr;
-        NAPI_CALL(env, napi_get_named_property(env, tp.jsThis_, PROP_BOUND_DRIVER, &uiDriver));
-        NAPI_ASSERT(env, uiDriver != nullptr, "UiDriver not found for UiComponent");
-        // Transformation:: {widget.getId() ===> uiDriver.GetWidgetAttribute(widget,"id")}
-        tp.argv_[0] = tp.jsThis_;
-        tp.argTypes_[0] = TypeId::COMPONENT;
-        tp.jsThis_ = uiDriver;
-        tp.argc_++;
-        // add attributeName parameter
-        NAPI_CALL(env, napi_create_string_utf8(env, attrName, NAPI_AUTO_LENGTH, &(tp.argv_[1])));
-        tp.argTypes_[1] = TypeId::STRING;
-        tp.argc_++;
-        return TransactAsync(env, tp);
-    }
-
-    /**Template for all UiComponent touch functions, which forward invocation to bound UiDriver api, return void.*/
-    template<WidgetOp kAction>
-    static napi_value ComponentOperator(napi_env env, napi_callback_info info)
-    {
-        TransactionData tp = {.apiId_= "UiDriver::PerformWidgetOperate", .returnType_=TypeId::NONE};
-        NAPI_CALL(env, ExtractCallbackInfo(env, info, 0, {}, tp));
-        // get the holding uiDriver which has found and will operate me
-        napi_value uiDriver = nullptr;
-        NAPI_CALL(env, napi_get_named_property(env, tp.jsThis_, PROP_BOUND_DRIVER, &uiDriver));
-        NAPI_ASSERT(env, uiDriver != nullptr, "UiDriver not found for UiComponent");
-        // Transformation:: {widget.click() ===> uiDriver.PerformAction(widget,CLICK)}
-        tp.argv_[0] = tp.jsThis_;
-        tp.argTypes_[0] = TypeId::COMPONENT;
-        tp.jsThis_ = uiDriver;
-        tp.argc_++;
-        // add actionCode parameter
-        NAPI_CALL(env, napi_create_int32(env, kAction, &(tp.argv_[1])));
-        tp.argTypes_[1] = TypeId::INT;
-        tp.argc_++;
-        return TransactAsync(env, tp);
-    }
-
-    /**Generic template for all UiComponent functions, which forward invocation to bound UiDriver api.*/
-    template<CStr kNativeApiId, TypeId kReturnType, TypeId... kArgTypes>
-    static napi_value GenericComponentFunc(napi_env env, napi_callback_info info)
-    {
-        static_assert(!string_view(kNativeApiId).empty(), "Native function name cannot be empty");
-        constexpr size_t argc = sizeof...(kArgTypes);
-        vector<TypeId> types = {};
-        if constexpr(argc > 0) {
-            types = {kArgTypes...};
-        }
-        TransactionData tp = {.apiId_= kNativeApiId, .returnType_=kReturnType};
-        NAPI_CALL(env, ExtractCallbackInfo(env, info, argc, types, tp));
-        // get the holding uiDriver which has found and will operate me
-        napi_value uiDriver = nullptr;
-        NAPI_CALL(env, napi_get_named_property(env, tp.jsThis_, PROP_BOUND_DRIVER, &uiDriver));
-        NAPI_ASSERT(env, uiDriver != nullptr, "UiDriver not found for UiComponent");
-        // Transformation:: {widget.func(arg0,arg1) ===> uiDriver.func(widget,arg0,arg1)}, need right shift args
-        for (size_t idx = tp.argc_; idx > 0; idx--) {
-            tp.argv_[idx] = tp.argv_[idx - 1];
-            tp.argTypes_[idx] = tp.argTypes_[idx - 1];
-        }
-        tp.argv_[0] = tp.jsThis_;
-        tp.argTypes_[0] = TypeId::COMPONENT;
-        tp.jsThis_ = uiDriver;
-        tp.argc_++;
-        return TransactAsync(env, tp);
-    }
-
-    /**Template for all UiDriver-key-action functions, return void.*/
-    template<UiKey kKey>
-    static napi_value UiDriverKeyOperator(napi_env env, napi_callback_info info)
-    {
-        TransactionData tp = {.apiId_= "UiDriver::TriggerKey"};
-        NAPI_CALL(env, ExtractCallbackInfo(env, info, 0, {TypeId::INT}, tp));
-        if constexpr(kKey != UiKey::GENERIC) {
-            // for named key, add keyCode parameter
-            tp.argc_ = 1;
-            NAPI_CALL(env, napi_create_int32(env, kKey, &(tp.argv_[0])));
-            tp.argTypes_[0] = TypeId::INT;
-        } else {
-            // for generic key, require keyCode from argv
-            NAPI_ASSERT(env, tp.argc_ >= 1, "Need keyCode argument");
-            for (size_t idx = tp.argc_; idx > 0; idx--) {
-                tp.argv_[idx] = tp.argv_[idx - 1];
-                tp.argTypes_[idx] = tp.argTypes_[idx - 1];
-            }
-            NAPI_CALL(env, napi_create_int32(env, kKey, &(tp.argv_[0])));
-            tp.argTypes_[0] = TypeId::INT;
-            tp.argc_++;
-        }
-        return TransactAsync(env, tp);
-    }
-
-    /**Find and assert component matching given selector exist. <b>(async function)</b>*/
-    static napi_value UiDriverComponentExistAsserter(napi_env env, napi_callback_info info)
-    {
-        TransactionData tp = {.apiId_= "UiDriver::FindWidgets", .returnType_=TypeId::COMPONENT};
-        NAPI_CALL(env, ExtractCallbackInfo(env, info, 1, {TypeId::BY}, tp));
-        tp.resultInspector_ = [](napi_env env, napi_value result) -> napi_value {
-            napi_valuetype type = napi_null;
-            if (result != nullptr) {
-                NAPI_CALL(env, napi_typeof(env, result, &type));
-            }
-            if (type == napi_null || type == napi_undefined) {
-                return CreateJsException(env, "ComponentExistAssertionFailure", "ComponentNotExist");
-            } else {
-                return result;
-            }
-        };
-        return TransactAsync(env, tp);
-    }
-
-    /**Template for all UiDriver single-pointer-based touch functions (generic-click/swipe/drag), return void.*/
-    template<PointerOp kAction>
-    static napi_value SinglePointToucher(napi_env env, napi_callback_info info)
-    {
-        constexpr auto isGenericSwipe = kAction >= PointerOp::SWIPE_P && kAction <= PointerOp::DRAG_P;
-        constexpr size_t argC = isGenericSwipe ? 4 : 2;
-        TransactionData tp {};
-        NAPI_CALL(env, ExtractCallbackInfo(env, info, argC, {TypeId::INT, TypeId::INT, TypeId::INT, TypeId::INT}, tp));
-        if constexpr (isGenericSwipe) {
-            tp.apiId_ = "UiDriver::PerformGenericSwipe";
-        } else {
-            tp.apiId_ = "UiDriver::PerformGenericClick";
-        }
-        // add action type as 1st parameter (right-shift provided argv, do from right to left to avoid overwriting)
-        for (size_t idx = tp.argc_; idx > 0; idx--) {
-            tp.argv_[idx] = tp.argv_[idx - 1];
-            tp.argTypes_[idx] = tp.argTypes_[idx - 1];
-        }
-        NAPI_CALL(env, napi_create_uint32(env, kAction, &(tp.argv_[0])));
-        tp.argc_++;
-        tp.argTypes_[tp.argc_] = TypeId::INT;
-        return TransactAsync(env, tp);
-    }
-
-    /**Template of function that initialize <b>unbound</b> uitest js wrapper-objects.*/
-    template<TypeId kObjectType>
-    static napi_value JsObjectInitializer(napi_env env, napi_callback_info info)
-    {
-        TransactionData tp;
-        NAPI_CALL(env, ExtractCallbackInfo(env, info, 0, {}, tp));
-        // set DataType property to jsThis
-        napi_value typeId = nullptr;
-        NAPI_CALL(env, napi_create_int32(env, kObjectType, &typeId));
-        NAPI_CALL(env, napi_set_named_property(env, tp.jsThis_, PROP_TYPE_ID, typeId));
-        return tp.jsThis_;
     }
 
     /**Exports uitest js wrapper-classes and its global constructor.*/
-    static napi_value ExportClass(napi_env env, napi_value exports, string_view name, TypeId type,
-                                  napi_callback initializer, napi_property_descriptor *methods, size_t num)
+    static napi_status ExportClass(napi_env env, napi_value exports, const FrontEndClassDef &classDef)
     {
-        // static storage to ensure secure reference, use u_ptr to avoid short-string-optimization
-        static vector<unique_ptr<string>> prettyFuncNames;
-        NAPI_ASSERT(env, exports != nullptr && initializer != nullptr && methods != nullptr, "Illegal export params");
-        // set pretty function name as data
-        for (size_t idx = 0; idx < num; idx++) {
-            prettyFuncNames.emplace_back(make_unique<string>(string(name) + "." + string(methods[idx].utf8name)));
-            methods[idx].data = (void*)(prettyFuncNames.back()->c_str());
+        NAPI_ASSERT_BASE(env, exports != nullptr, "Illegal export params", NAPI_ERR);
+        const auto name = classDef.name_.data();
+        const auto methodNeatNameOffset = classDef.name_.length() + 1;
+        auto descs = make_unique<napi_property_descriptor[]>(classDef.methodCount_);
+        for (size_t idx = 0; idx < classDef.methodCount_; idx++) {
+            const auto &methodDef = classDef.methods_[idx];
+            g_unCalledJsFuncNames.insert(string(methodDef.name_));
+            const auto neatName = methodDef.name_.substr(methodNeatNameOffset);
+            napi_property_descriptor desc = DECLARE_NAPI_FUNCTION(neatName.data(), GenericCallback);
+            if (methodDef.static_) {
+                desc.attributes = napi_static;
+            }
+            desc.data = (void *)(&methodDef);
+            descs[idx] = desc;
         }
+        constexpr auto initializer = [](napi_env env, napi_callback_info info) {
+            napi_value jsThis = nullptr;
+            NAPI_CALL_BASE(env, napi_get_cb_info(env, info, nullptr, nullptr, &jsThis, nullptr), jsThis);
+            napi_value refValue = nullptr;
+            NAPI_CALL_BASE(env, napi_get_named_property(env, jsThis, PROP_BACKEND_OBJ_REF, &refValue), jsThis);
+            auto ref = make_unique<string>(JsStrToCppStr(env, refValue));
+            auto finalizer = [](napi_env env, void *data, void *hint) {
+                auto ref = reinterpret_cast<string *>(data);
+                if (ref->length() > 0) {
+                    LOG_D("Finalizing object: %{public}s", data);
+                    g_backendObjsAboutToDelete.insert(*ref);
+                }
+                delete ref;
+            };
+            NAPI_CALL_BASE(env, napi_wrap(env, jsThis, ref.release(), finalizer, nullptr, nullptr), jsThis);
+            return jsThis;
+        };
         // define class, provide the js-class members(property) and initializer.
         napi_value ctor = nullptr;
-        NAPI_CALL(env, napi_define_class(env, name.data(), name.length(), initializer, nullptr, num, methods, &ctor));
-        NAPI_CALL(env, napi_set_named_property(env, exports, name.data(), ctor));
-        NAPI_CALL(env, MountJsConstructorToGlobal(env, type, ctor));
-        if (type == TypeId::BY) {
-            // export global By-seed object (unbound, no metadata)
+        NAPI_CALL_BASE(env, napi_define_class(env, name, NAPI_AUTO_LENGTH, initializer, nullptr,
+                                              classDef.methodCount_, descs.get(), &ctor), NAPI_ERR);
+        NAPI_CALL_BASE(env, napi_set_named_property(env, exports, name, ctor), NAPI_ERR);
+        NAPI_CALL_BASE(env, MountJsConstructorToGlobal(env, name, ctor), NAPI_ERR);
+        if (string_view(name) == "By") {
+            // create seed-by with special objectRef and mount to exporter
             napi_value bySeed = nullptr;
-            NAPI_CALL(env, napi_new_instance(env, ctor, 0, nullptr, &bySeed));
-            NAPI_CALL(env, napi_set_named_property(env, exports, "BY", bySeed));
+            NAPI_CALL_BASE(env, napi_new_instance(env, ctor, 0, nullptr, &bySeed), NAPI_ERR);
+            napi_value prop = nullptr;
+            NAPI_CALL_BASE(env, napi_create_string_utf8(env, REF_SEED_BY.data(), NAPI_AUTO_LENGTH, &prop), NAPI_ERR);
+            NAPI_CALL_BASE(env, napi_set_named_property(env, bySeed, PROP_BACKEND_OBJ_REF, prop), NAPI_ERR);
+            NAPI_CALL_BASE(env, napi_set_named_property(env, exports, "BY", bySeed), NAPI_ERR);
         }
-        return exports;
+        return napi_ok;
     }
 
-    /**Exports 'MatchValue' enumeration.*/
-    static napi_value ExportMatchPattern(napi_env env, napi_value exports)
+    /**Exports enumrator class.*/
+    static napi_status ExportEnumrator(napi_env env, napi_value exports, const FrontendEnumratorDef &enumDef)
     {
-        napi_value propMatchPattern;
-        napi_value propEquals;
-        napi_value propContains;
-        napi_value propStartsWith;
-        napi_value propEndsWith;
-        NAPI_CALL(env, napi_create_object(env, &propMatchPattern));
-        NAPI_CALL(env, napi_create_int32(env, ValueMatchRule::EQ, &propEquals));
-        NAPI_CALL(env, napi_create_int32(env, ValueMatchRule::CONTAINS, &propContains));
-        NAPI_CALL(env, napi_create_int32(env, ValueMatchRule::STARTS_WITH, &propStartsWith));
-        NAPI_CALL(env, napi_create_int32(env, ValueMatchRule::ENDS_WITH, &propEndsWith));
-        NAPI_CALL(env, napi_set_named_property(env, propMatchPattern, "EQUALS", propEquals));
-        NAPI_CALL(env, napi_set_named_property(env, propMatchPattern, "CONTAINS", propContains));
-        NAPI_CALL(env, napi_set_named_property(env, propMatchPattern, "STARTS_WITH", propStartsWith));
-        NAPI_CALL(env, napi_set_named_property(env, propMatchPattern, "ENDS_WITH", propEndsWith));
-        NAPI_CALL(env, napi_set_named_property(env, exports, "MatchPattern", propMatchPattern));
-        return exports;
+        NAPI_ASSERT_BASE(env, exports != nullptr, "Illegal export params", NAPI_ERR);
+        napi_value enumrator;
+        NAPI_CALL_BASE(env, napi_create_object(env, &enumrator), NAPI_ERR);
+        for (size_t idx = 0; idx < enumDef.valueCount_; idx++) {
+            const auto &def = enumDef.values_[idx];
+            napi_value prop = nullptr;
+            NAPI_CALL_BASE(env, napi_create_string_utf8(env, def.valueJson_.data(), NAPI_AUTO_LENGTH, &prop), NAPI_ERR);
+            NAPI_CALL_BASE(env, ValueStringConvert(env, prop, &prop, false), NAPI_ERR);
+            NAPI_CALL_BASE(env, napi_set_named_property(env, enumrator, def.name_.data(), prop), NAPI_ERR);
+        }
+        NAPI_CALL_BASE(env, napi_set_named_property(env, exports, enumDef.name_.data(), enumrator), NAPI_ERR);
+        return napi_ok;
     }
 
-    /**Exports 'By' class definition and member functions.*/
-    static napi_value ExportBy(napi_env env, napi_value exports)
-    {
-        static constexpr char cppCreator[] = "WidgetSelector::<init>";
-        static constexpr char cppAddRearLocator[] = "WidgetSelector::AddRearLocator";
-        static constexpr char cppAddFrontLocator[] = "WidgetSelector::AddFrontLocator";
-        napi_property_descriptor methods[] = {
-            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::ID], ByAttributeBuilder<UiAttr::ID>),
-            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::TEXT], ByAttributeBuilder<UiAttr::TEXT>),
-            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::KEY], ByAttributeBuilder<UiAttr::KEY>),
-            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::TYPE], ByAttributeBuilder<UiAttr::TYPE>),
-            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::ENABLED], ByAttributeBuilder<UiAttr::ENABLED>),
-            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::FOCUSED], ByAttributeBuilder<UiAttr::FOCUSED>),
-            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::SELECTED], ByAttributeBuilder<UiAttr::SELECTED>),
-            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::CLICKABLE], ByAttributeBuilder<UiAttr::CLICKABLE>),
-            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::LONG_CLICKABLE], ByAttributeBuilder<UiAttr::LONG_CLICKABLE>),
-            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::SCROLLABLE], ByAttributeBuilder<UiAttr::SCROLLABLE>),
-            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::CHECKABLE], ByAttributeBuilder<UiAttr::CHECKABLE>),
-            DECLARE_NAPI_FUNCTION(ATTR_NAMES[UiAttr::CHECKED], ByAttributeBuilder<UiAttr::CHECKED>),
-            DECLARE_NAPI_FUNCTION("isBefore", ByRelativeBuilder<cppAddRearLocator>),
-            DECLARE_NAPI_FUNCTION("isAfter", ByRelativeBuilder<cppAddFrontLocator>)
-        };
-        constexpr size_t num = sizeof(methods) / sizeof(methods[0]);
-        constexpr napi_callback initializer = JsObjectInitializer<TypeId::BY>;
-        // StaticSyncCreator for internal usage, not exposed to 'By' class
-        gInternalByCreator = StaticSyncCreator<cppCreator, BY>;
-        return ExportClass(env, exports, "By", TypeId::BY, initializer, methods, num);
-    }
-
-    /**Exports 'UiComponent' class definition and member functions.*/
-    napi_value ExportUiComponent(napi_env env, napi_value exports)
-    {
-        // UiComponent method calls will be forwarded to the bound UiDriver object
-        static constexpr char cppInput[] = "UiDriver::InputText";
-        static constexpr char cppClear[] = "UiDriver::ClearText";
-        static constexpr char cppSearch[] = "UiDriver::ScrollSearch";
-        static constexpr char cppDragTo[] = "UiDriver::DragWidgetToAnother";
-        napi_property_descriptor methods[] = {
-            DECLARE_NAPI_FUNCTION("getId", ComponentAttrGetter<UiAttr::ID>),
-            DECLARE_NAPI_FUNCTION("getText", ComponentAttrGetter<UiAttr::TEXT>),
-            DECLARE_NAPI_FUNCTION("getKey", ComponentAttrGetter<UiAttr::KEY>),
-            DECLARE_NAPI_FUNCTION("getType", ComponentAttrGetter<UiAttr::TYPE>),
-            DECLARE_NAPI_FUNCTION("isEnabled", ComponentAttrGetter<UiAttr::ENABLED>),
-            DECLARE_NAPI_FUNCTION("isFocused", ComponentAttrGetter<UiAttr::FOCUSED>),
-            DECLARE_NAPI_FUNCTION("isSelected", ComponentAttrGetter<UiAttr::SELECTED>),
-            DECLARE_NAPI_FUNCTION("isClickable", ComponentAttrGetter<UiAttr::CLICKABLE>),
-            DECLARE_NAPI_FUNCTION("isLongClickable", ComponentAttrGetter<UiAttr::LONG_CLICKABLE>),
-            DECLARE_NAPI_FUNCTION("isScrollable", ComponentAttrGetter<UiAttr::SCROLLABLE>),
-            DECLARE_NAPI_FUNCTION("isCheckable", ComponentAttrGetter<UiAttr::CHECKABLE>),
-            DECLARE_NAPI_FUNCTION("isChecked", ComponentAttrGetter<UiAttr::CHECKED>),
-            DECLARE_NAPI_FUNCTION("getBounds", ComponentAttrGetter<UiAttr::BOUNDS>),
-            DECLARE_NAPI_FUNCTION("click", ComponentOperator<WidgetOp::CLICK>),
-            DECLARE_NAPI_FUNCTION("longClick", ComponentOperator<WidgetOp::LONG_CLICK>),
-            DECLARE_NAPI_FUNCTION("doubleClick", ComponentOperator<WidgetOp::DOUBLE_CLICK>),
-            DECLARE_NAPI_FUNCTION("scrollToTop", (ComponentOperator<WidgetOp::SCROLL_TO_TOP>)),
-            DECLARE_NAPI_FUNCTION("scrollToBottom", (ComponentOperator<WidgetOp::SCROLL_TO_BOTTOM>)),
-            DECLARE_NAPI_FUNCTION("inputText", (GenericComponentFunc<cppInput, TypeId::NONE, TypeId::STRING>)),
-            DECLARE_NAPI_FUNCTION("clearText", (GenericComponentFunc<cppClear, TypeId::NONE>)),
-            DECLARE_NAPI_FUNCTION("scrollSearch", (GenericComponentFunc<cppSearch, TypeId::COMPONENT, TypeId::BY>)),
-            DECLARE_NAPI_FUNCTION("dragTo", (GenericComponentFunc<cppDragTo, TypeId::NONE, TypeId::COMPONENT>))
-        };
-        constexpr size_t num = sizeof(methods) / sizeof(methods[0]);
-        constexpr napi_callback init = JsObjectInitializer<TypeId::COMPONENT>;
-        return ExportClass(env, exports, "UiComponent", TypeId::COMPONENT, init, methods, num);
-    }
-
-    /**Exports 'UiDriver' class definition and member functions.*/
-    static napi_value ExportUiDriver(napi_env env, napi_value exports)
-    {
-        static constexpr char cppCreator[] = "UiDriver::<init>";
-        static constexpr char cppDelay[] = "UiDriver::DelayMs";
-        static constexpr char cppFinds[] = "UiDriver::FindWidgets";
-        static constexpr char cppCap[] = "UiDriver::TakeScreenCap";
-        static constexpr char cppWaitFor[] = "UiDriver::WaitForWidget";
-        napi_property_descriptor methods[] = {
-            DECLARE_NAPI_STATIC_FUNCTION("create", (StaticSyncCreator<cppCreator, TypeId::DRIVER>)),
-            DECLARE_NAPI_FUNCTION("delayMs", (GenericAsyncFunc<cppDelay, TypeId::NONE, false, TypeId::INT>)),
-            DECLARE_NAPI_FUNCTION("findComponents", (GenericAsyncFunc<cppFinds, TypeId::COMPONENT, true, TypeId::BY>)),
-            DECLARE_NAPI_FUNCTION("findComponent", (GenericAsyncFunc<cppFinds, TypeId::COMPONENT, false, TypeId::BY>)),
-            DECLARE_NAPI_FUNCTION("waitForComponent", (GenericAsyncFunc<cppWaitFor, COMPONENT, false, BY, INT>)),
-            DECLARE_NAPI_FUNCTION("screenCap", (GenericAsyncFunc<cppCap, TypeId::BOOL, false, TypeId::STRING>)),
-            DECLARE_NAPI_FUNCTION("assertComponentExist", UiDriverComponentExistAsserter),
-            DECLARE_NAPI_FUNCTION("pressBack", UiDriverKeyOperator<UiKey::BACK>),
-            DECLARE_NAPI_FUNCTION("triggerKey", UiDriverKeyOperator<UiKey::GENERIC>),
-            // raw coordinate based action methods
-            DECLARE_NAPI_FUNCTION("click", SinglePointToucher<PointerOp::CLICK_P>),
-            DECLARE_NAPI_FUNCTION("longClick", SinglePointToucher<PointerOp::LONG_CLICK_P>),
-            DECLARE_NAPI_FUNCTION("doubleClick", SinglePointToucher<PointerOp::DOUBLE_CLICK_P>),
-            DECLARE_NAPI_FUNCTION("swipe", SinglePointToucher<PointerOp::SWIPE_P>),
-            DECLARE_NAPI_FUNCTION("drag", SinglePointToucher<PointerOp::DRAG_P>),
-        };
-        static constexpr size_t num = sizeof(methods) / sizeof(methods[0]);
-        static constexpr napi_callback init = JsObjectInitializer<TypeId::DRIVER>;
-        return ExportClass(env, exports, "UiDriver", TypeId::DRIVER, init, methods, num);
-    }
-
-    /**Function used for statistics, return an array of called js-api names.*/
-    static napi_value GetCalledJsApis(napi_env env, napi_callback_info info)
+    /**Function used for statistics, return an array of uncalled js-api names.*/
+    static napi_value GetUnCalledJsApis(napi_env env, napi_callback_info info)
     {
         napi_value nameArray;
-        NAPI_CALL(env, napi_create_array_with_length(env, g_CalledJsFuncNames.size(), &nameArray));
+        NAPI_CALL(env, napi_create_array_with_length(env, g_unCalledJsFuncNames.size(), &nameArray));
         size_t idx = 0;
-        for (auto& name : g_CalledJsFuncNames) {
+        for (auto &name : g_unCalledJsFuncNames) {
             napi_value nameItem = nullptr;
             NAPI_CALL(env, napi_create_string_utf8(env, name.c_str(), NAPI_AUTO_LENGTH, &nameItem));
             NAPI_CALL(env, napi_set_element(env, nameArray, idx, nameItem));
@@ -869,25 +448,17 @@ namespace OHOS::uitest {
     napi_value Export(napi_env env, napi_value exports)
     {
         LOG_I("Begin export uitest apis");
-        // export transaction-environment lifecycle callbacks
+        // export transaction-environment-lifecycle callbacks and dfx functions
         napi_property_descriptor props[] = {
             DECLARE_NAPI_STATIC_FUNCTION("setup", EnvironmentSetup),
             DECLARE_NAPI_STATIC_FUNCTION("teardown", EnvironmentTeardown),
-            DECLARE_NAPI_STATIC_FUNCTION("getCalledJsApis", GetCalledJsApis)
+            DECLARE_NAPI_STATIC_FUNCTION("getUnCalledJsApis", GetUnCalledJsApis),
         };
-        NAPI_CALL(env, napi_define_properties(env, exports, sizeof(props)/ sizeof(props[0]), props));
-        if (ExportMatchPattern(env, exports) == nullptr) {
-            return nullptr;
-        }
-        if (ExportBy(env, exports) == nullptr) {
-            return nullptr;
-        }
-        if (ExportUiComponent(env, exports) == nullptr) {
-            return nullptr;
-        }
-        if (ExportUiDriver(env, exports) == nullptr) {
-            return nullptr;
-        }
+        NAPI_CALL(env, napi_define_properties(env, exports, sizeof(props) / sizeof(props[0]), props));
+        NAPI_CALL(env, ExportClass(env, exports, BY_DEF));
+        NAPI_CALL(env, ExportClass(env, exports, UI_DRIVER_DEF));
+        NAPI_CALL(env, ExportClass(env, exports, UI_COMPONENT_DEF));
+        NAPI_CALL(env, ExportEnumrator(env, exports, MATCH_PATTERN_DEF));
         LOG_I("End export uitest apis");
         return exports;
     }
@@ -898,7 +469,7 @@ namespace OHOS::uitest {
         .nm_filename = nullptr,
         .nm_register_func = Export,
         .nm_modname = "uitest",
-        .nm_priv = ((void *) 0),
+        .nm_priv = ((void *)0),
         .reserved = {0},
     };
 
@@ -906,7 +477,7 @@ namespace OHOS::uitest {
     {
         napi_module_register(&module);
     }
-}
+} // namespace OHOS::uitest
 
 // put register functions out of namespace to ensure C-linkage
 extern const char _binary_uitest_exporter_js_start[];
@@ -914,8 +485,7 @@ extern const char _binary_uitest_exporter_js_end[];
 extern const char _binary_uitest_exporter_abc_start[];
 extern const char _binary_uitest_exporter_abc_end[];
 
-extern "C" __attribute__((visibility("default")))
-void NAPI_uitest_GetJSCode(const char **buf, int *bufLen)
+extern "C" __attribute__((visibility("default"))) void NAPI_uitest_GetJSCode(const char **buf, int *bufLen)
 {
     if (buf != nullptr) {
         *buf = _binary_uitest_exporter_js_start;
@@ -925,8 +495,7 @@ void NAPI_uitest_GetJSCode(const char **buf, int *bufLen)
     }
 }
 
-extern "C" __attribute__((visibility("default")))
-void NAPI_uitest_GetABCCode(const char **buf, int *bufLen)
+extern "C" __attribute__((visibility("default"))) void NAPI_uitest_GetABCCode(const char **buf, int *bufLen)
 {
     if (buf != nullptr) {
         *buf = _binary_uitest_exporter_abc_start;

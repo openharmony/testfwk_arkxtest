@@ -33,7 +33,16 @@
 #define DCHECK(cond) assert((cond))
 #endif
 
+#define FORCE_INLINE __attribute__((always_inline)) inline
+
 namespace OHOS::uitest {
+    using CStr = const char*;
+    constexpr size_t INDEX_ZERO = 0;
+    constexpr size_t INDEX_ONE = 1;
+    constexpr size_t INDEX_TWO = 2;
+    constexpr size_t INDEX_THREE = 3;
+    constexpr size_t INDEX_FOUR = 4;
+
     /**Get current time millisecond.*/
     inline uint64_t GetCurrentMillisecond()
     {
