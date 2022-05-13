@@ -267,7 +267,7 @@ namespace OHOS::uitest {
         if constexpr (std::is_same<string, T>::value) {
             testValue = ReadCallArg<string>(in, INDEX_ZERO);
         } else if constexpr (std::is_same<bool, T>::value) { // bool testValue can be defaulted to true
-            testValue = to_string(ReadCallArg<bool>(in, INDEX_ZERO, true));
+            testValue = ReadCallArg<bool>(in, INDEX_ZERO, true) ? "true" : "false";
         } else {
             testValue = to_string(ReadCallArg<T>(in, INDEX_ZERO));
         }
@@ -370,6 +370,7 @@ namespace OHOS::uitest {
         auto screenCap = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             driver.TakeScreenCap(ReadCallArg<string>(in, INDEX_ZERO), out.exception_);
+            out.resultValue_ = (out.exception_.code_ == ErrCode::NO_ERROR) ;
         };
         server.AddHandler("UiDriver.screenCap", screenCap);
 
