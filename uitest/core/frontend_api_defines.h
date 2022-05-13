@@ -172,7 +172,7 @@ namespace OHOS::uitest {
         {"UiComponent.scrollToTop", "():void", false, false},
         {"UiComponent.scrollToBottom", "():void", false, false},
         {"UiComponent.inputText", "(string):void", false, false},
-        {"UiComponent.clearText", "(string):void", false, false},
+        {"UiComponent.clearText", "():void", false, false},
         {"UiComponent.scrollSearch", "(By):UiComponent", false, false},
         {"UiComponent.dragTo", "(UiComponent):void", false, false},
     };
