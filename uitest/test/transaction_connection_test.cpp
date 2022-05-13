@@ -64,7 +64,7 @@ protected:
 
 TEST_F(MessageTransceiverTest, checkMessageContent)
 {
-    auto emitted = TransactionMessage{};
+    auto emitted = TransactionMessage {};
     transceiver_.SetEmitter([&emitted](const TransactionMessage &msg) {
         emitted.id_ = msg.id_; // Sniff the emitted message
         emitted.type_ = msg.type_;
@@ -92,7 +92,7 @@ TEST_F(MessageTransceiverTest, checkMessageContent)
 
 TEST_F(MessageTransceiverTest, enqueueDequeueMessage)
 {
-    auto message = TransactionMessage{};
+    auto message = TransactionMessage {};
     // case1: no message in queue, polling timeout, check status and delayed time
     uint64_t startMs = GetCurrentMillisecond();
     auto status = transceiver_.PollCallReply(message, pollTimeoutMs_);
@@ -100,7 +100,7 @@ TEST_F(MessageTransceiverTest, enqueueDequeueMessage)
     ASSERT_EQ(MessageTransceiver::PollStatus::ABORT_WAIT_TIMEOUT, status);
     ASSERT_NEAR(pollTimeoutMs_, endMs - startMs, TIME_DIFF_TOLERANCE_MS) << "Incorrect polling time";
     // case2: message in queue, should return immediately
-    auto tempMessage = TransactionMessage{.id_ = 1234, .type_ = CALL};
+    auto tempMessage = TransactionMessage {.id_ = 1234, .type_ = CALL};
     transceiver_.OnReceiveMessage(tempMessage);
     startMs = GetCurrentMillisecond();
     status = transceiver_.PollCallReply(message, pollTimeoutMs_);
@@ -123,7 +123,7 @@ TEST_F(MessageTransceiverTest, enqueueDequeueMessage)
 
 TEST_F(MessageTransceiverTest, checkMessageFilter)
 {
-    auto message = TransactionMessage{.type_ = CALL};
+    auto message = TransactionMessage {.type_ = CALL};
     // without filter, message should be accepted
     transceiver_.OnReceiveMessage(message);
     auto status = transceiver_.PollCallReply(message, pollTimeoutMs_);
@@ -138,13 +138,13 @@ TEST_F(MessageTransceiverTest, checkMessageFilter)
 
 TEST_F(MessageTransceiverTest, checkAnwserHandshakeAtomatically)
 {
-    auto emitted = TransactionMessage{};
+    auto emitted = TransactionMessage {};
     transceiver_.SetEmitter([&emitted](const TransactionMessage &msg) {
         emitted.id_ = msg.id_; // Sniff the emitted message
         emitted.type_ = msg.type_;
         emitted.dataParcel_ = msg.dataParcel_;
     });
-    auto handshake = TransactionMessage{.id_ = 1234, .type_ = HANDSHAKE};
+    auto handshake = TransactionMessage {.id_ = 1234, .type_ = HANDSHAKE};
     transceiver_.OnReceiveMessage(handshake);
     // should emit ack automatically on receiving handshake
     ASSERT_EQ(TransactionType::ACK, emitted.type_);
@@ -153,7 +153,7 @@ TEST_F(MessageTransceiverTest, checkAnwserHandshakeAtomatically)
 
 TEST_F(MessageTransceiverTest, immediateExitHandling)
 {
-    auto message = TransactionMessage{.type_ = TransactionType::EXIT};
+    auto message = TransactionMessage {.type_ = TransactionType::EXIT};
     // EXIT-message comes at sometime before timeout, should end polling and return it
     constexpr uint64_t delayMs = 10;
     asyncWork_ = async(launch::async, [this, delayMs, message]() {
@@ -171,7 +171,7 @@ TEST_F(MessageTransceiverTest, immediateConnectionDiedHandling)
 {
     transceiver_.ScheduleCheckConnection(false);
     // connection died before timeout, should end polling and return it
-    auto message = TransactionMessage{};
+    auto message = TransactionMessage {};
     const uint64_t startMs = GetCurrentMillisecond();
     auto status = transceiver_.PollCallReply(message, WATCH_DOG_TIMEOUT_MS * 2);
     const uint64_t endMs = GetCurrentMillisecond();
@@ -184,11 +184,11 @@ TEST_F(MessageTransceiverTest, checkScheduleHandshake)
 {
     transceiver_.ScheduleCheckConnection(false);
     // connection died before timeout, should end polling and return it
-    auto message = TransactionMessage{};
+    auto message = TransactionMessage {};
     constexpr uint64_t handshakeDelayMs = 1000;
     asyncWork_ = async(launch::async, [this, handshakeDelayMs, message]() {
         this_thread::sleep_for(chrono::milliseconds(handshakeDelayMs));
-        auto handshake = TransactionMessage{.type_ = TransactionType::HANDSHAKE};
+        auto handshake = TransactionMessage {.type_ = TransactionType::HANDSHAKE};
         this->transceiver_.OnReceiveMessage(handshake);
     });
     const uint64_t startMs = GetCurrentMillisecond();
@@ -210,7 +210,7 @@ TEST_F(MessageTransceiverTest, ensureConnected)
     static constexpr uint64_t incomingDelayMs = 60;
     asyncWork_ = async(launch::async, [this]() {
         this_thread::sleep_for(chrono::milliseconds(incomingDelayMs));
-        auto message = TransactionMessage{.type_ = TransactionType::ACK};
+        auto message = TransactionMessage {.type_ = TransactionType::ACK};
         this->transceiver_.OnReceiveMessage(message);
     });
     const uint64_t startMs = GetCurrentMillisecond();
@@ -266,7 +266,7 @@ protected:
         }
         if (clientAsyncWork_.valid()) {
             // do this to ensure asyncWork_ terminates normally
-            auto terminate = TransactionMessage{.type_ = TransactionType::EXIT};
+            auto terminate = TransactionMessage {.type_ = TransactionType::EXIT};
             client_.GetTransceiver()->OnReceiveMessage(terminate);
             clientAsyncWork_.get();
         }
@@ -296,7 +296,7 @@ TEST_F(TransactionTest, checkApiTransaction)
 
     for (size_t idx = 0; idx < testSetSize; idx++) {
         // no wait reply, will just trigger emitting a call-message with serialized ApiCallInfo
-        auto call = ApiCallInfo{.apiId_ = apis.at(idx)};
+        auto call = ApiCallInfo {.apiId_ = apis.at(idx)};
         auto reply = ApiReplyInfo();
         client_.InvokeApi(call, reply);
         // check the result, after a short interval (because the server runs async)
@@ -333,7 +333,7 @@ TEST_F(TransactionTest, checkResultWhenConnectionDied)
     // enable connection check
     client_.GetTransceiver()->ScheduleCheckConnection(false);
     clientAsyncWork_ = async(launch::async, [this]() {
-        auto call = ApiCallInfo{.apiId_ = "wyz"};
+        auto call = ApiCallInfo {.apiId_ = "wyz"};
         auto reply = ApiReplyInfo();
         this->client_.InvokeApi(call, reply);
         return move(reply);
@@ -348,7 +348,7 @@ TEST_F(TransactionTest, checkResultWhenConnectionDied)
     ASSERT_NEAR(startMs, endMs, WATCH_DOG_TIMEOUT_MS * 1.02f);
     // connection is already dead, should return immediately in later invocations
     clientAsyncWork_ = async(launch::async, [this]() {
-        auto call = ApiCallInfo{.apiId_ = "zl"};
+        auto call = ApiCallInfo {.apiId_ = "zl"};
         auto reply = ApiReplyInfo();
         this->client_.InvokeApi(call, reply);
         return move(reply);
@@ -365,7 +365,7 @@ TEST_F(TransactionTest, checkResultWhenConnectionDied)
 TEST_F(TransactionTest, checkRejectConcurrentInvoke)
 {
     clientAsyncWork_ = async(launch::async, [this]() {
-        auto call = ApiCallInfo{.apiId_ = "zl"};
+        auto call = ApiCallInfo {.apiId_ = "zl"};
         auto reply = ApiReplyInfo();
         this->client_.InvokeApi(call, reply);
         return move(reply);
@@ -373,7 +373,7 @@ TEST_F(TransactionTest, checkRejectConcurrentInvoke)
     // give a short delay to ensure concurrence
     this_thread::sleep_for(chrono::milliseconds(TIME_DIFF_TOLERANCE_MS));
     uint64_t startMs = GetCurrentMillisecond();
-    auto call1 = ApiCallInfo{.apiId_ = "zl"};
+    auto call1 = ApiCallInfo {.apiId_ = "zl"};
     auto reply1 = ApiReplyInfo();
     client_.InvokeApi(call1, reply1);
     uint64_t endMs = GetCurrentMillisecond();
@@ -386,7 +386,7 @@ TEST_F(TransactionTest, checkRejectConcurrentInvoke)
 TEST_F(TransactionTest, checkResultAfterFinalized)
 {
     client_.Finalize();
-    auto call = ApiCallInfo{.apiId_ = "zl"};
+    auto call = ApiCallInfo {.apiId_ = "zl"};
     auto reply = ApiReplyInfo();
     uint64_t startMs = GetCurrentMillisecond();
     client_.InvokeApi(call, reply);

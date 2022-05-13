@@ -22,7 +22,7 @@ namespace OHOS::uitest {
     /**The default UiController of ohos, which is effective for all apps.*/
     class SysUiController final : public UiController {
     public:
-        SysUiController(std::string_view name);
+        explicit SysUiController(std::string_view name);
 
         ~SysUiController();
 

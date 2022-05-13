@@ -24,7 +24,7 @@ namespace OHOS::uitest {
 
     class TreeSnapshotTaker : public WidgetVisitor {
     public:
-        explicit TreeSnapshotTaker(stringstream &receiver) : receiver_(receiver){};
+        explicit TreeSnapshotTaker(stringstream &receiver) : receiver_(receiver) {};
 
         ~TreeSnapshotTaker() {}
 
@@ -204,10 +204,10 @@ namespace OHOS::uitest {
         vector<KeyEvent> events;
         if (!origText.empty()) {
             for (size_t index = 0; index < origText.size(); index++) {
-                events.emplace_back(KeyEvent{ActionStage::DOWN, 2015, typeCharTimeMs});
-                events.emplace_back(KeyEvent{ActionStage::UP, 2015, 0});
-                events.emplace_back(KeyEvent{ActionStage::DOWN, 2055, typeCharTimeMs});
-                events.emplace_back(KeyEvent{ActionStage::UP, 2055, 0});
+                events.emplace_back(KeyEvent {ActionStage::DOWN, 2015, typeCharTimeMs});
+                events.emplace_back(KeyEvent {ActionStage::UP, 2015, 0});
+                events.emplace_back(KeyEvent {ActionStage::DOWN, 2055, typeCharTimeMs});
+                events.emplace_back(KeyEvent {ActionStage::UP, 2055, 0});
             }
         }
         if (!text.empty()) {
@@ -224,12 +224,12 @@ namespace OHOS::uitest {
             }
             for (auto &pair : keyCodes) {
                 if (pair.second != KEYCODE_NONE) {
-                    events.emplace_back(KeyEvent{ActionStage::DOWN, pair.second, 0});
+                    events.emplace_back(KeyEvent {ActionStage::DOWN, pair.second, 0});
                 }
-                events.emplace_back(KeyEvent{ActionStage::DOWN, pair.first, typeCharTimeMs});
-                events.emplace_back(KeyEvent{ActionStage::UP, pair.first, 0});
+                events.emplace_back(KeyEvent {ActionStage::DOWN, pair.first, typeCharTimeMs});
+                events.emplace_back(KeyEvent {ActionStage::UP, pair.first, 0});
                 if (pair.second != KEYCODE_NONE) {
-                    events.emplace_back(KeyEvent{ActionStage::UP, pair.second, 0});
+                    events.emplace_back(KeyEvent {ActionStage::UP, pair.second, 0});
                 }
             }
         }
@@ -334,8 +334,8 @@ namespace OHOS::uitest {
         }
         auto boundsFrom = widgetFrom->GetBounds();
         auto boundsTo = widgetTo->GetBounds();
-        auto centerFrom = Point{boundsFrom.GetCenterX(), boundsFrom.GetCenterY()};
-        auto centerTo = Point{boundsTo.GetCenterX(), boundsTo.GetCenterY()};
+        auto centerFrom = Point(boundsFrom.GetCenterX(), boundsFrom.GetCenterY());
+        auto centerTo = Point(boundsTo.GetCenterX(), boundsTo.GetCenterY());
         InjectGenericSwipe(PointerOp::DRAG_P, centerFrom, centerTo, *uiController_, opt);
     }
 

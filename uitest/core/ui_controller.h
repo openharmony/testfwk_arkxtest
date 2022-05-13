@@ -83,7 +83,7 @@ namespace OHOS::uitest {
 
         static void RemoveAllControllers();
 
-        /**Install UiControllers with registered provider.*/
+        /**Install UiControllers with registered controllerProvider.*/
         static void InstallFromProvider();
 
         /**The the currently active UiController, returns null if none is available.*/

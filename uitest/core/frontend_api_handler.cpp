@@ -14,8 +14,8 @@
  */
 
 #include <sstream>
-#include "frontend_api_handler.h"
 #include "ui_driver.h"
+#include "frontend_api_handler.h"
 
 namespace OHOS::uitest {
     using namespace std;
@@ -101,8 +101,8 @@ namespace OHOS::uitest {
     {
         static const map<string, nlohmann::detail::value_t> typeMap = {
             {"int", nlohmann::detail::value_t::number_unsigned}, {"float", nlohmann::detail::value_t::number_float},
-            {"bool", nlohmann::detail::value_t::boolean},       {"string", nlohmann::detail::value_t::string},
-            {"By", nlohmann::detail::value_t::string},          {"UiComponent", nlohmann::detail::value_t::string},
+            {"bool", nlohmann::detail::value_t::boolean},        {"string", nlohmann::detail::value_t::string},
+            {"By", nlohmann::detail::value_t::string},           {"UiComponent", nlohmann::detail::value_t::string},
             {"UiDriver", nlohmann::detail::value_t::string},
         }; // complex-object should be passed with objRef (string type)
         constexpr size_t BUF_LEN = 32;
@@ -144,7 +144,7 @@ namespace OHOS::uitest {
                 auto paramTypes = vector<nlohmann::detail::value_t>();
                 auto hasDefaultArg = false;
                 ParseMethodSignature(methodDef.signature_, paramTypes, hasDefaultArg);
-                sApiArgTypesMap.insert({string(methodDef.name_), {paramTypes, hasDefaultArg}});
+                sApiArgTypesMap.insert(make_pair(string(methodDef.name_), make_pair(paramTypes, hasDefaultArg)));
             }
         }
     }
@@ -480,7 +480,7 @@ namespace OHOS::uitest {
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
             WidgetOp op = WidgetOp::CLICK;
             UiOpArgs uiOpArgs;
-            // // these methods accept one option integer argument
+            // these methods accept one option integer argument
             if (in.apiId_ == "UiComponent.click") {
                 op = WidgetOp::CLICK;
             } else if (in.apiId_ == "UiComponent.longClick") {
