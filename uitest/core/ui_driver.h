@@ -20,52 +20,49 @@
 #include "ui_controller.h"
 #include "ui_model.h"
 #include "widget_selector.h"
-#include "widget_image.h"
 
 namespace OHOS::uitest {
-
-    class UiDriver : public ExternApi<TypeId::DRIVER> {
+    class UiDriver : public BackendClass {
     public:
-        /**Create UiDriver for the target device.*/
-        explicit UiDriver(std::string_view device);
+        UiDriver() {}
 
-        ~UiDriver() {}
+        ~UiDriver() override {}
 
         /**Perform given operation on the given widget.*/
-        void PerformWidgetOperate(const WidgetImage &image, WidgetOp type, ApiCallErr &error);
+        void OperateWidget(const Widget &widget, WidgetOp op, const UiOpArgs& opt, ApiCallErr &error);
 
         /**Trigger the given key action. */
-        void TriggerKey(const KeyAction &action, ApiCallErr &error);
+        void TriggerKey(const KeyAction &key, const UiOpArgs& opt, ApiCallErr &error);
 
         /**Inject the given text to the given id-specified widget.*/
-        void InputText(const WidgetImage &image, std::string_view text, ApiCallErr &error);
+        void InputText(const Widget &widget, std::string_view text, const UiOpArgs& opt, ApiCallErr &error);
 
         /**Find widgets with the given selector. Results are arranged in the receiver in <b>DFS</b> order.
          * @returns the widget images.
          **/
-        void FindWidgets(const WidgetSelector &select, std::vector<std::unique_ptr<WidgetImage>> &rev, ApiCallErr &err);
+        void FindWidgets(const WidgetSelector &select, std::vector<std::unique_ptr<Widget>> &rev, ApiCallErr &err);
 
         /**Scroll on the given subject widget to find the target widget matching the selector.*/
-        std::unique_ptr<WidgetImage> ScrollSearch(const WidgetImage &img, const WidgetSelector &selector,
-                                                  ApiCallErr &err, int32_t deadZoneSize);
+        std::unique_ptr<Widget> ScrollSearch(const Widget &widget, const WidgetSelector &selector,
+                                                  const UiOpArgs& opt, ApiCallErr &err);
 
-        /**Scroll to the edge by the value of scrollingUp.*/
-        void ScrollToEdge(const WidgetImage &img, bool scrollingUp, int32_t deadZoneSize, ApiCallErr &err);
+        /**Scroll widget to the end.*/
+        void ScrollToEnd(const Widget &img, bool scrollUp, const UiOpArgs& opt, ApiCallErr &err);
 		
         /**Drag widget-A to widget-B.*/
-        void DragWidgetToAnother(const WidgetImage &imgFrom, const WidgetImage &imgTo, ApiCallErr &err);
+        void DragIntoWidget(const Widget &imgA, const Widget &imgB, const UiOpArgs& opt, ApiCallErr &err);
 
         /**Wait for the matching widget appear in the given timeout.*/
-        std::unique_ptr<WidgetImage> WaitForWidget(const WidgetSelector &select, uint32_t maxMs, ApiCallErr &err);
+        std::unique_ptr<Widget> WaitForWidget(const WidgetSelector &select, const UiOpArgs& opt, ApiCallErr &err);
 
-        /**Update the attributes of the WidgetImage from current UI.*/
-        void UpdateWidgetImage(WidgetImage &image, ApiCallErr &error);
+        /**Get the snapshot on current UI for the given widget.*/
+        std::unique_ptr<Widget> GetWidgetSnapshot(Widget &image, ApiCallErr &error);
 
         /**Perform generic-action on raw points.*/
-        void PerformGenericClick(PointerOp type, const Point &point, ApiCallErr &err);
+        void PerformClick(PointerOp op, const Point &point, const UiOpArgs& opt, ApiCallErr &err);
 
         /**Perform generic-swipe on raw points.*/
-        void PerformGenericSwipe(PointerOp type, const Point &fromPoint, const Point &toPoint, ApiCallErr &err);
+        void PerformSwipe(PointerOp op, const Point &p0, const Point &p1, const UiOpArgs& opt, ApiCallErr &err);
 
         /**Delay current thread for given duration.*/
         static void DelayMs(uint32_t ms);
@@ -73,24 +70,20 @@ namespace OHOS::uitest {
         /**Take screen capture, save to given file path as PNG.*/
         void TakeScreenCap(std::string_view savePath, ApiCallErr &err);
 
-        void WriteIntoParcel(nlohmann::json &data) const override;
-
-        void ReadFromParcel(const nlohmann::json &data) override;
+        const FrontEndClassDef& GetFrontendClassDef() const override
+        {
+            return UI_DRIVER_DEF;
+        }
 
     private:
         /**Update UI controller and UI objects.*/
         void UpdateUi(bool updateUiTree, ApiCallErr &error);
 
-        /**Retrieve widget represented by the given WidgetImage from updated UI.*/
-        const Widget *RetrieveWidget(const WidgetImage &img, ApiCallErr &err, bool updateUi = true);
+        /**Retrieve widget represented by the given widget from updated UI.*/
+        const Widget *RetrieveWidget(const Widget &img, ApiCallErr &err, bool updateUi = true);
 
         /**Find scroll widget on current UI. <b>(without updating UI objects)</b>*/
-        const Widget *FindScrollWidget(const WidgetImage &img) const;
-
-        /**For multi-device UI operation, specifies the target device name.*/
-        std::string deviceName_;
-        /**The UI manipulation options.*/
-        UiDriveOptions options_;
+        const Widget *FindScrollWidget(const Widget &img) const;
         // objects that are needed to be updated before each interaction and used in the interaction
         std::unique_ptr<WidgetTree> widgetTree_ = nullptr;
         const UiController *uiController_ = nullptr;

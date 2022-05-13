@@ -16,7 +16,7 @@
 #ifndef WIDGET_SELECTOR_H
 #define WIDGET_SELECTOR_H
 
-#include "extern_api.h"
+#include "frontend_api_handler.h"
 #include "widget_matcher.h"
 
 namespace OHOS::uitest {
@@ -24,11 +24,11 @@ namespace OHOS::uitest {
      * Selector that searches Widgets on the given WidgetTree according to the matchers
      * of the target widget and its adjacent (front/rear/ancestor/descendant) widgets.
      * */
-    class WidgetSelector : public ExternApi<TypeId::BY> {
+    class WidgetSelector : public BackendClass {
     public:
         WidgetSelector() = default;
 
-        ~WidgetSelector();
+        ~WidgetSelector() override {};
 
         /**Add a matcher as the target widget attribute requirement.*/
         void AddMatcher(const WidgetAttrMatcher &matcher);
@@ -46,9 +46,10 @@ namespace OHOS::uitest {
         /**Returns a description of this selector.*/
         std::string Describe() const;
 
-        void WriteIntoParcel(nlohmann::json &data) const override;
-
-        void ReadFromParcel(const nlohmann::json &data) override;
+        const FrontEndClassDef& GetFrontendClassDef() const override
+        {
+            return BY_DEF;
+        }
 
     private:
         std::vector<WidgetAttrMatcher> selfMatchers_;
