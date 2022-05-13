@@ -242,7 +242,7 @@ namespace OHOS::uitest {
         }
         // notify backend objects deleting
         if (g_backendObjsAboutToDelete.size() >= BACKEND_OBJ_CLEAN_THRESHOLD) {
-            auto gcCall = ApiCallInfo{.apiId_ = "BackendObjectsCleaner"};
+            auto gcCall = ApiCallInfo {.apiId_ = "BackendObjectsCleaner"};
             auto gcReply = ApiReplyInfo();
             for (auto& ref : g_unCalledJsFuncNames) {
                 gcCall.paramList_.emplace_back(ref);

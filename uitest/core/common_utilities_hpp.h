@@ -36,7 +36,7 @@
 #define FORCE_INLINE __attribute__((always_inline)) inline
 
 namespace OHOS::uitest {
-    using CStr = const char*;
+    using CStr = const char *;
     constexpr size_t INDEX_ZERO = 0;
     constexpr size_t INDEX_ONE = 1;
     constexpr size_t INDEX_TWO = 2;

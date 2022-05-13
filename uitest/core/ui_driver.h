@@ -47,10 +47,10 @@ namespace OHOS::uitest {
                                                   const UiOpArgs& opt, ApiCallErr &err);
 
         /**Scroll widget to the end.*/
-        void ScrollToEnd(const Widget &img, bool scrollUp, const UiOpArgs& opt, ApiCallErr &err);
+        void ScrollToEnd(const Widget &widget, bool scrollUp, const UiOpArgs& opt, ApiCallErr &err);
 		
         /**Drag widget-A to widget-B.*/
-        void DragIntoWidget(const Widget &imgA, const Widget &imgB, const UiOpArgs& opt, ApiCallErr &err);
+        void DragIntoWidget(const Widget &wa, const Widget &wb, const UiOpArgs& opt, ApiCallErr &err);
 
         /**Wait for the matching widget appear in the given timeout.*/
         std::unique_ptr<Widget> WaitForWidget(const WidgetSelector &select, const UiOpArgs& opt, ApiCallErr &err);
@@ -62,7 +62,7 @@ namespace OHOS::uitest {
         void PerformClick(PointerOp op, const Point &point, const UiOpArgs& opt, ApiCallErr &err);
 
         /**Perform generic-swipe on raw points.*/
-        void PerformSwipe(PointerOp op, const Point &p0, const Point &p1, const UiOpArgs& opt, ApiCallErr &err);
+        void PerformSwipe(PointerOp op, const Point &from, const Point &to, const UiOpArgs& opt, ApiCallErr &err);
 
         /**Delay current thread for given duration.*/
         static void DelayMs(uint32_t ms);
@@ -80,7 +80,7 @@ namespace OHOS::uitest {
         void UpdateUi(bool updateUiTree, ApiCallErr &error);
 
         /**Retrieve widget represented by the given widget from updated UI.*/
-        const Widget *RetrieveWidget(const Widget &img, ApiCallErr &err, bool updateUi = true);
+        const Widget *RetrieveWidget(const Widget &widget, ApiCallErr &err, bool updateUi = true);
 
         /**Find scroll widget on current UI. <b>(without updating UI objects)</b>*/
         const Widget *FindScrollWidget(const Widget &img) const;
