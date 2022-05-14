@@ -20,46 +20,20 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
 
-    void UiDriveOptions::WriteIntoParcel(json &data) const
-    {
-        auto arr = json::array();
-        arr.push_back(clickHoldMs_);
-        arr.push_back(longClickHoldMs_);
-        arr.push_back(doubleClickIntervalMs_);
-        arr.push_back(keyHoldMs_);
-        arr.push_back(swipeVelocityPps_);
-        arr.push_back(uiSteadyThresholdMs_);
-        arr.push_back(waitUiSteadyMaxMs_);
-        data["data"] = arr;
-    }
-
-    void UiDriveOptions::ReadFromParcel(const json &data)
-    {
-        auto arr = data["data"];
-        size_t index = 0;
-        clickHoldMs_ = arr.at(index++);
-        longClickHoldMs_ = arr.at(index++);
-        doubleClickIntervalMs_ = arr.at(index++);
-        keyHoldMs_ = arr.at(index++);
-        swipeVelocityPps_ = arr.at(index++);
-        uiSteadyThresholdMs_ = arr.at(index++);
-        waitUiSteadyMaxMs_ = arr.at(index++);
-    }
-
-    static void DecomposeClick(vector<TouchEvent> &recv, const Point &point, const UiDriveOptions &options)
+    static void DecomposeClick(vector<TouchEvent> &recv, const Point &point, const UiOpArgs &options)
     {
         recv.push_back(TouchEvent {ActionStage::DOWN, point, 0, options.clickHoldMs_});
         recv.push_back(TouchEvent {ActionStage::UP, point, options.clickHoldMs_, 0});
     }
 
-    static void DecomposeLongClick(vector<TouchEvent> &recv, const Point &point, const UiDriveOptions &options)
+    static void DecomposeLongClick(vector<TouchEvent> &recv, const Point &point, const UiOpArgs &options)
     {
         // should sleep after touch-down to make long-click duration
         recv.push_back(TouchEvent {ActionStage::DOWN, point, 0, options.longClickHoldMs_});
         recv.push_back(TouchEvent {ActionStage::UP, point, options.longClickHoldMs_, 0});
     }
 
-    static void DecomposeDoubleClick(vector<TouchEvent> &recv, const Point &point, const UiDriveOptions &options)
+    static void DecomposeDoubleClick(vector<TouchEvent> &recv, const Point &point, const UiOpArgs &options)
     {
         const auto msInterval = options.doubleClickIntervalMs_;
         recv.push_back(TouchEvent {ActionStage::DOWN, point, 0, options.clickHoldMs_});
@@ -70,7 +44,7 @@ namespace OHOS::uitest {
     }
 
     static void DecomposeComputeSwipe(vector<TouchEvent> &recv, const Point &from, const Point &to, bool drag,
-                                      const UiDriveOptions &options)
+                                      const UiOpArgs &options)
     {
         const int32_t distanceX = to.px_ - from.px_;
         const int32_t distanceY = to.py_ - from.py_;
@@ -99,7 +73,7 @@ namespace OHOS::uitest {
         }
     }
 
-    void GenericClick::Decompose(vector<TouchEvent> &recv, const Point &point, const UiDriveOptions &options) const
+    void GenericClick::Decompose(vector<TouchEvent> &recv, const Point &point, const UiOpArgs &options) const
     {
         DCHECK(type_ >= PointerOp::CLICK_P && type_ <= PointerOp::DOUBLE_CLICK_P);
         switch (type_) {
@@ -121,7 +95,7 @@ namespace OHOS::uitest {
     }
 
     void GenericSwipe::Decompose(vector<TouchEvent> &recv, const Point &fromPoint, const Point &toPoint,
-                                 const UiDriveOptions &options) const
+                                 const UiOpArgs &options) const
     {
         DCHECK(type_ >= PointerOp::SWIPE_P && type_ <= PointerOp::DRAG_P);
         DecomposeComputeSwipe(recv, fromPoint, toPoint, type_ == PointerOp::DRAG_P, options);

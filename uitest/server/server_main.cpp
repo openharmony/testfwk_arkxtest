@@ -19,7 +19,6 @@
 #include <iostream>
 #include <fstream>
 #include <getopt.h>
-#include "extern_api.h"
 #include "ipc_transactors_impl.h"
 #include "system_ui_controller.h"
 
@@ -67,7 +66,7 @@ namespace OHOS::uitest {
         if (iter != params.end()) {
             savePath = iter->second;
         }
-        auto controller = SysUiController("sys_ui_controller", "");
+        auto controller = SysUiController("sys_ui_controller");
         if (!controller.ConnectToSysAbility()) {
             PrintToConsole("Dump layout failed, cannot connect to AAMS");
             return EXIT_FAILURE;
@@ -99,7 +98,7 @@ namespace OHOS::uitest {
         if (iter != params.end()) {
             savePath = iter->second;
         }
-        auto controller = SysUiController("sys_ui_controller", "");
+        auto controller = SysUiController("sys_ui_controller");
         stringstream errorRecv;
         if (!controller.TakeScreenCap(savePath, errorRecv)) {
             PrintToConsole("ScreenCap failed: " + errorRecv.str());
@@ -128,8 +127,8 @@ namespace OHOS::uitest {
         // set actual api handlerFunc provided by uitest_core
         server.SetCallFunction(ApiTransact);
         // set delayed UiController
-        auto controllerProvider = [](string_view device, list<unique_ptr<UiController>> &receiver) {
-            auto controller = make_unique<SysUiController>("sys_ui_controller", device);
+        auto controllerProvider = [](list<unique_ptr<UiController>> &receiver) {
+            auto controller = make_unique<SysUiController>("sys_ui_controller");
             if (controller->ConnectToSysAbility()) {
                 receiver.push_back(move(controller));
             }

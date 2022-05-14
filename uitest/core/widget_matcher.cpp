@@ -19,7 +19,7 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
 
-    string GetRuleName(ValueMatchRule rule)
+    string GetRuleName(ValueMatchPattern rule)
     {
         switch (rule) {
             case EQ:
@@ -55,7 +55,7 @@ namespace OHOS::uitest {
         return ss.str();
     }
 
-    WidgetAttrMatcher::WidgetAttrMatcher(string_view attr, string_view testValue, ValueMatchRule rule)
+    WidgetAttrMatcher::WidgetAttrMatcher(string_view attr, string_view testValue, ValueMatchPattern rule)
         : attrName_(attr), testVal_(testValue), matchRule_(rule) {}
 
     bool WidgetAttrMatcher::Matches(const Widget &widget) const
@@ -72,21 +72,6 @@ namespace OHOS::uitest {
     {
         auto valueMatcher = ValueMatcher(testVal_, matchRule_);
         return "$" + string(attrName_) + " " + valueMatcher.Describe();
-    }
-
-    void WidgetAttrMatcher::WriteIntoParcel(json &data) const
-    {
-        data["attr_name"] = attrName_;
-        data["test_value"] = testVal_;
-        data["match_rule"] = matchRule_;
-    }
-
-    void WidgetAttrMatcher::ReadFromParcel(const json &data)
-    {
-        attrName_ = data["attr_name"];
-        testVal_ = data["test_value"];
-        uint8_t intVal = data["match_rule"];
-        matchRule_ = static_cast<ValueMatchRule>(intVal);
     }
 
     All::All(const WidgetAttrMatcher &ma, const WidgetAttrMatcher &mb)

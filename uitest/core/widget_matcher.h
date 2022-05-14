@@ -20,15 +20,17 @@
 #include <vector>
 #include <sstream>
 #include "ui_model.h"
-#include "extern_api.h"
 
 namespace OHOS::uitest {
-    /** get the readable name of the ValueMatchRule value.*/
-    std::string GetRuleName(ValueMatchRule rule);
+    /**Enumerates the supported string value match rules.*/
+    enum ValueMatchPattern : uint8_t { EQ, CONTAINS, STARTS_WITH, ENDS_WITH };
+
+    /** get the readable name of the ValueMatchPattern value.*/
+    std::string GetRuleName(ValueMatchPattern rule);
 
     class ValueMatcher {
     public:
-        explicit ValueMatcher(std::string testValue, ValueMatchRule rule = EQ)
+        explicit ValueMatcher(std::string testValue, ValueMatchPattern rule = EQ)
             : testValue_(std::move(testValue)), rule_(rule) {}
 
         virtual ~ValueMatcher() {}
@@ -39,7 +41,7 @@ namespace OHOS::uitest {
 
     private:
         const std::string testValue_;
-        const ValueMatchRule rule_;
+        const ValueMatchPattern rule_;
     };
 
     /**Base type of all widget matchers, test on a single Widget and returns true if it's
@@ -62,24 +64,20 @@ namespace OHOS::uitest {
     /**
      * Matcher to test a single widget attribute.
      * */
-    class WidgetAttrMatcher final : public WidgetMatcher, public Parcelable {
+    class WidgetAttrMatcher final : public WidgetMatcher {
     public:
         WidgetAttrMatcher() = delete;
 
-        explicit WidgetAttrMatcher(std::string_view attr, std::string_view testValue, ValueMatchRule rule);
+        explicit WidgetAttrMatcher(std::string_view attr, std::string_view testValue, ValueMatchPattern rule);
 
         bool Matches(const Widget &widget) const override;
 
         std::string Describe() const override;
 
-        void WriteIntoParcel(nlohmann::json &data) const override;
-
-        void ReadFromParcel(const nlohmann::json &data) override;
-
     private:
         std::string attrName_;
         std::string testVal_;
-        ValueMatchRule matchRule_;
+        ValueMatchPattern matchRule_;
     };
 
     /**

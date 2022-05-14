@@ -19,10 +19,51 @@
 #include <vector>
 #include <sstream>
 #include "common_utilities_hpp.h"
+#include "frontend_api_handler.h"
 #include "json.hpp"
 
 namespace OHOS::uitest {
+    /**Enumerates the supported UiComponent attributes.*/
+    enum UiAttr : uint8_t {
+        ID,
+        TEXT,
+        KEY,
+        TYPE,
+        BOUNDS,
+        ENABLED,
+        FOCUSED,
+        SELECTED,
+        CLICKABLE,
+        LONG_CLICKABLE,
+        SCROLLABLE,
+        CHECKABLE,
+        CHECKED,
+        // inner used attributes
+        HIERARCHY,
+        HASHCODE,
+    };
+
+    /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
+    constexpr std::string_view ATTR_NAMES[] = {
+        "id",            // ID
+        "text",          // TEXT
+        "key",           // KEY
+        "type",          // TYPE
+        "bounds",        // BOUNDS
+        "enabled",       // ENABLED
+        "focused",       // FOCUSED
+        "selected",      // SELECTED
+        "clickable",     // CLICKABLE
+        "longClickable", // LONG_CLICKABLE
+        "scrollable",    // SCROLLABLE
+        "checkable",     // CHECKABLE
+        "checked",       // CHECKED
+        "hierarchy",     // HIERARCHY
+        "hashcode",      // HASHCODE
+    };
+
     struct Point {
+        Point() : px_(0), py_(0) {};
         Point(int32_t px, int32_t py) : px_(px), py_(py) {};
         int32_t px_;
         int32_t py_;
@@ -41,48 +82,90 @@ namespace OHOS::uitest {
         int32_t top_;
         int32_t bottom_;
 
-        inline int32_t GetCenterX() const
+        FORCE_INLINE int32_t GetCenterX() const
         {
             return (left_ + right_) / 2;
         }
 
-        inline int32_t GetCenterY() const
+        FORCE_INLINE int32_t GetCenterY() const
         {
             return (top_ + bottom_) / 2;
         }
 
-        inline int32_t GetWidth() const
+        FORCE_INLINE int32_t GetWidth() const
         {
             return right_ - left_;
         }
 
-        inline int32_t GetHeight() const
+        FORCE_INLINE int32_t GetHeight() const
         {
             return bottom_ - top_;
         }
-
-        void ComputeOverlappingDimensions(const Rect &other, int32_t &width, int32_t& height) const;
-
-        bool ComputeIntersection(const Rect &other, Rect &result) const;
-
-        bool CompareTo(const Rect &other) const;
     };
 
-    class Widget;
+    /**Algorithm of rectangle.*/
+    class RectAlgorithm {
+    public:
+        FORCE_INLINE static bool CheckEqual(const Rect &ra, const Rect &rb);
+        FORCE_INLINE static bool CheckIntersectant(const Rect &ra, const Rect &rb);
+        FORCE_INLINE static bool IsInnerPoint(const Rect &rect, const Point& point);
+        FORCE_INLINE static bool IsPointOnEdge(const Rect &rect, const Point& point);
+        static bool ComputeIntersection(const Rect &ra, const Rect &rb, Rect &result);
+    };
 
-    /**Inner used widget attributes.*/
-    constexpr auto ATTR_HIERARCHY = "hierarchy";
-    constexpr auto ATTR_HASHCODE = "hashcode";
+    FORCE_INLINE bool RectAlgorithm::CheckEqual(const Rect &ra, const Rect &rb)
+    {
+        return ra.left_ == rb.left_ && ra.right_ == rb.right_
+               && ra.top_ == rb.top_ && ra.bottom_ == rb.bottom_;
+    }
 
-    class Widget {
+    FORCE_INLINE bool RectAlgorithm::CheckIntersectant(const Rect &ra, const Rect &rb)
+    {
+        if (ra.left_ >= rb.right_ || ra.right_ <= rb.left_) {
+            return false;
+        }
+        if (ra.top_ >= rb.bottom_ || ra.bottom_ <= rb.top_) {
+            return false;
+        }
+        return true;
+    }
+
+    FORCE_INLINE bool RectAlgorithm::IsInnerPoint(const Rect &rect, const Point& point)
+    {
+        if (point.px_ <= rect.left_ || point.px_ >= rect.right_
+            || point.py_ <= rect.top_ || point.py_ >= rect.bottom_) {
+            return false;
+        }
+        return true;
+    }
+
+    FORCE_INLINE bool RectAlgorithm::IsPointOnEdge(const Rect &rect, const Point& point)
+    {
+        if ((point.px_ == rect.left_ || point.px_ == rect.right_)
+            && point.py_ >= rect.top_ && point.py_ <= rect.bottom_) {
+            return true;
+        }
+        if ((point.py_ == rect.top_ || point.py_ == rect.bottom_)
+            && point.px_ >= rect.left_ && point.px_ <= rect.right_) {
+            return true;
+        }
+        return false;
+    }
+
+    class Widget : public BackendClass {
     public:
         // disable default constructor, copy constructor and assignment operator
         explicit Widget(std::string_view hierarchy) : hierarchy_(hierarchy)
         {
-            attributes_.insert(std::make_pair(ATTR_HIERARCHY, hierarchy));
+            attributes_.insert(std::make_pair(ATTR_NAMES[UiAttr::HIERARCHY], hierarchy));
         };
 
-        virtual ~Widget() {}
+        ~Widget() override {}
+
+        const FrontEndClassDef& GetFrontendClassDef() const override
+        {
+            return UI_COMPONENT_DEF;
+        }
 
         bool HasAttr(std::string_view name) const;
 
