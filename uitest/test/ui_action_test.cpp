@@ -44,7 +44,7 @@ protected:
         customOptions_.uiSteadyThresholdMs_ = CUSTOM_UI_STEADY_MS;
         customOptions_.waitUiSteadyMaxMs_ = CUSTOM_WAIT_UI_STEADY_MS;
     }
-    UiDriveOptions customOptions_;
+    UiOpArgs customOptions_;
 };
 
 TEST_F(UiActionTest, computeClickAction)
@@ -125,7 +125,7 @@ TEST_F(UiActionTest, computeDoubleClickAction)
 
 TEST_F(UiActionTest, computeSwipeAction)
 {
-    UiDriveOptions opt {};
+    UiOpArgs opt {};
     opt.swipeVelocityPps_ = 50; // specify the swipe velocity
     Point point0(0, 0);
     Point point1(100, 200);
@@ -166,7 +166,7 @@ TEST_F(UiActionTest, computeSwipeAction)
 
 TEST_F(UiActionTest, computeDragAction)
 {
-    UiDriveOptions opt {};
+    UiOpArgs opt {};
     opt.longClickHoldMs_ = 2000; // specify the long-click duration
     Point point0(0, 0);
     Point point1(100, 200);

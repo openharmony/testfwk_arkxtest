@@ -503,36 +503,3 @@ TEST_F(WidgetSelectorTest, selectorDescription)
     ASSERT_TRUE(pos4 != string::npos && pos4 > pos3);
     ASSERT_TRUE(pos5 != string::npos && pos5 > pos4);
 }
-
-TEST_F(WidgetSelectorTest, selectorSerialization)
-{
-    ApiCallErr err(NO_ERROR);
-    auto selector = WidgetSelector();
-    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "s", CONTAINS);
-    selector.AddMatcher(matcher0);
-
-    auto frontMatcher = WidgetAttrMatcher("resource-id", "id3", EQ);
-    auto frontLocator = WidgetSelector();
-    frontLocator.AddMatcher(frontMatcher);
-    selector.AddFrontLocator(frontLocator, err);
-    ASSERT_EQ(NO_ERROR, err.code_);
-    auto rearMatcher = WidgetAttrMatcher("resource-id", "id9", EQ);
-    auto rearLocator = WidgetSelector();
-    rearLocator.AddMatcher(rearMatcher);
-    selector.AddRearLocator(rearLocator, err);
-    ASSERT_EQ(NO_ERROR, err.code_);
-
-    vector<reference_wrapper<const Widget>> receiver;
-    selector.Select(tree_, receiver);
-    ASSERT_EQ(2, receiver.size()); // 2 widgets should be selected
-
-    // serialize this selector into json and re-creator one from it
-    nlohmann::json data;
-    selector.WriteIntoParcel(data);
-    auto newSelector = WidgetSelector();
-    newSelector.ReadFromParcel(data);
-    // test the new selector
-    receiver.clear();
-    newSelector.Select(tree_, receiver);
-    ASSERT_EQ(2, receiver.size()); // 2 widgets should be selected
-}

@@ -29,13 +29,11 @@ ohos_static_library("uitest_core") {
   use_exceptions = true
   configs = [ ":uitest_common_configs" ]
   sources = [
-    "${source_root}/core/extern_api.cpp",
-    "${source_root}/core/extern_api_registration.cpp",
+    "${source_root}/core/frontend_api_handler.cpp",
     "${source_root}/core/ui_action.cpp",
     "${source_root}/core/ui_controller.cpp",
     "${source_root}/core/ui_driver.cpp",
     "${source_root}/core/ui_model.cpp",
-    "${source_root}/core/widget_image.cpp",
     "${source_root}/core/widget_matcher.cpp",
     "${source_root}/core/widget_selector.cpp",
   ]
@@ -180,13 +178,12 @@ ohos_shared_library("uitest_client") {
 ohos_unittest("uitest_core_unittest") {
   sources = [
     "${source_root}/test/common_utilities_test.cpp",
-    "${source_root}/test/extern_api_test.cpp",
+    "${source_root}/test/frontend_api_handler_test.cpp",
     "${source_root}/test/transaction_connection_test.cpp",
     "${source_root}/test/ui_action_test.cpp",
     "${source_root}/test/ui_controller_test.cpp",
+    "${source_root}/test/ui_driver_test.cpp",
     "${source_root}/test/ui_model_test.cpp",
-    "${source_root}/test/uidriver_test.cpp",
-    "${source_root}/test/widget_image_test.cpp",
     "${source_root}/test/widget_matcher_test.cpp",
     "${source_root}/test/widget_selector_test.cpp",
   ]

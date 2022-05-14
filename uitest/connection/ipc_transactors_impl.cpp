@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "extern_api.h"
+#include "common_utilities_hpp.h"
 #include "ipc_transactors_impl.h"
 
 namespace OHOS::uitest {
@@ -54,10 +54,7 @@ namespace OHOS::uitest {
             auto message = TransactionMessage {};
             message.id_ = (uint32_t)want.GetIntParam("id", 0);
             message.type_ = static_cast<TransactionType>(want.GetIntParam("type", TransactionType::INVALID));
-            message.apiId_ = want.GetStringParam("apiId");
-            message.callerParcel_ = want.GetStringParam("callerParcel");
-            message.paramsParcel_ = want.GetStringParam("paramsParcel");
-            message.resultParcel_ = want.GetStringParam("resultParcel");
+            message.dataParcel_ = want.GetStringParam("data");
             this->OnReceiveMessage(message);
         });
         if (subscriber_ == nullptr) {
@@ -82,10 +79,7 @@ namespace OHOS::uitest {
         CommonEventData event;
         want.SetParam("id", (long) (message.id_));
         want.SetParam("type", message.type_);
-        want.SetParam("apiId", message.apiId_);
-        want.SetParam("callerParcel", message.callerParcel_);
-        want.SetParam("paramsParcel", message.paramsParcel_);
-        want.SetParam("resultParcel", message.resultParcel_);
+        want.SetParam("data", message.dataParcel_);
         event.SetWant(want);
         CommonEventManager::PublishCommonEvent(event);
     }
@@ -155,10 +149,10 @@ namespace OHOS::uitest {
     }
 
     /**Exported transaction client api-calling function.*/
-    string TransactionClientFunc(string_view apiId, string_view caller, string_view params)
+    void TransactionClientFunc(const ApiCallInfo& call, ApiReplyInfo& reply)
     {
         DCHECK(sClient != nullptr && sSetupCalled.load());
-        return sClient->InvokeApi(apiId, caller, params);
+        sClient->InvokeApi(call, reply);
     }
 
     /**Exported transaction-client dispose callback function.*/

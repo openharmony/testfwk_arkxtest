@@ -20,7 +20,6 @@
 #include <map>
 #include <set>
 #include "ui_model.h"
-#include "extern_api.h"
 
 namespace OHOS::uitest {
     // frequently used keys.
@@ -30,6 +29,15 @@ namespace OHOS::uitest {
     constexpr int32_t KEYCODE_V = 2038;
     constexpr char KEYNAME_BACK[] = "Back";
     constexpr char KEYNAME_PASTE[] = "Paste";
+
+    /**Enumerates all the supported widget operations.*/
+    enum WidgetOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK, SCROLL_TO_TOP, SCROLL_TO_BOTTOM };
+
+    /**Enumerates all the supported coordinate-based operations.*/
+    enum PointerOp : uint8_t { CLICK_P, LONG_CLICK_P, DOUBLE_CLICK_P, SWIPE_P, DRAG_P };
+
+    /**Enumerates the supported Key actions.*/
+    enum UiKey : uint8_t { BACK, GENERIC };
 
     enum ActionStage : uint8_t {
         DOWN = 0, MOVE = 1, UP = 2
@@ -50,9 +58,9 @@ namespace OHOS::uitest {
     };
 
     /**
-     * Options of the UI manipulation.
+     * Options of the UI operations, initialized with system default values.
      **/
-    class UiDriveOptions : public ExternApi<TypeId::RECT_JSON> {
+    class UiOpArgs {
     public:
         uint32_t clickHoldMs_ = 200;
         uint32_t longClickHoldMs_ = 1500;
@@ -61,10 +69,8 @@ namespace OHOS::uitest {
         uint32_t swipeVelocityPps_ = 600;
         uint32_t uiSteadyThresholdMs_ = 1000;
         uint32_t waitUiSteadyMaxMs_ = 3000;
-
-        void WriteIntoParcel(nlohmann::json &data) const override;
-
-        void ReadFromParcel(const nlohmann::json &data) override;
+        uint32_t waitWidgetMaxMs_ = 5000;
+        int32_t scrollWidgetDeadZone_ = 20;
     };
 
     /**
@@ -77,7 +83,7 @@ namespace OHOS::uitest {
         /**Compute the touch event sequence that are needed to implement this action.
          * @param point: the click location.
          * */
-        void Decompose(std::vector<TouchEvent> &recv, const Point &point, const UiDriveOptions &options) const;
+        void Decompose(std::vector<TouchEvent> &recv, const Point &point, const UiOpArgs &options) const;
 
         ~GenericClick() = default;
 
@@ -97,7 +103,7 @@ namespace OHOS::uitest {
          * @param toPoint: the swipe end point.
          * */
         void Decompose(std::vector<TouchEvent> &recv, const Point &fromPoint, const Point &toPoint,
-                       const UiDriveOptions &options) const;
+                       const UiOpArgs &options) const;
 
         ~GenericSwipe() = default;
 
@@ -111,7 +117,7 @@ namespace OHOS::uitest {
     class KeyAction {
     public:
         /**Compute the key event sequence that are needed to implement this action.*/
-        virtual void ComputeEvents(std::vector<KeyEvent> &recv, const UiDriveOptions &options) const = 0;
+        virtual void ComputeEvents(std::vector<KeyEvent> &recv, const UiOpArgs &options) const = 0;
 
         virtual ~KeyAction() = default;
 
@@ -125,7 +131,7 @@ namespace OHOS::uitest {
     public:
         explicit NamedPlainKey() = default;
 
-        void ComputeEvents(std::vector<KeyEvent> &recv, const UiDriveOptions &opt) const override
+        void ComputeEvents(std::vector<KeyEvent> &recv, const UiOpArgs &opt) const override
         {
             if (kCtrlCode != KEYCODE_NONE) {
                 recv.push_back(KeyEvent {ActionStage::DOWN, kCtrlCode,  0});
@@ -155,7 +161,7 @@ namespace OHOS::uitest {
     public:
         explicit AnonymousSingleKey(int32_t code) : code_(code) {};
 
-        void ComputeEvents(std::vector<KeyEvent> &recv, const UiDriveOptions &opt) const override
+        void ComputeEvents(std::vector<KeyEvent> &recv, const UiOpArgs &opt) const override
         {
             recv.push_back(KeyEvent {ActionStage::DOWN, code_, opt.keyHoldMs_});
             recv.push_back(KeyEvent {ActionStage::UP, code_, 0});
