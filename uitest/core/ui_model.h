@@ -41,6 +41,7 @@ namespace OHOS::uitest {
         // inner used attributes
         HIERARCHY,
         HASHCODE,
+        BOUNDSCENTER,
     };
 
     /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
@@ -60,6 +61,7 @@ namespace OHOS::uitest {
         "checked",       // CHECKED
         "hierarchy",     // HIERARCHY
         "hashcode",      // HASHCODE
+        "boundsCenter",  // BOUNDSCENTER
     };
 
     struct Point {

@@ -405,9 +405,11 @@ namespace OHOS::uitest {
                 op = PointerOp::DOUBLE_CLICK_P;
             } else if (in.apiId_ == "UiDriver.swipe") {
                 op = PointerOp::SWIPE_P;
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<int32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
                 point1 = Point(ReadCallArg<int32_t>(in, INDEX_TWO), ReadCallArg<int32_t>(in, INDEX_THREE));
             } else if (in.apiId_ == "UiDriver.drag") {
                 op = PointerOp::DRAG_P;
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<int32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
                 point1 = Point(ReadCallArg<int32_t>(in, INDEX_TWO), ReadCallArg<int32_t>(in, INDEX_THREE));
             }
             if (op == PointerOp::SWIPE_P || op == PointerOp::DRAG_P) {
@@ -432,6 +434,14 @@ namespace OHOS::uitest {
         auto snapshot = driver.GetWidgetSnapshot(image, out.exception_);
         if (out.exception_.code_ != NO_ERROR) {
             out.resultValue_ = nullptr; // exception, return null
+            return;
+        }
+        if (attrName == ATTR_NAMES[UiAttr::BOUNDSCENTER]) { // getBoundsCenter
+            const auto bounds = snapshot->GetBounds();
+            json data;
+            data["X"] = bounds.GetCenterX();
+            data["Y"] = bounds.GetCenterY();
+            out.resultValue_ = data;
             return;
         }
         if (attrName == ATTR_NAMES[UiAttr::BOUNDS]) { // getBounds
@@ -471,6 +481,7 @@ namespace OHOS::uitest {
         server.AddHandler("UiComponent.isCheckable", GenericComponentAttrGetter<UiAttr::CHECKABLE>);
         server.AddHandler("UiComponent.isChecked", GenericComponentAttrGetter<UiAttr::CHECKED>);
         server.AddHandler("UiComponent.getBounds", GenericComponentAttrGetter<UiAttr::BOUNDS>);
+        server.AddHandler("UiComponent.getBoundsCenter", GenericComponentAttrGetter<UiAttr::BOUNDSCENTER>);
     }
 
     static void RegisterUiComponentGestures()
@@ -489,8 +500,10 @@ namespace OHOS::uitest {
             } else if (in.apiId_ == "UiComponent.doubleClick") {
                 op = WidgetOp::DOUBLE_CLICK;
             } else if (in.apiId_ == "UiComponent.scrollToTop") {
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<int32_t>(in, INDEX_ZERO, uiOpArgs.swipeVelocityPps_);
                 op = WidgetOp::SCROLL_TO_TOP;
             } else if (in.apiId_ == "UiComponent.scrollToBottom") {
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<int32_t>(in, INDEX_ZERO, uiOpArgs.swipeVelocityPps_);
                 op = WidgetOp::SCROLL_TO_BOTTOM;
             }
             driver.OperateWidget(widget, op, uiOpArgs, out.exception_);
