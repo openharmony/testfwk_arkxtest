@@ -58,7 +58,7 @@ namespace OHOS::uitest {
 
         void EmitExit();
 
-        void SetMessageFilter(std::function<bool(TransactionType)>);
+        void SetMessageFilter(std::function<bool(TransactionType)> filter);
 
         PollStatus PollCallReply(TransactionMessage &out, uint64_t timeoutMs);
 
