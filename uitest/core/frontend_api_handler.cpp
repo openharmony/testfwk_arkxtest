@@ -343,8 +343,10 @@ namespace OHOS::uitest {
                 for (auto &ptr : recv) {
                     out.resultValue_.emplace_back(StoreBackendObject(move(ptr), driverRef));
                 }
-            } else { // return first one or null
-                out.resultValue_ = recv.empty() ? nullptr : StoreBackendObject(move(*(recv.begin())), driverRef);
+            } else if (recv.empty()) { // return first one or null
+                out.resultValue_ = nullptr;
+            } else {
+                out.resultValue_ =  StoreBackendObject(move(*(recv.begin())), driverRef);
             }
         };
         server.AddHandler("UiDriver.findComponent", genricFindWidgetHandler);
