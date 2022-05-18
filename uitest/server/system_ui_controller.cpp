@@ -426,8 +426,9 @@ namespace OHOS::uitest {
             return false;
         }
         LOG_I("Start connect to AAMS");
-        if (!ability->Connect()) {
-            LOG_E("Failed to connect to AAMS");
+        size_t ret = ability->Connect();
+        if (ret) {
+            LOG_E("Failed to connect to AAMS, RetError : %{public}d", ret);
             return false;
         }
         const auto timeout = chrono::milliseconds(500);
