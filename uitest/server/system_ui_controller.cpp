@@ -39,6 +39,15 @@ namespace OHOS::uitest {
     using namespace OHOS::Rosen;
     using namespace OHOS::Media;
 
+    enum RetError : int32_t {
+        RET_OK = 0,
+        RET_ERR_INVALID_PARAM = 1,
+        RET_ERR_NULLPTR = 2,
+        RET_ERR_CONNECTION_EXIST = 3,
+        RET_ERR_IPC_FAILED = 4,
+        RET_ERR_SAMGR = 5,
+    };
+    
     class UiEventMonitor final : public AccessibleAbilityListener {
     public:
         virtual ~UiEventMonitor() = default;
@@ -426,9 +435,25 @@ namespace OHOS::uitest {
             return false;
         }
         LOG_I("Start connect to AAMS");
-        if (!ability->Connect()) {
-            LOG_E("Failed to connect to AAMS");
-            return false;
+        auto ret = ability->Connect();
+        switch (ret) {
+            case (RET_OK):
+                break;
+            case (RET_ERR_INVALID_PARAM):
+                LOG_E("Failed to connect to AAMS, RET_ERR_INVALID_PARAM");
+                return false;
+            case (RET_ERR_NULLPTR):
+                LOG_E("Failed to connect to AAMS, RET_ERR_NULLPTR");
+                return false;
+            case (RET_ERR_CONNECTION_EXIST):
+                LOG_E("Failed to connect to AAMS, RET_ERR_CONNECTION_EXIST");
+                return false;
+            case (RET_ERR_IPC_FAILED):
+                LOG_E("Failed to connect to AAMS, RET_ERR_IPC_FAILED");
+                return false;
+            case (RET_ERR_SAMGR):
+                LOG_E("Failed to connect to AAMS, RET_ERR_SAMGR");
+                return false;
         }
         const auto timeout = chrono::milliseconds(500);
         if (condition.wait_for(uLock, timeout) == cv_status::timeout) {
