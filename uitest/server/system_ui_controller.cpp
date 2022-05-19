@@ -440,19 +440,19 @@ namespace OHOS::uitest {
             case (RET_OK):
                 break;
             case (RET_ERR_INVALID_PARAM):
-                LOG_E("Failed to connect to AAMS, INVALID_PARAM");
+                LOG_E("Failed to connect to AAMS, RET_ERR_INVALID_PARAM");
                 return false;
             case (RET_ERR_NULLPTR):
-                LOG_E("Failed to connect to AAMS, NULLPTR");
+                LOG_E("Failed to connect to AAMS, RET_ERR_NULLPTR");
                 return false;
             case (RET_ERR_CONNECTION_EXIST):
-                LOG_E("Failed to connect to AAMS, CONNECTION_EXIST");
+                LOG_E("Failed to connect to AAMS, RET_ERR_CONNECTION_EXIST");
                 return false;
             case (RET_ERR_IPC_FAILED):
-                LOG_E("Failed to connect to AAMS, IPC_FAILED");
+                LOG_E("Failed to connect to AAMS, RET_ERR_IPC_FAILED");
                 return false;
             case (RET_ERR_SAMGR):
-                LOG_E("Failed to connect to AAMS, SAMGR");
+                LOG_E("Failed to connect to AAMS, RET_ERR_SAMGR");
                 return false;
         }
         const auto timeout = chrono::milliseconds(500);
