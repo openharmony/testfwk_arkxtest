@@ -217,7 +217,8 @@ namespace OHOS::uitest {
         AccessibilityElementInfo elementInfo {};
         if (ability->GetRoot(elementInfo)) {
             const auto windowId = elementInfo.GetWindowId();
-            const auto windows = ability->GetWindows();
+            std::vector<AccessibilityWindowInfo> windows;
+            (void)ability->GetWindows(windows);
             for (auto& window:windows) {
                 if (windowId == window.GetWindowId()) {
                     // apply window bounds as root node bounds
