@@ -47,14 +47,14 @@ namespace OHOS::uitest {
     inline uint64_t GetCurrentMillisecond()
     {
         using namespace std::chrono;
-        return time_point_cast<milliseconds>(system_clock::now()).time_since_epoch().count();
+        return time_point_cast<milliseconds>(steady_clock::now()).time_since_epoch().count();
     }
 
     /**Get current time microseconds.*/
     inline uint64_t GetCurrentMicroseconds()
     {
         using namespace std::chrono;
-        return time_point_cast<microseconds>(system_clock::now()).time_since_epoch().count();
+        return time_point_cast<microseconds>(steady_clock::now()).time_since_epoch().count();
     }
 
     // log tag length limit
