@@ -387,7 +387,7 @@ namespace OHOS::uitest {
             auto finalizer = [](napi_env env, void *data, void *hint) {
                 auto ref = reinterpret_cast<string *>(data);
                 if (ref->length() > 0) {
-                    LOG_D("Finalizing object: %{public}s", data);
+                    LOG_D("Finalizing object: %{public}s", ref->c_str());
                     g_backendObjsAboutToDelete.insert(*ref);
                 }
                 delete ref;
