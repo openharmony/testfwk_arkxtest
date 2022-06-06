@@ -593,23 +593,19 @@ class ReportService {
 
     taskStart() {
         this.taskStartTime = new Date().getTime()
-        this.sleep(200)
         console.info('[start] start run suites')
     }
 
     suiteStart() {
-        this.sleep(200)
         console.info('[suite start]' + this.suiteService.getCurrentRunningSuite().description)
     }
 
     specStart() {
-        this.sleep(200)
         console.info('start running case \'' + this.specService.currentRunningSpec.description + '\'')
         this.index = this.index + 1
     }
 
     specDone() {
-        this.sleep(200)
         let msg = ''
         let spec = this.specService.currentRunningSpec
         if (spec.error) {
@@ -631,13 +627,11 @@ class ReportService {
     }
 
     suiteDone() {
-        this.sleep(200)
         console.info('[suite end]')
     }
 
     taskDone() {
         let msg = ''
-        this.sleep(200)
         this.taskDoneTime = new Date().getTime()
         this.duration = ((this.taskDoneTime - this.taskStartTime) / 1000).toFixed(2)
         let summary = this.suiteService.getSummary()
