@@ -311,7 +311,7 @@ namespace OHOS::uitest {
         widgetsConstructed_ = true;
     }
 
-    static void DfsMarshalWidget(const WidgetTree &tree, const Widget &root, nlohmann::json &dom)
+    static void DfsMarshalWidget(const WidgetTree& tree, const Widget& root, nlohmann::json& dom)
     {
         auto attributesData = json();
         // "< UiAttr::HIERARCHY" : do not expose inner used attributes
@@ -340,7 +340,7 @@ namespace OHOS::uitest {
         dom["children"] = childrenData;
     }
 
-    void WidgetTree::MarshalIntoDom(nlohmann::json &dom) const
+    void WidgetTree::MarshalIntoDom(nlohmann::json& dom) const
     {
         DCHECK(widgetsConstructed_);
         auto root = GetRootWidget();
