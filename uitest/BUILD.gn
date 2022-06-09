@@ -30,6 +30,7 @@ ohos_static_library("uitest_core") {
   configs = [ ":uitest_common_configs" ]
   sources = [
     "${source_root}/core/frontend_api_handler.cpp",
+    "${source_root}/core/rect_algorithm.cpp",
     "${source_root}/core/ui_action.cpp",
     "${source_root}/core/ui_controller.cpp",
     "${source_root}/core/ui_driver.cpp",
