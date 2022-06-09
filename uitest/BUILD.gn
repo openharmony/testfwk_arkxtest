@@ -64,7 +64,7 @@ accessibility_include_dirs = [
   "//base/accessibility/common/log/include",
   "//base/accessibility/dummyData",
   "//base/accessibility/interfaces/kits/napi/include",
-  "//foundation/ability/ability_runtime/frameworks/kits/ability/native/src",
+  "//foundation/ability/ability_runtime/frameworks/native/ability/native",
   "//foundation/ability/ability_runtime/frameworks/kits/ability/native/include",
   "//foundation/ability/ability_runtime/frameworks/kits/appkit/native/ability_runtime/",
   "//foundation/ability/ability_runtime/frameworks/kits/appkit/native/ability_runtime/context/",
@@ -90,8 +90,8 @@ ohos_executable("uitest_server") {
   deps = [ ":uitest_core" ]
 
   deps += [
-    "//foundation/ability/ability_runtime/frameworks/kits/appkit:app_context",
-    "//foundation/ability/ability_runtime/frameworks/kits/appkit:appkit_native",
+    "//foundation/ability/ability_runtime/frameworks/native/appkit:app_context",
+    "//foundation/ability/ability_runtime/frameworks/native/appkit:appkit_native",
   ]
 
   external_deps = [ "accessibility:accessibleability" ]
