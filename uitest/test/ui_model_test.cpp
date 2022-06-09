@@ -35,96 +35,6 @@ TEST(RectTest, testRectBase)
     ASSERT_EQ(rect.GetWidth(), 200 - 100);
 }
 
-TEST(RectAlgorithmTest, testCheckEqual)
-{
-    Rect rect(100, 200, 300, 400);
-    ASSERT_TRUE(RectAlgorithm::CheckEqual(rect, rect));
-    Rect rect1(0, 0, 0, 0);
-    ASSERT_FALSE(RectAlgorithm::CheckEqual(rect, rect1));
-}
-
-TEST(RectAlgorithmTest, testRectIntersection)
-{
-    Rect rect0(100, 200, 300, 400);
-    Rect rect1(0, 100, 0, 100);
-    Rect rect2(200, 300, 400, 500);
-    Rect rect3(100, 150, 200, 350);
-    Rect rect4(150, 250, 350, 450);
-    Rect rect5(120, 180, 320, 380);
-
-    Rect intersection {0, 0, 0, 0};
-    ASSERT_FALSE(RectAlgorithm::CheckIntersectant(rect0, rect1));
-    ASSERT_FALSE(RectAlgorithm::CheckIntersectant(rect0, rect2));
-    ASSERT_TRUE(RectAlgorithm::CheckIntersectant(rect0, rect3));
-    ASSERT_FALSE(RectAlgorithm::ComputeIntersection(rect0, rect1, intersection)); // no overlap
-    ASSERT_FALSE(RectAlgorithm::ComputeIntersection(rect0, rect2, intersection)); // no overlap
-    ASSERT_TRUE(RectAlgorithm::ComputeIntersection(rect0, rect3, intersection)); // x,y-overlap
-    ASSERT_EQ(100, intersection.left_);
-    ASSERT_EQ(150, intersection.right_);
-    ASSERT_EQ(300, intersection.top_);
-    ASSERT_EQ(350, intersection.bottom_);
-    intersection = {0, 0, 0, 0};
-    ASSERT_TRUE(RectAlgorithm::CheckIntersectant(rect0, rect4));
-    ASSERT_TRUE(RectAlgorithm::ComputeIntersection(rect0, rect4, intersection)); // x,y-overlap
-    ASSERT_EQ(150, intersection.left_);
-    ASSERT_EQ(200, intersection.right_);
-    ASSERT_EQ(350, intersection.top_);
-    ASSERT_EQ(400, intersection.bottom_);
-    intersection = {0, 0, 0, 0};
-    ASSERT_TRUE(RectAlgorithm::CheckIntersectant(rect0, rect5));
-    ASSERT_TRUE(RectAlgorithm::ComputeIntersection(rect0, rect5, intersection)); // fully contained
-    ASSERT_EQ(120, intersection.left_);
-    ASSERT_EQ(180, intersection.right_);
-    ASSERT_EQ(320, intersection.top_);
-    ASSERT_EQ(380, intersection.bottom_);
-}
-
-TEST(RectAlgorithmTest, testPointInRect)
-{
-    auto rect = Rect(10, 20, 10, 20);
-    // x not in section
-    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(5, 15)));
-    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(10, 15)));
-    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(25, 15)));
-    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(20, 15)));
-    // y not in section
-    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(15, 5)));
-    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(15, 10)));
-    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(15, 25)));
-    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(15, 20)));
-    // x and y not in section
-    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(5, 5)));
-    ASSERT_FALSE(RectAlgorithm::IsInnerPoint(rect, Point(25, 25)));
-    // x and y in section
-    ASSERT_TRUE(RectAlgorithm::IsInnerPoint(rect, Point(15, 15)));
-}
-
-TEST(RectAlgorithmTest, testPointOnRectEdge)
-{
-    auto rect = Rect(10, 20, 10, 20);
-    // on corner
-    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(10, 10)));
-    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(10, 20)));
-    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(20, 10)));
-    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(20, 20)));
-    // on edge
-    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(10, 15)));
-    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(15, 10)));
-    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(20, 15)));
-    ASSERT_TRUE(RectAlgorithm::IsPointOnEdge(rect, Point(15, 20)));
-    // in rect
-    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(15, 15)));
-    // out of rect
-    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(5, 10)));
-    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(25, 10)));
-    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(10, 5)));
-    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(10, 25)));
-    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(5, 15)));
-    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(25, 15)));
-    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(15, 5)));
-    ASSERT_FALSE(RectAlgorithm::IsPointOnEdge(rect, Point(15, 25)));
-}
-
 TEST(WidgetTest, testAttributes)
 {
     Widget widget("hierarchy");
@@ -145,7 +55,7 @@ TEST(WidgetTest, testSafeMovable)
     widget.SetAttr(ATTR_TEXT, "wyz");
     widget.SetAttr(ATTR_ID, "100");
     widget.SetHostTreeId("tree-10086");
-    widget.SetBounds(1, 2, 3, 4);
+    widget.SetBounds(Rect(1, 2, 3, 4));
 
     auto newWidget = move(widget);
     ASSERT_EQ("hierarchy", newWidget.GetHierarchy());
@@ -207,7 +117,7 @@ private:
     volatile bool firstWidget_ = true;
 };
 
-    static constexpr string_view DOM_TEXT = R"({
+static constexpr string_view DOM_TEXT = R"({
 "attributes": {"resource-id": "id0"},
 "children": [
 {
@@ -253,12 +163,12 @@ public:
 
 TEST(WidgetTreeTest, testConstructWidgetsFromDomCheckBounds)
 {
-    auto dom = nlohmann::json::parse(R"({"attributes":{"bounds":"[0,-50][100,200]"},"children":[]})");
+    auto dom = nlohmann::json::parse(R"({"attributes":{"bounds":"[0,-50][100,200]"}, "children":[]})");
     WidgetTree tree("tree");
     tree.ConstructFromDom(dom, false);
     BoundsVisitor visitor;
     tree.DfsTraverse(visitor);
-    auto& bounds = visitor.boundsList_.at(0);
+    auto &bounds = visitor.boundsList_.at(0);
     ASSERT_EQ(0, bounds.left_);
     ASSERT_EQ(100, bounds.right_); // check converting negative number
     ASSERT_EQ(-50, bounds.top_);
@@ -345,9 +255,9 @@ TEST(WidgetTreeTest, testVisitTearNodes)
 TEST(WidgetTreeTest, testBoundsAndVisibilityCorrection)
 {
     constexpr string_view domText = R"(
-{"attributes": {"resource-id": "id0","bounds": "[0,0][100,100]"},
+{"attributes" : {"resource-id" : "id0","bounds" : "[0,0][100,100]"},
 "children": [
-{"attributes": {"resource-id": "id00","bounds": "[0,20][100,80]"},
+{"attributes" : { "resource-id" : "id00","bounds" : "[0,20][100,80]" },
 "children": [ {"attributes": {"resource-id": "id000","bounds": "[0,10][100,90]"}, "children": []} ]
 },
 {"attributes": {"resource-id": "id01","bounds": "[0,-20][100,100]"},
@@ -356,17 +266,17 @@ TEST(WidgetTreeTest, testBoundsAndVisibilityCorrection)
 }
 ]
 })";
-//                  id01 id010 id011
-//                   |    |     |
-//                   |    |     |
-//  id0              |    |     |
-//   |        id000  |          |
-//   |   id00  |     |          |
-//   |    |    |     |
-//   |    |    |     |
-//   |    |    |     |
-//   |         |     |
-//   |               |
+    //                  id01 id010 id011
+    //                   |    |     |
+    //                   |    |     |
+    //  id0              |    |     |
+    //   |        id000  |          |
+    //   |   id00  |     |          |
+    //   |    |    |     |
+    //   |    |    |     |
+    //   |    |    |     |
+    //   |         |     |
+    //   |               |
     auto dom = nlohmann::json::parse(domText);
     WidgetTree tree("tree");
     tree.ConstructFromDom(dom, true); // enable bounds amending
@@ -377,12 +287,12 @@ TEST(WidgetTreeTest, testBoundsAndVisibilityCorrection)
     BoundsVisitor boundsVisitor;
     tree.DfsTraverse(boundsVisitor);
     // check revised bounds
-    vector<Rect> expectedBounds = { Rect(0, 100, 0, 100), Rect(0, 100, 20, 80),
-        Rect(0, 100, 20, 80), Rect(0, 100, 0, 100), Rect(0, 100, 0, 20) };
+    vector<Rect> expectedBounds = {Rect(0, 100, 0, 100), Rect(0, 100, 20, 80), Rect(0, 100, 20, 80),
+                                   Rect(0, 100, 0, 100), Rect(0, 100, 0, 20)};
     ASSERT_EQ(expectedBounds.size(), boundsVisitor.boundsList_.size());
     for (auto index = 0; index < expectedBounds.size(); index++) {
-        auto& expectedBound = expectedBounds.at(index);
-        auto& actualBound = boundsVisitor.boundsList_.at(index);
+        auto &expectedBound = expectedBounds.at(index);
+        auto &actualBound = boundsVisitor.boundsList_.at(index);
         ASSERT_EQ(expectedBound.left_, actualBound.left_);
         ASSERT_EQ(expectedBound.right_, actualBound.right_);
         ASSERT_EQ(expectedBound.top_, actualBound.top_);
@@ -398,4 +308,119 @@ TEST(WidgetTreeTest, testMarshalIntoDom)
     auto dom1 = nlohmann::json();
     tree.MarshalIntoDom(dom1);
     ASSERT_FALSE(dom1.empty());
+}
+
+/** Make merged tree from doms and collects the target attribute dfs sequence.*/
+static void CheckMergedTree(const array<string_view, 3> &doms, map<string, string> &attrCollector)
+{
+    WidgetTree tree("");
+    vector<unique_ptr<WidgetTree>> subTrees;
+    for (auto &dom : doms) {
+        auto tree = make_unique<WidgetTree>("");
+        tree->ConstructFromDom(nlohmann::json::parse(dom), true);
+        subTrees.push_back(move(tree));
+    }
+    WidgetTree::MergeTrees(subTrees, tree);
+    for (auto &[name, value] : attrCollector) {
+        if (name == "bounds") {
+            BoundsVisitor visitor;
+            tree.DfsTraverse(visitor);
+            stringstream stream;
+            for (auto &rect : visitor.boundsList_) {
+                stream << "[" << rect.left_ << "," << rect.top_ << "][" << rect.right_ << "," << rect.bottom_ << "]";
+                stream << ",";
+            }
+            attrCollector[name] = stream.str();
+        } else {
+            WidgetAttrVisitor visitor(name);
+            tree.DfsTraverse(visitor);
+            attrCollector[name] = visitor.attrValueSequence_.str();
+        }
+    }
+}
+
+TEST(WidgetTreeTest, testMergeTreesNoIntersection)
+{
+    // 3 tree vertical/horizontal arranged without intersection
+    constexpr string_view domText0 = R"(
+{
+"attributes": {"id": "t0-id0", "bounds": "[0,0][2,2]"},
+"children": [{"attributes": {"id": "t0-id00", "bounds": "[0,0][2,1]"}, "children": []}]
+})";
+    constexpr string_view domText1 = R"(
+{
+"attributes": {"id": "t1-id0", "bounds": "[0,2][2,4]"},
+"children": [{"attributes": {"id": "t1-id00", "bounds": "[0,2][2,3]"}, "children": []}]
+})";
+    constexpr string_view domText2 = R"(
+{
+"attributes": {"id": "t2-id0", "bounds": "[2,0][4,4]"},
+"children": [{"attributes": {"id": "t2-id00", "bounds": "[2,0][4,3]"}, "children": []}]
+})";
+    map<string, string> attrs;
+    attrs["id"] = "";
+    attrs["bounds"] = "";
+    CheckMergedTree({domText0, domText1, domText2}, attrs);
+    // all widgets should be available (leading ',': separator of virtual-root node attr-value)
+    ASSERT_EQ(",t0-id0,t0-id00,t1-id0,t1-id00,t2-id0,t2-id00", attrs["id"]);
+    // bounds should not be revised (leading '[0,0][4,4]': auto-computed virtual-root node bounds)
+    ASSERT_EQ("[0,0][4,4],[0,0][2,2],[0,0][2,1],[0,2][2,4],[0,2][2,3],[2,0][4,4],[2,0][4,3],", attrs["bounds"]);
+}
+
+TEST(WidgetTreeTest, testMergeTreesWithFullyCovered)
+{
+    // dom2 is fully covered by dom0 and dom1
+    constexpr string_view domText0 = R"(
+{
+"attributes": {"id": "t0-id0", "bounds": "[0,0][2,2]"},
+"children": [{"attributes": {"id": "t0-id00", "bounds": "[0,0][2,1]"}, "children": []}]
+})";
+    constexpr string_view domText1 = R"(
+{
+"attributes": {"id": "t1-id0", "bounds": "[0,2][2,4]"},
+"children": [{"attributes": {"id": "t1-id00", "bounds": "[0,2][2,3]"}, "children": []}]
+})";
+    constexpr string_view domText2 = R"(
+{
+"attributes": {"id": "t2-id0", "bounds": "[0,0][2,4]"},
+"children": [{"attributes": {"id": "t2-id00", "bounds": "[2,0][4,3]"}, "children": []}]
+})";
+    map<string, string> attrs;
+    attrs["id"] = "";
+    attrs["bounds"] = "";
+    CheckMergedTree({domText0, domText1, domText2}, attrs);
+    // tree2 widgets should be discarded (leading ',': separator of virtual-root node attr-value)
+    ASSERT_EQ(",t0-id0,t0-id00,t1-id0,t1-id00", attrs["id"]);
+    // bounds should not be revised (leading '[0,0][2,4]': auto-computed virtual-root node bounds)
+    ASSERT_EQ("[0,0][2,4],[0,0][2,2],[0,0][2,1],[0,2][2,4],[0,2][2,3],", attrs["bounds"]);
+}
+
+TEST(WidgetTreeTest, testMergeTreesWithPartialCovered)
+{
+    constexpr string_view domText0 = R"(
+{
+"attributes": {"id": "t0-id0", "bounds": "[0,0][4,4]"},
+"children": [{"attributes": {"id": "t0-id00", "bounds": "[0,0][4,2]"}, "children": []}]
+})";
+    // t1-id0 is partial covered by tree0, t1-id00 is fully covered
+    constexpr string_view domText1 = R"(
+{
+"attributes": {"id": "t1-id0", "bounds": "[0,2][4,6]"},
+"children": [{"attributes": {"id": "t1-id00", "bounds": "[0,2][4,4]"}, "children": []}]
+})";
+    // t2-id0 is partial covered by tree0/tree1, t2-id00 is fully covered by tree0/tree1
+    constexpr string_view domText2 = R"(
+{
+"attributes": {"id": "t2-id0", "bounds": "[0,0][4,8]"},
+"children": [{"attributes": {"id": "t2-id00", "bounds": "[0,0][4,5]"}, "children": []}]
+})";
+    map<string, string> attrs;
+    attrs["id"] = "";
+    attrs["bounds"] = "";
+    CheckMergedTree({domText0, domText1, domText2}, attrs);
+    // check visible widgets (leading ',': separator of virtual-root node attr-value)
+    ASSERT_EQ(",t0-id0,t0-id00,t1-id0,t2-id0", attrs["id"]);
+    // bounds should not be revised (leading '[0,0][2,4]': auto-computed virtual-root node bounds)
+    // t1-id0: [0,4][4,6]; t2-id0: [0,6][4,8]
+    ASSERT_EQ("[0,0][4,8],[0,0][4,4],[0,0][4,2],[0,4][4,6],[0,6][4,8],", attrs["bounds"]);
 }

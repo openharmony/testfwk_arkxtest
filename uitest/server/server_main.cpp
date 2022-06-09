@@ -21,13 +21,15 @@
 #include <getopt.h>
 #include "ipc_transactors_impl.h"
 #include "system_ui_controller.h"
+#include "ui_driver.h"
 
 using namespace std;
 using namespace std::chrono;
 
 namespace OHOS::uitest {
     struct option g_longOptions[] = {
-        {"path", required_argument, nullptr, 'p'},
+        {"save file in this path", required_argument, nullptr, 'p'},
+        {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
     };
     /* *Print to the console of this shell process. */
     static inline void PrintToConsole(string_view message)
@@ -45,6 +47,9 @@ namespace OHOS::uitest {
                     PrintToConsole(usage);
                     return EXIT_FAILURE;
                     break;
+                case 'i':
+                    params.insert(pair<char, string>(opt, "true"));
+                    break;
                 default:
                     params.insert(pair<char, string>(opt, optarg));
                     break;
@@ -59,28 +64,47 @@ namespace OHOS::uitest {
         auto savePath = "/data/local/tmp/layout_" + ts + ".json";
         map<char, string> params;
         static constexpr string_view usage = "USAGE: uitestkit dumpLayout -p <path>";
-        if (GetParam(argc, argv, "p:", usage, params) == EXIT_FAILURE) {
+        if (GetParam(argc, argv, "p:i", usage, params) == EXIT_FAILURE) {
             return EXIT_FAILURE;
         }
         auto iter = params.find('p');
         if (iter != params.end()) {
             savePath = iter->second;
         }
-        auto controller = SysUiController("sys_ui_controller");
-        if (!controller.ConnectToSysAbility()) {
-            PrintToConsole("Dump layout failed, cannot connect to AAMS");
-            return EXIT_FAILURE;
-        }
-        auto data = nlohmann::json();
-        controller.GetCurrentUiDom(data);
         ofstream fout;
         fout.open(savePath, ios::out | ios::binary);
         if (!fout) {
             PrintToConsole("Error path:" + savePath);
             return EXIT_FAILURE;
         }
+        auto controller = make_unique<SysUiController>("sys_ui_controller");
+        if (!controller->ConnectToSysAbility()) {
+            PrintToConsole("Dump layout failed, cannot connect to AAMS");
+                fout.close();
+                return EXIT_FAILURE;
+        }
+        if (params.find('i') != params.end()) {
+            vector<nlohmann::json> datas;
+            controller->GetUiHierarchy(datas);
+            auto array = nlohmann::json::array();
+            for (auto data : datas) {
+                array.push_back(data);
+            }
+            fout << array.dump();
+        } else {
+            UiController::RegisterController(move(controller), Priority::MEDIUM);
+            auto data = nlohmann::json();
+            auto driver = UiDriver();
+            auto error = ApiCallErr(NO_ERROR);
+            driver.DumpUiHierarchy(data, error);
+            if (error.code_ !=NO_ERROR) {
+                PrintToConsole("Dump layout failed: "+error.message_);
+                fout.close();
+                return EXIT_FAILURE;
+            }
+            fout << data.dump();
+        }
         PrintToConsole("DumpLayout saved to:" + savePath);
-        fout << data.dump();
         fout.close();
         return EXIT_SUCCESS;
     }
@@ -144,7 +168,7 @@ namespace OHOS::uitest {
 
     extern "C" int32_t main(int32_t argc, char *argv[])
     {
-        static constexpr string_view usage = "USAGE: uitestkit <screenCap|dumpLayout>";
+        static constexpr string_view usage = "USAGE: uitest <screenCap|dumpLayout>";
         if (argc < INDEX_TWO) {
             PrintToConsole("Missing argument");
             PrintToConsole(usage);

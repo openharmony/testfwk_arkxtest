@@ -113,6 +113,7 @@ namespace OHOS::uitest {
         FORCE_INLINE static bool IsInnerPoint(const Rect &rect, const Point& point);
         FORCE_INLINE static bool IsPointOnEdge(const Rect &rect, const Point& point);
         static bool ComputeIntersection(const Rect &ra, const Rect &rb, Rect &result);
+        static bool ComputeMaxVisibleRegion(const Rect& rect, const std::vector<Rect>& overlays, Rect& out);
     };
 
     FORCE_INLINE bool RectAlgorithm::CheckEqual(const Rect &ra, const Rect &rb)
@@ -157,7 +158,7 @@ namespace OHOS::uitest {
     class Widget : public BackendClass {
     public:
         // disable default constructor, copy constructor and assignment operator
-        explicit Widget(std::string_view hierarchy) : hierarchy_(hierarchy)
+        explicit  Widget(std::string_view hierarchy) : hierarchy_(hierarchy)
         {
             attributes_.insert(std::make_pair(ATTR_NAMES[UiAttr::HIERARCHY], hierarchy));
         };
@@ -189,11 +190,11 @@ namespace OHOS::uitest {
 
         std::string GetHostTreeId() const;
 
-        void SetBounds(int32_t cl, int32_t cr, int32_t ct, int32_t cb);
+        void SetBounds(const Rect& bounds);
 
         std::string ToStr() const;
 
-        void DumpAttributes(std::map<std::string, std::string> &receiver) const;
+        std::unique_ptr<Widget> Clone(std::string_view hostTreeId, std::string_view hierarchy) const;
 
     private:
         const std::string hierarchy_;
@@ -267,6 +268,14 @@ namespace OHOS::uitest {
 
         /**Check if the given widget node hierarchy is the root node hierarchy.*/
         static bool IsRootWidgetHierarchy(std::string_view hierarchy);
+
+        /**
+         * Merge several tree into one tree.
+         *
+         * @param from: the subtrees to merge, should be sorted by z-order and the top one be at first.
+         * @param to: the root tree to merge into.
+         * */
+        static void MergeTrees(const std::vector<std::unique_ptr<WidgetTree>>& from, WidgetTree& to);
 
     private:
         const std::string name_;

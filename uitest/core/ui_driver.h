@@ -70,6 +70,8 @@ namespace OHOS::uitest {
         /**Take screen capture, save to given file path as PNG.*/
         void TakeScreenCap(std::string_view savePath, ApiCallErr &err);
 
+        void DumpUiHierarchy(nlohmann::json& out, ApiCallErr& error);
+
         const FrontEndClassDef& GetFrontendClassDef() const override
         {
             return UI_DRIVER_DEF;
