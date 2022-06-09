@@ -48,14 +48,14 @@ public:
         return frameIndex_;
     }
 
-    void GetCurrentUiDom(nlohmann::json& out) const override
+    void GetUiHierarchy(vector<nlohmann::json>& out) const override
     {
         uint32_t newIndex = frameIndex_;
         frameIndex_++;
         if (newIndex >= mockDomFrames_.size()) {
-            out = nlohmann::json::parse(mockDomFrames_.at(mockDomFrames_.size() - 1));
+            out.push_back(nlohmann::json::parse(mockDomFrames_.at(mockDomFrames_.size() - 1)));
         } else {
-            out = nlohmann::json::parse(mockDomFrames_.at(newIndex));
+            out.push_back(nlohmann::json::parse(mockDomFrames_.at((newIndex))));
         }
     }
 
@@ -230,7 +230,7 @@ TEST_F(UiDriverTest, scrollSearchRetrieveSubjectWidgetFailed)
 }
 ]
 })";
-    constexpr auto mockDom1 = R"({"attributes":{"index":"0","resource-id":"id1","text":""},"children":[]})";
+    constexpr auto mockDom1 = R"({"attributes":{"bounds":"[0,0][100,100]"},"children":[]})";
     controller_->SetDomFrame(mockDom0);
 
     auto error = ApiCallErr(NO_ERROR);

@@ -22,22 +22,6 @@ namespace OHOS::uitest {
 
     static constexpr auto ROOT_HIERARCHY = "ROOT";
 
-    bool RectAlgorithm::ComputeIntersection(const Rect &ra, const Rect &rb, Rect &result)
-    {
-        if (ra.left_ >= rb.right_ || ra.right_ <= rb.left_) {
-            return false;
-        }
-        if (ra.top_ >= rb.bottom_ || ra.bottom_ <= rb.top_) {
-            return false;
-        }
-        array<int32_t, INDEX_FOUR> px = {ra.left_, ra.right_, rb.left_, rb.right_};
-        array<int32_t, INDEX_FOUR> py = {ra.top_, ra.bottom_, rb.top_, rb.bottom_};
-        sort(px.begin(), px.end());
-        sort(py.begin(), py.end());
-        result = {px[INDEX_ONE], px[INDEX_TWO], py[INDEX_ONE], py[INDEX_TWO]};
-        return true;
-    }
-
     static string Rect2JsonStr(const Rect &rect)
     {
         json data;
@@ -74,9 +58,9 @@ namespace OHOS::uitest {
         return hostTreeId_;
     }
 
-    void Widget::SetBounds(int32_t cl, int32_t cr, int32_t ct, int32_t cb)
+    void Widget::SetBounds(const Rect &bounds)
     {
-        bounds_ = Rect(cl, cr, ct, cb);
+        bounds_ = bounds;
         // save bounds attribute as structured data
         SetAttr(ATTR_NAMES[UiAttr::BOUNDS], Rect2JsonStr(bounds_));
     }
@@ -92,11 +76,14 @@ namespace OHOS::uitest {
         return os.str();
     }
 
-    void Widget::DumpAttributes(map<string, string> &receiver) const
+    unique_ptr<Widget> Widget::Clone(string_view hostTreeId, string_view hierarchy) const
     {
-        for (auto &[attr, value] : attributes_) {
-            receiver[attr] = value;
-        }
+        auto clone = make_unique<Widget>(hierarchy);
+        clone->hostTreeId_ = hostTreeId;
+        clone->attributes_ = this->attributes_;
+        clone->bounds_ = this->bounds_;
+        clone->SetAttr(ATTR_NAMES[UiAttr::HIERARCHY], hierarchy); // ensure hiararchy consisent
+        return clone;
     }
 
     class WidgetHierarchyBuilder {
@@ -134,7 +121,7 @@ namespace OHOS::uitest {
             return string(hierarchy) + string(hierarchySeparator_) + to_string(childIndex);
         }
 
-        static bool CheckIsDescendantHierarchyOfRoot(string_view hierarchy, string_view hierarchyRoot)
+        inline static bool CheckIsDescendantHierarchy(string_view hierarchy, string_view hierarchyRoot)
         {
             // child node hierarchy must startswith parent node hierarchy
             return hierarchy.find(hierarchyRoot) == 0;
@@ -170,7 +157,8 @@ namespace OHOS::uitest {
         }
 
         DCHECK(index == INDEX_FOUR);
-        widget.SetBounds(integers[INDEX_ZERO], integers[INDEX_TWO], integers[INDEX_ONE], integers[INDEX_THREE]);
+        auto rect = Rect(integers[INDEX_ZERO], integers[INDEX_TWO], integers[INDEX_ONE], integers[INDEX_THREE]);
+        widget.SetBounds(rect);
     }
 
     static void SetWidgetAttributes(Widget &widget, const map<string, string> &attributes)
@@ -245,7 +233,7 @@ namespace OHOS::uitest {
         bool traverseStarted = false;
         auto rootHierarchy = root.GetHierarchy();
         for (auto &hierarchy : widgetHierarchyIdDfsOrder_) {
-            if (!WidgetHierarchyBuilder::CheckIsDescendantHierarchyOfRoot(hierarchy, rootHierarchy)) {
+            if (!WidgetHierarchyBuilder::CheckIsDescendantHierarchy(hierarchy, rootHierarchy)) {
                 if (!traverseStarted) {
                     continue; // root node not found yet, skip visiting current widget and go ahead
                 } else {
@@ -310,7 +298,7 @@ namespace OHOS::uitest {
                 }
             }
             if (!RectAlgorithm::CheckEqual(newBounds, bounds)) {
-                widget.SetBounds(newBounds.left_, newBounds.right_, newBounds.top_, newBounds.bottom_);
+                widget.SetBounds(newBounds);
                 LOG_D("Amend bounds %{public}s from %{public}s", widget.ToStr().c_str(), Rect2JsonStr(bounds).c_str());
             }
             if (!amendBounds || (newBounds.GetWidth() > 0 && newBounds.GetHeight() > 0)) {
@@ -323,23 +311,20 @@ namespace OHOS::uitest {
         widgetsConstructed_ = true;
     }
 
-    static void DfsMarshalWidget(const WidgetTree& tree, const Widget& root, nlohmann::json& dom)
+    static void DfsMarshalWidget(const WidgetTree &tree, const Widget &root, nlohmann::json &dom)
     {
         auto attributesData = json();
-        auto dict = map<string, string>();
-        root.DumpAttributes(dict);
-        for (auto& [name, value] : dict) {
-            if (name == ATTR_NAMES[UiAttr::HASHCODE] || name == ATTR_NAMES[UiAttr::HIERARCHY]) {
-                // do not expose inner used attributes
-                continue;
-            }
-            attributesData[name] = value;
+        // "< UiAttr::HIERARCHY" : do not expose inner used attributes
+        for (auto index = 0; index < UiAttr::HIERARCHY; index++) {
+            const auto attr = ATTR_NAMES[index].data();
+            attributesData[attr] = root.GetAttr(attr, "");
         }
         stringstream stream;
         auto rect = root.GetBounds();
-        stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
+        stream << "[" << rect.left_ << "," << rect.top_ << "]"
+               << "[" << rect.right_ << "," << rect.bottom_ << "]";
         attributesData[ATTR_NAMES[UiAttr::BOUNDS].data()] = stream.str();
-        
+
         auto childrenData = json::array();
         uint32_t childIndex = 0;
         auto child = tree.GetChildWidget(root, childIndex);
@@ -350,12 +335,12 @@ namespace OHOS::uitest {
             childIndex++;
             child = tree.GetChildWidget(root, childIndex);
         }
-        
+
         dom["attributes"] = attributesData;
         dom["children"] = childrenData;
     }
 
-    void WidgetTree::MarshalIntoDom(nlohmann::json& dom) const
+    void WidgetTree::MarshalIntoDom(nlohmann::json &dom) const
     {
         DCHECK(widgetsConstructed_);
         auto root = GetRootWidget();
@@ -414,5 +399,131 @@ namespace OHOS::uitest {
     inline bool WidgetTree::CheckIsMyNode(const Widget &widget) const
     {
         return this->identifier_ == widget.GetHostTreeId();
+    }
+
+    /** WidgetVisitor used to visit and merge widgets of subtrees into dest root tree.*/
+    class MergerVisitor : public WidgetVisitor {
+    public:
+        // handler function to perform merging widget, arg1: the revised bounds
+        using MergerFunction = function<void(const Widget &, const Rect &)>;
+        explicit MergerVisitor(MergerFunction collector) : collector_(collector){};
+
+        ~MergerVisitor() {}
+
+        void PrepareToVisitSubTree(const WidgetTree &tree);
+
+        void EndVisitingSubTree();
+
+        void Visit(const Widget &widget) override;
+
+        Rect GetMergedBounds()
+        {
+            return mergedBounds_;
+        }
+
+    private:
+        MergerFunction collector_;
+        // the overlays of widget
+        vector<Rect> overlays_;
+        // the node hierarchy of first invisble parent
+        string maxInvisibleParent_ = "NA";
+        // the node hierarchy of first fully-visible parent
+        string maxFullyParent_ = "NA";
+        // the merged bounds
+        Rect mergedBounds_ = {0, 0, 0, 0};
+        // bounds of current visiting tree
+        Rect visitingTreeBounds_ = {0, 0, 0, 0};
+    };
+
+    void MergerVisitor::PrepareToVisitSubTree(const WidgetTree &tree)
+    {
+        auto root = tree.GetRootWidget();
+        DCHECK(root != nullptr);
+        // collect max bounds
+        auto rootBounds = root->GetBounds();
+        mergedBounds_.left_ = min(mergedBounds_.left_, rootBounds.left_);
+        mergedBounds_.top_ = min(mergedBounds_.top_, rootBounds.top_);
+        mergedBounds_.right_ = max(mergedBounds_.right_, rootBounds.right_);
+        mergedBounds_.bottom_ = max(mergedBounds_.bottom_, rootBounds.bottom_);
+        // update visiting tree bounds
+        visitingTreeBounds_ = rootBounds;
+        // reset intermediate data
+        maxInvisibleParent_ = "NA";
+        maxFullyParent_ = "NA";
+    }
+
+    void MergerVisitor::EndVisitingSubTree()
+    {
+        // add overlays for later visited subtrees
+        overlays_.push_back(visitingTreeBounds_);
+    }
+
+    void MergerVisitor::Visit(const Widget &widget)
+    {
+        if (collector_ == nullptr) {
+            return;
+        }
+        const auto hierarchy = widget.GetHierarchy();
+        const auto inInVisible = WidgetHierarchyBuilder::CheckIsDescendantHierarchy(hierarchy, maxInvisibleParent_);
+        const auto inFully = WidgetHierarchyBuilder::CheckIsDescendantHierarchy(hierarchy, maxFullyParent_);
+        if (inInVisible) {
+            // parent invisible, skip
+            return;
+        }
+        const auto bounds = widget.GetBounds();
+        bool visible = true;
+        auto visibleRegion = bounds;
+        if (!inFully) {
+            // parent not full-visible, need compute visible region
+            visible = RectAlgorithm::ComputeMaxVisibleRegion(bounds, overlays_, visibleRegion);
+        }
+        if (!visible) {
+            maxInvisibleParent_ = hierarchy; // update maxInvisibleParent
+            return;
+        }
+        if (!inFully && RectAlgorithm::CheckEqual(bounds, visibleRegion)) {
+            maxFullyParent_ = hierarchy; // update maxFullParent
+        }
+        // call collector with widget and revised bounds
+        collector_(widget, visibleRegion);
+    }
+
+    void WidgetTree::MergeTrees(const vector<unique_ptr<WidgetTree>> &from, WidgetTree &to)
+    {
+        if (from.empty()) {
+            return;
+        }
+        to.widgetsConstructed_ = true;
+        auto virtualRoot = Widget(ROOT_HIERARCHY);
+        virtualRoot.SetHostTreeId(to.identifier_);
+        // insert virtual root node into tree
+        to.widgetHierarchyIdDfsOrder_.emplace_back(ROOT_HIERARCHY);
+        to.widgetMap_.insert(make_pair(ROOT_HIERARCHY, move(virtualRoot)));
+        auto &vitualRootWidget = to.widgetMap_.begin()->second;
+        // amend widget hierarchy with prefix to make it the descendant of the virtualRoot
+        string hierarchyPrefix = "";
+        constexpr auto offset = string_view(ROOT_HIERARCHY).length();
+        // collect widget with revised hierarchy and bounds, merge it to dest tree
+        auto merger = [&hierarchyPrefix, &tree = to](const Widget &widget, const Rect &bounds) {
+            auto newHierarchy = string(hierarchyPrefix) + widget.GetHierarchy().substr(offset);
+            auto newWidget = widget.Clone(tree.identifier_, newHierarchy);
+            newWidget->SetBounds(bounds);
+            tree.widgetMap_.insert(make_pair(newHierarchy, move(*newWidget)));
+            tree.widgetHierarchyIdDfsOrder_.emplace_back(newHierarchy);
+        };
+        auto visitor = MergerVisitor(merger);
+        size_t index = 0;
+        for (auto &tree : from) {
+            DCHECK(tree != nullptr);
+            // update hierarchy prefix
+            hierarchyPrefix = string(ROOT_HIERARCHY) + "," + to_string(index);
+            // visit tree and forward visible widgets to collector
+            visitor.PrepareToVisitSubTree(*tree);
+            tree->DfsTraverse(visitor);
+            visitor.EndVisitingSubTree();
+            index++;
+        }
+        // amend bounds of the virtual root
+        vitualRootWidget.SetBounds(visitor.GetMergedBounds());
     }
 } // namespace OHOS::uitest
