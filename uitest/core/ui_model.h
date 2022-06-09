@@ -158,7 +158,7 @@ namespace OHOS::uitest {
     class Widget : public BackendClass {
     public:
         // disable default constructor, copy constructor and assignment operator
-        explicit  Widget(std::string_view hierarchy) : hierarchy_(hierarchy)
+        explicit Widget(std::string_view hierarchy) : hierarchy_(hierarchy)
         {
             attributes_.insert(std::make_pair(ATTR_NAMES[UiAttr::HIERARCHY], hierarchy));
         };
