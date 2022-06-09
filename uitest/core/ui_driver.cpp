@@ -15,7 +15,6 @@
 
 #include <future>
 #include "ui_driver.h"
-#include <fstream>
 
 namespace OHOS::uitest {
     using namespace std;
@@ -70,7 +69,6 @@ namespace OHOS::uitest {
 
     void UiDriver::DumpUiHierarchy(nlohmann::json& out, ApiCallErr& error)
     {
-        LOG_I("DumpUiHierarchy");
         UpdateUi(true, error);
         if (error.code_ !=NO_ERROR || widgetTree_ == nullptr) {
             return;
