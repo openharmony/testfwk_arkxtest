@@ -360,7 +360,7 @@ TEST(WidgetTreeTest, testMergeTreesNoIntersection)
     map<string, string> attrs;
     attrs["id"] = "";
     attrs["bounds"] = "";
-    CheckMergedTree({domText0, domText1, domText2 }, attrs);
+    CheckMergedTree({ domText0, domText1, domText2 }, attrs);
     // all widgets should be available (leading ',': separator of virtual-root node attr-value)
     ASSERT_EQ(",t0-id0,t0-id00,t1-id0,t1-id00,t2-id0,t2-id00", attrs["id"]);
     // bounds should not be revised (leading '[0,0][4,4]': auto-computed virtual-root node bounds)
@@ -388,7 +388,7 @@ TEST(WidgetTreeTest, testMergeTreesWithFullyCovered)
     map<string, string> attrs;
     attrs["id"] = "";
     attrs["bounds"] = "";
-    CheckMergedTree({domText0, domText1, domText2 }, attrs);
+    CheckMergedTree({ domText0, domText1, domText2 }, attrs);
     // tree2 widgets should be discarded (leading ',': separator of virtual-root node attr-value)
     ASSERT_EQ(",t0-id0,t0-id00,t1-id0,t1-id00", attrs["id"]);
     // bounds should not be revised (leading '[0,0][2,4]': auto-computed virtual-root node bounds)
@@ -417,7 +417,7 @@ TEST(WidgetTreeTest, testMergeTreesWithPartialCovered)
     map<string, string> attrs;
     attrs["id"] = "";
     attrs["bounds"] = "";
-    CheckMergedTree({domText0, domText1, domText2 }, attrs);
+    CheckMergedTree({ domText0, domText1, domText2 }, attrs);
     // check visible widgets (leading ',': separator of virtual-root node attr-value)
     ASSERT_EQ(",t0-id0,t0-id00,t1-id0,t2-id0", attrs["id"]);
     // bounds should not be revised (leading '[0,0][2,4]': auto-computed virtual-root node bounds)
