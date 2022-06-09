@@ -406,7 +406,7 @@ namespace OHOS::uitest {
     public:
         // handler function to perform merging widget, arg1: the revised bounds
         using MergerFunction = function<void(const Widget &, const Rect &)>;
-        explicit  MergerVisitor(MergerFunction collector) : collector_(collector){};
+        explicit MergerVisitor(MergerFunction collector) : collector_(collector) {};
 
         ~MergerVisitor() {}
 
