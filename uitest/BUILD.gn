@@ -52,26 +52,6 @@ common_external_deps = [
   "ipc:ipc_core",
 ]
 
-accessibility_include_dirs = [
-  "//base/accessibility/frameworks/aafwk/include",
-  "//foundation/multimodalinput/input/interfaces/native/innerkits/event/include",
-  "//utils/native/base/include",
-  "//base/accessibility/interfaces/innerkits/asacfwk/include",
-  "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
-  "//base/accessibility/frameworks/asacfwk/include",
-  "//foundation/appexecfwk/appexecfwk_lite/utils/bundle_lite",
-  "//base/accessibility/util/include",
-  "//base/accessibility/common/log/include",
-  "//base/accessibility/dummyData",
-  "//base/accessibility/interfaces/kits/napi/include",
-  "//foundation/ability/ability_runtime/frameworks/kits/ability/native/src",
-  "//foundation/ability/ability_runtime/frameworks/kits/ability/native/include",
-  "//foundation/ability/ability_runtime/frameworks/kits/appkit/native/ability_runtime/",
-  "//foundation/ability/ability_runtime/frameworks/kits/appkit/native/ability_runtime/context/",
-  "//foundation/ability/ability_runtime/interfaces/innerkits/runtime/include/",
-  "//base/accessibility/interfaces/innerkits/aafwk/include",
-]
-
 ohos_executable("uitest_server") {
   configs = [ ":uitest_common_configs" ]
   sources = [
@@ -84,7 +64,6 @@ ohos_executable("uitest_server") {
     "${source_root}/core",
     "${source_root}/connection",
   ]
-  include_dirs += accessibility_include_dirs
 
   # static link the uitest_core as server end
   deps = [ ":uitest_core" ]
