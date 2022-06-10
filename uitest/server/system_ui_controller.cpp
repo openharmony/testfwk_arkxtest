@@ -38,15 +38,6 @@ namespace OHOS::uitest {
     using namespace OHOS::Accessibility;
     using namespace OHOS::Rosen;
     using namespace OHOS::Media;
-
-    enum RetError : int32_t {
-        RET_OK = 0,
-        RET_ERR_INVALID_PARAM = 1,
-        RET_ERR_NULLPTR = 2,
-        RET_ERR_CONNECTION_EXIST = 3,
-        RET_ERR_IPC_FAILED = 4,
-        RET_ERR_SAMGR = 5,
-    };
     
     class UiEventMonitor final : public AccessibleAbilityListener {
     public:
@@ -146,8 +137,19 @@ namespace OHOS::uitest {
         DisConnectFromSysAbility();
     }
 
+    static size_t GenerateNodeHash(AccessibilityElementInfo &node)
+    {
+        static constexpr auto SHIFT_BITS = 32U;
+        static constexpr auto hashFunc = hash<string>();
+        int64_t intId = node.GetWindowId();
+        intId = (intId << SHIFT_BITS) + node.GetAccessibilityId();
+        const string strId = node.GetBundleName() + node.GetComponentType() + to_string(intId);
+        return hashFunc(strId);
+    }
+
     static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to)
     {
+        to[ATTR_NAMES[UiAttr::HASHCODE].data()] = to_string(GenerateNodeHash(node));
         to[ATTR_NAMES[UiAttr::TEXT].data()] = node.GetContent();
         to[ATTR_NAMES[UiAttr::ID].data()] = to_string(node.GetAccessibilityId());
         to[ATTR_NAMES[UiAttr::KEY].data()] = node.GetInspectorKey();
@@ -186,56 +188,60 @@ namespace OHOS::uitest {
         }
     }
 
-    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to)
+    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index)
     {
         json attributes;
         MarshalAccessibilityNodeAttributes(from, attributes);
+        attributes["index"] = to_string(index);
         to["attributes"] = attributes;
         auto childList = json::array();
         const auto childCount = from.GetChildCount();
         AccessibilityElementInfo child;
         auto ability = AccessibilityUITestAbility::GetInstance();
-        for (auto index = 0; index < childCount; index++) {
-            auto success = ability->GetChildElementInfo(index, from, child);
+        for (auto idx = 0; idx < childCount; idx++) {
+            auto success = ability->GetChildElementInfo(idx, from, child);
             if (success) {
                 if (!child.IsVisible()) {
                     continue;
                 }
                 auto parcel = json();
-                MarshallAccessibilityNodeInfo(child, parcel);
+                MarshallAccessibilityNodeInfo(child, parcel, idx);
                 childList.push_back(parcel);
             } else {
-                LOG_W("Get Node child at index=%{public}d failed", index);
+                LOG_W("Get Node child at index=%{public}d failed", idx);
             }
         }
         to["children"] = childList;
     }
 
-    static void GetCurrentUiDom2(nlohmann::json& out)
+    void SysUiController::GetUiHierarchy(vector<nlohmann::json>& out) const
     {
         auto ability = AccessibilityUITestAbility::GetInstance();
-        AccessibilityElementInfo elementInfo {};
-        if (ability->GetRoot(elementInfo)) {
-            const auto windowId = elementInfo.GetWindowId();
-            std::vector<AccessibilityWindowInfo> windows;
-            (void)ability->GetWindows(windows);
-            for (auto& window:windows) {
-                if (windowId == window.GetWindowId()) {
-                    // apply window bounds as root node bounds
-                    auto windowRect = window.GetRectInScreen();
-                    elementInfo.SetRectInScreen(windowRect);
-                    break;
-                }
+        std::vector<AccessibilityWindowInfo> windows;
+        (void)ability->GetWindows(windows);
+        sort(windows.begin(), windows.end(), [](auto& w1, auto& w2) -> bool {
+            if (w1.IsActive()) {
+                return true;
+            } else if (w2.IsActive()) {
+                return true;
             }
-            MarshallAccessibilityNodeInfo(elementInfo, out);
-        } else {
-            LOG_W("Root node not found from AccessibilityUITestAbility");
+            return w1.GetWindowLayer() < w2.GetWindowLayer();
+        });
+        AccessibilityElementInfo elementInfo {};
+        for (auto& window : windows) {
+            if (ability->GetRootByWindow(window, elementInfo)) {
+                const auto app = elementInfo.GetBundleName();
+                LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
+                // apply window bounds as root node bounds
+                auto windowRect = window.GetRectInScreen();
+                elementInfo.SetRectInScreen(windowRect);
+                auto root = nlohmann::json();
+                MarshallAccessibilityNodeInfo(elementInfo, root, 0);
+                out.push_back(move(root));
+            } else {
+                LOG_W("GetRootByWindow failed");
+            }
         }
-    }
-
-    void SysUiController::GetCurrentUiDom(nlohmann::json& out) const
-    {
-        GetCurrentUiDom2(out);
     }
 
     void SysUiController::WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const
