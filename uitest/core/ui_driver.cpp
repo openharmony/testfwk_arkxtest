@@ -51,28 +51,34 @@ namespace OHOS::uitest {
             return;
         }
         widgetTree_ = make_unique<WidgetTree>("");
-        auto domData = json();
-        uiController_->GetCurrentUiDom(domData);
-        if (domData.type() == nlohmann::detail::value_t::null || domData.empty()) {
-            LOG_E("%{public}s", "Get window nodes failed");
+        vector<nlohmann::json> doms;
+        uiController_->GetUiHierarchy(doms);
+        if (doms.empty()) {
+            LOG_E("%{public}s", "Get window doms failed");
             error = ApiCallErr(INTERNAL_ERROR, "Get window nodes failed");
             return;
         }
-        widgetTree_->ConstructFromDom(domData, true);
+        vector<unique_ptr<WidgetTree>> trees;
+        for (auto& dom : doms) {
+            auto tree = make_unique<WidgetTree>("");
+            tree->ConstructFromDom(dom, true);
+            trees.push_back(move(tree));
+        }
+        WidgetTree::MergeTrees(trees, *widgetTree_);
+    }
+
+    void UiDriver::DumpUiHierarchy(nlohmann::json& out, ApiCallErr& error)
+    {
+        UpdateUi(true, error);
+        if (error.code_ !=NO_ERROR || widgetTree_ == nullptr) {
+            return;
+        }
+        widgetTree_->MarshalIntoDom(out);
     }
 
     static unique_ptr<Widget> CloneFreeWidget(const Widget &from, const WidgetSelector &selector)
     {
-        auto clone = make_unique<Widget>(from.GetHierarchy());
-        map<string, string> attributes;
-        from.DumpAttributes(attributes);
-        for (auto &[name, value] : attributes) {
-            clone->SetAttr(name, value);
-        }
-        const auto bounds = from.GetBounds();
-        clone->SetBounds(bounds.left_, bounds.right_, bounds.top_, bounds.bottom_);
-        // belongs to no WidgetTree
-        clone->SetHostTreeId("NONE");
+        auto clone = from.Clone("NONE", from.GetHierarchy());
         // save the selection desc as dummy attribute
         clone->SetAttr(DUMMY_ATTRNAME_SELECTION, selector.Describe());
         return clone;
