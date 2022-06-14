@@ -40,7 +40,7 @@ namespace OHOS::uitest {
 
         virtual ~UiController() = default;
 
-        virtual void GetCurrentUiDom(nlohmann::json& out) const = 0;
+        virtual void GetUiHierarchy(std::vector<nlohmann::json>& out) const = 0;
 
         virtual void WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec) const {};
 
