@@ -30,6 +30,7 @@ ohos_static_library("uitest_core") {
   configs = [ ":uitest_common_configs" ]
   sources = [
     "${source_root}/core/frontend_api_handler.cpp",
+    "${source_root}/core/rect_algorithm.cpp",
     "${source_root}/core/ui_action.cpp",
     "${source_root}/core/ui_controller.cpp",
     "${source_root}/core/ui_driver.cpp",
@@ -52,26 +53,6 @@ common_external_deps = [
   "ipc:ipc_core",
 ]
 
-accessibility_include_dirs = [
-  "//base/accessibility/frameworks/aafwk/include",
-  "//foundation/multimodalinput/input/interfaces/native/innerkits/event/include",
-  "//utils/native/base/include",
-  "//base/accessibility/interfaces/innerkits/asacfwk/include",
-  "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
-  "//base/accessibility/frameworks/asacfwk/include",
-  "//foundation/appexecfwk/appexecfwk_lite/utils/bundle_lite",
-  "//base/accessibility/util/include",
-  "//base/accessibility/common/log/include",
-  "//base/accessibility/dummyData",
-  "//base/accessibility/interfaces/kits/napi/include",
-  "//foundation/ability/ability_runtime/frameworks/native/ability/native",
-  "//foundation/ability/ability_runtime/frameworks/kits/ability/native/include",
-  "//foundation/ability/ability_runtime/frameworks/kits/appkit/native/ability_runtime/",
-  "//foundation/ability/ability_runtime/frameworks/kits/appkit/native/ability_runtime/context/",
-  "//foundation/ability/ability_runtime/interfaces/innerkits/runtime/include/",
-  "//base/accessibility/interfaces/innerkits/aafwk/include",
-]
-
 ohos_executable("uitest_server") {
   configs = [ ":uitest_common_configs" ]
   sources = [
@@ -84,7 +65,6 @@ ohos_executable("uitest_server") {
     "${source_root}/core",
     "${source_root}/connection",
   ]
-  include_dirs += accessibility_include_dirs
 
   # static link the uitest_core as server end
   deps = [ ":uitest_core" ]
@@ -179,6 +159,7 @@ ohos_unittest("uitest_core_unittest") {
   sources = [
     "${source_root}/test/common_utilities_test.cpp",
     "${source_root}/test/frontend_api_handler_test.cpp",
+    "${source_root}/test/rect_algorithm_test.cpp",
     "${source_root}/test/transaction_connection_test.cpp",
     "${source_root}/test/ui_action_test.cpp",
     "${source_root}/test/ui_controller_test.cpp",
