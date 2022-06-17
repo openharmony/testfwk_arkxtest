@@ -176,6 +176,45 @@ namespace OHOS::uitest {
         const int32_t code_;
     };
 
+    /**Generic Combinedkeys actions.*/
+    class CombinedKeys final : public KeyAction {
+    public:
+        CombinedKeys(int32_t code_zero, int32_t code_one, int32_t code_two)
+            : code_zero_(code_zero), code_one_(code_one), code_two_(code_two) {};
+
+        void ComputeEvents(std::vector<KeyEvent> &recv, const UiOpArgs &opt) const override
+        {
+            recv.push_back(KeyEvent {ActionStage::DOWN, code_zero_, 0});
+            recv.push_back(KeyEvent {ActionStage::DOWN, code_one_, 0});
+            if (code_two_ != KEYCODE_NONE) {
+                recv.push_back(KeyEvent {ActionStage::DOWN, code_two_, opt.keyHoldMs_});
+            } else {
+                recv.at(INDEX_ONE).holdMs_ = opt.keyHoldMs_;
+            }
+            if (code_two_ != KEYCODE_NONE) {
+                recv.push_back(KeyEvent {ActionStage::UP, code_two_, 0});
+            }
+            recv.push_back(KeyEvent {ActionStage::UP, code_one_, 0});
+            recv.push_back(KeyEvent {ActionStage::UP, code_zero_, 0});
+        }
+
+        std::string Describe() const override
+        {
+            std::string desc0 = std::string("key_") + std::to_string(code_zero_);
+            std::string desc1 = std::string("key_") + std::to_string(code_one_);
+            if (code_two_ != KEYCODE_NONE) {
+                std::string desc2 = std::string("key_") + std::to_string(code_two_);
+                return desc0 + desc1 + desc2;
+            }
+            return desc0 + desc1;
+        }
+
+    private:
+        const int32_t code_zero_;
+        const int32_t code_one_;
+        const int32_t code_two_;
+    };
+
     using Back = NamedPlainKey<KEYNAME_BACK, KEYCODE_BACK>;
     using Paste = NamedPlainKey<KEYNAME_PASTE, KEYCODE_V, KEYCODE_CTRL>;
 }
