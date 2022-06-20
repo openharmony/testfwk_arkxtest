@@ -139,6 +139,7 @@ namespace OHOS::uitest {
         {"UiDriver.assertComponentExist", "(By):void", false, false},
         {"UiDriver.pressBack", "():void", false, false},
         {"UiDriver.triggerKey", "(int):void", false, false},
+        {"UiDriver.triggerCombineKeys", "(int,int,int?):void", false, false},
         {"UiDriver.click", "(int,int):void", false, false},
         {"UiDriver.longClick", "(int,int):void", false, false},
         {"UiDriver.doubleClick", "(int,int):void", false, false},
