@@ -14,9 +14,9 @@
  */
 
 #include <sstream>
-#include "frontend_api_handler.h"
 #include "ui_driver.h"
 #include "widget_operator.h"
+#include "frontend_api_handler.h"
 
 namespace OHOS::uitest {
     using namespace std;
