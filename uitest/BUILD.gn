@@ -36,6 +36,7 @@ ohos_static_library("uitest_core") {
     "${source_root}/core/ui_driver.cpp",
     "${source_root}/core/ui_model.cpp",
     "${source_root}/core/widget_matcher.cpp",
+    "${source_root}/core/widget_operator.cpp",
     "${source_root}/core/widget_selector.cpp",
   ]
   external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
@@ -166,6 +167,7 @@ ohos_unittest("uitest_core_unittest") {
     "${source_root}/test/ui_driver_test.cpp",
     "${source_root}/test/ui_model_test.cpp",
     "${source_root}/test/widget_matcher_test.cpp",
+    "${source_root}/test/widget_operator_test.cpp",
     "${source_root}/test/widget_selector_test.cpp",
   ]
   sources += [ "${source_root}/connection/ipc_transactors.cpp" ]
