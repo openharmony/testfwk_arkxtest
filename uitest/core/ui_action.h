@@ -30,11 +30,8 @@ namespace OHOS::uitest {
     constexpr char KEYNAME_BACK[] = "Back";
     constexpr char KEYNAME_PASTE[] = "Paste";
 
-    /**Enumerates all the supported widget operations.*/
-    enum WidgetOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK, SCROLL_TO_TOP, SCROLL_TO_BOTTOM };
-
-    /**Enumerates all the supported coordinate-based operations.*/
-    enum PointerOp : uint8_t { CLICK_P, LONG_CLICK_P, DOUBLE_CLICK_P, SWIPE_P, DRAG_P };
+    /**Enumerates all the supported coordinate-based touch operations.*/
+    enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG };
 
     /**Enumerates the supported Key actions.*/
     enum UiKey : uint8_t { BACK, GENERIC };
@@ -78,7 +75,7 @@ namespace OHOS::uitest {
      **/
     class GenericClick {
     public:
-        explicit GenericClick(PointerOp type) : type_(type) {};
+        explicit GenericClick(TouchOp type) : type_(type) {};
 
         /**Compute the touch event sequence that are needed to implement this action.
          * @param point: the click location.
@@ -88,7 +85,7 @@ namespace OHOS::uitest {
         ~GenericClick() = default;
 
     private:
-        const PointerOp type_;
+        const TouchOp type_;
     };
 
     /**
@@ -96,7 +93,7 @@ namespace OHOS::uitest {
      **/
     class GenericSwipe {
     public:
-        explicit GenericSwipe(PointerOp type) : type_(type) {};
+        explicit GenericSwipe(TouchOp type) : type_(type) {};
 
         /**Compute the touch event sequence that are needed to implement this action.
          * @param fromPoint: the swipe start point.
@@ -108,7 +105,7 @@ namespace OHOS::uitest {
         ~GenericSwipe() = default;
 
     private:
-        const PointerOp type_;
+        const TouchOp type_;
     };
 
     /**

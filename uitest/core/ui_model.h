@@ -42,6 +42,7 @@ namespace OHOS::uitest {
         HIERARCHY,
         HASHCODE,
         BOUNDSCENTER,
+        HOST_WINDOW_ID,
     };
 
     /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
@@ -62,6 +63,7 @@ namespace OHOS::uitest {
         "hierarchy",     // HIERARCHY
         "hashcode",      // HASHCODE
         "boundsCenter",  // BOUNDSCENTER
+        "hostWindowId",  // HOST_WINDOW_ID
     };
 
     struct Point {
@@ -110,16 +112,15 @@ namespace OHOS::uitest {
     public:
         FORCE_INLINE static bool CheckEqual(const Rect &ra, const Rect &rb);
         FORCE_INLINE static bool CheckIntersectant(const Rect &ra, const Rect &rb);
-        FORCE_INLINE static bool IsInnerPoint(const Rect &rect, const Point& point);
-        FORCE_INLINE static bool IsPointOnEdge(const Rect &rect, const Point& point);
+        FORCE_INLINE static bool IsInnerPoint(const Rect &rect, const Point &point);
+        FORCE_INLINE static bool IsPointOnEdge(const Rect &rect, const Point &point);
         static bool ComputeIntersection(const Rect &ra, const Rect &rb, Rect &result);
-        static bool ComputeMaxVisibleRegion(const Rect& rect, const std::vector<Rect>& overlays, Rect& out);
+        static bool ComputeMaxVisibleRegion(const Rect &rect, const std::vector<Rect> &overlays, Rect &out);
     };
 
     FORCE_INLINE bool RectAlgorithm::CheckEqual(const Rect &ra, const Rect &rb)
     {
-        return ra.left_ == rb.left_ && ra.right_ == rb.right_
-               && ra.top_ == rb.top_ && ra.bottom_ == rb.bottom_;
+        return ra.left_ == rb.left_ && ra.right_ == rb.right_ && ra.top_ == rb.top_ && ra.bottom_ == rb.bottom_;
     }
 
     FORCE_INLINE bool RectAlgorithm::CheckIntersectant(const Rect &ra, const Rect &rb)
@@ -165,7 +166,7 @@ namespace OHOS::uitest {
 
         ~Widget() override {}
 
-        const FrontEndClassDef& GetFrontendClassDef() const override
+        const FrontEndClassDef &GetFrontendClassDef() const override
         {
             return UI_COMPONENT_DEF;
         }
@@ -190,7 +191,7 @@ namespace OHOS::uitest {
 
         std::string GetHostTreeId() const;
 
-        void SetBounds(const Rect& bounds);
+        void SetBounds(const Rect &bounds);
 
         std::string ToStr() const;
 
@@ -199,7 +200,7 @@ namespace OHOS::uitest {
     private:
         const std::string hierarchy_;
         std::string hostTreeId_;
-        std::map <std::string, std::string> attributes_;
+        std::map<std::string, std::string> attributes_;
         Rect bounds_ = {0, 0, 0, 0};
     };
 
@@ -225,14 +226,14 @@ namespace OHOS::uitest {
          * @param dom: the dom json data.
          * @param amendBounds: if or not amend widget bounds and visibility.
          * */
-        void ConstructFromDom(const nlohmann::json& dom, bool amendBounds);
+        void ConstructFromDom(const nlohmann::json &dom, bool amendBounds);
 
         /**
          * Marshal tree nodes hierarchy into the given dom data.
          *
          * @param dom: the dom json data.
          * */
-        void MarshalIntoDom(nlohmann::json& dom) const;
+        void MarshalIntoDom(nlohmann::json &dom) const;
 
         void DfsTraverse(WidgetVisitor &visitor) const;
 
@@ -275,16 +276,16 @@ namespace OHOS::uitest {
          * @param from: the subtrees to merge, should be sorted by z-order and the top one be at first.
          * @param to: the root tree to merge into.
          * */
-        static void MergeTrees(const std::vector<std::unique_ptr<WidgetTree>>& from, WidgetTree& to);
+        static void MergeTrees(const std::vector<std::unique_ptr<WidgetTree>> &from, WidgetTree &to);
 
     private:
         const std::string name_;
         const std::string identifier_;
         bool widgetsConstructed_ = false;
         // widget-hierarchy VS widget-ptr
-        std::map <std::string, Widget> widgetMap_;
+        std::map<std::string, Widget> widgetMap_;
         // widget-hierarchies, dfs order
-        std::vector <std::string> widgetHierarchyIdDfsOrder_;
+        std::vector<std::string> widgetHierarchyIdDfsOrder_;
 
         /**
          * Get WidgetTree by hierarchy,return <code>nullptr</code> if no such widget exist.
@@ -297,6 +298,32 @@ namespace OHOS::uitest {
         /**Generated an unique tree-identifier.*/
         static std::string GenerateTreeId();
     };
-} // namespace uitest
+
+    /**Enumerates the supported UiComponent attributes.*/
+    enum WindowMode : uint8_t { UNKNOWN, FULLSCREEN, SPLIT_PRIMARY, SPLIT_SECONDARY, FLOATING, PIP };
+
+    // Represents a UI window on screen.
+    class Window : public BackendClass {
+    public:
+        explicit Window(int32_t id) : id_(id) {};
+
+        ~Window() override {}
+
+        const FrontEndClassDef &GetFrontendClassDef() const override
+        {
+            return UI_WINDOW_DEF;
+        }
+        // plain properties, make them public for easy access
+        int32_t id_;
+        std::string bundleName_;
+        std::string title_;
+        bool focused_;
+        bool actived_;
+        bool decoratorEnabled_;
+        uint32_t layer_;
+        Rect bounds_ = {0, 0, 0, 0};
+        WindowMode mode_;
+    };
+} // namespace OHOS::uitest
 
 #endif

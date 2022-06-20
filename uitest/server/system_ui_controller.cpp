@@ -26,6 +26,7 @@
 #include "display_manager.h"
 #include "input_manager.h"
 #include "png.h"
+#include "wm_common.h"
 #include "system_ui_controller.h"
 
 using namespace std;
@@ -38,7 +39,7 @@ namespace OHOS::uitest {
     using namespace OHOS::Accessibility;
     using namespace OHOS::Rosen;
     using namespace OHOS::Media;
-    
+
     class UiEventMonitor final : public AccessibleAbilityListener {
     public:
         virtual ~UiEventMonitor() = default;
@@ -170,7 +171,7 @@ namespace OHOS::uitest {
         stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
         to[ATTR_NAMES[UiAttr::BOUNDS].data()] = stream.str();
         auto actionList = node.GetActionList();
-        for (auto &action :actionList) {
+        for (auto &action : actionList) {
             switch (action.GetActionType()) {
                 case ACCESSIBILITY_ACTION_CLICK:
                     to[ATTR_NAMES[UiAttr::CLICKABLE].data()] = "true";
@@ -214,12 +215,48 @@ namespace OHOS::uitest {
         to["children"] = childList;
     }
 
-    void SysUiController::GetUiHierarchy(vector<nlohmann::json>& out) const
+    static void InflateWindowInfo(AccessibilityWindowInfo& node, Window& info)
+    {
+        info.focused_ = node.IsFocused();
+        info.actived_ = node.IsActive();
+        info.decoratorEnabled_ = node.IsDecorEnable();
+        info.layer_ = node.GetWindowLayer();
+        auto rect = node.GetRectInScreen();
+        info.bounds_ = Rect(rect.GetLeftTopXScreenPostion(), rect.GetRightBottomXScreenPostion(),
+                            rect.GetLeftTopYScreenPostion(), rect.GetRightBottomYScreenPostion());
+        info.mode_ = WindowMode::UNKNOWN;
+        const auto origMode = static_cast<OHOS::Rosen::WindowMode>(node.GetWindowMode());
+        switch (origMode) {
+            case OHOS::Rosen::WindowMode::WINDOW_MODE_FULLSCREEN:
+                info.mode_ = WindowMode::FULLSCREEN;
+                break;
+            case OHOS::Rosen::WindowMode::WINDOW_MODE_SPLIT_PRIMARY:
+                info.mode_ = WindowMode::SPLIT_PRIMARY;
+                break;
+            case OHOS::Rosen::WindowMode::WINDOW_MODE_SPLIT_SECONDARY:
+                info.mode_ = WindowMode::SPLIT_SECONDARY;
+                break;
+            case OHOS::Rosen::WindowMode::WINDOW_MODE_FLOATING:
+                info.mode_ = WindowMode::FLOATING;
+                break;
+            case OHOS::Rosen::WindowMode::WINDOW_MODE_PIP:
+                info.mode_ = WindowMode::PIP;
+                break;
+            default:
+                info.mode_ = WindowMode::UNKNOWN;
+                break;
+        }
+    }
+
+    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out) const
     {
         auto ability = AccessibilityUITestAbility::GetInstance();
-        std::vector<AccessibilityWindowInfo> windows;
-        (void)ability->GetWindows(windows);
-        sort(windows.begin(), windows.end(), [](auto& w1, auto& w2) -> bool {
+        vector<AccessibilityWindowInfo> windows;
+        if (!ability->GetWindows(windows)) {
+            LOG_W("GetWindows from AccessibilityUITestAbility failed");
+            return;
+        }
+        sort(windows.begin(), windows.end(), [](auto &w1, auto &w2) -> bool {
             if (w1.IsActive()) {
                 return true;
             } else if (w2.IsActive()) {
@@ -227,30 +264,31 @@ namespace OHOS::uitest {
             }
             return w1.GetWindowLayer() < w2.GetWindowLayer();
         });
-        AccessibilityElementInfo elementInfo {};
-        for (auto& window : windows) {
+        AccessibilityElementInfo elementInfo;
+        for (auto &window : windows) {
             if (ability->GetRootByWindow(window, elementInfo)) {
                 const auto app = elementInfo.GetBundleName();
                 LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
+                auto winInfo = Window(window.GetWindowId());
+                InflateWindowInfo(window, winInfo);
+                winInfo.bundleName_ = app;
                 // apply window bounds as root node bounds
-                auto windowRect = window.GetRectInScreen();
-                elementInfo.SetRectInScreen(windowRect);
+                auto windowBounds = window.GetRectInScreen();
+                elementInfo.SetRectInScreen(windowBounds);
                 auto root = nlohmann::json();
                 MarshallAccessibilityNodeInfo(elementInfo, root, 0);
-                out.push_back(move(root));
+                out.push_back(make_pair(move(winInfo), move(root)));
             } else {
                 LOG_W("GetRootByWindow failed");
             }
         }
     }
 
-    void SysUiController::WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const
-    {
-    }
+    void SysUiController::WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const {}
 
     void SysUiController::InjectTouchEventSequence(const vector<TouchEvent> &events) const
     {
-        for (auto& event:events) {
+        for (auto &event : events) {
             auto pointerEvent = PointerEvent::Create();
             PointerEvent::PointerItem pinterItem;
             pinterItem.SetPointerId(0);
@@ -281,7 +319,7 @@ namespace OHOS::uitest {
     void SysUiController::InjectKeyEventSequence(const vector<KeyEvent> &events) const
     {
         vector<int32_t> downKeys;
-        for (auto& event:events) {
+        for (auto &event : events) {
             if (event.stage_ == ActionStage::UP) {
                 auto iter = std::find(downKeys.begin(), downKeys.end(), event.code_);
                 if (iter == downKeys.end()) {
@@ -300,7 +338,7 @@ namespace OHOS::uitest {
             } else {
                 downKeys.push_back(event.code_);
                 auto keyEvent = OHOS::MMI::KeyEvent::Create();
-                for (auto downKey:downKeys) {
+                for (auto downKey : downKeys) {
                     keyEvent->SetKeyCode(downKey);
                     keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_DOWN);
                     OHOS::MMI::KeyEvent::KeyItem keyItem;
@@ -315,14 +353,12 @@ namespace OHOS::uitest {
             }
         }
         // check not released keys
-        for (auto downKey:downKeys) {
+        for (auto downKey : downKeys) {
             LOG_W("Key event sequence injections done with not-released key: %{public}d", downKey);
         }
     }
 
-    void SysUiController::PutTextToClipboard(string_view text) const
-    {
-    }
+    void SysUiController::PutTextToClipboard(string_view text) const {}
 
     bool SysUiController::IsWorkable() const
     {
@@ -429,7 +465,7 @@ namespace OHOS::uitest {
         unique_lock<mutex> uLock(mtx);
         condition_variable condition;
         auto onConnectCallback = [&condition]() {
-            LOG_I("Success connect to AAMS");
+            LOG_I("Success connect to AccessibilityUITestAbility");
             condition.notify_all();
         };
         if (g_monitorInstance_ == nullptr) {
@@ -441,33 +477,33 @@ namespace OHOS::uitest {
             LOG_E("Failed to register UiEventMonitor");
             return false;
         }
-        LOG_I("Start connect to AAMS");
+        LOG_I("Start connect to AccessibilityUITestAbility");
         auto ret = ability->Connect();
         switch (ret) {
             case (RET_OK):
                 break;
             case (RET_ERR_INVALID_PARAM):
-                LOG_E("Failed to connect to AAMS, RET_ERR_INVALID_PARAM");
+                LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_INVALID_PARAM");
                 return false;
             case (RET_ERR_NULLPTR):
-                LOG_E("Failed to connect to AAMS, RET_ERR_NULLPTR");
+                LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_NULLPTR");
                 return false;
             case (RET_ERR_CONNECTION_EXIST):
-                LOG_E("Failed to connect to AAMS, RET_ERR_CONNECTION_EXIST");
+                LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_CONNECTION_EXIST");
                 return false;
             case (RET_ERR_IPC_FAILED):
-                LOG_E("Failed to connect to AAMS, RET_ERR_IPC_FAILED");
+                LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_IPC_FAILED");
                 return false;
             case (RET_ERR_SAMGR):
-                LOG_E("Failed to connect to AAMS, RET_ERR_SAMGR");
+                LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_SAMGR");
                 return false;
         }
         const auto timeout = chrono::milliseconds(500);
         if (condition.wait_for(uLock, timeout) == cv_status::timeout) {
-            LOG_E("Wait connection to AAMS timed out");
+            LOG_E("Wait connection to AccessibilityUITestAbility timed out");
             return false;
         }
-        LOG_I("Register to AAMS done");
+        LOG_I("Register to AccessibilityUITestAbility done");
         connected_ = true;
         return true;
     }
@@ -482,20 +518,20 @@ namespace OHOS::uitest {
         unique_lock<mutex> uLock(mtx);
         condition_variable condition;
         auto onDisConnectCallback = [&condition]() {
-            LOG_I("Success disconnect from AAMS");
+            LOG_I("Success disconnect from AccessibilityUITestAbility");
             condition.notify_all();
         };
         g_monitorInstance_->SetOnAbilityDisConnectCallback(onDisConnectCallback);
         auto ability = AccessibilityUITestAbility::GetInstance();
-        LOG_I("Start disconnect from AAMS");
-        if (! ability->Disconnect()) {
-            LOG_E("Failed to disconnect from AAMS");
+        LOG_I("Start disconnect from AccessibilityUITestAbility");
+        if (!ability->Disconnect()) {
+            LOG_E("Failed to disconnect from AccessibilityUITestAbility");
             return;
         }
         const auto timeout = chrono::milliseconds(200);
         if (condition.wait_for(uLock, timeout) == cv_status::timeout) {
-            LOG_E("Wait disconnection from AAMS timed out");
+            LOG_E("Wait disconnection from AccessibilityUITestAbility timed out");
             return;
         }
     }
-}
+} // namespace OHOS::uitest

@@ -49,7 +49,7 @@ protected:
 
 TEST_F(UiActionTest, computeClickAction)
 {
-    GenericClick action(PointerOp::CLICK_P);
+    GenericClick action(TouchOp::CLICK);
     Point point {100, 200};
     vector<TouchEvent> events;
     action.Decompose(events, point, customOptions_);
@@ -69,7 +69,7 @@ TEST_F(UiActionTest, computeClickAction)
 
 TEST_F(UiActionTest, computeLongClickAction)
 {
-    GenericClick action(PointerOp::LONG_CLICK_P);
+    GenericClick action(TouchOp::LONG_CLICK);
     Point point {100, 200};
     vector<TouchEvent> events;
     action.Decompose(events, point, customOptions_);
@@ -91,7 +91,7 @@ TEST_F(UiActionTest, computeLongClickAction)
 
 TEST_F(UiActionTest, computeDoubleClickAction)
 {
-    GenericClick action(PointerOp::DOUBLE_CLICK_P);
+    GenericClick action(TouchOp::DOUBLE_CLICK_P);
     Point point {100, 200};
     vector<TouchEvent> events;
     action.Decompose(events, point, customOptions_);
@@ -129,7 +129,7 @@ TEST_F(UiActionTest, computeSwipeAction)
     opt.swipeVelocityPps_ = 50; // specify the swipe velocity
     Point point0(0, 0);
     Point point1(100, 200);
-    GenericSwipe action(PointerOp::SWIPE_P);
+    GenericSwipe action(TouchOp::SWIPE);
     vector<TouchEvent> events;
     action.Decompose(events, point0, point1, opt);
     // there should be more than 1 touches
@@ -170,8 +170,8 @@ TEST_F(UiActionTest, computeDragAction)
     opt.longClickHoldMs_ = 2000; // specify the long-click duration
     Point point0(0, 0);
     Point point1(100, 200);
-    GenericSwipe swipeAction(PointerOp::SWIPE_P);
-    GenericSwipe dragAction(PointerOp::DRAG_P);
+    GenericSwipe swipeAction(TouchOp::SWIPE);
+    GenericSwipe dragAction(TouchOp::DRAG);
     vector<TouchEvent> swipeEvents;
     vector<TouchEvent> dragEvents;
     swipeAction.Decompose(swipeEvents, point0, point1, opt);
