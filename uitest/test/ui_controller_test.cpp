@@ -43,8 +43,6 @@ public:
 
     ~DummyController() {}
 
-    void GetUiHierarchy(vector<nlohmann::json>& out) const override {}
-
     bool IsWorkable() const override
     {
         return workable_;

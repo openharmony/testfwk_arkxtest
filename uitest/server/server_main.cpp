@@ -80,15 +80,15 @@ namespace OHOS::uitest {
         auto controller = make_unique<SysUiController>("sys_ui_controller");
         if (!controller->ConnectToSysAbility()) {
             PrintToConsole("Dump layout failed, cannot connect to AAMS");
-                fout.close();
-                return EXIT_FAILURE;
+            fout.close();
+            return EXIT_FAILURE;
         }
         if (params.find('i') != params.end()) {
-            vector<nlohmann::json> datas;
+            vector<pair<Window, nlohmann::json>> datas;
             controller->GetUiHierarchy(datas);
             auto array = nlohmann::json::array();
-            for (auto data : datas) {
-                array.push_back(data);
+            for (auto& data : datas) {
+                array.push_back(data.second);
             }
             fout << array.dump();
         } else {
