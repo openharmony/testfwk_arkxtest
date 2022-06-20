@@ -14,10 +14,10 @@
  */
 
 function assertFalse(actualValue) {
-  return {
-    pass: actualValue === false,
-    message: 'except false, actualValue is ' + actualValue
-  }
+    return {
+        pass: actualValue === false,
+        message: 'except false, actualValue is ' + actualValue
+    };
 }
 
-export default assertFalse
+export default assertFalse;

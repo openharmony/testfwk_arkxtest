@@ -14,19 +14,19 @@
  */
 
 function isPromiseLike(obj) {
-  return !!obj && isFunction_(obj.then)
+    return !!obj && isFunction_(obj.then);
 }
 
 function isFunction_(value) {
-  return isA_('Function', value)
+    return isA_('Function', value);
 }
 
 function isA_(typeName, value) {
-  return getType_(value) === '[object ' + typeName + ']'
+    return getType_(value) === '[object ' + typeName + ']';
 }
 
 function getType_(value) {
-  return Object.prototype.toString.apply(value)
+    return Object.prototype.toString.apply(value);
 }
 
-export default isPromiseLike
+export default isPromiseLike;

@@ -14,22 +14,22 @@
  */
 
 function assertContain(actualValue, expect) {
-  let result = false
-  if (Object.prototype.toString.call(actualValue).indexOf('Array')) {
-    for (let i in actualValue) {
-      if (actualValue[i] == expect[0]) {
-        result = true
-      }
+    let result = false;
+    if (Object.prototype.toString.call(actualValue).indexOf('Array')) {
+        for (let i in actualValue) {
+            if (actualValue[i] == expect[0]) {
+                result = true;
+            }
+        }
     }
-  }
-  let type = Object.prototype.toString.call(actualValue)
-  if (type === '[object String]') {
-    result = actualValue.indexOf(expect[0]) >= 0
-  }
-  return {
-    pass: result,
-    message: 'except false, ' + actualValue + ' do not have  ' + expect[0]
-  }
+    let type = Object.prototype.toString.call(actualValue);
+    if (type === '[object String]') {
+        result = actualValue.indexOf(expect[0]) >= 0;
+    }
+    return {
+        pass: result,
+        message: 'except false, ' + actualValue + ' do not have  ' + expect[0]
+    };
 }
 
-export default assertContain
+export default assertContain;

@@ -15,23 +15,39 @@
 
 class SysTestKit {
 
-    static delegator = null
+    static delegator = null;
 
     constructor() {
-        this.id = 'sysTestKit'
-        this.index = 0
+        this.id = 'sysTestKit';
+        this.index = 0;
+    }
+
+    static actionStart(tag) {
+        console.info(JSON.stringify(tag));
+        var message = '\n' + 'OHOS_REPORT_ACTIONSTART: ' + JSON.stringify(tag) + '\n';
+        this.delegator.print(message).then(() => {
+            console.info(this.specService.currentRunningSpec.description + ' actionStart print success');
+        });
+    }
+
+    static actionEnd(tag) {
+        console.info(JSON.stringify(tag));
+        var message = '\n' + 'OHOS_REPORT_ACTIONEND: ' + JSON.stringify(tag) + '\n';
+        this.delegator.print(message).then(() => {
+            console.info(this.specService.currentRunningSpec.description + ' actionEnd print success');
+        });
     }
 
     static async existKeyword(keyword, timeout) {
-        keyword = keyword || 'jsapp'
-        timeout = timeout || 4
+        keyword = keyword || 'jsapp';
+        timeout = timeout || 4;
 
-        let searchResult = false
-        let cmd = 'hilog -x | grep -i \'' + keyword + '\' | wc -l'
+        let searchResult = false;
+        let cmd = 'hilog -x | grep -i \'' + keyword + '\' | wc -l';
         await executePromise(cmd, timeout).then((data) => {
-            searchResult = data
-        })
-        return searchResult
+            searchResult = data;
+        });
+        return searchResult;
     }
 }
 
@@ -39,11 +55,11 @@ function executePromise(cmd, timeout) {
     return new Promise((resolve, reject) => {
         SysTestKit.delegator.executeShellCommand(cmd, timeout,
             (error, data) => {
-                console.info('existKeyword CallBack: err : ' + JSON.stringify(error))
-                console.info('existKeyword CallBack: data : ' + JSON.stringify(data))
-                resolve(parseInt(data.stdResult) > 3 ? true : false)
-            })
-    })
+                console.info('existKeyword CallBack: err : ' + JSON.stringify(error));
+                console.info('existKeyword CallBack: data : ' + JSON.stringify(data));
+                resolve(parseInt(data.stdResult) > 3 ? true : false);
+            });
+    });
 }
 
-export default SysTestKit
+export default SysTestKit;

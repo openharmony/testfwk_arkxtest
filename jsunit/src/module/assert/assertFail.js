@@ -14,10 +14,10 @@
  */
 
 function assertFail() {
-  return {
-    pass: false,
-    message: 'fail '
-  }
+    return {
+        pass: false,
+        message: 'fail '
+    };
 }
 
-export default assertFail
+export default assertFail;

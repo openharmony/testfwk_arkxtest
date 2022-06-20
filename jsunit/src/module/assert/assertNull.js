@@ -14,10 +14,10 @@
  */
 
 function assertNull(actualValue) {
-  return {
-    pass: actualValue === null,
-    message: 'expect null, actualValue is ' + actualValue
-  }
+    return {
+        pass: actualValue === null,
+        message: 'expect null, actualValue is ' + actualValue
+    };
 }
 
-export default assertNull
+export default assertNull;
