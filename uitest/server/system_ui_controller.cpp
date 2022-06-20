@@ -26,8 +26,8 @@
 #include "display_manager.h"
 #include "input_manager.h"
 #include "png.h"
-#include "system_ui_controller.h"
 #include "wm_common.h"
+#include "system_ui_controller.h"
 
 using namespace std;
 using namespace chrono;
@@ -264,7 +264,7 @@ namespace OHOS::uitest {
             }
             return w1.GetWindowLayer() < w2.GetWindowLayer();
         });
-        AccessibilityElementInfo elementInfo{};
+        AccessibilityElementInfo elementInfo;
         for (auto &window : windows) {
             if (ability->GetRootByWindow(window, elementInfo)) {
                 const auto app = elementInfo.GetBundleName();
@@ -272,7 +272,6 @@ namespace OHOS::uitest {
                 auto winInfo = Window(window.GetWindowId());
                 InflateWindowInfo(window, winInfo);
                 winInfo.bundleName_ = app;
-                // FIXME:: windowName/windowTitle ?
                 // apply window bounds as root node bounds
                 auto windowBounds = window.GetRectInScreen();
                 elementInfo.SetRectInScreen(windowBounds);
