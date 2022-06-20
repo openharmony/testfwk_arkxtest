@@ -13,53 +13,53 @@
  * limitations under the License.
  */
 
-import Core from './core'
+import Core from './core';
 
-const core = Core.getInstance()
+const core = Core.getInstance();
 
 const describe = function (desc, func) {
-  if (typeof globalThis !== 'undefined') {
-    return globalThis.describe(desc, func)
-  }
-  return core.describe(desc, func)
-}
+    if (typeof globalThis !== 'undefined') {
+        return globalThis.describe(desc, func);
+    }
+    return core.describe(desc, func);
+};
 const it = function (desc, filter, func) {
-  if (typeof globalThis !== 'undefined') {
-    return globalThis.it(desc, filter, func)
-  }
-  return core.it(desc, filter, func)
-}
+    if (typeof globalThis !== 'undefined') {
+        return globalThis.it(desc, filter, func);
+    }
+    return core.it(desc, filter, func);
+};
 const beforeEach = function (func) {
-  if (typeof globalThis !== 'undefined') {
-    return globalThis.beforeEach(func)
-  }
-  return core.beforeEach(func)
-}
+    if (typeof globalThis !== 'undefined') {
+        return globalThis.beforeEach(func);
+    }
+    return core.beforeEach(func);
+};
 const afterEach = function (func) {
-  if (typeof globalThis !== 'undefined') {
-    return globalThis.afterEach(func)
-  }
-  return core.afterEach(func)
-}
+    if (typeof globalThis !== 'undefined') {
+        return globalThis.afterEach(func);
+    }
+    return core.afterEach(func);
+};
 const beforeAll = function (func) {
-  if (typeof globalThis !== 'undefined') {
-    return globalThis.beforeAll(func)
-  }
-  return core.beforeAll(func)
-}
+    if (typeof globalThis !== 'undefined') {
+        return globalThis.beforeAll(func);
+    }
+    return core.beforeAll(func);
+};
 const afterAll = function (func) {
-  if (typeof globalThis !== 'undefined') {
-    return globalThis.afterAll(func)
-  }
-  return core.afterAll(func)
-}
+    if (typeof globalThis !== 'undefined') {
+        return globalThis.afterAll(func);
+    }
+    return core.afterAll(func);
+};
 const expect = function (actualValue) {
-  if (typeof globalThis !== 'undefined') {
-    return globalThis.expect(actualValue)
-  }
-  return core.expect(actualValue)
-}
+    if (typeof globalThis !== 'undefined') {
+        return globalThis.expect(actualValue);
+    }
+    return core.expect(actualValue);
+};
 
 export {
-  describe, it, beforeAll, beforeEach, afterEach, afterAll, expect
-}
+    describe, it, beforeAll, beforeEach, afterEach, afterAll, expect
+};

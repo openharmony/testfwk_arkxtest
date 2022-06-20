@@ -14,16 +14,16 @@
  */
 
 function assertInstanceOf(actualValue, expected) {
-  if (Object.prototype.toString.call(actualValue) == '[object ' + expected[0] + ']') {
-    return {
-      pass: true
+    if (Object.prototype.toString.call(actualValue) == '[object ' + expected[0] + ']') {
+        return {
+            pass: true
+        };
+    } else {
+        return {
+            pass: false,
+            message: actualValue + ' is ' + Object.prototype.toString.call(actualValue) + 'not  ' + expected[0]
+        };
     }
-  } else {
-    return {
-      pass: false,
-      message: actualValue + ' is ' + Object.prototype.toString.call(actualValue) + 'not  ' + expected[0]
-    }
-  }
 }
 
-export default assertInstanceOf
+export default assertInstanceOf;

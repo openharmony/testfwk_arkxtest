@@ -14,28 +14,28 @@
  */
 
 function assertClose(actualValue, expected) {
-  console.log('expected:' + expected[0] + ',precision:' + expected[1])
-  if (actualValue === null && expected[0] === null) {
-    throw new Error('actualValue and expected can not be both null!!!')
-  }
-  let result
-  let diff = Math.abs(expected[0] - actualValue)
-  let actualAbs = Math.abs(actualValue)
-  if ((actualAbs - 0) === 0) {
-    if ((diff - 0) === 0) {
-      result = true
-    } else {
-      result = false
+    console.log('expected:' + expected[0] + ',precision:' + expected[1]);
+    if (actualValue === null && expected[0] === null) {
+        throw new Error('actualValue and expected can not be both null!!!');
     }
-  } else if (diff / actualAbs < expected[1]) {
-    result = true
-  } else {
-    result = false
-  }
-  return {
-    pass: result,
-    message: '|' + actualValue + ' - ' + expected[0] + '|/' + actualValue + ' is not less than ' + expected[1]
-  }
+    let result;
+    let diff = Math.abs(expected[0] - actualValue);
+    let actualAbs = Math.abs(actualValue);
+    if ((actualAbs - 0) === 0) {
+        if ((diff - 0) === 0) {
+            result = true;
+        } else {
+            result = false;
+        }
+    } else if (diff / actualAbs < expected[1]) {
+        result = true;
+    } else {
+        result = false;
+    }
+    return {
+        pass: result,
+        message: '|' + actualValue + ' - ' + expected[0] + '|/' + actualValue + ' is not less than ' + expected[1]
+    };
 }
 
-export default assertClose
+export default assertClose;

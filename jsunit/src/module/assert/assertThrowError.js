@@ -14,31 +14,31 @@
  */
 
 function assertThrowError(actualValue, expected) {
-  let result = false
-  let err
-  if (typeof actualValue !== 'function') {
-    throw new Error('actualValue is not a function')
-  }
-  try {
-    actualValue()
-    return {
-      pass: result,
-      message: ' An error is not thrown while it is expected!'
+    let result = false;
+    let err;
+    if (typeof actualValue !== 'function') {
+        throw new Error('actualValue is not a function');
     }
-  } catch (e) {
-    err = e
-  }
+    try {
+        actualValue();
+        return {
+            pass: result,
+            message: ' An error is not thrown while it is expected!'
+        };
+    } catch (e) {
+        err = e;
+    }
 
-  if (err instanceof Error) {
-    console.log(err.message)
-    if (err.message == expected[0]) {
-      result = true
+    if (err instanceof Error) {
+        console.log(err.message);
+        if (err.message == expected[0]) {
+            result = true;
+        }
     }
-  }
-  return {
-    pass: result,
-    message: 'expected throw failed , ' + err.message + ' is not ' + expected[0]
-  }
+    return {
+        pass: result,
+        message: 'expected throw failed , ' + err.message + ' is not ' + expected[0]
+    };
 }
 
-export default assertThrowError
+export default assertThrowError;
