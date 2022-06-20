@@ -26,7 +26,7 @@ namespace OHOS::uitest {
 
         ~SysUiController();
 
-        void GetUiHierarchy(std::vector<nlohmann::json>& out) const override;
+        void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>>& out) const override;
 
         void WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const override;
 

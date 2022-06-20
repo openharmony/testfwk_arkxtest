@@ -234,16 +234,35 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks)
     call2.paramList_.emplace_back(1);
     server.Call(call2, reply2);
     ASSERT_EQ(ErrCode::USAGE_ERROR, reply2.exception_.code_);
-    ASSERT_TRUE(reply2.exception_.message_.find("Illegal argument type") != string::npos);
+    ASSERT_TRUE(reply2.exception_.message_.find("Expect string") != string::npos);
     // call with argument defaulted (bool=true)
     auto call3 = ApiCallInfo {.apiId_ = "By.enabled", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply3 = ApiReplyInfo();
     call3.paramList_.emplace_back(true); // no defaulted
     server.Call(call3, reply3);
-    ASSERT_EQ(ErrCode::NO_ERROR, reply3.exception_.code_)<<reply3.exception_.message_;
+    ASSERT_EQ(ErrCode::NO_ERROR, reply3.exception_.code_);
 
     auto call4 = ApiCallInfo {.apiId_ = "By.enabled", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply4 = ApiReplyInfo(); // defaulted
     server.Call(call4, reply4);
-    ASSERT_EQ(ErrCode::NO_ERROR, reply4.exception_.code_)<<reply4.exception_.message_;
+    ASSERT_EQ(ErrCode::NO_ERROR, reply4.exception_.code_);
+    // call with bad object ref
+    auto call5 = ApiCallInfo {.apiId_ = "By.isAfter", .callerObjRef_ = string(REF_SEED_BY)};
+    call5.paramList_.emplace_back("By#100");
+    auto reply5 = ApiReplyInfo();
+    server.Call(call5, reply5);
+    ASSERT_EQ(ErrCode::INTERNAL_ERROR, reply5.exception_.code_); // bad-object is internal_error
+    ASSERT_TRUE(reply5.exception_.message_.find("Bad object ref") != string::npos);
+    // call with json param with wrong property
+    auto call6 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply6 = ApiReplyInfo();
+    server.Call(call6, reply6);
+    auto call7 = ApiCallInfo {.apiId_ = "UiDriver.findWindow", .callerObjRef_ = reply6.resultValue_.get<string>()};
+    auto arg = json();
+    arg["badProp"] = "wyz";
+    call7.paramList_.emplace_back(arg);
+    auto reply7 = ApiReplyInfo();
+    server.Call(call7, reply7);
+    ASSERT_EQ(ErrCode::USAGE_ERROR, reply7.exception_.code_);
+    ASSERT_TRUE(reply7.exception_.message_.find("Illegal property") != string::npos);
 }

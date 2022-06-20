@@ -22,22 +22,6 @@ namespace OHOS::uitest {
 
     static constexpr string_view DUMMY_ATTRNAME_SELECTION = "selectionDesc";
 
-    class TreeSnapshotTaker : public WidgetVisitor {
-    public:
-        explicit TreeSnapshotTaker(stringstream &receiver) : receiver_(receiver) {};
-
-        ~TreeSnapshotTaker() {}
-
-        void Visit(const Widget &widget) override
-        {
-            receiver_ << widget.GetAttr(ATTR_NAMES[UiAttr::TYPE], "") << "/";
-            receiver_ << widget.GetAttr(ATTR_NAMES[UiAttr::TEXT], "") << ";";
-        }
-
-    private:
-        stringstream &receiver_;
-    };
-
     void UiDriver::UpdateUi(bool updateUiTree, ApiCallErr &error)
     {
         UiController::InstallFromProvider();
@@ -50,27 +34,42 @@ namespace OHOS::uitest {
         if (!updateUiTree) {
             return;
         }
+        windows_.clear();
         widgetTree_ = make_unique<WidgetTree>("");
-        vector<nlohmann::json> doms;
-        uiController_->GetUiHierarchy(doms);
-        if (doms.empty()) {
-            LOG_E("%{public}s", "Get window doms failed");
+        vector<pair<Window, nlohmann::json>> hierarchies;
+        uiController_->GetUiHierarchy(hierarchies);
+        if (hierarchies.empty()) {
+            LOG_E("%{public}s", "Get windows failed");
             error = ApiCallErr(INTERNAL_ERROR, "Get window nodes failed");
             return;
         }
         vector<unique_ptr<WidgetTree>> trees;
-        for (auto& dom : doms) {
+        for (auto &hierarchy : hierarchies) {
             auto tree = make_unique<WidgetTree>("");
-            tree->ConstructFromDom(dom, true);
+            tree->ConstructFromDom(hierarchy.second, true);
+            auto &window = hierarchy.first;
+            windows_.push_back(move(window));
             trees.push_back(move(tree));
         }
         WidgetTree::MergeTrees(trees, *widgetTree_);
     }
 
-    void UiDriver::DumpUiHierarchy(nlohmann::json& out, ApiCallErr& error)
+    /** Get current UI tree.*/
+    const WidgetTree *UiDriver::GetWidgetTree() const
+    {
+        return widgetTree_ == nullptr? nullptr : widgetTree_.get();
+    }
+
+    /** Get current UI controller.*/
+    const UiController *UiDriver::GetUiController() const
+    {
+        return uiController_;
+    }
+
+    void UiDriver::DumpUiHierarchy(nlohmann::json &out, ApiCallErr &error)
     {
         UpdateUi(true, error);
-        if (error.code_ !=NO_ERROR || widgetTree_ == nullptr) {
+        if (error.code_ != NO_ERROR || widgetTree_ == nullptr) {
             return;
         }
         widgetTree_->MarshalIntoDom(out);
@@ -106,8 +105,8 @@ namespace OHOS::uitest {
         msg << "dose not exist on current UI! Check if the UI has changed after you got the widget object";
         if (recv.empty()) {
             msg << "(NoCandidates)";
-            LOG_W("%{public}s", msg.str().c_str());
             err = ApiCallErr(WIDGET_LOST, msg.str());
+            LOG_W("%{public}s", err.message_.c_str());
             return nullptr;
         }
         DCHECK(recv.size() == 1);
@@ -116,28 +115,26 @@ namespace OHOS::uitest {
         constexpr auto attrType = ATTR_NAMES[UiAttr::TYPE];
         if (widget.GetAttr(attrType, "A").compare(retrieved.GetAttr(attrType, "B")) != 0) {
             msg << " (CompareEqualsFailed)";
-            LOG_W("%{public}s", msg.str().c_str());
             err = ApiCallErr(WIDGET_LOST, msg.str());
+            LOG_W("%{public}s", err.message_.c_str());
             return nullptr;
         }
         return &retrieved;
     }
 
-    static void InjectGenericClick(PointerOp type, const Point &point, const UiController &controller,
-                                   const UiOpArgs &options)
+    void UiDriver::InjectClick(TouchOp type, const Point &point, const UiOpArgs &opt)
     {
         auto action = GenericClick(type);
         vector<TouchEvent> events;
-        action.Decompose(events, point, options);
+        action.Decompose(events, point, opt);
         if (events.empty()) {
             return;
         }
-        controller.InjectTouchEventSequence(events);
-        controller.WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
+        uiController_->InjectTouchEventSequence(events);
+        uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
     }
 
-    static void InjectGenericSwipe(PointerOp type, const Point &point0, const Point &point1,
-                                   const UiController &controller, const UiOpArgs &options)
+    void UiDriver::InjectSwipe(TouchOp type, const Point &point0, const Point &point1, const UiOpArgs &options)
     {
         auto action = GenericSwipe(type);
         vector<TouchEvent> events;
@@ -145,19 +142,19 @@ namespace OHOS::uitest {
         if (events.empty()) {
             return;
         }
-        controller.InjectTouchEventSequence(events);
-        controller.WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
+        uiController_->InjectTouchEventSequence(events);
+        uiController_->WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
     }
 
-    static void InjectKeyAction(const KeyAction &action, const UiController &controller, const UiOpArgs &options)
+    void UiDriver::InjectKey(const KeyAction &action, const UiOpArgs &options)
     {
         vector<KeyEvent> events;
         action.ComputeEvents(events, options);
         if (events.empty()) {
             return;
         }
-        controller.InjectKeyEventSequence(events);
-        controller.WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
+        uiController_->InjectKeyEventSequence(events);
+        uiController_->WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
     }
 
     void UiDriver::TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error)
@@ -166,183 +163,7 @@ namespace OHOS::uitest {
         if (error.code_ != NO_ERROR) {
             return;
         }
-        InjectKeyAction(key, *uiController_, opt);
-    }
-
-    void UiDriver::OperateWidget(const Widget &widget, WidgetOp op, const UiOpArgs &opt, ApiCallErr &error)
-    {
-        auto retrieved = RetrieveWidget(widget, error);
-        if (retrieved == nullptr || error.code_ != NO_ERROR) {
-            return;
-        }
-        const auto bounds = retrieved->GetBounds();
-        const int32_t cx = bounds.GetCenterX();
-        const int32_t cy = bounds.GetCenterY();
-        switch (op) {
-            case WidgetOp::CLICK:
-                InjectGenericClick(PointerOp::CLICK_P, {cx, cy}, *uiController_, opt);
-                break;
-            case WidgetOp::LONG_CLICK:
-                InjectGenericClick(PointerOp::LONG_CLICK_P, {cx, cy}, *uiController_, opt);
-                break;
-            case WidgetOp::DOUBLE_CLICK:
-                InjectGenericClick(PointerOp::DOUBLE_CLICK_P, {cx, cy}, *uiController_, opt);
-                break;
-            case WidgetOp::SCROLL_TO_TOP:
-            case WidgetOp::SCROLL_TO_BOTTOM:
-                ScrollToEnd(widget, op == WidgetOp::SCROLL_TO_TOP, opt, error);
-                break;
-        }
-    }
-
-    void UiDriver::InputText(const Widget &widget, string_view text, const UiOpArgs &opt, ApiCallErr &error)
-    {
-        auto retrieved = RetrieveWidget(widget, error);
-        if (retrieved == nullptr || error.code_ != NO_ERROR) {
-            return;
-        }
-        auto origText = retrieved->GetAttr(ATTR_NAMES[UiAttr::TEXT], "");
-        if (origText.empty() && text.empty()) {
-            return;
-        }
-        static constexpr uint32_t focusTimeMs = 500;
-        static constexpr uint32_t typeCharTimeMs = 50;
-        vector<KeyEvent> events;
-        if (!origText.empty()) {
-            for (size_t index = 0; index < origText.size(); index++) {
-                events.emplace_back(KeyEvent {ActionStage::DOWN, 2015, typeCharTimeMs});
-                events.emplace_back(KeyEvent {ActionStage::UP, 2015, 0});
-                events.emplace_back(KeyEvent {ActionStage::DOWN, 2055, typeCharTimeMs});
-                events.emplace_back(KeyEvent {ActionStage::UP, 2055, 0});
-            }
-        }
-        if (!text.empty()) {
-            vector<char> chars(text.begin(), text.end()); // decompose to sing-char input sequence
-            vector<pair<int32_t, int32_t>> keyCodes;
-            for (auto ch : chars) {
-                int32_t code = KEYCODE_NONE;
-                int32_t ctrlCode = KEYCODE_NONE;
-                if (!uiController_->GetCharKeyCode(ch, code, ctrlCode)) {
-                    error = ApiCallErr(USAGE_ERROR, string("Cannot input char ") + ch);
-                    return;
-                }
-                keyCodes.emplace_back(make_pair(code, ctrlCode));
-            }
-            for (auto &pair : keyCodes) {
-                if (pair.second != KEYCODE_NONE) {
-                    events.emplace_back(KeyEvent {ActionStage::DOWN, pair.second, 0});
-                }
-                events.emplace_back(KeyEvent {ActionStage::DOWN, pair.first, typeCharTimeMs});
-                events.emplace_back(KeyEvent {ActionStage::UP, pair.first, 0});
-                if (pair.second != KEYCODE_NONE) {
-                    events.emplace_back(KeyEvent {ActionStage::UP, pair.second, 0});
-                }
-            }
-        }
-        const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY());
-        InjectGenericClick(PointerOp::CLICK_P, center, *uiController_, opt);
-        DelayMs(focusTimeMs); // short delay to ensure focus gaining
-        uiController_->InjectKeyEventSequence(events);
-        events.clear();
-        uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
-    }
-
-    static string TakeScopeUiSnapshot(const WidgetTree &tree, const Widget &root)
-    {
-        stringstream os;
-        TreeSnapshotTaker snapshotTaker(os);
-        tree.DfsTraverseDescendants(snapshotTaker, root);
-        return os.str();
-    }
-
-    unique_ptr<Widget> UiDriver::ScrollSearch(const Widget &widget, const WidgetSelector &selector,
-                                              const UiOpArgs &opt, ApiCallErr &err)
-    {
-        vector<TouchEvent> scrollEvents;
-        bool scrollingUp = true;
-        string prevSnapshot;
-        vector<reference_wrapper<const Widget>> receiver;
-        while (true) {
-            auto scrollWidget = RetrieveWidget(widget, err);
-            if (scrollWidget == nullptr || err.code_ != NO_ERROR) {
-                return nullptr;
-            }
-            selector.Select(*widgetTree_, receiver);
-            if (!receiver.empty()) {
-                return CloneFreeWidget(receiver.at(0), selector);
-            }
-            string snapshot = TakeScopeUiSnapshot(*widgetTree_, *scrollWidget);
-            if (snapshot == prevSnapshot) {
-                // scrolling down to bottom, search completed with failure
-                if (!scrollingUp) {
-                    auto msg = string("Scroll search widget failed: ") + selector.Describe();
-                    LOG_W("%{public}s", msg.c_str());
-                    return nullptr;
-                } else {
-                    // scrolling down to top, change direction
-                    scrollingUp = false;
-                }
-            }
-            prevSnapshot = snapshot;
-            // execute scrolling on the scroll_widget without update UI
-            auto bounds = scrollWidget->GetBounds();
-            if (opt.scrollWidgetDeadZone_ > 0) {
-                // scroll widget from its deadZone maybe unresponsive
-                bounds.top_ += opt.scrollWidgetDeadZone_;
-                bounds.bottom_ -= opt.scrollWidgetDeadZone_;
-            }
-            Point topPoint(bounds.GetCenterX(), bounds.top_), bottomPoint(bounds.GetCenterX(), bounds.bottom_);
-            if (scrollingUp) {
-                InjectGenericSwipe(PointerOp::SWIPE_P, topPoint, bottomPoint, *uiController_, opt);
-            } else {
-                InjectGenericSwipe(PointerOp::SWIPE_P, bottomPoint, topPoint, *uiController_, opt);
-            }
-        }
-    }
-
-    void UiDriver::ScrollToEnd(const Widget &widget, bool scrollUp, const UiOpArgs &opt, ApiCallErr &err)
-    {
-        string prevSnapshot;
-        while (true) {
-            auto scrollWidget = RetrieveWidget(widget, err);
-            if (scrollWidget == nullptr || err.code_ != NO_ERROR) {
-                return;
-            }
-            string snapshot = TakeScopeUiSnapshot(*widgetTree_, *scrollWidget);
-            if (snapshot == prevSnapshot) {
-                return;
-            }
-            prevSnapshot = snapshot;
-            auto bounds = scrollWidget->GetBounds();
-            if (opt.scrollWidgetDeadZone_ > 0) {
-                // scroll widget from its deadZone maybe unresponsive
-                bounds.top_ += opt.scrollWidgetDeadZone_;
-                bounds.bottom_ -= opt.scrollWidgetDeadZone_;
-            }
-            Point topPoint(bounds.GetCenterX(), bounds.top_), bottomPoint(bounds.GetCenterX(), bounds.bottom_);
-            if (scrollUp) {
-                InjectGenericSwipe(PointerOp::SWIPE_P, topPoint, bottomPoint, *uiController_, opt);
-            } else {
-                InjectGenericSwipe(PointerOp::SWIPE_P, bottomPoint, topPoint, *uiController_, opt);
-            }
-        }
-    }
-
-    void UiDriver::DragIntoWidget(const Widget &wa, const Widget &wb, const UiOpArgs &opt, ApiCallErr &err)
-    {
-        auto widgetFrom = RetrieveWidget(wa, err);
-        if (widgetFrom == nullptr || err.code_ != NO_ERROR) {
-            return;
-        }
-        auto widgetTo = RetrieveWidget(wb, err, false);
-        if (widgetTo == nullptr || err.code_ != NO_ERROR) {
-            return;
-        }
-        auto boundsFrom = widgetFrom->GetBounds();
-        auto boundsTo = widgetTo->GetBounds();
-        auto centerFrom = Point(boundsFrom.GetCenterX(), boundsFrom.GetCenterY());
-        auto centerTo = Point(boundsTo.GetCenterX(), boundsTo.GetCenterY());
-        InjectGenericSwipe(PointerOp::DRAG_P, centerFrom, centerTo, *uiController_, opt);
+        InjectKey(key, opt);
     }
 
     void UiDriver::FindWidgets(const WidgetSelector &select, vector<unique_ptr<Widget>> &rev, ApiCallErr &err)
@@ -383,18 +204,6 @@ namespace OHOS::uitest {
         return nullptr;
     }
 
-    unique_ptr<Widget> UiDriver::GetWidgetSnapshot(Widget &widget, ApiCallErr &error)
-    {
-        auto retrieved = RetrieveWidget(widget, error);
-        if (retrieved == nullptr || error.code_ != NO_ERROR) {
-            return nullptr;
-        }
-        auto selector = WidgetSelector(); // dummy
-        auto ptr =  CloneFreeWidget(*retrieved, selector);
-        ptr->SetAttr(DUMMY_ATTRNAME_SELECTION, widget.GetAttr(DUMMY_ATTRNAME_SELECTION, ""));
-        return ptr;
-    }
-
     void UiDriver::DelayMs(uint32_t ms)
     {
         if (ms > 0) {
@@ -402,22 +211,22 @@ namespace OHOS::uitest {
         }
     }
 
-    void UiDriver::PerformClick(PointerOp op, const Point &point, const UiOpArgs &opt, ApiCallErr &err)
+    void UiDriver::PerformClick(TouchOp op, const Point &point, const UiOpArgs &opt, ApiCallErr &err)
     {
         UpdateUi(false, err);
         if (err.code_ != NO_ERROR) {
             return;
         }
-        InjectGenericClick(op, point, *uiController_, opt);
+        InjectClick(op, point, opt);
     }
 
-    void UiDriver::PerformSwipe(PointerOp op, const Point &from, const Point &to, const UiOpArgs &opt, ApiCallErr &err)
+    void UiDriver::PerformSwipe(TouchOp op, const Point &from, const Point &to, const UiOpArgs &opt, ApiCallErr &err)
     {
         UpdateUi(false, err);
         if (err.code_ != NO_ERROR) {
             return;
         }
-        InjectGenericSwipe(op, from, to, *uiController_, opt);
+        InjectSwipe(op, from, to, opt);
     }
 
     void UiDriver::TakeScreenCap(string_view savePath, ApiCallErr &err)
@@ -432,5 +241,40 @@ namespace OHOS::uitest {
         } else {
             LOG_D("ScreenCap saved to %{public}s", savePath.data());
         }
+    }
+
+    unique_ptr<Window> UiDriver::FindWindow(function<bool(const Window &)> matcher, ApiCallErr &err)
+    {
+        UpdateUi(true, err);
+        if (err.code_ != NO_ERROR) {
+            return nullptr;
+        }
+        for (const auto &window : windows_) {
+            if (matcher(window)) {
+                auto clone = make_unique<Window>(0);
+                *clone = window; // copy construct
+                return clone;
+            }
+        }
+        return nullptr;
+    }
+
+    const Window *UiDriver::RetrieveWindow(const Window &window, ApiCallErr &err)
+    {
+        UpdateUi(true, err);
+        if (err.code_ != NO_ERROR) {
+            return nullptr;
+        }
+        for (const auto &win : windows_) {
+            if (win.id_ == window.id_) {
+                return &win;
+            }
+        }
+        stringstream msg;
+        msg << "Window " << window.id_;
+        msg << "dose not exist on current UI! Check if the UI has changed after you got the window object";
+        err = ApiCallErr(WINDOW_LOST, msg.str());
+        LOG_W("%{public}s", err.message_.c_str());
+        return nullptr;
     }
 } // namespace OHOS::uitest

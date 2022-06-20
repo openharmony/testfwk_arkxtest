@@ -75,12 +75,12 @@ namespace OHOS::uitest {
 
     void GenericClick::Decompose(vector<TouchEvent> &recv, const Point &point, const UiOpArgs &options) const
     {
-        DCHECK(type_ >= PointerOp::CLICK_P && type_ <= PointerOp::DOUBLE_CLICK_P);
+        DCHECK(type_ >= TouchOp::CLICK && type_ <= TouchOp::DOUBLE_CLICK_P);
         switch (type_) {
-            case CLICK_P:
+            case CLICK:
                 DecomposeClick(recv, point, options);
                 break;
-            case LONG_CLICK_P:
+            case LONG_CLICK:
                 DecomposeLongClick(recv, point, options);
                 break;
             case DOUBLE_CLICK_P:
@@ -97,8 +97,8 @@ namespace OHOS::uitest {
     void GenericSwipe::Decompose(vector<TouchEvent> &recv, const Point &fromPoint, const Point &toPoint,
                                  const UiOpArgs &options) const
     {
-        DCHECK(type_ >= PointerOp::SWIPE_P && type_ <= PointerOp::DRAG_P);
-        DecomposeComputeSwipe(recv, fromPoint, toPoint, type_ == PointerOp::DRAG_P, options);
+        DCHECK(type_ >= TouchOp::SWIPE && type_ <= TouchOp::DRAG);
+        DecomposeComputeSwipe(recv, fromPoint, toPoint, type_ == TouchOp::DRAG, options);
         for (auto &event:recv) {
             event.flags_ = type_;
         }
