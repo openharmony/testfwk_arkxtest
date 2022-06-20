@@ -15,6 +15,7 @@
 
 #include <sstream>
 #include "ui_driver.h"
+#include "ui_action.h"
 #include "frontend_api_handler.h"
 
 namespace OHOS::uitest {
@@ -390,6 +391,17 @@ namespace OHOS::uitest {
             driver.TriggerKey(key, uiOpArgs, out.exception_);
         };
         server.AddHandler("UiDriver.triggerKey", triggerKey);
+
+        auto triggerCombineKeys = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto key0 = ReadCallArg<int32_t>(in, INDEX_ZERO);
+            auto key1 = ReadCallArg<int32_t>(in, INDEX_ONE);
+            auto key2 = ReadCallArg<int32_t>(in, INDEX_TWO, KEYCODE_NONE);
+            auto keyAction = CombinedKeys(key0, key1, key2);
+            driver.TriggerKey(keyAction, uiOpArgs, out.exception_);
+        };
+        server.AddHandler("UiDriver.triggerCombineKeys", triggerCombineKeys);
     }
 
     static void RegisterUiDriverTocuchOperators()
