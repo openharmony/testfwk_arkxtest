@@ -305,7 +305,7 @@ namespace OHOS::uitest {
     // Represents a UI window on screen.
     class Window : public BackendClass {
     public:
-        explicit Window(int32_t id) : id_(id){};
+        explicit Window(int32_t id) : id_(id) {};
 
         ~Window() override {}
 
