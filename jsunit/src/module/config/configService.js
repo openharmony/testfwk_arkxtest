@@ -13,18 +13,18 @@
  * limitations under the License.
  */
 
-import {ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter} from './Filter'
+import {ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter} from './Filter';
 
 class ConfigService {
     constructor(attr) {
-        this.id = attr.id
-        this.supportAsync = false
-        this.random = false
-        this.filterValid = []
+        this.id = attr.id;
+        this.supportAsync = false;
+        this.random = false;
+        this.filterValid = [];
     }
 
     init(coreContext) {
-        this.coreContext = coreContext
+        this.coreContext = coreContext;
     }
 
     isNormalInteger(str) {
@@ -33,79 +33,79 @@ class ConfigService {
     }
 
     basicParamValidCheck(params) {
-        let size = params.size
+        let size = params.size;
         if (size !== undefined && size !== '' && size !== null) {
-            let sizeArray = ['small', 'medium', 'large']
+            let sizeArray = ['small', 'medium', 'large'];
             if (sizeArray.indexOf(size) === -1) {
-                this.filterValid.push('size:' + size)
+                this.filterValid.push('size:' + size);
             }
         }
-        let level = params.level
+        let level = params.level;
         if (level !== undefined && level !== '' && level !== null) {
-            let levelArray = ['0', '1', '2', '3', '4']
+            let levelArray = ['0', '1', '2', '3', '4'];
             if (levelArray.indexOf(level) === -1) {
-                this.filterValid.push('level:' + level)
+                this.filterValid.push('level:' + level);
             }
         }
-        let testType = params.testType
+        let testType = params.testType;
         if (testType !== undefined && testType !== '' && testType !== null) {
             let testTypeArray = ['function', 'performance', 'power', 'reliability', 'security',
-                'global', 'compatibility', 'user', 'standard', 'safety', 'resilience']
+                'global', 'compatibility', 'user', 'standard', 'safety', 'resilience'];
             if (testTypeArray.indexOf(testType) === -1) {
-                this.filterValid.push('testType:' + testType)
+                this.filterValid.push('testType:' + testType);
             }
         }
     }
 
     filterParamValidCheck(params) {
-        let timeout = params.timeout
+        let timeout = params.timeout;
         if (timeout !== undefined && timeout !== '' && timeout !== null) {
             if (!this.isNormalInteger(timeout)) {
-                this.filterValid.push('timeout:' + timeout)
+                this.filterValid.push('timeout:' + timeout);
             }
         }
 
         if (params.dryRun !== undefined && params.dryRun !== 'true' && params.dryRun !== 'false') {
-            this.filterValid.push('dryRun:' + params.dryRun)
+            this.filterValid.push('dryRun:' + params.dryRun);
         }
 
-        let classes = params.class
-        let nameRule = /^[A-Za-z]{1}[\w#,.]*$/
+        let classes = params.class;
+        let nameRule = /^[A-Za-z]{1}[\w#,.]*$/;
         if (classes !== undefined && classes !== '' && classes !== null) {
-            let classArray = classes.split(',')
+            let classArray = classes.split(',');
             for (let className of classArray) {
                 if (!className.match(nameRule)) {
-                    this.filterValid.push('class:' + classes)
-                    break
+                    this.filterValid.push('class:' + classes);
+                    break;
                 }
             }
         }
-        let notClasses = params.notClass
+        let notClasses = params.notClass;
         if (notClasses !== undefined && notClasses !== '' && notClasses !== null) {
-            let notClassArray = notClasses.split(',')
+            let notClassArray = notClasses.split(',');
             for (let notClassName of notClassArray) {
                 if (!notClassName.match(nameRule)) {
-                    this.filterValid.push('notClass:' + notClasses)
-                    break
+                    this.filterValid.push('notClass:' + notClasses);
+                    break;
                 }
             }
         }
     }
 
     setConfig(params) {
-        this.basicParamValidCheck(params)
-        this.filterParamValidCheck(params)
+        this.basicParamValidCheck(params);
+        this.filterParamValidCheck(params);
         try {
-            this.class = params.class
-            this.notClass = params.notClass
-            this.flag = params.flag || {flag: false}
-            this.suite = params.suite
-            this.itName = params.itName
-            this.filter = params.filter
-            this.testType = params.testType
-            this.level = params.level
-            this.size = params.size
-            this.timeout = params.timeout
+            this.class = params.class;
+            this.notClass = params.notClass;
+            this.flag = params.flag || {flag: false};
+            this.suite = params.suite;
+            this.itName = params.itName;
+            this.filter = params.filter;
+            this.testType = params.testType;
+            this.level = params.level;
+            this.size = params.size;
+            this.timeout = params.timeout;
             this.filterParam = {
                 testType: {
                     'function': 1,
@@ -132,129 +132,132 @@ class ConfigService {
                     'medium': 1 << 17,
                     'large': 1 << 18,
                 }
-            }
-            this.parseParams()
+            };
+            this.parseParams();
         } catch (err) {
-            this.filter = 0
-            this.flag = false
-            this.suite = null
-            this.itName = null
-            this.testType = null
-            this.level = null
-            this.size = null
-            this.class = null
-            this.notClass = null
-            this.timeout = null
+            this.filter = 0;
+            this.flag = false;
+            this.suite = null;
+            this.itName = null;
+            this.testType = null;
+            this.level = null;
+            this.size = null;
+            this.class = null;
+            this.notClass = null;
+            this.timeout = null;
         }
     }
 
     parseParams() {
         if (this.filter != null) {
-            return
+            return;
         }
-        let testTypeFilter = 0
-        let sizeFilter = 0
-        let levelFilter = 0
+        let testTypeFilter = 0;
+        let sizeFilter = 0;
+        let levelFilter = 0;
         if (this.testType != null) {
             testTypeFilter = this.testType.split(',')
                 .map(item => this.filterParam.testType[item] || 0)
-                .reduce((pre, cur) => pre | cur, 0)
+                .reduce((pre, cur) => pre | cur, 0);
         }
         if (this.level != null) {
             levelFilter = this.level.split(',')
                 .map(item => this.filterParam.level[item] || 0)
-                .reduce((pre, cur) => pre | cur, 0)
+                .reduce((pre, cur) => pre | cur, 0);
         }
         if (this.size != null) {
             sizeFilter = this.size.split(',')
                 .map(item => this.filterParam.size[item] || 0)
-                .reduce((pre, cur) => pre | cur, 0)
+                .reduce((pre, cur) => pre | cur, 0);
         }
-        this.filter = testTypeFilter | sizeFilter | levelFilter
-        console.info('filter params:' + this.filter)
+        this.filter = testTypeFilter | sizeFilter | levelFilter;
+        console.info('filter params:' + this.filter);
     }
 
     isCurrentSuite(description) {
         if (this.suite !== undefined && this.suite !== '' && this.suite !== null) {
-            let suiteArray = this.suite.split(',')
+            let suiteArray = this.suite.split(',');
             return suiteArray.indexOf(description) !== -1;
         }
-        return false
+        return false;
     }
 
     filterSuite(currentSuiteName) {
-        let filterArray = []
+        let filterArray = [];
         if (this.suite !== undefined && this.suite !== '' && this.suite !== null) {
-            filterArray.push(new SuiteAndItNameFilter(currentSuiteName, '', this.suite))
+            filterArray.push(new SuiteAndItNameFilter(currentSuiteName, '', this.suite));
         }
         if (this.class !== undefined && this.class !== '' && this.class !== null) {
-            filterArray.push(new ClassFilter(currentSuiteName, '', this.class))
+            filterArray.push(new ClassFilter(currentSuiteName, '', this.class));
         }
         if (this.notClass !== undefined && this.notClass !== '' && this.notClass !== null) {
-            filterArray.push(new NotClassFilter(currentSuiteName, '', this.notClass))
+            filterArray.push(new NotClassFilter(currentSuiteName, '', this.notClass));
         }
 
-        let result = filterArray.map(item => item.filterSuite()).reduce((pre, cur) => pre || cur, false)
-        return result
+        let result = filterArray.map(item => item.filterSuite()).reduce((pre, cur) => pre || cur, false);
+        return result;
     }
 
     filterDesc(currentSuiteName, desc, fi, coreContext) {
-        let filterArray = []
+        let filterArray = [];
         if (this.itName !== undefined && this.itName !== '' && this.itName !== null) {
-            filterArray.push(new SuiteAndItNameFilter(currentSuiteName, desc, this.itName))
+            filterArray.push(new SuiteAndItNameFilter(currentSuiteName, desc, this.itName));
         }
         if (this.class !== undefined && this.class !== '' && this.class !== null) {
-            filterArray.push(new ClassFilter(currentSuiteName, desc, this.class))
+            filterArray.push(new ClassFilter(currentSuiteName, desc, this.class));
         }
         if (this.notClass !== undefined && this.notClass !== '' && this.notClass !== null) {
-            filterArray.push(new NotClassFilter(currentSuiteName, desc, this.notClass))
+            filterArray.push(new NotClassFilter(currentSuiteName, desc, this.notClass));
         }
         if (typeof (this.filter) !== 'undefined' && this.filter !== 0 && fi !== 0) {
-            filterArray.push(new TestTypesFilter('', '', fi, this.filter))
+            filterArray.push(new TestTypesFilter('', '', fi, this.filter));
         }
-        let result = filterArray.map(item => item.filterIt()).reduce((pre, cur) => pre || cur, false)
-        return result
+        let result = filterArray.map(item => item.filterIt()).reduce((pre, cur) => pre || cur, false);
+        return result;
     }
 
     isRandom() {
-        return this.random || false
+        return this.random || false;
     }
 
     setSupportAsync(value) {
-        this.supportAsync = value
+        this.supportAsync = value;
     }
 
     isSupportAsync() {
-        return this.supportAsync
+        return this.supportAsync;
     }
 
     translateParams(parameters) {
         const keySet = new Set([
             '-s class', '-s notClass', '-s suite', '-s itName',
             '-s level', '-s testType', '-s size', '-s timeout',
-            '-s dryRun'
-        ])
-        let targetParams = {}
+            '-s dryRun', 'class', 'notClass', 'suite', 'itName',
+            'level', 'testType', 'size', 'timeout', 'dryRun'
+        ]);
+        let targetParams = {};
         for (const key in parameters) {
             if (keySet.has(key)) {
-                targetParams[key.substring(3)] = parameters[key]
+                var newKey = key.replace("-s ", "");
+                targetParams[newKey] = parameters[key];
             }
         }
-        return targetParams
+        return targetParams;
     }
     translateParamsToString(parameters) {
         const keySet = new Set([
             '-s class', '-s notClass', '-s suite', '-s itName',
             '-s level', '-s testType', '-s size', '-s timeout',
-            '-s dryRun'
-        ])
+            '-s dryRun', 'class', 'notClass', 'suite', 'itName',
+            'level', 'testType', 'size', 'timeout', 'dryRun'
+        ]);
         let targetParams = '';
         for (const key in parameters) {
             if (keySet.has(key)) {
-                targetParams += ' ' + key + ' ' + parameters[key]
+                targetParams += ' ' + key + ' ' + parameters[key];
             }
         }
-        return targetParams.trim()
+        return targetParams.trim();
     }
 
     execute() {
@@ -263,4 +266,4 @@ class ConfigService {
 
 export {
     ConfigService
-}
+};
