@@ -120,7 +120,249 @@ export default async function abilityTest() {
 ```
 ### 使用方式
 
-  单元测试框架以npm包（hypium）形式发布至官网([https://www.npmjs.com/](https://www.npmjs.com/))，集成至sdk，开发者可以下载Deveco Studio使用，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
+   单元测试框架以npm包（hypium）形式发布至华为资源官网([https://repo.harmonyos.com/](https://repo.harmonyos.com/))，集成至sdk，开发者可以下载Deveco Studio使用，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
+
+### Hypium单元测试框架Mock能力
+
+目前开放函数级mock能力，对定义的函数进行mock然后修改函数的行为，让其返回我们想要指定的值或者某种动作行为，然后用断言进行验证，检查mock后的函数是否符合预期结果执行。
+
+
+```
+-----jsunit  单元测试框架
+        |------mock   Mock功能模块
+```
+
+-  **API列表：**
+
+| No. | 调用方 | API | 功能说明 |
+| --- | --- | --- | --- |
+| 1 | mockKit对象 |  mockFunc( f：founction )：founction() |     对定义的方法进行mock然后修改方法的行为,返回一个被修改后的方法 |
+| 2 | func  | when(mockedfunc：function) | 对传入后方法做检查，检查是否被mock并标记过，返回的是一个方法声明 |
+| 3 | func  | afterReturn（x：value） | 设定预期返回一个自定义的值value，比如某个字符串 |
+| 4 | func  | afterReturnNothing（） | 设定预期没有返回值，即 undefine |
+| 5 | func  | afterAction（x：action） | 设定预期返回一个函数执行的操作 |
+| 6 | func  | afterThrow（x：msg） | 设定预期抛出异常，并指定异常msg |
+| 7 | mockKit对象  | clear（） | 用例执行完毕后，进行数据mocker对象的清理，清理后无法再成功执行用例 |
+| 8 | func接收的参数  | any | 设定用户传任何类型参数（undefine和null除外），执行的结果都是预期的值 |
+| 9 | func接收的参数  | anyString | 设定用户传任何字符串参数，执行的结果都是预期的值 |
+| 10 | func接收的参数  | anyBoolean | 设定用户传任何boolean类型参数，执行的结果都是预期的值 |
+| 11 | func接收的参数  | anyFounction | 设定用户传任何function类型参数，执行的结果都是预期的值 |
+| 12 | func接收的参数  | anyNumber | 设定用户传任何数字类型参数，执行的结果都是预期的值 |
+| 13 | func接收的参数  | anyObj | 设定用户传任何对象类型参数，执行的结果都是预期的值 |
+| 14 | func接收的参数  | matchRegexs(Regex) | 设定用户传任何正则表达式类型参数Regex，执行的结果都是预期的值 |
+
+-  **使用示例：**
+
+用户可以通过一下方式进行引入mock模块进行测试用例编写：
+
+```javascript
+//必须引入的mock能力模块api
+import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
+//根据自己用例需要引入断言能力api
+import {describe, expect} from '@ohos/hypium'
+```
+**示例1：afterReturn 的使用**
+   
+```javascript
+import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
+import {describe, expect} from '@ohos/hypium'
+
+export default function ActsAbilityTest() {
+    describe('ActsAbilityTest', function () {
+        it('testMockfunc', 0, function () {
+            console.info("it1 begin")
+            
+            //1.创建一个mock能力的对象MockKit
+            let mocker = new MockKit();
+            
+            //2.定义需要被mock的方法func
+            var func = function() {
+                return "test";
+            }
+            
+            //3.把api mockFunc定义给mocker对象
+            mocker.mockFunc = mockFunc;
+            
+            //4.进行mock操作
+            let mockfunc = mocker.mockFunc(func);
+            when(mockfunc)('test').afterReturn('1');
+
+            //5.对mock后的函数进行断言，看是否符合预期
+            //执行成功案例，参数为'test'
+            expect(mockfunc('test')).assertEqual('1');//执行通过
+            
+            //执行失败案例，参数为 'abc'
+            expect(mockfunc('abc')).assertEqual('1');//执行失败
+        })
+    })
+}
+```
+- **特别注意：**
+`when(mockfunc)('test').afterReturn('1');`
+这句代码中的`('test')`是mock后的函数需要传递的匹配参数，目前支持一个参数
+`afterReturn('1')`是用户需要预期返回的结果。
+有且只有在参数是`('test')`的时候，执行的结果才是用户自定义的预期结果。
+
+**示例2： afterReturnNothing 的使用**
+
+```javascript
+import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
+import {describe, expect} from '@ohos/hypium'
+
+export default function ActsAbilityTest() {
+    describe('ActsAbilityTest', function () {
+        it('testMockfunc', 0, function () {
+            console.info("it1 begin")
+            
+            //1.创建一个mock能力的对象MockKit
+            let mocker = new MockKit();
+            
+            //2.定义需要被mock的方法func
+            var func = function() {
+                return "test";
+            }
+            
+            //3.把api mockFunc定义给mocker对象
+            mocker.mockFunc = mockFunc;
+            
+            //4.进行mock操作
+            let mockfunc = mocker.mockFunc(func);
+            //根据自己需求进行选择 执行完毕后的动作，比如这里我选择afterReturnNothing();即不返回任何值
+            when(mockfunc)('test').afterReturnNothing();
+
+            //5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+           
+             //执行成功案例，参数为'test'
+            expect(mockfunc('test')).assertUndefined();//执行通过
+            
+            //执行失败案例，参数传为 123
+            expect(mockfunc(123)).assertUndefined();//执行失败
+        })
+    })
+```
+
+**示例3： 设定参数类型为any ，即接受任何参数（undefine和null除外）的使用**
+
+```javascript
+//注意需要引入ArgumentMatchers类，即参数匹配器，any系列同理
+import {any} from '@ohos/hypium/src/module/mock/ArgumentMatchers'
+```
+
+
+```javascript
+import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
+import {any} from '@ohos/hypium/src/module/mock/ArgumentMatchers'
+import {describe, expect} from '@ohos/hypium'
+
+export default function ActsAbilityTest() {
+    describe('ActsAbilityTest', function () {
+        it('testMockfunc', 0, function () {
+            console.info("it1 begin")
+            
+            //1.创建一个mock能力的对象MockKit
+            let mocker = new MockKit();
+            
+            //2.定义需要被mock的方法func
+            var func = function() {
+                return "test";
+            }
+            
+            //3.把api mockFunc定义给mocker对象
+            mocker.mockFunc = mockFunc;
+            
+            //4.进行mock操作
+            let mockfunc = mocker.mockFunc(func);
+            //根据自己需求进行选择 
+            when(mockfunc)(any).afterReturn('1');
+            
+            //5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+            //执行成功的案例1，传参为字符串类型
+            expect(mockfunc('test')).afterReturn('1');//用例执行通过。
+             //执行成功的案例2，传参为数字类型123
+            //expect(mockfunc(123)).afterReturn('1');//用例执行通过。
+             //执行成功的案例3，传参为boolean类型true
+            //expect(mockfunc(true)).afterReturn('1');//用例执行通过。
+            
+            //执行失败的案例，传参为数字类型空
+            //expect(mockfunc()).afterReturn('1');//用例执行失败。
+        })
+    })
+```
+
+**示例4： 设定参数类型为anyString,anyBoolean等 的使用**
+```javascript
+import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
+import { anyString} from '@ohos/hypium/src/module/mock/ArgumentMatchers'
+import {describe, expect} from '@ohos/hypium'
+
+export default function ActsAbilityTest() {
+    describe('ActsAbilityTest', function () {
+        it('testMockfunc', 0, function () {
+            console.info("it1 begin")
+            
+            //1.创建一个mock能力的对象MockKit
+            let mocker = new MockKit();
+            
+            //2.定义需要被mock的方法func
+            var func = function() {
+                return "test";
+            }
+            
+            //3.把api mockFunc定义给mocker对象
+            mocker.mockFunc = mockFunc;
+            
+            //4.进行mock操作
+            let mockfunc = mocker.mockFunc(func);
+            //根据自己需求进行选择 
+            when(mockfunc)(anyString).afterReturn('1');
+            
+            //5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+            //执行成功的案例，传参为字符串类型
+            expect(mockfunc('test')).afterReturn('1');//用例执行通过。
+            
+            //执行失败的案例，传参为数字类型
+            //expect(mockfunc(123)).afterReturn('1');//用例执行失败。
+        })
+    })
+```
+
+**示例5： 设定参数类型为matchRegexs（Regex）等 的使用**
+```javascript
+import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
+import { matchRegexs} from '@ohos/hypium/src/module/mock/ArgumentMatchers'
+import {describe, expect} from '@ohos/hypium'
+
+export default function ActsAbilityTest() {
+    describe('ActsAbilityTest', function () {
+        it('testMockfunc', 0, function () {
+            console.info("it1 begin")
+            
+            //1.创建一个mock能力的对象MockKit
+            let mocker = new MockKit();
+            
+            //2.定义需要被mock的方法func
+            var func = function() {
+                return "test";
+            }
+            
+            //3.把api mockFunc定义给mocker对象
+            mocker.mockFunc = mockFunc;
+            
+            //4.进行mock操作
+            let mockfunc = mocker.mockFunc(func);
+            //根据自己需求进行选择，这里假设匹配正则，且正则为/123456/
+            when(mockfunc)(matchRegexs(/123456/)).afterReturn('1');
+            
+            //5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+            //执行成功的案例，传参为字符串 比如 '1234567898'
+            //expect(mockfunc('1234567898')).afterReturn('1');//用例执行通过。
+            //因为字符串 '1234567898'可以和正则/123456/匹配上
+            
+            //执行失败的案例，传参为字符串'1234'
+            //expect(mockfunc('1234')).afterReturn('1');//用例执行失败。反之
+        })
+    })
+```
 
 ## Ui测试框架功能特性
 
