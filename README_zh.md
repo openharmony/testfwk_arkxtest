@@ -120,7 +120,7 @@ export default async function abilityTest() {
 ```
 ### 使用方式
 
-   单元测试框架以npm包（hypium）形式发布至官网([https://repo.harmonyos.com/](https://repo.harmonyos.com/))，集成至sdk，开发者可以下载Deveco Studio使用，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
+   单元测试框架以npm包（hypium）形式发布至华为资源官网([https://repo.harmonyos.com/](https://repo.harmonyos.com/))，集成至sdk，开发者可以下载Deveco Studio使用，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
 
 ### Hypium单元测试框架Mock能力
 
