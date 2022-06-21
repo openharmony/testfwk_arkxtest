@@ -14,10 +14,10 @@
  */
 
 function assertUndefined(actualValue) {
-  return {
-    pass: undefined === actualValue,
-    message: 'expect Undefined, actualValue is ' + actualValue
-  }
+    return {
+        pass: undefined === actualValue,
+        message: 'expect Undefined, actualValue is ' + actualValue
+    };
 }
 
-export default assertUndefined
+export default assertUndefined;

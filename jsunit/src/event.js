@@ -14,81 +14,81 @@
  */
 
 class SpecEvent {
-  constructor(attr) {
-    this.id = attr.id
-    this.coreContext = attr.context
-    this.eventMonitors = []
-  }
-
-  subscribeEvent(service) {
-    this.eventMonitors.push(service)
-  }
-
-  specStart() {
-    for (let monitor in this.eventMonitors) {
-      this.eventMonitors[monitor]['specStart']()
+    constructor(attr) {
+        this.id = attr.id;
+        this.coreContext = attr.context;
+        this.eventMonitors = [];
     }
-  }
 
-  specDone() {
-    for (const monitor in this.eventMonitors) {
-      this.eventMonitors[monitor]['specDone']()
+    subscribeEvent(service) {
+        this.eventMonitors.push(service);
     }
-  }
+
+    specStart() {
+        for (let monitor in this.eventMonitors) {
+            this.eventMonitors[monitor]['specStart']();
+        }
+    }
+
+    specDone() {
+        for (const monitor in this.eventMonitors) {
+            this.eventMonitors[monitor]['specDone']();
+        }
+    }
 }
 
 class SuiteEvent {
-  constructor(attr) {
-    this.id = attr.id
-    this.suiteContext = attr.coreContext
-    this.eventMonitors = []
-  }
-
-  subscribeEvent(service) {
-    this.eventMonitors.push(service)
-  }
-
-  suiteStart() {
-    for (let monitor in this.eventMonitors) {
-      this.eventMonitors[monitor]['suiteStart']()
+    constructor(attr) {
+        this.id = attr.id;
+        this.suiteContext = attr.coreContext;
+        this.eventMonitors = [];
     }
-  }
 
-  suiteDone() {
-    for (let monitor in this.eventMonitors) {
-      this.eventMonitors[monitor]['suiteDone']()
+    subscribeEvent(service) {
+        this.eventMonitors.push(service);
     }
-  }
+
+    suiteStart() {
+        for (let monitor in this.eventMonitors) {
+            this.eventMonitors[monitor]['suiteStart']();
+        }
+    }
+
+    suiteDone() {
+        for (let monitor in this.eventMonitors) {
+            this.eventMonitors[monitor]['suiteDone']();
+        }
+    }
 }
 
 class TaskEvent {
-  constructor(attr) {
-    this.id = attr.id
-    this.coreContext = attr.coreContext
-    this.eventMonitors = []
-  }
-
-  subscribeEvent(service) {
-    this.eventMonitors.push(service)
-  }
-
-  taskStart() {
-    for (let monitor in this.eventMonitors) {
-      this.eventMonitors[monitor]['taskStart']()
+    constructor(attr) {
+        this.id = attr.id;
+        this.coreContext = attr.coreContext;
+        this.eventMonitors = [];
     }
-  }
 
-  taskDone() {
-    for (let monitor in this.eventMonitors) {
-      this.eventMonitors[monitor]['taskDone']()
+    subscribeEvent(service) {
+        this.eventMonitors.push(service);
     }
-  }
 
-  incorrectFormat() {
-    for (let monitor in this.eventMonitors) {
-      this.eventMonitors[monitor]['incorrectFormat']()
+    taskStart() {
+        for (let monitor in this.eventMonitors) {
+            this.eventMonitors[monitor]['taskStart']();
+        }
     }
-  }
+
+    taskDone() {
+        for (let monitor in this.eventMonitors) {
+            this.eventMonitors[monitor]['taskDone']();
+        }
+    }
+
+    incorrectFormat() {
+        for (let monitor in this.eventMonitors) {
+            this.eventMonitors[monitor]['incorrectFormat']();
+        }
+    }
 }
 
-export { SpecEvent, TaskEvent, SuiteEvent }
+export {SpecEvent, TaskEvent, SuiteEvent};

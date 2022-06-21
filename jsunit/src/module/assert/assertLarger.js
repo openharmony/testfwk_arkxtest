@@ -14,10 +14,10 @@
  */
 
 function assertLarger(actualValue, expected) {
-  return {
-    pass: actualValue > expected[0],
-    message: actualValue + ' is not larger than ' + expected[0]
-  }
+    return {
+        pass: actualValue > expected[0],
+        message: actualValue + ' is not larger than ' + expected[0]
+    };
 }
 
-export default assertLarger
+export default assertLarger;

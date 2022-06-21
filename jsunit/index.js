@@ -13,87 +13,87 @@
  * limitations under the License.
  */
 
-import Core from './src/core'
-import {DEFAULT, TestType, Size, Level} from './src/Constant'
-import DataDriver from './src/module/config/DataDriver'
-import ExpectExtend from './src/module/assert/ExpectExtend'
-import OhReport from './src/module/report/OhReport'
-import SysTestKit from './src/module/kit/SysTestKit'
-import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from './src/interface'
+import Core from './src/core';
+import {DEFAULT, TestType, Size, Level} from './src/Constant';
+import DataDriver from './src/module/config/DataDriver';
+import ExpectExtend from './src/module/assert/ExpectExtend';
+import OhReport from './src/module/report/OhReport';
+import SysTestKit from './src/module/kit/SysTestKit';
+import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from './src/interface';
 
 function dryRun(core, testParameters, abilityDelegator) {
     if (testParameters['dryRun'] === 'true') {
-        let testSuitesObj = {}
-        let suitesArray = []
-        const suiteService = core.getDefaultService('suite')
+        let testSuitesObj = {};
+        let suitesArray = [];
+        const suiteService = core.getDefaultService('suite');
         for (const suiteItem of suiteService.rootSuite.childSuites) {
-            let itArray = []
-            let suiteName = suiteItem['description']
+            let itArray = [];
+            let suiteName = suiteItem['description'];
             for (const itItem of suiteItem['specs']) {
-                itArray.push({'itName': itItem['description']})
+                itArray.push({'itName': itItem['description']});
             }
-            let obj = {}
-            obj[suiteName] = itArray
-            suitesArray.push(obj)
+            let obj = {};
+            obj[suiteName] = itArray;
+            suitesArray.push(obj);
         }
-        testSuitesObj['suites'] = suitesArray
+        testSuitesObj['suites'] = suitesArray;
 
-        let strJson = JSON.stringify(testSuitesObj)
-        let strLen = strJson.length
-        let maxLen = 500
-        let maxCount = Math.floor(strLen / maxLen)
+        let strJson = JSON.stringify(testSuitesObj);
+        let strLen = strJson.length;
+        let maxLen = 500;
+        let maxCount = Math.floor(strLen / maxLen);
 
         for (let count = 0; count <= maxCount; count++) {
-            abilityDelegator.print(strJson.substring(count * maxLen, (count + 1) * maxLen))
+            abilityDelegator.print(strJson.substring(count * maxLen, (count + 1) * maxLen));
         }
-        console.info('dryRun print success')
-        abilityDelegator.finishTest('dry run finished!!!', 0, () => { })
-        return true
+        console.info('dryRun print success');
+        abilityDelegator.finishTest('dry run finished!!!', 0, () => { });
+        return true;
     }
-    return false
+    return false;
 }
 
 class Hypium {
     static setData(data) {
-        const core = Core.getInstance()
-        const dataDriver = new DataDriver({data})
-        core.addService('dataDriver', dataDriver)
+        const core = Core.getInstance();
+        const dataDriver = new DataDriver({data});
+        core.addService('dataDriver', dataDriver);
     }
 
     static hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite) {
-        const core = Core.getInstance()
+        const core = Core.getInstance();
         const expectExtend = new ExpectExtend({
             'id': 'extend'
-        })
-        core.addService('expect', expectExtend)
+        });
+        core.addService('expect', expectExtend);
         const ohReport = new OhReport({
             'delegator': abilityDelegator
-        })
-        SysTestKit.delegator = abilityDelegator
-        core.addService('report', ohReport)
-        core.init()
-        core.subscribeEvent('spec', ohReport)
-        core.subscribeEvent('suite', ohReport)
-        core.subscribeEvent('task', ohReport)
-        const configService = core.getDefaultService('config')
-        let testParameters = configService.translateParams(abilityDelegatorArguments.parameters)
-        console.info('parameters:' + JSON.stringify(testParameters))
-        configService.setConfig(testParameters)
-        testsuite()
+        });
+        SysTestKit.delegator = abilityDelegator;
+        core.addService('report', ohReport);
+        core.init();
+        core.subscribeEvent('spec', ohReport);
+        core.subscribeEvent('suite', ohReport);
+        core.subscribeEvent('task', ohReport);
+        const configService = core.getDefaultService('config');
+        let testParameters = configService.translateParams(abilityDelegatorArguments.parameters);
+        console.info('parameters:' + JSON.stringify(testParameters));
+        configService.setConfig(testParameters);
+        testsuite();
         if (dryRun(core, testParameters, abilityDelegator)) {
-            return
+            return;
         }
         if (Object.prototype.hasOwnProperty.call(globalThis, 'setupUiTestEnvironment')) {
             globalThis.setupUiTestEnvironment().then(() => {
-                console.info('UiTestKit::after run uitest setup, start run testcases')
-                core.execute()
+                console.info('UiTestKit::after run uitest setup, start run testcases');
+                core.execute();
             }).catch((error) => {
-                console.error('UiTestKit:: call setupUiTestEnvironment failure:' + error)
-                core.execute()
-            })
+                console.error('UiTestKit:: call setupUiTestEnvironment failure:' + error);
+                core.execute();
+            });
         } else {
-            console.info('UiTestKit:: no need to setup uitest, start run testcases')
-            core.execute()
+            console.info('UiTestKit:: no need to setup uitest, start run testcases');
+            core.execute();
         }
     }
 }
@@ -110,4 +110,4 @@ export {
     OhReport,
     SysTestKit,
     describe, beforeAll, beforeEach, afterEach, afterAll, it, expect
-}
+};
