@@ -43,7 +43,7 @@ arkXtest
 示例代码：
 
 ```javascript
-import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from 'hypium/index'
+import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium'
 import demo from '@ohos.bundle'
 
 export default async function abilityTest() {
@@ -94,7 +94,7 @@ export default async function abilityTest() {
 示例代码：
 
 ```javascript
-import { describe, it, expect } from 'hypium/index'
+import { describe, it, expect } from '@ohos/hypium'
 export default async function abilityTest() {
   describe('assertClose', function () {
     it('assertBeClose success', 0, function () {
@@ -120,11 +120,11 @@ export default async function abilityTest() {
 ```
 ### 使用方式
 
-   单元测试框架以npm包（hypium）形式发布至华为资源官网([https://repo.harmonyos.com/](https://repo.harmonyos.com/))，集成至sdk，开发者可以下载Deveco Studio使用，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
+单元测试框架以npm包（hypium）形式发布至[服务组件官网](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
 
-### Hypium单元测试框架Mock能力
+### 单元测试框架Mock能力
 
-目前开放函数级mock能力，对定义的函数进行mock然后修改函数的行为，让其返回我们想要指定的值或者某种动作行为，然后用断言进行验证，检查mock后的函数是否符合预期结果执行。
+目前支持函数级mock能力，对定义的函数进行mock后修改函数的行为，使其返回指定的值或者执行某种动作。
 
 
 ```
@@ -136,13 +136,13 @@ export default async function abilityTest() {
 
 | No. | 调用方 | API | 功能说明 |
 | --- | --- | --- | --- |
-| 1 | mockKit对象 |  mockFunc( f：founction )：founction() |     对定义的方法进行mock然后修改方法的行为,返回一个被修改后的方法 |
+| 1 | mockKit对象 |  mockFunc( f：founction )：founction() |    对定义的方法进行mock后修改方法的行为,返回一个被修改后的方法 |
 | 2 | func  | when(mockedfunc：function) | 对传入后方法做检查，检查是否被mock并标记过，返回的是一个方法声明 |
-| 3 | func  | afterReturn（x：value） | 设定预期返回一个自定义的值value，比如某个字符串 |
-| 4 | func  | afterReturnNothing（） | 设定预期没有返回值，即 undefine |
-| 5 | func  | afterAction（x：action） | 设定预期返回一个函数执行的操作 |
-| 6 | func  | afterThrow（x：msg） | 设定预期抛出异常，并指定异常msg |
-| 7 | mockKit对象  | clear（） | 用例执行完毕后，进行数据mocker对象的清理，清理后无法再成功执行用例 |
+| 3 | func  | afterReturn(x：value) | 设定预期返回一个自定义的值value，比如某个字符串 |
+| 4 | func  | afterReturnNothing() | 设定预期没有返回值，即 undefine |
+| 5 | func  | afterAction(x：action) | 设定预期返回一个函数执行的操作 |
+| 6 | func  | afterThrow(x：msg) | 设定预期抛出异常，并指定异常msg |
+| 7 | mockKit对象  | clear() | 用例执行完毕后，进行数据mocker对象的清理，清理后无法再成功执行用例 |
 | 8 | func接收的参数  | any | 设定用户传任何类型参数（undefine和null除外），执行的结果都是预期的值 |
 | 9 | func接收的参数  | anyString | 设定用户传任何字符串参数，执行的结果都是预期的值 |
 | 10 | func接收的参数  | anyBoolean | 设定用户传任何boolean类型参数，执行的结果都是预期的值 |
@@ -162,7 +162,7 @@ import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
 import {describe, expect} from '@ohos/hypium'
 ```
 **示例1：afterReturn 的使用**
-   
+
 ```javascript
 import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
 import {describe, expect} from '@ohos/hypium'
@@ -388,7 +388,7 @@ import {UiDriver,BY,UiComponent,MatchPattern} from '@ohos.uitest'
 在测试用例文件中import `By/UiDriver/UiComponent`类，然后调用API接口编写测试用例。
 
 ```javascript
-import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from 'hypium/index'
+import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '@ohos/hypium'
 import {BY, UiDriver, UiComponent, MatchPattern} from '@ohos.uitest'
 
 export default async function abilityTest() {
