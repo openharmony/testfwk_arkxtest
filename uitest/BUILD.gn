@@ -71,8 +71,8 @@ ohos_executable("uitest_server") {
   deps = [ ":uitest_core" ]
 
   deps += [
-    "//foundation/ability/ability_runtime/frameworks/kits/appkit:app_context",
-    "//foundation/ability/ability_runtime/frameworks/kits/appkit:appkit_native",
+    "//foundation/ability/ability_runtime/frameworks/native/appkit:app_context",
+    "//foundation/ability/ability_runtime/frameworks/native/appkit:appkit_native",
   ]
 
   external_deps = [ "accessibility:accessibleability" ]
