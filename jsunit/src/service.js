@@ -520,12 +520,12 @@ class ExpectService {
         return {
             assertTrue: function (actualValue) {
                 return {
-                    pass: actualValue === true
+                    pass: (actualValue) === true
                 };
             },
             assertEqual: function (actualValue, args) {
                 return {
-                    pass: actualValue === args[0],
+                    pass: (actualValue) === args[0],
                     expectValue: args[0]
                 };
             },
