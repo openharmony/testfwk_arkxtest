@@ -107,20 +107,21 @@ namespace OHOS::uitest {
 
     TransactionClientImpl::~TransactionClientImpl() {};
 
-    static constexpr uint64_t WAIT_CONNECTION_TIMEOUT_MS = 1000;
+    static constexpr uint64_t WAIT_CONNECTION_TIMEOUT_MS = 5000;
 
     bool TransactionClientImpl::Initialize()
     {
         if (!Transactor::Initialize()) {
             return false;
         }
-        // schedule connection-checking with auto-handshaking, and wait-for first interaction established
-        transceiver_->ScheduleCheckConnection(true);
+        // emit handshake and wait-for first interaction established
         LOG_I("Start checking CS-interaction");
         if (!transceiver_->EnsureConnectionAlive(WAIT_CONNECTION_TIMEOUT_MS)) {
             LOG_E("Wait CS-interaction timed out in %{public}llu ms", (unsigned long long)WAIT_CONNECTION_TIMEOUT_MS);
             return false;
         }
+        // schedule connection-checking with auto-handshaking
+        transceiver_->ScheduleCheckConnection(true);
         LOG_I("Check CS-interaction succeed");
         return true;
     }
