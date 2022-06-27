@@ -15,8 +15,8 @@
 
 function assertNull(actualValue) {
     return {
-        pass: actualValue === null,
-        message: 'expect null, actualValue is ' + actualValue
+        pass: (actualValue) === null,
+        message: 'expect null, actualValue is ' + (actualValue)
     };
 }
 

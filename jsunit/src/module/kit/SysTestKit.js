@@ -25,16 +25,16 @@ class SysTestKit {
     static actionStart(tag) {
         console.info(JSON.stringify(tag));
         var message = '\n' + 'OHOS_REPORT_ACTIONSTART: ' + JSON.stringify(tag) + '\n';
-        this.delegator.print(message).then(() => {
-            console.info(this.specService.currentRunningSpec.description + ' actionStart print success');
+        SysTestKit.delegator.print(message).then(() => {
+            console.info(tag + ' actionStart print success');
         });
     }
 
     static actionEnd(tag) {
         console.info(JSON.stringify(tag));
         var message = '\n' + 'OHOS_REPORT_ACTIONEND: ' + JSON.stringify(tag) + '\n';
-        this.delegator.print(message).then(() => {
-            console.info(this.specService.currentRunningSpec.description + ' actionEnd print success');
+        SysTestKit.delegator.print(message).then(() => {
+            console.info(tag + ' actionEnd print success');
         });
     }
 
