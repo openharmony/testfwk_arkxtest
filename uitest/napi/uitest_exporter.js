@@ -16,9 +16,10 @@
 function exportUiTestLifeCycleMethods() {
   globalThis.setupUiTestEnvironment = async function () {
     let uitest = globalThis.requireInternal('uitest')
-    if (uitest.uitestSetupDone === true) {
+    if (uitest.uitestSetupCalled === true) {
       return
     }
+    uitest.uitestSetupCalled = true
     // check 'persist.ace.testmode.enabled' property
     let parameter = globalThis.requireNapi('systemparameter')
     if (parameter == null) {
@@ -47,11 +48,10 @@ function exportUiTestLifeCycleMethods() {
       }
     }
     uitest.setup('0123456789')
-    uitest.uitestSetupDone = true
   }
 
   globalThis.teardownUiTestEnvironment = function () {
-    if (uitest.uitestSetupDone === true) {
+    if (uitest.uitestSetupCalled === true) {
       console.info('UiTestKit_lifecycle, disposal uitest')
       uitest.teardown()
     }
