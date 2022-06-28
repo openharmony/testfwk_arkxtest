@@ -462,7 +462,7 @@ namespace OHOS::uitest {
                 LOG_E("Failed to connect to AAMS, RET_ERR_SAMGR");
                 return false;
         }
-        const auto timeout = chrono::milliseconds(500);
+        const auto timeout = chrono::milliseconds(1000);
         if (condition.wait_for(uLock, timeout) == cv_status::timeout) {
             LOG_E("Wait connection to AAMS timed out");
             return false;
