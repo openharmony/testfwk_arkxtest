@@ -38,6 +38,7 @@ ohos_static_library("uitest_core") {
     "${source_root}/core/widget_matcher.cpp",
     "${source_root}/core/widget_operator.cpp",
     "${source_root}/core/widget_selector.cpp",
+    "${source_root}/core/window_operator.cpp",
   ]
   external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
   defines = [
