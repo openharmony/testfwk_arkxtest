@@ -266,7 +266,7 @@ namespace OHOS::uitest {
         {"UiWindow.getBundleName", "():string", false, false},
         {"UiWindow.getBounds", "():Rect", false, false},
         {"UiWindow.getTitle", "():string", false, false},
-        {"UiWindow.getMode", "():int", false, false}, // WindowMode enum as int value
+        {"UiWindow.getWindowMode", "():int", false, false}, // WindowMode enum as int value
         {"UiWindow.isFocused", "():bool", false, false},
         {"UiWindow.isActived", "():bool", false, false},
         {"UiWindow.focuse", "():bool", false, false},

@@ -166,11 +166,14 @@ namespace OHOS::uitest {
         InjectKey(key, opt);
     }
 
-    void UiDriver::FindWidgets(const WidgetSelector &select, vector<unique_ptr<Widget>> &rev, ApiCallErr &err)
+    void UiDriver::FindWidgets(const WidgetSelector &select, vector<unique_ptr<Widget>> &rev,
+        ApiCallErr &err, bool updateUi)
     {
-        UpdateUi(true, err);
-        if (err.code_ != NO_ERROR) {
-            return;
+        if (updateUi) {
+            UpdateUi(true, err);
+            if (err.code_ != NO_ERROR) {
+                return;
+            }
         }
         vector<reference_wrapper<const Widget>> widgets;
         select.Select(*widgetTree_, widgets);

@@ -16,13 +16,14 @@
 #include <sstream>
 #include "ui_driver.h"
 #include "widget_operator.h"
+#include "window_operator.h"
 #include "frontend_api_handler.h"
 
 namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
     using namespace nlohmann::detail;
-
+ 
     FrontendApiServer &FrontendApiServer::Get()
     {
         static FrontendApiServer singleton;
@@ -648,7 +649,7 @@ namespace OHOS::uitest {
                 out.resultValue_ = data;
             } else if (in.apiId_ == "UiWindow.getTitle") {
                 out.resultValue_ = snapshot->title_;
-            } else if (in.apiId_ == "UiWindow.getMode") {
+            } else if (in.apiId_ == "UiWindow.getWindowMode") {
                 out.resultValue_ = (uint8_t)(snapshot->mode_);
             } else if (in.apiId_ == "UiWindow.isFocused") {
                 out.resultValue_ = snapshot->focused_;
@@ -659,21 +660,51 @@ namespace OHOS::uitest {
         server.AddHandler("UiWindow.getBundleName", genericGetter);
         server.AddHandler("UiWindow.getBounds", genericGetter);
         server.AddHandler("UiWindow.getTitle", genericGetter);
-        server.AddHandler("UiWindow.getMode", genericGetter);
+        server.AddHandler("UiWindow.getWindowMode", genericGetter);
         server.AddHandler("UiWindow.isFocused", genericGetter);
         server.AddHandler("UiWindow.isActived", genericGetter);
+    }
 
-        auto nopHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            out.exception_ = ApiCallErr(INTERNAL_ERROR, "Not implemented!");
+    static void RegisterUiWindowOperators()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto genericWinOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &window = GetBackendObject<Window>(in.callerObjRef_);
+            auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto wOp = WindowOperator(driver, window, uiOpArgs);
+            auto action = in.apiId_;
+            if (action == "UiWindow.moveTo") {
+                auto endX = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+                auto endY = ReadCallArg<uint32_t>(in, INDEX_ONE);
+                out.resultValue_ = wOp.MoveTo(endX, endY, out);
+            } else if (action == "UiWindow.resize") {
+                auto width = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+                auto highth = ReadCallArg<uint32_t>(in, INDEX_ONE);
+                auto direction = ReadCallArg<ResizeDirection>(in, INDEX_TWO);
+                out.resultValue_ = wOp.Resize(width, highth, direction, out);
+            } else if (action == "UiWindow.split") {
+                out.resultValue_ = wOp.Split(out);
+            } else if (action == "UiWindow.maximize") {
+                out.resultValue_ = wOp.Maximize(out);
+            } else if (action == "UiWindow.resume") {
+                out.resultValue_ = wOp.Resume(out);
+            } else if (action == "UiWindow.minimize") {
+                out.resultValue_ = wOp.Minimize(out);
+            } else if (action == "UiWindow.close") {
+                out.resultValue_ = wOp.Close(out);
+            } else if (action == "UiWindow.focuse") {
+                out.resultValue_ = wOp.Focuse(out);
+            }
         };
-        server.AddHandler("UiWindow.focuse", nopHandler);
-        server.AddHandler("UiWindow.moveTo", nopHandler);
-        server.AddHandler("UiWindow.resize", nopHandler);
-        server.AddHandler("UiWindow.split", nopHandler);
-        server.AddHandler("UiWindow.maximize", nopHandler);
-        server.AddHandler("UiWindow.resume", nopHandler);
-        server.AddHandler("UiWindow.minimize", nopHandler);
-        server.AddHandler("UiWindow.close", nopHandler);
+        server.AddHandler("UiWindow.focuse", genericWinOperationHandler);
+        server.AddHandler("UiWindow.moveTo", genericWinOperationHandler);
+        server.AddHandler("UiWindow.resize", genericWinOperationHandler);
+        server.AddHandler("UiWindow.split", genericWinOperationHandler);
+        server.AddHandler("UiWindow.maximize", genericWinOperationHandler);
+        server.AddHandler("UiWindow.resume", genericWinOperationHandler);
+        server.AddHandler("UiWindow.minimize", genericWinOperationHandler);
+        server.AddHandler("UiWindow.close", genericWinOperationHandler);
     }
 
     /** Register fronendApiHandlers and preprocessors on startup.*/
@@ -690,5 +721,6 @@ namespace OHOS::uitest {
         RegisterUiComponentAttrGetters();
         RegisterUiComponentOperators();
         RegisterUiWindowAttrGetters();
+        RegisterUiWindowOperators();
     }
 } // namespace OHOS::uitest
