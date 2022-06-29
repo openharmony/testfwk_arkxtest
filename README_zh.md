@@ -126,11 +126,9 @@ export default async function abilityTest() {
 
 目前支持函数级mock能力，对定义的函数进行mock后修改函数的行为，使其返回指定的值或者执行某种动作。
 
+#### 约束限制
 
-```
------jsunit  单元测试框架
-        |------mock   Mock功能模块
-```
+单元测试框架Mock能力从npm包1.0.1版本开始支持，需修改工程中package.info中配置依赖npm包版本号后使用。
 
 -  **API列表：**
 
