@@ -31,7 +31,8 @@ namespace OHOS::uitest {
         /**Find widgets with the given selector. Results are arranged in the receiver in <b>DFS</b> order.
          * @returns the widget object.
          **/
-        void FindWidgets(const WidgetSelector &select, std::vector<std::unique_ptr<Widget>> &rev, ApiCallErr &err);
+        void FindWidgets(const WidgetSelector &select, std::vector<std::unique_ptr<Widget>> &rev,
+            ApiCallErr &err, bool updateUi = true);
 
         /**Wait for the matching widget appear in the given timeout.*/
         std::unique_ptr<Widget> WaitForWidget(const WidgetSelector &select, const UiOpArgs &opt, ApiCallErr &err);
