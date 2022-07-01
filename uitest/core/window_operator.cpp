@@ -118,7 +118,7 @@ namespace OHOS::uitest {
             return false;
         }
         auto rect = window_.bounds_;
-        static constexpr uint32_t step = 5;
+        static constexpr uint32_t step = 30;
         Point from(rect.left_ + step, rect.top_ + step);
         Point to(endX, endY);
         driver_.PerformSwipe(TouchOp::DRAG, from, to, options_, out.exception_);
