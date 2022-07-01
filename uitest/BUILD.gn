@@ -16,6 +16,8 @@ import("//build/ohos.gni")
 
 source_root = "//test/arkXtest/uitest"
 
+ability_runtime_path = "//foundation/ability/ability_runtime"
+
 config("uitest_common_configs") {
   include_dirs = [ "//third_party/json/single_include/nlohmann" ]
   cflags = [
@@ -72,8 +74,8 @@ ohos_executable("uitest_server") {
   deps = [ ":uitest_core" ]
 
   deps += [
-    "//foundation/ability/ability_runtime/frameworks/native/appkit:app_context",
-    "//foundation/ability/ability_runtime/frameworks/native/appkit:appkit_native",
+    "${ability_runtime_path}/frameworks/native/appkit:app_context",
+    "${ability_runtime_path}/frameworks/native/appkit:appkit_native",
   ]
 
   external_deps = [ "accessibility:accessibleability" ]
