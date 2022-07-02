@@ -31,7 +31,7 @@ namespace OHOS::uitest {
     constexpr char KEYNAME_PASTE[] = "Paste";
 
     /**Enumerates all the supported coordinate-based touch operations.*/
-    enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG };
+    enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG, PINCH };
 
     /**Enumerates the supported Key actions.*/
     enum UiKey : uint8_t { BACK, GENERIC };
@@ -52,6 +52,45 @@ namespace OHOS::uitest {
         ActionStage stage_;
         int32_t code_;
         uint32_t holdMs_;
+    };
+
+    class PointerMatrix {
+    public:
+        PointerMatrix();
+
+        PointerMatrix(int32_t fingersNum, int32_t stepsNum);
+
+        PointerMatrix& operator=(PointerMatrix && other);
+
+        ~PointerMatrix();
+
+        void PushAction(const TouchEvent&ptr);
+
+        bool Empty();
+
+        TouchEvent & At(int32_t fingerIndex, int32_t stepIndex);
+
+        TouchEvent & At(int32_t fingerIndex, int32_t stepIndex) const;
+
+        int32_t GetCapacity();
+
+        int32_t GetSize();
+
+        int32_t GetSize() const;
+
+        int32_t GetSteps();
+
+        int32_t GetSteps() const;
+
+        int32_t GetFingers();
+
+        int32_t GetFingers() const;
+    private:
+        std::unique_ptr<TouchEvent[]> data_ = nullptr;
+        int32_t capacity;
+        int32_t stepNum;
+        int32_t fingerNum;
+        int32_t size;
     };
 
     /**
@@ -80,7 +119,7 @@ namespace OHOS::uitest {
         /**Compute the touch event sequence that are needed to implement this action.
          * @param point: the click location.
          * */
-        void Decompose(std::vector<TouchEvent> &recv, const Point &point, const UiOpArgs &options) const;
+        void Decompose(PointerMatrix &recv, const Point &point, const UiOpArgs &options) const;
 
         ~GenericClick() = default;
 
@@ -99,10 +138,30 @@ namespace OHOS::uitest {
          * @param fromPoint: the swipe start point.
          * @param toPoint: the swipe end point.
          * */
-        void Decompose(std::vector<TouchEvent> &recv, const Point &fromPoint, const Point &toPoint,
+        void Decompose(PointerMatrix &recv, const Point &fromPoint, const Point &toPoint,
                        const UiOpArgs &options) const;
 
         ~GenericSwipe() = default;
+
+    private:
+        const TouchOp type_;
+    };
+
+    /**
+     * Base type of all raw pointer pinch actions.
+     **/
+    class GenericPinch {
+    public:
+        explicit GenericPinch(TouchOp type) : type_(type) {};
+
+        /**Compute the touch event sequence that are needed to implement this action.
+         * @param fromPoint: the swipe start point.
+         * @param toPoint: the swipe end point.
+         * */
+        void DecomposePinch(PointerMatrix &recv, const Rect &rectBound, const float_t &scale,
+                            const UiOpArgs &options) const;
+
+        ~GenericPinch() = default;
 
     private:
         const TouchOp type_;

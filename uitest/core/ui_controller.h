@@ -44,7 +44,7 @@ namespace OHOS::uitest {
 
         virtual void WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec) const {};
 
-        virtual void InjectTouchEventSequence(const std::vector<TouchEvent>& events) const {};
+        virtual void InjectTouchEventSequence(const PointerMatrix& events) const {};
 
         virtual void InjectKeyEventSequence(const std::vector<KeyEvent>& events) const {};
 

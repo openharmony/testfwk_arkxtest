@@ -20,30 +20,42 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
 
-    static void DecomposeClick(vector<TouchEvent> &recv, const Point &point, const UiOpArgs &options)
+    static void DecomposeClick(PointerMatrix &recv, const Point &point, const UiOpArgs &options)
     {
-        recv.push_back(TouchEvent {ActionStage::DOWN, point, 0, options.clickHoldMs_});
-        recv.push_back(TouchEvent {ActionStage::UP, point, options.clickHoldMs_, 0});
+        const int32_t fingers = 1;
+        constexpr int16_t steps = 2;
+        PointerMatrix pointer(fingers, steps);
+        pointer.PushAction(TouchEvent {ActionStage::DOWN, point, 0, options.clickHoldMs_});
+        pointer.PushAction(TouchEvent {ActionStage::UP, point, options.clickHoldMs_, 0});
+        recv = move(pointer);
     }
 
-    static void DecomposeLongClick(vector<TouchEvent> &recv, const Point &point, const UiOpArgs &options)
+    static void DecomposeLongClick(PointerMatrix &recv, const Point &point, const UiOpArgs &options)
     {
         // should sleep after touch-down to make long-click duration
-        recv.push_back(TouchEvent {ActionStage::DOWN, point, 0, options.longClickHoldMs_});
-        recv.push_back(TouchEvent {ActionStage::UP, point, options.longClickHoldMs_, 0});
+        const int32_t fingers = 1;
+        constexpr int16_t steps = 2;
+        PointerMatrix pointer(fingers, steps);
+        pointer.PushAction(TouchEvent {ActionStage::DOWN, point, 0, options.longClickHoldMs_});
+        pointer.PushAction(TouchEvent {ActionStage::UP, point, options.longClickHoldMs_, 0});
+        recv = move(pointer);
     }
 
-    static void DecomposeDoubleClick(vector<TouchEvent> &recv, const Point &point, const UiOpArgs &options)
+    static void DecomposeDoubleClick(PointerMatrix &recv, const Point &point, const UiOpArgs &options)
     {
         const auto msInterval = options.doubleClickIntervalMs_;
-        recv.push_back(TouchEvent {ActionStage::DOWN, point, 0, options.clickHoldMs_});
-        recv.push_back(TouchEvent {ActionStage::UP, point, options.clickHoldMs_, msInterval});
+        const int32_t fingers = 1;
+        constexpr int16_t steps = 4;
+        PointerMatrix pointer(fingers, steps);
+        pointer.PushAction(TouchEvent {ActionStage::DOWN, point, 0, options.clickHoldMs_});
+        pointer.PushAction(TouchEvent {ActionStage::UP, point, options.clickHoldMs_, msInterval});
 
-        recv.push_back(TouchEvent {ActionStage::DOWN, point, 0, options.clickHoldMs_});
-        recv.push_back(TouchEvent {ActionStage::UP, point, options.clickHoldMs_, 0});
+        pointer.PushAction(TouchEvent {ActionStage::DOWN, point, 0, options.clickHoldMs_});
+        pointer.PushAction(TouchEvent {ActionStage::UP, point, options.clickHoldMs_, 0});
+        recv = move(pointer);
     }
 
-    static void DecomposeComputeSwipe(vector<TouchEvent> &recv, const Point &from, const Point &to, bool drag,
+    static void DecomposeComputeSwipe(PointerMatrix &recv, const Point &from, const Point &to, bool drag,
                                       const UiOpArgs &options)
     {
         const int32_t distanceX = to.px_ - from.px_;
@@ -56,24 +68,29 @@ namespace OHOS::uitest {
         }
         constexpr int16_t steps = 50;
         const uint32_t intervalMs = timeCostMs / steps + 1;
-        recv.push_back(TouchEvent {ActionStage::DOWN, {from.px_, from.py_}, 0, intervalMs});
+        const int32_t fingers = 1;
+        PointerMatrix pointer(fingers, steps + 1);
+
+        pointer.PushAction(TouchEvent {ActionStage::DOWN, {from.px_, from.py_}, 0, intervalMs});
         for (int16_t step = 1; step < steps; step++) {
             const int32_t pointX = from.px_ + (distanceX * step) / steps;
             const int32_t pointY = from.py_ + (distanceY * step) / steps;
             const uint32_t timeOffsetMs = (timeCostMs * step) / steps;
-            recv.push_back(TouchEvent {ActionStage::MOVE, {pointX, pointY}, timeOffsetMs, intervalMs});
+            pointer.PushAction(TouchEvent {ActionStage::MOVE, {pointX, pointY}, timeOffsetMs, intervalMs});
         }
-        recv.push_back(TouchEvent {ActionStage::UP, {to.px_, to.py_}, timeCostMs, intervalMs});
+
+        pointer.PushAction(TouchEvent {ActionStage::UP, {to.px_, to.py_}, timeCostMs, intervalMs});
         if (drag) {
             // drag needs longPressDown firstly
-            recv.at(0).holdMs_ += options.longClickHoldMs_;
-            for (std::size_t idx = 1; idx < recv.size(); idx++) {
-                recv.at(idx).downTimeOffsetMs_ += options.longClickHoldMs_;
+            pointer.At(fingers - 1,0).holdMs_ += options.longClickHoldMs_;
+            for (int idx = 1; idx < pointer.GetSize(); idx++) {
+                pointer.At(fingers - 1,idx).downTimeOffsetMs_ += options.longClickHoldMs_;
             }
         }
+        recv = move(pointer);
     }
 
-    void GenericClick::Decompose(vector<TouchEvent> &recv, const Point &point, const UiOpArgs &options) const
+    void GenericClick::Decompose(PointerMatrix &recv, const Point &point, const UiOpArgs &options) const
     {
         DCHECK(type_ >= TouchOp::CLICK && type_ <= TouchOp::DOUBLE_CLICK_P);
         switch (type_) {
@@ -89,18 +106,136 @@ namespace OHOS::uitest {
             default:
                 break;
         }
-        for (auto &event:recv) {
-            event.flags_ = type_;
+        for (int32_t i = 0; i < recv.GetSize(); i++) {
+            recv.At(recv.GetFingers() - 1, i).flags_ = type_;
         }
     }
 
-    void GenericSwipe::Decompose(vector<TouchEvent> &recv, const Point &fromPoint, const Point &toPoint,
+    void GenericSwipe::Decompose(PointerMatrix &recv, const Point &fromPoint, const Point &toPoint,
                                  const UiOpArgs &options) const
     {
         DCHECK(type_ >= TouchOp::SWIPE && type_ <= TouchOp::DRAG);
         DecomposeComputeSwipe(recv, fromPoint, toPoint, type_ == TouchOp::DRAG, options);
-        for (auto &event:recv) {
-            event.flags_ = type_;
+        for (int32_t i = 0; i < recv.GetSize(); i++) {
+            recv.At(recv.GetFingers() - 1, i).flags_ = type_;
         }
+    }
+
+    void GenericPinch::DecomposePinch(PointerMatrix &recv, const Rect &rectBound, const float_t & scale,
+                                      const UiOpArgs &options) const
+    {
+        DCHECK(type_ == TouchOp::PINCH);
+        const int32_t distanceX0 = abs(rectBound.GetCenterX() - rectBound.left_) * abs(scale - 1);
+        PointerMatrix pointer1;
+        PointerMatrix pointer2;
+        if (scale > 1) {
+            DecomposeComputeSwipe(pointer1, {rectBound.GetCenterX() - options.scrollWidgetDeadZone_, rectBound.GetCenterY()}, {(rectBound.GetCenterX() - distanceX0), rectBound.GetCenterY()},
+                                 type_ == TouchOp::DRAG, options);
+            DecomposeComputeSwipe(pointer2, {rectBound.GetCenterX() + options.scrollWidgetDeadZone_, rectBound.GetCenterY()}, {(rectBound.GetCenterX() + distanceX0), rectBound.GetCenterY()},
+                                 type_ == TouchOp::DRAG, options);
+        } else if (scale < 1) {
+            DecomposeComputeSwipe(pointer1, {rectBound.left_ + options.scrollWidgetDeadZone_, rectBound.GetCenterY()}, {(rectBound.left_ + distanceX0), rectBound.GetCenterY()},
+                                 type_ == TouchOp::DRAG, options);
+            DecomposeComputeSwipe(pointer2, {rectBound.right_ - options.scrollWidgetDeadZone_, rectBound.GetCenterY()}, {(rectBound.right_ - distanceX0), rectBound.GetCenterY()},
+                                 type_ == TouchOp::DRAG, options);
+        }
+
+        PointerMatrix pointer3(pointer1.GetFingers() + pointer2.GetFingers(), pointer1.GetSteps());
+        for (int32_t i = 0; i < pointer1.GetSize(); i++) {
+            pointer3.PushAction(pointer1.At(0,i));
+        }
+        for (int32_t j = 0; j < pointer2.GetSize(); j++) {
+            pointer3.PushAction(pointer2.At(0,j));
+        }
+        recv = move(pointer3);
+    }
+
+    PointerMatrix::PointerMatrix() {};
+
+    PointerMatrix::PointerMatrix(int32_t fingersNum, int32_t stepsNum)
+    {
+        this->fingerNum = fingersNum;
+        this->stepNum = stepsNum;
+        this->capacity = this->fingerNum * this->stepNum;
+        this->size = 0;
+        this->data_ = std::unique_ptr<TouchEvent[]>(new TouchEvent[this->capacity]);
+    }
+
+    PointerMatrix& PointerMatrix::operator=(PointerMatrix && other)
+    {
+        this->data_ = move(other.data_);
+        this->fingerNum = other.fingerNum;
+        this->stepNum = other.stepNum;
+        this->capacity = other.capacity;
+        this->size = other.size;
+        other.fingerNum = 0;
+        other.stepNum = 0;
+        other.capacity = 0;
+        other.size = 0;
+        return *this;
+    }
+
+    PointerMatrix::~PointerMatrix() {}
+
+    void PointerMatrix::PushAction(const TouchEvent&ptr)
+    {
+        if (this->capacity == this->size) {
+            return;
+        }
+        *(this->data_.get() + this->size) = ptr;
+        this->size++;
+    }
+
+    bool PointerMatrix::Empty()
+    {
+        if (this->size == 0) {
+            return true;
+        }
+        return false;
+    }
+
+    TouchEvent & PointerMatrix::At(int32_t fingerIndex, int32_t stepIndex)
+    {
+        return *(this->data_.get() + (fingerIndex * this->stepNum + stepIndex));
+    }
+
+    TouchEvent & PointerMatrix::At(int32_t fingerIndex, int32_t stepIndex) const
+    {
+        return *(this->data_.get() + (fingerIndex * this->stepNum + stepIndex));
+    }
+
+    int32_t PointerMatrix::GetCapacity()
+    {
+        return this->capacity;
+    }
+
+    int32_t PointerMatrix::GetSize()
+    {
+        return this->size;
+    }
+
+    int32_t PointerMatrix::GetSize() const
+    {
+        return this->size;
+    }
+
+    int32_t PointerMatrix::GetSteps()
+    {
+        return this->stepNum;
+    }
+
+    int32_t PointerMatrix::GetSteps() const
+    {
+        return this->stepNum;
+    }
+
+    int32_t PointerMatrix::GetFingers()
+    {
+        return this->fingerNum;
+    }
+
+    int32_t PointerMatrix::GetFingers() const
+    {
+        return this->fingerNum;
     }
 }

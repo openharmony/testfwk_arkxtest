@@ -614,6 +614,12 @@ namespace OHOS::uitest {
             } else if (in.apiId_ == "UiComponent.scrollSearch") {
                 auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
                 wOp.ScrollFindWidget(selector, out.exception_);
+            } else if (in.apiId_ == "UiComponent.pinchOut") {
+                auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
+                wOp.pinchWidget(pinchScale, out.exception_);
+            } else if (in.apiId_ == "UiComponent.pinchIn") {
+                auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
+                wOp.pinchWidget(pinchScale, out.exception_);
             }
         };
         server.AddHandler("UiComponent.click", genericOperationHandler);
@@ -625,6 +631,8 @@ namespace OHOS::uitest {
         server.AddHandler("UiComponent.inputText", genericOperationHandler);
         server.AddHandler("UiComponent.clearText", genericOperationHandler);
         server.AddHandler("UiComponent.scrollSearch", genericOperationHandler);
+        server.AddHandler("UiComponent.pinchOut", genericOperationHandler);
+        server.AddHandler("UiComponent.pinchIn", genericOperationHandler);
     }
 
     static void RegisterUiWindowAttrGetters()
