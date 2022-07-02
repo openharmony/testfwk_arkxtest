@@ -51,11 +51,11 @@ TEST_F(UiActionTest, computeClickAction)
 {
     GenericClick action(TouchOp::CLICK);
     Point point {100, 200};
-    vector<TouchEvent> events;
+    PointerMatrix events;
     action.Decompose(events, point, customOptions_);
-    ASSERT_EQ(2, events.size()); // up & down
-    auto event1 = *events.begin();
-    auto event2 = *(events.begin() + 1);
+    ASSERT_EQ(2, events.GetSize()); // up & down
+    auto & event1 = events.At(0,0);
+    auto & event2 = events.At(0,1);
     ASSERT_EQ(point.px_, event1.point_.px_);
     ASSERT_EQ(point.py_, event1.point_.py_);
     ASSERT_EQ(ActionStage::DOWN, event1.stage_);
@@ -71,11 +71,11 @@ TEST_F(UiActionTest, computeLongClickAction)
 {
     GenericClick action(TouchOp::LONG_CLICK);
     Point point {100, 200};
-    vector<TouchEvent> events;
+    PointerMatrix events;
     action.Decompose(events, point, customOptions_);
-    ASSERT_EQ(2, events.size()); // up & down
-    auto event1 = *events.begin();
-    auto event2 = *(events.begin() + 1);
+    ASSERT_EQ(2, events.GetSize()); // up & down
+    auto & event1 = events.At(0,0);
+    auto & event2 = events.At(0,1);
     ASSERT_EQ(point.px_, event1.point_.px_);
     ASSERT_EQ(point.py_, event1.point_.py_);
     ASSERT_EQ(ActionStage::DOWN, event1.stage_);
@@ -93,13 +93,13 @@ TEST_F(UiActionTest, computeDoubleClickAction)
 {
     GenericClick action(TouchOp::DOUBLE_CLICK_P);
     Point point {100, 200};
-    vector<TouchEvent> events;
+    PointerMatrix events;
     action.Decompose(events, point, customOptions_);
-    ASSERT_EQ(4, events.size()); // up-down-interval-up-down
-    auto event1 = *events.begin();
-    auto event2 = *(events.begin() + 1);
-    auto event3 = *(events.begin() + 2);
-    auto event4 = *(events.begin() + 3);
+    ASSERT_EQ(4, events.GetSize()); // up-down-interval-up-down
+    auto & event1 = events.At(0,0);
+    auto & event2 = events.At(0,1);
+    auto & event3 = events.At(0,2);
+    auto & event4 = events.At(0,3);
     ASSERT_EQ(point.px_, event1.point_.px_);
     ASSERT_EQ(point.py_, event1.point_.py_);
     ASSERT_EQ(ActionStage::DOWN, event1.stage_);
@@ -130,10 +130,10 @@ TEST_F(UiActionTest, computeSwipeAction)
     Point point0(0, 0);
     Point point1(100, 200);
     GenericSwipe action(TouchOp::SWIPE);
-    vector<TouchEvent> events;
+    PointerMatrix events;
     action.Decompose(events, point0, point1, opt);
     // there should be more than 1 touches
-    const int32_t steps = events.size() - 1;
+    const int32_t steps = events.GetSize() - 1;
     ASSERT_TRUE(steps > 1);
 
     const int32_t disX = point1.px_ - point0.px_;
@@ -143,22 +143,143 @@ TEST_F(UiActionTest, computeSwipeAction)
 
     uint32_t step = 0;
     // check the TouchEvent of each step
-    for (auto &event:events) {
+    for (int event = 0; event < events.GetSize(); event++) {
         int32_t expectedPointerX = point0.px_ + (disX * step) / steps;
         int32_t expectedPointerY = point0.py_ + (disY * step) / steps;
         uint32_t expectedTimeOffset = (totalCostMs * step) / steps;
-        ASSERT_NEAR(expectedPointerX, event.point_.px_, 5);
-        ASSERT_NEAR(expectedPointerY, event.point_.py_, 5);
-        ASSERT_NEAR(expectedTimeOffset, event.downTimeOffsetMs_, 5);
+        ASSERT_NEAR(expectedPointerX, events.At(0, event).point_.px_, 5);
+        ASSERT_NEAR(expectedPointerY, events.At(0,event).point_.py_, 5);
+        ASSERT_NEAR(expectedTimeOffset, events.At(0,event).downTimeOffsetMs_, 5);
         if (step == 0) {
             // should start with Action.DOWN
-            ASSERT_EQ(ActionStage::DOWN, event.stage_);
-        } else if (step == events.size() - 1) {
+            ASSERT_EQ(ActionStage::DOWN, events.At(0,event).stage_);
+        } else if (step == events.GetSize() - 1) {
             // should end with Action.UP
-            ASSERT_EQ(ActionStage::UP, event.stage_);
+            ASSERT_EQ(ActionStage::UP, events.At(0,event).stage_);
         } else {
             // middle events should all be action-MOVE
-            ASSERT_EQ(ActionStage::MOVE, event.stage_);
+            ASSERT_EQ(ActionStage::MOVE, events.At(0,event).stage_);
+        }
+        step++;
+    }
+}
+
+TEST_F(UiActionTest, computePinchInAction)
+{
+    UiOpArgs opt {};
+    opt.swipeVelocityPps_ = 50; // specify the swipe velocity
+    Rect rect(210, 510, 30, 330);
+    GenericPinch action(TouchOp::PINCH);
+    float_t scale = 0.5;
+    PointerMatrix events;
+    action.DecomposePinch(events, rect, scale, opt);
+    // there should be more than 1 touches
+    const int32_t steps = events.GetSteps() - 1;
+    ASSERT_TRUE(steps > 1);
+    ASSERT_EQ(102, events.GetSize());
+    ASSERT_EQ(51, events.GetSteps());
+
+    const int32_t disX0 = abs(rect.left_ - rect.GetCenterX()) * abs(scale-1);
+    ASSERT_EQ(75, disX0);
+    const uint32_t totalCostMs = disX0 * 1000 / opt.swipeVelocityPps_;
+
+    uint32_t step = 0;
+    // check the TouchEvent of each step
+    for (int eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
+        int32_t eventFinger = 0;
+        int32_t expectedPointerX0 = rect.left_ + (disX0 * step) / steps;
+        uint32_t expectedTimeOffset = (totalCostMs * step) / steps;
+        uint32_t x0 = events.At(eventFinger, eventStep).point_.px_;
+        ASSERT_NEAR(expectedPointerX0, x0, 20);
+        if (eventStep == 0) {
+        // should start with Action.DOWN
+        ASSERT_EQ(ActionStage::DOWN, events.At(eventFinger,eventStep).stage_);
+        ASSERT_EQ(0, events.At(eventFinger, eventStep).downTimeOffsetMs_);
+        } else if (eventStep == events.GetSteps() - 1) {
+            // should end with Action.UP
+            ASSERT_EQ(ActionStage::UP, events.At(eventFinger,eventStep).stage_);
+        } else {
+            // middle events should all be action-MOVE
+            ASSERT_EQ(ActionStage::MOVE, events.At(eventFinger,eventStep).stage_);
+        }
+        step++;
+    }
+    step = 0;
+    for (int eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
+        int32_t eventFinger = 1;
+        int32_t expectedPointerX0 = rect.right_ - (disX0 * step) / steps;
+        uint32_t expectedTimeOffset = (totalCostMs * step) / steps;
+        ASSERT_NEAR(expectedPointerX0, events.At(eventFinger, eventStep).point_.px_, 20);
+        if (eventStep == 0) {
+        // should start with Action.DOWN
+        ASSERT_EQ(ActionStage::DOWN, events.At(eventFinger,eventStep).stage_);
+        } else if (eventStep == events.GetSteps() - 1) {
+            // should end with Action.UP
+            ASSERT_EQ(ActionStage::UP, events.At(eventFinger,eventStep).stage_);
+        } else {
+            // middle events should all be action-MOVE
+            ASSERT_EQ(ActionStage::MOVE, events.At(eventFinger,eventStep).stage_);
+        }
+        step++;
+    }
+}
+
+TEST_F(UiActionTest, computePinchOutAction)
+{
+    UiOpArgs opt {};
+    opt.swipeVelocityPps_ = 50; // specify the swipe velocity
+    Rect rect(210, 510, 30, 330);
+    GenericPinch action(TouchOp::PINCH);
+    float_t scale = 1.5;
+    PointerMatrix events;
+    action.DecomposePinch(events, rect, scale, opt);
+    // there should be more than 1 touches
+    const int32_t steps = events.GetSteps() - 1;
+    ASSERT_TRUE(steps > 1);
+    ASSERT_EQ(102, events.GetSize());
+    ASSERT_EQ(51, events.GetSteps());
+
+    const int32_t disX0 = abs(rect.left_ - rect.GetCenterX()) * abs(scale-1);
+    ASSERT_EQ(75, disX0);
+    const uint32_t totalCostMs = disX0 * 1000 / opt.swipeVelocityPps_;
+
+    uint32_t step = 0;
+    // check the TouchEvent of each step
+    for (int eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
+        int32_t eventFinger = 0;
+        int32_t expectedPointerX0 = rect.GetCenterX() - (disX0 * step) / steps;
+        uint32_t expectedTimeOffset = (totalCostMs * step) / steps;
+        uint32_t x0 = events.At(eventFinger, eventStep).point_.px_;
+        uint32_t y0 = events.At(eventFinger, eventStep).point_.py_;
+        ASSERT_NEAR(expectedPointerX0, x0, 20);
+        if (eventStep == 0) {
+        // should start with Action.DOWN
+        ASSERT_EQ(ActionStage::DOWN, events.At(eventFinger,eventStep).stage_);
+        ASSERT_EQ(0, events.At(eventFinger, eventStep).downTimeOffsetMs_);
+        } else if (eventStep == events.GetSteps() - 1) {
+            // should end with Action.UP
+            ASSERT_EQ(ActionStage::UP, events.At(eventFinger,eventStep).stage_);
+        } else {
+            // middle events should all be action-MOVE
+            ASSERT_EQ(ActionStage::MOVE, events.At(eventFinger,eventStep).stage_);
+        }
+        step++;
+    }
+    step = 0;
+    for (int eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
+        int32_t eventFinger = 1;
+        int32_t expectedPointerX0 = rect.GetCenterX() + (disX0 * step) / steps;
+        uint32_t expectedTimeOffset = (totalCostMs * step) / steps;
+        ASSERT_NEAR(expectedPointerX0, events.At(eventFinger, eventStep).point_.px_, 20);
+        if (eventStep == 0) {
+        // should start with Action.DOWN
+        ASSERT_EQ(ActionStage::DOWN, events.At(eventFinger,eventStep).stage_);
+        } else if (eventStep == events.GetSteps() - 1) {
+            // should end with Action.UP
+            ASSERT_EQ(ActionStage::UP, events.At(eventFinger,eventStep).stage_);
+        } else {
+            // middle events should all be action-MOVE
+            ASSERT_EQ(ActionStage::MOVE, events.At(eventFinger,eventStep).stage_);
         }
         step++;
     }
@@ -172,18 +293,18 @@ TEST_F(UiActionTest, computeDragAction)
     Point point1(100, 200);
     GenericSwipe swipeAction(TouchOp::SWIPE);
     GenericSwipe dragAction(TouchOp::DRAG);
-    vector<TouchEvent> swipeEvents;
-    vector<TouchEvent> dragEvents;
+    PointerMatrix swipeEvents;
+    PointerMatrix dragEvents;
     swipeAction.Decompose(swipeEvents, point0, point1, opt);
     dragAction.Decompose(dragEvents, point0, point1, opt);
 
-    ASSERT_TRUE(swipeEvents.size() > 1);\
-    ASSERT_EQ(swipeEvents.size(), dragEvents.size());
+    ASSERT_TRUE(swipeEvents.GetSize() > 1);
+    ASSERT_EQ(swipeEvents.GetSize(), dragEvents.GetSize());
 
     // check the hold time of each event
-    for (auto step = 0; step < swipeEvents.size(); step++) {
-        auto &swipeEvent = swipeEvents.at(step);
-        auto &dragEvent = dragEvents.at(step);
+    for (auto step = 0; step < swipeEvents.GetSize(); step++) {
+        auto &swipeEvent = swipeEvents.At(0,step);
+        auto &dragEvent = dragEvents.At(0,step);
         ASSERT_EQ(swipeEvent.stage_, dragEvent.stage_);
         // drag needs longPressDown firstly, the downOffSet of following event should be delayed
         if (step == 0) {
