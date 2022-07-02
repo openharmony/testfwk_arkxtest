@@ -20,7 +20,7 @@ using namespace std;
 
 static constexpr auto ATTR_TEXT = "text";
 // record the triggered touch events.
-static vector<TouchEvent> touch_event_records;
+
 static std::unique_ptr<PointerMatrix> touch_event_records = nullptr;
 
 class MockController2 : public UiController {

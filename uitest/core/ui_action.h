@@ -58,7 +58,7 @@ namespace OHOS::uitest {
     public:
         PointerMatrix();
 
-        PointerMatrix(int32_t fingersNum, int32_t stepsNum);
+        PointerMatrix(uint32_t fingersNum, uint32_t stepsNum);
 
         PointerMatrix& operator=(PointerMatrix && other);
 
@@ -68,29 +68,29 @@ namespace OHOS::uitest {
 
         bool Empty();
 
-        TouchEvent & At(int32_t fingerIndex, int32_t stepIndex);
+        TouchEvent & At(uint32_t fingerIndex, uint32_t stepIndex);
 
-        TouchEvent & At(int32_t fingerIndex, int32_t stepIndex) const;
+        TouchEvent & At(uint32_t fingerIndex, uint32_t stepIndex) const;
 
-        int32_t GetCapacity();
+        uint32_t GetCapacity();
 
-        int32_t GetSize();
+        uint32_t GetSize();
 
-        int32_t GetSize() const;
+        uint32_t GetSize() const;
 
-        int32_t GetSteps();
+        uint32_t GetSteps();
 
-        int32_t GetSteps() const;
+        uint32_t GetSteps() const;
 
-        int32_t GetFingers();
+        uint32_t GetFingers();
 
-        int32_t GetFingers() const;
+        uint32_t GetFingers() const;
     private:
         std::unique_ptr<TouchEvent[]> data_ = nullptr;
-        int32_t capacity;
-        int32_t stepNum;
-        int32_t fingerNum;
-        int32_t size;
+        uint32_t capacity_;
+        uint32_t stepNum_;
+        uint32_t fingerNum_;
+        uint32_t size_;
     };
 
     /**
