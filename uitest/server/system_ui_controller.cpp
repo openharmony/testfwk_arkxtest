@@ -292,8 +292,8 @@ namespace OHOS::uitest {
             auto pointerEvent = PointerEvent::Create();
             PointerEvent::PointerItem pinterItem;
             pinterItem.SetPointerId(0);
-            pinterItem.SetGlobalX(event.point_.px_);
-            pinterItem.SetGlobalY(event.point_.py_);
+            pinterItem.SetDisplayX(event.point_.px_);
+            pinterItem.SetDisplayY(event.point_.py_);
             switch (event.stage_) {
                 case ActionStage::DOWN:
                     pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_DOWN);
