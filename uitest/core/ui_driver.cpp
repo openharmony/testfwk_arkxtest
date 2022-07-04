@@ -145,6 +145,7 @@ namespace OHOS::uitest {
         uiController_->InjectTouchEventSequence(events);
         uiController_->WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
     }
+
     void UiDriver::InjectPinch(TouchOp type, const Rect &rectBound, const float_t & scale, const UiOpArgs &options)
     {
         auto action = GenericPinch(type);
@@ -243,13 +244,13 @@ namespace OHOS::uitest {
         InjectSwipe(op, from, to, opt);
     }
 
-    void UiDriver::PerformPinch(TouchOp op, const Rect &rectBound, const float_t &scale, const UiOpArgs &opt, ApiCallErr &err)
+    void UiDriver::PerformPinch(TouchOp op, const Rect &recB, const float_t &scl, const UiOpArgs &opt, ApiCallErr &err)
     {
         UpdateUi(false, err);
         if (err.code_ != NO_ERROR) {
             return;
         }
-        InjectPinch(op, rectBound, scale, opt);
+        InjectPinch(op, recB, scl, opt);
     }
     void UiDriver::TakeScreenCap(string_view savePath, ApiCallErr &err)
     {
