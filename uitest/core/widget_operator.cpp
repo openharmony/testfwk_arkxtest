@@ -122,6 +122,37 @@ namespace OHOS::uitest {
         driver_.PerformSwipe(TouchOp::DRAG, centerFrom, centerTo, options_, error);
     }
 
+    void WidgetOperator::pinchWidget(float_t scale, ApiCallErr &error) const
+    {
+        auto retrieved = driver_.RetrieveWidget(widget_, error);
+        if (retrieved == nullptr || error.code_ != NO_ERROR) {
+            return;
+        }
+        auto matcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HIERARCHY], "ROOT", ValueMatchPattern::EQ);
+        auto selector = WidgetSelector();
+        selector.AddMatcher(matcher);
+        vector<unique_ptr<Widget>> recv;
+        driver_.FindWidgets(selector, recv, error);
+        if (error.code_ != ErrCode::NO_ERROR) {
+            return;
+        }
+        if (recv.empty()) {
+            error = ApiCallErr(INTERNAL_ERROR, "Cannot find root widget");
+                return;
+        }
+        auto rootBound = recv.front()->GetBounds();
+        auto rectBound = widget_.GetBounds();
+        auto widthScale = (float_t)(rootBound.GetWidth() / rectBound.GetWidth());
+        auto heightScale = (float_t)(rootBound.GetHeight() / rectBound.GetHeight());
+        auto originalScale = min(widthScale, heightScale);
+        if (scale < 0) {
+            error = ApiCallErr(USAGE_ERROR, "Please input the correct scale");
+            return;
+        } else if (scale > originalScale) {
+            scale = originalScale;
+        }
+        driver_.PerformPinch(TouchOp::PINCH, rectBound, scale, options_, error);
+    }
     void WidgetOperator::InputText(string_view text, ApiCallErr &error) const
     {
         auto retrieved = driver_.RetrieveWidget(widget_, error);
@@ -175,7 +206,7 @@ namespace OHOS::uitest {
 
     unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const
     {
-        vector<TouchEvent> scrollEvents;
+        PointerMatrix scrollEvents;
         bool scrollingUp = true;
         string prevSnapshot;
         vector<reference_wrapper<const Widget>> receiver;

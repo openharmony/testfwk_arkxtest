@@ -286,32 +286,34 @@ namespace OHOS::uitest {
 
     void SysUiController::WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const {}
 
-    void SysUiController::InjectTouchEventSequence(const vector<TouchEvent> &events) const
+    void SysUiController::InjectTouchEventSequence(const PointerMatrix &events) const
     {
-        for (auto &event : events) {
-            auto pointerEvent = PointerEvent::Create();
-            PointerEvent::PointerItem pinterItem;
-            pinterItem.SetPointerId(0);
-            pinterItem.SetGlobalX(event.point_.px_);
-            pinterItem.SetGlobalY(event.point_.py_);
-            switch (event.stage_) {
-                case ActionStage::DOWN:
-                    pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_DOWN);
-                    break;
-                case ActionStage::MOVE:
-                    pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_MOVE);
-                    break;
-                case ActionStage::UP:
-                    pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_UP);
-                    break;
-            }
-            pinterItem.SetPressed(event.stage_ != ActionStage::UP);
-            pointerEvent->AddPointerItem(pinterItem);
-            pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
-            pointerEvent->SetPointerId(0);
-            InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
-            if (event.holdMs_ > 0) {
-                this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
+        for (uint32_t step = 0; step < events.GetSteps(); step++) {
+            for (uint32_t finger = 0; finger < events.GetFingers(); finger++) {
+                auto pointerEvent = PointerEvent::Create();
+                pointerEvent->SetPointerId(finger);
+                PointerEvent::PointerItem pinterItem;
+                pinterItem.SetPointerId(finger);
+                pinterItem.SetGlobalX(events.At(finger, step).point_.px_);
+                pinterItem.SetGlobalY(events.At(finger, step).point_.py_);
+                switch (events.At(finger, step).stage_) {
+                    case ActionStage::DOWN:
+                        pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_DOWN);
+                        break;
+                    case ActionStage::MOVE:
+                        pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_MOVE);
+                        break;
+                    case ActionStage::UP:
+                        pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_UP);
+                        break;
+                }
+                pinterItem.SetPressed(events.At(finger, step).stage_ != ActionStage::UP);
+                pointerEvent->AddPointerItem(pinterItem);
+                pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
+                InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
+                if (events.At(finger, step).holdMs_ > 0) {
+                this_thread::sleep_for(chrono::milliseconds(events.At(finger, step).holdMs_));
+                }
             }
         }
     }

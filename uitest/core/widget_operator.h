@@ -36,6 +36,9 @@ namespace OHOS::uitest {
         /**Drag widget to another one.*/
         void DragIntoWidget(const Widget &another, ApiCallErr &error) const;
 
+        /**Pinch widget to the target scale*/
+        void pinchWidget(float_t scale, ApiCallErr &error) const;
+
         /**Scroll on the widget to find the target widget matching the selector.*/
         std::unique_ptr<Widget> ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const;
 
