@@ -254,6 +254,8 @@ namespace OHOS::uitest {
         {"UiComponent.clearText", "():void", false, false},
         {"UiComponent.scrollSearch", "(By):UiComponent", false, false},
         {"UiComponent.dragTo", "(UiComponent):void", false, false},
+        {"UiComponent.pinchOut", "(float):void", false, false},
+        {"UiComponent.pinchIn", "(float):void", false, false},
     };
     constexpr FrontEndClassDef UI_COMPONENT_DEF = {
         "UiComponent",
