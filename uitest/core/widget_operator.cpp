@@ -139,7 +139,7 @@ namespace OHOS::uitest {
         if (recv.empty()) {
             error = ApiCallErr(INTERNAL_ERROR, "Cannot find root widget");
                 return;
-            }
+        }
         auto rootBound = recv.front()->GetBounds();
         auto rectBound = widget_.GetBounds();
         auto widthScale = (float_t)(rootBound.GetWidth() / rectBound.GetWidth());
