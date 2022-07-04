@@ -294,9 +294,9 @@ namespace OHOS::uitest {
                 pointerEvent->SetPointerId(finger);
                 PointerEvent::PointerItem pinterItem;
                 pinterItem.SetPointerId(finger);
-                pinterItem.SetGlobalX(events.At(finger,step).point_.px_);
-                pinterItem.SetGlobalY(events.At(finger,step).point_.py_);
-                switch (events.At(finger,step).stage_) {
+                pinterItem.SetGlobalX(events.At(finger, step).point_.px_);
+                pinterItem.SetGlobalY(events.At(finger, step).point_.py_);
+                switch (events.At(finger, step).stage_) {
                     case ActionStage::DOWN:
                         pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_DOWN);
                         break;
@@ -307,12 +307,12 @@ namespace OHOS::uitest {
                         pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_UP);
                         break;
                 }
-                pinterItem.SetPressed(events.At(finger,step).stage_ != ActionStage::UP);
+                pinterItem.SetPressed(events.At(finger, step).stage_ != ActionStage::UP);
                 pointerEvent->AddPointerItem(pinterItem);
                 pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
                 InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
-                if (events.At(finger,step).holdMs_ > 0) {
-                this_thread::sleep_for(chrono::milliseconds(events.At(finger,step).holdMs_));
+                if (events.At(finger, step).holdMs_ > 0) {
+                this_thread::sleep_for(chrono::milliseconds(events.At(finger, step).holdMs_));
                 }
             }
         }

@@ -56,7 +56,7 @@ namespace OHOS::uitest {
         void PerformSwipe(TouchOp op, const Point &from, const Point &to, const UiOpArgs &opt, ApiCallErr &err);
 
         /**Perform pinch the given scale.*/
-        void PerformPinch(TouchOp op, const Rect &rectBound, const float_t &scale, const UiOpArgs &opt, ApiCallErr &err);
+        void PerformPinch(TouchOp op, const Rect &rectBd, const float_t &scale, const UiOpArgs &opt, ApiCallErr &err);
 
         /**Delay current thread for given duration.*/
         static void DelayMs(uint32_t ms);

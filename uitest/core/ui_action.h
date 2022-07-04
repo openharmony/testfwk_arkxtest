@@ -60,6 +60,8 @@ namespace OHOS::uitest {
 
         PointerMatrix(uint32_t fingersNum, uint32_t stepsNum);
 
+        PointerMatrix(PointerMatrix&& other);
+
         PointerMatrix& operator=(PointerMatrix && other);
 
         ~PointerMatrix();

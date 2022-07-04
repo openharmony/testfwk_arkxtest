@@ -69,12 +69,10 @@ public:
 
     void InjectTouchEventSequence(const PointerMatrix &events) const override
     {
-        touch_event_records = std::unique_ptr<PointerMatrix>(new PointerMatrix(events.GetFingers(), events.GetSteps()));
-        for (int32_t step = 0; step < events.GetSteps(); step++)
-        {
-            for (int32_t finger = 0; finger < events.GetFingers(); finger++)
-            {
-                touch_event_records->PushAction(events.At(finger,step));
+        touch_event_records = std::make_unique<PointerMatrix>(events.GetFingers(), events.GetSteps());
+        for (int32_t step = 0; step < events.GetSteps(); step++) {
+            for (int32_t finger = 0; finger < events.GetFingers(); finger++) {
+                touch_event_records->PushAction(events.At(finger, step));
             }
         }
     }
@@ -235,7 +233,9 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckSubjectWidget)
     // check the scroll action events, should be acted on the subject node specified by WidgetMatcher
     ASSERT_TRUE(!touch_event_records->Empty());
     auto &firstEvent = touch_event_records->At(0,0);
-    auto &lastEvent = touch_event_records->At(touch_event_records->GetFingers() - 1,touch_event_records->GetSteps() - 1);
+    auto fin = touch_event_records->GetFingers() - 1;
+    auto ste = touch_event_records->GetSteps() - 1;
+    auto &lastEvent = touch_event_records->At(fin, ste);
     // check scroll event pointer_x
     int32_t subjectCx = (0 + 600) / 2;
     ASSERT_NEAR(firstEvent.point_.px_, subjectCx, 5);
@@ -247,11 +247,11 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckSubjectWidget)
     int32_t minCy = 1E5;
     for (int32_t finger = 0; finger < touch_event_records->GetFingers(); finger++) {
         for (int32_t step = 0; step < touch_event_records->GetSteps(); step++) {
-            if (touch_event_records->At(finger,step).point_.py_ > maxCy) {
-            maxCy = touch_event_records->At(finger,step).point_.py_;
+            if (touch_event_records->At(finger, step).point_.py_ > maxCy) {
+            maxCy = touch_event_records->At(finger, step).point_.py_;
             }
-            if (touch_event_records->At(finger,step).point_.py_ < minCy) {
-            minCy = touch_event_records->At(finger,step).point_.py_;
+            if (touch_event_records->At(finger, step).point_.py_ < minCy) {
+            minCy = touch_event_records->At(finger, step).point_.py_;
             }
         }
     }
@@ -299,7 +299,7 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckDirection)
     int32_t maxCyEventIndex = 0;
     uint32_t index = 0;
     for (int32_t event = 0; event < touch_event_records->GetSize() - 1; event++) {
-        if (touch_event_records->At(0,event).point_.py_ > touch_event_records->At(0,maxCyEventIndex).point_.py_) {
+        if (touch_event_records->At(0, event).point_.py_ > touch_event_records->At(0, maxCyEventIndex).point_.py_) {
             maxCyEventIndex = index;
         }
         index++;
@@ -307,9 +307,9 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckDirection)
 
     for (size_t idx = 0; idx < touch_event_records->GetSize() - 1; idx++) {
         if (idx < maxCyEventIndex) {
-            ASSERT_LT(touch_event_records->At(0,idx).point_.py_, touch_event_records->At(0,idx + 1).point_.py_);
+            ASSERT_LT(touch_event_records->At(0, idx).point_.py_, touch_event_records->At(0, idx + 1).point_.py_);
         } else if (idx > maxCyEventIndex) {
-            ASSERT_GT(touch_event_records->At(0,idx).point_.py_, touch_event_records->At(0,idx + 1).point_.py_);
+            ASSERT_GT(touch_event_records->At(0, idx).point_.py_, touch_event_records->At(0, idx + 1).point_.py_);
         }
     }
 }

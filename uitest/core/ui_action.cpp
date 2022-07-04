@@ -82,9 +82,9 @@ namespace OHOS::uitest {
         pointer.PushAction(TouchEvent {ActionStage::UP, {to.px_, to.py_}, timeCostMs, intervalMs});
         if (drag) {
             // drag needs longPressDown firstly
-            pointer.At(fingers - 1,0).holdMs_ += options.longClickHoldMs_;
+            pointer.At(fingers - 1, 0).holdMs_ += options.longClickHoldMs_;
             for (uint32_t idx = 1; idx < pointer.GetSize(); idx++) {
-                pointer.At(fingers - 1,idx).downTimeOffsetMs_ += options.longClickHoldMs_;
+                pointer.At(fingers - 1, idx).downTimeOffsetMs_ += options.longClickHoldMs_;
             }
         }
         recv = move(pointer);
@@ -140,16 +140,16 @@ namespace OHOS::uitest {
             auto toPoint0 = Point((rectBound.left_ + distanceX0), rectBound.GetCenterY());
             auto fromPoint1 = Point(rectBound.right_ - options.scrollWidgetDeadZone_, rectBound.GetCenterY());
             auto toPoint1 = Point((rectBound.right_ - distanceX0), rectBound.GetCenterY());
-            DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0,type_ == TouchOp::DRAG, options);
+            DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, type_ == TouchOp::DRAG, options);
             DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, type_ == TouchOp::DRAG, options);
         }
 
         PointerMatrix pointer3(pointer1.GetFingers() + pointer2.GetFingers(), pointer1.GetSteps());
         for (uint32_t index = 0; index < pointer1.GetSize(); index++) {
-            pointer3.PushAction(pointer1.At(0,index));
+            pointer3.PushAction(pointer1.At(0, index));
         }
         for (uint32_t index = 0; index < pointer2.GetSize(); index++) {
-            pointer3.PushAction(pointer2.At(0,index));
+            pointer3.PushAction(pointer2.At(0, index));
         }
         recv = move(pointer3);
     }
@@ -162,7 +162,7 @@ namespace OHOS::uitest {
         this->stepNum_ = stepsNum;
         this->capacity_ = this->fingerNum_ * this->stepNum_;
         this->size_ = 0;
-        this->data_ = std::unique_ptr<TouchEvent[]>(new TouchEvent[this->capacity_]);
+        this->data_ = std::make_unique<TouchEvent[]>(this->capacity_);
     }
 
     PointerMatrix& PointerMatrix::operator=(PointerMatrix && other)

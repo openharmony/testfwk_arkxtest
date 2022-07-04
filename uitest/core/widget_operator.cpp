@@ -125,7 +125,7 @@ namespace OHOS::uitest {
     void WidgetOperator::pinchWidget(float_t scale, ApiCallErr &error) const
     {
         auto retrieved = driver_.RetrieveWidget(widget_, error);
-        if (retrieved == nullptr || error.code_ != NO_ERROR) {LOG_I("Return");
+        if (retrieved == nullptr || error.code_ != NO_ERROR) {
             return;
         }
         auto matcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HIERARCHY], "ROOT", ValueMatchPattern::EQ);
@@ -142,7 +142,9 @@ namespace OHOS::uitest {
             }
         auto rootBound = recv.front()->GetBounds();
         auto rectBound = widget_.GetBounds();
-        auto originalScale = min((float_t)(rootBound.GetWidth() / rectBound.GetWidth()), (float)(rootBound.GetHeight() / rectBound.GetHeight()));
+        auto widthScale = (float_t)(rootBound.GetWidth() / rectBound.GetWidth());
+        auto heightScale = (float_t)(rootBound.GetHeight() / rectBound.GetHeight());
+        auto originalScale = min(widthScale, heightScale);
         if (scale < 0) {
             error = ApiCallErr(USAGE_ERROR, "Please input the correct scale");
             return;
