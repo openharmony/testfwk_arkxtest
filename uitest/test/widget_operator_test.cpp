@@ -232,7 +232,7 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckSubjectWidget)
     ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
     // check the scroll action events, should be acted on the subject node specified by WidgetMatcher
     ASSERT_TRUE(!touch_event_records->Empty());
-    auto &firstEvent = touch_event_records->At(0,0);
+    auto &firstEvent = touch_event_records->At(0, 0);
     auto fin = touch_event_records->GetFingers() - 1;
     auto ste = touch_event_records->GetSteps() - 1;
     auto &lastEvent = touch_event_records->At(fin, ste);

@@ -181,7 +181,6 @@ TEST_F(UiActionTest, computePinchInAction)
 
     const int32_t disX0 = abs(rect.left_ - rect.GetCenterX()) * abs(scale - 1);
     ASSERT_EQ(75, disX0);
-    const uint32_t totalCostMs = disX0 * 1000 / opt.swipeVelocityPps_;
 
     uint32_t step = 0;
     // check the TouchEvent of each step
@@ -239,7 +238,6 @@ TEST_F(UiActionTest, computePinchOutAction)
 
     const int32_t disX0 = abs(rect.left_ - rect.GetCenterX()) * abs(scale - 1);
     ASSERT_EQ(75, disX0);
-    const uint32_t totalCostMs = disX0 * 1000 / opt.swipeVelocityPps_;
 
     uint32_t step = 0;
     // check the TouchEvent of each step

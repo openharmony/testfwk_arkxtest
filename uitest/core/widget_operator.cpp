@@ -133,10 +133,10 @@ namespace OHOS::uitest {
         selector.AddMatcher(matcher);
         vector<unique_ptr<Widget>> recv;
         driver_.FindWidgets(selector, recv, error);
-        if (error.code_!=ErrCode::NO_ERROR){
+        if (error.code_ != ErrCode::NO_ERROR) {
             return;
         }
-        if (recv.empty()){
+        if (recv.empty()) {
             error = ApiCallErr(INTERNAL_ERROR, "Cannot find root widget");
                 return;
             }
