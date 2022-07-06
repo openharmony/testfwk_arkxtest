@@ -72,6 +72,33 @@ export interface Assert {
 
 export function expect(actualValue?: any): Assert
 
+export function when(mockedFounction: MockedFunc): MockedFunc
+
+export function MockedFunc(arg: ArgMatchers): MockedFuncReturn
+
+export interface ArgMatchers {
+   any():void
+   anyString():void
+   anyBoolean():void
+   anyNumber():void
+   anyObj():void
+   anyFounction():void
+   matchRegexs(Regex: RegExp):void
+}
+
+export interface MockedFuncReturn{
+  afterReturn(value: any):any
+  afterReturnNothing():undefined
+  afterAction(action: any):any
+  afterThrow(e_msg: string):string
+  clear():void
+}
+
+export class MockKit {
+  constructor(): MockKit
+  mockFunc(func: Function): MockedFunc
+}
+
 export class SysTestKit {
     static actionStart(tag: string): void
     static actionEnd(tag: string): void
