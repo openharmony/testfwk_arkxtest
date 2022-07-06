@@ -122,60 +122,19 @@ namespace OHOS::uitest {
         return &retrieved;
     }
 
-    void UiDriver::InjectClick(TouchOp type, const Point &point, const UiOpArgs &opt)
-    {
-        auto action = GenericClick(type);
-        PointerMatrix events;
-        action.Decompose(events, point, opt);
-        if (events.Empty()) {
-            return;
-        }
-        uiController_->InjectTouchEventSequence(events);
-        uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
-    }
-
-    void UiDriver::InjectSwipe(TouchOp type, const Point &point0, const Point &point1, const UiOpArgs &options)
-    {
-        auto action = GenericSwipe(type);
-        PointerMatrix events;
-        action.Decompose(events, point0, point1, options);
-        if (events.Empty()) {
-            return;
-        }
-        uiController_->InjectTouchEventSequence(events);
-        uiController_->WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
-    }
-
-    void UiDriver::InjectPinch(TouchOp type, const Rect &rectBound, const float_t & scale, const UiOpArgs &options)
-    {
-        auto action = GenericPinch(type);
-        PointerMatrix events;
-        action.DecomposePinch(events, rectBound, scale, options);
-        if (events.Empty()) {
-            return;
-        }
-        uiController_->InjectTouchEventSequence(events);
-        uiController_->WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
-    }
-
-    void UiDriver::InjectKey(const KeyAction &action, const UiOpArgs &options)
-    {
-        vector<KeyEvent> events;
-        action.ComputeEvents(events, options);
-        if (events.empty()) {
-            return;
-        }
-        uiController_->InjectKeyEventSequence(events);
-        uiController_->WaitForUiSteady(options.uiSteadyThresholdMs_, options.waitUiSteadyMaxMs_);
-    }
-
     void UiDriver::TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error)
     {
         UpdateUi(false, error);
         if (error.code_ != NO_ERROR) {
             return;
         }
-        InjectKey(key, opt);
+        vector<KeyEvent> events;
+        key.ComputeEvents(events, opt);
+        if (events.empty()) {
+            return;
+        }
+        uiController_->InjectKeyEventSequence(events);
+        uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
     }
 
     void UiDriver::FindWidgets(const WidgetSelector &select, vector<unique_ptr<Widget>> &rev,
@@ -226,32 +185,21 @@ namespace OHOS::uitest {
         }
     }
 
-    void UiDriver::PerformClick(TouchOp op, const Point &point, const UiOpArgs &opt, ApiCallErr &err)
+    void UiDriver::PerformTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err)
     {
         UpdateUi(false, err);
         if (err.code_ != NO_ERROR) {
             return;
         }
-        InjectClick(op, point, opt);
+        PointerMatrix events;
+        touch.Decompose(events, opt);
+        if (events.Empty()) {
+            return;
+        }
+        uiController_->InjectTouchEventSequence(events);
+        uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
     }
 
-    void UiDriver::PerformSwipe(TouchOp op, const Point &from, const Point &to, const UiOpArgs &opt, ApiCallErr &err)
-    {
-        UpdateUi(false, err);
-        if (err.code_ != NO_ERROR) {
-            return;
-        }
-        InjectSwipe(op, from, to, opt);
-    }
-
-    void UiDriver::PerformPinch(TouchOp op, const Rect &recB, const float_t &scl, const UiOpArgs &opt, ApiCallErr &err)
-    {
-        UpdateUi(false, err);
-        if (err.code_ != NO_ERROR) {
-            return;
-        }
-        InjectPinch(op, recB, scl, opt);
-    }
     void UiDriver::TakeScreenCap(string_view savePath, ApiCallErr &err)
     {
         UpdateUi(false, err);

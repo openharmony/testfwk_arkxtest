@@ -90,18 +90,18 @@ namespace OHOS::uitest {
         recv = move(pointer);
     }
 
-    void GenericClick::Decompose(PointerMatrix &recv, const Point &point, const UiOpArgs &options) const
+    void GenericClick::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
     {
         DCHECK(type_ >= TouchOp::CLICK && type_ <= TouchOp::DOUBLE_CLICK_P);
         switch (type_) {
             case CLICK:
-                DecomposeClick(recv, point, options);
+                DecomposeClick(recv, point_, options);
                 break;
             case LONG_CLICK:
-                DecomposeLongClick(recv, point, options);
+                DecomposeLongClick(recv, point_, options);
                 break;
             case DOUBLE_CLICK_P:
-                DecomposeDoubleClick(recv, point, options);
+                DecomposeDoubleClick(recv, point_, options);
                 break;
             default:
                 break;
@@ -111,37 +111,34 @@ namespace OHOS::uitest {
         }
     }
 
-    void GenericSwipe::Decompose(PointerMatrix &recv, const Point &fromPoint, const Point &toPoint,
-                                 const UiOpArgs &options) const
+    void GenericSwipe::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
     {
         DCHECK(type_ >= TouchOp::SWIPE && type_ <= TouchOp::DRAG);
-        DecomposeComputeSwipe(recv, fromPoint, toPoint, type_ == TouchOp::DRAG, options);
+        DecomposeComputeSwipe(recv, from_, to_, type_ == TouchOp::DRAG, options);
         for (uint32_t index = 0; index < recv.GetSize(); index++) {
             recv.At(recv.GetFingers() - 1, index).flags_ = type_;
         }
     }
 
-    void GenericPinch::DecomposePinch(PointerMatrix &recv, const Rect &rectBound, const float_t & scale,
-                                      const UiOpArgs &options) const
+    void GenericPinch::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
     {
-        DCHECK(type_ == TouchOp::PINCH);
-        const int32_t distanceX0 = abs(rectBound.GetCenterX() - rectBound.left_) * abs(scale - 1);
+        const int32_t distanceX0 = abs(rect_.GetCenterX() - rect_.left_) * abs(scale_ - 1);
         PointerMatrix pointer1;
         PointerMatrix pointer2;
-        if (scale > 1) {
-            auto fromPoint0 = Point(rectBound.GetCenterX() - options.scrollWidgetDeadZone_, rectBound.GetCenterY());
-            auto toPoint0 = Point((rectBound.GetCenterX() - distanceX0), rectBound.GetCenterY());
-            auto fromPoint1 = Point(rectBound.GetCenterX() + options.scrollWidgetDeadZone_, rectBound.GetCenterY());
-            auto toPoint1 = Point((rectBound.GetCenterX() + distanceX0), rectBound.GetCenterY());
-            DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, type_ == TouchOp::DRAG, options);
-            DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, type_ == TouchOp::DRAG, options);
-        } else if (scale < 1) {
-            auto fromPoint0 = Point(rectBound.left_ + options.scrollWidgetDeadZone_, rectBound.GetCenterY());
-            auto toPoint0 = Point((rectBound.left_ + distanceX0), rectBound.GetCenterY());
-            auto fromPoint1 = Point(rectBound.right_ - options.scrollWidgetDeadZone_, rectBound.GetCenterY());
-            auto toPoint1 = Point((rectBound.right_ - distanceX0), rectBound.GetCenterY());
-            DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, type_ == TouchOp::DRAG, options);
-            DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, type_ == TouchOp::DRAG, options);
+        if (scale_ > 1) {
+            auto fromPoint0 = Point(rect_.GetCenterX() - options.scrollWidgetDeadZone_, rect_.GetCenterY());
+            auto toPoint0 = Point((rect_.GetCenterX() - distanceX0), rect_.GetCenterY());
+            auto fromPoint1 = Point(rect_.GetCenterX() + options.scrollWidgetDeadZone_, rect_.GetCenterY());
+            auto toPoint1 = Point((rect_.GetCenterX() + distanceX0), rect_.GetCenterY());
+            DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, false, options);
+            DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, false, options);
+        } else if (scale_ < 1) {
+            auto fromPoint0 = Point(rect_.left_ + options.scrollWidgetDeadZone_, rect_.GetCenterY());
+            auto toPoint0 = Point((rect_.left_ + distanceX0), rect_.GetCenterY());
+            auto fromPoint1 = Point(rect_.right_ - options.scrollWidgetDeadZone_, rect_.GetCenterY());
+            auto toPoint1 = Point((rect_.right_ - distanceX0), rect_.GetCenterY());
+            DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, false, options);
+            DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, false, options);
         }
 
         PointerMatrix pointer3(pointer1.GetFingers() + pointer2.GetFingers(), pointer1.GetSteps());
@@ -190,7 +187,7 @@ namespace OHOS::uitest {
         this->size_++;
     }
 
-    bool PointerMatrix::Empty()
+    bool PointerMatrix::Empty() const
     {
         if (this->size_ == 0) {
             return true;
@@ -198,24 +195,19 @@ namespace OHOS::uitest {
         return false;
     }
 
-    TouchEvent & PointerMatrix::At(uint32_t fingerIndex, uint32_t stepIndex)
+    TouchEvent& PointerMatrix::At(uint32_t fingerIndex, uint32_t stepIndex)
     {
         return *(this->data_.get() + (fingerIndex * this->stepNum_ + stepIndex));
     }
 
-    TouchEvent & PointerMatrix::At(uint32_t fingerIndex, uint32_t stepIndex) const
+    TouchEvent& PointerMatrix::At(uint32_t fingerIndex, uint32_t stepIndex) const
     {
         return *(this->data_.get() + (fingerIndex * this->stepNum_ + stepIndex));
     }
 
-    uint32_t PointerMatrix::GetCapacity()
+    uint32_t PointerMatrix::GetCapacity() const
     {
         return this->capacity_;
-    }
-
-    uint32_t PointerMatrix::GetSize()
-    {
-        return this->size_;
     }
 
     uint32_t PointerMatrix::GetSize() const
@@ -223,19 +215,9 @@ namespace OHOS::uitest {
         return this->size_;
     }
 
-    uint32_t PointerMatrix::GetSteps()
-    {
-        return this->stepNum_;
-    }
-
     uint32_t PointerMatrix::GetSteps() const
     {
         return this->stepNum_;
-    }
-
-    uint32_t PointerMatrix::GetFingers()
-    {
-        return this->fingerNum_;
     }
 
     uint32_t PointerMatrix::GetFingers() const
