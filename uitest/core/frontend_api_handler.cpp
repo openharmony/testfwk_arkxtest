@@ -419,16 +419,16 @@ namespace OHOS::uitest {
             auto matcher = [&filterJson](const Window &window) -> bool {
                 bool match = true;
                 if (filterJson.contains("bundleName")) {
-                    match &= filterJson["bundleName"].get<string>() == window.bundleName_;
+                    match = match && (filterJson["bundleName"].get<string>() == window.bundleName_);
                 }
                 if (filterJson.contains("title")) {
-                    match &= filterJson["title"].get<string>() == window.title_;
+                    match = match && (filterJson["title"].get<string>() == window.title_);
                 }
                 if (filterJson.contains("focused")) {
-                    match &= filterJson["focused"].get<bool>() == window.focused_;
+                    match = match && (filterJson["focused"].get<bool>() == window.focused_);
                 }
                 if (filterJson.contains("actived")) {
-                    match &= filterJson["actived"].get<bool>() == window.actived_;
+                    match = match && (filterJson["actived"].get<bool>() == window.actived_);
                 }
                 return match;
             };
@@ -513,9 +513,11 @@ namespace OHOS::uitest {
                 point1 = Point(ReadCallArg<int32_t>(in, INDEX_TWO), ReadCallArg<int32_t>(in, INDEX_THREE));
             }
             if (op == TouchOp::SWIPE || op == TouchOp::DRAG) {
-                driver.PerformSwipe(op, point0, point1, uiOpArgs, out.exception_);
+                auto touch = GenericSwipe(op, point0, point1);
+                driver.PerformTouch(touch, uiOpArgs, out.exception_);
             } else {
-                driver.PerformClick(op, point0, uiOpArgs, out.exception_);
+                auto touch = GenericClick(op, point0);
+                driver.PerformTouch(touch, uiOpArgs, out.exception_);
             }
         };
         server.AddHandler("UiDriver.click", genericClick);
@@ -599,10 +601,10 @@ namespace OHOS::uitest {
             } else if (in.apiId_ == "UiComponent.doubleClick") {
                 wOp.GenericClick(TouchOp::DOUBLE_CLICK_P, out.exception_);
             } else if (in.apiId_ == "UiComponent.scrollToTop") {
-                uiOpArgs.swipeVelocityPps_ = ReadCallArg<int32_t>(in, INDEX_ZERO, uiOpArgs.swipeVelocityPps_);
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_ZERO, uiOpArgs.swipeVelocityPps_);
                 wOp.ScrollToEnd(true, out.exception_);
             } else if (in.apiId_ == "UiComponent.scrollToBottom") {
-                uiOpArgs.swipeVelocityPps_ = ReadCallArg<int32_t>(in, INDEX_ZERO, uiOpArgs.swipeVelocityPps_);
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_ZERO, uiOpArgs.swipeVelocityPps_);
                 wOp.ScrollToEnd(false, out.exception_);
             } else if (in.apiId_ == "UiComponent.dragTo") {
                 auto &widgetTo = GetBackendObject<Widget>(ReadCallArg<string>(in, INDEX_ZERO));
@@ -616,10 +618,10 @@ namespace OHOS::uitest {
                 wOp.ScrollFindWidget(selector, out.exception_);
             } else if (in.apiId_ == "UiComponent.pinchOut") {
                 auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
-                wOp.pinchWidget(pinchScale, out.exception_);
+                wOp.PinchWidget(pinchScale, out.exception_);
             } else if (in.apiId_ == "UiComponent.pinchIn") {
                 auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
-                wOp.pinchWidget(pinchScale, out.exception_);
+                wOp.PinchWidget(pinchScale, out.exception_);
             }
         };
         server.AddHandler("UiComponent.click", genericOperationHandler);

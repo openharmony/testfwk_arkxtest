@@ -49,10 +49,10 @@ protected:
 
 TEST_F(UiActionTest, computeClickAction)
 {
-    GenericClick action(TouchOp::CLICK);
     Point point {100, 200};
+    GenericClick action(TouchOp::CLICK, point);
     PointerMatrix events;
-    action.Decompose(events, point, customOptions_);
+    action.Decompose(events, customOptions_);
     ASSERT_EQ(2, events.GetSize()); // up & down
     auto & event1 = events.At(0, 0);
     auto & event2 = events.At(0, 1);
@@ -69,10 +69,10 @@ TEST_F(UiActionTest, computeClickAction)
 
 TEST_F(UiActionTest, computeLongClickAction)
 {
-    GenericClick action(TouchOp::LONG_CLICK);
     Point point {100, 200};
+    GenericClick action(TouchOp::LONG_CLICK, point);
     PointerMatrix events;
-    action.Decompose(events, point, customOptions_);
+    action.Decompose(events, customOptions_);
     ASSERT_EQ(2, events.GetSize()); // up & down
     auto & event1 = events.At(0, 0);
     auto & event2 = events.At(0, 1);
@@ -91,10 +91,10 @@ TEST_F(UiActionTest, computeLongClickAction)
 
 TEST_F(UiActionTest, computeDoubleClickAction)
 {
-    GenericClick action(TouchOp::DOUBLE_CLICK_P);
     Point point {100, 200};
+    GenericClick action(TouchOp::DOUBLE_CLICK_P, point);
     PointerMatrix events;
-    action.Decompose(events, point, customOptions_);
+    action.Decompose(events, customOptions_);
     ASSERT_EQ(4, events.GetSize()); // up-down-interval-up-down
     auto & event1 = events.At(0, 0);
     auto & event2 = events.At(0, 1);
@@ -129,9 +129,9 @@ TEST_F(UiActionTest, computeSwipeAction)
     opt.swipeVelocityPps_ = 50; // specify the swipe velocity
     Point point0(0, 0);
     Point point1(100, 200);
-    GenericSwipe action(TouchOp::SWIPE);
+    GenericSwipe action(TouchOp::SWIPE, point0, point1);
     PointerMatrix events;
-    action.Decompose(events, point0, point1, opt);
+    action.Decompose(events, opt);
     // there should be more than 1 touches
     const int32_t steps = events.GetSize() - 1;
     ASSERT_TRUE(steps > 1);
@@ -169,10 +169,10 @@ TEST_F(UiActionTest, computePinchInAction)
     UiOpArgs opt {};
     opt.swipeVelocityPps_ = 50; // specify the swipe velocity
     Rect rect(210, 510, 30, 330);
-    GenericPinch action(TouchOp::PINCH);
     float_t scale = 0.5;
+    GenericPinch action(rect, scale);
     PointerMatrix events;
-    action.DecomposePinch(events, rect, scale, opt);
+    action.Decompose(events, opt);
     // there should be more than 1 touches
     const int32_t steps = events.GetSteps() - 1;
     ASSERT_TRUE(steps > 1);
@@ -226,10 +226,10 @@ TEST_F(UiActionTest, computePinchOutAction)
     UiOpArgs opt {};
     opt.swipeVelocityPps_ = 50; // specify the swipe velocity
     Rect rect(210, 510, 30, 330);
-    GenericPinch action(TouchOp::PINCH);
     float_t scale = 1.5;
+    GenericPinch action(rect, scale);
     PointerMatrix events;
-    action.DecomposePinch(events, rect, scale, opt);
+    action.Decompose(events, opt);
     // there should be more than 1 touches
     const int32_t steps = events.GetSteps() - 1;
     ASSERT_TRUE(steps > 1);
@@ -284,12 +284,12 @@ TEST_F(UiActionTest, computeDragAction)
     opt.longClickHoldMs_ = 2000; // specify the long-click duration
     Point point0(0, 0);
     Point point1(100, 200);
-    GenericSwipe swipeAction(TouchOp::SWIPE);
-    GenericSwipe dragAction(TouchOp::DRAG);
+    GenericSwipe swipeAction(TouchOp::SWIPE, point0, point1);
+    GenericSwipe dragAction(TouchOp::DRAG, point0, point1);
     PointerMatrix swipeEvents;
     PointerMatrix dragEvents;
-    swipeAction.Decompose(swipeEvents, point0, point1, opt);
-    dragAction.Decompose(dragEvents, point0, point1, opt);
+    swipeAction.Decompose(swipeEvents, opt);
+    dragAction.Decompose(dragEvents, opt);
 
     ASSERT_TRUE(swipeEvents.GetSize() > 1);
     ASSERT_EQ(swipeEvents.GetSize(), dragEvents.GetSize());
@@ -323,7 +323,6 @@ TEST_F(UiActionTest, computeBackKeyAction)
 
     ASSERT_EQ(KEYCODE_BACK, event2.code_);
     ASSERT_EQ(ActionStage::UP, event2.stage_);
-    ASSERT_EQ(KEYNAME_BACK, keyAction.Describe()); // test the description
 }
 
 TEST_F(UiActionTest, computePasteAction)
@@ -346,7 +345,6 @@ TEST_F(UiActionTest, computePasteAction)
     ASSERT_EQ(ActionStage::UP, event3.stage_);
     ASSERT_EQ(KEYCODE_CTRL, event4.code_);
     ASSERT_EQ(ActionStage::UP, event4.stage_);
-    ASSERT_EQ(KEYNAME_PASTE, keyAction.Describe());
 }
 
 TEST_F(UiActionTest, anonymousSignleKey)
@@ -364,5 +362,4 @@ TEST_F(UiActionTest, anonymousSignleKey)
 
     ASSERT_EQ(keyCode, event2.code_);
     ASSERT_EQ(ActionStage::UP, event2.stage_);
-    ASSERT_EQ(expectedDesc, anonymousKey.Describe());
 }
