@@ -30,7 +30,7 @@ namespace OHOS::uitest {
 
         void WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const override;
 
-        void InjectTouchEventSequence(const std::vector<TouchEvent> &events) const override;
+        void InjectTouchEventSequence(const PointerMatrix &events) const override;
 
         void InjectKeyEventSequence(const std::vector<KeyEvent> &events) const override;
 
