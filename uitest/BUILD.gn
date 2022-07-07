@@ -19,7 +19,10 @@ source_root = "//test/arkXtest/uitest"
 ability_runtime_path = "//foundation/ability/ability_runtime"
 
 config("uitest_common_configs") {
-  include_dirs = [ "//third_party/json/single_include/nlohmann" ]
+  include_dirs = [
+    "//third_party/json/single_include/nlohmann",
+    "//foundation/mutimodalinput/input/interfaces",
+  ]
   cflags = [
     "-Wfloat-equal",
     "-Wformat=2",
