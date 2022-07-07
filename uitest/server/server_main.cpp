@@ -67,7 +67,7 @@ namespace OHOS::uitest {
     int g_newTime;
     int g_indexTime;
     int g_pressTime;
-    int g_thousandMilliseconds = 1000;
+    int g_timeIndex = 1000;
     int g_timeInterval = 5000;
     int g_actionInterval = 300;
     int g_pressDuration = 600;
@@ -135,7 +135,7 @@ namespace OHOS::uitest {
                 outFile_ << data.yPosi << ',';
                 outFile_ << data.x2Posi << ',';
                 outFile_ << data.y2Posi << ',';
-                outFile_ << ((data.interval + g_thousandMilliseconds - 1) / g_thousandMilliseconds) << std::endl;
+                outFile_ << ((data.interval + g_timeIndex - 1) / g_timeIndex) << std::endl;
             }
 
             static void ReadEventLine(std::ifstream &inFile)
@@ -167,7 +167,7 @@ namespace OHOS::uitest {
                                 << y2Posi << ";"
                                 << interval << std::endl;
                     }
-                    usleep(interval * g_thousandMilliseconds);
+                    usleep(interval * g_timeIndex);
                 }
             }
         };
@@ -422,7 +422,7 @@ namespace OHOS::uitest {
                     int alpha = g_timesVector.size();
                     data.interval = g_timesVector.back()-g_timesVector[alpha - TWO];
             } else {
-                    data.interval = g_thousandMilliseconds;
+                    data.interval = g_timeIndex;
             }
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
                     g_newTime = GetMillisTime();
@@ -433,7 +433,9 @@ namespace OHOS::uitest {
             }
             if (pointerEvent->GetPointerAction() != MMI::PointerEvent::POINTER_ACTION_UP) {
                 g_eventsVector.push_back(item);
-                if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN || pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
+                if (
+                    pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN || 
+                    pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
                     g_mmiTimesVector.push_back(g_touchTime);
                 }
             } else {
@@ -471,7 +473,7 @@ namespace OHOS::uitest {
                             << " yPosi:" << data.yPosi
                             << " x2Posi:" << data.x2Posi
                             << " y2Posi:" << data.y2Posi
-                            << " interval:" << ((data.interval + g_thousandMilliseconds - 1) / g_thousandMilliseconds) << std::endl;
+                            << " interval:" << ((data.interval + g_timeIndex - 1) / g_timeIndex) << std::endl;
 
                 g_eventsVector.clear();
             }
