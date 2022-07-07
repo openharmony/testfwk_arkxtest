@@ -434,7 +434,7 @@ namespace OHOS::uitest {
             if (pointerEvent->GetPointerAction() != MMI::PointerEvent::POINTER_ACTION_UP) {
                 g_eventsVector.push_back(item);
                 if (
-                    pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN || 
+                    pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN ||
                     pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
                     g_mmiTimesVector.push_back(g_touchTime);
                 }
