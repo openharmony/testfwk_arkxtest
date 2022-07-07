@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import ExtendInterface from "@ohos/hypium/src/module/mock/ExtendInterface";
+import ExtendInterface from "./ExtendInterface";
 import {
     ArgumentMatchers,
     any,
@@ -25,7 +25,7 @@ import {
     matcheReturnKey,
     matcheStubKey,
     isRegExp,
-} from "@ohos/hypium/src/module/mock/ArgumentMatchers";
+} from "./ArgumentMatchers";
 
 class MockKit {
     constructor() {
