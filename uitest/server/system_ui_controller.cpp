@@ -294,8 +294,8 @@ namespace OHOS::uitest {
                 pointerEvent->SetPointerId(finger);
                 PointerEvent::PointerItem pinterItem;
                 pinterItem.SetPointerId(finger);
-                pinterItem.SetGlobalX(events.At(finger, step).point_.px_);
-                pinterItem.SetGlobalY(events.At(finger, step).point_.py_);
+                pinterItem.SetDisplayX(events.At(finger, step).point_.px_);
+                pinterItem.SetDisplayY(events.At(finger, step).point_.py_);
                 switch (events.At(finger, step).stage_) {
                     case ActionStage::DOWN:
                         pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_DOWN);
