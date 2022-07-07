@@ -132,43 +132,41 @@ export default async function abilityTest() {
 
 -  **API列表：**
 
-| No. | 调用方 | API | 功能说明 |
-| --- | --- | --- | --- |
-| 1 | mockKit对象 |  mockFunc( f：founction )：founction() |    对定义的方法进行mock后修改方法的行为,返回一个被修改后的方法 |
-| 2 | func  | when(mockedfunc：function) | 对传入后方法做检查，检查是否被mock并标记过，返回的是一个方法声明 |
-| 3 | func  | afterReturn(x：value) | 设定预期返回一个自定义的值value，比如某个字符串 |
-| 4 | func  | afterReturnNothing() | 设定预期没有返回值，即 undefine |
-| 5 | func  | afterAction(x：action) | 设定预期返回一个函数执行的操作 |
-| 6 | func  | afterThrow(x：msg) | 设定预期抛出异常，并指定异常msg |
-| 7 | mockKit对象  | clear() | 用例执行完毕后，进行数据mocker对象的清理，清理后无法再成功执行用例 |
-| 8 | func接收的参数  | any | 设定用户传任何类型参数（undefine和null除外），执行的结果都是预期的值 |
-| 9 | func接收的参数  | anyString | 设定用户传任何字符串参数，执行的结果都是预期的值 |
-| 10 | func接收的参数  | anyBoolean | 设定用户传任何boolean类型参数，执行的结果都是预期的值 |
-| 11 | func接收的参数  | anyFounction | 设定用户传任何function类型参数，执行的结果都是预期的值 |
-| 12 | func接收的参数  | anyNumber | 设定用户传任何数字类型参数，执行的结果都是预期的值 |
-| 13 | func接收的参数  | anyObj | 设定用户传任何对象类型参数，执行的结果都是预期的值 |
-| 14 | func接收的参数  | matchRegexs(Regex) | 设定用户传任何正则表达式类型参数Regex，执行的结果都是预期的值 |
+| No. | API | 功能说明 |
+| --- | --- | --- |
+| 1 |  mockFunc( f：founction )：founction() |    对定义的方法进行mock后修改方法的行为,返回一个被修改后的方法 |
+| 2 | when(mockedfunc：function) | 对传入后方法做检查，检查是否被mock并标记过，返回的是一个方法声明 |
+| 3 |afterReturn(x：value) | 设定预期返回一个自定义的值value，比如某个字符串 |
+| 4 | afterReturnNothing() | 设定预期没有返回值，即 undefine |
+| 5 |  afterAction(x：action) | 设定预期返回一个函数执行的操作 |
+| 6 |  afterThrow(x：msg) | 设定预期抛出异常，并指定异常msg |
+| 7 |  clear() | 用例执行完毕后，进行数据mocker对象的清理 |
+| 8 |  any | 设定用户传任何类型参数（undefine和null除外），执行的结果都是预期的值 |
+| 9 |  anyString | 设定用户传任何字符串参数，执行的结果都是预期的值 |
+| 10 |  anyBoolean | 设定用户传任何boolean类型参数，执行的结果都是预期的值 |
+| 11 |  anyFounction | 设定用户传任何function类型参数，执行的结果都是预期的值 |
+| 12 | anyNumber | 设定用户传任何数字类型参数，执行的结果都是预期的值 |
+| 13 | anyObj | 设定用户传任何对象类型参数，执行的结果都是预期的值 |
+| 14 | matchRegexs(Regex) | 设定用户传任何正则表达式类型参数Regex，执行的结果都是预期的值 |
 
 -  **使用示例：**
 
 用户可以通过一下方式进行引入mock模块进行测试用例编写：
 
 ```javascript
-//必须引入的mock能力模块api
-import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
+//必须引入的mock能力模块api: MockKit, when, mockFunc等
 //根据自己用例需要引入断言能力api
-import {describe, expect} from '@ohos/hypium'
+import { describe, expect, it, MockKit, when, mockFunc } from '@ohos/hypium'
 ```
 **示例1：afterReturn 的使用**
 
 ```javascript
-import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
-import {describe, expect} from '@ohos/hypium'
+import { describe, expect, it, MockKit, when, mockFunc } from '@ohos/hypium'
 
 export default function ActsAbilityTest() {
     describe('ActsAbilityTest', function () {
         it('testMockfunc', 0, function () {
-            console.info("it1 begin")
+            console.info("it1 begin");
             
             //1.创建一个mock能力的对象MockKit
             let mocker = new MockKit();
@@ -176,7 +174,7 @@ export default function ActsAbilityTest() {
             //2.定义需要被mock的方法func
             var func = function() {
                 return "test";
-            }
+            };
             
             //3.把api mockFunc定义给mocker对象
             mocker.mockFunc = mockFunc;
@@ -204,13 +202,12 @@ export default function ActsAbilityTest() {
 **示例2： afterReturnNothing 的使用**
 
 ```javascript
-import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
-import {describe, expect} from '@ohos/hypium'
+import { describe, expect, it, MockKit, when, mockFunc } from '@ohos/hypium'
 
 export default function ActsAbilityTest() {
     describe('ActsAbilityTest', function () {
         it('testMockfunc', 0, function () {
-            console.info("it1 begin")
+            console.info("it1 begin");
             
             //1.创建一个mock能力的对象MockKit
             let mocker = new MockKit();
@@ -218,7 +215,7 @@ export default function ActsAbilityTest() {
             //2.定义需要被mock的方法func
             var func = function() {
                 return "test";
-            }
+            };
             
             //3.把api mockFunc定义给mocker对象
             mocker.mockFunc = mockFunc;
@@ -248,14 +245,12 @@ import {any} from '@ohos/hypium/src/module/mock/ArgumentMatchers'
 
 
 ```javascript
-import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
-import {any} from '@ohos/hypium/src/module/mock/ArgumentMatchers'
-import {describe, expect} from '@ohos/hypium'
+import { describe, expect, it, MockKit, when, mockFunc, any} from '@ohos/hypium'
 
 export default function ActsAbilityTest() {
     describe('ActsAbilityTest', function () {
         it('testMockfunc', 0, function () {
-            console.info("it1 begin")
+            console.info("it1 begin");
             
             //1.创建一个mock能力的对象MockKit
             let mocker = new MockKit();
@@ -263,7 +258,7 @@ export default function ActsAbilityTest() {
             //2.定义需要被mock的方法func
             var func = function() {
                 return "test";
-            }
+            };
             
             //3.把api mockFunc定义给mocker对象
             mocker.mockFunc = mockFunc;
@@ -289,14 +284,12 @@ export default function ActsAbilityTest() {
 
 **示例4： 设定参数类型为anyString,anyBoolean等 的使用**
 ```javascript
-import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
-import { anyString} from '@ohos/hypium/src/module/mock/ArgumentMatchers'
-import {describe, expect} from '@ohos/hypium'
+import { describe, expect, it, MockKit, when, mockFunc, anyString} from '@ohos/hypium'
 
 export default function ActsAbilityTest() {
     describe('ActsAbilityTest', function () {
         it('testMockfunc', 0, function () {
-            console.info("it1 begin")
+            console.info("it1 begin");
             
             //1.创建一个mock能力的对象MockKit
             let mocker = new MockKit();
@@ -304,7 +297,7 @@ export default function ActsAbilityTest() {
             //2.定义需要被mock的方法func
             var func = function() {
                 return "test";
-            }
+            };
             
             //3.把api mockFunc定义给mocker对象
             mocker.mockFunc = mockFunc;
@@ -326,14 +319,12 @@ export default function ActsAbilityTest() {
 
 **示例5： 设定参数类型为matchRegexs（Regex）等 的使用**
 ```javascript
-import { MockKit,when,mockFunc} from '@ohos/hypium/src/module/mock/MockKit'
-import { matchRegexs} from '@ohos/hypium/src/module/mock/ArgumentMatchers'
-import {describe, expect} from '@ohos/hypium'
+import { describe, expect, it, MockKit, when, mockFunc, matchRegexs} from '@ohos/hypium'
 
 export default function ActsAbilityTest() {
     describe('ActsAbilityTest', function () {
         it('testMockfunc', 0, function () {
-            console.info("it1 begin")
+            console.info("it1 begin");
             
             //1.创建一个mock能力的对象MockKit
             let mocker = new MockKit();
@@ -341,7 +332,7 @@ export default function ActsAbilityTest() {
             //2.定义需要被mock的方法func
             var func = function() {
                 return "test";
-            }
+            };
             
             //3.把api mockFunc定义给mocker对象
             mocker.mockFunc = mockFunc;
