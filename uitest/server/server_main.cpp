@@ -43,26 +43,6 @@ using namespace std::chrono;
 
 namespace OHOS::uitest {
     const std::string HELP_MSG =
-    "   help,          help messages\n"
-    "   screenCap,                  \n"
-    "   dumpLayout,                 \n"
-    "   uiRecord -record,     record\n"
-    "   uiRecord -read,     readfile\n";
-    int g_touchTime;
-    int g_newTime;
-    int g_indexTime;
-    int g_pressTime;
-    int g_timeIndex = 1000;
-    int g_timeInterval = 5000;
-    int g_actionInterval = 300;
-    int g_pressDuration = 600;
-    int g_maxDistance = 16;
-
-    using namespace std;
-using namespace std::chrono;
-
-namespace OHOS::uitest {
-    const std::string HELP_MSG =
     "   help,                                            print help messages\n"
     "   screenCap,                                                          \n"
     "   dumpLayout,                                                         \n"
@@ -77,13 +57,21 @@ namespace OHOS::uitest {
     int g_actionInterval = 300;
     int g_pressDuration = 600;
     int g_maxDistance = 16;
-    int g_zero = 0;
     std::ofstream outFile;
     std::string g_operationType[5] = {"click", "longClick", "doubleClick", "swipe", "drag"};
     TouchOp touchop = CLICK;
     vector<MMI::PointerEvent::PointerItem> g_eventsVector;
     vector<int> g_timesVector;
     vector<int> g_mmiTimesVector;
+    
+    enum IndexNumber {
+        INDEX_ZERO,
+        INDEX_ONE,
+        INDEX_TWO,
+        INDEX_THREE,
+        INDEX_FOUR,
+        INDEX_FIVE
+    };
 
     namespace {
         std::string operationType_[5] = {"click", "longClick", "doubleClick", "swipe", "drag"};
@@ -143,12 +131,12 @@ namespace OHOS::uitest {
                     inFile >> buffer;
                     std::string delim = ",";
                     auto caseInfo = TestUtils::split(buffer, delim);
-                    Type = caseInfo[g_zero];
-                    xPosi = std::stoi(caseInfo[g_zero + 1]);
-                    yPosi = std::stoi(caseInfo[g_zero + 2]);
-                    x2Posi = std::stoi(caseInfo[g_zero + 3]);
-                    y2Posi = std::stoi(caseInfo[g_zero + 4]);
-                    interval = std::stoi(caseInfo[g_zero + 5]);
+                    Type = caseInfo[INDEX_ZERO];
+                    xPosi = std::stoi(caseInfo[INDEX_ONE]);
+                    yPosi = std::stoi(caseInfo[INDEX_TWO]);
+                    x2Posi = std::stoi(caseInfo[INDEX_THREE]);
+                    y2Posi = std::stoi(caseInfo[INDEX_FOUR]);
+                    interval = std::stoi(caseInfo[INDEX_FIVE]);
                     if (inFile.fail()) {
                         break;
                     } else {
@@ -332,7 +320,7 @@ namespace OHOS::uitest {
         return exitCode;
     }
 
-     class Timer {
+    class Timer {
     public:
         Timer(): _expired(true), _try_to_expire(false)
         {}
@@ -408,7 +396,7 @@ namespace OHOS::uitest {
             touchEventInfo::eventData data {};
             if (g_timesVector.size() > 1) {
                     int alpha = g_timesVector.size();
-                    data.interval = g_timesVector.back()-g_timesVector[alpha - (g_zero + 2)];
+                    data.interval = g_timesVector.back()-g_timesVector[alpha - INDEX_TWO];
             } else {
                     data.interval = g_timeIndex;
             }
@@ -474,7 +462,7 @@ namespace OHOS::uitest {
     {
         return std::make_shared<InputEventCallback>();
     }
-
+            
     static void timerFunc()
     {
         int t = GetMillisTime();
@@ -487,7 +475,7 @@ namespace OHOS::uitest {
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
-        if (argc != g_zero + 3) {
+        if (argc != INDEX_THREE) {
             PrintToConsole(usage);
             exit(EXIT_FAILURE);
         }
