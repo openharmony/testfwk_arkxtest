@@ -57,21 +57,13 @@ namespace OHOS::uitest {
     int g_actionInterval = 300;
     int g_pressDuration = 600;
     int g_maxDistance = 16;
+    int g_indexFive = 5;
     std::ofstream outFile;
     std::string g_operationType[5] = {"click", "longClick", "doubleClick", "swipe", "drag"};
     TouchOp touchop = CLICK;
     vector<MMI::PointerEvent::PointerItem> g_eventsVector;
     vector<int> g_timesVector;
     vector<int> g_mmiTimesVector;
-    
-    enum IndexNumber {
-        INDEX_ZERO,
-        INDEX_ONE,
-        INDEX_TWO,
-        INDEX_THREE,
-        INDEX_FOUR,
-        INDEX_FIVE
-    };
 
     namespace {
         std::string operationType_[5] = {"click", "longClick", "doubleClick", "swipe", "drag"};
@@ -136,7 +128,7 @@ namespace OHOS::uitest {
                     yPosi = std::stoi(caseInfo[INDEX_TWO]);
                     x2Posi = std::stoi(caseInfo[INDEX_THREE]);
                     y2Posi = std::stoi(caseInfo[INDEX_FOUR]);
-                    interval = std::stoi(caseInfo[INDEX_FIVE]);
+                    interval = std::stoi(caseInfo[g_indexFive]);
                     if (inFile.fail()) {
                         break;
                     } else {
