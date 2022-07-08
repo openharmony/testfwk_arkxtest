@@ -13,21 +13,6 @@
  * limitations under the License.
  */
 
-/*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #include <chrono>
 #include <unistd.h>
 #include <memory>
@@ -73,24 +58,31 @@ namespace OHOS::uitest {
     int g_pressDuration = 600;
     int g_maxDistance = 16;
 
+    using namespace std;
+using namespace std::chrono;
+
+namespace OHOS::uitest {
+    const std::string HELP_MSG =
+    "   help,                                            print help messages\n"
+    "   screenCap,                                                          \n"
+    "   dumpLayout,                                                         \n"
+    "   uiRecord -record,    wirte location coordinates of events into files\n"
+    "   uiRecord -read,                    print file content to the console\n";
+    int g_touchTime;
+    int g_newTime;
+    int g_indexTime;
+    int g_pressTime;
+    int g_timeIndex = 1000;
+    int g_timeInterval = 5000;
+    int g_actionInterval = 300;
+    int g_pressDuration = 600;
+    int g_maxDistance = 16;
+    int g_zero = 0;
     std::ofstream outFile;
     std::string g_operationType[5] = {"click", "longClick", "doubleClick", "swipe", "drag"};
-
-    enum Number {
-        ZERO,
-        ONE,
-        TWO,
-        THREE,
-        FOUR,
-        FIVE
-    };
-
     TouchOp touchop = CLICK;
-
     vector<MMI::PointerEvent::PointerItem> g_eventsVector;
-
     vector<int> g_timesVector;
-
     vector<int> g_mmiTimesVector;
 
     namespace {
@@ -151,12 +143,12 @@ namespace OHOS::uitest {
                     inFile >> buffer;
                     std::string delim = ",";
                     auto caseInfo = TestUtils::split(buffer, delim);
-                    Type = caseInfo[ZERO];
-                    xPosi = std::stoi(caseInfo[ONE]);
-                    yPosi = std::stoi(caseInfo[TWO]);
-                    x2Posi = std::stoi(caseInfo[THREE]);
-                    y2Posi = std::stoi(caseInfo[FOUR]);
-                    interval = std::stoi(caseInfo[FIVE]);
+                    Type = caseInfo[g_zero];
+                    xPosi = std::stoi(caseInfo[g_zero + 1]);
+                    yPosi = std::stoi(caseInfo[g_zero + 2]);
+                    x2Posi = std::stoi(caseInfo[g_zero + 3]);
+                    y2Posi = std::stoi(caseInfo[g_zero + 4]);
+                    interval = std::stoi(caseInfo[g_zero + 5]);
                     if (inFile.fail()) {
                         break;
                     } else {
@@ -340,23 +332,20 @@ namespace OHOS::uitest {
         return exitCode;
     }
 
-    class Timer {
+     class Timer {
     public:
         Timer(): _expired(true), _try_to_expire(false)
         {}
-
         Timer(const Timer& timer)
         {
             _expired = timer._expired.load();
             _try_to_expire = timer._try_to_expire.load();
         }
-
         Timer& operator = (const Timer& timer);
         ~Timer()
         {
             stop();
         }
-
         void start(int interval, std::function<void()> task)
         {
             if (_expired == false) {
@@ -368,7 +357,7 @@ namespace OHOS::uitest {
                     std::this_thread::sleep_for(std::chrono::milliseconds(interval));
                     task();
                 }
-
+    
                 {
                     std::lock_guard<std::mutex> locker(_mutex);
                     _expired = true;
@@ -376,25 +365,24 @@ namespace OHOS::uitest {
                 }
             }).detach();
         }
-
         void stop()
         {
             if (_expired) {
                 return;
             }
-
+    
             if (_try_to_expire) {
                 return;
             }
-
+    
             _try_to_expire = true; // change this bool value to make timer while loop stop
             {
                 std::unique_lock<std::mutex> locker(_mutex);
                 _expired_cond.wait(locker, [this] {return _expired == true; });
-
+    
                 // reset the timer
                 if (_expired == true) {
-                        _try_to_expire = false;
+                    _try_to_expire = false;
                 }
             }
         }
@@ -420,7 +408,7 @@ namespace OHOS::uitest {
             touchEventInfo::eventData data {};
             if (g_timesVector.size() > 1) {
                     int alpha = g_timesVector.size();
-                    data.interval = g_timesVector.back()-g_timesVector[alpha - TWO];
+                    data.interval = g_timesVector.back()-g_timesVector[alpha - (g_zero + 2)];
             } else {
                     data.interval = g_timeIndex;
             }
@@ -441,10 +429,10 @@ namespace OHOS::uitest {
             } else {
                 g_indexTime = GetMillisTime();
                 g_pressTime = g_indexTime - g_newTime;
-                if (g_eventsVector.size() > 1 && ((item.GetGlobalX() - g_eventsVector[0].GetGlobalX()) \
-                    * (item.GetGlobalX() - g_eventsVector[0].GetGlobalX()) +                           \
-                    (item.GetGlobalY()-g_eventsVector[0].GetGlobalY())*(item.GetGlobalY() -            \
-                    g_eventsVector[0].GetGlobalY())>g_maxDistance)) {
+                if (g_eventsVector.size() > 1 && ((item.GetDisplayX() - g_eventsVector[0].GetDisplayX()) \
+                    * (item.GetDisplayX() - g_eventsVector[0].GetDisplayX()) +                           \
+                    (item.GetDisplayY()-g_eventsVector[0].GetDisplayY())*(item.GetDisplayY() -           \
+                    g_eventsVector[0].GetDisplayY())>g_maxDistance)) {
                     if (g_mmiTimesVector[1] - g_mmiTimesVector[0] > g_actionInterval) {
                         touchop = DRAG;
                     } else {
@@ -463,10 +451,10 @@ namespace OHOS::uitest {
                 MMI::PointerEvent::PointerItem up_event = g_eventsVector.back();
                 MMI::PointerEvent::PointerItem down_event = g_eventsVector.front();
                 data.actionType = touchop;
-                data.xPosi = down_event.GetGlobalX();
-                data.yPosi = down_event.GetGlobalY();
-                data.x2Posi = up_event.GetGlobalX();
-                data.y2Posi = up_event.GetGlobalY();
+                data.xPosi = down_event.GetDisplayX();
+                data.yPosi = down_event.GetDisplayY();
+                data.x2Posi = up_event.GetDisplayX();
+                data.y2Posi = up_event.GetDisplayY();
                 touchEventInfo::WriteEventData(outFile, data);
                 std::cout << " PointerEvent:" << g_operationType[data.actionType]
                             << " xPosi:" << data.xPosi
@@ -499,7 +487,7 @@ namespace OHOS::uitest {
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
-        if (argc != THREE) {
+        if (argc != g_zero + 3) {
             PrintToConsole(usage);
             exit(EXIT_FAILURE);
         }
@@ -513,10 +501,12 @@ namespace OHOS::uitest {
             auto callBackPtr = InputEventCallback::GetPtr();
             if (callBackPtr == nullptr) {
                 std::cout << "nullptr" << std::endl;
+                return OHOS::ERR_INVALID_VALUE;
             }
             int32_t id1 = MMI::InputManager::GetInstance()->AddMonitor(callBackPtr);
             if (id1 == -1) {
                 std::cout << "Startup Failed!" << std::endl;
+                return OHOS::ERR_INVALID_VALUE;
             }
             std::cout << "Started Recording Successfully..." << std::endl;
             int flag = getc(stdin);
@@ -565,3 +555,4 @@ namespace OHOS::uitest {
         }
     }
 }
+
