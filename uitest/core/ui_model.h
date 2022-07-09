@@ -314,15 +314,14 @@ namespace OHOS::uitest {
             return UI_WINDOW_DEF;
         }
         // plain properties, make them public for easy access
-        int32_t id_;
-        std::string bundleName_;
-        std::string title_;
-        bool focused_;
-        bool actived_;
-        bool decoratorEnabled_;
-        uint32_t layer_;
+        int32_t id_ = 0;
+        std::string bundleName_ = "";
+        std::string title_ = "";
+        bool focused_ = false;
+        bool actived_ = false;
+        bool decoratorEnabled_ = false;
         Rect bounds_ = {0, 0, 0, 0};
-        WindowMode mode_;
+        WindowMode mode_ = UNKNOWN;
     };
 } // namespace OHOS::uitest
 

@@ -49,14 +49,8 @@ namespace OHOS::uitest {
         /**Trigger the given key action. */
         void TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error);
 
-        /**Perform generic-action on raw points.*/
-        void PerformClick(TouchOp op, const Point &point, const UiOpArgs &opt, ApiCallErr &err);
-
-        /**Perform generic-swipe on raw points.*/
-        void PerformSwipe(TouchOp op, const Point &from, const Point &to, const UiOpArgs &opt, ApiCallErr &err);
-
-        /**Perform pinch the given scale.*/
-        void PerformPinch(TouchOp op, const Rect &rectBd, const float_t &scale, const UiOpArgs &opt, ApiCallErr &err);
+        /**Perform the given touch action.*/
+        void PerformTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
 
         /**Delay current thread for given duration.*/
         static void DelayMs(uint32_t ms);
@@ -80,14 +74,6 @@ namespace OHOS::uitest {
     private:
         /**Update UI controller and UI objects.*/
         void UpdateUi(bool updateUiTree, ApiCallErr &error);
-        /**Inject generic click.*/
-        void InjectClick(TouchOp type, const Point &point, const UiOpArgs &opt);
-        /**Inject generic swipe.*/
-        void InjectSwipe(TouchOp type, const Point &point0, const Point &point1, const UiOpArgs &options);
-        /**Inject pinch.*/
-        void InjectPinch(TouchOp type, const Rect &rectBound, const float_t & scale, const UiOpArgs &options);
-        /**Inject key action.*/
-        void InjectKey(const KeyAction &action, const UiOpArgs &options);
         // UI objects that are needed to be updated before each interaction and used in the interaction
         const UiController *uiController_ = nullptr;
         std::unique_ptr<WidgetTree> widgetTree_ = nullptr;

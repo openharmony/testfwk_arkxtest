@@ -220,7 +220,6 @@ namespace OHOS::uitest {
         info.focused_ = node.IsFocused();
         info.actived_ = node.IsActive();
         info.decoratorEnabled_ = node.IsDecorEnable();
-        info.layer_ = node.GetWindowLayer();
         auto rect = node.GetRectInScreen();
         info.bounds_ = Rect(rect.GetLeftTopXScreenPostion(), rect.GetRightBottomXScreenPostion(),
                             rect.GetLeftTopYScreenPostion(), rect.GetRightBottomYScreenPostion());

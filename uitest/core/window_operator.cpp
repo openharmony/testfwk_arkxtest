@@ -84,8 +84,8 @@ namespace OHOS::uitest {
         return true;
     }
 
-    WindowOperator::WindowOperator(UiDriver &driver, const Window &Window, UiOpArgs &options)
-        : driver_(driver), window_(Window), options_(options)
+    WindowOperator::WindowOperator(UiDriver &driver, const Window &window, UiOpArgs &options)
+        : driver_(driver), window_(window), options_(options)
     {
     }
 
@@ -96,7 +96,8 @@ namespace OHOS::uitest {
         static constexpr uint32_t step2 = 40;
         Point from(rect.GetCenterX(), rect.top_ + step1);
         Point to(rect.GetCenterX(), rect.top_ + step2);
-        driver_.PerformSwipe(TouchOp::DRAG, from, to, options_, out.exception_);
+        auto touch = GenericSwipe(TouchOp::DRAG, from, to);
+        driver_.PerformTouch(touch, options_, out.exception_);
     }
 
     bool WindowOperator::Focuse(ApiReplyInfo &out)
@@ -106,7 +107,8 @@ namespace OHOS::uitest {
         } else {
             auto rect = window_.bounds_;
             Point windowCenter(rect.GetCenterX(), rect.GetCenterY());
-            driver_.PerformClick(TouchOp::CLICK, windowCenter, options_, out.exception_);
+            auto touch = GenericClick(TouchOp::CLICK, windowCenter);
+            driver_.PerformTouch(touch, options_, out.exception_);
             return (out.exception_.code_ == ErrCode::NO_ERROR);
         }
     }
@@ -121,7 +123,8 @@ namespace OHOS::uitest {
         static constexpr uint32_t step = 30;
         Point from(rect.left_ + step, rect.top_ + step);
         Point to(endX, endY);
-        driver_.PerformSwipe(TouchOp::DRAG, from, to, options_, out.exception_);
+        auto touch = GenericSwipe(TouchOp::DRAG, from, to);
+        driver_.PerformTouch(touch, options_, out.exception_);
         return (out.exception_.code_ == ErrCode::NO_ERROR);
     }
 
@@ -133,7 +136,7 @@ namespace OHOS::uitest {
         }
         auto rect = window_.bounds_;
         if ((((direction == LEFT) || (direction == RIGHT))&& highth != rect.GetHeight()) ||
-            (((direction == UP_) || (direction == DOWN_))&& width != rect.GetWidth())) {
+            (((direction == D_UP) || (direction == D_DOWN))&& width != rect.GetWidth())) {
                 LOG_W("The operation cannot be done in this direction");
                 return false;
             }
@@ -147,11 +150,11 @@ namespace OHOS::uitest {
                 from = Point(rect.right_, rect.GetCenterY());
                 to = Point((rect.left_ + width), rect.GetCenterY());
                 break;
-            case (UP_):
+            case (D_UP):
                 from = Point(rect.GetCenterX(), rect.top_);
                 to = Point(rect.GetCenterX(), rect.bottom_ - highth);
                 break;
-            case (DOWN_):
+            case (D_DOWN):
                 from = Point(rect.GetCenterX(), rect.bottom_);
                 to = Point(rect.GetCenterX(), rect.top_ + highth);
                 break;
@@ -174,7 +177,8 @@ namespace OHOS::uitest {
             default:
                 break;
         }
-        driver_.PerformSwipe(TouchOp::DRAG, from, to, options_, out.exception_);
+        auto touch = GenericSwipe(TouchOp::DRAG, from, to);
+        driver_.PerformTouch(touch, options_, out.exception_);
         return (out.exception_.code_ == ErrCode::NO_ERROR);
     }
 
@@ -244,6 +248,7 @@ namespace OHOS::uitest {
         }
         auto rect = (*widgets.at(0)).GetBounds();
         Point widgetCenter(rect.GetCenterX(), rect.GetCenterY());
-        driver_.PerformClick(TouchOp::CLICK, widgetCenter, options_, out.exception_);
+        auto touch = GenericClick(TouchOp::CLICK, widgetCenter);
+        driver_.PerformTouch(touch, options_, out.exception_);
     }
 } // namespace OHOS::uitest

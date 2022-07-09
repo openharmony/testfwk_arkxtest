@@ -28,11 +28,6 @@ namespace OHOS::uitest {
             recv = events_;
         }
 
-        std::string Describe() const override
-        {
-            return "KeysForwarder";
-        }
-
     private:
         const vector<KeyEvent> &events_;
     };
@@ -74,7 +69,8 @@ namespace OHOS::uitest {
             return;
         }
         const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY());
-        driver_.PerformClick(op, center, options_, error);
+        auto touch = OHOS::uitest::GenericClick(op, center);
+        driver_.PerformTouch(touch, options_, error);
     }
 
     void WidgetOperator::ScrollToEnd(bool toTop, ApiCallErr &error) const
@@ -98,9 +94,11 @@ namespace OHOS::uitest {
             }
             Point topPoint(bounds.GetCenterX(), bounds.top_), bottomPoint(bounds.GetCenterX(), bounds.bottom_);
             if (toTop) {
-                driver_.PerformSwipe(TouchOp::SWIPE, topPoint, bottomPoint, options_, error);
+                auto touch = GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint);
+                driver_.PerformTouch(touch, options_, error);
             } else {
-                driver_.PerformSwipe(TouchOp::SWIPE, bottomPoint, topPoint, options_, error);
+                auto touch = GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
+                driver_.PerformTouch(touch, options_, error);
             }
         }
     }
@@ -119,10 +117,11 @@ namespace OHOS::uitest {
         auto boundsTo = widgetTo->GetBounds();
         auto centerFrom = Point(boundsFrom.GetCenterX(), boundsFrom.GetCenterY());
         auto centerTo = Point(boundsTo.GetCenterX(), boundsTo.GetCenterY());
-        driver_.PerformSwipe(TouchOp::DRAG, centerFrom, centerTo, options_, error);
+        auto touch = GenericSwipe(TouchOp::DRAG, centerFrom, centerTo);
+        driver_.PerformTouch(touch, options_, error);
     }
 
-    void WidgetOperator::pinchWidget(float_t scale, ApiCallErr &error) const
+    void WidgetOperator::PinchWidget(float_t scale, ApiCallErr &error) const
     {
         auto retrieved = driver_.RetrieveWidget(widget_, error);
         if (retrieved == nullptr || error.code_ != NO_ERROR) {
@@ -132,26 +131,27 @@ namespace OHOS::uitest {
         auto selector = WidgetSelector();
         selector.AddMatcher(matcher);
         vector<unique_ptr<Widget>> recv;
-        driver_.FindWidgets(selector, recv, error);
+        driver_.FindWidgets(selector, recv, error, false);
         if (error.code_ != ErrCode::NO_ERROR) {
             return;
         }
         if (recv.empty()) {
             error = ApiCallErr(INTERNAL_ERROR, "Cannot find root widget");
-                return;
+            return;
         }
         auto rootBound = recv.front()->GetBounds();
         auto rectBound = widget_.GetBounds();
-        auto widthScale = (float_t)(rootBound.GetWidth() / rectBound.GetWidth());
-        auto heightScale = (float_t)(rootBound.GetHeight() / rectBound.GetHeight());
-        auto originalScale = min(widthScale, heightScale);
+        float_t widthScale = (float_t)(rootBound.GetWidth() / rectBound.GetWidth());
+        float_t heightScale = (float_t)(rootBound.GetHeight() / rectBound.GetHeight());
+        float_t originalScale = min(widthScale, heightScale);
         if (scale < 0) {
             error = ApiCallErr(USAGE_ERROR, "Please input the correct scale");
             return;
         } else if (scale > originalScale) {
             scale = originalScale;
         }
-        driver_.PerformPinch(TouchOp::PINCH, rectBound, scale, options_, error);
+        auto touch = GenericPinch(rectBound, scale);
+        driver_.PerformTouch(touch, options_, error);
     }
     void WidgetOperator::InputText(string_view text, ApiCallErr &error) const
     {
@@ -198,7 +198,8 @@ namespace OHOS::uitest {
             }
         }
         const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY());
-        driver_.PerformClick(TouchOp::CLICK, center, options_, error);
+        auto touch = OHOS::uitest::GenericClick(TouchOp::CLICK, center);
+        driver_.PerformTouch(touch, options_, error);
         driver_.DelayMs(focusTimeMs); // short delay to ensure focus gaining
         auto keyAction = KeysForwarder(events);
         driver_.TriggerKey(keyAction, options_, error);
@@ -245,9 +246,11 @@ namespace OHOS::uitest {
             }
             Point topPoint(bounds.GetCenterX(), bounds.top_), bottomPoint(bounds.GetCenterX(), bounds.bottom_);
             if (scrollingUp) {
-                driver_.PerformSwipe(TouchOp::SWIPE, topPoint, bottomPoint, options_, error);
+                auto touch = GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint);
+                driver_.PerformTouch(touch, options_, error);
             } else {
-                driver_.PerformSwipe(TouchOp::SWIPE, bottomPoint, topPoint, options_, error);
+                auto touch = GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
+                driver_.PerformTouch(touch, options_, error);
             }
         }
     }

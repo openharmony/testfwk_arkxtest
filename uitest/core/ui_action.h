@@ -27,8 +27,6 @@ namespace OHOS::uitest {
     constexpr int32_t KEYCODE_BACK = 2;
     constexpr int32_t KEYCODE_CTRL = 2072;
     constexpr int32_t KEYCODE_V = 2038;
-    constexpr char KEYNAME_BACK[] = "Back";
-    constexpr char KEYNAME_PASTE[] = "Paste";
 
     /**Enumerates all the supported coordinate-based touch operations.*/
     enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG, PINCH };
@@ -68,31 +66,25 @@ namespace OHOS::uitest {
 
         void PushAction(const TouchEvent&ptr);
 
-        bool Empty();
+        bool Empty() const;
 
-        TouchEvent & At(uint32_t fingerIndex, uint32_t stepIndex);
+        TouchEvent& At(uint32_t fingerIndex, uint32_t stepIndex);
 
-        TouchEvent & At(uint32_t fingerIndex, uint32_t stepIndex) const;
+        TouchEvent& At(uint32_t fingerIndex, uint32_t stepIndex) const;
 
-        uint32_t GetCapacity();
-
-        uint32_t GetSize();
+        uint32_t GetCapacity() const;
 
         uint32_t GetSize() const;
 
-        uint32_t GetSteps();
-
         uint32_t GetSteps() const;
-
-        uint32_t GetFingers();
 
         uint32_t GetFingers() const;
     private:
         std::unique_ptr<TouchEvent[]> data_ = nullptr;
-        uint32_t capacity_;
-        uint32_t stepNum_;
-        uint32_t fingerNum_;
-        uint32_t size_;
+        uint32_t capacity_ = 0;
+        uint32_t stepNum_ = 0;
+        uint32_t fingerNum_ = 0;
+        uint32_t size_ = 0;
     };
 
     /**
@@ -111,62 +103,62 @@ namespace OHOS::uitest {
         int32_t scrollWidgetDeadZone_ = 20;
     };
 
+    class TouchAction {
+    public:
+        /**Compute the touch event sequence that are needed to implement this action.
+         * @param recv: the event seqence receiver.
+         * @param options the ui operation agruments.
+         * */
+        virtual void Decompose(PointerMatrix &recv, const UiOpArgs &options) const = 0;
+    };
+
     /**
      * Base type of all raw pointer click actions.
      **/
-    class GenericClick {
+    class GenericClick : public TouchAction {
     public:
-        explicit GenericClick(TouchOp type) : type_(type) {};
+        GenericClick(TouchOp type, const Point &point) : type_(type), point_(point) {};
 
-        /**Compute the touch event sequence that are needed to implement this action.
-         * @param point: the click location.
-         * */
-        void Decompose(PointerMatrix &recv, const Point &point, const UiOpArgs &options) const;
+        void Decompose(PointerMatrix &recv, const UiOpArgs &options) const override;
 
         ~GenericClick() = default;
 
     private:
         const TouchOp type_;
+        const Point point_;
     };
 
     /**
      * Base type of all raw pointer swipe actions.
      **/
-    class GenericSwipe {
+    class GenericSwipe : public TouchAction {
     public:
-        explicit GenericSwipe(TouchOp type) : type_(type) {};
+        explicit GenericSwipe(TouchOp type, const Point &from, const Point &to) : type_(type), from_(from), to_(to) {};
 
-        /**Compute the touch event sequence that are needed to implement this action.
-         * @param fromPoint: the swipe start point.
-         * @param toPoint: the swipe end point.
-         * */
-        void Decompose(PointerMatrix &recv, const Point &fromPoint, const Point &toPoint,
-                       const UiOpArgs &options) const;
+        void Decompose(PointerMatrix &recv, const UiOpArgs &options) const override;
 
         ~GenericSwipe() = default;
 
     private:
         const TouchOp type_;
+        const Point from_;
+        const Point to_;
     };
 
     /**
      * Base type of all raw pointer pinch actions.
      **/
-    class GenericPinch {
+    class GenericPinch : public TouchAction {
     public:
-        explicit GenericPinch(TouchOp type) : type_(type) {};
+        explicit GenericPinch(const Rect &rect, float_t scale) : rect_(rect), scale_(scale) {};
 
-        /**Compute the touch event sequence that are needed to implement this action.
-         * @param fromPoint: the swipe start point.
-         * @param toPoint: the swipe end point.
-         * */
-        void DecomposePinch(PointerMatrix &recv, const Rect &rectBound, const float_t &scale,
-                            const UiOpArgs &options) const;
+        void Decompose(PointerMatrix &recv, const UiOpArgs &options) const override;
 
         ~GenericPinch() = default;
 
     private:
-        const TouchOp type_;
+        const Rect rect_;
+        const float_t scale_;
     };
 
     /**
@@ -178,13 +170,10 @@ namespace OHOS::uitest {
         virtual void ComputeEvents(std::vector<KeyEvent> &recv, const UiOpArgs &options) const = 0;
 
         virtual ~KeyAction() = default;
-
-        /**Describes this key action.*/
-        virtual std::string Describe() const = 0;
     };
 
     /**Base type of named single-key actions with at most 1 ctrl key.*/
-    template<CStr kName, uint32_t kCode, uint32_t kCtrlCode = KEYCODE_NONE>
+    template<uint32_t kCode, uint32_t kCtrlCode = KEYCODE_NONE>
     class NamedPlainKey : public KeyAction {
     public:
         explicit NamedPlainKey() = default;
@@ -200,18 +189,6 @@ namespace OHOS::uitest {
                 recv.push_back(KeyEvent {ActionStage::UP, kCtrlCode, 0});
             }
         }
-
-        std::string Describe() const override
-        {
-            if constexpr (kName != nullptr) {
-                return kName;
-            }
-            std::string desc = std::string("key_") + std::to_string(kCode);
-            if constexpr (kCtrlCode != KEYCODE_NONE) {
-                desc = desc + "(ctrlKey=" + std::to_string(kCtrlCode) + ")";
-            }
-            return desc;
-        }
     };
 
     /**Generic key actions without name and ctrl key.*/
@@ -223,11 +200,6 @@ namespace OHOS::uitest {
         {
             recv.push_back(KeyEvent {ActionStage::DOWN, code_, opt.keyHoldMs_});
             recv.push_back(KeyEvent {ActionStage::UP, code_, 0});
-        }
-
-        std::string Describe() const override
-        {
-            return std::string("key_") + std::to_string(code_);
         }
 
     private:
@@ -256,25 +228,14 @@ namespace OHOS::uitest {
             recv.push_back(KeyEvent {ActionStage::UP, codeZero_, 0});
         }
 
-        std::string Describe() const override
-        {
-            std::string desc0 = std::string("key_") + std::to_string(codeZero_);
-            std::string desc1 = std::string("key_") + std::to_string(codeOne_);
-            if (codeTwo_ != KEYCODE_NONE) {
-                std::string desc2 = std::string("key_") + std::to_string(codeTwo_);
-                return desc0 + desc1 + desc2;
-            }
-            return desc0 + desc1;
-        }
-
     private:
         const int32_t codeZero_;
         const int32_t codeOne_;
         const int32_t codeTwo_;
     };
 
-    using Back = NamedPlainKey<KEYNAME_BACK, KEYCODE_BACK>;
-    using Paste = NamedPlainKey<KEYNAME_PASTE, KEYCODE_V, KEYCODE_CTRL>;
+    using Back = NamedPlainKey<KEYCODE_BACK>;
+    using Paste = NamedPlainKey<KEYCODE_V, KEYCODE_CTRL>;
 }
 
 #endif
