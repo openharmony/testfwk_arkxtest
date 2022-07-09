@@ -23,8 +23,8 @@ namespace OHOS::uitest {
     enum ResizeDirection : uint8_t {
         LEFT,
         RIGHT,
-        UP_,
-        DOWN_,
+        D_UP,
+        D_DOWN,
         LEFT_UP,
         LEFT_DOWN,
         RIGHT_UP,
@@ -33,7 +33,7 @@ namespace OHOS::uitest {
 
     class WindowOperator {
     public:
-       WindowOperator(UiDriver &driver, const Window &Window, UiOpArgs &options);
+       WindowOperator(UiDriver &driver, const Window &window, UiOpArgs &options);
 
        /**Focus the window.*/
        bool Focuse(ApiReplyInfo &out);
