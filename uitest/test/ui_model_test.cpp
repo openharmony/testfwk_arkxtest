@@ -290,7 +290,7 @@ TEST(WidgetTreeTest, testBoundsAndVisibilityCorrection)
     vector<Rect> expectedBounds = {Rect(0, 100, 0, 100), Rect(0, 100, 20, 80), Rect(0, 100, 20, 80),
                                    Rect(0, 100, 0, 100), Rect(0, 100, 0, 20)};
     ASSERT_EQ(expectedBounds.size(), boundsVisitor.boundsList_.size());
-    for (auto index = 0; index < expectedBounds.size(); index++) {
+    for (size_t index = 0; index < expectedBounds.size(); index++) {
         auto &expectedBound = expectedBounds.at(index);
         auto &actualBound = boundsVisitor.boundsList_.at(index);
         ASSERT_EQ(expectedBound.left_, actualBound.left_);
