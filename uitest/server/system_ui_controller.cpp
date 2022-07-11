@@ -202,6 +202,12 @@ namespace OHOS::uitest {
         for (auto idx = 0; idx < childCount; idx++) {
             auto success = ability->GetChildElementInfo(idx, from, child);
             if (success) {
+                if (child.GetComponentType() == "rootdecortag") {
+                    AccessibilityElementInfo child2;
+                    (ability->GetChildElementInfo(0, child, child2) && child2.IsVisible()) ||
+                    (ability->GetChildElementInfo(1, child, child2) && child2.IsVisible());
+                    child = child2;
+                }
                 if (!child.IsVisible()) {
                     continue;
                 }
