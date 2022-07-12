@@ -38,33 +38,33 @@ namespace OHOS::uitest {
     };
 
     static const std::map<std::pair<WindowAction, WindowMode>, Operational> operationalMap {
-        {std::pair(MOVETO, FULLSCREEN), {false, 0, "Fullscreen window can not move"}},
-        {std::pair(MOVETO, SPLIT_PRIMARY), {true, 0, ""}},
-        {std::pair(MOVETO, SPLIT_SECONDARY), {true, 0, ""}},
-        {std::pair(MOVETO, FLOATING), {true, 0, ""}},
-        {std::pair(RESIZE, FULLSCREEN), {false, 0, "Fullscreen window can not resize"}},
-        {std::pair(RESIZE, SPLIT_PRIMARY), {true, 0, ""}},
-        {std::pair(RESIZE, SPLIT_SECONDARY), {true, 0, ""}},
-        {std::pair(RESIZE, FLOATING), {true, 0, ""}},
+        {std::pair(MOVETO, FULLSCREEN), {false, INDEX_ZERO, "Fullscreen window can not move"}},
+        {std::pair(MOVETO, SPLIT_PRIMARY), {false, INDEX_ZERO, "SPLIT_PRIMARY window can not move"}},
+        {std::pair(MOVETO, SPLIT_SECONDARY), {false, INDEX_ZERO, "SPLIT_SECONDARY window can not move"}},
+        {std::pair(MOVETO, FLOATING), {true, INDEX_ZERO, ""}},
+        {std::pair(RESIZE, FULLSCREEN), {false, INDEX_ZERO, "Fullscreen window can not resize"}},
+        {std::pair(RESIZE, SPLIT_PRIMARY), {true, INDEX_ZERO, ""}},
+        {std::pair(RESIZE, SPLIT_SECONDARY), {true, INDEX_ZERO, ""}},
+        {std::pair(RESIZE, FLOATING), {true, INDEX_ZERO, ""}},
         {std::pair(SPLIT, FULLSCREEN), {true, INDEX_ONE, ""}},
-        {std::pair(SPLIT, SPLIT_PRIMARY), {true, INDEX_ONE, ""}},
-        {std::pair(SPLIT, SPLIT_SECONDARY), {true, INDEX_ONE, ""}},
+        {std::pair(SPLIT, SPLIT_PRIMARY), {false, INDEX_ONE, "SPLIT_PRIMARY can not split again"}},
+        {std::pair(SPLIT, SPLIT_SECONDARY), {false, INDEX_ONE, "SPLIT_SECONDARY can not split again"}},
         {std::pair(SPLIT, FLOATING), {true, INDEX_ONE, ""}},
         {std::pair(MAXIMIZE, FULLSCREEN), {false, INDEX_TWO, "Fullscreen window is already maximized"}},
         {std::pair(MAXIMIZE, SPLIT_PRIMARY), {true, INDEX_TWO, ""}},
-        {std::pair(MAXIMIZE, SPLIT_SECONDARY), {true, INDEX_TWO, ""}},
+        {std::pair(MAXIMIZE, SPLIT_SECONDARY), {false, INDEX_TWO, "SPLIT_SECONDARY window can not maximize"}},
         {std::pair(MAXIMIZE, FLOATING), {true, INDEX_TWO, ""}},
         {std::pair(RESUME, FULLSCREEN), {true, INDEX_TWO, ""}},
         {std::pair(RESUME, SPLIT_PRIMARY), {true, INDEX_TWO, ""}},
-        {std::pair(RESUME, SPLIT_SECONDARY), {true, INDEX_TWO, ""}},
+        {std::pair(RESUME, SPLIT_SECONDARY), {false, INDEX_TWO, "SPLIT_SECONDARY window can not resume"}},
         {std::pair(RESUME, FLOATING), {true, INDEX_TWO, ""}},
         {std::pair(MINIMIZE, FULLSCREEN), {true, INDEX_THREE, ""}},
         {std::pair(MINIMIZE, SPLIT_PRIMARY), {true, INDEX_THREE, ""}},
-        {std::pair(MINIMIZE, SPLIT_SECONDARY), {true, INDEX_THREE, ""}},
+        {std::pair(MINIMIZE, SPLIT_SECONDARY), {false, INDEX_THREE, "SPLIT_SECONDARY window can not minimize"}},
         {std::pair(MINIMIZE, FLOATING), {true, INDEX_THREE, ""}},
         {std::pair(CLOSE, FULLSCREEN), {true, INDEX_FOUR, ""}},
         {std::pair(CLOSE, SPLIT_PRIMARY), {true, INDEX_FOUR, ""}},
-        {std::pair(CLOSE, SPLIT_SECONDARY), {true, INDEX_FOUR, ""}},
+        {std::pair(CLOSE, SPLIT_SECONDARY), {false, INDEX_FOUR, "SPLIT_SECONDARY window can not close"}},
         {std::pair(CLOSE, FLOATING), {true, INDEX_FOUR, ""}},
     };
 
@@ -91,6 +91,9 @@ namespace OHOS::uitest {
 
     void WindowOperator::CallBar(ApiReplyInfo &out)
     {
+        if (window_.mode_ == WindowMode::FLOATING) {
+            return;
+        }
         auto rect = window_.bounds_;
         static constexpr uint32_t step1 = 10;
         static constexpr uint32_t step2 = 40;
@@ -242,11 +245,11 @@ namespace OHOS::uitest {
         auto matcher = WidgetAttrMatcher("index", std::to_string(index), EQ);
         selector.AddMatcher(matcher);
         vector<unique_ptr<Widget>> widgets;
-        driver_.FindWidgets(selector, widgets, out.exception_, false);
+        driver_.FindWidgets(selector, widgets, out.exception_);
         if (out.exception_.code_ != ErrCode::NO_ERROR) {
             return;
         }
-        auto rect = (*widgets.at(0)).GetBounds();
+        auto rect = widgets.front()->GetBounds();
         Point widgetCenter(rect.GetCenterX(), rect.GetCenterY());
         auto touch = GenericClick(TouchOp::CLICK, widgetCenter);
         driver_.PerformTouch(touch, options_, out.exception_);
