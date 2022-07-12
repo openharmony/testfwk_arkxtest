@@ -464,12 +464,12 @@ namespace OHOS::uitest {
     }
 
     static int32_t UiRecord(int32_t argc, char *argv[])
-    {   
+    {
         int timeInterval_ = 5000;
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
         if (argc != INDEX_THREE) {
             PrintToConsole(usage);
-            return EXIT_FAILURE;;
+            return EXIT_FAILURE;
         }
         std::string opt = argv[2];
         if (opt == "record") {
@@ -498,7 +498,7 @@ namespace OHOS::uitest {
             return OHOS::ERR_OK;
         } else {
             PrintToConsole(usage);
-            return EXIT_FAILURE;;
+            return EXIT_FAILURE;
         }
     }
 
