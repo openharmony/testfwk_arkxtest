@@ -532,5 +532,3 @@ namespace OHOS::uitest {
         }
     }
 }
-
-
