@@ -141,8 +141,8 @@ namespace OHOS::uitest {
         }
         auto rootBound = recv.front()->GetBounds();
         auto rectBound = widget_.GetBounds();
-        float_t widthScale = (float_t)(rootBound.GetWidth() / rectBound.GetWidth());
-        float_t heightScale = (float_t)(rootBound.GetHeight() / rectBound.GetHeight());
+        float_t widthScale = (float_t)(rootBound.GetWidth()) / (float_t)(rectBound.GetWidth());
+        float_t heightScale = (float_t)(rootBound.GetHeight()) / (float_t)(rectBound.GetHeight());
         float_t originalScale = min(widthScale, heightScale);
         if (scale < 0) {
             error = ApiCallErr(USAGE_ERROR, "Please input the correct scale");
