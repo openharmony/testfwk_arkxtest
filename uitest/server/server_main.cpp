@@ -387,8 +387,7 @@ namespace OHOS::uitest {
             g_touchTime = GetMillisTime();
             touchEventInfo::eventData data {};
             if (g_timesVector.size() > 1) {
-                    int alpha = g_timesVector.size();
-                    data.interval = g_timesVector.back()-g_timesVector[alpha - INDEX_TWO];
+                    data.interval = g_timesVector.back()-g_timesVector[g_timesVector.size() - INDEX_TWO];
             } else {
                     data.interval = g_timeIndex;
             }
@@ -469,7 +468,7 @@ namespace OHOS::uitest {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
         if (argc != INDEX_THREE) {
             PrintToConsole(usage);
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
         std::string opt = argv[2];
         if (opt == "record") {
@@ -498,7 +497,7 @@ namespace OHOS::uitest {
             return OHOS::ERR_OK;
         } else {
             PrintToConsole(usage);
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
     }
 
