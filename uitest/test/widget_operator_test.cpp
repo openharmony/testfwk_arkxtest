@@ -305,7 +305,7 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckDirection)
         index++;
     }
 
-    for (size_t idx = 0; idx < touch_event_records->GetSize() - 1; idx++) {
+    for (uint32_t idx = 0; idx < touch_event_records->GetSize() - 1; idx++) {
         if (idx < maxCyEventIndex) {
             ASSERT_LT(touch_event_records->At(0, idx).point_.py_, touch_event_records->At(0, idx + 1).point_.py_);
         } else if (idx > maxCyEventIndex) {
