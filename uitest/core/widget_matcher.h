@@ -18,7 +18,6 @@
 
 #include <string>
 #include <vector>
-#include <sstream>
 #include "ui_model.h"
 
 namespace OHOS::uitest {
