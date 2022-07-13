@@ -195,11 +195,6 @@ namespace OHOS::uitest {
         return false;
     }
 
-    TouchEvent& PointerMatrix::At(uint32_t fingerIndex, uint32_t stepIndex)
-    {
-        return *(this->data_.get() + (fingerIndex * this->stepNum_ + stepIndex));
-    }
-
     TouchEvent& PointerMatrix::At(uint32_t fingerIndex, uint32_t stepIndex) const
     {
         return *(this->data_.get() + (fingerIndex * this->stepNum_ + stepIndex));
