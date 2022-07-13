@@ -15,10 +15,7 @@
 #ifndef UI_ACTION_H
 #define UI_ACTION_H
 
-#include <string>
 #include <vector>
-#include <map>
-#include <set>
 #include "ui_model.h"
 
 namespace OHOS::uitest {
