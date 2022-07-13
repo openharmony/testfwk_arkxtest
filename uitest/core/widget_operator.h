@@ -16,7 +16,6 @@
 #ifndef WIDGET_OPERATOR_H
 #define WIDGET_OPERATOR_H
 
-#include <string>
 #include "ui_driver.h"
 
 namespace OHOS::uitest {

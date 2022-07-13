@@ -16,7 +16,6 @@
 #ifndef WINDOW_OPERATOR_H
 #define WINDOW_OPERATOR_H
 
-#include <string>
 #include "ui_driver.h"
 
 namespace OHOS::uitest {

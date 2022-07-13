@@ -16,7 +16,6 @@
 #ifndef UI_DRIVER_H
 #define UI_DRIVER_H
 
-#include <string>
 #include "ui_controller.h"
 #include "ui_model.h"
 #include "widget_selector.h"
