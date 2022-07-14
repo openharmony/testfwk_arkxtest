@@ -334,7 +334,7 @@ namespace OHOS::uitest {
                 }
     
                 {
-                    std::lock_guard<std::mutex> locker(mutex);
+                    std::lock_guard<std::mutex> locker(index);
                     expired = true;
                     expiredCond.notify_one();
                 }
@@ -352,7 +352,7 @@ namespace OHOS::uitest {
     
             tryToExpire = true; // change this bool value to make timer while loop stop
             {
-                std::unique_lock<std::mutex> locker(mutex);
+                std::unique_lock<std::mutex> locker(index);
                 expiredCond.wait(locker, [this] {return expired == true; });
     
                 // reset the timer
@@ -365,7 +365,7 @@ namespace OHOS::uitest {
     private:
         std::atomic<bool> expired; // timer stopped status
         std::atomic<bool> tryToExpire; // timer is in stop process
-        std::mutex mutex;
+        std::mutex index;
         std::condition_variable expiredCond;
     };
 
@@ -378,8 +378,8 @@ namespace OHOS::uitest {
         virtual void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override
         {
             MMI::PointerEvent::PointerItem item;
-            int newTime_;
-            int pressDuration_ = 600;
+            int newTime;
+            int pressDuration = 600;
             bool result = pointerEvent->GetPointerItem(pointerEvent->GetPointerId(), item);
             g_touchTime = GetMillisTime();
             TouchEventInfo::EventData data {};
@@ -389,8 +389,8 @@ namespace OHOS::uitest {
                     data.interval = g_timeIndex;
             }
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
-                    newTime_ = GetMillisTime();
-                    g_timesVector.push_back(newTime_);
+                    newTime = GetMillisTime();
+                    g_timesVector.push_back(newTime);
             }
             if (!result) {
                 std::cout << "GetPointerItem Fail" << std::endl;
@@ -403,25 +403,25 @@ namespace OHOS::uitest {
                     g_mmiTimesVector.push_back(g_touchTime);
                 }
             } else {
-                int indexTime_ = GetMillisTime();
-                int actionInterval_ = 300;
-                int g_pressTime = indexTime_ - newTime_;
+                int indexTime = GetMillisTime();
+                int actionInterval = 300;
+                int pressTime = indexTime - newTime;
                 if (g_eventsVector.size() > 1 && ((item.GetDisplayX() - g_eventsVector[0].GetDisplayX()) \
                     * (item.GetDisplayX() - g_eventsVector[0].GetDisplayX()) +                           \
                     (item.GetDisplayY()-g_eventsVector[0].GetDisplayY())*(item.GetDisplayY() -           \
                     g_eventsVector[0].GetDisplayY())>g_maxDistance)) {
-                    if (g_mmiTimesVector[1] - g_mmiTimesVector[0] > actionInterval_) {
+                    if (g_mmiTimesVector[1] - g_mmiTimesVector[0] > actionInterval) {
                         touchop = DRAG;
                     } else {
                         touchop = SWIPE;
                     }
                     g_mmiTimesVector.clear();
                 } else {
-                    if (data.interval > actionInterval_ && g_pressTime < pressDuration_) {
+                    if (data.interval > actionInterval && pressTime < pressDuration) {
                             touchop = CLICK;
-                        } else if (data.interval < actionInterval_ && g_pressTime < pressDuration_) {
+                        } else if (data.interval < actionInterval && pressTime < pressDuration) {
                             touchop = DOUBLE_CLICK_P;
-                        } else if (data.interval > actionInterval_ && g_pressTime > pressDuration_) {
+                        } else if (data.interval > actionInterval && pressTime > pressDuration) {
                             touchop = LONG_CLICK;
                         }
                 }
