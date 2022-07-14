@@ -57,15 +57,13 @@ namespace OHOS::uitest {
 
         PointerMatrix(PointerMatrix&& other);
 
-        PointerMatrix& operator=(PointerMatrix && other);
+        PointerMatrix& operator=(PointerMatrix&& other);
 
         ~PointerMatrix();
 
-        void PushAction(const TouchEvent&ptr);
+        void PushAction(const TouchEvent& ptr);
 
         bool Empty() const;
-
-        TouchEvent& At(uint32_t fingerIndex, uint32_t stepIndex);
 
         TouchEvent& At(uint32_t fingerIndex, uint32_t stepIndex) const;
 

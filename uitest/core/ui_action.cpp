@@ -162,7 +162,7 @@ namespace OHOS::uitest {
         this->data_ = std::make_unique<TouchEvent[]>(this->capacity_);
     }
 
-    PointerMatrix& PointerMatrix::operator=(PointerMatrix && other)
+    PointerMatrix& PointerMatrix::operator=(PointerMatrix&& other)
     {
         this->data_ = move(other.data_);
         this->fingerNum_ = other.fingerNum_;
@@ -178,7 +178,7 @@ namespace OHOS::uitest {
 
     PointerMatrix::~PointerMatrix() {}
 
-    void PointerMatrix::PushAction(const TouchEvent&ptr)
+    void PointerMatrix::PushAction(const TouchEvent& ptr)
     {
         if (this->capacity_ == this->size_) {
             return;
@@ -193,11 +193,6 @@ namespace OHOS::uitest {
             return true;
         }
         return false;
-    }
-
-    TouchEvent& PointerMatrix::At(uint32_t fingerIndex, uint32_t stepIndex)
-    {
-        return *(this->data_.get() + (fingerIndex * this->stepNum_ + stepIndex));
     }
 
     TouchEvent& PointerMatrix::At(uint32_t fingerIndex, uint32_t stepIndex) const
