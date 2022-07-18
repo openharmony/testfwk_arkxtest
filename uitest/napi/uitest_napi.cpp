@@ -334,6 +334,9 @@ namespace OHOS::uitest {
         // 1. marshal parameters into json-array
         napi_value paramArray = nullptr;
         NAPI_CALL(env, napi_create_array_with_length(env, count, &paramArray));
+        if (count > NAPI_MAX_ARG_COUNT) {
+            count = NAPI_MAX_ARG_COUNT;
+        }
         for (size_t idx = 0; idx < count; idx++) {
             napi_value item = nullptr; // convert to backendObjRef if any
             NAPI_CALL(env, GetBackendObjRefProp(env, argv[idx], &item));
