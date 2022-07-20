@@ -33,16 +33,16 @@ class OhReport {
 
     taskDone() {
         this.taskDoneTime = new Date().getTime();
-        this.duration = this.taskDoneTime - this.taskStartTime;
         let summary = this.suiteService.getSummary();
         var message = '\n' + 'OHOS_REPORT_RESULT: stream=Tests run: ' + summary.total + ', Failure: ' + summary.failure;
         message += ', Error: ' + summary.error;
         message += ', Pass: ' + summary.pass;
         message += '\n' + 'OHOS_REPORT_CODE: ' + (summary.failure > 0 ? -1 : 0) + '\n';
-        message += 'OHOS_REPORT_STATUS: consuming=' + this.duration + '\n';
+        message += 'OHOS_REPORT_STATUS: consuming=' + summary.duration + '\n';
         this.delegator.print(message).then(() => {
             console.info('report print success');
-            this.delegator.finishTest('your test finished!!!', 0, () => { });
+            this.delegator.finishTest('your test finished!!!', 0, () => {
+            });
         });
     }
 
@@ -50,13 +50,14 @@ class OhReport {
         if (this.coreContext.getDefaultService('config').filterValid.length !== 0) {
             var value = this.coreContext.getDefaultService('config').filterValid;
             var message = 'this param ' + value.join(',') + ' is invalid' + '\n';
-            this.delegator.finishTest(message, 0, () => { });
+            this.delegator.finishTest(message, 0, () => {
+            });
         }
     }
 
     suiteStart() {
         let suiteService = this.coreContext.getDefaultService('suite');
-        var message = '\n' + 'OHOS_REPORT_SUM: ' + suiteService.getSummary().total;
+        var message = '\n' + 'OHOS_REPORT_SUM: ' + suiteService.getCurrentRunningSuite().getSpecsNum();
         message += '\n' + 'OHOS_REPORT_STATUS: class=' + suiteService.getCurrentRunningSuite().description + '\n';
         this.delegator.print(message).then(() => {
             console.info(suiteService.getCurrentRunningSuite().description + ' print success');
@@ -65,7 +66,7 @@ class OhReport {
 
     suiteDone() {
         var message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
-        message += '\n' + 'OHOS_REPORT_STATUS: consuming=' + this.suiteService.currentRunningSuite.duration + '\n';
+        message += '\n' + 'OHOS_REPORT_STATUS: consuming=' + this.suiteService.getCurrentRunningSuite().duration + '\n';
         this.delegator.print(message).then(() => {
             console.info(suiteService.getCurrentRunningSuite().description + ' print success');
         });
