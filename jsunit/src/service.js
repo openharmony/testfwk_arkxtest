@@ -39,10 +39,11 @@ function processFunc(coreContext, func) {
                         function done() {
                             resolve();
                         }
-
                         let funcType = func(done);
                         if (funcType instanceof Promise) {
-                            funcType.catch(err => {reject(err);});
+                            funcType.catch(err => {
+                                reject(err);
+                            });
                         }
                     });
                 };
@@ -58,7 +59,9 @@ function processFunc(coreContext, func) {
 
                     let funcType = func(done, paramItem);
                     if (funcType instanceof Promise) {
-                        funcType.catch(err => {reject(err);});
+                        funcType.catch(err => {
+                            reject(err);
+                        });
                     }
                 });
             };
@@ -127,10 +130,12 @@ class SuiteService {
         let error = 0;
         let failure = 0;
         let pass = 0;
+        let duration = 0;
         let rootSuite = this.coreContext.getDefaultService('suite').rootSuite;
         if (rootSuite && rootSuite.childSuites) {
             for (let i = 0; i < rootSuite.childSuites.length; i++) {
                 let testsuite = rootSuite.childSuites[i];
+                duration += testsuite.duration;
                 let specs = testsuite['specs'];
                 for (let j = 0; j < specs.length; j++) {
                     total++;
@@ -145,7 +150,7 @@ class SuiteService {
                 }
             }
         }
-        return {total: total, failure: failure, error: error, pass: pass};
+        return {total: total, failure: failure, error: error, pass: pass, duration: duration};
     }
 
     init(coreContext) {
@@ -225,7 +230,6 @@ SuiteService.Suite = class {
         if (this.description !== '') {
             coreContext.fireEvents('suite', 'suiteStart', this);
         }
-        let startTime = new Date().getTime();
         this.runHookFunc('beforeAll');
         if (this.specs.length > 0) {
             const configService = coreContext.getDefaultService('config');
@@ -247,8 +251,6 @@ SuiteService.Suite = class {
             });
         }
         this.runHookFunc('afterAll');
-        let endTime = new Date().getTime();
-        this.duration = endTime - startTime;
         if (this.description !== '') {
             coreContext.fireEvents('suite', 'suiteDone');
         }
@@ -261,7 +263,6 @@ SuiteService.Suite = class {
             if (this.description !== '') {
                 coreContext.fireEvents('suite', 'suiteStart', this);
             }
-            let startTime = new Date().getTime();
             await this.runAsyncHookFunc('beforeAll');
             if (this.specs.length > 0) {
                 const configService = coreContext.getDefaultService('config');
@@ -285,8 +286,6 @@ SuiteService.Suite = class {
             }
 
             await this.runAsyncHookFunc('afterAll');
-            let endTime = new Date().getTime();
-            this.duration = endTime - startTime;
             if (this.description !== '') {
                 coreContext.fireEvents('suite', 'suiteDone');
             }
@@ -380,6 +379,7 @@ SpecService.Spec = class {
         };
         this.error = undefined;
         this.duration = 0;
+        this.startTime = 0;
     }
 
     setResult() {
@@ -394,8 +394,8 @@ SpecService.Spec = class {
     run(coreContext) {
         const specService = coreContext.getDefaultService('spec');
         specService.setCurrentRunningSpec(this);
+        this.startTime = new Date().getTime();
         coreContext.fireEvents('spec', 'specStart', this);
-        let startTime = new Date().getTime();
         try {
             let dataDriver = coreContext.getServices('dataDriver');
             if (typeof dataDriver === 'undefined') {
@@ -417,19 +417,17 @@ SpecService.Spec = class {
         } catch (e) {
             this.error = e;
         }
-        let endTime = new Date().getTime();
-        this.duration = endTime - startTime;
         coreContext.fireEvents('spec', 'specDone', this);
     }
 
     asyncRun(coreContext) {
         const specService = coreContext.getDefaultService('spec');
         specService.setCurrentRunningSpec(this);
+        this.startTime = new Date().getTime();
         const config = coreContext.getDefaultService('config');
-        const timeout = + (config.timeout === undefined ? 5000 : config.timeout);
+        const timeout = +(config.timeout === undefined ? 5000 : config.timeout);
         return new Promise(async resolve => {
             coreContext.fireEvents('spec', 'specStart', this);
-            let startTime = new Date().getTime();
 
             function timeoutPromise() {
                 return new Promise(function (resolve, reject) {
@@ -471,8 +469,6 @@ SpecService.Spec = class {
             } catch (e) {
                 this.error = e;
             }
-            let endTime = new Date().getTime();
-            this.duration = endTime - startTime;
             coreContext.fireEvents('spec', 'specDone', this);
             resolve();
         });
@@ -599,7 +595,6 @@ class ReportService {
 
     taskStart() {
         this.sleep(50);
-        this.taskStartTime = new Date().getTime();
         console.info('[start] start run suites');
     }
 
@@ -618,6 +613,9 @@ class ReportService {
         this.sleep(50);
         let msg = '';
         let spec = this.specService.currentRunningSpec;
+        spec.duration = new Date().getTime() - spec.startTime;
+        let suite = this.suiteService.currentRunningSuite;
+        suite.duration += spec.duration;
         if (spec.error) {
             this.formatPrint('error', spec.description + ' ; consuming ' + spec.duration + 'ms');
             this.formatPrint('errorDetail', spec.error);
@@ -645,11 +643,9 @@ class ReportService {
     taskDone() {
         this.sleep(50);
         let msg = '';
-        this.taskDoneTime = new Date().getTime();
-        this.duration = this.taskDoneTime - this.taskStartTime;
         let summary = this.suiteService.getSummary();
         msg = 'total cases:' + summary.total + ';failure ' + summary.failure + ',' + 'error ' + summary.error;
-        msg += ',pass ' + summary.pass + '; consuming ' + this.duration + 'ms';
+        msg += ',pass ' + summary.pass + '; consuming ' + summary.duration + 'ms';
         console.info(msg);
         console.info('[end] run suites end');
     }
