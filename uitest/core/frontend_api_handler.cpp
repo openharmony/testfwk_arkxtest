@@ -660,7 +660,7 @@ namespace OHOS::uitest {
             } else if (in.apiId_ == "UiWindow.getTitle") {
                 out.resultValue_ = snapshot->title_;
             } else if (in.apiId_ == "UiWindow.getWindowMode") {
-                out.resultValue_ = (uint8_t)(snapshot->mode_);
+                out.resultValue_ = (uint8_t)(snapshot->mode_ - 1);
             } else if (in.apiId_ == "UiWindow.isFocused") {
                 out.resultValue_ = snapshot->focused_;
             } else if (in.apiId_ == "UiWindow.isActived") {
@@ -703,11 +703,11 @@ namespace OHOS::uitest {
                 out.resultValue_ = wOp.Minimize(out);
             } else if (action == "UiWindow.close") {
                 out.resultValue_ = wOp.Close(out);
-            } else if (action == "UiWindow.focuse") {
+            } else if (action == "UiWindow.focus") {
                 out.resultValue_ = wOp.Focuse(out);
             }
         };
-        server.AddHandler("UiWindow.focuse", genericWinOperationHandler);
+        server.AddHandler("UiWindow.focus", genericWinOperationHandler);
         server.AddHandler("UiWindow.moveTo", genericWinOperationHandler);
         server.AddHandler("UiWindow.resize", genericWinOperationHandler);
         server.AddHandler("UiWindow.split", genericWinOperationHandler);
