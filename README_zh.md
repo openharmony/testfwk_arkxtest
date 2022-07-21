@@ -234,6 +234,7 @@ export default function ActsAbilityTest() {
             expect(mockfunc(123)).assertUndefined();//执行失败
         })
     })
+}
 ```
 
 **示例3： 设定参数类型为any ，即接受任何参数（undefine和null除外）的使用**
@@ -270,16 +271,17 @@ export default function ActsAbilityTest() {
             
             //5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
             //执行成功的案例1，传参为字符串类型
-            expect(mockfunc('test')).afterReturn('1');//用例执行通过。
+            expect(mockfunc('test')).assertEqual('1');//用例执行通过。
              //执行成功的案例2，传参为数字类型123
-            //expect(mockfunc(123)).afterReturn('1');//用例执行通过。
+            //expect(mockfunc(123)).assertEqual('1');//用例执行通过。
              //执行成功的案例3，传参为boolean类型true
-            //expect(mockfunc(true)).afterReturn('1');//用例执行通过。
+            //expect(mockfunc(true)).assertEqual('1');//用例执行通过。
             
             //执行失败的案例，传参为数字类型空
-            //expect(mockfunc()).afterReturn('1');//用例执行失败。
+            //expect(mockfunc()).assertEqual('1');//用例执行失败。
         })
     })
+}
 ```
 
 **示例4： 设定参数类型为anyString,anyBoolean等 的使用**
@@ -309,12 +311,13 @@ export default function ActsAbilityTest() {
             
             //5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
             //执行成功的案例，传参为字符串类型
-            expect(mockfunc('test')).afterReturn('1');//用例执行通过。
+            expect(mockfunc('test')).assertEqual('1');//用例执行通过。
             
             //执行失败的案例，传参为数字类型
-            //expect(mockfunc(123)).afterReturn('1');//用例执行失败。
+            //expect(mockfunc(123)).assertEqual('1');//用例执行失败。
         })
     })
+}
 ```
 
 **示例5： 设定参数类型为matchRegexs（Regex）等 的使用**
@@ -344,13 +347,14 @@ export default function ActsAbilityTest() {
             
             //5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
             //执行成功的案例，传参为字符串 比如 '1234567898'
-            //expect(mockfunc('1234567898')).afterReturn('1');//用例执行通过。
+            //expect(mockfunc('1234567898')).assertEqual('1');//用例执行通过。
             //因为字符串 '1234567898'可以和正则/123456/匹配上
             
             //执行失败的案例，传参为字符串'1234'
-            //expect(mockfunc('1234')).afterReturn('1');//用例执行失败。反之
+            //expect(mockfunc('1234')).assertEqual('1');//用例执行失败。
         })
     })
+}
 ```
 
 ## Ui测试框架功能特性
