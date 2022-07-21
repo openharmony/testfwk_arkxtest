@@ -271,7 +271,7 @@ namespace OHOS::uitest {
         {"UiWindow.getWindowMode", "():int", false, false}, // WindowMode enum as int value
         {"UiWindow.isFocused", "():bool", false, false},
         {"UiWindow.isActived", "():bool", false, false},
-        {"UiWindow.focuse", "():bool", false, false},
+        {"UiWindow.focus", "():bool", false, false},
         {"UiWindow.moveTo", "(int,int):bool", false, false},
         {"UiWindow.resize", "(int,int,int):bool", false, false}, // ResizeDirection enum as int value
         {"UiWindow.split", "():bool", false, false},
