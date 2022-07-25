@@ -70,8 +70,8 @@ public:
     void InjectTouchEventSequence(const PointerMatrix &events) const override
     {
         touch_event_records = std::make_unique<PointerMatrix>(events.GetFingers(), events.GetSteps());
-        for (int32_t step = 0; step < events.GetSteps(); step++) {
-            for (int32_t finger = 0; finger < events.GetFingers(); finger++) {
+        for (uint32_t step = 0; step < events.GetSteps(); step++) {
+            for (uint32_t finger = 0; finger < events.GetFingers(); finger++) {
                 touch_event_records->PushAction(events.At(finger, step));
             }
         }
@@ -245,8 +245,8 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckSubjectWidget)
     constexpr int32_t subjectWidgetHeight = 1000 - 200;
     int32_t maxCy = 0;
     int32_t minCy = 1E5;
-    for (int32_t finger = 0; finger < touch_event_records->GetFingers(); finger++) {
-        for (int32_t step = 0; step < touch_event_records->GetSteps(); step++) {
+    for (uint32_t finger = 0; finger < touch_event_records->GetFingers(); finger++) {
+        for (uint32_t step = 0; step < touch_event_records->GetSteps(); step++) {
             if (touch_event_records->At(finger, step).point_.py_ > maxCy) {
             maxCy = touch_event_records->At(finger, step).point_.py_;
             }
@@ -296,9 +296,9 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckDirection)
     // check the scroll action events, should be acted on the specified node
     ASSERT_TRUE(!touch_event_records->Empty());
     // should scroll-search upward (cy_from<cy_to) then downward (cy_from>cy_to)
-    int32_t maxCyEventIndex = 0;
+    uint32_t maxCyEventIndex = 0;
     uint32_t index = 0;
-    for (int32_t event = 0; event < touch_event_records->GetSize() - 1; event++) {
+    for (uint32_t event = 0; event < touch_event_records->GetSize() - 1; event++) {
         if (touch_event_records->At(0, event).point_.py_ > touch_event_records->At(0, maxCyEventIndex).point_.py_) {
             maxCyEventIndex = index;
         }
