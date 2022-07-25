@@ -615,9 +615,9 @@ namespace OHOS::uitest {
                 wOp.InputText("", out.exception_);
             } else if (in.apiId_ == "UiComponent.scrollSearch") {
                 auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
-                auto result = wOp.ScrollFindWidget(selector, out.exception_);
-                if (result != nullptr) {
-                    out.resultValue_ = StoreBackendObject(move(result), sDriverBindingMap.find(in.callerObjRef_)->second);
+                auto res = wOp.ScrollFindWidget(selector, out.exception_);
+                if (res != nullptr) {
+                    out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
                 }
             } else if (in.apiId_ == "UiComponent.pinchOut") {
                 auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
