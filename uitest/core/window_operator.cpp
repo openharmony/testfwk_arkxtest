@@ -21,7 +21,7 @@ namespace OHOS::uitest {
     using namespace nlohmann;
 
     enum WindowAction : uint8_t {
-        FOCUSE,
+        FOCUS,
         MOVETO,
         RESIZE,
         SPLIT,
@@ -109,8 +109,9 @@ namespace OHOS::uitest {
             return true;
         } else {
             auto rect = window_.bounds_;
-            Point windowCenter(rect.GetCenterX(), rect.GetCenterY());
-            auto touch = GenericClick(TouchOp::CLICK, windowCenter);
+            static constexpr uint32_t step = 10;
+            Point focus(rect.GetCenterX(), rect.top_ + step);
+            auto touch = GenericClick(TouchOp::CLICK, focus);
             driver_.PerformTouch(touch, options_, out.exception_);
             return (out.exception_.code_ == ErrCode::NO_ERROR);
         }
@@ -123,9 +124,9 @@ namespace OHOS::uitest {
             return false;
         }
         auto rect = window_.bounds_;
-        static constexpr uint32_t step = 30;
+        static constexpr uint32_t step = 40;
         Point from(rect.left_ + step, rect.top_ + step);
-        Point to(endX, endY);
+        Point to(endX + step, endY + step);
         auto touch = GenericSwipe(TouchOp::DRAG, from, to);
         driver_.PerformTouch(touch, options_, out.exception_);
         return (out.exception_.code_ == ErrCode::NO_ERROR);
