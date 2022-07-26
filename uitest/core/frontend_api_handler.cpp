@@ -619,10 +619,7 @@ namespace OHOS::uitest {
                 if (res != nullptr) {
                     out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
                 }
-            } else if (in.apiId_ == "UiComponent.pinchOut") {
-                auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
-                wOp.PinchWidget(pinchScale, out.exception_);
-            } else if (in.apiId_ == "UiComponent.pinchIn") {
+            } else if (in.apiId_ == "UiComponent.pinchOut" || in.apiId_ == "UiComponent.pinchIn") {
                 auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
                 wOp.PinchWidget(pinchScale, out.exception_);
             }
