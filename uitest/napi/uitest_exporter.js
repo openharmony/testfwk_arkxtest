@@ -13,43 +13,42 @@
  * limitations under the License.
  */
 
-function exportUiTestLifeCycleMethods() {
-  globalThis.setupUiTestEnvironment = async function () {
-    let uitest = globalThis.requireInternal('uitest')
-    if (uitest.uitestSetupCalled === true) {
-      return
-    }
-    uitest.uitestSetupCalled = true
-    // check 'persist.ace.testmode.enabled' property
-    let parameter = globalThis.requireNapi('systemparameter')
-    if (parameter == null) {
-      console.error('UiTestKit_exporter: Failed to require systemparameter napi module!')
-      return
-    }
-    if (parameter.getSync('persist.ace.testmode.enabled', '0') !== '1') {
-      console.warn('UiTestKit_exporter: systemParameter "persist.ace.testmode.enabled" is not set!')
-    }
-    let registry = globalThis.requireNapi('application.abilityDelegatorRegistry')
-    if (registry == null) {
-      console.error('UiTestKit_exporter: Failed to require AbilityDelegator napi module')
-      return
-    }
-    // startup server_daemon
-    let delegator = registry.getAbilityDelegator()
-    if (delegator == null) {
-      console.warn('UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started')
-    } else {
-      console.info('UiTestKit_lifecycle: Begin executing shell command to start server-daemon')
-      try {
-        let result = await delegator.executeShellCommand('uitest start-daemon 0123456789', 1)
-        console.info(`UiTestKit_lifecycle: Start server-daemon finished: ${JSON.stringify(result)}`)
-      } catch (error) {
-        console.error(`UiTestKit_lifecycle: Start server-daemon failed: ${JSON.stringify(error)}`)
-      }
-    }
-    uitest.setup('0123456789')
+function runUiTestLifeCycleMethods() {
+  let uitest = globalThis.requireInternal('uitest')
+  if (uitest.uitestSetupCalled === true) {
+    return
   }
+  uitest.uitestSetupCalled = true
+  // check 'persist.ace.testmode.enabled' property
+  let parameter = globalThis.requireNapi('systemparameter')
+  if (parameter == null) {
+    console.error('UiTestKit_exporter: Failed to require systemparameter napi module!')
+    return
+  }
+  if (parameter.getSync('persist.ace.testmode.enabled', '0') !== '1') {
+    console.warn('UiTestKit_exporter: systemParameter "persist.ace.testmode.enabled" is not set!')
+  }
+  // schedule server_daemon startup
+  let registry = globalThis.requireNapi('application.abilityDelegatorRegistry')
+  if (registry == null) {
+    console.error('UiTestKit_exporter: Failed to require AbilityDelegator napi module')
+    return
+  }
+  let delegator = registry.getAbilityDelegator()
+  if (delegator == null) {
+    console.warn('UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started')
+  } else {
+    console.info('UiTestKit_lifecycle: Begin executing shell command to start server-daemon')
+    delegator.executeShellCommand('uitest start-daemon 0123456789', 1).then((value) => {
+      console.info(`UiTestKit_lifecycle: Start server-daemon finished: ${JSON.stringify(value)}`)
+    }).catch((error) => {
+      console.error(`UiTestKit_lifecycle: Start server-daemon failed: ${JSON.stringify(error)}`)
+    })
+  }
+  // establish connection with server_daemon sync
+  uitest.setup('0123456789')
 
+  // export teardown function
   globalThis.teardownUiTestEnvironment = function () {
     if (uitest.uitestSetupCalled === true) {
       console.info('UiTestKit_lifecycle, disposal uitest')
@@ -60,7 +59,7 @@ function exportUiTestLifeCycleMethods() {
 
 function requireUiTest() {
   console.info('UiTestKit_exporter: Start running uitest_exporter')
-  exportUiTestLifeCycleMethods()
+  runUiTestLifeCycleMethods()
   let module = undefined
   try {
     module = globalThis.requireInternal('uitest')
