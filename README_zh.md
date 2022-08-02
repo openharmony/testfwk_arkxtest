@@ -19,10 +19,11 @@ arkXtest
 
 ## 单元测试框架功能特性
 
-| No.  | 特性     | 功能说明                           |
-| ---- | -------- | ---------------------------------- |
-| 1    | 基础流程 | 支持编写及执行基础用例             |
-| 2    | 断言库   | 判断用例实际期望值与预期值是否相符 |
+| No.  | 特性     | 功能说明                                                     |
+| ---- | -------- | ------------------------------------------------------------ |
+| 1    | 基础流程 | 支持编写及执行基础用例                                       |
+| 2    | 断言库   | 判断用例实际期望值与预期值是否相符                           |
+| 3    | Mock能力 | 支持函数级mock能力，对定义的函数进行mock后修改函数的行为，使其返回指定的值或者执行某种动作 |
 
 ### 使用说明
 
@@ -118,19 +119,15 @@ export default async function abilityTest() {
   })
 }
 ```
-### 使用方式
 
-单元测试框架以npm包（hypium）形式发布至[服务组件官网](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
 
-### 单元测试框架Mock能力
+#### Mock能力
 
-目前支持函数级mock能力，对定义的函数进行mock后修改函数的行为，使其返回指定的值或者执行某种动作。
+##### 约束限制
 
-#### 约束限制
+单元测试框架Mock能力从npm包[1.0.1版本](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)开始支持，需修改源码工程中package.info中配置依赖npm包版本号后使用。
 
-单元测试框架Mock能力从npm包1.0.1版本开始支持，需修改工程中package.info中配置依赖npm包版本号后使用。
-
--  **API列表：**
+-  **接口列表：**
 
 | No. | API | 功能说明 |
 | --- | --- | --- |
@@ -357,6 +354,10 @@ export default function ActsAbilityTest() {
 }
 ```
 
+### 使用方式
+
+单元测试框架以npm包（hypium）形式发布至[服务组件官网](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
+
 ## Ui测试框架功能特性
 
 | No.  | 特性        | 功能说明                                                     |
@@ -364,11 +365,12 @@ export default function ActsAbilityTest() {
 | 1    | UiDriver    | Ui测试的入口，提供查找控件，检查控件存在性以及注入按键能力   |
 | 2    | By          | 用于描述目标控件特征(文本、id、类型等)，`UiDriver`根据`By`描述的控件特征信息来查找控件 |
 | 3    | UiComponent | UiDriver查找返回的控件对象，提供查询控件属性，滑动查找等触控和检视能力 |
+| 4    | UiWindow    | UiDriver查找返回的窗口对象，提供获取窗口属性、操作窗口的能力 |
 
 **使用者在测试脚本通过如下方式引入使用：**
 
 ```typescript
-import {UiDriver,BY,UiComponent,MatchPattern} from '@ohos.uitest'
+import {UiDriver,BY,UiComponent,Uiwindow,MatchPattern} from '@ohos.uitest'
 ```
 
 > 注意事项
@@ -415,6 +417,7 @@ export default async function abilityTest() {
 | 6    | assertComponentExist(b:By):Promise<void>                     | 断言匹配的控件存在     |
 | 7    | delayMs(t:number):Promise<void>                              | 延时                   |
 | 8    | screenCap(s:path):Promise<void>                              | 截屏                   |
+| 9    | findWindow(filter: WindowFilter): Promise<UiWindow>          | 查找匹配窗口           |
 
 其中assertComponentExist接口是断言API，用于断言当前界面存在目标控件；如果控件不存在，该API将抛出JS异常，使当前测试用例失败。
 
@@ -436,6 +439,8 @@ export default async function abilityTest() {
   })
 }
 ```
+
+`UiDriver`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#uidriver)。
 
 ### By使用说明
 
@@ -459,6 +464,8 @@ Ui测试框架通过`By`类提供了丰富的控件特征描述API，用来匹�
 | 10   | isAfter(b:By):By                   | **相对定位**，限定目标控件位于指定特征控件之后 |
 
 其中，`text`属性支持{`MatchPattern.EQUALS`，`MatchPattern.CONTAINS`，`MatchPattern.STARTS_WITH`，`MatchPattern.ENDS_WITH`}四种匹配模式，缺省使用`MatchPattern.EQUALS`模式。
+
+`By`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#by)。
 
 #### 控件绝对定位
 
@@ -494,7 +501,6 @@ let switch = await driver.findComponent(BY.id(Id_switch).isAfter(BY.text("Item3_
 
 通过`By.isAfter`方法，指定位于目标控件前面的特征控件属性，通过该特征控件进行相对定位。一般地，特征控件是某个具有全局唯一特征的控件(例如具有唯一的id或者唯一的text)。
 
-
 类似的，可以使用`By.isBefore`控件指定位于目标控件后面的特征控件属性，实现相对定位。
 
 ### UiComponent使用说明
@@ -513,7 +519,7 @@ let switch = await driver.findComponent(BY.id(Id_switch).isAfter(BY.text("Item3_
 | 6    | getType():Promise<string>         | 获取控件类型                                 |
 | 7    | isEnabled():Promise<bool>         | 获取控件使能状态                             |
 
-`UiComponent`完整的API列表请参考其API文档。
+`UiComponent`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#uicomponent)。
 
 **示例代码1**：单击控件。
 
@@ -543,6 +549,45 @@ expect(found).assertTrue()
 let editText = await driver.findComponent(BY.type('InputText'))
 await editText.inputText("user_name")
 ```
+### UiWindow使用说明
+
+`UiWindow`类代表了Ui界面上的一个窗口，一般是通过`UiDriver.findWindow(by)`方法查找到的。通过该类的实例，用户可以获取窗口属性，并进行窗口拖动、调整窗口大小等操作。
+
+`UiWindow`包含的常用API：
+
+| No.  | API                                                          | 功能描述                                         |
+| ---- | ------------------------------------------------------------ | ------------------------------------------------ |
+| 1    | getBundleName(): Promise<string>                             | 获取窗口所属应用包名                             |
+| 2    | getTitle(): Promise<string>                                  | 获取窗口标题信息                                 |
+| 3    | focus(): Promise<bool>                                       | 使得当前窗口获取焦点                             |
+| 4    | moveTo(x: number, y: number): Promise<bool>;                 | 将当前窗口移动到指定位置（适用于支持移动的窗口） |
+| 5    | resize(wide: number, height: number, direction: ResizeDirection): Promise<bool> | 调整窗口大小（适用于支持调整大小的窗口）         |
+| 6    | split(): Promise<bool>                                       | 将窗口模式切换为分屏模式(适用于支持分屏的窗口)   |
+| 7    | close(): Promise<bool>                                       | 关闭当前窗口                                     |
+
+`UiWindow`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#uiwindow9)。
+
+**示例代码1**：获取窗口属性。
+
+```javascript
+let window = await driver.findWindow({actived: true})
+let bundelName = await window.getBundleName()
+```
+
+**示例代码2**：移动窗口。
+
+```javascript
+let window = await driver.findWindow({actived: true})
+await window.moveTo(500,500)
+```
+
+**示例代码3**：关闭窗口。
+
+```javascript
+let window = await driver.findWindow({actived: true})
+await window.close()
+```
+
 ### 使用方式
 
   开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
@@ -553,6 +598,8 @@ await editText.inputText("user_name")
 ### UI测试框架自构建方式
 
 > Ui测试框架在OpenHarmony-3.1-Release版本中未随版本编译，需手动处理，具体指导请[参考](https://gitee.com/openharmony/arkXtest/blob/OpenHarmony-3.1-Release/README_zh.md#%E6%8E%A8%E9%80%81ui%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E8%87%B3%E8%AE%BE%E5%A4%87)。
+
+开发者如需自行编译Ui测试框架代码验证子修改内容，编译命令和推送位置请参考本章节内容。
 
 #### 构建命令
 
