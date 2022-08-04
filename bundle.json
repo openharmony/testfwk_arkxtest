@@ -23,23 +23,20 @@
       "ram": "100KB",
       "deps": {
         "components": [
-          "utils_base",
-          "common_event_service",
-          "ability_manager",
-          "appexecfwk_base",
-          "appexecfwk_core",
-          "cesfwk_innerkits",
-          "ipc_core",
-          "libhilog",
-          "libmmi-client",
-          "samgr_proxy",
-          "want",
+          "bundle_framework",
+          "hiviewdfx_hilog_native",
+          "input",
+          "ability_base",
+          "ipc",
+          "libpng",
+          "samgr_standard",
           "accessibility",
-          "ability_runtime",
+          "common_event_service",
           "napi",
-          "libdm",
-          "image_native",
-          "libwm"
+          "multimedia_image_standard",
+          "ability_runtime",
+          "common",
+          "window_manager"
         ],
         "third_party": [
           "libpng"
