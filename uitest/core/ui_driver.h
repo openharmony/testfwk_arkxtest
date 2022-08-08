@@ -63,7 +63,7 @@ namespace OHOS::uitest {
         const WidgetTree *GetWidgetTree() const;
 
         /** Get current UI controller.*/
-        const UiController *GetUiController() const;
+        const UiController *GetUiController(ApiCallErr &error);
 
         const FrontEndClassDef &GetFrontendClassDef() const override
         {
