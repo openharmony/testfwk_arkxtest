@@ -64,7 +64,7 @@ namespace OHOS::uitest {
 
         void ScheduleCheckConnection(bool emitHandshake);
 
-        bool EnsureConnectionAlive(uint64_t timeoutMs);
+        bool DiscoverPeer(uint64_t timeoutMs);
 
         virtual void Finalize();
 

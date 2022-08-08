@@ -205,7 +205,7 @@ TEST_F(MessageTransceiverTest, ensureConnected)
 {
     constexpr uint64_t timeoutMs = 100;
     // give no incoming message, should be timed-out
-    ASSERT_FALSE(transceiver_.EnsureConnectionAlive(timeoutMs));
+    ASSERT_FALSE(transceiver_.DiscoverPeer(timeoutMs));
     // inject incoming message before timeout, should return true immediately
     static constexpr uint64_t incomingDelayMs = 60;
     asyncWork_ = async(launch::async, [this]() {
@@ -214,7 +214,7 @@ TEST_F(MessageTransceiverTest, ensureConnected)
         this->transceiver_.OnReceiveMessage(message);
     });
     const uint64_t startMs = GetCurrentMillisecond();
-    ASSERT_TRUE(transceiver_.EnsureConnectionAlive(timeoutMs));
+    ASSERT_TRUE(transceiver_.DiscoverPeer(timeoutMs));
     const uint64_t endMs = GetCurrentMillisecond();
     ASSERT_NEAR(startMs, endMs, incomingDelayMs + TIME_DIFF_TOLERANCE_MS); // check return immediately
 }
