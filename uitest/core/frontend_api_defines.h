@@ -243,6 +243,8 @@ namespace OHOS::uitest {
         {"UiDriver.wakeUpDisplay", "():void", false, false},
         {"UiDriver.pressHome", "():void", false, false},
         {"UiDriver.waitForIdle", "(int,int):bool", false, false},
+        {"UiDriver.fling", "(Point,Point,int,int):void", false, false},
+        {"UiDriver.injectMultiPointerAction", "(PointerMatrix, int?):bool", false, false},
     };
     constexpr FrontEndClassDef UI_DRIVER_DEF = {
         "UiDriver",
@@ -307,8 +309,19 @@ namespace OHOS::uitest {
         sizeof(UI_WINDOW_METHODS) / sizeof(FrontendMethodDef),
     };
 
+    /** PointerMatrix class definition.*/
+    constexpr FrontendMethodDef POINTER_MATRIX_METHODS[] = {
+        {"PointerMatrix.create", "(int,int):PointerMatrix", true, true},
+        {"PointerMatrix.setPoint", "(int,int,Point):void", false, true},
+    };
+    constexpr FrontEndClassDef POINTER_MATRIX_DEF = {
+        "PointerMatrix",
+        POINTER_MATRIX_METHODS,
+        sizeof(POINTER_MATRIX_METHODS) / sizeof(FrontendMethodDef),
+    };
+
     /** List all the frontend data-type definitions.*/
-    const auto FRONTEND_CLASS_DEFS = {&BY_DEF, &UI_DRIVER_DEF, &UI_COMPONENT_DEF, &UI_WINDOW_DEF};
+    const auto FRONTEND_CLASS_DEFS = {&BY_DEF, &UI_DRIVER_DEF, &UI_COMPONENT_DEF, &UI_WINDOW_DEF, &POINTER_MATRIX_DEF};
     const auto FRONTEND_ENUMERATOR_DEFS = {&MATCH_PATTERN_DEF, &WINDOW_MODE_DEF, &RESIZE_DIRECTION_DEF,
                                            &DISPLAY_ROTATION_DEF};
     const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF};
@@ -325,6 +338,7 @@ namespace OHOS::uitest {
         UI_DRIVER_DEF.name_,
         UI_COMPONENT_DEF.name_,
         UI_WINDOW_DEF.name_,
+        POINTER_MATRIX_DEF.name_,
     };
 } // namespace OHOS::uitest
 

@@ -28,7 +28,7 @@ namespace OHOS::uitest {
     constexpr int32_t KEYCODE_HOME = 1;
 
     /**Enumerates all the supported coordinate-based touch operations.*/
-    enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG, PINCH };
+    enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG };
 
     /**Enumerates the supported Key actions.*/
     enum UiKey : uint8_t { BACK, GENERIC };
@@ -51,7 +51,7 @@ namespace OHOS::uitest {
         uint32_t holdMs_;
     };
 
-    class PointerMatrix {
+    class PointerMatrix : public BackendClass {
     public:
         PointerMatrix();
 
@@ -61,7 +61,12 @@ namespace OHOS::uitest {
 
         PointerMatrix& operator=(PointerMatrix&& other);
 
-        ~PointerMatrix();
+        ~PointerMatrix() override;
+
+        const FrontEndClassDef &GetFrontendClassDef() const override
+        {
+            return POINTER_MATRIX_DEF;
+        }
 
         void PushAction(const TouchEvent& ptr);
 
@@ -89,15 +94,21 @@ namespace OHOS::uitest {
      **/
     class UiOpArgs {
     public:
+        const uint32_t maxSwipeVelocityPps_ = 3000;
+        const uint32_t minSwipeVelocityPps_ = 200;
+        const uint32_t defaultSwipeVelocityPps_ = 600;
+        const uint32_t maxMultiTouchFingers = 10;
+        const uint32_t maxMultiTouchSteps = 1000;
         uint32_t clickHoldMs_ = 200;
         uint32_t longClickHoldMs_ = 1500;
         uint32_t doubleClickIntervalMs_ = 200;
         uint32_t keyHoldMs_ = 100;
-        uint32_t swipeVelocityPps_ = 600;
+        uint32_t swipeVelocityPps_ = defaultSwipeVelocityPps_;
         uint32_t uiSteadyThresholdMs_ = 1000;
         uint32_t waitUiSteadyMaxMs_ = 3000;
         uint32_t waitWidgetMaxMs_ = 5000;
         int32_t scrollWidgetDeadZone_ = 20;
+        uint16_t swipeStepsCounts_ = 50;
     };
 
     class TouchAction {
@@ -156,6 +167,21 @@ namespace OHOS::uitest {
     private:
         const Rect rect_;
         const float_t scale_;
+    };
+
+    /**
+     * Base type of multi pointer actions.
+     **/
+    class MultiPointerAction : public TouchAction {
+    public:
+        explicit MultiPointerAction(const PointerMatrix &pointer) : pointers_(pointer) {};
+
+        void Decompose(PointerMatrix &recv, const UiOpArgs &options) const override;
+
+        ~MultiPointerAction() = default;
+
+    private:
+        const PointerMatrix& pointers_;
     };
 
     /**

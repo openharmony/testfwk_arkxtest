@@ -164,6 +164,51 @@ TEST_F(UiActionTest, computeSwipeAction)
     }
 }
 
+TEST_F(UiActionTest, computeFlingAction)
+{
+    UiOpArgs opt {};
+    opt.swipeVelocityPps_ = 800; // specify the swipe velocity
+    Point point0(0, 0);
+    Point point1(200, 200);
+
+    const uint32_t stepLen = 2;
+    const int32_t disX = point1.px_ - point0.px_;
+    const int32_t disY = point1.py_ - point0.py_;
+    const uint32_t distance = sqrt(disX * disX + disY * disY);
+    const uint32_t totalCostMs = distance * 1000 / opt.swipeVelocityPps_;
+    opt.swipeStepsCounts_ = distance / stepLen;
+
+    GenericSwipe action(TouchOp::SWIPE, point0, point1);
+    PointerMatrix events;
+    action.Decompose(events, opt);
+    // there should be more than 1 touches
+    const uint16_t steps = opt.swipeStepsCounts_;
+    ASSERT_TRUE(steps > 1);
+    ASSERT_EQ(steps, 141);
+
+    uint32_t step = 0;
+    // check the TouchEvent of each step
+    for (uint32_t event = 0; event < events.GetSize(); event++) {
+        int32_t expectedPointerX = point0.px_ + (disX * step) / steps;
+        int32_t expectedPointerY = point0.py_ + (disY * step) / steps;
+        uint32_t expectedTimeOffset = (totalCostMs * step) / steps;
+        ASSERT_NEAR(expectedPointerX, events.At(0, event).point_.px_, 5);
+        ASSERT_NEAR(expectedPointerY, events.At(0, event).point_.py_, 5);
+        ASSERT_NEAR(expectedTimeOffset, events.At(0, event).downTimeOffsetMs_, 5);
+        if (step == 0) {
+            // should start with Action.DOWN
+            ASSERT_EQ(ActionStage::DOWN, events.At(0, event).stage_);
+        } else if (step == events.GetSize() - 1) {
+            // should end with Action.UP
+            ASSERT_EQ(ActionStage::UP, events.At(0, event).stage_);
+        } else {
+            // middle events should all be action-MOVE
+            ASSERT_EQ(ActionStage::MOVE, events.At(0, event).stage_);
+        }
+        step++;
+    }
+}
+
 TEST_F(UiActionTest, computePinchInAction)
 {
     UiOpArgs opt {};
@@ -218,6 +263,95 @@ TEST_F(UiActionTest, computePinchInAction)
             ASSERT_EQ(ActionStage::MOVE, events.At(eventFinger, eventStep).stage_);
         }
         step++;
+    }
+}
+
+TEST_F(UiActionTest, computeMultiPointerMatrixAction)
+{
+    UiOpArgs opt {};
+    opt.swipeVelocityPps_ = 50; // specify the swipe velocity
+    const uint32_t finger = 2;
+    const uint32_t step = 4;
+    PointerMatrix pointer(finger, step);
+    for (uint32_t stepIndex = 0; stepIndex < step; stepIndex++) {
+        pointer.At(0, stepIndex).point_.px_ = 245 + 20 * stepIndex;
+        pointer.At(0, stepIndex).point_.py_ = 480;
+    }
+    for (uint32_t stepIndex = 0; stepIndex < step; stepIndex++) {
+        pointer.At(1, stepIndex).point_.px_ = 505 - 20 * stepIndex;
+        pointer.At(1, stepIndex).point_.py_ = 480;
+    }
+    MultiPointerAction action(pointer);
+    ASSERT_EQ(2, pointer.GetFingers());
+    ASSERT_EQ(4, pointer.GetSteps());
+    // ASSERT_EQ(8, pointer.GetSize());
+    ASSERT_EQ(245, pointer.At(0, 0).point_.px_);
+    PointerMatrix events;
+    action.Decompose(events, opt);
+    // there should be more than 1 touches
+    ASSERT_EQ(8, events.GetSize());
+    ASSERT_EQ(4, events.GetSteps());
+    for (uint32_t eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
+        for (uint32_t eventFinger = 0; eventFinger < events.GetFingers(); eventFinger++) {
+            if (eventStep == 0) {
+                ASSERT_EQ(ActionStage::DOWN, events.At(eventFinger, eventStep).stage_);
+            } else if (eventStep == events.GetSteps() - 1) {
+                ASSERT_EQ(ActionStage::UP, events.At(eventFinger, eventStep).stage_);
+            } else {
+                ASSERT_EQ(ActionStage::MOVE, events.At(eventFinger, eventStep).stage_);
+            }
+            eventFinger++;
+        }
+        eventStep++;
+    }
+}
+
+TEST_F(UiActionTest, computeMultiPointerMatrixAction1)
+{
+    UiOpArgs opt {};
+    opt.swipeVelocityPps_ = 600; // specify the swipe velocity
+    const uint32_t finger = 4;
+    const uint32_t step = 4;
+    PointerMatrix pointer(finger, step);
+    for (uint32_t stepIndex = 0; stepIndex < step; stepIndex++) {
+        pointer.At(0, stepIndex).point_.px_ = 245 + 20 * stepIndex;
+        pointer.At(0, stepIndex).point_.py_ = 480;
+    }
+    for (uint32_t stepIndex = 0; stepIndex < step; stepIndex++) {
+        pointer.At(1, stepIndex).point_.px_ = 505 - 20 * stepIndex;
+        pointer.At(1, stepIndex).point_.py_ = 480;
+    }
+    for (uint32_t stepIndex = 0; stepIndex < step; stepIndex++) {
+        pointer.At(2, stepIndex).point_.px_ = 375;
+        pointer.At(2, stepIndex).point_.py_ = 350 + 20 * stepIndex;
+    }
+    for (uint32_t stepIndex = 0; stepIndex < step; stepIndex++) {
+        pointer.At(3, stepIndex).point_.px_ = 375;
+        pointer.At(3, stepIndex).point_.py_ = 610 - 20 * stepIndex;
+    }
+    MultiPointerAction action(pointer);
+    ASSERT_EQ(4, pointer.GetFingers());
+    ASSERT_EQ(4, pointer.GetSteps());
+    // ASSERT_EQ(8, pointer.GetSize());
+    ASSERT_EQ(245, pointer.At(0, 0).point_.px_);
+    ASSERT_EQ(590, pointer.At(3, 1).point_.py_);
+    PointerMatrix events;
+    action.Decompose(events, opt);
+    // there should be more than 1 touches
+    ASSERT_EQ(16, events.GetSize());
+    ASSERT_EQ(4, events.GetSteps());
+    for (uint32_t eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
+        for (uint32_t eventFinger = 0; eventFinger < events.GetFingers(); eventFinger++) {
+            if (eventStep == 0) {
+                ASSERT_EQ(ActionStage::DOWN, events.At(eventFinger, eventStep).stage_);
+            } else if (eventStep == events.GetSteps() - 1) {
+                ASSERT_EQ(ActionStage::UP, events.At(eventFinger, eventStep).stage_);
+            } else {
+                ASSERT_EQ(ActionStage::MOVE, events.At(eventFinger, eventStep).stage_);
+            }
+            eventFinger++;
+        }
+        eventStep++;
     }
 }
 
