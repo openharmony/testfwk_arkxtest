@@ -154,8 +154,6 @@ namespace OHOS::uitest {
                 const auto incomingMillis = transceiver->lastIncomingMessageMillis_.load();
                 const auto outgoingMillis = transceiver->lastOutgoingMessageMillis_.load();
                 const auto millis = GetCurrentMillisecond();
-                const auto outgoingIdleTime = millis - transceiver->lastOutgoingMessageMillis_.load();
-                const auto incomingIdleTime = millis - transceiver->lastIncomingMessageMillis_.load();
                 const auto incomingIdleTime = millis - incomingMillis;
                 const auto outgoingIdleTime = millis - outgoingMillis;
                 if (emitHandshake && (outgoingIdleTime > secureDurationMs || incomingIdleTime > secureDurationMs)) {
