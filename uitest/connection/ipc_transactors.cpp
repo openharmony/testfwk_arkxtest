@@ -151,9 +151,13 @@ namespace OHOS::uitest {
         constexpr auto interval = chrono::milliseconds(secureDurationMs / slices);
         future<void> periodWork = async(launch::async, [transceiver = this, interval, emitHandshake]() {
             while (transceiver != nullptr && transceiver->autoHandshaking_.load()) {
+                const auto incomingMillis = transceiver->lastIncomingMessageMillis_.load();
+                const auto outgoingMillis = transceiver->lastOutgoingMessageMillis_.load();
                 const auto millis = GetCurrentMillisecond();
                 const auto outgoingIdleTime = millis - transceiver->lastOutgoingMessageMillis_.load();
                 const auto incomingIdleTime = millis - transceiver->lastIncomingMessageMillis_.load();
+                const auto incomingIdleTime = millis - incomingMillis;
+                const auto outgoingIdleTime = millis - outgoingMillis;
                 if (emitHandshake && (outgoingIdleTime > secureDurationMs || incomingIdleTime > secureDurationMs)) {
                     // emit handshake in secure_duration
                     transceiver->EmitHandshake();
@@ -175,7 +179,7 @@ namespace OHOS::uitest {
         LOG_I("Connection-check scheduled, autoHandshake=%{public}d", emitHandshake);
     }
 
-    bool MessageTransceiver::EnsureConnectionAlive(uint64_t timeoutMs)
+    bool MessageTransceiver::DiscoverPeer(uint64_t timeoutMs)
     {
         constexpr uint64_t intervalMs = 20;
         constexpr auto duration = chrono::milliseconds(intervalMs);

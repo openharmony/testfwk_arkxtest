@@ -52,7 +52,7 @@ namespace OHOS::uitest {
         subscriber_ = make_shared<CommonEventForwarder>(info, [this](const CommonEventData &event) {
             auto &want = event.GetWant();
             auto message = TransactionMessage {};
-            message.id_ = (uint32_t)want.GetIntParam("id", 0);
+            message.id_ = (uint32_t)want.GetLongParam("id", 0);
             message.type_ = static_cast<TransactionType>(want.GetIntParam("type", TransactionType::INVALID));
             message.dataParcel_ = want.GetStringParam("data");
             this->OnReceiveMessage(message);
@@ -116,7 +116,7 @@ namespace OHOS::uitest {
         }
         // emit handshake and wait-for first interaction established
         LOG_I("Start checking CS-interaction");
-        if (!transceiver_->EnsureConnectionAlive(WAIT_CONNECTION_TIMEOUT_MS)) {
+        if (!transceiver_->DiscoverPeer(WAIT_CONNECTION_TIMEOUT_MS)) {
             LOG_E("Wait CS-interaction timed out in %{public}llu ms", (unsigned long long)WAIT_CONNECTION_TIMEOUT_MS);
             return false;
         }
