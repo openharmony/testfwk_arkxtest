@@ -28,7 +28,7 @@ namespace OHOS::uitest {
 
         void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>>& out) const override;
 
-        void WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const override;
+        bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const override;
 
         void InjectTouchEventSequence(const PointerMatrix &events) const override;
 
@@ -47,6 +47,18 @@ namespace OHOS::uitest {
 
         // teardown method, disconnect from system ability AAMS
         void DisConnectFromSysAbility();
+
+        void SetDisplayRotation(DisplayRotation rotation) const override;
+
+        DisplayRotation GetDisplayRotation() const override;
+
+        void SetDisplayRotationEnabled(bool enabled) const override;
+
+        Point GetDisplaySize() const override;
+
+        Point GetDisplayDensity() const override;
+
+        bool IsScreenOn() const override;
 
     private:
         bool connected_ = false;

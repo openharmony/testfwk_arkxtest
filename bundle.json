@@ -23,20 +23,22 @@
       "ram": "100KB",
       "deps": {
         "components": [
-          "bundle_framework",
-          "hiviewdfx_hilog_native",
-          "input",
-          "ability_base",
-          "ipc",
-          "libpng",
-          "samgr_standard",
-          "accessibility",
+          "common",
           "common_event_service",
+          "ipc",
+          "ability_base",
+          "window_manager",
+          "utils_base",
           "napi",
+          "bundle_framework",
+          "samgr_standard",
+          "libpng",
+          "accessibility",
           "multimedia_image_standard",
           "ability_runtime",
-          "common",
-          "window_manager"
+          "hiviewdfx_hilog_native",
+          "input",
+          "graphic_standard"
         ],
         "third_party": [
           "libpng"

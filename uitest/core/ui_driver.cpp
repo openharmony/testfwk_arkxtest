@@ -61,8 +61,9 @@ namespace OHOS::uitest {
     }
 
     /** Get current UI controller.*/
-    const UiController *UiDriver::GetUiController() const
+    const UiController *UiDriver::GetUiController(ApiCallErr &error)
     {
+        this->UpdateUi(false, error);
         return uiController_;
     }
 
