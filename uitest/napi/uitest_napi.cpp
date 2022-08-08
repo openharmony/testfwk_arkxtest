@@ -465,6 +465,7 @@ namespace OHOS::uitest {
         NAPI_CALL(env, ExportEnumrator(env, exports, MATCH_PATTERN_DEF));
         NAPI_CALL(env, ExportEnumrator(env, exports, RESIZE_DIRECTION_DEF));
         NAPI_CALL(env, ExportEnumrator(env, exports, WINDOW_MODE_DEF));
+        NAPI_CALL(env, ExportEnumrator(env, exports, DISPLAY_ROTATION_DEF));
         LOG_I("End export uitest apis");
         return exports;
     }

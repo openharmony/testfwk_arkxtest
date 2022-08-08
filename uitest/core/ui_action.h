@@ -24,6 +24,8 @@ namespace OHOS::uitest {
     constexpr int32_t KEYCODE_BACK = 2;
     constexpr int32_t KEYCODE_CTRL = 2072;
     constexpr int32_t KEYCODE_V = 2038;
+    constexpr int32_t KEYCODE_POWER = 18;
+    constexpr int32_t KEYCODE_HOME = 1;
 
     /**Enumerates all the supported coordinate-based touch operations.*/
     enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG, PINCH };
@@ -230,6 +232,8 @@ namespace OHOS::uitest {
     };
 
     using Back = NamedPlainKey<KEYCODE_BACK>;
+    using Power = NamedPlainKey<KEYCODE_POWER>;
+    using Home = NamedPlainKey<KEYCODE_HOME>;
     using Paste = NamedPlainKey<KEYCODE_V, KEYCODE_CTRL>;
 }
 

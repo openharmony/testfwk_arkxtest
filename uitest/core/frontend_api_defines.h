@@ -143,6 +143,19 @@ namespace OHOS::uitest {
         sizeof(WINDOW_MODE_VALUES) / sizeof(FrontendEnumValueDef),
     };
 
+    /** Describes the rotation of the device display.*/
+    constexpr FrontendEnumValueDef DISPLAY_ROTATION_VALUES[] = {
+        {"ROTATION_0", "0"},
+        {"ROTATION_90", "1"},
+        {"ROTATION_180", "2"},
+        {"ROTATION_270", "3"},
+    };
+    constexpr FrontendEnumratorDef DISPLAY_ROTATION_DEF = {
+        "DisplayRotation",
+        DISPLAY_ROTATION_VALUES,
+        sizeof(DISPLAY_ROTATION_VALUES) / sizeof(FrontendEnumValueDef),
+    };
+
     /** Rect jsonObject definition.*/
     constexpr FrontEndJsonPropDef RECT_PROPERTIES[] = {
         {"leftX", "int", true},
@@ -222,6 +235,14 @@ namespace OHOS::uitest {
         {"UiDriver.doubleClick", "(int,int):void", false, false},
         {"UiDriver.swipe", "(int,int,int,int,int?):void", false, false},
         {"UiDriver.drag", "(int,int,int,int,int?):void", false, false},
+        {"UiDriver.setDisplayRotation", "(int):void", false, false},  // DisplayRotation enum as int value
+        {"UiDriver.getDisplayRotation", "():int", false, false},  // DisplayRotation enum as int value
+        {"UiDriver.setDisplayRotationEnabled", "(bool):void", false, false},
+        {"UiDriver.getDisplaySize", "():Point", false, false},
+        {"UiDriver.getDisplayDensity", "():Point", false, false},
+        {"UiDriver.wakeUpDisplay", "():void", false, false},
+        {"UiDriver.pressHome", "():void", false, false},
+        {"UiDriver.waitForIdle", "(int,int):bool", false, false},
     };
     constexpr FrontEndClassDef UI_DRIVER_DEF = {
         "UiDriver",
@@ -288,7 +309,8 @@ namespace OHOS::uitest {
 
     /** List all the frontend data-type definitions.*/
     const auto FRONTEND_CLASS_DEFS = {&BY_DEF, &UI_DRIVER_DEF, &UI_COMPONENT_DEF, &UI_WINDOW_DEF};
-    const auto FRONTEND_ENUMERATOR_DEFS = {&MATCH_PATTERN_DEF, &WINDOW_MODE_DEF, &RESIZE_DIRECTION_DEF};
+    const auto FRONTEND_ENUMERATOR_DEFS = {&MATCH_PATTERN_DEF, &WINDOW_MODE_DEF, &RESIZE_DIRECTION_DEF,
+                                           &DISPLAY_ROTATION_DEF};
     const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF};
     /** The allowed in/out data type scope of frontend apis.*/
     const std::initializer_list<std::string_view> DATA_TYPE_SCOPE = {

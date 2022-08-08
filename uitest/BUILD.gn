@@ -97,9 +97,13 @@ ohos_executable("uitest_server") {
   ]
 
   #dependencies for screencap
-  deps += [ "//third_party/libpng:libpng" ]
+  deps += [
+    "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client",
+    "//third_party/libpng:libpng",
+  ]
   external_deps += [
     "multimedia_image_standard:image_native",
+    "utils_base:utils",
     "window_manager:libdm",
     "window_manager:libwm",
   ]

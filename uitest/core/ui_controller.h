@@ -30,6 +30,13 @@ namespace OHOS::uitest {
         HIGH = 3, MEDIUM = 2, LOW = 1
     };
 
+    enum DisplayRotation : uint32_t {
+        ROTATION_0,
+        ROTATION_90,
+        ROTATION_180,
+        ROTATION_270
+    };
+
     class UiController;
     // Prototype of function that provides UiControllers, used to install controllers on demand.
     using UiControllerProvider = std::function<void(std::list<std::unique_ptr<UiController>> &)>;
@@ -42,7 +49,10 @@ namespace OHOS::uitest {
 
         virtual void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>>& out) const {};
 
-        virtual void WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec) const {};
+        virtual bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec) const
+        {
+            return false;
+        };
 
         virtual void InjectTouchEventSequence(const PointerMatrix& events) const {};
 
@@ -58,6 +68,30 @@ namespace OHOS::uitest {
         virtual bool GetCharKeyCode(char ch, int32_t& code, int32_t& ctrlCode) const
         {
             return false;
+        };
+
+        virtual void SetDisplayRotation(DisplayRotation rotation) const {};
+
+        virtual DisplayRotation GetDisplayRotation() const
+        {
+            return ROTATION_0;
+        };
+
+        virtual void SetDisplayRotationEnabled(bool enabled) const {};
+
+        virtual Point GetDisplaySize() const
+        {
+            return Point(0, 0);
+        };
+
+        virtual Point GetDisplayDensity() const
+        {
+            return Point(0, 0);
+        };
+
+        virtual bool IsScreenOn() const
+        {
+            return true;
         };
 
         /**
