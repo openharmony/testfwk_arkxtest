@@ -109,8 +109,8 @@ namespace OHOS::uitest {
     static constexpr int8_t tagLen = tagChars[MAX_LOG_TAG_LEN - 1];   \
     if constexpr (tagLen > 0) { \
         auto tag = std::string_view(tagChars.data(), tagLen); \
-        static constexpr LogType type = LogType::LOG_APP; \
-        static constexpr uint32_t domain = 0xD001C03;                \
+        static constexpr LogType type = LogType::LOG_CORE; \
+        static constexpr uint32_t domain = 0xD003100;                \
         HiLogPrint(type, static_cast<LogLevel>(LEVEL), domain, LOG_TAG, "%{public}s " FMT, tag.data(), ##VARS); \
     } \
 }while (0)

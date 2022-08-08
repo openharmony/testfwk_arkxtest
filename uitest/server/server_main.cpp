@@ -47,7 +47,9 @@ namespace OHOS::uitest {
     "   screenCap,                                                          \n"
     "   dumpLayout,                                                         \n"
     "   uiRecord -record,    wirte location coordinates of events into files\n"
-    "   uiRecord -read,                    print file content to the console\n";
+    "   uiRecord -read,                    print file content to the console\n"
+    "   --version,                                print current tool version\n";
+    const std::string VERSION = "3.2.2.1";
     int g_touchTime;
     int g_timeIndex = 1000;
     int g_timeInterval = 5000;
@@ -499,14 +501,9 @@ namespace OHOS::uitest {
         }
     }
 
-    static int32_t Help()
-    {
-        return EXIT_SUCCESS;
-    }
-
     extern "C" int32_t main(int32_t argc, char *argv[])
     {
-        static constexpr string_view usage = "USAGE: uitest <help|screenCap|dumpLayout|uiRecord>";
+        static constexpr string_view usage = "USAGE: uitest <help|screenCap|dumpLayout|uiRecord|--version>";
         if ((size_t)argc < INDEX_TWO) {
             PrintToConsole("Missing argument");
             PrintToConsole(usage);
@@ -522,9 +519,12 @@ namespace OHOS::uitest {
             exit(ScreenCap(argc, argv));
         } else if (command == "uiRecord") {
             exit(UiRecord(argc, argv));
+        } else if (command == "--version") {
+            PrintToConsole(VERSION);
+            exit (EXIT_SUCCESS);
         } else if (command == "help") {
             PrintToConsole(HELP_MSG);
-            exit(Help());
+            exit(EXIT_SUCCESS);
         } else {
             PrintToConsole("Illegal argument: " + command);
             PrintToConsole(usage);

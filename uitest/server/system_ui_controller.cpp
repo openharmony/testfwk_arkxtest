@@ -24,6 +24,7 @@
 #include "accessibility_event_info.h"
 #include "accessibility_ui_test_ability.h"
 #include "display_manager.h"
+#include "screen_manager.h"
 #include "input_manager.h"
 #include "png.h"
 #include "wm_common.h"
@@ -289,7 +290,6 @@ namespace OHOS::uitest {
         }
     }
 
-    void SysUiController::WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const {}
 
     void SysUiController::InjectTouchEventSequence(const PointerMatrix &events) const
     {
@@ -515,6 +515,11 @@ namespace OHOS::uitest {
         return true;
     }
 
+    bool SysUiController::WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const
+    {
+        return g_monitorInstance_->WaitEventIdle(idleThresholdMs, timeoutMs);
+    }
+
     void SysUiController::DisConnectFromSysAbility()
     {
         if (!connected_ || g_monitorInstance_ == nullptr) {
@@ -540,5 +545,69 @@ namespace OHOS::uitest {
             LOG_E("Wait disconnection from AccessibilityUITestAbility timed out");
             return;
         }
+    }
+
+    void SysUiController::SetDisplayRotation(DisplayRotation rotation) const
+    {
+        auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        auto screenId = display->GetScreenId();
+        ScreenManager &screenMgr = ScreenManager::GetInstance();
+        auto screen = screenMgr.GetScreenById(screenId);
+        switch (rotation) {
+            case ROTATION_0 :
+                screen->SetOrientation(Orientation::VERTICAL);
+                break;
+            case ROTATION_90 :
+                screen->SetOrientation(Orientation::HORIZONTAL);
+                break;
+            case ROTATION_180 :
+                screen->SetOrientation(Orientation::REVERSE_VERTICAL);
+                break;
+            case ROTATION_270 :
+                screen->SetOrientation(Orientation::REVERSE_HORIZONTAL);
+                break;
+            default :
+                break;
+        }
+    }
+
+    DisplayRotation SysUiController::GetDisplayRotation() const
+    {
+        auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        auto rotation = (DisplayRotation)display->GetRotation();
+        return rotation;
+    }
+
+    void SysUiController::SetDisplayRotationEnabled(bool enabled) const
+    {
+        ScreenManager &screenMgr = ScreenManager::GetInstance();
+        screenMgr.SetScreenRotationLocked(enabled);
+    }
+
+    Point SysUiController::GetDisplaySize() const
+    {
+        LOG_I("SysUiController::GetDisplaySize");
+        auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        auto width = display->GetWidth();
+        auto height = display->GetHeight();
+        Point result(width, height);
+        return result;
+    }
+
+    Point SysUiController::GetDisplayDensity() const
+    {
+        auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        auto rate = display->GetVirtualPixelRatio();
+        Point displaySize = GetDisplaySize();
+        Point result(displaySize.px_ * rate, displaySize.py_ * rate);
+        return result;
+    }
+
+    bool SysUiController::IsScreenOn() const
+    {
+        DisplayManager &displayMgr = DisplayManager::GetInstance();
+        auto displayId = displayMgr.GetDefaultDisplayId();
+        auto state = displayMgr.GetDisplayState(displayId);
+        return (state == DisplayState::ON);
     }
 } // namespace OHOS::uitest

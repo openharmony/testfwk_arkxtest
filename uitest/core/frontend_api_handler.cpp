@@ -449,27 +449,29 @@ namespace OHOS::uitest {
             out.resultValue_ = StoreBackendObject(make_unique<UiDriver>());
         };
         server.AddHandler("UiDriver.create", create);
-
         auto delay = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             driver.DelayMs(ReadCallArg<uint32_t>(in, INDEX_ZERO));
         };
         server.AddHandler("UiDriver.delayMs", delay);
-
         auto screenCap = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             driver.TakeScreenCap(ReadCallArg<string>(in, INDEX_ZERO), out.exception_);
             out.resultValue_ = (out.exception_.code_ == ErrCode::NO_ERROR);
         };
         server.AddHandler("UiDriver.screenCap", screenCap);
-
         auto pressBack = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             driver.TriggerKey(Back(), uiOpArgs, out.exception_);
         };
         server.AddHandler("UiDriver.pressBack", pressBack);
-
+        auto pressHome = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            driver.TriggerKey(Home(), uiOpArgs, out.exception_);
+        };
+        server.AddHandler("UiDriver.pressHome", pressHome);
         auto triggerKey = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
@@ -477,7 +479,6 @@ namespace OHOS::uitest {
             driver.TriggerKey(key, uiOpArgs, out.exception_);
         };
         server.AddHandler("UiDriver.triggerKey", triggerKey);
-
         auto triggerCombineKeys = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
@@ -525,6 +526,57 @@ namespace OHOS::uitest {
         server.AddHandler("UiDriver.doubleClick", genericClick);
         server.AddHandler("UiDriver.swipe", genericClick);
         server.AddHandler("UiDriver.drag", genericClick);
+    }
+
+    static void RegisterUiDriverDisplayOperators()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto genericDisplayOperator = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            auto controller = driver.GetUiController(out.exception_);
+            if (out.exception_.code_ != NO_ERROR) {
+                return;
+            }
+            if (in.apiId_ == "UiDriver.setDisplayRotation") {
+                auto rotation = ReadCallArg<DisplayRotation>(in, INDEX_ZERO);
+                controller->SetDisplayRotation(rotation);
+            } else if (in.apiId_ == "UiDriver.getDisplayRotation") {
+                out.resultValue_ = controller->GetDisplayRotation();
+            } else if (in.apiId_ == "UiDriver.setDisplayRotationEnabled") {
+                auto enabled = ReadCallArg<bool>(in, INDEX_ZERO);
+                controller->SetDisplayRotationEnabled(enabled);
+            } else if (in.apiId_ == "UiDriver.waitForIdle") {
+                auto idleTime = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+                auto timeout = ReadCallArg<uint32_t>(in, INDEX_ONE);
+                out.resultValue_ = controller->WaitForUiSteady(idleTime, timeout);
+            } else if (in.apiId_ == "UiDriver.wakeUpDisplay") {
+                if (controller->IsScreenOn()) {
+                    return;
+                } else {
+                    UiOpArgs uiOpArgs;
+                    driver.TriggerKey(Power(), uiOpArgs, out.exception_);
+                }
+            } else if (in.apiId_ == "UiDriver.getDisplaySize") {
+                auto result = controller->GetDisplaySize();
+                json data;
+                data["X"] = result.px_;
+                data["Y"] = result.py_;
+                out.resultValue_ = data;
+            } else if (in.apiId_ == "UiDriver.getDisplayDensity") {
+                auto result = controller->GetDisplayDensity();
+                json data;
+                data["X"] = result.px_;
+                data["Y"] = result.py_;
+                out.resultValue_ = data;
+            }
+        };
+        server.AddHandler("UiDriver.setDisplayRotation", genericDisplayOperator);
+        server.AddHandler("UiDriver.getDisplayRotation", genericDisplayOperator);
+        server.AddHandler("UiDriver.setDisplayRotationEnabled", genericDisplayOperator);
+        server.AddHandler("UiDriver.waitForIdle", genericDisplayOperator);
+        server.AddHandler("UiDriver.wakeUpDisplay", genericDisplayOperator);
+        server.AddHandler("UiDriver.getDisplaySize", genericDisplayOperator);
+        server.AddHandler("UiDriver.getDisplayDensity", genericDisplayOperator);
     }
 
     template <UiAttr kAttr, bool kString = false>
@@ -732,5 +784,6 @@ namespace OHOS::uitest {
         RegisterUiComponentOperators();
         RegisterUiWindowAttrGetters();
         RegisterUiWindowOperators();
+        RegisterUiDriverDisplayOperators();
     }
 } // namespace OHOS::uitest

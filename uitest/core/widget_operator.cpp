@@ -180,7 +180,7 @@ namespace OHOS::uitest {
             for (auto ch : chars) {
                 int32_t code = KEYCODE_NONE;
                 int32_t ctrlCode = KEYCODE_NONE;
-                if (!driver_.GetUiController()->GetCharKeyCode(ch, code, ctrlCode)) {
+                if (!driver_.GetUiController(error)->GetCharKeyCode(ch, code, ctrlCode)) {
                     error = ApiCallErr(USAGE_ERROR, string("Cannot input char ") + ch);
                     return;
                 }
