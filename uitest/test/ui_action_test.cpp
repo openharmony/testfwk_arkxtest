@@ -284,7 +284,6 @@ TEST_F(UiActionTest, computeMultiPointerMatrixAction)
     MultiPointerAction action(pointer);
     ASSERT_EQ(2, pointer.GetFingers());
     ASSERT_EQ(4, pointer.GetSteps());
-    // ASSERT_EQ(8, pointer.GetSize());
     ASSERT_EQ(245, pointer.At(0, 0).point_.px_);
     PointerMatrix events;
     action.Decompose(events, opt);
@@ -332,7 +331,6 @@ TEST_F(UiActionTest, computeMultiPointerMatrixAction1)
     MultiPointerAction action(pointer);
     ASSERT_EQ(4, pointer.GetFingers());
     ASSERT_EQ(4, pointer.GetSteps());
-    // ASSERT_EQ(8, pointer.GetSize());
     ASSERT_EQ(245, pointer.At(0, 0).point_.px_);
     ASSERT_EQ(590, pointer.At(3, 1).point_.py_);
     PointerMatrix events;

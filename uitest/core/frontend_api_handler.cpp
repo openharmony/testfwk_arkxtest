@@ -538,7 +538,7 @@ namespace OHOS::uitest {
         server.AddHandler("UiDriver.drag", genericClick);
     }
 
-	static void RegisterUiDriverMultiPointerOperators()
+    static void RegisterUiDriverMultiPointerOperators()
     {
         auto &server = FrontendApiServer::Get();
         auto genericFling = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -852,7 +852,6 @@ namespace OHOS::uitest {
         };
         server.AddHandler("PointerMatrix.create", create);
 
-        // auto &server = FrontendApiServer::Get();
         auto setPoint = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &pointer = GetBackendObject<PointerMatrix>(in.callerObjRef_);
             auto finger = ReadCallArg<uint32_t>(in, INDEX_ZERO);
