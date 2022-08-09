@@ -299,9 +299,7 @@ TEST_F(UiActionTest, computeMultiPointerMatrixAction)
             } else {
                 ASSERT_EQ(ActionStage::MOVE, events.At(eventFinger, eventStep).stage_);
             }
-            eventFinger++;
         }
-        eventStep++;
     }
 }
 
@@ -347,9 +345,7 @@ TEST_F(UiActionTest, computeMultiPointerMatrixAction1)
             } else {
                 ASSERT_EQ(ActionStage::MOVE, events.At(eventFinger, eventStep).stage_);
             }
-            eventFinger++;
         }
-        eventStep++;
     }
 }
 
