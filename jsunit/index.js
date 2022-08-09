@@ -20,8 +20,8 @@ import ExpectExtend from './src/module/assert/ExpectExtend';
 import OhReport from './src/module/report/OhReport';
 import SysTestKit from './src/module/kit/SysTestKit';
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from './src/interface';
-import { MockKit,when,mockFunc } from './src/module/mock/MockKit'
-import { anyString, any, matchRegexs, anyBoolean, anyFounction, anyNumber} from './src/module/mock/ArgumentMatchers'
+import {MockKit, when} from './src/module/mock/MockKit';
+import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
 
 function dryRun(core, testParameters, abilityDelegator) {
     if (testParameters['dryRun'] === 'true') {
@@ -112,6 +112,6 @@ export {
     OhReport,
     SysTestKit,
     describe, beforeAll, beforeEach, afterEach, afterAll, it, expect,
-    MockKit,when,mockFunc,
-    anyString, any, matchRegexs, anyBoolean, anyFounction, anyNumber
+    MockKit, when,
+    ArgumentMatchers
 };
