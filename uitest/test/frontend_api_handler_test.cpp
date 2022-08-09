@@ -266,3 +266,148 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks)
     ASSERT_EQ(ErrCode::USAGE_ERROR, reply7.exception_.code_);
     ASSERT_TRUE(reply7.exception_.message_.find("Illegal property") != string::npos);
 }
+
+TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
+{
+    const auto& server =  FrontendApiServer::Get();
+    // call with argument llegal fingers
+    auto call0 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
+    auto reply0 = ApiReplyInfo();
+    call0.paramList_.emplace_back(11);
+    call0.paramList_.emplace_back(3);
+    server.Call(call0, reply0);
+    ASSERT_EQ(ErrCode::USAGE_ERROR, reply0.exception_.code_);
+    ASSERT_TRUE(reply0.exception_.message_.find("Number of illegal fingers") != string::npos);
+    // call with argument illegal steps
+    auto call2 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
+    auto reply2 = ApiReplyInfo();
+    call2.paramList_.emplace_back(2);
+    call2.paramList_.emplace_back(1001);
+    server.Call(call2, reply2);
+    ASSERT_EQ(ErrCode::USAGE_ERROR, reply2.exception_.code_);
+    ASSERT_TRUE(reply2.exception_.message_.find("Number of illegal steps") != string::npos);
+    // call with argument illegal steps
+    auto call4 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
+    auto reply4 = ApiReplyInfo();
+    call4.paramList_.emplace_back(5);
+    call4.paramList_.emplace_back(0);
+    server.Call(call4, reply4);
+    ASSERT_EQ(ErrCode::USAGE_ERROR, reply4.exception_.code_);
+    ASSERT_TRUE(reply4.exception_.message_.find("Number of illegal steps") != string::npos);
+    // call with argument illegal fingers
+    auto call5 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
+    auto reply5 = ApiReplyInfo();
+    call5.paramList_.emplace_back(-1);
+    call5.paramList_.emplace_back(5);
+    server.Call(call5, reply5);
+    ASSERT_EQ(ErrCode::USAGE_ERROR, reply5.exception_.code_);
+    ASSERT_TRUE(reply5.exception_.message_.find("Number of illegal fingers") != string::npos);
+    // call with argument illegal fingers
+    auto call6 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
+    auto reply6 = ApiReplyInfo();
+    call6.paramList_.emplace_back(0);
+    call6.paramList_.emplace_back(5);
+    server.Call(call6, reply6);
+    ASSERT_EQ(ErrCode::USAGE_ERROR, reply6.exception_.code_);
+    ASSERT_TRUE(reply6.exception_.message_.find("Number of illegal fingers") != string::npos);
+}
+
+TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecksOne)
+{
+    const auto& server =  FrontendApiServer::Get();
+    // call with argument illegal steps
+    auto call7 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
+    auto reply7 = ApiReplyInfo();
+    call7.paramList_.emplace_back(5);
+    call7.paramList_.emplace_back(-5);
+    server.Call(call7, reply7);
+    ASSERT_EQ(ErrCode::USAGE_ERROR, reply7.exception_.code_);
+    ASSERT_TRUE(reply7.exception_.message_.find("Number of illegal steps") != string::npos);
+    // call with argument illegal fingers
+    auto call10 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
+    auto reply10 = ApiReplyInfo();
+    call10.paramList_.emplace_back(6);
+    call10.paramList_.emplace_back(10);
+    server.Call(call10, reply10);
+    ASSERT_EQ(ErrCode::NO_ERROR, reply10.exception_.code_);
+    auto call11 = ApiCallInfo {.apiId_ = "PointerMatrix.setPoint", .callerObjRef_ = reply10.resultValue_.get<string>()};
+    call11.paramList_.emplace_back(6);
+    call11.paramList_.emplace_back(1);
+    auto arg1 = json();
+    arg1["X"] = 9;
+    arg1["Y"] = 10;
+    call11.paramList_.emplace_back(arg1);
+    auto reply11 = ApiReplyInfo();
+    server.Call(call11, reply11);
+    ASSERT_EQ(ErrCode::USAGE_ERROR, reply11.exception_.code_);
+    ASSERT_TRUE(reply11.exception_.message_.find("Number of illegal fingers") != string::npos);
+    // call with argument illegal steps
+    auto call12 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
+    auto reply12 = ApiReplyInfo();
+    call12.paramList_.emplace_back(6);
+    call12.paramList_.emplace_back(10);
+    server.Call(call12, reply12);
+    ASSERT_EQ(ErrCode::NO_ERROR, reply12.exception_.code_);
+    auto call13 = ApiCallInfo {.apiId_ = "PointerMatrix.setPoint", .callerObjRef_ = reply12.resultValue_.get<string>()};
+    call13.paramList_.emplace_back(5);
+    call13.paramList_.emplace_back(11);
+    auto arg2 = json();
+    arg2["X"] = 9;
+    arg2["Y"] = 10;
+    call13.paramList_.emplace_back(arg2);
+    auto reply13 = ApiReplyInfo();
+    server.Call(call13, reply13);
+    ASSERT_EQ(ErrCode::USAGE_ERROR, reply13.exception_.code_);
+    ASSERT_TRUE(reply13.exception_.message_.find("Number of illegal steps") != string::npos);
+}
+
+TEST_F(FrontendApiHandlerTest, injectMultiPointerActionparameterPreChecks)
+{
+    const auto& server =  FrontendApiServer::Get();
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    auto call3 = ApiCallInfo {.apiId_ = "UiDriver.fling", .callerObjRef_ = reply2.resultValue_.get<string>()};
+    auto from = json();
+    from["X"] = 30;
+    from["Y"] = 40;
+    auto to = json();
+    to["X"] = 300;
+    to["Y"] = 400;
+    call3.paramList_.emplace_back(from);
+    call3.paramList_.emplace_back(to);
+    call3.paramList_.emplace_back(0);
+    call3.paramList_.emplace_back(4000);
+    auto reply3 = ApiReplyInfo();
+    server.Call(call3, reply3);
+    ASSERT_EQ(ErrCode::USAGE_ERROR, reply3.exception_.code_);
+    ASSERT_TRUE(reply3.exception_.message_.find("The stepLen is out of range") != string::npos);
+
+    auto call4 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply4 = ApiReplyInfo();
+    server.Call(call4, reply4);
+    auto call5 = ApiCallInfo {.apiId_ = "UiDriver.fling", .callerObjRef_ = reply4.resultValue_.get<string>()};
+    call5.paramList_.emplace_back(from);
+    call5.paramList_.emplace_back(to);
+    call5.paramList_.emplace_back(451);
+    call5.paramList_.emplace_back(4000);
+    auto reply5 = ApiReplyInfo();
+    server.Call(call5, reply5);
+    ASSERT_EQ(ErrCode::USAGE_ERROR, reply5.exception_.code_);
+    ASSERT_TRUE(reply5.exception_.message_.find("The stepLen is out of range") != string::npos);
+
+    auto call6 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply6 = ApiReplyInfo();
+    server.Call(call6, reply6);
+    auto call7 = ApiCallInfo {.apiId_ = "UiDriver.fling", .callerObjRef_ = reply6.resultValue_.get<string>()};
+    auto from3 = json();
+    from3["X"] = "";
+    from3["Y"] = "";
+    call7.paramList_.emplace_back(from3);
+    call7.paramList_.emplace_back(to);
+    call7.paramList_.emplace_back(500);
+    call7.paramList_.emplace_back(4000);
+    auto reply7 = ApiReplyInfo();
+    server.Call(call7, reply7);
+    ASSERT_EQ(ErrCode::USAGE_ERROR, reply7.exception_.code_);
+}

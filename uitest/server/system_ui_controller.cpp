@@ -294,8 +294,8 @@ namespace OHOS::uitest {
     void SysUiController::InjectTouchEventSequence(const PointerMatrix &events) const
     {
         for (uint32_t step = 0; step < events.GetSteps(); step++) {
+            auto pointerEvent = PointerEvent::Create();
             for (uint32_t finger = 0; finger < events.GetFingers(); finger++) {
-                auto pointerEvent = PointerEvent::Create();
                 pointerEvent->SetPointerId(finger);
                 PointerEvent::PointerItem pinterItem;
                 pinterItem.SetPointerId(finger);
