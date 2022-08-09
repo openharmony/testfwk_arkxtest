@@ -491,6 +491,14 @@ namespace OHOS::uitest {
         server.AddHandler("UiDriver.triggerCombineKeys", triggerCombineKeys);
     }
 
+    static void CheckSwipeVelocityPps(UiOpArgs& args)
+    {
+        if (args.swipeVelocityPps_ < args.minSwipeVelocityPps_ || args.swipeVelocityPps_ > args.maxSwipeVelocityPps_) {
+            LOG_W("The swipe velocity out of range");
+            args.swipeVelocityPps_ = args.defaultSwipeVelocityPps_;
+        }
+    }
+
     static void RegisterUiDriverTocuchOperators()
     {
         auto &server = FrontendApiServer::Get();
@@ -506,11 +514,13 @@ namespace OHOS::uitest {
                 op = TouchOp::DOUBLE_CLICK_P;
             } else if (in.apiId_ == "UiDriver.swipe") {
                 op = TouchOp::SWIPE;
-                uiOpArgs.swipeVelocityPps_ = ReadCallArg<int32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
+                CheckSwipeVelocityPps(uiOpArgs);
                 point1 = Point(ReadCallArg<int32_t>(in, INDEX_TWO), ReadCallArg<int32_t>(in, INDEX_THREE));
             } else if (in.apiId_ == "UiDriver.drag") {
                 op = TouchOp::DRAG;
-                uiOpArgs.swipeVelocityPps_ = ReadCallArg<int32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
+                CheckSwipeVelocityPps(uiOpArgs);
                 point1 = Point(ReadCallArg<int32_t>(in, INDEX_TWO), ReadCallArg<int32_t>(in, INDEX_THREE));
             }
             if (op == TouchOp::SWIPE || op == TouchOp::DRAG) {
@@ -526,6 +536,58 @@ namespace OHOS::uitest {
         server.AddHandler("UiDriver.doubleClick", genericClick);
         server.AddHandler("UiDriver.swipe", genericClick);
         server.AddHandler("UiDriver.drag", genericClick);
+    }
+
+    static void RegisterUiDriverMultiPointerOperators()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto genericFling = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto op = TouchOp::SWIPE;
+            auto pointJson0 = ReadCallArg<json>(in, INDEX_ZERO);
+            auto pointJson1 = ReadCallArg<json>(in, INDEX_ONE);
+            if (pointJson0.empty() || pointJson1.empty()) {
+                out.exception_ = ApiCallErr(USAGE_ERROR, "Point cannot be empty");
+                return;
+            }
+            const auto point0 = Point(pointJson0["X"], pointJson0["Y"]);
+            const auto point1 = Point(pointJson1["X"], pointJson1["Y"]);
+            const auto stepLength = ReadCallArg<uint32_t>(in, INDEX_TWO);
+            uiOpArgs.swipeVelocityPps_  = ReadCallArg<uint32_t>(in, INDEX_THREE);
+            CheckSwipeVelocityPps(uiOpArgs);
+            const int32_t distanceX = point1.px_ - point0.px_;
+            const int32_t distanceY = point1.py_ - point0.py_;
+            const uint32_t distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+            if (stepLength <= 0 || stepLength > distance) {
+                out.exception_ = ApiCallErr(USAGE_ERROR, "The stepLen is out of range");
+                return;
+            }
+            uiOpArgs.swipeStepsCounts_ = distance / stepLength;
+            auto touch = GenericSwipe(op, point0, point1);
+            driver.PerformTouch(touch, uiOpArgs, out.exception_);
+        };
+        server.AddHandler("UiDriver.fling", genericFling);
+
+        auto multiPointerAction = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            auto &pointer = GetBackendObject<PointerMatrix>(ReadCallArg<string>(in, INDEX_ZERO));
+            for (uint32_t fingerIndex = 0; fingerIndex < pointer.GetFingers(); fingerIndex++) {
+                for (uint32_t stepIndex = 0; stepIndex < pointer.GetSteps(); stepIndex++) {
+                    if (pointer.At(fingerIndex, stepIndex).flags_ != 1) {
+                        out.exception_ = ApiCallErr(USAGE_ERROR, "There is not all coordinate points are set");
+                        return;
+                    }
+                }
+            };
+            UiOpArgs uiOpArgs;
+            uiOpArgs.swipeVelocityPps_  = ReadCallArg<uint32_t>(in, INDEX_ONE, uiOpArgs.swipeVelocityPps_);
+            CheckSwipeVelocityPps(uiOpArgs);
+            auto touch = MultiPointerAction(pointer);
+            driver.PerformTouch(touch, uiOpArgs, out.exception_);
+            out.resultValue_ = (out.exception_.code_ == ErrCode::NO_ERROR);
+        };
+        server.AddHandler("UiDriver.injectMultiPointerAction", multiPointerAction);
     }
 
     static void RegisterUiDriverDisplayOperators()
@@ -654,9 +716,11 @@ namespace OHOS::uitest {
                 wOp.GenericClick(TouchOp::DOUBLE_CLICK_P, out.exception_);
             } else if (in.apiId_ == "UiComponent.scrollToTop") {
                 uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_ZERO, uiOpArgs.swipeVelocityPps_);
+                CheckSwipeVelocityPps(uiOpArgs);
                 wOp.ScrollToEnd(true, out.exception_);
             } else if (in.apiId_ == "UiComponent.scrollToBottom") {
                 uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_ZERO, uiOpArgs.swipeVelocityPps_);
+                CheckSwipeVelocityPps(uiOpArgs);
                 wOp.ScrollToEnd(false, out.exception_);
             } else if (in.apiId_ == "UiComponent.dragTo") {
                 auto &widgetTo = GetBackendObject<Widget>(ReadCallArg<string>(in, INDEX_ZERO));
@@ -769,6 +833,49 @@ namespace OHOS::uitest {
         server.AddHandler("UiWindow.close", genericWinOperationHandler);
     }
 
+    static void RegisterPointerMatrixOperators()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto create = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            UiOpArgs uiOpArgs;
+            auto finger = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+            if (finger < 1 || finger > uiOpArgs.maxMultiTouchFingers) {
+                out.exception_ = ApiCallErr(USAGE_ERROR, "Number of illegal fingers");
+                return;
+            }
+            auto step = ReadCallArg<uint32_t>(in, INDEX_ONE);
+            if (step < 1 || step > uiOpArgs.maxMultiTouchSteps) {
+                out.exception_ = ApiCallErr(USAGE_ERROR, "Number of illegal steps");
+                return;
+            }
+            out.resultValue_ = StoreBackendObject(make_unique<PointerMatrix>(finger, step));
+        };
+        server.AddHandler("PointerMatrix.create", create);
+
+        auto setPoint = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &pointer = GetBackendObject<PointerMatrix>(in.callerObjRef_);
+            auto finger = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+            if (finger < 0 || finger >= pointer.GetFingers()) {
+                out.exception_ = ApiCallErr(USAGE_ERROR, "Number of illegal fingers");
+                return;
+            }
+            auto step = ReadCallArg<uint32_t>(in, INDEX_ONE);
+            if (step < 0 || step >= pointer.GetSteps()) {
+                out.exception_ = ApiCallErr(USAGE_ERROR, "Number of illegal steps");
+                return;
+            }
+            auto pointJson = ReadCallArg<json>(in, INDEX_TWO);
+            if (pointJson.empty()) {
+                out.exception_ = ApiCallErr(USAGE_ERROR, "Point cannot be empty");
+                return;
+            }
+            const auto point = Point(pointJson["X"], pointJson["Y"]);
+            pointer.At(finger, step).point_ = point;
+            pointer.At(finger, step).flags_ = 1;
+        };
+        server.AddHandler("PointerMatrix.setPoint", setPoint);
+    }
+
     /** Register fronendApiHandlers and preprocessors on startup.*/
     __attribute__((constructor)) static void RegisterApiHandlers()
     {
@@ -784,6 +891,8 @@ namespace OHOS::uitest {
         RegisterUiComponentOperators();
         RegisterUiWindowAttrGetters();
         RegisterUiWindowOperators();
+        RegisterPointerMatrixOperators();
+        RegisterUiDriverMultiPointerOperators();
         RegisterUiDriverDisplayOperators();
     }
 } // namespace OHOS::uitest

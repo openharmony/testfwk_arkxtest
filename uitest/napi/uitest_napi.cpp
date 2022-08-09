@@ -462,6 +462,7 @@ namespace OHOS::uitest {
         NAPI_CALL(env, ExportClass(env, exports, UI_DRIVER_DEF));
         NAPI_CALL(env, ExportClass(env, exports, UI_COMPONENT_DEF));
         NAPI_CALL(env, ExportClass(env, exports, UI_WINDOW_DEF));
+        NAPI_CALL(env, ExportClass(env, exports, POINTER_MATRIX_DEF));
         NAPI_CALL(env, ExportEnumrator(env, exports, MATCH_PATTERN_DEF));
         NAPI_CALL(env, ExportEnumrator(env, exports, RESIZE_DIRECTION_DEF));
         NAPI_CALL(env, ExportEnumrator(env, exports, WINDOW_MODE_DEF));

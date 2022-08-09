@@ -66,13 +66,13 @@ namespace OHOS::uitest {
             // do not need to execute swipe
             return;
         }
-        constexpr int16_t steps = 50;
+        const auto steps = options.swipeStepsCounts_;
         const uint32_t intervalMs = timeCostMs / steps + 1;
         constexpr uint32_t fingers = 1;
         PointerMatrix pointer(fingers, steps + 1);
 
         pointer.PushAction(TouchEvent {ActionStage::DOWN, {from.px_, from.py_}, 0, intervalMs});
-        for (int16_t step = 1; step < steps; step++) {
+        for (uint16_t step = 1; step < steps; step++) {
             const int32_t pointX = from.px_ + (distanceX * step) / steps;
             const int32_t pointY = from.py_ + (distanceY * step) / steps;
             const uint32_t timeOffsetMs = (timeCostMs * step) / steps;
@@ -149,6 +149,39 @@ namespace OHOS::uitest {
             pointer3.PushAction(pointer2.At(0, index));
         }
         recv = move(pointer3);
+    }
+
+    void MultiPointerAction::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
+    {
+        PointerMatrix matrix(pointers_.GetFingers(), pointers_.GetSteps());
+        for (uint32_t finger = 0; finger < pointers_.GetFingers(); finger++) {
+            uint32_t timeOffsetMs = 0;
+            uint32_t intervalMs = 0;
+            constexpr uint32_t unitConversionConstant = 1000;
+            for (uint32_t step = 0; step < pointers_.GetSteps() - 1; step++) {
+                const int32_t pxTo = pointers_.At(finger, step + 1).point_.px_;
+                const int32_t pxFrom = pointers_.At(finger, step).point_.px_;
+                const int32_t distanceX = pxTo - pxFrom;
+                const int32_t pyTo = pointers_.At(finger, step + 1).point_.py_;
+                const int32_t pyFrom = pointers_.At(finger, step).point_.py_;
+                const int32_t distanceY = pyTo - pyFrom;
+                const uint32_t distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+                intervalMs = (distance * unitConversionConstant) / options.swipeVelocityPps_;
+                if (distance < 1) {
+                    return;
+                }
+                if (step == 0) {
+                    matrix.PushAction(TouchEvent {ActionStage::DOWN, {pxFrom, pyFrom}, 0, intervalMs});
+                } else {
+                    timeOffsetMs += intervalMs;
+                    matrix.PushAction(TouchEvent {ActionStage::MOVE, {pxFrom, pyFrom}, timeOffsetMs, intervalMs});
+                }
+            }
+            auto endPx = pointers_.At(finger, pointers_.GetSteps() - 1).point_.px_;
+            auto endPy = pointers_.At(finger, pointers_.GetSteps() - 1).point_.py_;
+            matrix.PushAction(TouchEvent {ActionStage::UP, {endPx, endPy}, timeOffsetMs, intervalMs});
+        }
+        recv = move(matrix);
     }
 
     PointerMatrix::PointerMatrix() {};
