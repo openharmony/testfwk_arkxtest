@@ -15,6 +15,8 @@
 
 export const DEFAULT = 0B0000
 
+export const when: when;
+
 export enum TestType {
     FUNCTION = 0B1,
     PERFORMANCE = 0B1 << 1,
@@ -72,31 +74,39 @@ export interface Assert {
 
 export function expect(actualValue?: any): Assert
 
-export function when(mockedFounction: MockedFunc): MockedFunc
-
-export function MockedFunc(arg: ArgMatchers): MockedFuncReturn
-
-export interface ArgMatchers {
-   any():void
-   anyString():void
-   anyBoolean():void
-   anyNumber():void
-   anyObj():void
-   anyFounction():void
-   matchRegexs(Regex: RegExp):void
+export class ArgumentMatchers {
+    static any;
+    static anyString;
+    static anyBoolean;
+    static anyNumber;
+    static anyObj;
+    static anyFunction;
+    static matchRegexs(Regex: RegExp): void
 }
 
-export interface MockedFuncReturn{
-  afterReturn(value: any):any
-  afterReturnNothing():undefined
-  afterAction(action: any):any
-  afterThrow(e_msg: string):string
-  clear():void
+declare interface when {
+    afterReturn(value: any): any
+    afterReturnNothing(): undefined
+    afterAction(action: any): any
+    afterThrow(e_msg: string): string
+    (argMatchers: any): when;
+}
+
+export interface VerificationMode {
+    times(count: Number): void
+    never(): void
+    once(): void
+    atLeast(count: Number): void
+    atMost(count: Number): void
 }
 
 export class MockKit {
-  constructor(): MockKit
-  mockFunc(func: Function): MockedFunc
+    constructor()
+    mockFunc(obj: Object, func: Function): Function
+    verify(methodName: String, argsArray: Array<any>): VerificationMode
+    ignoreMock(obj: Object, func: Function): void
+    clear(obj: Object): void
+    clearAll(): void
 }
 
 export class SysTestKit {
