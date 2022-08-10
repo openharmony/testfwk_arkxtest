@@ -38,7 +38,7 @@ class OhReport {
         message += ', Error: ' + summary.error;
         message += ', Pass: ' + summary.pass;
         message += '\n' + 'OHOS_REPORT_CODE: ' + (summary.failure > 0 ? -1 : 0) + '\n';
-        message += 'OHOS_REPORT_STATUS: consuming=' + summary.duration + '\n';
+        message += 'OHOS_REPORT_STATUS: taskconsuming=' + summary.duration + '\n';
         this.delegator.print(message).then(() => {
             console.info('report print success');
             this.delegator.finishTest('your test finished!!!', 0, () => {
@@ -56,28 +56,26 @@ class OhReport {
     }
 
     suiteStart() {
-        let suiteService = this.coreContext.getDefaultService('suite');
-        var message = '\n' + 'OHOS_REPORT_SUM: ' + suiteService.getCurrentRunningSuite().getSpecsNum();
-        message += '\n' + 'OHOS_REPORT_STATUS: class=' + suiteService.getCurrentRunningSuite().description + '\n';
+        var message = '\n' + 'OHOS_REPORT_SUM: ' + this.suiteService.getCurrentRunningSuite().getSpecsNum();
+        message += '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description + '\n';
         this.delegator.print(message).then(() => {
-            console.info(suiteService.getCurrentRunningSuite().description + ' print success');
+            console.info(this.suiteService.getCurrentRunningSuite().description + ' print success');
         });
     }
 
     suiteDone() {
         var message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
-        message += '\n' + 'OHOS_REPORT_STATUS: consuming=' + this.suiteService.getCurrentRunningSuite().duration + '\n';
+        message += '\n' + 'OHOS_REPORT_STATUS: suiteconsuming=' + this.suiteService.getCurrentRunningSuite().duration + '\n';
         this.delegator.print(message).then(() => {
-            console.info(suiteService.getCurrentRunningSuite().description + ' print success');
+            console.info(this.suiteService.getCurrentRunningSuite().description + ' print success');
         });
     }
 
     specStart() {
-        let suiteService = this.coreContext.getDefaultService('suite');
-        var message = '\n' + 'OHOS_REPORT_STATUS: class=' + suiteService.getCurrentRunningSuite().description;
+        var message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
         message += '\n' + 'OHOS_REPORT_STATUS: current=' + (++this.index);
         message += '\n' + 'OHOS_REPORT_STATUS: id=JS';
-        message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + suiteService.getSummary().total;
+        message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.suiteService.getSummary().total;
         message += '\n' + 'OHOS_REPORT_STATUS: stream=';
         message += '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
         message += '\n' + 'OHOS_REPORT_STATUS_CODE: 1' + '\n';
@@ -102,7 +100,7 @@ class OhReport {
         } else if (this.specService.currentRunningSpec.result) {
             if (this.specService.currentRunningSpec.result.failExpects.length > 0) {
                 this.specService.currentRunningSpec.result.failExpects.forEach(failExpect => {
-                    emsg = failExpect.message || ('expect ' + failExpect.actualValue + ' ' + failExpect.checkFunc + ' ' + (failExpect.expectValue || ''));
+                    emsg = failExpect.message || ('expect ' + failExpect.actualValue + ' ' + failExpect.checkFunc + ' ' + (failExpect.expectValue));
                 });
                 message += '\n' + 'OHOS_REPORT_STATUS: stack=' + emsg;
                 message += '\n' + 'OHOS_REPORT_STATUS: stream=';

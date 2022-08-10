@@ -21,6 +21,16 @@ class ConfigService {
         this.supportAsync = false;
         this.random = false;
         this.filterValid = [];
+        this.filter = 0;
+        this.flag = false;
+        this.suite = null;
+        this.itName = null;
+        this.testType = null;
+        this.level = null;
+        this.size = null;
+        this.class = null;
+        this.notClass = null;
+        this.timeout = null;
     }
 
     init(coreContext) {
@@ -106,6 +116,7 @@ class ConfigService {
             this.level = params.level;
             this.size = params.size;
             this.timeout = params.timeout;
+            this.dryRun = params.dryRun;
             this.filterParam = {
                 testType: {
                     'function': 1,
@@ -135,16 +146,7 @@ class ConfigService {
             };
             this.parseParams();
         } catch (err) {
-            this.filter = 0;
-            this.flag = false;
-            this.suite = null;
-            this.itName = null;
-            this.testType = null;
-            this.level = null;
-            this.size = null;
-            this.class = null;
-            this.notClass = null;
-            this.timeout = null;
+            console.info('setConfig error: ' + err.message);
         }
     }
 
