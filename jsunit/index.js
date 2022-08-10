@@ -23,38 +23,6 @@ import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '
 import {MockKit, when} from './src/module/mock/MockKit';
 import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
 
-function dryRun(core, testParameters, abilityDelegator) {
-    if (testParameters['dryRun'] === 'true') {
-        let testSuitesObj = {};
-        let suitesArray = [];
-        const suiteService = core.getDefaultService('suite');
-        for (const suiteItem of suiteService.rootSuite.childSuites) {
-            let itArray = [];
-            let suiteName = suiteItem['description'];
-            for (const itItem of suiteItem['specs']) {
-                itArray.push({'itName': itItem['description']});
-            }
-            let obj = {};
-            obj[suiteName] = itArray;
-            suitesArray.push(obj);
-        }
-        testSuitesObj['suites'] = suitesArray;
-
-        let strJson = JSON.stringify(testSuitesObj);
-        let strLen = strJson.length;
-        let maxLen = 500;
-        let maxCount = Math.floor(strLen / maxLen);
-
-        for (let count = 0; count <= maxCount; count++) {
-            abilityDelegator.print(strJson.substring(count * maxLen, (count + 1) * maxLen));
-        }
-        console.info('dryRun print success');
-        abilityDelegator.finishTest('dry run finished!!!', 0, () => { });
-        return true;
-    }
-    return false;
-}
-
 class Hypium {
     static setData(data) {
         const core = Core.getInstance();
@@ -82,20 +50,17 @@ class Hypium {
         console.info('parameters:' + JSON.stringify(testParameters));
         configService.setConfig(testParameters);
         testsuite();
-        if (dryRun(core, testParameters, abilityDelegator)) {
-            return;
-        }
         if (Object.prototype.hasOwnProperty.call(globalThis, 'setupUiTestEnvironment')) {
             globalThis.setupUiTestEnvironment().then(() => {
                 console.info('UiTestKit::after run uitest setup, start run testcases');
-                core.execute();
+                core.execute(abilityDelegator);
             }).catch((error) => {
                 console.error('UiTestKit:: call setupUiTestEnvironment failure:' + error);
-                core.execute();
+                core.execute(abilityDelegator);
             });
         } else {
             console.info('UiTestKit:: no need to setup uitest, start run testcases');
-            core.execute();
+            core.execute(abilityDelegator);
         }
     }
 }
