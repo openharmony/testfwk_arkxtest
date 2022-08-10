@@ -12,6 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+class AssertException extends Error {
+    constructor() {
+        super();
+        this.name = "AssertException";
+    }
+}
 
 function processFunc(coreContext, func) {
     let argNames = ((func || '').toString()
@@ -39,11 +45,10 @@ function processFunc(coreContext, func) {
                         function done() {
                             resolve();
                         }
+
                         let funcType = func(done);
                         if (funcType instanceof Promise) {
-                            funcType.catch(err => {
-                                reject(err);
-                            });
+                            funcType.catch(err => {reject(err);});
                         }
                     });
                 };
@@ -59,9 +64,7 @@ function processFunc(coreContext, func) {
 
                     let funcType = func(done, paramItem);
                     if (funcType instanceof Promise) {
-                        funcType.catch(err => {
-                            reject(err);
-                        });
+                        funcType.catch(err => {reject(err);});
                     }
                 });
             };
@@ -155,6 +158,45 @@ class SuiteService {
 
     init(coreContext) {
         this.coreContext = coreContext;
+    }
+
+    dryRun(abilityDelegator) {
+        let configService = this.coreContext.getDefaultService('config');
+        if (configService['dryRun'] !== 'true') {
+            return false;
+        }
+        let testSuitesObj = {};
+        let suitesArray = [];
+        for (const suiteItem of this.rootSuite.childSuites) {
+            let itArray = [];
+            let suiteName = suiteItem['description'];
+            for (const itItem of suiteItem['specs']) {
+                let itName = itItem['description'];
+                let filter = itItem['fi'];
+                if (!configService.filterDesc(suiteName, itName, filter, this.coreContext)) {
+                    itArray.push({'itName': itItem['description']});
+                }
+            }
+            if (!configService.filterSuite(suiteName) && (itArray.length > 0)) {
+                let obj = {};
+                obj[suiteName] = itArray;
+                suitesArray.push(obj);
+            }
+        }
+        testSuitesObj['suites'] = suitesArray;
+
+        let strJson = JSON.stringify(testSuitesObj);
+        let strLen = strJson.length;
+        let maxLen = 500;
+        let maxCount = Math.floor(strLen / maxLen);
+
+        for (let count = 0; count <= maxCount; count++) {
+            abilityDelegator.print(strJson.substring(count * maxLen, (count + 1) * maxLen));
+        }
+        console.info('dryRun print success');
+        abilityDelegator.finishTest('dry run finished!!!', 0, () => { });
+
+        return true;
     }
 
     execute() {
@@ -425,7 +467,7 @@ SpecService.Spec = class {
         specService.setCurrentRunningSpec(this);
         this.startTime = new Date().getTime();
         const config = coreContext.getDefaultService('config');
-        const timeout = +(config.timeout === undefined ? 5000 : config.timeout);
+        const timeout = + (config.timeout === undefined ? 5000 : config.timeout);
         return new Promise(async resolve => {
             coreContext.fireEvents('spec', 'specStart', this);
 
@@ -439,9 +481,7 @@ SpecService.Spec = class {
                 let dataDriver = coreContext.getServices('dataDriver');
                 if (typeof dataDriver === 'undefined') {
                     const p = Promise.race([this.fn(), timeoutPromise()]);
-                    await p.then(() => {
-                        this.setResult();
-                    });
+                    await p.then(() => {this.setResult();});
                 } else {
                     let suiteParams = dataDriver.dataDriver.getSuiteParams();
                     let specParams = dataDriver.dataDriver.getSpecParams();
@@ -449,25 +489,24 @@ SpecService.Spec = class {
                     console.info('[spec params] ' + JSON.stringify(specParams));
                     if (this.fn.length === 0) {
                         const p = Promise.race([this.fn(), timeoutPromise()]);
-                        await p.then(() => {
-                            this.setResult();
-                        });
+                        await p.then(() => {this.setResult();});
                     } else if (specParams.length === 0) {
                         const p = Promise.race([this.fn(suiteParams), timeoutPromise()]);
-                        await p.then(() => {
-                            this.setResult();
-                        });
+                        await p.then(() => {this.setResult();});
                     } else {
                         for (const paramItem of specParams) {
-                            const p = Promise.race([this.fn(Object.assign({}, paramItem, suiteParams)), timeoutPromise()]);
-                            await p.then(() => {
-                                this.setResult();
-                            });
+                            const p = Promise.race([this.fn(Object.assign({}, paramItem, suiteParams)),
+                            timeoutPromise()]);
+                            await p.then(() => {this.setResult();});
                         }
                     }
                 }
             } catch (e) {
-                this.error = e;
+                if (e instanceof AssertException) {
+                    this.fail = e;
+                } else {
+                    this.error = e;
+                }
             }
             coreContext.fireEvents('spec', 'specDone', this);
             resolve();
@@ -485,6 +524,7 @@ SpecService.Spec = class {
             this.result.passExpects.push(expectResult);
         } else {
             this.result.failExpects.push(expectResult);
+            throw new AssertException(expectResult);
         }
     }
 };
@@ -595,6 +635,7 @@ class ReportService {
 
     taskStart() {
         this.sleep(50);
+        this.taskStartTime = new Date().getTime();
         console.info('[start] start run suites');
     }
 
