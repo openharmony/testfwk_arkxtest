@@ -141,9 +141,14 @@ class Core {
         }
     }
 
-    execute() {
+    execute(abilityDelegator) {
         const suiteService = this.getDefaultService('suite');
-        suiteService.execute();
+        if (suiteService.dryRun(abilityDelegator)) {
+            return;
+        }
+        setTimeout(() => {
+            suiteService.execute();
+        }, 10);
     }
 }
 
