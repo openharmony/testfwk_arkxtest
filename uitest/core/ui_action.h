@@ -99,7 +99,7 @@ namespace OHOS::uitest {
         const uint32_t defaultSwipeVelocityPps_ = 600;
         const uint32_t maxMultiTouchFingers = 10;
         const uint32_t maxMultiTouchSteps = 1000;
-        uint32_t clickHoldMs_ = 200;
+        uint32_t clickHoldMs_ = 100;
         uint32_t longClickHoldMs_ = 1500;
         uint32_t doubleClickIntervalMs_ = 200;
         uint32_t keyHoldMs_ = 100;
