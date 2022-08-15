@@ -538,6 +538,18 @@ namespace OHOS::uitest {
         server.AddHandler("UiDriver.drag", genericClick);
     }
 
+    static bool CheckMultiPointerOperatorsPoint(PointerMatrix& pointer)
+    {
+        for (uint32_t fingerIndex = 0; fingerIndex < pointer.GetFingers(); fingerIndex++) {
+            for (uint32_t stepIndex = 0; stepIndex < pointer.GetSteps(); stepIndex++) {
+                if (pointer.At(fingerIndex, stepIndex).flags_ != 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     static void RegisterUiDriverMultiPointerOperators()
     {
         auto &server = FrontendApiServer::Get();
@@ -572,14 +584,11 @@ namespace OHOS::uitest {
         auto multiPointerAction = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto &pointer = GetBackendObject<PointerMatrix>(ReadCallArg<string>(in, INDEX_ZERO));
-            for (uint32_t fingerIndex = 0; fingerIndex < pointer.GetFingers(); fingerIndex++) {
-                for (uint32_t stepIndex = 0; stepIndex < pointer.GetSteps(); stepIndex++) {
-                    if (pointer.At(fingerIndex, stepIndex).flags_ != 1) {
-                        out.exception_ = ApiCallErr(USAGE_ERROR, "There is not all coordinate points are set");
-                        return;
-                    }
-                }
-            };
+            auto flag = CheckMultiPointerOperatorsPoint(pointer);
+            if (!flag) {
+                out.exception_ = ApiCallErr(USAGE_ERROR, "There is not all coordinate points are set");
+                return;
+            }
             UiOpArgs uiOpArgs;
             uiOpArgs.swipeVelocityPps_  = ReadCallArg<uint32_t>(in, INDEX_ONE, uiOpArgs.swipeVelocityPps_);
             CheckSwipeVelocityPps(uiOpArgs);
