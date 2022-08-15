@@ -542,7 +542,7 @@ namespace OHOS::uitest {
     {
         for (uint32_t fingerIndex = 0; fingerIndex < pointer.GetFingers(); fingerIndex++) {
             for (uint32_t stepIndex = 0; stepIndex < pointer.GetSteps(); stepIndex++) {
-                if (pointer.At(fingerIndex, stepIndex).flags_ != 1){
+                if (pointer.At(fingerIndex, stepIndex).flags_ != 1) {
                     return false;
                 }
             }
