@@ -50,6 +50,14 @@ namespace OHOS::uitest {
     /** Convert js string to cpp string.*/
     static string JsStrToCppStr(napi_env env, napi_value jsStr)
     {
+        if (jsStr == nullptr) {
+            return "";
+        }
+        napi_valuetype type;
+        NAPI_CALL_BASE(env, napi_typeof(env, jsStr, &type), "");
+        if (type == napi_undefined || type == napi_null) {
+            return "";
+        }
         size_t bufSize = 0;
         char buf[NAPI_MAX_BUF_LEN] = {0};
         NAPI_CALL_BASE(env, napi_get_value_string_utf8(env, jsStr, buf, NAPI_MAX_BUF_LEN, &bufSize), "");
