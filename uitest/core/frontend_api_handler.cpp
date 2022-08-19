@@ -856,7 +856,7 @@ namespace OHOS::uitest {
         server.AddHandler("UiWindow.resume", genericWinBarOperationHandler);
         server.AddHandler("UiWindow.minimize", genericWinBarOperationHandler);
         server.AddHandler("UiWindow.close", genericWinBarOperationHandler);
-        server.AddHandler("UiWindow.moveTo", genericWinOperationHandler);
+        server.AddHandler("UiWindow.moveTo", genericWinBarOperationHandler);
     }
 
     static void RegisterPointerMatrixOperators()
