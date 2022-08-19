@@ -151,9 +151,9 @@ export default async function abilityTest() {
 用户可以通过一下方式进行引入mock模块进行测试用例编写：
 
 ```javascript
-//必须引入的mock能力模块api: MockKit, when, mockFunc等
+//必须引入的mock能力模块api: MockKit, when
 //根据自己用例需要引入断言能力api
-import { describe, expect, it, MockKit, when, mockFunc } from '@ohos/hypium'
+import { describe, expect, it, MockKit, when} from '@ohos/hypium'
 ```
 **示例1：afterReturn 的使用**
 
@@ -254,10 +254,8 @@ export default function ActsAbilityTest() {
 **示例3： 设定参数类型为any ，即接受任何参数（undefine和null除外）的使用**
 
 ```javascript
-//注意需要引入ArgumentMatchers类，即参数匹配器，any系列同理
-import {any} from '@ohos/hypium/src/module/mock/ArgumentMatchers'
+//注意需要引入ArgumentMatchers类，即参数匹配器，例如：ArgumentMatchers.any
 ```
-
 
 ```javascript
 import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
