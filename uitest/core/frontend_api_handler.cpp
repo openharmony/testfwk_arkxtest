@@ -809,11 +809,7 @@ namespace OHOS::uitest {
             UiOpArgs uiOpArgs;
             auto wOp = WindowOperator(driver, window, uiOpArgs);
             auto action = in.apiId_;
-            if (action == "UiWindow.moveTo") {
-                auto endX = ReadCallArg<uint32_t>(in, INDEX_ZERO);
-                auto endY = ReadCallArg<uint32_t>(in, INDEX_ONE);
-                out.resultValue_ = wOp.MoveTo(endX, endY, out);
-            } else if (action == "UiWindow.resize") {
+            if (action == "UiWindow.resize") {
                 auto width = ReadCallArg<uint32_t>(in, INDEX_ZERO);
                 auto highth = ReadCallArg<uint32_t>(in, INDEX_ONE);
                 auto direction = ReadCallArg<ResizeDirection>(in, INDEX_TWO);
@@ -847,6 +843,10 @@ namespace OHOS::uitest {
                     out.resultValue_ = wOp.Minimize(out);
                 } else if (action == "UiWindow.close") {
                     out.resultValue_ = wOp.Close(out);
+                } else (action == "UiWindow.moveTo") {
+                    auto endX = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+                    auto endY = ReadCallArg<uint32_t>(in, INDEX_ONE);
+                    out.resultValue_ = wOp.MoveTo(endX, endY, out);
                 }
             } else {
                 out.exception_ = ApiCallErr(USAGE_ERROR, "this device can not support this action");
