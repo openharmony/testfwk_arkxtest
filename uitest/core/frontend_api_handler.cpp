@@ -809,37 +809,54 @@ namespace OHOS::uitest {
             UiOpArgs uiOpArgs;
             auto wOp = WindowOperator(driver, window, uiOpArgs);
             auto action = in.apiId_;
-            if (action == "UiWindow.moveTo") {
-                auto endX = ReadCallArg<uint32_t>(in, INDEX_ZERO);
-                auto endY = ReadCallArg<uint32_t>(in, INDEX_ONE);
-                out.resultValue_ = wOp.MoveTo(endX, endY, out);
-            } else if (action == "UiWindow.resize") {
+            if (action == "UiWindow.resize") {
                 auto width = ReadCallArg<uint32_t>(in, INDEX_ZERO);
                 auto highth = ReadCallArg<uint32_t>(in, INDEX_ONE);
                 auto direction = ReadCallArg<ResizeDirection>(in, INDEX_TWO);
                 out.resultValue_ = wOp.Resize(width, highth, direction, out);
-            } else if (action == "UiWindow.split") {
-                out.resultValue_ = wOp.Split(out);
-            } else if (action == "UiWindow.maximize") {
-                out.resultValue_ = wOp.Maximize(out);
-            } else if (action == "UiWindow.resume") {
-                out.resultValue_ = wOp.Resume(out);
-            } else if (action == "UiWindow.minimize") {
-                out.resultValue_ = wOp.Minimize(out);
-            } else if (action == "UiWindow.close") {
-                out.resultValue_ = wOp.Close(out);
             } else if (action == "UiWindow.focus") {
                 out.resultValue_ = wOp.Focuse(out);
             }
         };
         server.AddHandler("UiWindow.focus", genericWinOperationHandler);
-        server.AddHandler("UiWindow.moveTo", genericWinOperationHandler);
         server.AddHandler("UiWindow.resize", genericWinOperationHandler);
-        server.AddHandler("UiWindow.split", genericWinOperationHandler);
-        server.AddHandler("UiWindow.maximize", genericWinOperationHandler);
-        server.AddHandler("UiWindow.resume", genericWinOperationHandler);
-        server.AddHandler("UiWindow.minimize", genericWinOperationHandler);
-        server.AddHandler("UiWindow.close", genericWinOperationHandler);
+    }
+
+    static void RegisterUiWinBarOperators()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto genericWinBarOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &window = GetBackendObject<Window>(in.callerObjRef_);
+            auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto wOp = WindowOperator(driver, window, uiOpArgs);
+            auto action = in.apiId_;
+            if (window.decoratorEnabled_) {
+                if (action == "UiWindow.split") {
+                    out.resultValue_ = wOp.Split(out);
+                } else if (action == "UiWindow.maximize") {
+                    out.resultValue_ = wOp.Maximize(out);
+                } else if (action == "UiWindow.resume") {
+                    out.resultValue_ = wOp.Resume(out);
+                } else if (action == "UiWindow.minimize") {
+                    out.resultValue_ = wOp.Minimize(out);
+                } else if (action == "UiWindow.close") {
+                    out.resultValue_ = wOp.Close(out);
+                } else if (action == "UiWindow.moveTo") {
+                    auto endX = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+                    auto endY = ReadCallArg<uint32_t>(in, INDEX_ONE);
+                    out.resultValue_ = wOp.MoveTo(endX, endY, out);
+                }
+            } else {
+                out.exception_ = ApiCallErr(USAGE_ERROR, "this device can not support this action");
+            }
+        };
+        server.AddHandler("UiWindow.split", genericWinBarOperationHandler);
+        server.AddHandler("UiWindow.maximize", genericWinBarOperationHandler);
+        server.AddHandler("UiWindow.resume", genericWinBarOperationHandler);
+        server.AddHandler("UiWindow.minimize", genericWinBarOperationHandler);
+        server.AddHandler("UiWindow.close", genericWinBarOperationHandler);
+        server.AddHandler("UiWindow.moveTo", genericWinBarOperationHandler);
     }
 
     static void RegisterPointerMatrixOperators()
@@ -900,6 +917,7 @@ namespace OHOS::uitest {
         RegisterUiComponentOperators();
         RegisterUiWindowAttrGetters();
         RegisterUiWindowOperators();
+        RegisterUiWinBarOperators();
         RegisterPointerMatrixOperators();
         RegisterUiDriverMultiPointerOperators();
         RegisterUiDriverDisplayOperators();
