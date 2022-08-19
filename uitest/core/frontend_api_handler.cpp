@@ -819,7 +819,6 @@ namespace OHOS::uitest {
             }
         };
         server.AddHandler("UiWindow.focus", genericWinOperationHandler);
-        server.AddHandler("UiWindow.moveTo", genericWinOperationHandler);
         server.AddHandler("UiWindow.resize", genericWinOperationHandler);
     }
 
@@ -843,7 +842,7 @@ namespace OHOS::uitest {
                     out.resultValue_ = wOp.Minimize(out);
                 } else if (action == "UiWindow.close") {
                     out.resultValue_ = wOp.Close(out);
-                } else (action == "UiWindow.moveTo") {
+                } else if (action == "UiWindow.moveTo") {
                     auto endX = ReadCallArg<uint32_t>(in, INDEX_ZERO);
                     auto endY = ReadCallArg<uint32_t>(in, INDEX_ONE);
                     out.resultValue_ = wOp.MoveTo(endX, endY, out);
@@ -857,6 +856,7 @@ namespace OHOS::uitest {
         server.AddHandler("UiWindow.resume", genericWinBarOperationHandler);
         server.AddHandler("UiWindow.minimize", genericWinBarOperationHandler);
         server.AddHandler("UiWindow.close", genericWinBarOperationHandler);
+        server.AddHandler("UiWindow.moveTo", genericWinOperationHandler);
     }
 
     static void RegisterPointerMatrixOperators()
