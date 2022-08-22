@@ -56,10 +56,10 @@ namespace OHOS::uitest {
     int g_timeinterval = 5000;
     int g_maxdistance = 16;
     int g_indexfive = 5;
-    std::ofstream g_outFile;
-    std::string g_operationType[5] = {"click", "longClick", "doubleClick", "swipe", "drag"};
+    std::ofstream g_outfile;
+    std::string g_operationtype[5] = {"click", "longClick", "doubleClick", "swipe", "drag"};
     TouchOp touchop = CLICK;
-    vector<MMI::PointerEvent::PointerItem> g_eventsVector;
+    vector<MMI::PointerEvent::PointerItem> g_eventsvector;
     vector<int> g_timesvector;
     vector<int> g_mmitimesvector;
 
@@ -399,7 +399,7 @@ namespace OHOS::uitest {
                 std::cout << "GetPointerItem Fail" << std::endl;
             }
             if (pointerEvent->GetPointerAction() != MMI::PointerEvent::POINTER_ACTION_UP) {
-                g_eventsVector.push_back(item);
+                g_eventsvector.push_back(item);
                 if (
                     pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN ||
                     pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
@@ -409,10 +409,10 @@ namespace OHOS::uitest {
                 int indexTime = GetMillisTime();
                 int actionInterval = 340;
                 int pressTime = indexTime - newTime;
-                if (g_eventsVector.size() > 1 && ((item.GetDisplayX() - g_eventsVector[0].GetDisplayX()) \
-                    * (item.GetDisplayX() - g_eventsVector[0].GetDisplayX()) +                           \
-                    (item.GetDisplayY()-g_eventsVector[0].GetDisplayY())*(item.GetDisplayY() -           \
-                    g_eventsVector[0].GetDisplayY())>g_maxdistance)) {
+                if (g_eventsvector.size() > 1 && ((item.GetDisplayX() - g_eventsvector[0].GetDisplayX()) \
+                    * (item.GetDisplayX() - g_eventsvector[0].GetDisplayX()) +                           \
+                    (item.GetDisplayY()-g_eventsvector[0].GetDisplayY())*(item.GetDisplayY() -           \
+                    g_eventsvector[0].GetDisplayY())>g_maxdistance)) {
                     if (g_mmitimesvector[1] - g_mmitimesvector[0] > actionInterval) {
                         touchop = DRAG;
                     } else {
@@ -428,22 +428,22 @@ namespace OHOS::uitest {
                             touchop = LONG_CLICK;
                         }
                 }
-                MMI::PointerEvent::PointerItem up_event = g_eventsVector.back();
-                MMI::PointerEvent::PointerItem down_event = g_eventsVector.front();
+                MMI::PointerEvent::PointerItem up_event = g_eventsvector.back();
+                MMI::PointerEvent::PointerItem down_event = g_eventsvector.front();
                 data.actionType = touchop;
                 data.xPosi = down_event.GetDisplayX();
                 data.yPosi = down_event.GetDisplayY();
                 data.x2Posi = up_event.GetDisplayX();
                 data.y2Posi = up_event.GetDisplayY();
-                TouchEventInfo::WriteEventData(g_outFile, data);
-                std::cout << " PointerEvent:" << g_operationType[data.actionType]
+                TouchEventInfo::WriteEventData(g_outfile, data);
+                std::cout << " PointerEvent:" << g_operationtype[data.actionType]
                             << " xPosi:" << data.xPosi
                             << " yPosi:" << data.yPosi
                             << " x2Posi:" << data.x2Posi
                             << " y2Posi:" << data.y2Posi
                             << " interval:" << ((data.interval + g_timeindex - 1) / g_timeindex) << std::endl;
 
-                g_eventsVector.clear();
+                g_eventsvector.clear();
             }
         }
         virtual void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override {}
@@ -460,7 +460,7 @@ namespace OHOS::uitest {
         int t = GetMillisTime();
         int diff = t - g_touchtime;
         if (diff >= g_timeinterval) {
-            cout<< "No operation detected for 5 seconds, press ctrl + c to save this file?" <<endl;
+            cout << "No operation detected for 5 seconds, press ctrl + c to save this file?" << endl;
         }
     }
 
@@ -475,7 +475,7 @@ namespace OHOS::uitest {
         if (opt == "record") {
             Timer timer;
             timer.Start(g_timeinterval, TimerFunc);
-            if (!InitEventRecordFile(g_outFile)) {
+            if (!InitEventRecordFile(g_outfile)) {
             return OHOS::ERR_INVALID_VALUE;
             }
             auto callBackPtr = InputEventCallback::GetPtr();
