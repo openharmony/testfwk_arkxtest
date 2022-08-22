@@ -922,3 +922,9 @@ hdc_std file send uitest /system/bin/uitest
 hdc_std file send libuitest.z.so /system/lib/module/libuitest.z.so
 hdc_std shell chmod +x /system/bin/uitest
 ```
+
+### 版本信息
+
+| 版本号  |                           功能说明                           |
+| :-----: | :----------------------------------------------------------: |
+| 3.2.2.1 | 1、增加抛滑、获取/设置屏幕方向接口<br />2、窗口处理逻辑增加不支持场景处理逻辑 |
