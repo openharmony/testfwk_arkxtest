@@ -51,17 +51,17 @@ namespace OHOS::uitest {
     "   uiRecord -read,                    print file content to the console\n"
     "   --version,                                print current tool version\n";
     const std::string VERSION = "3.2.2.1";
-    int g_touchTime;
-    int g_timeIndex = 1000;
-    int g_timeInterval = 5000;
-    int g_maxDistance = 16;
-    int g_indexFive = 5;
+    int g_touchtime;
+    int g_timeindex = 1000;
+    int g_timeinterval = 5000;
+    int g_maxdistance = 16;
+    int g_indexfive = 5;
     std::ofstream g_outFile;
     std::string g_operationType[5] = {"click", "longClick", "doubleClick", "swipe", "drag"};
     TouchOp touchop = CLICK;
     vector<MMI::PointerEvent::PointerItem> g_eventsVector;
-    vector<int> g_timesVector;
-    vector<int> g_mmiTimesVector;
+    vector<int> g_timesvector;
+    vector<int> g_mmitimesvector;
 
     namespace {
         std::string operationType_[5] = {"click", "longClick", "doubleClick", "swipe", "drag"};
@@ -105,7 +105,7 @@ namespace OHOS::uitest {
                 outFile << data.yPosi << ',';
                 outFile << data.x2Posi << ',';
                 outFile << data.y2Posi << ',';
-                outFile << ((data.interval + g_timeIndex - 1) / g_timeIndex) << std::endl;
+                outFile << ((data.interval + g_timeindex - 1) / g_timeindex) << std::endl;
             }
 
             static void ReadEventLine(std::ifstream &inFile)
@@ -126,7 +126,7 @@ namespace OHOS::uitest {
                     yPosi = std::stoi(caseInfo[INDEX_TWO]);
                     x2Posi = std::stoi(caseInfo[INDEX_THREE]);
                     y2Posi = std::stoi(caseInfo[INDEX_FOUR]);
-                    interval = std::stoi(caseInfo[g_indexFive]);
+                    interval = std::stoi(caseInfo[g_indexfive]);
                     if (inFile.fail()) {
                         break;
                     } else {
@@ -137,7 +137,7 @@ namespace OHOS::uitest {
                                 << y2Posi << ";"
                                 << interval << std::endl;
                     }
-                    usleep(interval * g_timeIndex);
+                    usleep(interval * g_timeindex);
                 }
             }
         };
@@ -171,7 +171,7 @@ namespace OHOS::uitest {
         }
     } // namespace
 
-    struct option g_longOptions[] = {
+    struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
     };
@@ -185,7 +185,7 @@ namespace OHOS::uitest {
         map<char, string> &params)
     {
         int opt;
-        while ((opt = getopt_long(argc, argv, optstring.data(), g_longOptions, nullptr)) != -1) {
+        while ((opt = getopt_long(argc, argv, optstring.data(), g_longoptions, nullptr)) != -1) {
             switch (opt) {
                 case '?':
                     PrintToConsole(usage);
@@ -384,16 +384,16 @@ namespace OHOS::uitest {
             int newTime;
             int pressDuration = 600;
             bool result = pointerEvent->GetPointerItem(pointerEvent->GetPointerId(), item);
-            g_touchTime = GetMillisTime();
+            g_touchtime = GetMillisTime();
             TouchEventInfo::EventData data {};
-            if (g_timesVector.size() > 1) {
-                    data.interval = g_timesVector.back()-g_timesVector[g_timesVector.size() - INDEX_TWO];
+            if (g_timesvector.size() > 1) {
+                    data.interval = g_timesvector.back()-g_timesvector[g_timesvector.size() - INDEX_TWO];
             } else {
-                    data.interval = g_timeIndex;
+                    data.interval = g_timeindex;
             }
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
                     newTime = GetMillisTime();
-                    g_timesVector.push_back(newTime);
+                    g_timesvector.push_back(newTime);
             }
             if (!result) {
                 std::cout << "GetPointerItem Fail" << std::endl;
@@ -403,7 +403,7 @@ namespace OHOS::uitest {
                 if (
                     pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN ||
                     pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
-                    g_mmiTimesVector.push_back(g_touchTime);
+                    g_mmitimesvector.push_back(g_touchtime);
                 }
             } else {
                 int indexTime = GetMillisTime();
@@ -412,13 +412,13 @@ namespace OHOS::uitest {
                 if (g_eventsVector.size() > 1 && ((item.GetDisplayX() - g_eventsVector[0].GetDisplayX()) \
                     * (item.GetDisplayX() - g_eventsVector[0].GetDisplayX()) +                           \
                     (item.GetDisplayY()-g_eventsVector[0].GetDisplayY())*(item.GetDisplayY() -           \
-                    g_eventsVector[0].GetDisplayY())>g_maxDistance)) {
-                    if (g_mmiTimesVector[1] - g_mmiTimesVector[0] > actionInterval) {
+                    g_eventsVector[0].GetDisplayY())>g_maxdistance)) {
+                    if (g_mmitimesvector[1] - g_mmitimesvector[0] > actionInterval) {
                         touchop = DRAG;
                     } else {
                         touchop = SWIPE;
                     }
-                    g_mmiTimesVector.clear();
+                    g_mmitimesvector.clear();
                 } else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
                             touchop = CLICK;
@@ -441,7 +441,7 @@ namespace OHOS::uitest {
                             << " yPosi:" << data.yPosi
                             << " x2Posi:" << data.x2Posi
                             << " y2Posi:" << data.y2Posi
-                            << " interval:" << ((data.interval + g_timeIndex - 1) / g_timeIndex) << std::endl;
+                            << " interval:" << ((data.interval + g_timeindex - 1) / g_timeindex) << std::endl;
 
                 g_eventsVector.clear();
             }
@@ -458,9 +458,9 @@ namespace OHOS::uitest {
     static void TimerFunc()
     {
         int t = GetMillisTime();
-        int diff = t - g_touchTime;
-        if (diff >= g_timeInterval) {
-            cout<<"No operation detected for 5 seconds, press ctrl + c to save this file?"<<endl;
+        int diff = t - g_touchtime;
+        if (diff >= g_timeinterval) {
+            cout<< "No operation detected for 5 seconds, press ctrl + c to save this file?" <<endl;
         }
     }
 
@@ -474,7 +474,7 @@ namespace OHOS::uitest {
         std::string opt = argv[2];
         if (opt == "record") {
             Timer timer;
-            timer.Start(g_timeInterval, TimerFunc);
+            timer.Start(g_timeinterval, TimerFunc);
             if (!InitEventRecordFile(g_outFile)) {
             return OHOS::ERR_INVALID_VALUE;
             }
@@ -524,7 +524,7 @@ namespace OHOS::uitest {
             exit(UiRecord(argc, argv));
         } else if (command == "--version") {
             PrintToConsole(VERSION);
-            exit (EXIT_SUCCESS);
+            exit(EXIT_SUCCESS);
         } else if (command == "help") {
             PrintToConsole(HELP_MSG);
             exit(EXIT_SUCCESS);
