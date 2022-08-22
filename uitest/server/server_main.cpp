@@ -22,6 +22,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <regex>
+#include <unistd.h>
 #include <typeinfo>
 #include <cstring>
 #include <vector>
@@ -406,7 +407,7 @@ namespace OHOS::uitest {
                 }
             } else {
                 int indexTime = GetMillisTime();
-                int actionInterval = 300;
+                int actionInterval = 340;
                 int pressTime = indexTime - newTime;
                 if (g_eventsVector.size() > 1 && ((item.GetDisplayX() - g_eventsVector[0].GetDisplayX()) \
                     * (item.GetDisplayX() - g_eventsVector[0].GetDisplayX()) +                           \
@@ -490,6 +491,8 @@ namespace OHOS::uitest {
             std::cout << "Started Recording Successfully..." << std::endl;
             int flag = getc(stdin);
             std::cout << flag << std::endl;
+            constexpr int TIME_TO_SLEEP = 3600;
+            sleep(TIME_TO_SLEEP);
             return OHOS::ERR_OK;
         } else if (opt == "read") {
             std::ifstream inFile(DEFAULT_DIR + "/" + "record.csv");
