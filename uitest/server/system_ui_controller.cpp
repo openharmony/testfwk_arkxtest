@@ -274,6 +274,9 @@ namespace OHOS::uitest {
         for (auto &window : windows) {
             if (ability->GetRootByWindow(window, elementInfo)) {
                 const auto app = elementInfo.GetBundleName();
+                if (app == "com.ohos.wallpaper") {
+                    continue;
+                }
                 LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
                 auto winInfo = Window(window.GetWindowId());
                 InflateWindowInfo(window, winInfo);
