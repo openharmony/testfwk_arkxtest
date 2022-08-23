@@ -91,10 +91,10 @@ class OhReport {
         message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.suiteService.getSummary().total;
         let emsg = '';
         if (this.specService.currentRunningSpec.error) {
-            message += '\n' + 'OHOS_REPORT_STATUS: stack=' + this.specService.currentRunningSpec.error;
+            message += '\n' + 'OHOS_REPORT_STATUS: stack=' + this.specService.currentRunningSpec.error.message;
             message += '\n' + 'OHOS_REPORT_STATUS: stream=';
             message += '\n' + 'Error in ' + this.specService.currentRunningSpec.description;
-            message += '\n' + this.specService.currentRunningSpec.error;
+            message += '\n' + this.specService.currentRunningSpec.error.message;
             message += '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
             message += '\n' + 'OHOS_REPORT_STATUS_CODE: -1' + '\n';
         } else if (this.specService.currentRunningSpec.result) {
