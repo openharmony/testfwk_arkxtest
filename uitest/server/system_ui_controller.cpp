@@ -266,7 +266,7 @@ namespace OHOS::uitest {
             if (w1.IsActive()) {
                 return true;
             } else if (w2.IsActive()) {
-                return true;
+                return false;
             }
             return w1.GetWindowLayer() < w2.GetWindowLayer();
         });
@@ -274,9 +274,6 @@ namespace OHOS::uitest {
         for (auto &window : windows) {
             if (ability->GetRootByWindow(window, elementInfo)) {
                 const auto app = elementInfo.GetBundleName();
-                if (app == "com.ohos.wallpaper") {
-                    continue;
-                }
                 LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
                 auto winInfo = Window(window.GetWindowId());
                 InflateWindowInfo(window, winInfo);
