@@ -634,24 +634,20 @@ class ReportService {
     }
 
     taskStart() {
-        this.sleep(50);
         this.taskStartTime = new Date().getTime();
         console.info('[start] start run suites');
     }
 
     suiteStart() {
-        this.sleep(50);
         console.info('[suite start]' + this.suiteService.getCurrentRunningSuite().description);
     }
 
     specStart() {
-        this.sleep(50);
         console.info('start running case \'' + this.specService.currentRunningSpec.description + '\'');
         this.index = this.index + 1;
     }
 
     specDone() {
-        this.sleep(50);
         let msg = '';
         let spec = this.specService.currentRunningSpec;
         spec.duration = new Date().getTime() - spec.startTime;
@@ -676,13 +672,11 @@ class ReportService {
     }
 
     suiteDone() {
-        this.sleep(50);
         let suite = this.suiteService.currentRunningSuite;
         console.info('[suite end]' + ' consuming ' + suite.duration + 'ms');
     }
 
     taskDone() {
-        this.sleep(50);
         let msg = '';
         let summary = this.suiteService.getSummary();
         msg = 'total cases:' + summary.total + ';failure ' + summary.failure + ',' + 'error ' + summary.error;
