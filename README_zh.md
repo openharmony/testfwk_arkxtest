@@ -660,6 +660,90 @@ export default function ActsAbilityTest() {
     });
 }
 ```
+#### 数据驱动
+
+##### 约束限制
+
+单元测试框架数据驱动能力从[hypium 1.0.2版本](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)开始支持
+
+- 参数传递 : 为指定测试套、测试用例传递参数
+- 压力测试 : 为指定测试套、测试用例的执行次数
+
+数据驱动可以根据配置参数来驱动测试用例的执行次数和每一次传入的参数，使用时依赖data.json配置文件，文件内容如下：
+
+建议 : data.json与测试用例*.test.js|ets文件同目录
+
+```json
+{
+	"suites": [{
+		"describe": ["actsAbilityTest"],
+		"stress": 2,
+		"params": {
+			"suiteParams1": "suiteParams001",
+			"suiteParams2": "suiteParams002"
+		},
+		"items": [{
+			"it": "testDataDriverAsync",
+			"stress": 2,
+			"params": [{
+				"name": "tom",
+				"value": 5
+			}, {
+				"name": "jerry",
+				"value": 4
+			}]
+		}, {
+			"it": "testDataDriver",
+			"stress": 3
+		}]
+	}]
+}
+```
+
+配置参数说明：
+
+|      | 配置项名称 | 功能                                      |
+| :--- | :--------- | :---------------------------------------- |
+| 1    | "suite"    | 测试套配置 (必填)                         |
+| 2    | "items"    | 测试用例配置 (必填)                       |
+| 3    | "describe" | 测试套名称 (必填)                         |
+| 4    | "it"       | 测试用例名称 (必填)                       |
+| 5    | "params"   | 测试套 / 测试用例 可传入使用的参数 (可选) |
+| 6    | "stress"   | 测试套 / 测试用例 指定执行次数 (可选)     |
+
+示例代码：
+
+在TestAbility目录下app.js|ets文件中导入data.json，并在Hypium.hypiumTest() 方法执行前，设置参数数据
+
+```javascript
+import AbilityDelegatorRegistry from '@ohos.application.abilityDelegatorRegistry'
+import { Hypium } from '@ohos/hypium'
+import testsuite from '../test/List.test'
+import data from '../test/data.json';
+
+...
+Hypium.setData(data);
+Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
+...
+```
+
+```javascript
+import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '@ohos/hypium';
+
+export default function abilityTest() {
+    describe('actsAbilityTest', function () {
+        it('testDataDriverAsync', 0, async function (done, data) {
+            console.info('name: ' + data.name);
+            console.info('value: ' + data.value);
+            done();
+        });
+
+        it('testDataDriver', 0, function () {
+            console.info('stress test');
+        });
+    });
+}
+```
 
 ### 使用方式
 

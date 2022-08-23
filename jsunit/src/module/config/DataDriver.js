@@ -55,7 +55,7 @@ class DataDriver {
         let suites = ObjectUtils.get(this.data, SUITES_KEY, []);
         for (const suiteItem of suites) {
             let describeValue = ObjectUtils.get(suiteItem, DESCRIBE_KEY, '');
-            if (ObjectUtils.has(suiteItem, DESCRIBE_KEY) && describeValue === suiteDesc && (typeof describeValue === 'string') && describeValue.constructor === String) {
+            if (ObjectUtils.has(suiteItem, DESCRIBE_KEY) && (typeof describeValue === 'object') && describeValue.constructor === Array && describeValue.includes(suiteDesc)) {
                 let specs = ObjectUtils.get(suiteItem, SPECS_KEY, []);
                 for (const specItem of specs) {
                     if (ObjectUtils.has(specItem, IT_KEY) && ObjectUtils.get(specItem, IT_KEY) === specDesc) {
@@ -86,7 +86,7 @@ class DataDriver {
         let suites = ObjectUtils.get(this.data, SUITES_KEY, []);
         for (const suiteItem of suites) {
             let describeValue = ObjectUtils.get(suiteItem, DESCRIBE_KEY, '');
-            if (ObjectUtils.has(suiteItem, DESCRIBE_KEY) && describeValue === suiteDesc && (typeof describeValue === 'string') && describeValue.constructor === String) {
+            if (ObjectUtils.has(suiteItem, DESCRIBE_KEY) && (typeof describeValue === 'object') && describeValue.constructor === Array && describeValue.includes(suiteDesc)) {
                 let specs = ObjectUtils.get(suiteItem, SPECS_KEY, []);
                 for (const specItem of specs) {
                     if (ObjectUtils.has(specItem, IT_KEY) && ObjectUtils.get(specItem, IT_KEY) === specDesc) {
@@ -104,7 +104,7 @@ class DataDriver {
         let suites = ObjectUtils.get(this.data, SUITES_KEY, []);
         for (const suiteItem of suites) {
             let describeValue = ObjectUtils.get(suiteItem, DESCRIBE_KEY, []);
-            if (ObjectUtils.has(suiteItem, DESCRIBE_KEY) && describeValue === suiteDesc && (typeof describeValue === 'string') && describeValue.constructor === String) {
+            if (ObjectUtils.has(suiteItem, DESCRIBE_KEY) && (typeof describeValue === 'object') && describeValue.constructor === Array && describeValue.includes(suiteDesc)) {
                 let tempStress = ObjectUtils.get(suiteItem, STRESS_KEY, stress);
                 return (Number.isInteger(tempStress) && tempStress >= 1) ? tempStress : stress;
             }
