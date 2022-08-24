@@ -108,8 +108,8 @@ namespace OHOS::uitest {
                 outFile << data.x2Posi << ',';
                 outFile << data.y2Posi << ',';
                 outFile << ((data.interval + g_timeindex - 1) / g_timeindex) << ',';
-                outFile << 400 << ',';
-                outFile << 400 << std::endl;
+                outFile << 0 << ',';
+                outFile << 1500 << std::endl;
             }
 
             static void ReadEventLine(std::ifstream &inFile)
