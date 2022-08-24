@@ -58,6 +58,7 @@ namespace OHOS::uitest {
     int g_indexfive = 5;
     int g_indexsix = 6;
     int g_indexseven = 7;
+    int g_velocity = 1500;
     std::ofstream g_outfile;
     std::string g_operationtype[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
     TouchOp touchop = CLICK;
@@ -109,7 +110,7 @@ namespace OHOS::uitest {
                 outFile << data.y2Posi << ',';
                 outFile << ((data.interval + g_timeindex - 1) / g_timeindex) << ',';
                 outFile << 0 << ',';
-                outFile << 1500 << std::endl;
+                outFile << g_velocity << std::endl;
             }
 
             static void ReadEventLine(std::ifstream &inFile)
