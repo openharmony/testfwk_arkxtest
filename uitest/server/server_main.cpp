@@ -55,16 +55,17 @@ namespace OHOS::uitest {
     int g_timeindex = 1000;
     int g_timeinterval = 5000;
     int g_maxdistance = 16;
-    int g_indexfive = 5;
+    int g_velocity = 1500;
     std::ofstream g_outfile;
-    std::string g_operationtype[5] = {"click", "longClick", "doubleClick", "swipe", "drag"};
-    TouchOp touchop = CLICK;
+    std::string g_operationtype[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
     vector<MMI::PointerEvent::PointerItem> g_eventsvector;
     vector<int> g_timesvector;
     vector<int> g_mmitimesvector;
+    enum g_touchop : uint8_t {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN};
+    g_touchop touchop = ZERO;
 
     namespace {
-        std::string operationType_[5] = {"click", "longClick", "doubleClick", "swipe", "drag"};
+        std::string operationType_[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
         std::string DEFAULT_DIR  = "/data/local/tmp/layout";
         int64_t GetMillisTime()
         {
@@ -105,7 +106,9 @@ namespace OHOS::uitest {
                 outFile << data.yPosi << ',';
                 outFile << data.x2Posi << ',';
                 outFile << data.y2Posi << ',';
-                outFile << ((data.interval + g_timeindex - 1) / g_timeindex) << std::endl;
+                outFile << ((data.interval + g_timeindex - 1) / g_timeindex) << ',';
+                outFile << 0 << ',';
+                outFile << g_velocity << std::endl;
             }
 
             static void ReadEventLine(std::ifstream &inFile)
@@ -117,16 +120,20 @@ namespace OHOS::uitest {
                 int x2Posi = -1;
                 int y2Posi = -1;
                 int interval = -1;
+                int distance = -1;
+                int velocity = -1;
                 while (!inFile.eof()) {
                     inFile >> buffer;
                     std::string delim = ",";
                     auto caseInfo = TestUtils::split(buffer, delim);
-                    type = caseInfo[INDEX_ZERO];
-                    xPosi = std::stoi(caseInfo[INDEX_ONE]);
-                    yPosi = std::stoi(caseInfo[INDEX_TWO]);
-                    x2Posi = std::stoi(caseInfo[INDEX_THREE]);
-                    y2Posi = std::stoi(caseInfo[INDEX_FOUR]);
-                    interval = std::stoi(caseInfo[g_indexfive]);
+                    type = caseInfo[ZERO];
+                    xPosi = std::stoi(caseInfo[ONE]);
+                    yPosi = std::stoi(caseInfo[TWO]);
+                    x2Posi = std::stoi(caseInfo[THREE]);
+                    y2Posi = std::stoi(caseInfo[FOUR]);
+                    interval = std::stoi(caseInfo[FIVE]);
+                    distance = std::stoi(caseInfo[SIX]);
+                    velocity = std::stoi(caseInfo[SEVEN]);
                     if (inFile.fail()) {
                         break;
                     } else {
@@ -135,7 +142,9 @@ namespace OHOS::uitest {
                                 << yPosi << ";"
                                 << x2Posi << ";"
                                 << y2Posi << ";"
-                                << interval << std::endl;
+                                << interval << ";"
+                                << distance << ";"
+                                << velocity << ";" << std::endl;
                     }
                     usleep(interval * g_timeindex);
                 }
@@ -408,24 +417,29 @@ namespace OHOS::uitest {
             } else {
                 int indexTime = GetMillisTime();
                 int actionInterval = 340;
-                int pressTime = indexTime - newTime;
+                int flingThreshold = 30;
+                int pressTime = indexTime - g_timesvector.back();
                 if (g_eventsvector.size() > 1 && ((item.GetDisplayX() - g_eventsvector[0].GetDisplayX()) \
                     * (item.GetDisplayX() - g_eventsvector[0].GetDisplayX()) +                           \
                     (item.GetDisplayY()-g_eventsvector[0].GetDisplayY())*(item.GetDisplayY() -           \
                     g_eventsvector[0].GetDisplayY())>g_maxdistance)) {
                     if (g_mmitimesvector[1] - g_mmitimesvector[0] > actionInterval) {
-                        touchop = DRAG;
+                        touchop = FOUR;
                     } else {
-                        touchop = SWIPE;
+                        if (indexTime - g_mmitimesvector.back() > flingThreshold) {
+                            touchop = THREE;
+                        } else {
+                            touchop = FIVE;
+                        }
                     }
                     g_mmitimesvector.clear();
                 } else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
-                            touchop = CLICK;
+                            touchop = ZERO;
                         } else if (data.interval < actionInterval && pressTime < pressDuration) {
-                            touchop = DOUBLE_CLICK_P;
+                            touchop = TWO;
                         } else if (data.interval > actionInterval && pressTime > pressDuration) {
-                            touchop = LONG_CLICK;
+                            touchop = ONE;
                         }
                 }
                 MMI::PointerEvent::PointerItem up_event = g_eventsvector.back();
