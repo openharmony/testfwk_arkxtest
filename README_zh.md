@@ -198,7 +198,7 @@ export default function ActsAbilityTest() {
     });
 }
 ```
-- **特别注意：**
+- **须知：**
 `when(mockfunc)('test').afterReturn('1');`
 这句代码中的`('test')`是mock后的函数需要传递的匹配参数，目前支持一个参数
 `afterReturn('1')`是用户需要预期返回的结果。
@@ -254,7 +254,7 @@ export default function ActsAbilityTest() {
 **示例3： 设定参数类型为any ，即接受任何参数（undefine和null除外）的使用**
 
 
-注意需要引入ArgumentMatchers类，即参数匹配器，例如：ArgumentMatchers.any
+须知：需要引入ArgumentMatchers类，即参数匹配器，例如：ArgumentMatchers.any
 
 ```javascript
 import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
@@ -671,7 +671,7 @@ export default function ActsAbilityTest() {
 
 数据驱动可以根据配置参数来驱动测试用例的执行次数和每一次传入的参数，使用时依赖data.json配置文件，文件内容如下：
 
->建议 : data.json与测试用例*.test.js|ets文件同目录
+>说明 : data.json与测试用例*.test.js|ets文件同目录
 
 ```json
 {
@@ -764,7 +764,7 @@ export default function abilityTest() {
 import {UiDriver,BY,UiComponent,Uiwindow,MatchPattern} from '@ohos.uitest'
 ```
 
-> 注意事项
+> 须知
 > 1. `By`类提供的接口全部是同步接口，使用者可以使用`builder`模式链式调用其接口构造控件筛选条件。
 > 2. `UiDrivier`和`UiComponent`类提供的接口全部是异步接口(`Promise`形式)，**需使用`await`语法**。
 > 3. Ui测试用例均需使用**异步**语法编写用例，需遵循单元测试框架异步用例编写规范。
