@@ -121,7 +121,7 @@ namespace OHOS::uitest {
                 int x2Posi = -1;
                 int y2Posi = -1;
                 int interval = -1;
-                int distance = -1;
+                int length = -1;
                 int velocity = -1;
                 while (!inFile.eof()) {
                     inFile >> buffer;
