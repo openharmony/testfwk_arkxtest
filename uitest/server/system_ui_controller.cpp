@@ -268,7 +268,7 @@ namespace OHOS::uitest {
             } else if (w2.IsActive()) {
                 return false;
             }
-            return w1.GetWindowLayer() < w2.GetWindowLayer();
+            return w1.GetWindowLayer() > w2.GetWindowLayer();
         });
         AccessibilityElementInfo elementInfo;
         for (auto &window : windows) {
