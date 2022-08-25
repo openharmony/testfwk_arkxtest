@@ -55,7 +55,8 @@ namespace OHOS::uitest {
     int g_timeindex = 1000;
     int g_timeinterval = 5000;
     int g_maxdistance = 16;
-    int g_velocity = 1500;
+    int g_length = 20;
+    int g_velocity = 600;
     std::ofstream g_outfile;
     std::string g_operationtype[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
     vector<MMI::PointerEvent::PointerItem> g_eventsvector;
@@ -107,7 +108,7 @@ namespace OHOS::uitest {
                 outFile << data.x2Posi << ',';
                 outFile << data.y2Posi << ',';
                 outFile << ((data.interval + g_timeindex - 1) / g_timeindex) << ',';
-                outFile << 0 << ',';
+                outFile << g_length << ',';
                 outFile << g_velocity << std::endl;
             }
 
@@ -132,7 +133,7 @@ namespace OHOS::uitest {
                     x2Posi = std::stoi(caseInfo[THREE]);
                     y2Posi = std::stoi(caseInfo[FOUR]);
                     interval = std::stoi(caseInfo[FIVE]);
-                    distance = std::stoi(caseInfo[SIX]);
+                    length = std::stoi(caseInfo[SIX]);
                     velocity = std::stoi(caseInfo[SEVEN]);
                     if (inFile.fail()) {
                         break;
@@ -143,7 +144,7 @@ namespace OHOS::uitest {
                                 << x2Posi << ";"
                                 << y2Posi << ";"
                                 << interval << ";"
-                                << distance << ";"
+                                << length << ";"
                                 << velocity << ";" << std::endl;
                     }
                     usleep(interval * g_timeindex);
