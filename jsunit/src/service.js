@@ -194,7 +194,7 @@ class SuiteService {
             abilityDelegator.print(strJson.substring(count * maxLen, (count + 1) * maxLen));
         }
         console.info('dryRun print success');
-        abilityDelegator.finishTest('dryRun finished!!!', 0, () => { });
+        abilityDelegator.finishTest('dry run finished!!!', 0, () => { });
 
         return true;
     }
