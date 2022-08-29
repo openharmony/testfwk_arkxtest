@@ -131,7 +131,7 @@ export default async function abilityTest() {
 
 | No. | API | 功能说明 |
 | --- | --- | --- |
-| 1 | mockFunc(obj: object, f：founction()) | mock某个类的对象obj的函数f，那么需要传两个参数：obj和f，支持使用异步函数（说明：对mock而言并没有很多区别，因为mock并不关注原函数的实现） |
+| 1 | mockFunc(obj: object, f：founction()) | mock某个类的对象obj的函数f，那么需要传两个参数：obj和f，支持使用异步函数（说明：对mock而言并没有很多区别，因为mock并不关注原函数的实现）。 |
 | 2 | when(mockedfunc：function) | 对传入后方法做检查，检查是否被mock并标记过，返回的是一个方法声明。 |
 | 3 | afterReturn(x：value) | 设定预期返回一个自定义的值value，比如某个字符串或者一个promise。 |
 | 4 | afterReturnNothing() | 设定预期没有返回值，即 undefined。 |
