@@ -131,35 +131,35 @@ export default async function abilityTest() {
 
 | No. | API | 功能说明 |
 | --- | --- | --- |
-| 1 |  mockFunc( obj: object, f：founction() | mock某个类的对象obj的函数f，那么需要传两个参数：obj和f , 支持使用异步函数（说明：对mock而言并没有很多区别，因为mock并不关注原函数的实现） |
+| 1 | mockFunc(obj: object, f：founction()) | mock某个类的对象obj的函数f，那么需要传两个参数：obj和f，支持使用异步函数（说明：对mock而言并没有很多区别，因为mock并不关注原函数的实现） |
 | 2 | when(mockedfunc：function) | 对传入后方法做检查，检查是否被mock并标记过，返回的是一个方法声明。 |
-| 3 |afterReturn(x：value) | 设定预期返回一个自定义的值value，比如某个字符串或者一个promice。 |
-| 4 | afterReturnNothing() | 设定预期没有返回值，即 undefine。 |
-| 5 |  afterAction(x：action) | 设定预期返回一个函数执行的操作。 |
-| 6 |  afterThrow(x：msg) | 设定预期抛出异常，并指定异常msg。 |
-| 7 |  clear() | 用例执行完毕后，进行数据mocker对象的还原处理（还原之后对象恢复被mock之前的功能）。 |
-| 8 |  any | 设定用户传任何类型参数（undefine和null除外），执行的结果都是预期的值，使用ArgumentMatchers.any方式调用。 |
-| 9 |  anyString | 设定用户传任何字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.anyString方式调用。 |
-| 10 |  anyBoolean | 设定用户传任何boolean类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyBoolean方式调用。 |
-| 11 |  anyFounction | 设定用户传任何function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyFounction方式调用。 |
+| 3 | afterReturn(x：value) | 设定预期返回一个自定义的值value，比如某个字符串或者一个promise。 |
+| 4 | afterReturnNothing() | 设定预期没有返回值，即 undefined。 |
+| 5 | afterAction(x：action) | 设定预期返回一个函数执行的操作。 |
+| 6 | afterThrow(x：msg) | 设定预期抛出异常，并指定异常msg。 |
+| 7 | clear() | 用例执行完毕后，进行数据mocker对象的还原处理（还原之后对象恢复被mock之前的功能）。 |
+| 8 | any | 设定用户传任何类型参数（undefined和null除外），执行的结果都是预期的值，使用ArgumentMatchers.any方式调用。 |
+| 9 | anyString | 设定用户传任何字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.anyString方式调用。 |
+| 10 | anyBoolean | 设定用户传任何boolean类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyBoolean方式调用。 |
+| 11 | anyFounction | 设定用户传任何function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyFounction方式调用。 |
 | 12 | anyNumber | 设定用户传任何数字类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyNumber方式调用。 |
 | 13 | anyObj | 设定用户传任何对象类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyObj方式调用。 |
 | 14 | matchRegexs(Regex) | 设定用户传任何正则表达式类型参数Regex，执行的结果都是预期的值，使用ArgumentMatchers.matchRegexs(Regex)方式调用。 |
-| 15 |  verify(methodName, argsArray) | 验证methodName（函数名字符串）所对应的函数和其参数列表argsArray的执行 行为是否符合预期，返回一个 VerificationMode：一个提供验证模式的类，它有times(count),once(),atLeast(x),atMost(x),never()等函数可供选择|
-| 16 |  times(count) | 验证行为调用过count次 |
-| 17 | once() | 验证行为调用过一次 |
-| 18 | atLeast(count) | 验证行为至少调用过count次 |
-| 19 | atMost(count) |  验证行为至多调用过count次 |
-| 20 | never |  验证行为从未发生过 |
-| 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效 |
-| 22 |  clearAll() | 用例执行完毕后，进行数据和内存清理 |
+| 15 | verify(methodName, argsArray) | 验证methodName（函数名字符串）所对应的函数和其参数列表argsArray的执行行为是否符合预期，返回一个VerificationMode：一个提供验证模式的类，它有times(count)、once()、atLeast(x)、atMost(x)、never()等函数可供选择。 |
+| 16 | times(count) | 验证行为调用过count次。 |
+| 17 | once() | 验证行为调用过一次。 |
+| 18 | atLeast(count) | 验证行为至少调用过count次。 |
+| 19 | atMost(count) | 验证行为至多调用过count次。 |
+| 20 | never | 验证行为从未发生过。 |
+| 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效。 |
+| 22 | clearAll() | 用例执行完毕后，进行数据和内存清理。 |
 
 -  **使用示例：**
 
 用户可以通过以下方式进行引入mock模块进行测试用例编写：
 
 - **须知：**
-必须引入的mock能力模块api: MockKit, when
+必须引入的mock能力模块api: MockKit，when
 根据自己用例需要引入断言能力api
 例如：`import { describe, expect, it, MockKit, when} from '@ohos/hypium'`
 
@@ -652,7 +652,7 @@ export default function ActsAbilityTest() {
 }
 ```
 
-**示例11：  mock 系统函数的使用**
+**示例11：mock 系统函数的使用**
 
 ```javascript
 export default function ActsAbilityTest() {
@@ -671,7 +671,7 @@ export default function ActsAbilityTest() {
 ```
 
 
-**示例12：  verify times 函数的使用 （验证函数调用次数）**
+**示例12：verify times函数的使用（验证函数调用次数）**
 
 ```javascript
 import { describe, expect, it, MockKit, when } from '@ohos/hypium'
@@ -692,7 +692,7 @@ export default function ActsAbilityTest() {
             }
             //3.创建类对象
             let claser = new ClassName();
-            //4.mock  类ClassName对象的某个方法，比如method_1
+            //4.mock 类ClassName对象的某个方法，比如method_1
             let func_1 = mocker.mockFunc(claser, claser.method_1);
             //5.期望被mock后的函数能够返回自己假设的结果
             when(func_1)('123').afterReturn('4');
