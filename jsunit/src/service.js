@@ -556,13 +556,15 @@ class ExpectService {
         return {
             assertTrue: function (actualValue) {
                 return {
-                    pass: (actualValue) === true
+                    pass: (actualValue) === true,
+                    message: 'expect true, actualValue is ' + actualValue
                 };
             },
             assertEqual: function (actualValue, args) {
                 return {
                     pass: (actualValue) === args[0],
-                    expectValue: args[0]
+                    expectValue: args[0],
+                    message: 'expect ' + actualValue + ' equals ' + args[0]
                 };
             },
             assertThrow: function (actual, args) {
@@ -661,7 +663,7 @@ class ReportService {
                 this.formatPrint('fail', spec.description + ' ; consuming ' + spec.duration + 'ms');
                 spec.result.failExpects.forEach(failExpect => {
                     msg = failExpect.message || ('expect ' + failExpect.actualValue + ' '
-                        + failExpect.checkFunc + ' ' + (failExpect.expectValue || ''));
+                        + failExpect.checkFunc + ' ' + (failExpect.expectValue));
                     this.formatPrint('failDetail', msg);
                 });
             } else {
