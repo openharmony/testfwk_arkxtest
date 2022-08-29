@@ -120,7 +120,7 @@ class MockKit {
         let retrunKet = params[0];
         let stubSetKey = this.currentSetKey;
 
-        if (this.currentSetKey && retrunKet) {
+        if (this.currentSetKey && (typeof (retrunKet) != "undefined")) {
             retrunKet = stubSetKey;
         }
         let matcher = new ArgumentMatchers();
