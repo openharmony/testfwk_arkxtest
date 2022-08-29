@@ -557,14 +557,14 @@ class ExpectService {
             assertTrue: function (actualValue) {
                 return {
                     pass: (actualValue) === true,
-                    message: 'except true, actualValue is ' + actualValue
+                    message: 'expect true, actualValue is ' + actualValue
                 };
             },
             assertEqual: function (actualValue, args) {
                 return {
                     pass: (actualValue) === args[0],
                     expectValue: args[0],
-                    message: 'except ' + actualValue + ' equals ' + args[0]
+                    message: 'expect ' + actualValue + ' equals ' + args[0]
                 };
             },
             assertThrow: function (actual, args) {
