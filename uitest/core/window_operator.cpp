@@ -32,56 +32,59 @@ namespace OHOS::uitest {
     };
 
     struct Operational {
+        WindowAction action;
+        WindowMode windowMode;
         bool support;
         size_t index;
         std::string_view message;
     };
 
-    static const std::map<std::pair<WindowAction, WindowMode>, Operational> operationalMap {
-        {std::pair(MOVETO, FULLSCREEN), {false, INDEX_ZERO, "Fullscreen window can not move"}},
-        {std::pair(MOVETO, SPLIT_PRIMARY), {false, INDEX_ZERO, "SPLIT_PRIMARY window can not move"}},
-        {std::pair(MOVETO, SPLIT_SECONDARY), {false, INDEX_ZERO, "SPLIT_SECONDARY window can not move"}},
-        {std::pair(MOVETO, FLOATING), {true, INDEX_ZERO, ""}},
-        {std::pair(RESIZE, FULLSCREEN), {false, INDEX_ZERO, "Fullscreen window can not resize"}},
-        {std::pair(RESIZE, SPLIT_PRIMARY), {true, INDEX_ZERO, ""}},
-        {std::pair(RESIZE, SPLIT_SECONDARY), {true, INDEX_ZERO, ""}},
-        {std::pair(RESIZE, FLOATING), {true, INDEX_ZERO, ""}},
-        {std::pair(SPLIT, FULLSCREEN), {true, INDEX_ONE, ""}},
-        {std::pair(SPLIT, SPLIT_PRIMARY), {false, INDEX_ONE, "SPLIT_PRIMARY can not split again"}},
-        {std::pair(SPLIT, SPLIT_SECONDARY), {false, INDEX_ONE, "SPLIT_SECONDARY can not split again"}},
-        {std::pair(SPLIT, FLOATING), {true, INDEX_ONE, ""}},
-        {std::pair(MAXIMIZE, FULLSCREEN), {false, INDEX_TWO, "Fullscreen window is already maximized"}},
-        {std::pair(MAXIMIZE, SPLIT_PRIMARY), {true, INDEX_TWO, ""}},
-        {std::pair(MAXIMIZE, SPLIT_SECONDARY), {false, INDEX_TWO, "SPLIT_SECONDARY window can not maximize"}},
-        {std::pair(MAXIMIZE, FLOATING), {true, INDEX_TWO, ""}},
-        {std::pair(RESUME, FULLSCREEN), {true, INDEX_TWO, ""}},
-        {std::pair(RESUME, SPLIT_PRIMARY), {true, INDEX_TWO, ""}},
-        {std::pair(RESUME, SPLIT_SECONDARY), {false, INDEX_TWO, "SPLIT_SECONDARY window can not resume"}},
-        {std::pair(RESUME, FLOATING), {true, INDEX_TWO, ""}},
-        {std::pair(MINIMIZE, FULLSCREEN), {true, INDEX_THREE, ""}},
-        {std::pair(MINIMIZE, SPLIT_PRIMARY), {true, INDEX_THREE, ""}},
-        {std::pair(MINIMIZE, SPLIT_SECONDARY), {false, INDEX_THREE, "SPLIT_SECONDARY window can not minimize"}},
-        {std::pair(MINIMIZE, FLOATING), {true, INDEX_THREE, ""}},
-        {std::pair(CLOSE, FULLSCREEN), {true, INDEX_FOUR, ""}},
-        {std::pair(CLOSE, SPLIT_PRIMARY), {true, INDEX_FOUR, ""}},
-        {std::pair(CLOSE, SPLIT_SECONDARY), {false, INDEX_FOUR, "SPLIT_SECONDARY window can not close"}},
-        {std::pair(CLOSE, FLOATING), {true, INDEX_FOUR, ""}},
+    static const Operational g_operations[28] = {
+        {MOVETO, FULLSCREEN, false, INDEX_ZERO, "Fullscreen window can not move"},
+        {MOVETO, SPLIT_PRIMARY, false, INDEX_ZERO, "SPLIT_PRIMARY window can not move"},
+        {MOVETO, SPLIT_SECONDARY, false, INDEX_ZERO, "SPLIT_SECONDARY window can not move"},
+        {MOVETO, FLOATING, true, INDEX_ZERO, ""},
+        {RESIZE, FULLSCREEN, false, INDEX_ZERO, "Fullscreen window can not resize"},
+        {RESIZE, SPLIT_PRIMARY, true, INDEX_ZERO, ""},
+        {RESIZE, SPLIT_SECONDARY, true, INDEX_ZERO, ""},
+        {RESIZE, FLOATING, true, INDEX_ZERO, ""},
+        {SPLIT, FULLSCREEN, true, INDEX_ONE, ""},
+        {SPLIT, SPLIT_PRIMARY, false, INDEX_ONE, "SPLIT_PRIMARY can not split again"},
+        {SPLIT, SPLIT_SECONDARY, false, INDEX_ONE, "SPLIT_SECONDARY can not split again"},
+        {SPLIT, FLOATING, true, INDEX_ONE, ""},
+        {MAXIMIZE, FULLSCREEN, false, INDEX_TWO, "Fullscreen window is already maximized"},
+        {MAXIMIZE, SPLIT_PRIMARY, true, INDEX_TWO, ""},
+        {MAXIMIZE, SPLIT_SECONDARY, false, INDEX_TWO, "SPLIT_SECONDARY window can not maximize"},
+        {MAXIMIZE, FLOATING, true, INDEX_TWO, ""},
+        {RESUME, FULLSCREEN, true, INDEX_TWO, ""},
+        {RESUME, SPLIT_PRIMARY, true, INDEX_TWO, ""},
+        {RESUME, SPLIT_SECONDARY, false, INDEX_TWO, "SPLIT_SECONDARY window can not resume"},
+        {RESUME, FLOATING, true, INDEX_TWO, ""},
+        {MINIMIZE, FULLSCREEN, true, INDEX_THREE, ""},
+        {MINIMIZE, SPLIT_PRIMARY, true, INDEX_THREE, ""},
+        {MINIMIZE, SPLIT_SECONDARY, false, INDEX_THREE, "SPLIT_SECONDARY window can not minimize"},
+        {MINIMIZE, FLOATING, true, INDEX_THREE, ""},
+        {CLOSE, FULLSCREEN, true, INDEX_FOUR, ""},
+        {CLOSE, SPLIT_PRIMARY, true, INDEX_FOUR, ""},
+        {CLOSE, SPLIT_SECONDARY, false, INDEX_FOUR, "SPLIT_SECONDARY window can not close"},
+        {CLOSE, FLOATING, true, INDEX_FOUR, ""}
     };
 
     static bool IsOperational(const WindowAction action, const WindowMode mode, ApiReplyInfo &out, size_t &index)
     {
-        std::pair<WindowAction, WindowMode> key (action, mode);
-        if (operationalMap.find(key) == operationalMap.end()) {
-            out.exception_.code_ = ErrCode::INTERNAL_ERROR;
-            return false;
+        for (auto dex = 0; dex < sizeof(g_operations) / sizeof(Operational); dex++) {
+            if (g_operations[dex].action == action && g_operations[dex].windowMode == mode) {
+                if (g_operations[dex].support) {
+                    index = g_operations[dex].index;
+                    return true;
+                } else {
+                    out.exception_ = ApiCallErr(ErrCode::USAGE_ERROR, g_operations[dex].message);
+                    return false;
+                }
+            }
         }
-        if (!operationalMap.find(key)->second.support) {
-            out.exception_.message_ = operationalMap.find(key)->second.message;
-            out.exception_.code_ = ErrCode::USAGE_ERROR;
-            return false;
-        }
-        index = operationalMap.find(key)->second.index;
-        return true;
+        out.exception_.code_ = ErrCode::INTERNAL_ERROR;
+        return false;
     }
 
     WindowOperator::WindowOperator(UiDriver &driver, const Window &window, UiOpArgs &options)
