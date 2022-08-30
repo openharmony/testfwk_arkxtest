@@ -32,7 +32,7 @@ namespace OHOS::uitest {
     };
 
     struct Operational {
-        uint8_t action;
+        WindowAction action;
         WindowMode windowMode;
         bool support;
         size_t index;
