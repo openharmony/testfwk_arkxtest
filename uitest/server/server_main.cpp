@@ -32,6 +32,7 @@
 #include <mutex>
 #include <ctime>
 #include <condition_variable>
+#include <math.h>
 #include "ipc_transactors_impl.h"
 #include "system_ui_controller.h"
 #include "input_manager.h"
@@ -54,9 +55,8 @@ namespace OHOS::uitest {
     int g_touchtime;
     int g_timeindex = 1000;
     int g_timeinterval = 5000;
-    int g_maxdistance = 16;
-    int g_length = 20;
-    int g_velocity = 600;
+    int g_maxdistance = 220;
+    int g_velocity = 1500;
     std::ofstream g_outfile;
     std::string g_operationtype[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
     vector<MMI::PointerEvent::PointerItem> g_eventsvector;
@@ -108,7 +108,7 @@ namespace OHOS::uitest {
                 outFile << data.x2Posi << ',';
                 outFile << data.y2Posi << ',';
                 outFile << ((data.interval + g_timeindex - 1) / g_timeindex) << ',';
-                outFile << g_length << ',';
+                outFile << 0 << ',';
                 outFile << g_velocity << std::endl;
             }
 
@@ -121,7 +121,7 @@ namespace OHOS::uitest {
                 int x2Posi = -1;
                 int y2Posi = -1;
                 int interval = -1;
-                int length = -1;
+                int distance = -1;
                 int velocity = -1;
                 while (!inFile.eof()) {
                     inFile >> buffer;
@@ -133,7 +133,7 @@ namespace OHOS::uitest {
                     x2Posi = std::stoi(caseInfo[THREE]);
                     y2Posi = std::stoi(caseInfo[FOUR]);
                     interval = std::stoi(caseInfo[FIVE]);
-                    length = std::stoi(caseInfo[SIX]);
+                    distance = std::stoi(caseInfo[SIX]);
                     velocity = std::stoi(caseInfo[SEVEN]);
                     if (inFile.fail()) {
                         break;
@@ -144,7 +144,7 @@ namespace OHOS::uitest {
                                 << x2Posi << ";"
                                 << y2Posi << ";"
                                 << interval << ";"
-                                << length << ";"
+                                << distance << ";"
                                 << velocity << ";" << std::endl;
                     }
                     usleep(interval * g_timeindex);
@@ -418,16 +418,19 @@ namespace OHOS::uitest {
             } else {
                 int indexTime = GetMillisTime();
                 int actionInterval = 340;
-                int flingThreshold = 30;
                 int pressTime = indexTime - g_timesvector.back();
-                if (g_eventsvector.size() > 1 && ((item.GetDisplayX() - g_eventsvector[0].GetDisplayX()) \
-                    * (item.GetDisplayX() - g_eventsvector[0].GetDisplayX()) +                           \
-                    (item.GetDisplayY()-g_eventsvector[0].GetDisplayY())*(item.GetDisplayY() -           \
-                    g_eventsvector[0].GetDisplayY())>g_maxdistance)) {
+                int distance = pow((item.GetDisplayX() - g_eventsvector[0].GetDisplayX()), 2)            \
+                    + pow((item.GetDisplayY()-g_eventsvector[0].GetDisplayY()), 2);
+                float speed = (pow((item.GetDisplayX() - g_eventsvector[g_eventsvector.size() -          \
+                    INDEX_TWO].GetDisplayX()), 2) + pow((item.GetDisplayY() -                            \
+                    g_eventsvector[g_eventsvector.size() - INDEX_TWO].GetDisplayY()), 2)) /              \
+                    pow((indexTime - g_mmitimesvector[g_mmitimesvector.size() - INDEX_TWO]), 2);
+                float threshold = 0.0018;
+                if (g_eventsvector.size() > 1 && (distance >g_maxdistance)) {
                     if (g_mmitimesvector[1] - g_mmitimesvector[0] > actionInterval) {
                         touchop = FOUR;
                     } else {
-                        if (indexTime - g_mmitimesvector.back() > flingThreshold) {
+                        if ((speed < threshold)) {
                             touchop = THREE;
                         } else {
                             touchop = FIVE;
