@@ -32,7 +32,7 @@
 #include <mutex>
 #include <ctime>
 #include <condition_variable>
-#include <math.h>
+#include <cmath>
 #include "ipc_transactors_impl.h"
 #include "system_ui_controller.h"
 #include "input_manager.h"
@@ -421,17 +421,17 @@ namespace OHOS::uitest {
                 int actionInterval = 300;
                 int pressTime = indexTime - g_timesvector.back();
                 int distance = pow((item.GetDisplayX() - g_eventsvector[0].GetDisplayX()), 2)            \
-                    + pow((item.GetDisplayY()-g_eventsvector[0].GetDisplayY()), 2);
+                    + pow((item.GetDisplayY() - g_eventsvector[0].GetDisplayY()), 2);
                 float speed = (pow((item.GetDisplayX() - g_eventsvector[g_eventsvector.size() -          \
                     INDEX_TWO].GetDisplayX()), 2) + pow((item.GetDisplayY() -                            \
                     g_eventsvector[g_eventsvector.size() - INDEX_TWO].GetDisplayY()), 2)) /              \
                     pow((indexTime - g_mmitimesvector[g_mmitimesvector.size() - INDEX_TWO]), 2);
                 float threshold = 0.005;
-                if (g_eventsvector.size() > 1 && (distance >g_maxdistance)) {
+                if (g_eventsvector.size() > 1 && (distance > g_maxdistance)) {
                     if (g_mmitimesvector[1] - g_mmitimesvector[0] > actionInterval) {
                         touchop = FOUR;
                     } else {
-                        if ((speed < threshold)) {
+                        if (speed < threshold) {
                             touchop = THREE;
                         } else {
                             touchop = FIVE;
