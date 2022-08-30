@@ -418,7 +418,7 @@ namespace OHOS::uitest {
                 }
             } else {
                 int indexTime = GetMillisTime();
-                int actionInterval = 340;
+                int actionInterval = 300;
                 int pressTime = indexTime - g_timesvector.back();
                 int distance = pow((item.GetDisplayX() - g_eventsvector[0].GetDisplayX()), 2)            \
                     + pow((item.GetDisplayY()-g_eventsvector[0].GetDisplayY()), 2);
@@ -426,7 +426,7 @@ namespace OHOS::uitest {
                     INDEX_TWO].GetDisplayX()), 2) + pow((item.GetDisplayY() -                            \
                     g_eventsvector[g_eventsvector.size() - INDEX_TWO].GetDisplayY()), 2)) /              \
                     pow((indexTime - g_mmitimesvector[g_mmitimesvector.size() - INDEX_TWO]), 2);
-                float threshold = 0.0018;
+                float threshold = 0.005;
                 if (g_eventsvector.size() > 1 && (distance >g_maxdistance)) {
                     if (g_mmitimesvector[1] - g_mmitimesvector[0] > actionInterval) {
                         touchop = FOUR;
