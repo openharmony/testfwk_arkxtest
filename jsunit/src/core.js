@@ -143,7 +143,9 @@ class Core {
 
     execute(abilityDelegator) {
         const suiteService = this.getDefaultService('suite');
-        if (suiteService.dryRun(abilityDelegator)) {
+        const configService = this.getDefaultService('config');
+        if (configService['dryRun'] === 'true') {
+            suiteService.dryRun(abilityDelegator);
             return;
         }
         setTimeout(() => {
