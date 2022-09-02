@@ -31,7 +31,7 @@ class OhReport {
         this.taskStartTime = new Date().getTime();
     }
 
-    taskDone() {
+    async taskDone() {
         this.taskDoneTime = new Date().getTime();
         let summary = this.suiteService.getSummary();
         var message = '\n' + 'OHOS_REPORT_RESULT: stream=Tests run: ' + summary.total + ', Failure: ' + summary.failure;
@@ -39,7 +39,7 @@ class OhReport {
         message += ', Pass: ' + summary.pass;
         message += '\n' + 'OHOS_REPORT_CODE: ' + (summary.failure > 0 ? -1 : 0) + '\n';
         message += 'OHOS_REPORT_STATUS: taskconsuming=' + summary.duration + '\n';
-        this.delegator.print(message).then(() => {
+        await this.delegator.print(message).then(() => {
             console.info('report print success');
             this.delegator.finishTest('your test finished!!!', 0, () => {
             });
@@ -55,23 +55,23 @@ class OhReport {
         }
     }
 
-    suiteStart() {
+    async suiteStart() {
         var message = '\n' + 'OHOS_REPORT_SUM: ' + this.suiteService.getCurrentRunningSuite().getSpecsNum();
         message += '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description + '\n';
-        this.delegator.print(message).then(() => {
+        await this.delegator.print(message).then(() => {
             console.info(this.suiteService.getCurrentRunningSuite().description + ' print success');
         });
     }
 
-    suiteDone() {
+    async suiteDone() {
         var message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
         message += '\n' + 'OHOS_REPORT_STATUS: suiteconsuming=' + this.suiteService.getCurrentRunningSuite().duration + '\n';
-        this.delegator.print(message).then(() => {
+        await this.delegator.print(message).then(() => {
             console.info(this.suiteService.getCurrentRunningSuite().description + ' print success');
         });
     }
 
-    specStart() {
+    async specStart() {
         var message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
         message += '\n' + 'OHOS_REPORT_STATUS: current=' + (++this.index);
         message += '\n' + 'OHOS_REPORT_STATUS: id=JS';
@@ -79,12 +79,12 @@ class OhReport {
         message += '\n' + 'OHOS_REPORT_STATUS: stream=';
         message += '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
         message += '\n' + 'OHOS_REPORT_STATUS_CODE: 1' + '\n';
-        this.delegator.print(message).then(() => {
+        await this.delegator.print(message).then(() => {
             console.info(this.specService.currentRunningSpec.description + ' start print success');
         });
     }
 
-    specDone() {
+    async specDone() {
         var message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
         message += '\n' + 'OHOS_REPORT_STATUS: current=' + (this.index);
         message += '\n' + 'OHOS_REPORT_STATUS: id=JS';
@@ -116,7 +116,7 @@ class OhReport {
             message += '\n';
         }
         message += 'OHOS_REPORT_STATUS: consuming=' + this.specService.currentRunningSpec.duration + '\n';
-        this.delegator.print(message).then(() => {
+        await this.delegator.print(message).then(() => {
             console.info(this.specService.currentRunningSpec.description + ' end print success');
         });
     }

@@ -160,11 +160,8 @@ class SuiteService {
         this.coreContext = coreContext;
     }
 
-    dryRun(abilityDelegator) {
-        let configService = this.coreContext.getDefaultService('config');
-        if (configService['dryRun'] !== 'true') {
-            return false;
-        }
+    async dryRun(abilityDelegator) {
+        const configService = this.coreContext.getDefaultService('config');
         let testSuitesObj = {};
         let suitesArray = [];
         for (const suiteItem of this.rootSuite.childSuites) {
@@ -191,12 +188,10 @@ class SuiteService {
         let maxCount = Math.floor(strLen / maxLen);
 
         for (let count = 0; count <= maxCount; count++) {
-            abilityDelegator.print(strJson.substring(count * maxLen, (count + 1) * maxLen));
+            await abilityDelegator.print(strJson.substring(count * maxLen, (count + 1) * maxLen));
         }
         console.info('dryRun print success');
         abilityDelegator.finishTest('dry run finished!!!', 0, () => { });
-
-        return true;
     }
 
     execute() {
