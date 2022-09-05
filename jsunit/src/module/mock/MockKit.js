@@ -102,18 +102,11 @@ class MockKit {
             }
         }
         values.set(key, returnInfo);
-        console.info(
-            "set stub:" + f + ";" + "key:" + key + ",returnInfo:" + returnInfo
-        );
         this.stubs.set(f, values);
     }
 
     getReturnInfo(f, params) {
         let values = this.stubs.get(f);
-        console.info(
-            "getReruntInfo:" + f + ",values:" + values + ",params:" + params[0]
-        );
-
         if (!values) {
             return undefined;
         }
@@ -134,7 +127,6 @@ class MockKit {
             }
         });
 
-        console.info("detail:" + values.get(retrunKet));
         return values.get(retrunKet);
     }
 
@@ -176,7 +168,6 @@ class MockKit {
         let name = originalMethod.getName();
         let arglistString = name + '(' + Array.from(args).toString() + ')';
         let records = this.recordCalls.get(arglistString);
-        console.log(records);
         if (!records) {
             records = 0;
         }
