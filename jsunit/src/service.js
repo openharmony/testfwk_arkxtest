@@ -272,7 +272,7 @@ SuiteService.Suite = class {
             const configService = coreContext.getDefaultService('config');
             if (configService.isRandom()) {
                 this.specs.sort(function () {
-                    return secureRandomNumber() > 0.5 ? -1 : 1;
+                    return Math.random().toFixed(1) > 0.5 ? -1 : 1;
                 });
             }
             this.specs.forEach(spec => {
@@ -305,7 +305,7 @@ SuiteService.Suite = class {
                 const configService = coreContext.getDefaultService('config');
                 if (configService.isRandom()) {
                     this.specs.sort(function () {
-                        return secureRandomNumber() > 0.5 ? -1 : 1;
+                        return Math.random().toFixed(1) > 0.5 ? -1 : 1;
                     });
                 }
                 for (let i = 0; i < this.specs.length; i++) {

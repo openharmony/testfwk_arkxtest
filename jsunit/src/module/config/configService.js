@@ -79,6 +79,10 @@ class ConfigService {
             this.filterValid.push('dryRun:' + params.dryRun);
         }
 
+        if (params.random !== undefined && params.random !== 'true' && params.random !== 'false') {
+            this.filterValid.push('random:' + params.random);
+        }
+
         let classes = params.class;
         let nameRule = /^[A-Za-z]{1}[\w#,.]*$/;
         if (classes !== undefined && classes !== '' && classes !== null) {
@@ -117,6 +121,7 @@ class ConfigService {
             this.size = params.size;
             this.timeout = params.timeout;
             this.dryRun = params.dryRun;
+            this.random = params.random === 'true' ? true : false;
             this.filterParam = {
                 testType: {
                     'function': 1,
@@ -234,8 +239,8 @@ class ConfigService {
         const keySet = new Set([
             '-s class', '-s notClass', '-s suite', '-s itName',
             '-s level', '-s testType', '-s size', '-s timeout',
-            '-s dryRun', 'class', 'notClass', 'suite', 'itName',
-            'level', 'testType', 'size', 'timeout', 'dryRun'
+            '-s dryRun', '-s random', 'class', 'notClass', 'suite', 'itName',
+            'level', 'testType', 'size', 'timeout', 'dryRun', 'random'
         ]);
         let targetParams = {};
         for (const key in parameters) {
@@ -250,8 +255,8 @@ class ConfigService {
         const keySet = new Set([
             '-s class', '-s notClass', '-s suite', '-s itName',
             '-s level', '-s testType', '-s size', '-s timeout',
-            '-s dryRun', 'class', 'notClass', 'suite', 'itName',
-            'level', 'testType', 'size', 'timeout', 'dryRun'
+            '-s dryRun', '-s random', 'class', 'notClass', 'suite', 'itName',
+            'level', 'testType', 'size', 'timeout', 'dryRun', 'random'
         ]);
         let targetParams = '';
         for (const key in parameters) {
