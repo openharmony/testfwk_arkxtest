@@ -426,9 +426,13 @@ namespace OHOS::uitest {
                     INDEX_TWO].GetDisplayX()), 2) + pow((item.GetDisplayY() -                            \
                     g_eventsvector[g_eventsvector.size() - INDEX_TWO].GetDisplayY()), 2)) /              \
                     pow((indexTime - g_mmitimesvector[g_mmitimesvector.size() - INDEX_TWO]), 2);
+                float initialSpeed = (pow((g_eventsvector[2].GetDisplayX() -                             \
+                    g_eventsvector[0].GetDisplayX()), 2) + pow((g_eventsvector[2].GetDisplayY() -        \
+                    g_eventsvector[0].GetDisplayY()), 2)) /                                              \
+                    pow((g_mmitimesvector[2] - g_mmitimesvector[0]), 2);
                 float threshold = 0.005;
                 if (g_eventsvector.size() > 1 && (distance > g_maxdistance)) {
-                    if (g_mmitimesvector[1] - g_mmitimesvector[0] > actionInterval) {
+                    if (initialSpeed < threshold) {
                         touchop = FOUR;
                     } else {
                         if (speed < threshold) {
