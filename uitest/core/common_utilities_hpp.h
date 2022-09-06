@@ -42,6 +42,7 @@ namespace OHOS::uitest {
     constexpr size_t INDEX_TWO = 2;
     constexpr size_t INDEX_THREE = 3;
     constexpr size_t INDEX_FOUR = 4;
+    constexpr int32_t NUM_TWO = 2;
 
     /**Get current time millisecond.*/
     inline uint64_t GetCurrentMillisecond()

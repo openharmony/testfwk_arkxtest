@@ -504,6 +504,8 @@ namespace OHOS::uitest {
             case (RET_ERR_SAMGR):
                 LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_SAMGR");
                 return false;
+            default:
+                break;
         }
         const auto timeout = chrono::milliseconds(1000);
         if (condition.wait_for(uLock, timeout) == cv_status::timeout) {

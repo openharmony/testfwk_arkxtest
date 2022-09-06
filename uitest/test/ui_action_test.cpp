@@ -54,8 +54,8 @@ TEST_F(UiActionTest, computeClickAction)
     PointerMatrix events;
     action.Decompose(events, customOptions_);
     ASSERT_EQ(2, events.GetSize()); // up & down
-    auto & event1 = events.At(0, 0);
-    auto & event2 = events.At(0, 1);
+    auto &event1 = events.At(0, 0);
+    auto &event2 = events.At(0, 1);
     ASSERT_EQ(point.px_, event1.point_.px_);
     ASSERT_EQ(point.py_, event1.point_.py_);
     ASSERT_EQ(ActionStage::DOWN, event1.stage_);
@@ -74,8 +74,8 @@ TEST_F(UiActionTest, computeLongClickAction)
     PointerMatrix events;
     action.Decompose(events, customOptions_);
     ASSERT_EQ(2, events.GetSize()); // up & down
-    auto & event1 = events.At(0, 0);
-    auto & event2 = events.At(0, 1);
+    auto &event1 = events.At(0, 0);
+    auto &event2 = events.At(0, 1);
     ASSERT_EQ(point.px_, event1.point_.px_);
     ASSERT_EQ(point.py_, event1.point_.py_);
     ASSERT_EQ(ActionStage::DOWN, event1.stage_);
@@ -96,10 +96,10 @@ TEST_F(UiActionTest, computeDoubleClickAction)
     PointerMatrix events;
     action.Decompose(events, customOptions_);
     ASSERT_EQ(4, events.GetSize()); // up-down-interval-up-down
-    auto & event1 = events.At(0, 0);
-    auto & event2 = events.At(0, 1);
-    auto & event3 = events.At(0, 2);
-    auto & event4 = events.At(0, 3);
+    auto &event1 = events.At(0, 0);
+    auto &event2 = events.At(0, 1);
+    auto &event3 = events.At(0, 2);
+    auto &event4 = events.At(0, 3);
     ASSERT_EQ(point.px_, event1.point_.px_);
     ASSERT_EQ(point.py_, event1.point_.py_);
     ASSERT_EQ(ActionStage::DOWN, event1.stage_);
