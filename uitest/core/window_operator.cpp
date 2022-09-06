@@ -39,7 +39,7 @@ namespace OHOS::uitest {
         std::string_view message;
     };
 
-    static const Operational g_operations[28] = {
+    static const Operational OPERATIONS[28] = {
         {MOVETO, FULLSCREEN, false, INDEX_ZERO, "Fullscreen window can not move"},
         {MOVETO, SPLIT_PRIMARY, false, INDEX_ZERO, "SPLIT_PRIMARY window can not move"},
         {MOVETO, SPLIT_SECONDARY, false, INDEX_ZERO, "SPLIT_SECONDARY window can not move"},
@@ -72,13 +72,13 @@ namespace OHOS::uitest {
 
     static bool IsOperational(const WindowAction action, const WindowMode mode, ApiReplyInfo &out, size_t &index)
     {
-        for (auto dex = 0; dex < sizeof(g_operations) / sizeof(Operational); dex++) {
-            if (g_operations[dex].action == action && g_operations[dex].windowMode == mode) {
-                if (g_operations[dex].support) {
-                    index = g_operations[dex].index;
+        for (auto dex = 0; dex < sizeof(OPERATIONS) / sizeof(Operational); dex++) {
+            if (OPERATIONS[dex].action == action && OPERATIONS[dex].windowMode == mode) {
+                if (OPERATIONS[dex].support) {
+                    index = OPERATIONS[dex].index;
                     return true;
                 } else {
-                    out.exception_ = ApiCallErr(ErrCode::USAGE_ERROR, g_operations[dex].message);
+                    out.exception_ = ApiCallErr(ErrCode::USAGE_ERROR, OPERATIONS[dex].message);
                     return false;
                 }
             }
