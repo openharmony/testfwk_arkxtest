@@ -487,8 +487,6 @@ namespace OHOS::uitest {
         LOG_I("Start connect to AccessibilityUITestAbility");
         auto ret = ability->Connect();
         switch (ret) {
-            case (RET_OK):
-                break;
             case (RET_ERR_INVALID_PARAM):
                 LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_INVALID_PARAM");
                 return false;
