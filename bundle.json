@@ -28,7 +28,7 @@
           "ipc",
           "ability_base",
           "window_manager",
-          "utils_base",
+          "c_utils",
           "napi",
           "bundle_framework",
           "samgr_standard",
