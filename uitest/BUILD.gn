@@ -102,8 +102,8 @@ ohos_executable("uitest_server") {
     "//third_party/libpng:libpng",
   ]
   external_deps += [
+    "c_utils:utils",
     "multimedia_image_standard:image_native",
-    "utils_base:utils",
     "window_manager:libdm",
     "window_manager:libwm",
   ]
