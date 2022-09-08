@@ -431,11 +431,13 @@ namespace OHOS::uitest {
             if (!result) {
                 std::cout << "GetPointerItem Fail" << std::endl;
             }
+
             g_eventsvector.push_back(item);
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN ||
                 pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
                 g_mmitimesvector.push_back(g_touchtime);
             }
+
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP)  {
                 int indexTime = GetMillisTime();
                 int eventCount = g_eventsvector.size();
@@ -446,25 +448,25 @@ namespace OHOS::uitest {
                 float threshold = 0.005;
                 if (eventCount > 2 && (distance > g_maxdistance)) {
                     if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance && getSpeed(0, dragMonitor) < threshold) {
-                        touchop = drag;
+                        touchop = drag; //drag
                     }else {
                         if (speed < threshold) {
-                            touchop = swipe;
+                            touchop = swipe; // swipe
                         }else {
-                            touchop = fling;
+                            touchop = fling; // fling
                         }
                     }
                     g_mmitimesvector.clear();
                 }
                 else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
-                        touchop = click;
+                        touchop = click; //click
                     }
                     else if (data.interval < actionInterval && pressTime < pressDuration) {
-                        touchop = double_click;
+                        touchop = double_click; //doubleclick
                     }
                     else if (data.interval > actionInterval && pressTime > pressDuration) {
-                        touchop = long_click;
+                        touchop = long_click; //longclick
                     }
                 }
                 MMI::PointerEvent::PointerItem up_event = g_eventsvector.back();
@@ -505,9 +507,7 @@ namespace OHOS::uitest {
     static int32_t UiRecord(int32_t argc, char* argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
-        if (argc == INDEX_THREE || argc == INDEX_FOUR ) {
-            PrintToConsole(usage);
-        }else{
+        if (!(argc == INDEX_THREE || argc == INDEX_FOUR )) {
             PrintToConsole(usage);
             return EXIT_FAILURE;
         }
