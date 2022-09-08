@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include <inttypes.h>
 #include "common_utilities_hpp.h"
 #include "ipc_transactors_impl.h"
 
@@ -117,7 +118,7 @@ namespace OHOS::uitest {
         // emit handshake and wait-for first interaction established
         LOG_I("Start checking CS-interaction");
         if (!transceiver_->DiscoverPeer(WAIT_CONNECTION_TIMEOUT_MS)) {
-            LOG_E("Wait CS-interaction timed out in %{public}llu ms", WAIT_CONNECTION_TIMEOUT_MS);
+            LOG_E("Wait CS-interaction timed out in %{public}" PRIu64 "  ms", WAIT_CONNECTION_TIMEOUT_MS);
             return false;
         }
         // schedule connection-checking with auto-handshaking
