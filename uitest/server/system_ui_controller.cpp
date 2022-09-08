@@ -487,8 +487,6 @@ namespace OHOS::uitest {
         LOG_I("Start connect to AccessibilityUITestAbility");
         auto ret = ability->Connect();
         switch (ret) {
-            case (RET_OK):
-                break;
             case (RET_ERR_INVALID_PARAM):
                 LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_INVALID_PARAM");
                 return false;
@@ -504,6 +502,8 @@ namespace OHOS::uitest {
             case (RET_ERR_SAMGR):
                 LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_SAMGR");
                 return false;
+            default:
+                break;
         }
         const auto timeout = chrono::milliseconds(1000);
         if (condition.wait_for(uLock, timeout) == cv_status::timeout) {
