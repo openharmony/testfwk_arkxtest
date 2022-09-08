@@ -117,7 +117,7 @@ namespace OHOS::uitest {
         // emit handshake and wait-for first interaction established
         LOG_I("Start checking CS-interaction");
         if (!transceiver_->DiscoverPeer(WAIT_CONNECTION_TIMEOUT_MS)) {
-            LOG_E("Wait CS-interaction timed out in %{public}llu ms", (unsigned long long)WAIT_CONNECTION_TIMEOUT_MS);
+            LOG_E("Wait CS-interaction timed out in %{public}llu ms", WAIT_CONNECTION_TIMEOUT_MS);
             return false;
         }
         // schedule connection-checking with auto-handshaking
@@ -132,19 +132,19 @@ namespace OHOS::uitest {
     }
 
     static unique_ptr<TransactionClientImpl> sClient = nullptr;
-    static atomic<bool> sSetupCalled = false;
+    static atomic<bool> g_sSetupCalled = false;
 
     /**Exported transaction-client initialization callback function.*/
     bool SetupTransactionEnv(string_view token)
     {
-        if (!sSetupCalled.load()) {
+        if (!g_sSetupCalled.load()) {
             if (sClient == nullptr) {
                 sClient = make_unique<TransactionClientImpl>(token);
             }
             if (!sClient->Initialize()) {
                 LOG_E("SetupTransactionEnv failed");
             }
-            sSetupCalled.store(true);
+            g_sSetupCalled.store(true);
         }
         return true;
     }
@@ -152,16 +152,16 @@ namespace OHOS::uitest {
     /**Exported transaction client api-calling function.*/
     void TransactionClientFunc(const ApiCallInfo& call, ApiReplyInfo& reply)
     {
-        DCHECK(sClient != nullptr && sSetupCalled.load());
+        DCHECK(sClient != nullptr && g_sSetupCalled.load());
         sClient->InvokeApi(call, reply);
     }
 
     /**Exported transaction-client dispose callback function.*/
     void DisposeTransactionEnv()
     {
-        if (sSetupCalled.load() && sClient != nullptr) {
+        if (g_sSetupCalled.load() && sClient != nullptr) {
             sClient->Finalize();
-            sSetupCalled.store(false);
+            g_sSetupCalled.store(false);
         }
     }
 }
