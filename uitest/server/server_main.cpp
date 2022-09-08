@@ -431,48 +431,40 @@ namespace OHOS::uitest {
             if (!result) {
                 std::cout << "GetPointerItem Fail" << std::endl;
             }
-
             g_eventsvector.push_back(item);
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN ||
                 pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
                 g_mmitimesvector.push_back(g_touchtime);
             }
-
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP)  {
                 int indexTime = GetMillisTime();
                 int eventCount = g_eventsvector.size();
                 int actionInterval = 300;
                 int pressTime = indexTime - g_timesvector.back();
-//                int distance = pow((item.GetDisplayX() - g_eventsvector[0].GetDisplayX()), 2)            \
-//                    + pow((item.GetDisplayY() - g_eventsvector[0].GetDisplayY()), 2);
                 int distance = getDistance(0,eventCount);
-//                float speed = (pow((item.GetDisplayX() - g_eventsvector[g_eventsvector.size() - \
-//                    INDEX_TWO].GetDisplayX()), 2) + pow((item.GetDisplayY() - \
-//                        g_eventsvector[g_eventsvector.size() - INDEX_TWO].GetDisplayY()), 2)) / \
-//                    pow((indexTime - g_mmitimesvector[g_mmitimesvector.size() - INDEX_TWO]), 2);
                 int speed = getSpeed(0,eventCount-INDEX_TWO);
                 float threshold = 0.005;
                 if (eventCount > 2 && (distance > g_maxdistance)) {
                     if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance && getSpeed(0, dragMonitor) < threshold) {
-                        touchop = drag; //drag
+                        touchop = drag;
                     }else {
                         if (speed < threshold) {
-                            touchop = swipe; // swipe
+                            touchop = swipe;
                         }else {
-                            touchop = fling; // fling
+                            touchop = fling;
                         }
                     }
                     g_mmitimesvector.clear();
                 }
                 else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
-                        touchop = click; //click
+                        touchop = click;
                     }
                     else if (data.interval < actionInterval && pressTime < pressDuration) {
-                        touchop = double_click; //doubleclick
+                        touchop = double_click;
                     }
                     else if (data.interval > actionInterval && pressTime > pressDuration) {
-                        touchop = long_click; //longclick
+                        touchop = long_click;
                     }
                 }
                 MMI::PointerEvent::PointerItem up_event = g_eventsvector.back();
