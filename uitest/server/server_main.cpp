@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-
 #include <chrono>
 #include <unistd.h>
 #include <memory>
@@ -33,6 +32,7 @@
 #include <mutex>
 #include <ctime>
 #include <condition_variable>
+#include <cmath>
 #include "ipc_transactors_impl.h"
 #include "system_ui_controller.h"
 #include "input_manager.h"
@@ -42,7 +42,6 @@
 
 using namespace std;
 using namespace std::chrono;
-
 
 namespace OHOS::uitest {
     const std::string HELP_MSG =
@@ -61,7 +60,7 @@ namespace OHOS::uitest {
     int g_velocity = 600;
     int dragMonitor = 2;
     std::ofstream g_outfile;
-    std::string g_operationtype[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling" };
+    std::string g_operationtype[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
     vector<MMI::PointerEvent::PointerItem> g_eventsvector;
     vector<int> g_timesvector;
     vector<int> g_mmitimesvector;
@@ -77,7 +76,7 @@ namespace OHOS::uitest {
     g_touchop touchop = click;
 
     namespace {
-        std::string operationType_[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling" };
+        std::string operationType_[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
         std::string DEFAULT_DIR = "/data/local/tmp/layout";
         int64_t GetMillisTime()
         {
@@ -111,7 +110,7 @@ namespace OHOS::uitest {
                 time_t interval;
             };
 
-            static void WriteEventData(std::ofstream &outFile, const EventData& data)
+            static void WriteEventData(std::ofstream &outFile, const EventData &data)
             {
                 outFile << operationType_[data.actionType] << ',';
                 outFile << data.xPosi << ',';
@@ -123,7 +122,7 @@ namespace OHOS::uitest {
                 outFile << g_velocity << std::endl;
             }
 
-            static void ReadEventLine(std::ifstream& inFile)
+            static void ReadEventLine(std::ifstream &inFile)
             {
                 char buffer[50];
                 string type;
@@ -148,8 +147,7 @@ namespace OHOS::uitest {
                     velocity = std::stoi(caseInfo[Velocity]);
                     if (inFile.fail()) {
                         break;
-                    }
-                    else {
+                    } else {
                         std::cout << type << ";"
                                 << xPosi << ";"
                                 << yPosi << ";"
@@ -203,8 +201,8 @@ namespace OHOS::uitest {
         std::cout << message << std::endl;
     }
 
-    static int32_t GetParam(int32_t argc, char* argv[], string_view optstring, string_view usage,
-                            map<char, string>& params)
+    static int32_t GetParam(int32_t argc, char *argv[], string_view optstring, string_view usage,
+        map<char, string>& params)
     {
         int opt;
         while ((opt = getopt_long(argc, argv, optstring.data(), g_longoptions, nullptr)) != -1) {
@@ -257,7 +255,7 @@ namespace OHOS::uitest {
                 array.push_back(data.second);
             }
             fout << array.dump();
-        }else {
+        } else {
             UiController::RegisterController(move(controller), Priority::MEDIUM);
             auto data = nlohmann::json();
             auto driver = UiDriver();
@@ -416,11 +414,10 @@ namespace OHOS::uitest {
             int pressDuration = 600;
             bool result = pointerEvent->GetPointerItem(pointerEvent->GetPointerId(), item);
             g_touchtime = GetMillisTime();
-            TouchEventInfo::EventData data{};
+            TouchEventInfo::EventData data {};
             if (g_timesvector.size() > 1) {
                 data.interval = g_timesvector.back() - g_timesvector[g_timesvector.size() - INDEX_TWO];
-            }
-            else {
+            } else {
                 data.interval = g_timeindex;
             }
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
@@ -446,23 +443,20 @@ namespace OHOS::uitest {
                 if (eventCount > 2 && (distance > g_maxdistance)) {
                     if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance && getSpeed(0, dragMonitor) < threshold) {
                         touchop = drag; 
-                    }else {
+                    } else {
                         if (speed < threshold) {
                             touchop = swipe; 
-                        }else {
+                        } else {
                             touchop = fling; 
                         }
                     }
                     g_mmitimesvector.clear();
-                }
-                else {
+                }else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
                         touchop = click;
-                    }
-                    else if (data.interval < actionInterval && pressTime < pressDuration) {
+                    } else if (data.interval < actionInterval && pressTime < pressDuration) {
                         touchop = double_click;
-                    }
-                    else if (data.interval > actionInterval && pressTime > pressDuration) {
+                    } else if (data.interval > actionInterval && pressTime > pressDuration) {
                         touchop = long_click;
                     }
                 }
@@ -475,11 +469,11 @@ namespace OHOS::uitest {
                 data.y2Posi = up_event.GetDisplayY();
                 TouchEventInfo::WriteEventData(g_outfile, data);
                 std::cout << " PointerEvent:" << g_operationtype[data.actionType]
-                          << " xPosi:" << data.xPosi
-                          << " yPosi:" << data.yPosi
-                          << " x2Posi:" << data.x2Posi
-                          << " y2Posi:" << data.y2Posi
-                          << " interval:" << ((data.interval + g_timeindex - 1) / g_timeindex) << std::endl;
+                            << " xPosi:" << data.xPosi
+                            << " yPosi:" << data.yPosi
+                            << " x2Posi:" << data.x2Posi
+                            << " y2Posi:" << data.y2Posi
+                            << " interval:" << ((data.interval + g_timeindex - 1) / g_timeindex) << std::endl;
                 g_eventsvector.clear();
             }
         }
@@ -556,20 +550,20 @@ namespace OHOS::uitest {
         string command(argv[1]);
         if (command == "dumpLayout") {
             exit(DumpLayout(argc, argv));
-        }else if (command == "start-daemon") {
+        } else if (command == "start-daemon") {
             string_view token = argc < 3 ? "" : argv[2];
             exit(StartDaemon(token));
-        }else if (command == "screenCap") {
+        } else if (command == "screenCap") {
             exit(ScreenCap(argc, argv));
         }else if (command == "uiRecord") {
             exit(UiRecord(argc, argv));
-        }else if (command == "--version") {
+        } else if (command == "--version") {
             PrintToConsole(VERSION);
             exit(EXIT_SUCCESS);
-        }else if (command == "help") {
+        } else if (command == "help") {
             PrintToConsole(HELP_MSG);
             exit(EXIT_SUCCESS);
-        }else {
+        } else {
             PrintToConsole("Illegal argument: " + command);
             PrintToConsole(usage);
             exit(EXIT_FAILURE);
