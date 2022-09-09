@@ -46,12 +46,12 @@ using namespace std::chrono;
 
 namespace OHOS::uitest {
     const std::string HELP_MSG =
-            "   help,                                            print help messages\n"
-            "   screenCap,                                                          \n"
-            "   dumpLayout,                                                         \n"
-            "   uiRecord -record,    wirte location coordinates of events into files\n"
-            "   uiRecord -read,                    print file content to the console\n"
-            "   --version,                                print current tool version\n";
+    "   help,                                            print help messages\n"
+    "   screenCap,                                                          \n"
+    "   dumpLayout,                                                         \n"
+    "   uiRecord -record,    wirte location coordinates of events into files\n"
+    "   uiRecord -read,                    print file content to the console\n"
+    "   --version,                                print current tool version\n";
     const std::string VERSION = "3.2.2.1";
     int g_touchtime;
     int g_timeindex = 1000;
@@ -61,7 +61,7 @@ namespace OHOS::uitest {
     int g_velocity = 600;
     int dragMonitor = 2;
     std::ofstream g_outfile;
-    std::string g_operationtype[6] = { "click", "longClick", "doubleClick", "swipe", "drag", "fling" };
+    std::string g_operationtype[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling" };
     vector<MMI::PointerEvent::PointerItem> g_eventsvector;
     vector<int> g_timesvector;
     vector<int> g_mmitimesvector;
@@ -73,11 +73,11 @@ namespace OHOS::uitest {
         drag = 4,
         fling = 5
     };
-    enum caseinfo : uint8_t { Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velocity };
+    enum caseinfo : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velocity };
     g_touchop touchop = click;
 
     namespace {
-        std::string operationType_[6] = { "click", "longClick", "doubleClick", "swipe", "drag", "fling" };
+        std::string operationType_[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling" };
         std::string DEFAULT_DIR = "/data/local/tmp/layout";
         int64_t GetMillisTime()
         {
@@ -90,11 +90,11 @@ namespace OHOS::uitest {
         public:
             TestUtils() = default;
             virtual ~TestUtils() = default;
-            static std::vector<std::string> split(const std::string& in, const std::string& delim)
+            static std::vector<std::string> split(const std::string &in, const std::string &delim)
             {
                 std::regex reg(delim);
                 std::vector<std::string> res = {
-                        std::sregex_token_iterator(in.begin(), in.end(), reg, -1), std::sregex_token_iterator()
+                    std::sregex_token_iterator(in.begin(), in.end(), reg, -1), std::sregex_token_iterator()
                 };
                 return res;
             };
@@ -111,7 +111,7 @@ namespace OHOS::uitest {
                 time_t interval;
             };
 
-            static void WriteEventData(std::ofstream& outFile, const EventData& data)
+            static void WriteEventData(std::ofstream &outFile, const EventData& data)
             {
                 outFile << operationType_[data.actionType] << ',';
                 outFile << data.xPosi << ',';
@@ -151,13 +151,13 @@ namespace OHOS::uitest {
                     }
                     else {
                         std::cout << type << ";"
-                                  << xPosi << ";"
-                                  << yPosi << ";"
-                                  << x2Posi << ";"
-                                  << y2Posi << ";"
-                                  << interval << ";"
-                                  << length << ";"
-                                  << velocity << ";" << std::endl;
+                                << xPosi << ";"
+                                << yPosi << ";"
+                                << x2Posi << ";"
+                                << y2Posi << ";"
+                                << interval << ";"
+                                << length << ";"
+                                << velocity << ";" << std::endl;
                     }
                     usleep(interval * g_timeindex);
                 }
@@ -166,7 +166,7 @@ namespace OHOS::uitest {
 
         bool InitReportFolder()
         {
-            DIR* rootDir = nullptr;
+            DIR *rootDir = nullptr;
             if ((rootDir = opendir(DEFAULT_DIR.c_str())) == nullptr) {
                 int ret = mkdir(DEFAULT_DIR.c_str(), S_IROTH | S_IRWXU | S_IRWXG);
                 if (ret != 0) {
@@ -177,7 +177,7 @@ namespace OHOS::uitest {
             return true;
         }
 
-        bool InitEventRecordFile(std::ofstream& outFile)
+        bool InitEventRecordFile(std::ofstream &outFile)
         {
             if (!InitReportFolder()) {
                 return false;
@@ -194,8 +194,8 @@ namespace OHOS::uitest {
     } // namespace
 
     struct option g_longoptions[] = {
-            {"save file in this path", required_argument, nullptr, 'p'},
-            {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
+        {"save file in this path", required_argument, nullptr, 'p'},
+        {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
     };
     /* *Print to the console of this shell process. */
     static inline void PrintToConsole(string_view message)
@@ -224,7 +224,7 @@ namespace OHOS::uitest {
         return EXIT_SUCCESS;
     }
 
-    static int32_t DumpLayout(int32_t argc, char* argv[])
+    static int32_t DumpLayout(int32_t argc, char *argv[])
     {
         auto ts = to_string(GetCurrentMicroseconds());
         auto savePath = "/data/local/tmp/layout_" + ts + ".json";
@@ -257,15 +257,14 @@ namespace OHOS::uitest {
                 array.push_back(data.second);
             }
             fout << array.dump();
-        }
-        else {
+        }else {
             UiController::RegisterController(move(controller), Priority::MEDIUM);
             auto data = nlohmann::json();
             auto driver = UiDriver();
             auto error = ApiCallErr(NO_ERROR);
             driver.DumpUiHierarchy(data, error);
             if (error.code_ != NO_ERROR) {
-                PrintToConsole("Dump layout failed: " + error.message_);
+                PrintToConsole("Dump layout failed: "+error.message_);
                 fout.close();
                 return EXIT_FAILURE;
             }
@@ -276,7 +275,7 @@ namespace OHOS::uitest {
         return EXIT_SUCCESS;
     }
 
-    static int32_t ScreenCap(int32_t argc, char* argv[])
+    static int32_t ScreenCap(int32_t argc, char *argv[])
     {
         auto ts = to_string(GetCurrentMicroseconds());
         auto savePath = "/data/local/tmp/screenCap_" + ts + ".png";
@@ -318,7 +317,7 @@ namespace OHOS::uitest {
         // set actual api handlerFunc provided by uitest_core
         server.SetCallFunction(ApiTransact);
         // set delayed UiController
-        auto controllerProvider = [](list<unique_ptr<UiController>>& receiver) {
+        auto controllerProvider = [](list<unique_ptr<UiController>> &receiver) {
             auto controller = make_unique<SysUiController>("sys_ui_controller");
             if (controller->ConnectToSysAbility()) {
                 receiver.push_back(move(controller));
@@ -335,7 +334,7 @@ namespace OHOS::uitest {
 
     class Timer {
     public:
-        Timer() : expired(true), tryToExpire(false)
+        Timer(): expired(true), tryToExpire(false)
         {}
         Timer(const Timer& timer)
         {
@@ -431,13 +430,11 @@ namespace OHOS::uitest {
             if (!result) {
                 std::cout << "GetPointerItem Fail" << std::endl;
             }
-
             g_eventsvector.push_back(item);
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN ||
                 pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
                 g_mmitimesvector.push_back(g_touchtime);
             }
-
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP)  {
                 int indexTime = GetMillisTime();
                 int eventCount = g_eventsvector.size();
@@ -448,25 +445,25 @@ namespace OHOS::uitest {
                 float threshold = 0.005;
                 if (eventCount > 2 && (distance > g_maxdistance)) {
                     if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance && getSpeed(0, dragMonitor) < threshold) {
-                        touchop = drag; //drag
+                        touchop = drag; 
                     }else {
                         if (speed < threshold) {
-                            touchop = swipe; // swipe
+                            touchop = swipe; 
                         }else {
-                            touchop = fling; // fling
+                            touchop = fling; 
                         }
                     }
                     g_mmitimesvector.clear();
                 }
                 else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
-                        touchop = click; //click
+                        touchop = click;
                     }
                     else if (data.interval < actionInterval && pressTime < pressDuration) {
-                        touchop = double_click; //doubleclick
+                        touchop = double_click;
                     }
                     else if (data.interval > actionInterval && pressTime > pressDuration) {
-                        touchop = long_click; //longclick
+                        touchop = long_click;
                     }
                 }
                 MMI::PointerEvent::PointerItem up_event = g_eventsvector.back();
@@ -504,7 +501,7 @@ namespace OHOS::uitest {
         }
     }
 
-    static int32_t UiRecord(int32_t argc, char* argv[])
+    static int32_t UiRecord(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
         if (!(argc == INDEX_THREE || argc == INDEX_FOUR )) {
@@ -539,18 +536,16 @@ namespace OHOS::uitest {
             constexpr int TIME_TO_SLEEP = 3600;
             sleep(TIME_TO_SLEEP);
             return OHOS::ERR_OK;
-        }
-        else if (opt == "read") {
+        } else if (opt == "read") {
             std::ifstream inFile(DEFAULT_DIR + "/" + "record.csv");
             TouchEventInfo::ReadEventLine(inFile);
             return OHOS::ERR_OK;
-        }
-        else {
+        } else {
             return EXIT_FAILURE;
         }
     }
 
-    extern "C" int32_t main(int32_t argc, char* argv[])
+    extern "C" int32_t main(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest <help|screenCap|dumpLayout|uiRecord|--version>";
         if ((size_t)argc < INDEX_TWO) {
@@ -561,26 +556,20 @@ namespace OHOS::uitest {
         string command(argv[1]);
         if (command == "dumpLayout") {
             exit(DumpLayout(argc, argv));
-        }
-        else if (command == "start-daemon") {
+        }else if (command == "start-daemon") {
             string_view token = argc < 3 ? "" : argv[2];
             exit(StartDaemon(token));
-        }
-        else if (command == "screenCap") {
+        }else if (command == "screenCap") {
             exit(ScreenCap(argc, argv));
-        }
-        else if (command == "uiRecord") {
+        }else if (command == "uiRecord") {
             exit(UiRecord(argc, argv));
-        }
-        else if (command == "--version") {
+        }else if (command == "--version") {
             PrintToConsole(VERSION);
             exit(EXIT_SUCCESS);
-        }
-        else if (command == "help") {
+        }else if (command == "help") {
             PrintToConsole(HELP_MSG);
             exit(EXIT_SUCCESS);
-        }
-        else {
+        }else {
             PrintToConsole("Illegal argument: " + command);
             PrintToConsole(usage);
             exit(EXIT_FAILURE);
