@@ -4,7 +4,7 @@
     "description": "test framwork",
     "publishAs": "code-segment",
     "segment": {
-       "destPath": "test/arkXtest/uitest"
+       "destPath": "test/testfwk/arkxtest/uitest"
     },
     "scripts": {
     },
@@ -46,10 +46,10 @@
       },
       "build": {
         "sub_component": [
-            "//test/arkXtest/uitest:uitestkit"
+            "//test/testfwk/arkxtest/uitest:uitestkit"
         ],
     "test": [
-      "//test/arkXtest/uitest:uitestkit_test"
+      "//test/testfwk/arkxtest/uitest:uitestkit_test"
     ]
       }
     }
