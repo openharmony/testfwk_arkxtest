@@ -14,7 +14,7 @@
 import("//arkcompiler/ets_frontend/ts2panda/ts2abc_config.gni")
 import("//build/ohos.gni")
 
-source_root = "//test/arkXtest/uitest"
+source_root = "//test/testfwk/arkxtest/uitest"
 
 ability_runtime_path = "//foundation/ability/ability_runtime"
 
