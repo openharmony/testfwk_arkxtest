@@ -202,7 +202,7 @@ namespace OHOS::uitest {
     }
 
     static int32_t GetParam(int32_t argc, char *argv[], string_view optstring, string_view usage,
-        map<char, string>& params)
+        map<char, string> &params)
     {
         int opt;
         while ((opt = getopt_long(argc, argv, optstring.data(), g_longoptions, nullptr)) != -1) {
@@ -511,8 +511,6 @@ namespace OHOS::uitest {
             }
             if (argc == INDEX_FOUR){
                 dragMonitor = atoi(argv[3]);
-                static constexpr string_view dragmonitor = "get dragMonitor time from argv";
-                PrintToConsole(dragmonitor);
             }
             auto callBackPtr = InputEventCallback::GetPtr();
             if (callBackPtr == nullptr) {
@@ -535,6 +533,7 @@ namespace OHOS::uitest {
             TouchEventInfo::ReadEventLine(inFile);
             return OHOS::ERR_OK;
         } else {
+            PrintToConsole(usage);
             return EXIT_FAILURE;
         }
     }
@@ -555,7 +554,7 @@ namespace OHOS::uitest {
             exit(StartDaemon(token));
         } else if (command == "screenCap") {
             exit(ScreenCap(argc, argv));
-        }else if (command == "uiRecord") {
+        } else if (command == "uiRecord") {
             exit(UiRecord(argc, argv));
         } else if (command == "--version") {
             PrintToConsole(VERSION);
