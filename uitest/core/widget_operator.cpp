@@ -34,7 +34,8 @@ namespace OHOS::uitest {
 
     class TreeSnapshotTaker : public WidgetVisitor {
     public:
-        explicit TreeSnapshotTaker(string &receiver, std::vector<string> &leafNodes) : receiver_(receiver), leafNodes_(leafNodes){};
+        explicit TreeSnapshotTaker(string &receiver, vector<string> &leafNodes) : receiver_(receiver),
+                                   leafNodes_(leafNodes){};
 
         ~TreeSnapshotTaker() {}
 
@@ -51,10 +52,10 @@ namespace OHOS::uitest {
 
     private:
         string &receiver_;
-        std::vector<string> &leafNodes_;
+        vector<string> &leafNodes_;
     };
 
-    static void TakeScopeUiSnapshot(UiDriver& driver, const Widget &root, string &snapshot, std::vector<string> &leafNodes)
+    static void TakeScopeUiSnapshot(UiDriver& driver, const Widget &root, string &snapshot, vector<string> &leafNodes)
     {
         TreeSnapshotTaker snapshotTaker(snapshot, leafNodes);
         driver.GetWidgetTree()->DfsTraverseDescendants(snapshotTaker, root);
