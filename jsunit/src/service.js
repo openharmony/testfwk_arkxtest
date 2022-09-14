@@ -195,12 +195,21 @@ class SuiteService {
     }
 
     execute() {
-        if (this.coreContext.getDefaultService('config').filterValid.length !== 0) {
+        const configService = this.coreContext.getDefaultService('config');
+        if (configService.filterValid.length !== 0) {
             this.coreContext.fireEvents('task', 'incorrectFormat');
             return;
         }
+
+        if (configService.isRandom() && this.rootSuite.childSuites.length > 0) {
+            this.rootSuite.childSuites.sort(function () {
+                return Math.random().toFixed(1) > 0.5 ? -1 : 1;
+            });
+            this.currentRunningSuite = this.rootSuite.childSuites[0];
+        }
+
         this.coreContext.fireEvents('task', 'taskStart');
-        if (this.coreContext.getDefaultService('config').isSupportAsync()) {
+        if (configService.isSupportAsync()) {
             let asyncExecute = async () => {
                 await this.rootSuite.asyncRun(this.coreContext);
             };
