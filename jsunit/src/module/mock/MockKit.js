@@ -213,6 +213,21 @@ class MockKit {
         let a = this.recordCalls.get(methodName + '(' + argsArray.toString() + ')');
         return new VerificationMode(a ? a : 0);
     }
+
+    mockObject(object) {
+        if (!object || typeof object === "string") {
+            throw Error(`this ${object} cannot be mocked`);
+        }
+        const _this = this;
+        let mockedObject = {};
+        let keys = Reflect.ownKeys(object);
+        keys.filter(key => (typeof Reflect.get(object, key)) === 'function')
+            .forEach(key => {
+                mockedObject[key] = object[key];
+                mockedObject[key] = _this.mockFunc(mockedObject, mockedObject[key]);
+            });
+        return mockedObject;
+    }
 }
 
 function ifMockedFunction(f) {
