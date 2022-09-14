@@ -35,7 +35,7 @@ namespace OHOS::uitest {
     class TreeSnapshotTaker : public WidgetVisitor {
     public:
         explicit TreeSnapshotTaker(string &receiver, vector<string> &leafNodes) : receiver_(receiver),
-                                   leafNodes_(leafNodes){};
+            leafNodes_(leafNodes){};
 
         ~TreeSnapshotTaker() {}
 
