@@ -94,7 +94,7 @@ namespace OHOS::uitest {
      **/
     class UiOpArgs {
     public:
-        const uint32_t maxSwipeVelocityPps_ = 3000;
+        const uint32_t maxSwipeVelocityPps_ = 15000;
         const uint32_t minSwipeVelocityPps_ = 200;
         const uint32_t defaultSwipeVelocityPps_ = 600;
         const uint32_t maxMultiTouchFingers = 10;
