@@ -13,8 +13,10 @@
  * limitations under the License.
  */
 
+#include <future>
 #include <napi/native_api.h>
 #include <napi/native_node_api.h>
+#include <queue>
 #include <set>
 #include <string>
 #include <unistd.h>
@@ -28,7 +30,7 @@ namespace OHOS::uitest {
 
     static constexpr size_t NAPI_MAX_BUF_LEN = 1024;
     static constexpr size_t NAPI_MAX_ARG_COUNT = 8;
-    static constexpr size_t BACKEND_OBJ_CLEAN_THRESHOLD = 20;
+    static constexpr size_t BACKEND_OBJ_GC_BATCH = 100;
     // type of unexpected or napi-internal error
     static constexpr napi_status NAPI_ERR = napi_status::napi_generic_failure;
     // the name of property that represents the objectRef of the backend object
@@ -36,7 +38,8 @@ namespace OHOS::uitest {
     /**For dfx usage, records the uncalled js apis. */
     static set<string> g_unCalledJsFuncNames;
     /**For gc usage, records the backend objRefs about to delete. */
-    static set<string> g_backendObjsAboutToDelete;
+    static queue<string> g_backendObjsAboutToDelete;
+    static mutex g_gcQueueMutex;
 
     // use external setup/transact/disposal callback functions
     extern bool SetupTransactionEnv(string_view token);
@@ -249,14 +252,16 @@ namespace OHOS::uitest {
             NAPI_CALL(env, napi_get_undefined(env, &resultValue)); // return undefined it's error
         }
         // notify backend objects deleting
-        if (g_backendObjsAboutToDelete.size() >= BACKEND_OBJ_CLEAN_THRESHOLD) {
+        if (g_backendObjsAboutToDelete.size() >= BACKEND_OBJ_GC_BATCH) {
             auto gcCall = ApiCallInfo {.apiId_ = "BackendObjectsCleaner"};
-            auto gcReply = ApiReplyInfo();
-            for (auto& ref : g_backendObjsAboutToDelete) {
-                gcCall.paramList_.emplace_back(ref);
+            unique_lock<mutex> lock(g_gcQueueMutex);
+            for (auto count = 0; count < BACKEND_OBJ_GC_BATCH; count++) {
+                gcCall.paramList_.emplace_back(g_backendObjsAboutToDelete.front());
+                g_backendObjsAboutToDelete.pop();
             }
+            lock.unlock();
+            auto gcReply = ApiReplyInfo();
             transactFunc(gcCall, gcReply);
-            g_backendObjsAboutToDelete.clear();
         }
         return resultValue;
     }
@@ -399,7 +404,8 @@ namespace OHOS::uitest {
                 auto ref = reinterpret_cast<string *>(data);
                 if (ref->length() > 0) {
                     LOG_D("Finalizing object: %{public}s", ref->c_str());
-                    g_backendObjsAboutToDelete.insert(*ref);
+                    unique_lock<mutex> lock(g_gcQueueMutex);
+                    g_backendObjsAboutToDelete.push(*ref);
                 }
                 delete ref;
             };
