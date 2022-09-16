@@ -196,7 +196,7 @@ namespace OHOS::uitest {
         napi_value refValue = *pOut;
         napi_value constructor = nullptr;
         NAPI_CALL_BASE(env, GetJsConstructorFromGlobal(env, frontendTypeName, &constructor), NAPI_ERR);
-        NAPI_CALL_BASE(env, napi_new_instance(env, constructor, 0, nullptr, pOut), NAPI_ERR);
+        NAPI_CALL_BASE(env, napi_new_instance(env, constructor, 1, &refValue, pOut), NAPI_ERR);
         NAPI_CALL_BASE(env, napi_set_named_property(env, *pOut, PROP_BACKEND_OBJ_REF, refValue), NAPI_ERR);
         if (bindJsThis) { // bind the jsThis object
             LOG_D("Bind jsThis");
@@ -252,7 +252,7 @@ namespace OHOS::uitest {
         if (g_backendObjsAboutToDelete.size() >= BACKEND_OBJ_CLEAN_THRESHOLD) {
             auto gcCall = ApiCallInfo {.apiId_ = "BackendObjectsCleaner"};
             auto gcReply = ApiReplyInfo();
-            for (auto& ref : g_unCalledJsFuncNames) {
+            for (auto& ref : g_backendObjsAboutToDelete) {
                 gcCall.paramList_.emplace_back(ref);
             }
             transactFunc(gcCall, gcReply);
@@ -390,11 +390,11 @@ namespace OHOS::uitest {
             descs[idx] = desc;
         }
         constexpr auto initializer = [](napi_env env, napi_callback_info info) {
+            auto argc = NAPI_MAX_ARG_COUNT;
+            napi_value argv[NAPI_MAX_ARG_COUNT] = { nullptr };
             napi_value jsThis = nullptr;
-            NAPI_CALL_BASE(env, napi_get_cb_info(env, info, nullptr, nullptr, &jsThis, nullptr), jsThis);
-            napi_value refValue = nullptr;
-            NAPI_CALL_BASE(env, napi_get_named_property(env, jsThis, PROP_BACKEND_OBJ_REF, &refValue), jsThis);
-            auto ref = make_unique<string>(JsStrToCppStr(env, refValue));
+            NAPI_CALL_BASE(env, napi_get_cb_info(env, info, &argc, argv, &jsThis, nullptr), jsThis);
+            auto ref = make_unique<string>(argc <= 0 ? "" : JsStrToCppStr(env, argv[0]));
             auto finalizer = [](napi_env env, void *data, void *hint) {
                 auto ref = reinterpret_cast<string *>(data);
                 if (ref->length() > 0) {
