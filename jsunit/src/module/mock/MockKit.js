@@ -94,6 +94,9 @@ class MockKit {
             values = new Map();
         }
         let key = params[0];
+        if (typeof key == "undefined") {
+            key = "hypium-mock-" + f.propName;
+        }
         let matcher = new ArgumentMatchers();
         if (matcher.matcheStubKey(key)) {
             key = matcher.matcheStubKey(key);
@@ -111,6 +114,9 @@ class MockKit {
             return undefined;
         }
         let retrunKet = params[0];
+        if (typeof retrunKet == "undefined") {
+            retrunKet = "hypium-mock-" + f.propName;
+        }
         let stubSetKey = this.currentSetKey;
 
         if (this.currentSetKey && (typeof (retrunKet) != "undefined")) {

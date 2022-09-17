@@ -89,7 +89,7 @@ declare interface when {
     afterReturnNothing(): undefined
     afterAction(action: any): any
     afterThrow(e_msg: string): string
-    (argMatchers: any): when;
+    (argMatchers?: any): when;
 }
 
 export interface VerificationMode {
