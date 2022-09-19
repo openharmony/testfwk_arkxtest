@@ -13,8 +13,10 @@
  * limitations under the License.
  */
 
+#include <future>
 #include <napi/native_api.h>
 #include <napi/native_node_api.h>
+#include <queue>
 #include <set>
 #include <string>
 #include <unistd.h>
@@ -28,7 +30,7 @@ namespace OHOS::uitest {
 
     static constexpr size_t NAPI_MAX_BUF_LEN = 1024;
     static constexpr size_t NAPI_MAX_ARG_COUNT = 8;
-    static constexpr size_t BACKEND_OBJ_CLEAN_THRESHOLD = 20;
+    static constexpr size_t BACKEND_OBJ_GC_BATCH = 100;
     // type of unexpected or napi-internal error
     static constexpr napi_status NAPI_ERR = napi_status::napi_generic_failure;
     // the name of property that represents the objectRef of the backend object
@@ -37,6 +39,8 @@ namespace OHOS::uitest {
     static set<string> g_unCalledJsFuncNames;
     /**For gc usage, records the backend objRefs about to delete. */
     static set<string> g_backendObjsAboutToDelete;
+    static queue<string> g_backendObjsAboutToDelete;
+    static mutex g_gcQueueMutex;
 
     // use external setup/transact/disposal callback functions
     extern bool SetupTransactionEnv(string_view token);
@@ -196,7 +200,7 @@ namespace OHOS::uitest {
         napi_value refValue = *pOut;
         napi_value constructor = nullptr;
         NAPI_CALL_BASE(env, GetJsConstructorFromGlobal(env, frontendTypeName, &constructor), NAPI_ERR);
-        NAPI_CALL_BASE(env, napi_new_instance(env, constructor, 0, nullptr, pOut), NAPI_ERR);
+        NAPI_CALL_BASE(env, napi_new_instance(env, constructor, 1, &refValue, pOut), NAPI_ERR);
         NAPI_CALL_BASE(env, napi_set_named_property(env, *pOut, PROP_BACKEND_OBJ_REF, refValue), NAPI_ERR);
         if (bindJsThis) { // bind the jsThis object
             LOG_D("Bind jsThis");
@@ -249,14 +253,16 @@ namespace OHOS::uitest {
             NAPI_CALL(env, napi_get_undefined(env, &resultValue)); // return undefined it's error
         }
         // notify backend objects deleting
-        if (g_backendObjsAboutToDelete.size() >= BACKEND_OBJ_CLEAN_THRESHOLD) {
+        if (g_backendObjsAboutToDelete.size() >= BACKEND_OBJ_GC_BATCH) {
             auto gcCall = ApiCallInfo {.apiId_ = "BackendObjectsCleaner"};
-            auto gcReply = ApiReplyInfo();
-            for (auto& ref : g_unCalledJsFuncNames) {
-                gcCall.paramList_.emplace_back(ref);
+            unique_lock<mutex> lock(g_gcQueueMutex);
+            for (auto count = 0; count < BACKEND_OBJ_GC_BATCH; count++) {
+                gcCall.paramList_.emplace_back(g_backendObjsAboutToDelete.front());
+                g_backendObjsAboutToDelete.pop();
             }
+            lock.unlock();
+            auto gcReply = ApiReplyInfo();
             transactFunc(gcCall, gcReply);
-            g_backendObjsAboutToDelete.clear();
         }
         return resultValue;
     }
@@ -390,16 +396,17 @@ namespace OHOS::uitest {
             descs[idx] = desc;
         }
         constexpr auto initializer = [](napi_env env, napi_callback_info info) {
+            auto argc = NAPI_MAX_ARG_COUNT;
+            napi_value argv[NAPI_MAX_ARG_COUNT] = { nullptr };
             napi_value jsThis = nullptr;
-            NAPI_CALL_BASE(env, napi_get_cb_info(env, info, nullptr, nullptr, &jsThis, nullptr), jsThis);
-            napi_value refValue = nullptr;
-            NAPI_CALL_BASE(env, napi_get_named_property(env, jsThis, PROP_BACKEND_OBJ_REF, &refValue), jsThis);
-            auto ref = make_unique<string>(JsStrToCppStr(env, refValue));
+            NAPI_CALL_BASE(env, napi_get_cb_info(env, info, &argc, argv, &jsThis, nullptr), jsThis);
+            auto ref = make_unique<string>(argc <= 0 ? "" : JsStrToCppStr(env, argv[0]));
             auto finalizer = [](napi_env env, void *data, void *hint) {
                 auto ref = reinterpret_cast<string *>(data);
                 if (ref->length() > 0) {
                     LOG_D("Finalizing object: %{public}s", ref->c_str());
-                    g_backendObjsAboutToDelete.insert(*ref);
+                    unique_lock<mutex> lock(g_gcQueueMutex);
+                    g_backendObjsAboutToDelete.push(*ref);
                 }
                 delete ref;
             };
