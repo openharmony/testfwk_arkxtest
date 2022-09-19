@@ -38,7 +38,6 @@ namespace OHOS::uitest {
     /**For dfx usage, records the uncalled js apis. */
     static set<string> g_unCalledJsFuncNames;
     /**For gc usage, records the backend objRefs about to delete. */
-    static set<string> g_backendObjsAboutToDelete;
     static queue<string> g_backendObjsAboutToDelete;
     static mutex g_gcQueueMutex;
 
