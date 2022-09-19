@@ -95,7 +95,7 @@ class MockKit {
         }
         let key = params[0];
         if (typeof key == "undefined") {
-            key = "hypium-mock-" + f.propName;
+            key = "anonymous-mock-" + f.propName;
         }
         let matcher = new ArgumentMatchers();
         if (matcher.matcheStubKey(key)) {
@@ -115,7 +115,7 @@ class MockKit {
         }
         let retrunKet = params[0];
         if (typeof retrunKet == "undefined") {
-            retrunKet = "hypium-mock-" + f.propName;
+            retrunKet = "anonymous-mock-" + f.propName;
         }
         let stubSetKey = this.currentSetKey;
 
