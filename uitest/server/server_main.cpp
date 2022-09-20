@@ -60,11 +60,11 @@ namespace OHOS::uitest {
     int g_velocity = 600;
     int dragMonitor = 2;
     std::ofstream g_outfile;
-    std::string g_operationtype[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
+    std::string g_operationType[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
     vector<MMI::PointerEvent::PointerItem> g_eventsvector;
     vector<int> g_timesvector;
     vector<int> g_mmitimesvector;
-    enum g_touchop : uint8_t {
+    enum GTouchop : uint8_t {
         click = 0,
         long_click = 1,
         double_click = 2,
@@ -73,11 +73,10 @@ namespace OHOS::uitest {
         fling = 5
     };
     enum caseinfo : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velocity };
-    g_touchop touchop = click;
+    GTouchop touchop = click;
 
     namespace {
-        std::string operationType_[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
-        std::string DEFAULT_DIR = "/data/local/tmp/layout";
+        std::string g_defaultDir = "/data/local/tmp/layout";
         int64_t GetMillisTime()
         {
             auto timeNow = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
@@ -112,7 +111,7 @@ namespace OHOS::uitest {
 
             static void WriteEventData(std::ofstream &outFile, const EventData &data)
             {
-                outFile << operationType_[data.actionType] << ',';
+                outFile << g_operationType[data.actionType] << ',';
                 outFile << data.xPosi << ',';
                 outFile << data.yPosi << ',';
                 outFile << data.x2Posi << ',';
@@ -165,10 +164,10 @@ namespace OHOS::uitest {
         bool InitReportFolder()
         {
             DIR *rootDir = nullptr;
-            if ((rootDir = opendir(DEFAULT_DIR.c_str())) == nullptr) {
-                int ret = mkdir(DEFAULT_DIR.c_str(), S_IROTH | S_IRWXU | S_IRWXG);
+            if ((rootDir = opendir(g_defaultDir.c_str())) == nullptr) {
+                int ret = mkdir(g_defaultDir.c_str(), S_IROTH | S_IRWXU | S_IRWXG);
                 if (ret != 0) {
-                    std::cerr << "failed to create dir: " << DEFAULT_DIR << std::endl;
+                    std::cerr << "failed to create dir: " << g_defaultDir << std::endl;
                     return false;
                 }
             }
@@ -180,7 +179,7 @@ namespace OHOS::uitest {
             if (!InitReportFolder()) {
                 return false;
             }
-            std::string filePath = DEFAULT_DIR + "/" + "record.csv";
+            std::string filePath = g_defaultDir + "/" + "record.csv";
             outFile.open(filePath, std::ios_base::out | std::ios_base::trunc);
             if (!outFile) {
                 std::cerr << "Failed to create csv file at:" << filePath << std::endl;
@@ -210,7 +209,6 @@ namespace OHOS::uitest {
                 case '?':
                     PrintToConsole(usage);
                     return EXIT_FAILURE;
-                    break;
                 case 'i':
                     params.insert(pair<char, string>(opt, "true"));
                     break;
@@ -443,12 +441,10 @@ namespace OHOS::uitest {
                 if (eventCount > 2 && (distance > g_maxdistance)) {
                     if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance && getSpeed(0, dragMonitor) < threshold) {
                         touchop = drag; 
-                    } else {
-                        if (speed < threshold) {
+                    } else if (speed < threshold) {
                             touchop = swipe; 
-                        } else {
-                            touchop = fling; 
-                        }
+                    } else {
+                        touchop = fling; 
                     }
                     g_mmitimesvector.clear();
                 }else {
@@ -468,7 +464,7 @@ namespace OHOS::uitest {
                 data.x2Posi = up_event.GetDisplayX();
                 data.y2Posi = up_event.GetDisplayY();
                 TouchEventInfo::WriteEventData(g_outfile, data);
-                std::cout << " PointerEvent:" << g_operationtype[data.actionType]
+                std::cout << " PointerEvent:" << g_operationType[data.actionType]
                             << " xPosi:" << data.xPosi
                             << " yPosi:" << data.yPosi
                             << " x2Posi:" << data.x2Posi
@@ -529,7 +525,7 @@ namespace OHOS::uitest {
             sleep(TIME_TO_SLEEP);
             return OHOS::ERR_OK;
         } else if (opt == "read") {
-            std::ifstream inFile(DEFAULT_DIR + "/" + "record.csv");
+            std::ifstream inFile(g_defaultDir + "/" + "record.csv");
             TouchEventInfo::ReadEventLine(inFile);
             return OHOS::ERR_OK;
         } else {
