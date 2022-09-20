@@ -72,7 +72,7 @@ namespace OHOS::uitest {
         drag = 4,
         fling = 5
     };
-    enum caseinfo : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velocity };
+    enum GCaseInfo : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velocity };
     GTouchop g_touchop = click;
 
     namespace {
