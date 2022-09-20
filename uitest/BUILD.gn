@@ -103,7 +103,7 @@ ohos_executable("uitest_server") {
   ]
   external_deps += [
     "c_utils:utils",
-    "multimedia_image_standard:image_native",
+    "multimedia_image_framework:image_native",
     "window_manager:libdm",
     "window_manager:libwm",
   ]
