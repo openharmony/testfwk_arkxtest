@@ -73,7 +73,7 @@ namespace OHOS::uitest {
         fling = 5
     };
     enum caseinfo : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velocity };
-    GTouchop touchop = click;
+    GTouchop g_touchop = click;
 
     namespace {
         std::string g_defaultDir = "/data/local/tmp/layout";
@@ -392,7 +392,7 @@ namespace OHOS::uitest {
 
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
-        virtual void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override
+        void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override
         {
             std::cout << "keyCode" << keyEvent->GetKeyCode() << std::endl;
         }
@@ -405,7 +405,7 @@ namespace OHOS::uitest {
             double speed = getDistance(i,j)/ pow((g_mmitimesvector[i] - g_mmitimesvector[j]), 2);
             return speed;
         }
-        virtual void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override
+        void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override
         {
             MMI::PointerEvent::PointerItem item;
             int newTime;
@@ -440,25 +440,25 @@ namespace OHOS::uitest {
                 float threshold = 0.005;
                 if (eventCount > 2 && (distance > g_maxdistance)) {
                     if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance && getSpeed(0, dragMonitor) < threshold) {
-                        touchop = drag; 
+                        g_touchop = drag; 
                     } else if (speed < threshold) {
-                            touchop = swipe; 
+                            g_touchop = swipe; 
                     } else {
-                        touchop = fling; 
+                        g_touchop = fling; 
                     }
                     g_mmitimesvector.clear();
                 }else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
-                        touchop = click;
+                        g_touchop = click;
                     } else if (data.interval < actionInterval && pressTime < pressDuration) {
-                        touchop = double_click;
+                        g_touchop = double_click;
                     } else if (data.interval > actionInterval && pressTime > pressDuration) {
-                        touchop = long_click;
+                        g_touchop = long_click;
                     }
                 }
                 MMI::PointerEvent::PointerItem up_event = g_eventsvector.back();
                 MMI::PointerEvent::PointerItem down_event = g_eventsvector.front();
-                data.actionType = touchop;
+                data.actionType = g_touchop;
                 data.xPosi = down_event.GetDisplayX();
                 data.yPosi = down_event.GetDisplayY();
                 data.x2Posi = up_event.GetDisplayX();
@@ -473,7 +473,7 @@ namespace OHOS::uitest {
                 g_eventsvector.clear();
             }
         }
-        virtual void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override {}
+        void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override {}
         static std::shared_ptr<InputEventCallback> GetPtr();
     };
 
@@ -521,8 +521,8 @@ namespace OHOS::uitest {
             std::cout << "Started Recording Successfully..." << std::endl;
             int flag = getc(stdin);
             std::cout << flag << std::endl;
-            constexpr int TIME_TO_SLEEP = 3600;
-            sleep(TIME_TO_SLEEP);
+            constexpr int timeToSleep = 3600;
+            sleep(timeToSleep);
             return OHOS::ERR_OK;
         } else if (opt == "read") {
             std::ifstream inFile(g_defaultDir + "/" + "record.csv");
