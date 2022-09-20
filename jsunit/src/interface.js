@@ -18,46 +18,25 @@ import Core from './core';
 const core = Core.getInstance();
 
 const describe = function (desc, func) {
-    if (typeof globalThis !== 'undefined') {
-        return globalThis.describe(desc, func);
-    }
-    return core.describe(desc, func);
+    return Reflect.has(core, 'describe') ? core.describe(desc, func) : (desc, func) => { };
 };
 const it = function (desc, filter, func) {
-    if (typeof globalThis !== 'undefined') {
-        return globalThis.it(desc, filter, func);
-    }
-    return core.it(desc, filter, func);
+    return Reflect.has(core, 'it') ? core.it(desc, filter, func) : (desc, filter, func) => { };
 };
 const beforeEach = function (func) {
-    if (typeof globalThis !== 'undefined') {
-        return globalThis.beforeEach(func);
-    }
-    return core.beforeEach(func);
+    return Reflect.has(core, 'beforeEach') ? core.beforeEach(func) : (func) => { };
 };
 const afterEach = function (func) {
-    if (typeof globalThis !== 'undefined') {
-        return globalThis.afterEach(func);
-    }
-    return core.afterEach(func);
+    return Reflect.has(core, 'afterEach') ? core.afterEach(func) : (func) => { };
 };
 const beforeAll = function (func) {
-    if (typeof globalThis !== 'undefined') {
-        return globalThis.beforeAll(func);
-    }
-    return core.beforeAll(func);
+    return Reflect.has(core, 'beforeAll') ? core.beforeAll(func) : (func) => { };
 };
 const afterAll = function (func) {
-    if (typeof globalThis !== 'undefined') {
-        return globalThis.afterAll(func);
-    }
-    return core.afterAll(func);
+    return Reflect.has(core, 'afterAll') ? core.afterAll(func) : (func) => { };
 };
 const expect = function (actualValue) {
-    if (typeof globalThis !== 'undefined') {
-        return globalThis.expect(actualValue);
-    }
-    return core.expect(actualValue);
+    return Reflect.has(core, 'expect') ? core.expect(actualValue) : (actualValue) => { };
 };
 
 export {
