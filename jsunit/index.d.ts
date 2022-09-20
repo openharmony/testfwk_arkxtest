@@ -89,7 +89,7 @@ declare interface when {
     afterReturnNothing(): undefined
     afterAction(action: any): any
     afterThrow(e_msg: string): string
-    (argMatchers: any): when;
+    (argMatchers?: any): when;
 }
 
 export interface VerificationMode {
@@ -103,6 +103,7 @@ export interface VerificationMode {
 export class MockKit {
     constructor()
     mockFunc(obj: Object, func: Function): Function
+    mockObject(obj: Object): Object
     verify(methodName: String, argsArray: Array<any>): VerificationMode
     ignoreMock(obj: Object, func: Function): void
     clear(obj: Object): void
