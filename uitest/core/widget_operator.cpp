@@ -34,26 +34,31 @@ namespace OHOS::uitest {
 
     class TreeSnapshotTaker : public WidgetVisitor {
     public:
-        explicit TreeSnapshotTaker(stringstream &receiver) : receiver_(receiver) {};
+        explicit TreeSnapshotTaker(string &receiver, vector<string> &leafNodes) : receiver_(receiver),
+            leafNodes_(leafNodes){};
 
         ~TreeSnapshotTaker() {}
 
         void Visit(const Widget &widget) override
         {
-            receiver_ << widget.GetAttr(ATTR_NAMES[UiAttr::TYPE], "") << "/";
-            receiver_ << widget.GetAttr(ATTR_NAMES[UiAttr::TEXT], "") << ";";
+            auto type = widget.GetAttr(ATTR_NAMES[UiAttr::TYPE], "") + "/";
+            auto value =  widget.GetAttr(ATTR_NAMES[UiAttr::TEXT], "") + "/";
+            auto hashcode =  widget.GetAttr(ATTR_NAMES[UiAttr::HASHCODE], "") + ";";
+            receiver_ = receiver_ + type + value + hashcode;
+            if (value != "/") {
+                leafNodes_.push_back(type + value + hashcode);
+            }
         }
 
     private:
-        stringstream &receiver_;
+        string &receiver_;
+        vector<string> &leafNodes_;
     };
 
-    static string TakeScopeUiSnapshot(UiDriver& driver, const Widget &root)
+    static void TakeScopeUiSnapshot(UiDriver& driver, const Widget &root, string &snapshot, vector<string> &leafNodes)
     {
-        stringstream os;
-        TreeSnapshotTaker snapshotTaker(os);
+        TreeSnapshotTaker snapshotTaker(snapshot, leafNodes);
         driver.GetWidgetTree()->DfsTraverseDescendants(snapshotTaker, root);
-        return os.str();
     }
 
     WidgetOperator::WidgetOperator(UiDriver &driver, const Widget &widget, const UiOpArgs &options)
@@ -75,17 +80,20 @@ namespace OHOS::uitest {
 
     void WidgetOperator::ScrollToEnd(bool toTop, ApiCallErr &error) const
     {
-        string prevSnapshot;
+        string prevSnapshot = "", targetSnapshot = "";
         while (true) {
             auto scrollWidget = driver_.RetrieveWidget(widget_, error);
             if (scrollWidget == nullptr || error.code_ != NO_ERROR) {
                 return;
             }
-            string snapshot = TakeScopeUiSnapshot(driver_, *scrollWidget);
-            if (snapshot == prevSnapshot) {
+            string snapshot;
+            vector<string> leafNodes;
+            TakeScopeUiSnapshot(driver_, *scrollWidget, snapshot, leafNodes);
+            if ((prevSnapshot == snapshot) || (snapshot.find(targetSnapshot) != string::npos && targetSnapshot != "")) {
                 return;
             }
             prevSnapshot = snapshot;
+            targetSnapshot = (toTop ? leafNodes.front() : leafNodes.back());
             auto bounds = scrollWidget->GetBounds();
             if (options_.scrollWidgetDeadZone_ > 0) {
                 // scroll widget from its deadZone maybe unresponsive
@@ -209,7 +217,7 @@ namespace OHOS::uitest {
     {
         PointerMatrix scrollEvents;
         bool scrollingUp = true;
-        string prevSnapshot;
+        string prevSnapshot = "", targetSnapshot = "";
         vector<reference_wrapper<const Widget>> receiver;
         while (true) {
             auto scrollWidget = driver_.RetrieveWidget(widget_, error);
@@ -224,8 +232,10 @@ namespace OHOS::uitest {
                 clone->SetAttr("selectionDesc", selector.Describe());
                 return clone;
             }
-            string snapshot = TakeScopeUiSnapshot(driver_, *scrollWidget);
-            if (snapshot == prevSnapshot) {
+            string snapshot;
+            vector<string> leafNodes;
+            TakeScopeUiSnapshot(driver_, *scrollWidget, snapshot, leafNodes);
+            if ((snapshot == prevSnapshot) || (snapshot.find(targetSnapshot) != string::npos && targetSnapshot != "")) {
                 // scrolling down to bottom, search completed with failure
                 if (!scrollingUp) {
                     auto msg = string("Scroll search widget failed: ") + selector.Describe();
@@ -237,6 +247,7 @@ namespace OHOS::uitest {
                 }
             }
             prevSnapshot = snapshot;
+            targetSnapshot = (scrollingUp ? leafNodes.front() : leafNodes.back());
             // execute scrolling on the scroll_widget without update UI
             auto bounds = scrollWidget->GetBounds();
             if (options_.scrollWidgetDeadZone_ > 0) {
