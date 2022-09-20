@@ -94,6 +94,9 @@ class MockKit {
             values = new Map();
         }
         let key = params[0];
+        if (typeof key == "undefined") {
+            key = "anonymous-mock-" + f.propName;
+        }
         let matcher = new ArgumentMatchers();
         if (matcher.matcheStubKey(key)) {
             key = matcher.matcheStubKey(key);
@@ -111,6 +114,9 @@ class MockKit {
             return undefined;
         }
         let retrunKet = params[0];
+        if (typeof retrunKet == "undefined") {
+            retrunKet = "anonymous-mock-" + f.propName;
+        }
         let stubSetKey = this.currentSetKey;
 
         if (this.currentSetKey && (typeof (retrunKet) != "undefined")) {
@@ -212,6 +218,21 @@ class MockKit {
         }
         let a = this.recordCalls.get(methodName + '(' + argsArray.toString() + ')');
         return new VerificationMode(a ? a : 0);
+    }
+
+    mockObject(object) {
+        if (!object || typeof object === "string") {
+            throw Error(`this ${object} cannot be mocked`);
+        }
+        const _this = this;
+        let mockedObject = {};
+        let keys = Reflect.ownKeys(object);
+        keys.filter(key => (typeof Reflect.get(object, key)) === 'function')
+            .forEach(key => {
+                mockedObject[key] = object[key];
+                mockedObject[key] = _this.mockFunc(mockedObject, mockedObject[key]);
+            });
+        return mockedObject;
     }
 }
 
