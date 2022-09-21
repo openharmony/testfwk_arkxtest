@@ -58,17 +58,25 @@ namespace OHOS::uitest {
     int g_maxdistance = 220;
     int g_length = 20;
     int g_velocity = 600;
+    int dragMonitor = 2;
     std::ofstream g_outfile;
-    std::string g_operationtype[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
+    std::string g_operationType[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
     vector<MMI::PointerEvent::PointerItem> g_eventsvector;
     vector<int> g_timesvector;
     vector<int> g_mmitimesvector;
-    enum g_touchop : uint8_t {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN};
-    g_touchop touchop = ZERO;
+    enum GTouchop : uint8_t {
+        click = 0,
+        long_click = 1,
+        double_click = 2,
+        swipe = 3,
+        drag = 4,
+        fling = 5
+    };
+    enum GCaseInfo : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velocity };
+    GTouchop g_touchop = click;
 
     namespace {
-        std::string operationType_[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
-        std::string DEFAULT_DIR  = "/data/local/tmp/layout";
+        std::string g_defaultDir = "/data/local/tmp/layout";
         int64_t GetMillisTime()
         {
             auto timeNow = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
@@ -103,7 +111,7 @@ namespace OHOS::uitest {
 
             static void WriteEventData(std::ofstream &outFile, const EventData &data)
             {
-                outFile << operationType_[data.actionType] << ',';
+                outFile << g_operationType[data.actionType] << ',';
                 outFile << data.xPosi << ',';
                 outFile << data.yPosi << ',';
                 outFile << data.x2Posi << ',';
@@ -128,14 +136,14 @@ namespace OHOS::uitest {
                     inFile >> buffer;
                     std::string delim = ",";
                     auto caseInfo = TestUtils::split(buffer, delim);
-                    type = caseInfo[ZERO];
-                    xPosi = std::stoi(caseInfo[ONE]);
-                    yPosi = std::stoi(caseInfo[TWO]);
-                    x2Posi = std::stoi(caseInfo[THREE]);
-                    y2Posi = std::stoi(caseInfo[FOUR]);
-                    interval = std::stoi(caseInfo[FIVE]);
-                    length = std::stoi(caseInfo[SIX]);
-                    velocity = std::stoi(caseInfo[SEVEN]);
+                    type = caseInfo[Type];
+                    xPosi = std::stoi(caseInfo[XPosi]);
+                    yPosi = std::stoi(caseInfo[YPosi]);
+                    x2Posi = std::stoi(caseInfo[X2Posi]);
+                    y2Posi = std::stoi(caseInfo[Y2Posi]);
+                    interval = std::stoi(caseInfo[Interval]);
+                    length = std::stoi(caseInfo[Length]);
+                    velocity = std::stoi(caseInfo[Velocity]);
                     if (inFile.fail()) {
                         break;
                     } else {
@@ -156,10 +164,10 @@ namespace OHOS::uitest {
         bool InitReportFolder()
         {
             DIR *rootDir = nullptr;
-            if ((rootDir = opendir(DEFAULT_DIR.c_str())) == nullptr) {
-                int ret = mkdir(DEFAULT_DIR.c_str(), S_IROTH | S_IRWXU | S_IRWXG);
+            if ((rootDir = opendir(g_defaultDir.c_str())) == nullptr) {
+                int ret = mkdir(g_defaultDir.c_str(), S_IROTH | S_IRWXU | S_IRWXG);
                 if (ret != 0) {
-                    std::cerr << "failed to create dir: " << DEFAULT_DIR << std::endl;
+                    std::cerr << "failed to create dir: " << g_defaultDir << std::endl;
                     return false;
                 }
             }
@@ -171,7 +179,7 @@ namespace OHOS::uitest {
             if (!InitReportFolder()) {
                 return false;
             }
-            std::string filePath = DEFAULT_DIR + "/" + "record.csv";
+            std::string filePath = g_defaultDir + "/" + "record.csv";
             outFile.open(filePath, std::ios_base::out | std::ios_base::trunc);
             if (!outFile) {
                 std::cerr << "Failed to create csv file at:" << filePath << std::endl;
@@ -251,7 +259,7 @@ namespace OHOS::uitest {
             auto driver = UiDriver();
             auto error = ApiCallErr(NO_ERROR);
             driver.DumpUiHierarchy(data, error);
-            if (error.code_ !=NO_ERROR) {
+            if (error.code_ != NO_ERROR) {
                 PrintToConsole("Dump layout failed: "+error.message_);
                 fout.close();
                 return EXIT_FAILURE;
@@ -345,7 +353,7 @@ namespace OHOS::uitest {
                     std::this_thread::sleep_for(std::chrono::milliseconds(interval));
                     task();
                 }
-    
+
                 {
                     std::lock_guard<std::mutex> locker(index);
                     expired = true;
@@ -358,16 +366,16 @@ namespace OHOS::uitest {
             if (expired) {
                 return;
             }
-    
+
             if (tryToExpire) {
                 return;
             }
-    
+
             tryToExpire = true; // change this bool value to make timer while loop stop
             {
                 std::unique_lock<std::mutex> locker(index);
                 expiredCond.wait(locker, [this] {return expired == true; });
-    
+
                 // reset the timer
                 if (expired == true) {
                     tryToExpire = false;
@@ -384,11 +392,20 @@ namespace OHOS::uitest {
 
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
-        virtual void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override
+        void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override
         {
             std::cout << "keyCode" << keyEvent->GetKeyCode() << std::endl;
         }
-        virtual void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override
+        int getDistance(int i, int j) const{
+            int distance = pow((g_eventsvector[i].GetDisplayX() - g_eventsvector[j].GetDisplayX()), 2)            \
+                + pow((g_eventsvector[i].GetDisplayY() - g_eventsvector[j].GetDisplayY()), 2);
+            return distance;
+        }
+        double getSpeed(int i, int j) const {
+            double speed = getDistance(i,j)/ pow((g_mmitimesvector[i] - g_mmitimesvector[j]), 2);
+            return speed;
+        }
+        void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override
         {
             MMI::PointerEvent::PointerItem item;
             int newTime;
@@ -397,78 +414,66 @@ namespace OHOS::uitest {
             g_touchtime = GetMillisTime();
             TouchEventInfo::EventData data {};
             if (g_timesvector.size() > 1) {
-                    data.interval = g_timesvector.back()-g_timesvector[g_timesvector.size() - INDEX_TWO];
+                data.interval = g_timesvector.back() - g_timesvector[g_timesvector.size() - INDEX_TWO];
             } else {
-                    data.interval = g_timeindex;
+                data.interval = g_timeindex;
             }
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
-                    newTime = GetMillisTime();
-                    g_timesvector.push_back(newTime);
+                newTime = GetMillisTime();
+                g_timesvector.push_back(newTime);
             }
             if (!result) {
                 std::cout << "GetPointerItem Fail" << std::endl;
             }
-            if (pointerEvent->GetPointerAction() != MMI::PointerEvent::POINTER_ACTION_UP) {
-                g_eventsvector.push_back(item);
-                if (
-                    pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN ||
-                    pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
-                    g_mmitimesvector.push_back(g_touchtime);
-                }
-            } else {
+            g_eventsvector.push_back(item);
+            if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN ||
+                pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
+                g_mmitimesvector.push_back(g_touchtime);
+            }
+            if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP)  {
                 int indexTime = GetMillisTime();
+                int eventCount = g_eventsvector.size();
                 int actionInterval = 300;
                 int pressTime = indexTime - g_timesvector.back();
-                int distance = pow((item.GetDisplayX() - g_eventsvector[0].GetDisplayX()), 2)            \
-                    + pow((item.GetDisplayY() - g_eventsvector[0].GetDisplayY()), 2);
-                float speed = (pow((item.GetDisplayX() - g_eventsvector[g_eventsvector.size() -          \
-                    INDEX_TWO].GetDisplayX()), 2) + pow((item.GetDisplayY() -                            \
-                    g_eventsvector[g_eventsvector.size() - INDEX_TWO].GetDisplayY()), 2)) /              \
-                    pow((indexTime - g_mmitimesvector[g_mmitimesvector.size() - INDEX_TWO]), 2);
-                float initialSpeed = (pow((g_eventsvector[2].GetDisplayX() -                             \
-                    g_eventsvector[0].GetDisplayX()), 2) + pow((g_eventsvector[2].GetDisplayY() -        \
-                    g_eventsvector[0].GetDisplayY()), 2)) /                                              \
-                    pow((g_mmitimesvector[2] - g_mmitimesvector[0]), 2);
+                int distance = getDistance(0,eventCount);
+                int speed = getSpeed(0,eventCount-INDEX_TWO);
                 float threshold = 0.005;
-                if (g_eventsvector.size() > 1 && (distance > g_maxdistance)) {
-                    if (initialSpeed < threshold) {
-                        touchop = FOUR;
+                if (eventCount > 2 && (distance > g_maxdistance)) {
+                    if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance && getSpeed(0, dragMonitor) < threshold) {
+                        g_touchop = drag; 
+                    } else if (speed < threshold) {
+                            g_touchop = swipe; 
                     } else {
-                        if (speed < threshold) {
-                            touchop = THREE;
-                        } else {
-                            touchop = FIVE;
-                        }
+                        g_touchop = fling; 
                     }
                     g_mmitimesvector.clear();
-                } else {
+                }else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
-                            touchop = ZERO;
-                        } else if (data.interval < actionInterval && pressTime < pressDuration) {
-                            touchop = TWO;
-                        } else if (data.interval > actionInterval && pressTime > pressDuration) {
-                            touchop = ONE;
-                        }
+                        g_touchop = click;
+                    } else if (data.interval < actionInterval && pressTime < pressDuration) {
+                        g_touchop = double_click;
+                    } else if (data.interval > actionInterval && pressTime > pressDuration) {
+                        g_touchop = long_click;
+                    }
                 }
                 MMI::PointerEvent::PointerItem up_event = g_eventsvector.back();
                 MMI::PointerEvent::PointerItem down_event = g_eventsvector.front();
-                data.actionType = touchop;
+                data.actionType = g_touchop;
                 data.xPosi = down_event.GetDisplayX();
                 data.yPosi = down_event.GetDisplayY();
                 data.x2Posi = up_event.GetDisplayX();
                 data.y2Posi = up_event.GetDisplayY();
                 TouchEventInfo::WriteEventData(g_outfile, data);
-                std::cout << " PointerEvent:" << g_operationtype[data.actionType]
+                std::cout << " PointerEvent:" << g_operationType[data.actionType]
                             << " xPosi:" << data.xPosi
                             << " yPosi:" << data.yPosi
                             << " x2Posi:" << data.x2Posi
                             << " y2Posi:" << data.y2Posi
                             << " interval:" << ((data.interval + g_timeindex - 1) / g_timeindex) << std::endl;
-
                 g_eventsvector.clear();
             }
         }
-        virtual void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override {}
+        void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override {}
         static std::shared_ptr<InputEventCallback> GetPtr();
     };
 
@@ -476,7 +481,7 @@ namespace OHOS::uitest {
     {
         return std::make_shared<InputEventCallback>();
     }
-            
+
     static void TimerFunc()
     {
         int t = GetMillisTime();
@@ -489,7 +494,7 @@ namespace OHOS::uitest {
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
-        if (argc != INDEX_THREE) {
+        if (!(argc == INDEX_THREE || argc == INDEX_FOUR )) {
             PrintToConsole(usage);
             return EXIT_FAILURE;
         }
@@ -498,7 +503,10 @@ namespace OHOS::uitest {
             Timer timer;
             timer.Start(g_timeinterval, TimerFunc);
             if (!InitEventRecordFile(g_outfile)) {
-            return OHOS::ERR_INVALID_VALUE;
+                return OHOS::ERR_INVALID_VALUE;
+            }
+            if (argc == INDEX_FOUR){
+                dragMonitor = atoi(argv[3]);
             }
             auto callBackPtr = InputEventCallback::GetPtr();
             if (callBackPtr == nullptr) {
@@ -513,11 +521,11 @@ namespace OHOS::uitest {
             std::cout << "Started Recording Successfully..." << std::endl;
             int flag = getc(stdin);
             std::cout << flag << std::endl;
-            constexpr int TIME_TO_SLEEP = 3600;
-            sleep(TIME_TO_SLEEP);
+            constexpr int timeToSleep = 3600;
+            sleep(timeToSleep);
             return OHOS::ERR_OK;
         } else if (opt == "read") {
-            std::ifstream inFile(DEFAULT_DIR + "/" + "record.csv");
+            std::ifstream inFile(g_defaultDir + "/" + "record.csv");
             TouchEventInfo::ReadEventLine(inFile);
             return OHOS::ERR_OK;
         } else {
