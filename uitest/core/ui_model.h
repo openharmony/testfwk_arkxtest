@@ -243,8 +243,6 @@ namespace OHOS::uitest {
 
         void DfsTraverseDescendants(WidgetVisitor &visitor, const Widget &root) const;
 
-        void GetChildCoutMap(std::map<std::string, size_t> &childCoutMap) const;
-
         /**
          * Get the root widget node.
          *

@@ -311,23 +311,8 @@ namespace OHOS::uitest {
         widgetsConstructed_ = true;
     }
 
-    void WidgetTree::GetChildCoutMap(std::map<std::string, size_t> &childCountMap) const
-    {
-        for (auto &hierarchy : widgetHierarchyIdDfsOrder_) {
-            if (hierarchy == ROOT_HIERARCHY) {
-                continue;
-            }
-            auto parentHierarchy = WidgetHierarchyBuilder::GetParentWidgetHierarchy(hierarchy);
-            if (childCountMap.find(parentHierarchy) == childCountMap.end()) {
-                childCountMap[parentHierarchy] = 1;
-            } else {
-                childCountMap[parentHierarchy] = childCountMap[parentHierarchy] + 1;
-            }
-        }
-    }
-
     static void DfsMarshalWidget(const WidgetTree& tree, const Widget& root, nlohmann::json& dom,
-        const std::map<string, size_t> childCountMap)
+        const std::map<string, size_t> widgetChildCountMap)
     {
         auto attributesData = json();
         // "< UiAttr::HIERARCHY" : do not expose inner used attributes
@@ -342,10 +327,10 @@ namespace OHOS::uitest {
         attributesData[ATTR_NAMES[UiAttr::BOUNDS].data()] = stream.str();
 
         auto childrenData = json::array();
-        uint32_t childIndex = 0, childCount = 0 , visitCount = 0;
+        uint32_t childIndex = 0, childCount = 0, visitCount = 0;
         auto hierarchy = root.GetHierarchy();
-        if (childCountMap.find(hierarchy) != childCountMap.end()) {
-            childCount = childCountMap.find(hierarchy)->second;
+        if (widgetChildCountMap.find(hierarchy) != widgetChildCountMap.end()) {
+            childCount = widgetChildCountMap.find(hierarchy)->second;
         }
         while (visitCount < childCount) {
             auto child = tree.GetChildWidget(root, childIndex);
@@ -354,7 +339,7 @@ namespace OHOS::uitest {
                 continue;
             }
             auto childData = json();
-            DfsMarshalWidget(tree, *child, childData, childCountMap);
+            DfsMarshalWidget(tree, *child, childData, widgetChildCountMap);
             childrenData.emplace_back(childData);
             visitCount++;
         }
@@ -367,10 +352,20 @@ namespace OHOS::uitest {
     {
         DCHECK(widgetsConstructed_);
         auto root = GetRootWidget();
-        std::map<string, size_t> childCountMap;
-        this->GetChildCoutMap(childCountMap);
+        std::map<string, size_t> widgetChildCountMap;
+        for (auto &hierarchy : widgetHierarchyIdDfsOrder_) {
+            if (hierarchy == ROOT_HIERARCHY) {
+                continue;
+            }
+            auto parentHierarchy = WidgetHierarchyBuilder::GetParentWidgetHierarchy(hierarchy);
+            if (widgetChildCountMap.find(parentHierarchy) == widgetChildCountMap.end()) {
+                widgetChildCountMap[parentHierarchy] = 1;
+            } else {
+                widgetChildCountMap[parentHierarchy] = widgetChildCountMap[parentHierarchy] + 1;
+            }
+        }
         if (root != nullptr) {
-            DfsMarshalWidget(*this, *root, dom, childCountMap);
+            DfsMarshalWidget(*this, *root, dom, widgetChildCountMap);
         }
     }
 
