@@ -75,12 +75,11 @@ class ConfigService {
             }
         }
 
-        if (params.dryRun !== undefined && params.dryRun !== 'true' && params.dryRun !== 'false') {
-            this.filterValid.push('dryRun:' + params.dryRun);
-        }
-
-        if (params.random !== undefined && params.random !== 'true' && params.random !== 'false') {
-            this.filterValid.push('random:' + params.random);
+        let paramKeys = ['dryRun', 'random'];
+        for (const key of paramKeys) {
+            if (paramKeys[key] !== undefined && paramKeys[key] !== 'true' && paramKeys[key] !== 'false') {
+                this.filterValid.push(`${key}:${paramKeys[key]}`);
+            }
         }
 
         let classes = params.class;
