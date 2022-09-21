@@ -201,7 +201,6 @@ namespace OHOS::uitest {
                 case '?':
                     PrintToConsole(usage);
                     return EXIT_FAILURE;
-                    break;
                 case 'i':
                     params.insert(pair<char, string>(opt, "true"));
                     break;
