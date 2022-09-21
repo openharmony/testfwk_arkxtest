@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include <inttypes.h>
+#include <cinttypes>
 #include "common_utilities_hpp.h"
 #include "ipc_transactors_impl.h"
 
