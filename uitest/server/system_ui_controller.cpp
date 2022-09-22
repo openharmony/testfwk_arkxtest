@@ -210,6 +210,7 @@ namespace OHOS::uitest {
                     child = child2;
                 }
                 if (!child.IsVisible()) {
+                    LOG_I("invisible node drop, id: %{public}d", child.GetAccessibilityId());
                     continue;
                 }
                 auto parcel = json();
