@@ -72,7 +72,7 @@ namespace OHOS::uitest {
 
     static bool IsOperational(const WindowAction action, const WindowMode mode, ApiReplyInfo &out, size_t &index)
     {
-        for (auto dex = 0; dex < sizeof(OPERATIONS) / sizeof(Operational); dex++) {
+        for (unsigned long dex = 0; dex < sizeof(OPERATIONS) / sizeof(Operational); dex++) {
             if (OPERATIONS[dex].action == action && OPERATIONS[dex].windowMode == mode) {
                 if (OPERATIONS[dex].support) {
                     index = OPERATIONS[dex].index;
