@@ -255,7 +255,7 @@ namespace OHOS::uitest {
         if (g_backendObjsAboutToDelete.size() >= BACKEND_OBJ_GC_BATCH) {
             auto gcCall = ApiCallInfo {.apiId_ = "BackendObjectsCleaner"};
             unique_lock<mutex> lock(g_gcQueueMutex);
-            for (auto count = 0; count < BACKEND_OBJ_GC_BATCH; count++) {
+            for (size_t count = 0; count < BACKEND_OBJ_GC_BATCH; count++) {
                 gcCall.paramList_.emplace_back(g_backendObjsAboutToDelete.front());
                 g_backendObjsAboutToDelete.pop();
             }
