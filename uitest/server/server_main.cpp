@@ -397,6 +397,7 @@ namespace OHOS::uitest {
             std::cout << "keyCode" << keyEvent->GetKeyCode() << std::endl;
         }
         int getDistance(int i, int j) const{
+            
             int distance = pow((g_eventsvector[i].GetDisplayX() - g_eventsvector[j].GetDisplayX()), 2)            \
                 + pow((g_eventsvector[i].GetDisplayY() - g_eventsvector[j].GetDisplayY()), 2);
             return distance;
@@ -435,9 +436,10 @@ namespace OHOS::uitest {
                 int eventCount = g_eventsvector.size();
                 int actionInterval = 300;
                 int pressTime = indexTime - g_timesvector.back();
-                int distance = getDistance(0,eventCount);
+                int distance = getDistance(0, eventCount-INDEX_ONE);
                 int speed = getSpeed(0,eventCount-INDEX_TWO);
                 float threshold = 0.005;
+                
                 if (eventCount > 2 && (distance > g_maxdistance)) {
                     if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance && getSpeed(0, dragMonitor) < threshold) {
                         g_touchop = drag; 
@@ -446,6 +448,7 @@ namespace OHOS::uitest {
                     } else {
                         g_touchop = fling; 
                     }
+                    
                     g_mmitimesvector.clear();
                 }else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
