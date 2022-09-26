@@ -624,6 +624,7 @@ namespace OHOS::uitest {
                 if (controller->IsScreenOn()) {
                     return;
                 } else {
+                    LOG_I("screen is off, turn it on");
                     UiOpArgs uiOpArgs;
                     driver.TriggerKey(Power(), uiOpArgs, out.exception_);
                 }
