@@ -24,15 +24,15 @@ class SpecEvent {
         this.eventMonitors.push(service);
     }
 
-    specStart() {
+    async specStart() {
         for (let monitor in this.eventMonitors) {
-            this.eventMonitors[monitor]['specStart']();
+            await this.eventMonitors[monitor]['specStart']();
         }
     }
 
-    specDone() {
+    async specDone() {
         for (const monitor in this.eventMonitors) {
-            this.eventMonitors[monitor]['specDone']();
+            await this.eventMonitors[monitor]['specDone']();
         }
     }
 }
@@ -48,15 +48,15 @@ class SuiteEvent {
         this.eventMonitors.push(service);
     }
 
-    suiteStart() {
+    async suiteStart() {
         for (let monitor in this.eventMonitors) {
-            this.eventMonitors[monitor]['suiteStart']();
+            await this.eventMonitors[monitor]['suiteStart']();
         }
     }
 
-    suiteDone() {
+    async suiteDone() {
         for (let monitor in this.eventMonitors) {
-            this.eventMonitors[monitor]['suiteDone']();
+            await this.eventMonitors[monitor]['suiteDone']();
         }
     }
 }
@@ -78,9 +78,9 @@ class TaskEvent {
         }
     }
 
-    taskDone() {
+    async taskDone() {
         for (let monitor in this.eventMonitors) {
-            this.eventMonitors[monitor]['taskDone']();
+            await this.eventMonitors[monitor]['taskDone']();
         }
     }
 
