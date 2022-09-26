@@ -435,7 +435,7 @@ namespace OHOS::uitest {
                 int eventCount = g_eventsvector.size();
                 int actionInterval = 300;
                 int pressTime = indexTime - g_timesvector.back();
-                int distance = getDistance(0,eventCount);
+                int distance = getDistance(0, eventCount-INDEX_ONE);
                 int speed = getSpeed(0,eventCount-INDEX_TWO);
                 float threshold = 0.005;
                 if (eventCount > 2 && (distance > g_maxdistance)) {
