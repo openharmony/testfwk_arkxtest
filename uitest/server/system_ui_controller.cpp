@@ -609,6 +609,6 @@ namespace OHOS::uitest {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
         auto displayId = displayMgr.GetDefaultDisplayId();
         auto state = displayMgr.GetDisplayState(displayId);
-        return (state == DisplayState::ON);
+        return (state != DisplayState::OFF);
     }
 } // namespace OHOS::uitest
