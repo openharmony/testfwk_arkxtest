@@ -34,7 +34,7 @@ class OhReport {
     async taskDone() {
         this.taskDoneTime = new Date().getTime();
         let summary = this.suiteService.getSummary();
-        var message = '\n' + 'OHOS_REPORT_RESULT: stream=Tests run: ' + summary.total + ', Failure: ' + summary.failure;
+        let message = '\n' + 'OHOS_REPORT_RESULT: stream=Tests run: ' + summary.total + ', Failure: ' + summary.failure;
         message += ', Error: ' + summary.error;
         message += ', Pass: ' + summary.pass;
         message += '\n' + 'OHOS_REPORT_CODE: ' + (summary.failure > 0 ? -1 : 0) + '\n';
@@ -56,7 +56,7 @@ class OhReport {
     }
 
     async suiteStart() {
-        var message = '\n' + 'OHOS_REPORT_SUM: ' + this.suiteService.getCurrentRunningSuite().getSpecsNum();
+        let message = '\n' + 'OHOS_REPORT_SUM: ' + this.suiteService.getCurrentRunningSuite().getSpecsNum();
         message += '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description + '\n';
         await this.delegator.print(message).then(() => {
             console.info(this.suiteService.getCurrentRunningSuite().description + ' print success');
@@ -64,7 +64,7 @@ class OhReport {
     }
 
     async suiteDone() {
-        var message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
+        let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
         message += '\n' + 'OHOS_REPORT_STATUS: suiteconsuming=' + this.suiteService.getCurrentRunningSuite().duration + '\n';
         await this.delegator.print(message).then(() => {
             console.info(this.suiteService.getCurrentRunningSuite().description + ' print success');
@@ -72,7 +72,7 @@ class OhReport {
     }
 
     async specStart() {
-        var message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
+        let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
         message += '\n' + 'OHOS_REPORT_STATUS: current=' + (++this.index);
         message += '\n' + 'OHOS_REPORT_STATUS: id=JS';
         message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.suiteService.getSummary().total;
@@ -85,7 +85,7 @@ class OhReport {
     }
 
     async specDone() {
-        var message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
+        let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
         message += '\n' + 'OHOS_REPORT_STATUS: current=' + (this.index);
         message += '\n' + 'OHOS_REPORT_STATUS: id=JS';
         message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.suiteService.getSummary().total;
