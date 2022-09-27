@@ -427,13 +427,13 @@ namespace OHOS::uitest {
             }
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
                 newTime = GetMillisTime();
-                g_timesvector.push_back(newTime); 
+                g_timesvector.push_back(newTime); //只记录down 用于识别doubleclick
             }
             if (!result) {
                 std::cout << "GetPointerItem Fail" << std::endl;
             }
             g_eventsvector.push_back(item);
-            g_mmitimesvector.push_back(g_touchtime);
+            g_mmitimesvector.push_back(g_touchtime); //记录所有事件时间
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP)  {
                 int indexTime = GetMillisTime();
                 int eventCount = g_eventsvector.size();
@@ -441,10 +441,10 @@ namespace OHOS::uitest {
                 int pressTime = indexTime - g_timesvector.back();
                 int distance = getDistance(0, eventCount-INDEX_ONE);
                 double speed = getSpeed(0, eventCount-INDEX_ONE, isClick, clickEventCount);
-                float threshold = 1;
+                float threshold = 0.6;
                 
                 if (eventCount > 2 && (distance > g_maxdistance)) {
-                    if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance) { 
+                    if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance) { //不用识别速度吧？
                         g_touchop = drag; 
                     } else if (speed < threshold) {
                         g_touchop = swipe; 
