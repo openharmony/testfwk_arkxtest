@@ -398,17 +398,19 @@ namespace OHOS::uitest {
         {
             std::cout << "keyCode" << keyEvent->GetKeyCode() << std::endl;
         }
-        int getDistance(int i, int j) const{
-            int distance = pow((g_eventsvector[i].GetDisplayX() - g_eventsvector[j].GetDisplayX()), 2)            \
-                + pow((g_eventsvector[i].GetDisplayY() - g_eventsvector[j].GetDisplayY()), 2);
+        int getDistance(int i, int j) const
+        {
+            int distance = pow((g_eventsvector[i].GetDisplayX() - g_eventsvector[j].GetDisplayX()), INDEX_TWO)            \
+                + pow((g_eventsvector[i].GetDisplayY() - g_eventsvector[j].GetDisplayY()), INDEX_TWO);
             return distance;
         }
-        double getSpeed(int i, int j, bool is_click, int click_eventCount) const {
+        double getSpeed(int i, int j, bool is_click, int click_eventCount) const 
+        {
             double speed = 0;
             if (is_click) {
-                speed = getDistance(i,j)/ pow((g_mmitimesvector[i+click_eventCount] - g_mmitimesvector.back()), 2);
+                speed = getDistance(i,j)/ pow((g_mmitimesvector[i+click_eventCount] - g_mmitimesvector.back()), INDEX_TWO);
             } else {
-                speed = getDistance(i,j)/ pow((g_mmitimesvector[i] - g_mmitimesvector[j]), 2);
+                speed = getDistance(i,j)/ pow((g_mmitimesvector[i] - g_mmitimesvector[j]), INDEX_TWO);
             }
             return speed;
         }
@@ -427,13 +429,13 @@ namespace OHOS::uitest {
             }
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
                 newTime = GetMillisTime();
-                g_timesvector.push_back(newTime); //只记录down 用于识别doubleclick
+                g_timesvector.push_back(newTime); 
             }
             if (!result) {
                 std::cout << "GetPointerItem Fail" << std::endl;
             }
             g_eventsvector.push_back(item);
-            g_mmitimesvector.push_back(g_touchtime); //记录所有事件时间
+            g_mmitimesvector.push_back(g_touchtime); 
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP)  {
                 int indexTime = GetMillisTime();
                 int eventCount = g_eventsvector.size();
@@ -442,9 +444,8 @@ namespace OHOS::uitest {
                 int distance = getDistance(0, eventCount-INDEX_ONE);
                 double speed = getSpeed(0, eventCount-INDEX_ONE, isClick, clickEventCount);
                 float threshold = 0.6;
-                
                 if (eventCount > 2 && (distance > g_maxdistance)) {
-                    if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance) { //不用识别速度吧？
+                    if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance) { 
                         g_touchop = drag; 
                     } else if (speed < threshold) {
                         g_touchop = swipe; 
