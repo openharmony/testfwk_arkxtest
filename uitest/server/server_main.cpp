@@ -449,12 +449,10 @@ namespace OHOS::uitest {
                 if (eventCount > 2 && (distance > g_maxdistance)) {
                     if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance && getSpeed(0, dragMonitor, isClick, clickEventCount) < threshold) {
                         g_touchop = drag; 
+                    } else if (speed < threshold) {
+                        g_touchop = swipe; 
                     } else {
-                        if (speed < threshold) {
-                            g_touchop = swipe; 
-                        } else {
-                            g_touchop = fling; 
-                        }
+                        g_touchop = fling; 
                     }
                 }else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
