@@ -64,9 +64,9 @@ namespace OHOS::uitest {
     vector<MMI::PointerEvent::PointerItem> g_eventsvector;
     vector<int> g_timesvector;
     vector<int> g_mmitimesvector;
-    enum GTouchop : uint8_t {CLICK = 0, LONG_CLICK, DOUBLE_CLICK, SWIPE, DRAG, FLING};
-    enum GCaseInfo : uint8_t {TYPE = 0, X_POSI, Y_POSI, X2POSI, Y2POSI, INTERVAL, LENGTH, VELOCITY};
-    GTouchop g_touchop = CLICK;
+    enum GTouchop : uint8_t {click = 0, long_click, double_click, swipe, drag, fling};
+    enum GCaseInfo : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velocity };
+    GTouchop g_touchop = click;
     bool g_isClick = false;
     int g_clickEventCount = 0;
 
@@ -131,14 +131,14 @@ namespace OHOS::uitest {
                     inFile >> buffer;
                     std::string delim = ",";
                     auto caseInfo = TestUtils::split(buffer, delim);
-                    type = caseInfo[TYPE];
-                    xPosi = std::stoi(caseInfo[X_POSI]);
-                    yPosi = std::stoi(caseInfo[Y_POSI]);
-                    x2Posi = std::stoi(caseInfo[X2POSI]);
-                    y2Posi = std::stoi(caseInfo[Y2POSI]);
-                    interval = std::stoi(caseInfo[INTERVAL]);
-                    length = std::stoi(caseInfo[LENGTH]);
-                    velocity = std::stoi(caseInfo[VELOCITY]);
+                    type = caseInfo[Type];
+                    xPosi = std::stoi(caseInfo[XPosi]);
+                    yPosi = std::stoi(caseInfo[YPosi]);
+                    x2Posi = std::stoi(caseInfo[X2Posi]);
+                    y2Posi = std::stoi(caseInfo[Y2Posi]);
+                    interval = std::stoi(caseInfo[Interval]);
+                    length = std::stoi(caseInfo[Length]);
+                    velocity = std::stoi(caseInfo[Velocity]);
                     if (inFile.fail()) {
                         break;
                     } else {
@@ -429,7 +429,7 @@ namespace OHOS::uitest {
             }
             g_eventsvector.push_back(item);
             g_mmitimesvector.push_back(g_touchtime);
-            if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP) {
+            if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP)  {
                 int indexTime = GetMillisTime();
                 int eventCount = g_eventsvector.size();
                 int actionInterval = 300;
@@ -445,16 +445,16 @@ namespace OHOS::uitest {
                     } else {
                         g_touchop = fling; 
                     }
-                } else {
+                }else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
-                        g_touchop = CLICK;
+                        g_touchop = click;
                     } else if (data.interval < actionInterval && pressTime < pressDuration) {
-                        g_touchop = DOUBLE_CLICK;
+                        g_touchop = double_click;
                     } else if (data.interval > actionInterval && pressTime > pressDuration) {
-                        g_touchop = LONG_CLICK;
+                        g_touchop = long_click;
                     }
                 }
-                if (g_touchop == CLICK) {
+                if (g_touchop == click) {
                     g_isClick = true;
                     g_clickEventCount = g_mmitimesvector.size();
                 } else {
@@ -500,7 +500,7 @@ namespace OHOS::uitest {
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
-        if (!(argc == INDEX_THREE || argc == INDEX_FOUR)) {
+        if (!(argc == INDEX_THREE || argc == INDEX_FOUR )) {
             PrintToConsole(usage);
             return EXIT_FAILURE;
         }
