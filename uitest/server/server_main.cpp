@@ -406,7 +406,7 @@ namespace OHOS::uitest {
         double getSpeed(int i, int j, bool is_click, int click_eventCount) const {
             double speed = 0;
             if (is_click) {
-                speed = getDistance(i,j)/ pow((g_mmitimesvector[i+click_eventCount] - g_mmitimesvector[j]), 2);
+                speed = getDistance(i,j)/ pow((g_mmitimesvector[i+click_eventCount] - g_mmitimesvector.back()), 2);
             } else {
                 speed = getDistance(i,j)/ pow((g_mmitimesvector[i] - g_mmitimesvector[j]), 2);
             }
@@ -427,27 +427,24 @@ namespace OHOS::uitest {
             }
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
                 newTime = GetMillisTime();
-                g_timesvector.push_back(newTime);
+                g_timesvector.push_back(newTime); 
             }
             if (!result) {
                 std::cout << "GetPointerItem Fail" << std::endl;
             }
             g_eventsvector.push_back(item);
-            if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN ||
-                pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
-                g_mmitimesvector.push_back(g_touchtime);
-            }
+            g_mmitimesvector.push_back(g_touchtime);
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP)  {
                 int indexTime = GetMillisTime();
                 int eventCount = g_eventsvector.size();
                 int actionInterval = 300;
                 int pressTime = indexTime - g_timesvector.back();
                 int distance = getDistance(0, eventCount-INDEX_ONE);
-                int speed = getSpeed(0, eventCount-INDEX_TWO, isClick, clickEventCount);
-                float threshold = 0.005;
+                double speed = getSpeed(0, eventCount-INDEX_ONE, isClick, clickEventCount);
+                float threshold = 1;
                 
                 if (eventCount > 2 && (distance > g_maxdistance)) {
-                    if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance && getSpeed(0, dragMonitor, isClick, clickEventCount) < threshold) {
+                    if (eventCount > dragMonitor && getDistance(0,dragMonitor) < g_maxdistance) { 
                         g_touchop = drag; 
                     } else if (speed < threshold) {
                         g_touchop = swipe; 
@@ -457,7 +454,7 @@ namespace OHOS::uitest {
                 }else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
                         g_touchop = click;
-                        clickEventCount = g_eventsvector.size();
+                        clickEventCount = g_mmitimesvector.size();
                     } else if (data.interval < actionInterval && pressTime < pressDuration) {
                         g_touchop = double_click;
                     } else if (data.interval > actionInterval && pressTime > pressDuration) {
