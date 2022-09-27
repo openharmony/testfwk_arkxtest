@@ -65,7 +65,7 @@ namespace OHOS::uitest {
     vector<int> g_timesvector;
     vector<int> g_mmitimesvector;
     enum GTouchop : uint8_t {click = 0, long_click, double_click, swipe, drag, fling};
-    enum GCaseInfo : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velocity };
+    enum GCaseInfo : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velocity};
     GTouchop g_touchop = click;
     bool g_isClick = false;
     int g_clickEventCount = 0;
