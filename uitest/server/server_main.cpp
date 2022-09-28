@@ -426,7 +426,7 @@ namespace OHOS::uitest {
                 int pressTime = indexTime - g_timesvector.back();
                 int distance = GetDistance(0, eventCount-INDEX_ONE);
                 double speed = GetSpeed(0, eventCount-INDEX_ONE, g_isClick, g_clickEventCount);
-                if (eventCount > INDEX_TWO && (distance > g_maxdistance)) {
+                if (eventCount > TWO && (distance > g_maxdistance)) {
                     double threshold = 0.6;
                     if (eventCount > g_dragMonitor && GetDistance(0, g_dragMonitor) < g_maxdistance) { 
                         g_touchop = drag; 
