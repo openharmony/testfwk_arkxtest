@@ -39,6 +39,7 @@
 #include "i_input_event_consumer.h"
 #include "pointer_event.h"
 #include "ui_driver.h"
+#define TWO 2
 
 using namespace std;
 using namespace std::chrono;
@@ -69,6 +70,7 @@ namespace OHOS::uitest {
     GTouchop g_touchop = click;
     bool g_isClick = false;
     int g_clickEventCount = 0;
+
     namespace {
         std::string g_defaultDir = "/data/local/tmp/layout";
         int64_t GetMillisTime()
@@ -118,26 +120,18 @@ namespace OHOS::uitest {
             static void ReadEventLine(std::ifstream &inFile)
             {
                 char buffer[50];
-                string type;
-                int xPosi = -1;
-                int yPosi = -1;
-                int x2Posi = -1;
-                int y2Posi = -1;
-                int interval = -1;
-                int length = -1;
-                int velocity = -1;
                 while (!inFile.eof()) {
                     inFile >> buffer;
                     std::string delim = ",";
                     auto caseInfo = TestUtils::split(buffer, delim);
-                    type = caseInfo[Type];
-                    xPosi = std::stoi(caseInfo[XPosi]);
-                    yPosi = std::stoi(caseInfo[YPosi]);
-                    x2Posi = std::stoi(caseInfo[X2Posi]);
-                    y2Posi = std::stoi(caseInfo[Y2Posi]);
-                    interval = std::stoi(caseInfo[Interval]);
-                    length = std::stoi(caseInfo[Length]);
-                    velocity = std::stoi(caseInfo[Velocity]);
+                    string type = caseInfo[Type];
+                    int xPosi = std::stoi(caseInfo[XPosi]);
+                    int yPosi = std::stoi(caseInfo[YPosi]);
+                    int x2Posi = std::stoi(caseInfo[X2Posi]);
+                    int y2Posi = std::stoi(caseInfo[Y2Posi]);
+                    int interval = std::stoi(caseInfo[Interval]);
+                    int length = std::stoi(caseInfo[Length]);
+                    int velocity = std::stoi(caseInfo[Velocity]);
                     if (inFile.fail()) {
                         break;
                     } else {
@@ -157,8 +151,7 @@ namespace OHOS::uitest {
 
         bool InitReportFolder()
         {
-            DIR *rootDir = nullptr;
-            if ((rootDir = opendir(g_defaultDir.c_str())) == nullptr) {
+            if (opendir(g_defaultDir.c_str()) == nullptr) {
                 int ret = mkdir(g_defaultDir.c_str(), S_IROTH | S_IRWXU | S_IRWXG);
                 if (ret != 0) {
                     std::cerr << "failed to create dir: " << g_defaultDir << std::endl;
@@ -392,25 +385,23 @@ namespace OHOS::uitest {
         }
         int GetDistance(int i, int j) const
         {
-            int distance = pow((g_eventsvector[i].GetDisplayX() - g_eventsvector[j].GetDisplayX()), 2)            \
-                + pow((g_eventsvector[i].GetDisplayY() - g_eventsvector[j].GetDisplayY()), 2);
+            int distance = pow((g_eventsvector[i].GetDisplayX() - g_eventsvector[j].GetDisplayX()), TWO)            \
+                + pow((g_eventsvector[i].GetDisplayY() - g_eventsvector[j].GetDisplayY()), TWO);
             return distance;
         }
-        double GetSpeed(int i, int j, bool is_click, int click_eventCount) const
+        double GetSpeed(int i, int j, bool is_click, int click_eventCount) const 
         {
             double speed = 0;
             if (is_click) {
-                speed = GetDistance(i,j)/ pow((g_mmitimesvector[i+click_eventCount] - g_mmitimesvector.back()), 2);
+                speed = GetDistance(i,j)/ pow((g_mmitimesvector[i+click_eventCount] - g_mmitimesvector.back()), TWO);
             } else {
-                speed = GetDistance(i,j)/ pow((g_mmitimesvector[i] - g_mmitimesvector[j]), 2);
+                speed = GetDistance(i,j)/ pow((g_mmitimesvector[i] - g_mmitimesvector[j]), TWO);
             }
             return speed;
         }
         void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override
         {
             MMI::PointerEvent::PointerItem item;
-            int newTime;
-            int pressDuration = 600;
             bool result = pointerEvent->GetPointerItem(pointerEvent->GetPointerId(), item);
             g_touchtime = GetMillisTime();
             TouchEventInfo::EventData data {};
@@ -420,8 +411,7 @@ namespace OHOS::uitest {
                 data.interval = g_timeindex;
             }
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
-                newTime = GetMillisTime();
-                g_timesvector.push_back(newTime);
+                g_timesvector.push_back(GetMillisTime());
             }
             if (!result) {
                 std::cout << "GetPointerItem Fail" << std::endl;
@@ -432,12 +422,13 @@ namespace OHOS::uitest {
                 int indexTime = GetMillisTime();
                 int eventCount = g_eventsvector.size();
                 int actionInterval = 300;
+                int pressDuration = 600;
                 int pressTime = indexTime - g_timesvector.back();
                 int distance = GetDistance(0, eventCount-INDEX_ONE);
                 double speed = GetSpeed(0, eventCount-INDEX_ONE, g_isClick, g_clickEventCount);
-                float threshold = 0.6;
                 if (eventCount > INDEX_TWO && (distance > g_maxdistance)) {
-                    if (eventCount > g_dragMonitor && GetDistance(0,g_dragMonitor) < g_maxdistance) { 
+                    double threshold = 0.6;
+                    if (eventCount > g_dragMonitor && GetDistance(0, g_dragMonitor) < g_maxdistance) { 
                         g_touchop = drag; 
                     } else if (speed < threshold) {
                         g_touchop = swipe; 
