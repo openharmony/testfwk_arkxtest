@@ -69,7 +69,6 @@ namespace OHOS::uitest {
     GTouchop g_touchop = click;
     bool g_isClick = false;
     int g_clickEventCount = 0;
-
     namespace {
         std::string g_defaultDir = "/data/local/tmp/layout";
         int64_t GetMillisTime()
@@ -397,7 +396,7 @@ namespace OHOS::uitest {
                 + pow((g_eventsvector[i].GetDisplayY() - g_eventsvector[j].GetDisplayY()), 2);
             return distance;
         }
-        double GetSpeed(int i, int j, bool is_click, int click_eventCount) const 
+        double GetSpeed(int i, int j, bool is_click, int click_eventCount) const
         {
             double speed = 0;
             if (is_click) {
