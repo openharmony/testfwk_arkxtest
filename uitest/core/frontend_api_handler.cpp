@@ -538,7 +538,7 @@ namespace OHOS::uitest {
         server.AddHandler("UiDriver.drag", genericClick);
     }
 
-    static bool CheckMultiPointerOperatorsPoint(PointerMatrix& pointer)
+    static bool CheckMultiPointerOperatorsPoint(const PointerMatrix& pointer)
     {
         for (uint32_t fingerIndex = 0; fingerIndex < pointer.GetFingers(); fingerIndex++) {
             for (uint32_t stepIndex = 0; stepIndex < pointer.GetSteps(); stepIndex++) {

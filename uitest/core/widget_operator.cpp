@@ -55,7 +55,7 @@ namespace OHOS::uitest {
         vector<string> &leafNodes_;
     };
 
-    static void TakeScopeUiSnapshot(UiDriver& driver, const Widget &root, string &snapshot, vector<string> &leafNodes)
+    static void TakeScopeUiSnapshot(const UiDriver& driver, const Widget &root, string &snapshot, vector<string> &leafNodes)
     {
         TreeSnapshotTaker snapshotTaker(snapshot, leafNodes);
         driver.GetWidgetTree()->DfsTraverseDescendants(snapshotTaker, root);

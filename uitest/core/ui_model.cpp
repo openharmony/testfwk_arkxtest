@@ -312,7 +312,7 @@ namespace OHOS::uitest {
     }
 
     static void DfsMarshalWidget(const WidgetTree& tree, const Widget& root, nlohmann::json& dom,
-        const std::map<string, size_t> widgetChildCountMap)
+        const std::map<string, size_t>& widgetChildCountMap)
     {
         auto attributesData = json();
         // "< UiAttr::HIERARCHY" : do not expose inner used attributes
@@ -436,7 +436,7 @@ namespace OHOS::uitest {
 
         void Visit(const Widget &widget) override;
 
-        Rect GetMergedBounds()
+        Rect GetMergedBounds() const
         {
             return mergedBounds_;
         }

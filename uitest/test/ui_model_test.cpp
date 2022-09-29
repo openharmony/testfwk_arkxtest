@@ -316,9 +316,9 @@ static void CheckMergedTree(const array<string_view, 3> &doms, map<string, strin
     WidgetTree tree("");
     vector<unique_ptr<WidgetTree>> subTrees;
     for (auto &dom : doms) {
-        auto tree = make_unique<WidgetTree>("");
-        tree->ConstructFromDom(nlohmann::json::parse(dom), true);
-        subTrees.push_back(move(tree));
+        auto tempTree = make_unique<WidgetTree>("");
+        tempTree->ConstructFromDom(nlohmann::json::parse(dom), true);
+        subTrees.push_back(move(tempTree));
     }
     WidgetTree::MergeTrees(subTrees, tree);
     for (auto &[name, value] : attrCollector) {
