@@ -34,7 +34,7 @@
           "samgr_standard",
           "libpng",
           "accessibility",
-          "multimedia_image_standard",
+          "multimedia_image_framework",
           "ability_runtime",
           "hiviewdfx_hilog_native",
           "input",
