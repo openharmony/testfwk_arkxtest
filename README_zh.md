@@ -24,6 +24,7 @@ arkXtest
 | 1    | 基础流程 | 支持编写及执行基础用例。                                     |
 | 2    | 断言库   | 判断用例实际期望值与预期值是否相符。                         |
 | 3    | Mock能力 | 支持函数级mock能力，对定义的函数进行mock后修改函数的行为，使其返回指定的值或者执行某种动作。 |
+| 4    | 数据驱动 | 提供数据驱动能力，支持复用同一个测试脚本，使用不同输入数据驱动执行。 |
 
 ### 使用说明
 
@@ -131,7 +132,7 @@ export default async function abilityTest() {
 
 | No. | API | 功能说明 |
 | --- | --- | --- |
-| 1 | mockFunc(obj: object, f：founction()) | mock某个类的对象obj的函数f，那么需要传两个参数：obj和f，支持使用异步函数（说明：对mock而言并没有很多区别，因为mock并不关注原函数的实现）。 |
+| 1 | mockFunc(obj: object, f：function()) | mock某个类的对象obj的函数f，那么需要传两个参数：obj和f，支持使用异步函数（说明：对mock而言原函数实现是同步或异步没太多区别，因为mock并不关注原函数的实现）。 |
 | 2 | when(mockedfunc：function) | 对传入后方法做检查，检查是否被mock并标记过，返回的是一个方法声明。 |
 | 3 | afterReturn(x：value) | 设定预期返回一个自定义的值value，比如某个字符串或者一个promise。 |
 | 4 | afterReturnNothing() | 设定预期没有返回值，即 undefined。 |
@@ -141,7 +142,7 @@ export default async function abilityTest() {
 | 8 | any | 设定用户传任何类型参数（undefined和null除外），执行的结果都是预期的值，使用ArgumentMatchers.any方式调用。 |
 | 9 | anyString | 设定用户传任何字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.anyString方式调用。 |
 | 10 | anyBoolean | 设定用户传任何boolean类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyBoolean方式调用。 |
-| 11 | anyFounction | 设定用户传任何function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyFounction方式调用。 |
+| 11 | anyFunction | 设定用户传任何function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyFunction方式调用。 |
 | 12 | anyNumber | 设定用户传任何数字类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyNumber方式调用。 |
 | 13 | anyObj | 设定用户传任何对象类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyObj方式调用。 |
 | 14 | matchRegexs(Regex) | 设定用户传任何正则表达式类型参数Regex，执行的结果都是预期的值，使用ArgumentMatchers.matchRegexs(Regex)方式调用。 |
@@ -159,7 +160,7 @@ export default async function abilityTest() {
 用户可以通过以下方式进行引入mock模块进行测试用例编写：
 
 - **须知：**
-必须引入的mock能力模块api: MockKit，when
+使用时候必须引入的mock能力模块： MockKit，when
 根据自己用例需要引入断言能力api
 例如：`import { describe, expect, it, MockKit, when} from '@ohos/hypium'`
 
@@ -244,7 +245,7 @@ export default function ActsAbilityTest() {
             //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
             let mockfunc = mocker.mockFunc(claser, claser.method_1);
 
-            //4.根据自己需求进行选择 执行完毕后的动作，比如这里我选择afterReturnNothing();即不返回任何值
+            //4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterReturnNothing();即不返回任何值
             when(mockfunc)('test').afterReturnNothing();
 
             //5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
@@ -759,8 +760,8 @@ export default function ActsAbilityTest() {
 
 单元测试框架数据驱动能力从[hypium 1.0.2版本](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)开始支持。
 
-- 参数传递 : 为指定测试套、测试用例传递参数。
-- 压力测试 : 为指定测试套、测试用例的执行次数。
+- 数据参数传递 : 为指定测试套、测试用例传递测试输入数据参数。
+- 压力测试 : 为指定测试套、测试用例设置执行次数。
 
 数据驱动可以根据配置参数来驱动测试用例的执行次数和每一次传入的参数，使用时依赖data.json配置文件，文件内容如下：
 
@@ -840,7 +841,7 @@ export default function abilityTest() {
 
 ### 使用方式
 
-单元测试框架以npm包（hypium）形式发布至[服务组件官网](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
+单元测试框架以npm包（hypium）形式发布至[服务组件官网](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001267284568)。
 
 ## Ui测试框架功能特性
 
@@ -859,7 +860,7 @@ import {UiDriver,BY,UiComponent,Uiwindow,MatchPattern} from '@ohos.uitest'
 
 > 须知
 > 1. `By`类提供的接口全部是同步接口，使用者可以使用`builder`模式链式调用其接口构造控件筛选条件。
-> 2. `UiDrivier`和`UiComponent`类提供的接口全部是异步接口(`Promise`形式)，**需使用`await`语法**。
+> 2. `UiDriver`和`UiComponent`类提供的接口全部是异步接口(`Promise`形式)，**需使用`await`语法**。
 > 3. Ui测试用例均需使用**异步**语法编写用例，需遵循单元测试框架异步用例编写规范。
 
    
@@ -1074,8 +1075,9 @@ await window.close()
 
 ### 使用方式
 
-  开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
+  开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001267284568)。
   UI测试框架使能需要执行如下命令。
+
 >```shell
 > hdc_std shell param set persist.ace.testmode.enabled 1
 >```
