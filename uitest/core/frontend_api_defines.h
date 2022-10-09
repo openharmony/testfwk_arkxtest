@@ -38,7 +38,7 @@ namespace OHOS::uitest {
     struct ApiCallErr {
     public:
         ErrCode code_;
-        std::string message_;
+        std::string message_ = "";
 
         ApiCallErr() = delete;
 

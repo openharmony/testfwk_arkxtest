@@ -28,7 +28,7 @@ namespace OHOS::uitest {
 
     void WidgetSelector::AddFrontLocator(const WidgetSelector &selector, ApiCallErr &error)
     {
-        if (!selector.rearLocators_.empty() || !selector.rearLocators_.empty()) {
+        if (!selector.rearLocators_.empty()) {
             error = ApiCallErr(USAGE_ERROR, NEST_USAGE_ERROR);
             return;
         }
@@ -37,7 +37,7 @@ namespace OHOS::uitest {
 
     void WidgetSelector::AddRearLocator(const WidgetSelector &selector, ApiCallErr &error)
     {
-        if (!selector.rearLocators_.empty() || !selector.rearLocators_.empty()) {
+        if (!selector.rearLocators_.empty()) {
             error = ApiCallErr(USAGE_ERROR, NEST_USAGE_ERROR);
             return;
         }
@@ -68,11 +68,10 @@ namespace OHOS::uitest {
         }
 
         vector<uint32_t> discardWidgetOffsets;
-        uint32_t offset = 0;
         // check locators at each direction and filter out unsatisfied widgets
         for (size_t idx = 0; idx < INDEX_TWO; idx++) {
             discardWidgetOffsets.clear();
-            offset = 0;
+            uint32_t offset = 0;
             for (auto &result:results) {
                 const bool front = idx == 0;
                 const auto &locators = front ? frontLocators_ : rearLocators_;
