@@ -246,8 +246,10 @@ namespace OHOS::uitest {
             return;
         }
         auto selector = WidgetSelector();
-        auto matcher = WidgetAttrMatcher("index", std::to_string(index), EQ);
-        selector.AddMatcher(matcher);
+        auto matcher1 = WidgetAttrMatcher("index", std::to_string(index), EQ);
+        auto matcher2 = WidgetAttrMatcher("type", "button", EQ);
+        selector.AddMatcher(matcher1);
+        selector.AddMatcher(matcher2);
         vector<unique_ptr<Widget>> widgets;
         driver_.FindWidgets(selector, widgets, out.exception_);
         if (out.exception_.code_ != ErrCode::NO_ERROR) {
