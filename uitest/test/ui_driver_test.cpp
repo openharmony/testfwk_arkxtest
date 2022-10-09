@@ -82,8 +82,7 @@ TEST_F(UiDriverTest, internalError)
     auto error = ApiCallErr(NO_ERROR);
     auto key = Back();
     driver_->TriggerKey(key, opt_, error);
-
-    ASSERT_EQ(INTERNAL_ERROR, error.code_);
+    ASSERT_EQ(ERR_INTERNAL, error.code_);
 }
 
 TEST_F(UiDriverTest, normalInteraction)
@@ -177,7 +176,7 @@ TEST_F(UiDriverTest, retrieveWidgetFailure)
     driver_->RetrieveWidget(*widgets.at(0), error, true);
 
     // retrieve widget failed should be marked as exception
-    ASSERT_EQ(WIDGET_LOST, error.code_);
+    ASSERT_EQ(ERR_COMPONENT_LOST, error.code_);
     ASSERT_TRUE(error.message_.find(selector.Describe()) != string::npos)
                                 << "Error message should contains the widget selection description";
 }
@@ -233,6 +232,6 @@ TEST_F(UiDriverTest, retrieveWidget)
     controller_->SetDomFrame(mockDom2);
     // we should not be able to refresh WidgetImage on the new UI since its gone (hashcode and attributes changed)
     snapshot = driver_->RetrieveWidget(*widgets.at(0), error);
-    ASSERT_EQ(WIDGET_LOST, error.code_);
+    ASSERT_EQ(ERR_COMPONENT_LOST, error.code_);
     ASSERT_EQ(nullptr, snapshot);
 }

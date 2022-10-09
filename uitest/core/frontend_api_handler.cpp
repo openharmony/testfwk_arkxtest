@@ -23,6 +23,200 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
     using namespace nlohmann::detail;
+
+    /** API argument type list map.*/
+    static map<string, pair<vector<string>, bool>> sApiArgTypesMap;
+
+    static void ParseMethodSignature(string_view signature, vector<string> &types, bool &defArg)
+    {
+        int charIndex = 0;
+        constexpr size_t BUF_LEN = 32;
+        char buf[BUF_LEN];
+        size_t tokenLen = 0;
+        size_t defArgCount = 0;
+        string token;
+        for (char ch : signature) {
+            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
+                buf[tokenLen++] = ch;
+            } else if (ch == '?') {
+                defArgCount++;
+                DCHECK(defArgCount == 1); // only one defaultArg allowed
+            } else if (ch == ',' || ch == '?' || ch == ')') {
+                if (tokenLen > 0) {
+                    token = string_view(buf, tokenLen);
+                    DCHECK(find(DATA_TYPE_SCOPE.begin(), DATA_TYPE_SCOPE.end(), token) != DATA_TYPE_SCOPE.end());
+                    types.emplace_back(token);
+                }
+                tokenLen = 0; // consume token and reset buffer
+                if (ch == ')') {
+                    // add return value type to the end of types.
+                    string retType = string(signature.substr(charIndex + 2));
+                    types.emplace_back(retType);
+                    break; // end parsing
+                }
+            }
+            charIndex++;
+        }
+        defArg = defArgCount > 0;
+    }
+
+    /** Parse frontend method definitions to collect type information.*/
+    static void ParseFrontendMethodsSignature()
+    {
+        for (auto classDef : FRONTEND_CLASS_DEFS) {
+            LOG_D("parse class %{public}s", string(classDef->name_).c_str());
+            if (classDef->methods_ == nullptr || classDef->methodCount_ <= 0) {
+                continue;
+            }
+            for (size_t idx = 0; idx < classDef->methodCount_; idx++) {
+                auto methodDef = classDef->methods_[idx];
+                auto paramTypes = vector<string>();
+                auto hasDefaultArg = false;
+                ParseMethodSignature(methodDef.signature_, paramTypes, hasDefaultArg);
+                sApiArgTypesMap.insert(make_pair(string(methodDef.name_), make_pair(paramTypes, hasDefaultArg)));
+            }
+        }
+    }
+
+    static string GetClassName(const string &apiName, char splitter) 
+    {
+        size_t classNameLen;
+        classNameLen = apiName.find(splitter);
+        if (classNameLen == std::string::npos) {
+            return "";
+        }
+        return apiName.substr(0, classNameLen);
+    }
+
+    static string CheckAndDoApiMapping(string_view apiName, char splitter, const map<string, string> &apiMap) 
+    {
+        size_t classNameLen;
+        string output = string(apiName);
+        classNameLen = output.find(splitter);
+        if (classNameLen == std::string::npos) {
+            return output;
+        }
+        string className = output.substr(0, classNameLen);
+        auto result = apiMap.find(className);
+        if (result == apiMap.end()) {
+            return output;
+        }
+        auto specialMapItem = apiMap.find(output);
+        if (specialMapItem != apiMap.end()) {
+            output = specialMapItem->second;
+        } else {
+            output.replace(0, classNameLen, result->second);
+        }
+        LOG_D("original className: %{public}s, modified to: %{public}s", className.c_str(), output.c_str());
+        return output;
+    }
+
+    FrontendApiServer::FrontendApiServer() 
+    {
+        old2NewApiMap_["By"] = "On";
+        old2NewApiMap_["UiDriver"] = "Driver";
+        old2NewApiMap_["UiComponent"] = "Component";
+        old2NewApiMap_["By.id"] = "On.accessibilityId";
+        old2NewApiMap_["By.key"] = "On.id";
+        old2NewApiMap_["UiComponent.getId"] = "Component.getAccessibilityId";
+        old2NewApiMap_["UiComponent.getKey"] = "Component.getId";
+        new2OldApiMap_["On"] = "By" ;
+        new2OldApiMap_["Driver"] = "UiDriver" ;
+        new2OldApiMap_["Component"] = "UiComponent" ;
+    }
+
+    /** 
+     * map api8 old api call to new api. 
+     * return old api name if it's an old api call.
+     * return empty string if it's a new api call.
+     */
+    static const std::map<ErrCode, std::vector<ErrCode>> ErrMap =
+    {
+        /**Correspondence between old and new error codes*/
+        {NO_ERROR,{NO_ERROR}},
+        {ERR_COMPONENT_LOST, {WIDGET_LOST, WINDOW_LOST}},
+        {ERR_NO_SYSTEM_CAPABILITY, {USAGE_ERROR}},
+        {ERR_INTERNAL, {INTERNAL_ERROR}},
+        {ERR_INITIALIZE_FAILED, {USAGE_ERROR}},
+        {ERR_INVALID_INPUT, {USAGE_ERROR}},
+        {ERR_ASSERTION_FAILED, {ASSERTION_FAILURE}},
+        {ERR_OPERATION_UNSUPPORTED, {INTERNAL_ERROR}},
+        {ERR_API_USAGE, {INTERNAL_ERROR}},
+    };
+    
+    string FrontendApiServer::ApiMapPre(ApiCallInfo &inModifier) const 
+    {
+        // 1. map method name
+        const string &className = GetClassName(inModifier.apiId_, '.');
+        const auto result = old2NewApiMap_.find(className);
+        if (result == old2NewApiMap_.end()) {
+            return "";
+        }
+        string oldApiName = inModifier.apiId_;
+        inModifier.apiId_ = CheckAndDoApiMapping(inModifier.apiId_, '.', old2NewApiMap_);
+        LOG_D("Modify call name to %{public}s", inModifier.apiId_.c_str());
+        // 2. map callerObjRef
+        if (inModifier.callerObjRef_.find(className) == 0) {
+            inModifier.callerObjRef_.replace(0, className.length(), result->second);
+            LOG_D("Modify callobjref to %{public}s", inModifier.callerObjRef_.c_str());
+        }
+        // 3. map parameters
+        // find method signature of old api
+        const auto find = sApiArgTypesMap.find(oldApiName);
+        if (find == sApiArgTypesMap.end()) {
+            return oldApiName;
+        }
+        const auto &argTypes = find->second.first;
+        size_t argCount = inModifier.paramList_.size();
+        if (argTypes.size() - 1 < argCount) {
+            // parameter number invalid
+            return oldApiName;
+        }
+        for (size_t i = 0; i < argCount; i++) {
+            auto &argItem = inModifier.paramList_.at(i);
+            const string &argType = argTypes.at(i);
+            if (argType != "string" && argItem.type() == value_t::string) {
+                argItem = CheckAndDoApiMapping(argItem.get<string>(), '#', old2NewApiMap_);
+            }
+        }
+        return oldApiName;
+    }
+
+    static void ErrCodeMapping(ApiCallErr &apiErr) 
+    {
+        ErrCode ec = apiErr.code_;
+        std::string_view msg = apiErr.message_;
+        auto findCode = ErrMap.find(ec);
+        if (findCode != ErrMap.end() && !findCode->second.empty()) {
+            apiErr = ApiCallErr(findCode->second.at(0), msg);
+        } 
+    }
+
+    /** map new error code and api Object to old error code and api Object. */
+    void FrontendApiServer::ApiMapPost(const string &oldApiName, ApiReplyInfo &out) const {
+        json &value = out.resultValue_;
+        const auto type = value.type();
+        // 1. error code conversion
+        ErrCodeMapping(out.exception_);
+        // 2. ret value conversion 
+        const auto find = sApiArgTypesMap.find(oldApiName);
+        if (find == sApiArgTypesMap.end()) {
+            return;
+        }
+        string &retType = find->second.first.back();
+        if ( (retType == "string") || (retType == "[string]")) {
+            return;
+        }
+        if (type == value_t::string) {
+            value = CheckAndDoApiMapping(value.get<string>(), '#', new2OldApiMap_);
+        } else if (type == value_t::array) {
+            for (auto &item : value) {
+                if (item.type() == value_t::string) {
+                    item = CheckAndDoApiMapping(item.get<string>(), '#', new2OldApiMap_);
+                }
+            }
+        }
+    }
  
     FrontendApiServer &FrontendApiServer::Get()
     {
@@ -40,7 +234,8 @@ namespace OHOS::uitest {
 
     bool FrontendApiServer::HasHandlerFor(std::string_view apiId) const
     {
-        return handlers_.find(string(apiId)) != handlers_.end();
+        string apiIdstr = CheckAndDoApiMapping(apiId, '.', old2NewApiMap_);
+        return handlers_.find(apiIdstr) != handlers_.end();
     }
 
     void FrontendApiServer::RemoveHandler(string_view apiId)
@@ -63,27 +258,38 @@ namespace OHOS::uitest {
 
     void FrontendApiServer::Call(const ApiCallInfo &in, ApiReplyInfo &out) const
     {
+        // initialize method signature
+        if (sApiArgTypesMap.empty()) {
+            ParseFrontendMethodsSignature();
+        }
+        string oldApiName = ApiMapPre(const_cast<ApiCallInfo&>(in));
         auto find = handlers_.find(in.apiId_);
         if (find == handlers_.end()) {
-            out.exception_ = ApiCallErr(ErrCode::INTERNAL_ERROR, "No handler found for api '" + in.apiId_ + "'");
+            out.exception_ = ApiCallErr(ERR_INTERNAL, "No handler found for api '" + in.apiId_ + "'");
             return;
         }
         try {
             for (auto &[name, processor] : commonPreprocessors_) {
                 processor(in, out);
-                if (out.exception_.code_ != ErrCode::NO_ERROR) {
-                    out.exception_.message_ = out.exception_.message_ + "(PreProsessing: " + name + ")";
-                    return; // error during pre-proccessing, abort
+                if (out.exception_.code_ != NO_ERROR) {
+                    out.exception_.message_ = out.exception_.message_ + "(PreProcessing: " + name + ")";
+                    if (oldApiName.length() > 0) {
+                        ApiMapPost(oldApiName, out);
+                    }
+                    return; // error during pre-processing, abort
                 }
             }
         } catch (std::exception &ex) {
-            out.exception_ = ApiCallErr(ErrCode::INTERNAL_ERROR, "Preprocessor failed: " + string(ex.what()));
+            out.exception_ = ApiCallErr(ERR_INTERNAL, "Preprocessor failed: " + string(ex.what()));
         }
         try {
             find->second(in, out);
         } catch (std::exception &ex) {
             // catch possible json-parsing error
-            out.exception_ = ApiCallErr(ErrCode::INTERNAL_ERROR, "Handler failed: " + string(ex.what()));
+            out.exception_ = ApiCallErr(ERR_INTERNAL, "Handler failed: " + string(ex.what()));
+        }
+        if (oldApiName.length() > 0) {
+            ApiMapPost(oldApiName, out);
         }
     }
 
@@ -97,53 +303,7 @@ namespace OHOS::uitest {
     static map<string, unique_ptr<BackendClass>> sBackendObjects;
     /** UiDriver binding map.*/
     static map<string, string> sDriverBindingMap;
-    /** API argument type list map.*/
-    static map<string, pair<vector<string>, bool>> sApiArgTypesMap;
 
-    static void ParseMethodSignature(string_view signature, vector<string> &types, bool &defArg)
-    {
-        constexpr size_t BUF_LEN = 32;
-        char buf[BUF_LEN];
-        size_t tokenLen = 0;
-        size_t defArgCount = 0;
-        string token;
-        for (char ch : signature) {
-            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
-                buf[tokenLen++] = ch;
-            } else if (ch == '?') {
-                defArgCount++;
-                DCHECK(defArgCount == 1); // only one defaultArg allowed
-            } else if (ch == ',' || ch == '?' || ch == ')') {
-                if (tokenLen > 0) {
-                    token = string_view(buf, tokenLen);
-                    DCHECK(find(DATA_TYPE_SCOPE.begin(), DATA_TYPE_SCOPE.end(), token) != DATA_TYPE_SCOPE.end());
-                    types.emplace_back(token);
-                }
-                tokenLen = 0; // consume token and reset buffer
-                if (ch == ')') {
-                    break; // end parsing
-                }
-            }
-        }
-        defArg = defArgCount > 0;
-    }
-
-    /** Parse frontend method definitions to collect type information.*/
-    static void ParseFrontendMethodsSignature()
-    {
-        for (auto classDef : FRONTEND_CLASS_DEFS) {
-            if (classDef->methods_ == nullptr || classDef->methodCount_ <= 0) {
-                continue;
-            }
-            for (size_t idx = 0; idx < classDef->methodCount_; idx++) {
-                auto methodDef = classDef->methods_[idx];
-                auto paramTypes = vector<string>();
-                auto hasDefaultArg = false;
-                ParseMethodSignature(methodDef.signature_, paramTypes, hasDefaultArg);
-                sApiArgTypesMap.insert(make_pair(string(methodDef.name_), make_pair(paramTypes, hasDefaultArg)));
-            }
-        }
-    }
 
 #define CHECK_CALL_ARG(condition, code, message, error) \
     if (!(condition)) {                                 \
@@ -163,25 +323,25 @@ namespace OHOS::uitest {
         auto find0 = find_if(begin0, end0, [&expect](const FrontEndClassDef *def) { return def->name_ == expect; });
         auto find1 = find_if(begin1, end1, [&expect](const FrontEndJsonDef *def) { return def->name_ == expect; });
         if (expect == "int") {
-            CHECK_CALL_ARG(isInteger, USAGE_ERROR, "Expect interger", error);
+            CHECK_CALL_ARG(isInteger, ERR_INVALID_INPUT, "Expect integer", error);
         } else if (expect == "float") {
-            CHECK_CALL_ARG(isInteger || type == value_t::number_float, USAGE_ERROR, "Expect float", error);
+            CHECK_CALL_ARG(isInteger || type == value_t::number_float, ERR_INVALID_INPUT, "Expect float", error);
         } else if (expect == "bool") {
-            CHECK_CALL_ARG(type == value_t::boolean, USAGE_ERROR, "Expect boolean", error);
+            CHECK_CALL_ARG(type == value_t::boolean, ERR_INVALID_INPUT, "Expect boolean", error);
         } else if (expect == "string") {
-            CHECK_CALL_ARG(type == value_t::string, USAGE_ERROR, "Expect string", error);
+            CHECK_CALL_ARG(type == value_t::string, ERR_INVALID_INPUT, "Expect string", error);
         } else if (find0 != end0) {
-            CHECK_CALL_ARG(type == value_t::string, USAGE_ERROR, "Expect " + string(expect), error);
+            CHECK_CALL_ARG(type == value_t::string, ERR_INVALID_INPUT, "Expect " + string(expect), error);
             const auto findRef = sBackendObjects.find(value.get<string>());
-            CHECK_CALL_ARG(findRef != sBackendObjects.end(), INTERNAL_ERROR, "Bad object ref", error);
+            CHECK_CALL_ARG(findRef != sBackendObjects.end(), ERR_INTERNAL, "Bad object ref", error);
         } else if (find1 != end1) {
-            CHECK_CALL_ARG(type == value_t::object, USAGE_ERROR, "Expect " + string(expect), error);
+            CHECK_CALL_ARG(type == value_t::object, ERR_INVALID_INPUT, "Expect " + string(expect), error);
             auto copy = value;
             for (size_t idx = 0; idx < (*find1)->propCount_; idx++) {
                 auto def = (*find1)->props_ + idx;
                 const auto propName = string(def->name_);
                 if (!value.contains(propName)) {
-                    CHECK_CALL_ARG(!(def->required_), USAGE_ERROR, "Missing property " + propName, error);
+                    CHECK_CALL_ARG(!(def->required_), ERR_INVALID_INPUT, "Missing property " + propName, error);
                     continue;
                 }
                 copy.erase(propName);
@@ -192,9 +352,9 @@ namespace OHOS::uitest {
                     return;
                 }
             }
-            CHECK_CALL_ARG(copy.empty(), USAGE_ERROR, "Illegal property of " + string(expect), error);
+            CHECK_CALL_ARG(copy.empty(), ERR_INVALID_INPUT, "Illegal property of " + string(expect), error);
         } else {
-            CHECK_CALL_ARG(false, INTERNAL_ERROR, "Unknown target type " + string(expect), error);
+            CHECK_CALL_ARG(false, ERR_INTERNAL, "Unknown target type " + string(expect), error);
         }
     }
 
@@ -203,20 +363,17 @@ namespace OHOS::uitest {
     {
         // return nullptr by default
         out.resultValue_ = nullptr;
-        if (sApiArgTypesMap.empty()) {
-            ParseFrontendMethodsSignature();
-        }
         const auto find = sApiArgTypesMap.find(in.apiId_);
         if (find == sApiArgTypesMap.end()) {
             return;
         }
         const auto &types = find->second.first;
         const auto argSupportDefault = find->second.second;
-        // check argument count
-        const auto maxArgc = types.size();
+        // check argument count.(last item of "types" is return value type)
+        const auto maxArgc = types.size() - 1;
         const auto minArgc = argSupportDefault ? maxArgc - 1 : maxArgc;
         const auto argc = in.paramList_.size();
-        CHECK_CALL_ARG(argc <= maxArgc && argc >= minArgc, USAGE_ERROR, "Illegal argument count", out.exception_);
+        CHECK_CALL_ARG(argc <= maxArgc && argc >= minArgc, ERR_INVALID_INPUT, "Illegal argument count", out.exception_);
         // check argument type
         for (size_t idx = 0; idx < argc; idx++) {
             CheckCallArgType(types.at(idx), in.paramList_.at(idx), out.exception_);
@@ -306,12 +463,12 @@ namespace OHOS::uitest {
         return in.paramList_.at(index).get<T>();
     }
 
-    template <UiAttr kAttr, typename T> static void GenericByAttrBuilder(const ApiCallInfo &in, ApiReplyInfo &out)
+    template <UiAttr kAttr, typename T> static void GenericOnAttrBuilder(const ApiCallInfo &in, ApiReplyInfo &out)
     {
         const auto attrName = ATTR_NAMES[kAttr];
         // always create and return a new selector
         auto selector = make_unique<WidgetSelector>();
-        if (in.callerObjRef_ != REF_SEED_BY) { // copy-construct from the caller if it's not seed
+        if (in.callerObjRef_ != REF_SEED_ON) { // copy-construct from the caller if it's not seed
             *selector = GetBackendObject<WidgetSelector>(in.callerObjRef_);
         }
         string testValue = "";
@@ -328,27 +485,26 @@ namespace OHOS::uitest {
         out.resultValue_ = StoreBackendObject(move(selector));
     }
 
-    static void RegisterByBuilders()
-    {
+    static void RegisterOnBuilders() {
         auto &server = FrontendApiServer::Get();
-        server.AddHandler("By.id", GenericByAttrBuilder<UiAttr::ID, int32_t>);
-        server.AddHandler("By.text", GenericByAttrBuilder<UiAttr::TEXT, string>);
-        server.AddHandler("By.key", GenericByAttrBuilder<UiAttr::KEY, string>);
-        server.AddHandler("By.type", GenericByAttrBuilder<UiAttr::TYPE, string>);
-        server.AddHandler("By.enabled", GenericByAttrBuilder<UiAttr::ENABLED, bool>);
-        server.AddHandler("By.focused", GenericByAttrBuilder<UiAttr::FOCUSED, bool>);
-        server.AddHandler("By.selected", GenericByAttrBuilder<UiAttr::SELECTED, bool>);
-        server.AddHandler("By.clickable", GenericByAttrBuilder<UiAttr::CLICKABLE, bool>);
-        server.AddHandler("By.longClickable", GenericByAttrBuilder<UiAttr::LONG_CLICKABLE, bool>);
-        server.AddHandler("By.scrollable", GenericByAttrBuilder<UiAttr::SCROLLABLE, bool>);
-        server.AddHandler("By.checkable", GenericByAttrBuilder<UiAttr::CHECKABLE, bool>);
-        server.AddHandler("By.checked", GenericByAttrBuilder<UiAttr::CHECKED, bool>);
+        server.AddHandler("On.accessibilityId", GenericOnAttrBuilder<UiAttr::ACCESSIBILITY_ID, int32_t>); // ��д��.d.ts�ļ�
+        server.AddHandler("On.text", GenericOnAttrBuilder<UiAttr::TEXT, string>);
+        server.AddHandler("On.id", GenericOnAttrBuilder<UiAttr::ID, string>);
+        server.AddHandler("On.type", GenericOnAttrBuilder<UiAttr::TYPE, string>);
+        server.AddHandler("On.enabled", GenericOnAttrBuilder<UiAttr::ENABLED, bool>);
+        server.AddHandler("On.focused", GenericOnAttrBuilder<UiAttr::FOCUSED, bool>);
+        server.AddHandler("On.selected", GenericOnAttrBuilder<UiAttr::SELECTED, bool>);
+        server.AddHandler("On.clickable", GenericOnAttrBuilder<UiAttr::CLICKABLE, bool>);
+        server.AddHandler("On.longClickable", GenericOnAttrBuilder<UiAttr::LONG_CLICKABLE, bool>);
+        server.AddHandler("On.scrollable", GenericOnAttrBuilder<UiAttr::SCROLLABLE, bool>);
+        server.AddHandler("On.checkable", GenericOnAttrBuilder<UiAttr::CHECKABLE, bool>);
+        server.AddHandler("On.checked", GenericOnAttrBuilder<UiAttr::CHECKED, bool>);
 
         auto genericRelativeBuilder = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            const auto attrName = in.apiId_.substr(BY_DEF.name_.length() + 1); // By.xxx()->xxx
+            const auto attrName = in.apiId_.substr(ON_DEF.name_.length() + 1); // On.xxx()->xxx
             // always create and return a new selector
             auto selector = make_unique<WidgetSelector>();
-            if (in.callerObjRef_ != REF_SEED_BY) { // copy-construct from the caller if it's not seed
+            if (in.callerObjRef_ != REF_SEED_ON) { // copy-construct from the caller if it's not seed
                 *selector = GetBackendObject<WidgetSelector>(in.callerObjRef_);
             }
             if (attrName == "isBefore") {
@@ -360,20 +516,20 @@ namespace OHOS::uitest {
             }
             out.resultValue_ = StoreBackendObject(move(selector));
         };
-        server.AddHandler("By.isBefore", genericRelativeBuilder);
-        server.AddHandler("By.isAfter", genericRelativeBuilder);
+        server.AddHandler("On.isBefore", genericRelativeBuilder);
+        server.AddHandler("On.isAfter", genericRelativeBuilder);
     }
 
     static void RegisterUiDriverComponentFinders()
     {
         auto &server = FrontendApiServer::Get();
-        auto genricFindWidgetHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+        auto genericFindWidgetHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             const auto driverRef = in.callerObjRef_;
             auto &driver = GetBackendObject<UiDriver>(driverRef);
             auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
             UiOpArgs uiOpArgs;
             vector<unique_ptr<Widget>> recv;
-            if (in.apiId_ == "UiDriver.waitForComponent") {
+            if (in.apiId_ == "Driver.waitForComponent") {
                 uiOpArgs.waitWidgetMaxMs_ = ReadCallArg<uint32_t>(in, INDEX_ONE);
                 auto result = driver.WaitForWidget(selector, uiOpArgs, out.exception_);
                 if (result != nullptr) {
@@ -382,15 +538,15 @@ namespace OHOS::uitest {
             } else {
                 driver.FindWidgets(selector, recv, out.exception_);
             }
-            if (out.exception_.code_ != ErrCode::NO_ERROR) {
+            if (out.exception_.code_ != NO_ERROR) {
                 return;
             }
-            if (in.apiId_ == "UiDriver.assertComponentExist") {
-                if (recv.empty()) { // widget-exist assertion faliure, delevier exception
-                    out.exception_.code_ = ErrCode::ASSERTION_FAILURE;
-                    out.exception_.message_ = "UiComponent not exist matching: " + selector.Describe();
+            if (in.apiId_ == "Driver.assertComponentExist") {
+                if (recv.empty()) { // widget-exist assertion failure, deliver exception
+                    out.exception_.code_ = ERR_ASSERTION_FAILED;
+                    out.exception_.message_ = "Component not exist matching: " + selector.Describe();
                 }
-            } else if (in.apiId_ == "UiDriver.findComponents") { // return widget array, maybe empty
+            } else if (in.apiId_ == "Driver.findComponents") { // return widget array, maybe empty
                 for (auto &ptr : recv) {
                     out.resultValue_.emplace_back(StoreBackendObject(move(ptr), driverRef));
                 }
@@ -400,10 +556,10 @@ namespace OHOS::uitest {
                 out.resultValue_ = StoreBackendObject(move(*(recv.begin())), driverRef);
             }
         };
-        server.AddHandler("UiDriver.findComponent", genricFindWidgetHandler);
-        server.AddHandler("UiDriver.findComponents", genricFindWidgetHandler);
-        server.AddHandler("UiDriver.waitForComponent", genricFindWidgetHandler);
-        server.AddHandler("UiDriver.assertComponentExist", genricFindWidgetHandler);
+        server.AddHandler("Driver.findComponent", genericFindWidgetHandler);
+        server.AddHandler("Driver.findComponents", genericFindWidgetHandler);
+        server.AddHandler("Driver.waitForComponent", genericFindWidgetHandler);
+        server.AddHandler("Driver.assertComponentExist", genericFindWidgetHandler);
     }
 
     static void RegisterUiDriverWindowFinder()
@@ -413,7 +569,7 @@ namespace OHOS::uitest {
             auto &driver = GetBackendObject<UiDriver>(driverRef);
             auto filterJson = ReadCallArg<json>(in, INDEX_ZERO);
             if (filterJson.empty()) {
-                out.exception_ = ApiCallErr(USAGE_ERROR, "WindowFilter cannot be empty");
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "WindowFilter cannot be empty");
                 return;
             }
             auto matcher = [&filterJson](const Window &window) -> bool {
@@ -439,46 +595,56 @@ namespace OHOS::uitest {
                 out.resultValue_ = StoreBackendObject(move(window), driverRef);
             }
         };
-        FrontendApiServer::Get().AddHandler("UiDriver.findWindow", findWindowHandler);
+        FrontendApiServer::Get().AddHandler("Driver.findWindow", findWindowHandler);
     }
 
     static void RegisterUiDriverMiscMethods()
     {
         auto &server = FrontendApiServer::Get();
         auto create = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            out.resultValue_ = StoreBackendObject(make_unique<UiDriver>());
+            auto driver = make_unique<UiDriver>();
+            driver->GetUiController(out.exception_);
+            if (out.exception_.code_ == NO_ERROR) {
+                out.resultValue_ = StoreBackendObject(move(driver));
+            } else {
+                out.exception_ = ApiCallErr(ERR_INITIALIZE_FAILED);
+            }
         };
-        server.AddHandler("UiDriver.create", create);
+        server.AddHandler("Driver.create", create);
+
         auto delay = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             driver.DelayMs(ReadCallArg<uint32_t>(in, INDEX_ZERO));
         };
-        server.AddHandler("UiDriver.delayMs", delay);
+        server.AddHandler("Driver.delayMs", delay);
+
         auto screenCap = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             driver.TakeScreenCap(ReadCallArg<string>(in, INDEX_ZERO), out.exception_);
-            out.resultValue_ = (out.exception_.code_ == ErrCode::NO_ERROR);
+            out.resultValue_ = (out.exception_.code_ == NO_ERROR);
+            out.exception_.code_ = NO_ERROR;
         };
-        server.AddHandler("UiDriver.screenCap", screenCap);
+        server.AddHandler("Driver.screenCap", screenCap);
+
         auto pressBack = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             driver.TriggerKey(Back(), uiOpArgs, out.exception_);
         };
-        server.AddHandler("UiDriver.pressBack", pressBack);
+        server.AddHandler("Driver.pressBack", pressBack);
         auto pressHome = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             driver.TriggerKey(Home(), uiOpArgs, out.exception_);
         };
-        server.AddHandler("UiDriver.pressHome", pressHome);
+        server.AddHandler("Driver.pressHome", pressHome);
         auto triggerKey = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             auto key = AnonymousSingleKey(ReadCallArg<int32_t>(in, INDEX_ZERO));
             driver.TriggerKey(key, uiOpArgs, out.exception_);
         };
-        server.AddHandler("UiDriver.triggerKey", triggerKey);
+        server.AddHandler("Driver.triggerKey", triggerKey);
         auto triggerCombineKeys = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
@@ -488,7 +654,7 @@ namespace OHOS::uitest {
             auto keyAction = CombinedKeys(key0, key1, key2);
             driver.TriggerKey(keyAction, uiOpArgs, out.exception_);
         };
-        server.AddHandler("UiDriver.triggerCombineKeys", triggerCombineKeys);
+        server.AddHandler("Driver.triggerCombineKeys", triggerCombineKeys);
     }
 
     static void CheckSwipeVelocityPps(UiOpArgs& args)
@@ -499,7 +665,7 @@ namespace OHOS::uitest {
         }
     }
 
-    static void RegisterUiDriverTocuchOperators()
+    static void RegisterUiDriverTouchOperators()
     {
         auto &server = FrontendApiServer::Get();
         auto genericClick = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -508,16 +674,16 @@ namespace OHOS::uitest {
             auto point1 = Point(0, 0);
             UiOpArgs uiOpArgs;
             auto op = TouchOp::CLICK;
-            if (in.apiId_ == "UiDriver.longClick") {
+            if (in.apiId_ == "Driver.longClick") {
                 op = TouchOp::LONG_CLICK;
-            } else if (in.apiId_ == "UiDriver.doubleClick") {
+            } else if (in.apiId_ == "Driver.doubleClick") {
                 op = TouchOp::DOUBLE_CLICK_P;
-            } else if (in.apiId_ == "UiDriver.swipe") {
+            } else if (in.apiId_ == "Driver.swipe") {
                 op = TouchOp::SWIPE;
                 uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
                 CheckSwipeVelocityPps(uiOpArgs);
                 point1 = Point(ReadCallArg<int32_t>(in, INDEX_TWO), ReadCallArg<int32_t>(in, INDEX_THREE));
-            } else if (in.apiId_ == "UiDriver.drag") {
+            } else if (in.apiId_ == "Driver.drag") {
                 op = TouchOp::DRAG;
                 uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
                 CheckSwipeVelocityPps(uiOpArgs);
@@ -531,11 +697,11 @@ namespace OHOS::uitest {
                 driver.PerformTouch(touch, uiOpArgs, out.exception_);
             }
         };
-        server.AddHandler("UiDriver.click", genericClick);
-        server.AddHandler("UiDriver.longClick", genericClick);
-        server.AddHandler("UiDriver.doubleClick", genericClick);
-        server.AddHandler("UiDriver.swipe", genericClick);
-        server.AddHandler("UiDriver.drag", genericClick);
+        server.AddHandler("Driver.click", genericClick);
+        server.AddHandler("Driver.longClick", genericClick);
+        server.AddHandler("Driver.doubleClick", genericClick);
+        server.AddHandler("Driver.swipe", genericClick);
+        server.AddHandler("Driver.drag", genericClick);
     }
 
     static bool CheckMultiPointerOperatorsPoint(const PointerMatrix& pointer)
@@ -560,7 +726,7 @@ namespace OHOS::uitest {
             auto pointJson0 = ReadCallArg<json>(in, INDEX_ZERO);
             auto pointJson1 = ReadCallArg<json>(in, INDEX_ONE);
             if (pointJson0.empty() || pointJson1.empty()) {
-                out.exception_ = ApiCallErr(USAGE_ERROR, "Point cannot be empty");
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Point cannot be empty");
                 return;
             }
             const auto point0 = Point(pointJson0["X"], pointJson0["Y"]);
@@ -572,21 +738,21 @@ namespace OHOS::uitest {
             const int32_t distanceY = point1.py_ - point0.py_;
             const uint32_t distance = sqrt(distanceX * distanceX + distanceY * distanceY);
             if (stepLength <= 0 || stepLength > distance) {
-                out.exception_ = ApiCallErr(USAGE_ERROR, "The stepLen is out of range");
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "The stepLen is out of range");
                 return;
             }
             uiOpArgs.swipeStepsCounts_ = distance / stepLength;
             auto touch = GenericSwipe(op, point0, point1);
             driver.PerformTouch(touch, uiOpArgs, out.exception_);
         };
-        server.AddHandler("UiDriver.fling", genericFling);
+        server.AddHandler("Driver.fling", genericFling);
 
         auto multiPointerAction = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto &pointer = GetBackendObject<PointerMatrix>(ReadCallArg<string>(in, INDEX_ZERO));
             auto flag = CheckMultiPointerOperatorsPoint(pointer);
             if (!flag) {
-                out.exception_ = ApiCallErr(USAGE_ERROR, "There is not all coordinate points are set");
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "There is not all coordinate points are set");
                 return;
             }
             UiOpArgs uiOpArgs;
@@ -594,9 +760,9 @@ namespace OHOS::uitest {
             CheckSwipeVelocityPps(uiOpArgs);
             auto touch = MultiPointerAction(pointer);
             driver.PerformTouch(touch, uiOpArgs, out.exception_);
-            out.resultValue_ = (out.exception_.code_ == ErrCode::NO_ERROR);
+            out.resultValue_ = (out.exception_.code_ == NO_ERROR);
         };
-        server.AddHandler("UiDriver.injectMultiPointerAction", multiPointerAction);
+        server.AddHandler("Driver.injectMultiPointerAction", multiPointerAction);
     }
 
     static void RegisterUiDriverDisplayOperators()
@@ -608,19 +774,19 @@ namespace OHOS::uitest {
             if (out.exception_.code_ != NO_ERROR) {
                 return;
             }
-            if (in.apiId_ == "UiDriver.setDisplayRotation") {
+            if (in.apiId_ == "Driver.setDisplayRotation") {
                 auto rotation = ReadCallArg<DisplayRotation>(in, INDEX_ZERO);
                 controller->SetDisplayRotation(rotation);
-            } else if (in.apiId_ == "UiDriver.getDisplayRotation") {
+            } else if (in.apiId_ == "Driver.getDisplayRotation") {
                 out.resultValue_ = controller->GetDisplayRotation();
-            } else if (in.apiId_ == "UiDriver.setDisplayRotationEnabled") {
+            } else if (in.apiId_ == "Driver.setDisplayRotationEnabled") {
                 auto enabled = ReadCallArg<bool>(in, INDEX_ZERO);
                 controller->SetDisplayRotationEnabled(enabled);
-            } else if (in.apiId_ == "UiDriver.waitForIdle") {
+            } else if (in.apiId_ == "Driver.waitForIdle") {
                 auto idleTime = ReadCallArg<uint32_t>(in, INDEX_ZERO);
                 auto timeout = ReadCallArg<uint32_t>(in, INDEX_ONE);
                 out.resultValue_ = controller->WaitForUiSteady(idleTime, timeout);
-            } else if (in.apiId_ == "UiDriver.wakeUpDisplay") {
+            } else if (in.apiId_ == "Driver.wakeUpDisplay") {
                 if (controller->IsScreenOn()) {
                     return;
                 } else {
@@ -628,13 +794,13 @@ namespace OHOS::uitest {
                     UiOpArgs uiOpArgs;
                     driver.TriggerKey(Power(), uiOpArgs, out.exception_);
                 }
-            } else if (in.apiId_ == "UiDriver.getDisplaySize") {
+            } else if (in.apiId_ == "Driver.getDisplaySize") {
                 auto result = controller->GetDisplaySize();
                 json data;
                 data["X"] = result.px_;
                 data["Y"] = result.py_;
                 out.resultValue_ = data;
-            } else if (in.apiId_ == "UiDriver.getDisplayDensity") {
+            } else if (in.apiId_ == "Driver.getDisplayDensity") {
                 auto result = controller->GetDisplayDensity();
                 json data;
                 data["X"] = result.px_;
@@ -642,13 +808,13 @@ namespace OHOS::uitest {
                 out.resultValue_ = data;
             }
         };
-        server.AddHandler("UiDriver.setDisplayRotation", genericDisplayOperator);
-        server.AddHandler("UiDriver.getDisplayRotation", genericDisplayOperator);
-        server.AddHandler("UiDriver.setDisplayRotationEnabled", genericDisplayOperator);
-        server.AddHandler("UiDriver.waitForIdle", genericDisplayOperator);
-        server.AddHandler("UiDriver.wakeUpDisplay", genericDisplayOperator);
-        server.AddHandler("UiDriver.getDisplaySize", genericDisplayOperator);
-        server.AddHandler("UiDriver.getDisplayDensity", genericDisplayOperator);
+        server.AddHandler("Driver.setDisplayRotation", genericDisplayOperator);
+        server.AddHandler("Driver.getDisplayRotation", genericDisplayOperator);
+        server.AddHandler("Driver.setDisplayRotationEnabled", genericDisplayOperator);
+        server.AddHandler("Driver.waitForIdle", genericDisplayOperator);
+        server.AddHandler("Driver.wakeUpDisplay", genericDisplayOperator);
+        server.AddHandler("Driver.getDisplaySize", genericDisplayOperator);
+        server.AddHandler("Driver.getDisplayDensity", genericDisplayOperator);
     }
 
     template <UiAttr kAttr, bool kString = false>
@@ -694,20 +860,20 @@ namespace OHOS::uitest {
     static void RegisterUiComponentAttrGetters()
     {
         auto &server = FrontendApiServer::Get();
-        server.AddHandler("UiComponent.getId", GenericComponentAttrGetter<UiAttr::ID>);
-        server.AddHandler("UiComponent.getText", GenericComponentAttrGetter<UiAttr::TEXT, true>);
-        server.AddHandler("UiComponent.getKey", GenericComponentAttrGetter<UiAttr::KEY, true>);
-        server.AddHandler("UiComponent.getType", GenericComponentAttrGetter<UiAttr::TYPE, true>);
-        server.AddHandler("UiComponent.isEnabled", GenericComponentAttrGetter<UiAttr::ENABLED>);
-        server.AddHandler("UiComponent.isFocused", GenericComponentAttrGetter<UiAttr::FOCUSED>);
-        server.AddHandler("UiComponent.isSelected", GenericComponentAttrGetter<UiAttr::SELECTED>);
-        server.AddHandler("UiComponent.isClickable", GenericComponentAttrGetter<UiAttr::CLICKABLE>);
-        server.AddHandler("UiComponent.isLongClickable", GenericComponentAttrGetter<UiAttr::LONG_CLICKABLE>);
-        server.AddHandler("UiComponent.isScrollable", GenericComponentAttrGetter<UiAttr::SCROLLABLE>);
-        server.AddHandler("UiComponent.isCheckable", GenericComponentAttrGetter<UiAttr::CHECKABLE>);
-        server.AddHandler("UiComponent.isChecked", GenericComponentAttrGetter<UiAttr::CHECKED>);
-        server.AddHandler("UiComponent.getBounds", GenericComponentAttrGetter<UiAttr::BOUNDS>);
-        server.AddHandler("UiComponent.getBoundsCenter", GenericComponentAttrGetter<UiAttr::BOUNDSCENTER>);
+        server.AddHandler("Component.getAccessibilityId", GenericComponentAttrGetter<UiAttr::ACCESSIBILITY_ID>);
+        server.AddHandler("Component.getText", GenericComponentAttrGetter<UiAttr::TEXT, true>);
+        server.AddHandler("Component.getId", GenericComponentAttrGetter<UiAttr::ID, true>);
+        server.AddHandler("Component.getType", GenericComponentAttrGetter<UiAttr::TYPE, true>);
+        server.AddHandler("Component.isEnabled", GenericComponentAttrGetter<UiAttr::ENABLED>);
+        server.AddHandler("Component.isFocused", GenericComponentAttrGetter<UiAttr::FOCUSED>);
+        server.AddHandler("Component.isSelected", GenericComponentAttrGetter<UiAttr::SELECTED>);
+        server.AddHandler("Component.isClickable", GenericComponentAttrGetter<UiAttr::CLICKABLE>);
+        server.AddHandler("Component.isLongClickable", GenericComponentAttrGetter<UiAttr::LONG_CLICKABLE>);
+        server.AddHandler("Component.isScrollable", GenericComponentAttrGetter<UiAttr::SCROLLABLE>);
+        server.AddHandler("Component.isCheckable", GenericComponentAttrGetter<UiAttr::CHECKABLE>);
+        server.AddHandler("Component.isChecked", GenericComponentAttrGetter<UiAttr::CHECKED>);
+        server.AddHandler("Component.getBounds", GenericComponentAttrGetter<UiAttr::BOUNDS>);
+        server.AddHandler("Component.getBoundsCenter", GenericComponentAttrGetter<UiAttr::BOUNDSCENTER>);
     }
 
     static void RegisterUiComponentOperators()
@@ -718,49 +884,49 @@ namespace OHOS::uitest {
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             auto wOp = WidgetOperator(driver, widget, uiOpArgs);
-            if (in.apiId_ == "UiComponent.click") {
+            if (in.apiId_ == "Component.click") {
                 wOp.GenericClick(TouchOp::CLICK, out.exception_);
-            } else if (in.apiId_ == "UiComponent.longClick") {
+            } else if (in.apiId_ == "Component.longClick") {
                 wOp.GenericClick(TouchOp::LONG_CLICK, out.exception_);
-            } else if (in.apiId_ == "UiComponent.doubleClick") {
+            } else if (in.apiId_ == "Component.doubleClick") {
                 wOp.GenericClick(TouchOp::DOUBLE_CLICK_P, out.exception_);
-            } else if (in.apiId_ == "UiComponent.scrollToTop") {
+            } else if (in.apiId_ == "Component.scrollToTop") {
                 uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_ZERO, uiOpArgs.swipeVelocityPps_);
                 CheckSwipeVelocityPps(uiOpArgs);
                 wOp.ScrollToEnd(true, out.exception_);
-            } else if (in.apiId_ == "UiComponent.scrollToBottom") {
+            } else if (in.apiId_ == "Component.scrollToBottom") {
                 uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_ZERO, uiOpArgs.swipeVelocityPps_);
                 CheckSwipeVelocityPps(uiOpArgs);
                 wOp.ScrollToEnd(false, out.exception_);
-            } else if (in.apiId_ == "UiComponent.dragTo") {
+            } else if (in.apiId_ == "Component.dragTo") {
                 auto &widgetTo = GetBackendObject<Widget>(ReadCallArg<string>(in, INDEX_ZERO));
                 wOp.DragIntoWidget(widgetTo, out.exception_);
-            } else if (in.apiId_ == "UiComponent.inputText") {
+            } else if (in.apiId_ == "Component.inputText") {
                 wOp.InputText(ReadCallArg<string>(in, INDEX_ZERO), out.exception_);
-            } else if (in.apiId_ == "UiComponent.clearText") {
+            } else if (in.apiId_ == "Component.clearText") {
                 wOp.InputText("", out.exception_);
-            } else if (in.apiId_ == "UiComponent.scrollSearch") {
+            } else if (in.apiId_ == "Component.scrollSearch") {
                 auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
                 auto res = wOp.ScrollFindWidget(selector, out.exception_);
                 if (res != nullptr) {
                     out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
                 }
-            } else if (in.apiId_ == "UiComponent.pinchOut" || in.apiId_ == "UiComponent.pinchIn") {
+            } else if (in.apiId_ == "Component.pinchOut" || in.apiId_ == "Component.pinchIn") {
                 auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
                 wOp.PinchWidget(pinchScale, out.exception_);
             }
         };
-        server.AddHandler("UiComponent.click", genericOperationHandler);
-        server.AddHandler("UiComponent.longClick", genericOperationHandler);
-        server.AddHandler("UiComponent.doubleClick", genericOperationHandler);
-        server.AddHandler("UiComponent.scrollToTop", genericOperationHandler);
-        server.AddHandler("UiComponent.scrollToBottom", genericOperationHandler);
-        server.AddHandler("UiComponent.dragTo", genericOperationHandler);
-        server.AddHandler("UiComponent.inputText", genericOperationHandler);
-        server.AddHandler("UiComponent.clearText", genericOperationHandler);
-        server.AddHandler("UiComponent.scrollSearch", genericOperationHandler);
-        server.AddHandler("UiComponent.pinchOut", genericOperationHandler);
-        server.AddHandler("UiComponent.pinchIn", genericOperationHandler);
+        server.AddHandler("Component.click", genericOperationHandler);
+        server.AddHandler("Component.longClick", genericOperationHandler);
+        server.AddHandler("Component.doubleClick", genericOperationHandler);
+        server.AddHandler("Component.scrollToTop", genericOperationHandler);
+        server.AddHandler("Component.scrollToBottom", genericOperationHandler);
+        server.AddHandler("Component.dragTo", genericOperationHandler);
+        server.AddHandler("Component.inputText", genericOperationHandler);
+        server.AddHandler("Component.clearText", genericOperationHandler);
+        server.AddHandler("Component.scrollSearch", genericOperationHandler);
+        server.AddHandler("Component.pinchOut", genericOperationHandler);
+        server.AddHandler("Component.pinchIn", genericOperationHandler);
     }
 
     static void RegisterUiWindowAttrGetters()
@@ -814,9 +980,9 @@ namespace OHOS::uitest {
                 auto width = ReadCallArg<uint32_t>(in, INDEX_ZERO);
                 auto highth = ReadCallArg<uint32_t>(in, INDEX_ONE);
                 auto direction = ReadCallArg<ResizeDirection>(in, INDEX_TWO);
-                out.resultValue_ = wOp.Resize(width, highth, direction, out);
+                wOp.Resize(width, highth, direction, out);
             } else if (action == "UiWindow.focus") {
-                out.resultValue_ = wOp.Focuse(out);
+                wOp.Focus(out);
             }
         };
         server.AddHandler("UiWindow.focus", genericWinOperationHandler);
@@ -834,22 +1000,22 @@ namespace OHOS::uitest {
             auto action = in.apiId_;
             if (window.decoratorEnabled_) {
                 if (action == "UiWindow.split") {
-                    out.resultValue_ = wOp.Split(out);
+                    wOp.Split(out);
                 } else if (action == "UiWindow.maximize") {
-                    out.resultValue_ = wOp.Maximize(out);
+                    wOp.Maximize(out);
                 } else if (action == "UiWindow.resume") {
-                    out.resultValue_ = wOp.Resume(out);
+                    wOp.Resume(out);
                 } else if (action == "UiWindow.minimize") {
-                    out.resultValue_ = wOp.Minimize(out);
+                    wOp.Minimize(out);
                 } else if (action == "UiWindow.close") {
-                    out.resultValue_ = wOp.Close(out);
+                    wOp.Close(out);
                 } else if (action == "UiWindow.moveTo") {
                     auto endX = ReadCallArg<uint32_t>(in, INDEX_ZERO);
                     auto endY = ReadCallArg<uint32_t>(in, INDEX_ONE);
-                    out.resultValue_ = wOp.MoveTo(endX, endY, out);
+                    wOp.MoveTo(endX, endY, out);
                 }
             } else {
-                out.exception_ = ApiCallErr(USAGE_ERROR, "this device can not support this action");
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
             }
         };
         server.AddHandler("UiWindow.split", genericWinBarOperationHandler);
@@ -867,12 +1033,12 @@ namespace OHOS::uitest {
             UiOpArgs uiOpArgs;
             auto finger = ReadCallArg<uint32_t>(in, INDEX_ZERO);
             if (finger < 1 || finger > uiOpArgs.maxMultiTouchFingers) {
-                out.exception_ = ApiCallErr(USAGE_ERROR, "Number of illegal fingers");
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Number of illegal fingers");
                 return;
             }
             auto step = ReadCallArg<uint32_t>(in, INDEX_ONE);
             if (step < 1 || step > uiOpArgs.maxMultiTouchSteps) {
-                out.exception_ = ApiCallErr(USAGE_ERROR, "Number of illegal steps");
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Number of illegal steps");
                 return;
             }
             out.resultValue_ = StoreBackendObject(make_unique<PointerMatrix>(finger, step));
@@ -883,17 +1049,17 @@ namespace OHOS::uitest {
             auto &pointer = GetBackendObject<PointerMatrix>(in.callerObjRef_);
             auto finger = ReadCallArg<uint32_t>(in, INDEX_ZERO);
             if (finger < 0 || finger >= pointer.GetFingers()) {
-                out.exception_ = ApiCallErr(USAGE_ERROR, "Number of illegal fingers");
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Number of illegal fingers");
                 return;
             }
             auto step = ReadCallArg<uint32_t>(in, INDEX_ONE);
             if (step < 0 || step >= pointer.GetSteps()) {
-                out.exception_ = ApiCallErr(USAGE_ERROR, "Number of illegal steps");
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Number of illegal steps");
                 return;
             }
             auto pointJson = ReadCallArg<json>(in, INDEX_TWO);
             if (pointJson.empty()) {
-                out.exception_ = ApiCallErr(USAGE_ERROR, "Point cannot be empty");
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Point cannot be empty");
                 return;
             }
             const auto point = Point(pointJson["X"], pointJson["Y"]);
@@ -903,17 +1069,17 @@ namespace OHOS::uitest {
         server.AddHandler("PointerMatrix.setPoint", setPoint);
     }
 
-    /** Register fronendApiHandlers and preprocessors on startup.*/
+    /** Register frontendApiHandlers and preprocessors on startup.*/
     __attribute__((constructor)) static void RegisterApiHandlers()
     {
         auto &server = FrontendApiServer::Get();
         server.AddCommonPreprocessor("APiCallInfoChecker", APiCallInfoChecker);
         server.AddHandler("BackendObjectsCleaner", BackendObjectsCleaner);
-        RegisterByBuilders();
+        RegisterOnBuilders();
         RegisterUiDriverComponentFinders();
         RegisterUiDriverWindowFinder();
         RegisterUiDriverMiscMethods();
-        RegisterUiDriverTocuchOperators();
+        RegisterUiDriverTouchOperators();
         RegisterUiComponentAttrGetters();
         RegisterUiComponentOperators();
         RegisterUiWindowAttrGetters();

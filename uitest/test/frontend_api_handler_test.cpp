@@ -16,7 +16,10 @@
 #include <utility>
 
 #include "gtest/gtest.h"
+// For testing private method
+#define private public
 #include "frontend_api_handler.h"
+#include "dummy_controller.h"
 #include "widget_selector.h"
 
 using namespace OHOS::uitest;
@@ -28,10 +31,18 @@ class FrontendApiHandlerTest : public testing::Test {
 public:
     ~FrontendApiHandlerTest() override = default;
 protected:
+    void SetUp() override
+    {
+        auto dummyController = make_unique<DummyController>("dummyController");
+        dummyController->SetWorkable(true);
+        UiController::RegisterController(move(dummyController), HIGH);
+    }
+
     void TearDown() override
     {
         // common-preprocessors works on all apiCall, delete after testing
         FrontendApiServer::Get().RemoveCommonPreprocessor("dummyProcessor");
+        UiController::RemoveController("dummyController");
     }
 };
 
@@ -64,7 +75,7 @@ TEST_F(FrontendApiHandlerTest, noInvocationHandler)
     auto call = ApiCallInfo {.apiId_ = "wyz"};
     auto reply = ApiReplyInfo();
     FrontendApiServer::Get().Call(call, reply);
-    ASSERT_EQ(INTERNAL_ERROR, reply.exception_.code_);
+    ASSERT_EQ(ERR_INTERNAL, reply.exception_.code_);
     ASSERT_TRUE(reply.exception_.message_.find("No handler found") != string::npos);
 }
 
@@ -88,7 +99,7 @@ TEST_F(FrontendApiHandlerTest, addRemoveHandler)
     server.RemoveHandler(apiId);
     ASSERT_FALSE(server.HasHandlerFor(apiId));
     server.Call(call, reply);
-    ASSERT_EQ(INTERNAL_ERROR, reply.exception_.code_) << "The handler should be unavailable after been removed";
+    ASSERT_EQ(ERR_INTERNAL, reply.exception_.code_) << "The handler should be unavailable after been removed";
 }
 
 TEST_F(FrontendApiHandlerTest, inOutDataTransfer)
@@ -122,7 +133,7 @@ TEST_F(FrontendApiHandlerTest, jsonExceptionDefance)
     auto reply = ApiReplyInfo();
     server.Call(call, reply);
     // json exception should be caught and reported properly
-    ASSERT_EQ(INTERNAL_ERROR, reply.exception_.code_);
+    ASSERT_EQ(ERR_INTERNAL, reply.exception_.code_);
     ASSERT_TRUE(reply.exception_.message_.find("json.exception.out_of_range") != string::npos);
 }
 
@@ -130,7 +141,7 @@ TEST_F(FrontendApiHandlerTest, apiErrorDeliver)
 {
     static auto apiId = GenerateUniqueId();
     auto &server = FrontendApiServer::Get();
-    auto handler = [](const ApiCallInfo &in, ApiReplyInfo &out) { out.exception_.code_ = ErrCode::USAGE_ERROR; };
+    auto handler = [](const ApiCallInfo &in, ApiReplyInfo &out) { out.exception_.code_ = USAGE_ERROR; };
     server.AddHandler(apiId, handler);
 
     auto call = ApiCallInfo {.apiId_ = apiId};
@@ -150,7 +161,7 @@ TEST_F(FrontendApiHandlerTest, commonPreprocessor)
 
     auto processor = [](const ApiCallInfo &in, ApiReplyInfo &out) {
         if (in.paramList_.at(0).get<string>() == "oops") {
-            out.exception_.code_ = ErrCode::USAGE_ERROR;
+            out.exception_.code_ = ERR_OPERATION_UNSUPPORTED;
         }
     };
     server.AddCommonPreprocessor("dummyProcessor", processor);
@@ -160,14 +171,14 @@ TEST_F(FrontendApiHandlerTest, commonPreprocessor)
     // handler should be called if preprocessing passed
     call.paramList_.emplace_back("nice");
     server.Call(call, reply);
-    ASSERT_EQ(ErrCode::NO_ERROR, reply.exception_.code_);
+    ASSERT_EQ(NO_ERROR, reply.exception_.code_);
     ASSERT_TRUE(handlerCalled);
     // preprocessing failed, handler should not be called
     call.paramList_.clear();
     call.paramList_.emplace_back("oops");
     handlerCalled = false;
     server.Call(call, reply);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply.exception_.code_);
+    ASSERT_EQ(ERR_OPERATION_UNSUPPORTED, reply.exception_.code_);
     ASSERT_FALSE(handlerCalled);
 }
 
@@ -184,7 +195,8 @@ TEST_F(FrontendApiHandlerTest, checkAllHandlersRegisted)
     }
 }
 
-TEST_F(FrontendApiHandlerTest, callApiE2E)
+// API8 end to end call test
+TEST_F(FrontendApiHandlerTest, callApiE2EOldAPi)
 {
     const auto& server =  FrontendApiServer::Get();
     // create by1 with seed
@@ -193,22 +205,171 @@ TEST_F(FrontendApiHandlerTest, callApiE2E)
     auto reply0 = ApiReplyInfo();
     server.Call(call0, reply0);
     // check result
-    ASSERT_EQ(ErrCode::NO_ERROR, reply0.exception_.code_);
+    ASSERT_EQ(NO_ERROR, reply0.exception_.code_);
     ASSERT_EQ(nlohmann::detail::value_t::string, reply0.resultValue_.type()); // should return backend-by-ref
     const auto ref0 = reply0.resultValue_.get<string>();
     ASSERT_TRUE(ref0.find("By#") != string::npos);
+
     // go on creating combine by: isAfter (after ref0)
     auto call1 = ApiCallInfo {.apiId_ = "By.isAfter", .callerObjRef_ = string(REF_SEED_BY)};
     call1.paramList_.emplace_back(ref0);
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    // check result
-    ASSERT_EQ(ErrCode::NO_ERROR, reply1.exception_.code_);
+    ASSERT_EQ(NO_ERROR, reply1.exception_.code_);
     ASSERT_EQ(nlohmann::detail::value_t::string, reply1.resultValue_.type()); // should return backend-by-ref
     const auto ref1 = reply1.resultValue_.get<string>();
     ASSERT_TRUE(ref1.find("By#") != string::npos);
     // should always return a new By
     ASSERT_NE(ref0, ref1);
+
+    auto call2 = ApiCallInfo{.apiId_ = "UiDriver.create", .callerObjRef_ = string()};
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    ASSERT_EQ(NO_ERROR, reply2.exception_.code_);
+    ASSERT_EQ(nlohmann::detail::value_t::string, reply2.resultValue_.type()); // should return backend-On-ref
+    const auto ref2 = reply2.resultValue_.get<string>();
+    ASSERT_TRUE(ref2.find("UiDriver#") != string::npos);
+
+    auto call3 = ApiCallInfo {.apiId_ = "By.id", .callerObjRef_ = string(REF_SEED_BY)};
+    call3.paramList_.emplace_back(1);
+    auto reply3 = ApiReplyInfo();
+    server.Call(call3, reply3);
+    // check result
+    ASSERT_EQ(NO_ERROR, reply3.exception_.code_);
+    ASSERT_EQ(nlohmann::detail::value_t::string, reply3.resultValue_.type()); // should return backend-by-ref
+    const auto ref3 = reply3.resultValue_.get<string>();
+    ASSERT_TRUE(ref3.find("By#") != string::npos);
+
+    auto call4 = ApiCallInfo {.apiId_ = "By.key", .callerObjRef_ = string(REF_SEED_BY)};
+    call4.paramList_.emplace_back("1");
+    auto reply4 = ApiReplyInfo();
+    server.Call(call4, reply4);
+    // check result
+    ASSERT_EQ(NO_ERROR, reply4.exception_.code_);
+    ASSERT_EQ(nlohmann::detail::value_t::string, reply4.resultValue_.type()); // should return backend-by-ref
+    const auto ref4 = reply4.resultValue_.get<string>();
+    ASSERT_TRUE(ref4.find("By#") != string::npos);
+}
+
+// API9+ end to end call test
+TEST_F(FrontendApiHandlerTest, callApiE2E)
+{
+    const auto& server =  FrontendApiServer::Get();
+
+    // create by1 with seed
+    auto call0 = ApiCallInfo {.apiId_ = "On.text", .callerObjRef_ = string(REF_SEED_BY)};
+    call0.paramList_.emplace_back("wyz");
+    auto reply0 = ApiReplyInfo();
+    server.Call(call0, reply0);
+    // check result
+    ASSERT_EQ(NO_ERROR, reply0.exception_.code_);
+    ASSERT_EQ(nlohmann::detail::value_t::string, reply0.resultValue_.type()); // should return backend-On-ref
+    const auto ref0 = reply0.resultValue_.get<string>();
+    ASSERT_TRUE(ref0.find("On#") != string::npos);
+
+    // go on creating combine by: isAfter (after ref0)
+    auto call1 = ApiCallInfo {.apiId_ = "On.isAfter", .callerObjRef_ = string(REF_SEED_BY)};
+    call1.paramList_.emplace_back(ref0);
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    // check result
+    ASSERT_EQ(NO_ERROR, reply1.exception_.code_);
+    ASSERT_EQ(nlohmann::detail::value_t::string, reply1.resultValue_.type()); // should return backend-On-ref
+    const auto ref1 = reply1.resultValue_.get<string>();
+    ASSERT_TRUE(ref1.find("On#") != string::npos);
+    ASSERT_NE(ref0, ref1);
+
+    // should always return a new By
+    auto call2 = ApiCallInfo{.apiId_ = "Driver.create", .callerObjRef_ = string()};
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    ASSERT_EQ(NO_ERROR, reply2.exception_.code_);
+    ASSERT_EQ(nlohmann::detail::value_t::string, reply2.resultValue_.type()); // should return backend-On-ref
+    const auto ref2 = reply2.resultValue_.get<string>();
+    ASSERT_TRUE(ref2.find("Driver#") != string::npos);
+    
+    auto call3 = ApiCallInfo {.apiId_ = "On.id", .callerObjRef_ = string(REF_SEED_BY)};
+    call3.paramList_.emplace_back("1");
+    auto reply3 = ApiReplyInfo();
+    server.Call(call3, reply3);
+    // check result
+    ASSERT_EQ(NO_ERROR, reply3.exception_.code_);
+    ASSERT_EQ(nlohmann::detail::value_t::string, reply3.resultValue_.type()); // should return backend-by-ref
+    const auto ref3 = reply3.resultValue_.get<string>();
+    ASSERT_TRUE(ref3.find("On#") != string::npos);
+}
+
+// FrontendAPiServer::ApiMapPre and ApiMapPost Test (Used for old api adaptation)
+TEST_F(FrontendApiHandlerTest, apiMapTest) {
+    const auto& server =  FrontendApiServer::Get();
+    auto call0 = ApiCallInfo {.apiId_ = "UiDriver.findComponent", .callerObjRef_ = "UiDriver#0"};
+    call0.paramList_.emplace_back("By#1");
+    string oldApiName = server.ApiMapPre(call0);
+    // Call_id and callerObjRef should be converted correctly.
+    // Object parameters and object return value should be converted.
+    ASSERT_EQ(call0.paramList_.at(0).get<string>(), "On#1");
+    ASSERT_EQ(call0.apiId_, "Driver.findComponent");
+    ASSERT_EQ(call0.callerObjRef_, "Driver#0");
+    ASSERT_EQ(oldApiName, "UiDriver.findComponent");
+    auto reply0 = ApiReplyInfo();
+    reply0.resultValue_ = "Component#1";
+    server.ApiMapPost(oldApiName, reply0);
+    ASSERT_EQ(reply0.resultValue_.get<string>(), "UiComponent#1");
+
+    oldApiName = "UiDriver.findComponents";
+    auto reply1 = ApiReplyInfo();
+    reply1.resultValue_ = nlohmann::json::array();
+    reply1.resultValue_.emplace_back("Component#0");
+    reply1.resultValue_.emplace_back("Component#1");
+    server.ApiMapPost(oldApiName, reply1);
+    // Object array return value should be converted;
+    ASSERT_EQ(reply1.resultValue_.at(0).get<string>(), "UiComponent#0");
+    ASSERT_EQ(reply1.resultValue_.at(1).get<string>(), "UiComponent#1");
+
+    auto call1 = ApiCallInfo {.apiId_ = "By.text", .callerObjRef_ = "By#seed"};
+    call1.paramList_.emplace_back("By#0");
+    oldApiName = server.ApiMapPre(call1);
+    // String parameters should NOT be converted;
+    ASSERT_EQ(call1.apiId_, "On.text");
+    ASSERT_EQ(call1.callerObjRef_, "On#seed");
+    ASSERT_EQ(call1.paramList_.at(0).get<string>(), "By#0");
+    ASSERT_EQ(oldApiName, "By.text");
+
+    auto call2 = ApiCallInfo {.apiId_ = "UiComponent.getText", .callerObjRef_ = "UiComponent#0"};
+    oldApiName = server.ApiMapPre(call2);
+    // String return value should NOT be converted.
+    ASSERT_EQ(call2.apiId_, "Component.getText");
+    ASSERT_EQ(call2.callerObjRef_, "Component#0");
+    ASSERT_EQ(oldApiName, "UiComponent.getText");
+    auto reply2 = ApiReplyInfo();
+    reply2.resultValue_ = "Component#0";
+    server.ApiMapPost(oldApiName, reply2);
+    ASSERT_EQ(reply2.resultValue_.get<string>(), "Component#0");
+
+    auto call3 = ApiCallInfo {.apiId_ = "Component.getText", .callerObjRef_ = "Component#0"};
+    oldApiName = server.ApiMapPre(call3);
+    // New API should NOT be converted.
+    ASSERT_EQ(call3.apiId_, "Component.getText");
+    ASSERT_EQ(call3.callerObjRef_, "Component#0");
+    ASSERT_EQ(oldApiName, "");
+    
+    // Test special apiId_ mapping
+    ApiCallInfo calls[] = {
+        {.apiId_ = "By.id", .callerObjRef_ = "By#0"},
+        {.apiId_ = "By.key", .callerObjRef_ = "By#0"},
+        {.apiId_ = "UiComponent.getId", .callerObjRef_ = "UiComponent#0"},
+        {.apiId_ = "UiComponent.getKey", .callerObjRef_ = "UiComponent#0"}
+    };
+    string expectedResults[] = {
+        "On.accessibilityId",
+        "On.id",
+        "Component.getAccessibilityId",
+        "Component.getId"
+    };
+    for (int i = 0; i < sizeof(calls) / sizeof(ApiCallInfo); i++) {
+        server.ApiMapPre(calls[i]);
+        ASSERT_EQ(calls[i].apiId_, expectedResults[i]);
+    }
 }
 
 TEST_F(FrontendApiHandlerTest, parameterPreChecks)
@@ -218,7 +379,7 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks)
     auto call0 = ApiCallInfo {.apiId_ = "By.type", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply0 = ApiReplyInfo();
     server.Call(call0, reply0);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply0.exception_.code_);
+    ASSERT_EQ(USAGE_ERROR, reply0.exception_.code_);
     ASSERT_TRUE(reply0.exception_.message_.find("Illegal argument count") != string::npos);
     // call with argument redundant
     auto call1 = ApiCallInfo {.apiId_ = "By.type", .callerObjRef_ = string(REF_SEED_BY)};
@@ -226,32 +387,32 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks)
     call1.paramList_.emplace_back("wyz");
     call1.paramList_.emplace_back("zl");
     server.Call(call1, reply1);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply1.exception_.code_);
+    ASSERT_EQ(USAGE_ERROR, reply1.exception_.code_);
     ASSERT_TRUE(reply1.exception_.message_.find("Illegal argument count") != string::npos);
     // call with argument of wrong type
     auto call2 = ApiCallInfo {.apiId_ = "By.type", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply2 = ApiReplyInfo();
     call2.paramList_.emplace_back(1);
     server.Call(call2, reply2);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply2.exception_.code_);
+    ASSERT_EQ(USAGE_ERROR, reply2.exception_.code_);
     ASSERT_TRUE(reply2.exception_.message_.find("Expect string") != string::npos);
     // call with argument defaulted (bool=true)
     auto call3 = ApiCallInfo {.apiId_ = "By.enabled", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply3 = ApiReplyInfo();
     call3.paramList_.emplace_back(true); // no defaulted
     server.Call(call3, reply3);
-    ASSERT_EQ(ErrCode::NO_ERROR, reply3.exception_.code_);
+    ASSERT_EQ(NO_ERROR, reply3.exception_.code_);
 
     auto call4 = ApiCallInfo {.apiId_ = "By.enabled", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply4 = ApiReplyInfo(); // defaulted
     server.Call(call4, reply4);
-    ASSERT_EQ(ErrCode::NO_ERROR, reply4.exception_.code_);
+    ASSERT_EQ(NO_ERROR, reply4.exception_.code_);
     // call with bad object ref
     auto call5 = ApiCallInfo {.apiId_ = "By.isAfter", .callerObjRef_ = string(REF_SEED_BY)};
     call5.paramList_.emplace_back("By#100");
     auto reply5 = ApiReplyInfo();
     server.Call(call5, reply5);
-    ASSERT_EQ(ErrCode::INTERNAL_ERROR, reply5.exception_.code_); // bad-object is internal_error
+    ASSERT_EQ(INTERNAL_ERROR, reply5.exception_.code_); // bad-object is internal_error
     ASSERT_TRUE(reply5.exception_.message_.find("Bad object ref") != string::npos);
     // call with json param with wrong property
     auto call6 = ApiCallInfo {.apiId_ = "UiDriver.create"};
@@ -263,7 +424,7 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks)
     call7.paramList_.emplace_back(arg);
     auto reply7 = ApiReplyInfo();
     server.Call(call7, reply7);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply7.exception_.code_);
+    ASSERT_EQ(USAGE_ERROR, reply7.exception_.code_);
     ASSERT_TRUE(reply7.exception_.message_.find("Illegal property") != string::npos);
 }
 
@@ -276,7 +437,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
     call0.paramList_.emplace_back(11);
     call0.paramList_.emplace_back(3);
     server.Call(call0, reply0);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply0.exception_.code_);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply0.exception_.code_);
     ASSERT_TRUE(reply0.exception_.message_.find("Number of illegal fingers") != string::npos);
     // call with argument illegal steps
     auto call2 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
@@ -284,7 +445,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
     call2.paramList_.emplace_back(2);
     call2.paramList_.emplace_back(1001);
     server.Call(call2, reply2);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply2.exception_.code_);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply2.exception_.code_);
     ASSERT_TRUE(reply2.exception_.message_.find("Number of illegal steps") != string::npos);
     // call with argument illegal steps
     auto call4 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
@@ -292,7 +453,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
     call4.paramList_.emplace_back(5);
     call4.paramList_.emplace_back(0);
     server.Call(call4, reply4);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply4.exception_.code_);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply4.exception_.code_);
     ASSERT_TRUE(reply4.exception_.message_.find("Number of illegal steps") != string::npos);
     // call with argument illegal fingers
     auto call5 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
@@ -300,7 +461,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
     call5.paramList_.emplace_back(-1);
     call5.paramList_.emplace_back(5);
     server.Call(call5, reply5);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply5.exception_.code_);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply5.exception_.code_);
     ASSERT_TRUE(reply5.exception_.message_.find("Number of illegal fingers") != string::npos);
     // call with argument illegal fingers
     auto call6 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
@@ -308,7 +469,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
     call6.paramList_.emplace_back(0);
     call6.paramList_.emplace_back(5);
     server.Call(call6, reply6);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply6.exception_.code_);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply6.exception_.code_);
     ASSERT_TRUE(reply6.exception_.message_.find("Number of illegal fingers") != string::npos);
 }
 
@@ -321,7 +482,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecksOne)
     call7.paramList_.emplace_back(5);
     call7.paramList_.emplace_back(-5);
     server.Call(call7, reply7);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply7.exception_.code_);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply7.exception_.code_);
     ASSERT_TRUE(reply7.exception_.message_.find("Number of illegal steps") != string::npos);
     // call with argument illegal fingers
     auto call10 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
@@ -329,7 +490,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecksOne)
     call10.paramList_.emplace_back(6);
     call10.paramList_.emplace_back(10);
     server.Call(call10, reply10);
-    ASSERT_EQ(ErrCode::NO_ERROR, reply10.exception_.code_);
+    ASSERT_EQ(NO_ERROR, reply10.exception_.code_);
     auto call11 = ApiCallInfo {.apiId_ = "PointerMatrix.setPoint", .callerObjRef_ = reply10.resultValue_.get<string>()};
     call11.paramList_.emplace_back(6);
     call11.paramList_.emplace_back(1);
@@ -339,7 +500,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecksOne)
     call11.paramList_.emplace_back(arg1);
     auto reply11 = ApiReplyInfo();
     server.Call(call11, reply11);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply11.exception_.code_);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply11.exception_.code_);
     ASSERT_TRUE(reply11.exception_.message_.find("Number of illegal fingers") != string::npos);
     // call with argument illegal steps
     auto call12 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
@@ -347,7 +508,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecksOne)
     call12.paramList_.emplace_back(6);
     call12.paramList_.emplace_back(10);
     server.Call(call12, reply12);
-    ASSERT_EQ(ErrCode::NO_ERROR, reply12.exception_.code_);
+    ASSERT_EQ(NO_ERROR, reply12.exception_.code_);
     auto call13 = ApiCallInfo {.apiId_ = "PointerMatrix.setPoint", .callerObjRef_ = reply12.resultValue_.get<string>()};
     call13.paramList_.emplace_back(5);
     call13.paramList_.emplace_back(11);
@@ -357,7 +518,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecksOne)
     call13.paramList_.emplace_back(arg2);
     auto reply13 = ApiReplyInfo();
     server.Call(call13, reply13);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply13.exception_.code_);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply13.exception_.code_);
     ASSERT_TRUE(reply13.exception_.message_.find("Number of illegal steps") != string::npos);
 }
 
@@ -380,7 +541,7 @@ TEST_F(FrontendApiHandlerTest, injectMultiPointerActionparameterPreChecks)
     call3.paramList_.emplace_back(4000);
     auto reply3 = ApiReplyInfo();
     server.Call(call3, reply3);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply3.exception_.code_);
+    ASSERT_EQ(USAGE_ERROR, reply3.exception_.code_);
     ASSERT_TRUE(reply3.exception_.message_.find("The stepLen is out of range") != string::npos);
 
     auto call4 = ApiCallInfo {.apiId_ = "UiDriver.create"};
@@ -393,7 +554,7 @@ TEST_F(FrontendApiHandlerTest, injectMultiPointerActionparameterPreChecks)
     call5.paramList_.emplace_back(4000);
     auto reply5 = ApiReplyInfo();
     server.Call(call5, reply5);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply5.exception_.code_);
+    ASSERT_EQ(USAGE_ERROR, reply5.exception_.code_);
     ASSERT_TRUE(reply5.exception_.message_.find("The stepLen is out of range") != string::npos);
 
     auto call6 = ApiCallInfo {.apiId_ = "UiDriver.create"};
@@ -409,5 +570,5 @@ TEST_F(FrontendApiHandlerTest, injectMultiPointerActionparameterPreChecks)
     call7.paramList_.emplace_back(4000);
     auto reply7 = ApiReplyInfo();
     server.Call(call7, reply7);
-    ASSERT_EQ(ErrCode::USAGE_ERROR, reply7.exception_.code_);
+    ASSERT_EQ(USAGE_ERROR, reply7.exception_.code_);
 }

@@ -25,6 +25,7 @@
 namespace OHOS::uitest {
     /**Enumerates the supported UiComponent attributes.*/
     enum UiAttr : uint8_t {
+        ACCESSIBILITY_ID,
         ID,
         TEXT,
         KEY,
@@ -47,6 +48,7 @@ namespace OHOS::uitest {
 
     /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
     constexpr std::string_view ATTR_NAMES[] = {
+        "accessibilityId", // ACCESSIBILITY_ID
         "id",            // ID
         "text",          // TEXT
         "key",           // KEY
@@ -168,7 +170,7 @@ namespace OHOS::uitest {
 
         const FrontEndClassDef &GetFrontendClassDef() const override
         {
-            return UI_COMPONENT_DEF;
+            return COMPONENT_DEF;
         }
 
         bool HasAttr(std::string_view name) const;

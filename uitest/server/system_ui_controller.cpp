@@ -153,7 +153,8 @@ namespace OHOS::uitest {
     {
         to[ATTR_NAMES[UiAttr::HASHCODE].data()] = to_string(GenerateNodeHash(node));
         to[ATTR_NAMES[UiAttr::TEXT].data()] = node.GetContent();
-        to[ATTR_NAMES[UiAttr::ID].data()] = to_string(node.GetAccessibilityId());
+        to[ATTR_NAMES[UiAttr::ACCESSIBILITY_ID].data()] = to_string(node.GetAccessibilityId());
+        to[ATTR_NAMES[UiAttr::ID].data()] = node.GetInspectorKey();
         to[ATTR_NAMES[UiAttr::KEY].data()] = node.GetInspectorKey();
         to[ATTR_NAMES[UiAttr::TYPE].data()] = node.GetComponentType();
         to[ATTR_NAMES[UiAttr::ENABLED].data()] = node.IsEnabled() ? "true" : "false";

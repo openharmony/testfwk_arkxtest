@@ -35,28 +35,28 @@ namespace OHOS::uitest {
        WindowOperator(UiDriver &driver, const Window &window, UiOpArgs &options);
 
        /**Focus the window.*/
-       bool Focuse(ApiReplyInfo &out);
+       void Focus(ApiReplyInfo &out);
 
        /**Move this Window to the specified points.*/
-       bool MoveTo(uint32_t endX, uint32_t endY, ApiReplyInfo &out);
+       void MoveTo(uint32_t endX, uint32_t endY, ApiReplyInfo &out);
 
        /**Resize this Window to the specified size for the specified direction.*/
-       bool Resize(int32_t width, int32_t highth, ResizeDirection direction, ApiReplyInfo &out);
+       void Resize(int32_t width, int32_t highth, ResizeDirection direction, ApiReplyInfo &out);
 
        /**Change this Window into split screen mode*/
-       bool Split(ApiReplyInfo &out);
+       void Split(ApiReplyInfo &out);
 
        /**Maximize this window.*/
-       bool Maximize(ApiReplyInfo &out);
+       void Maximize(ApiReplyInfo &out);
 
        /**Resume this window.*/
-       bool Resume(ApiReplyInfo &out);
+       void Resume(ApiReplyInfo &out);
 
        /**Minimize this window.*/
-       bool Minimize(ApiReplyInfo &out);
+       void Minimize(ApiReplyInfo &out);
 
        /**Close this window.*/
-       bool Close(ApiReplyInfo &out);
+       void Close(ApiReplyInfo &out);
 
     private:
         UiDriver &driver_;

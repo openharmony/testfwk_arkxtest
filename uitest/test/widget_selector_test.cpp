@@ -468,7 +468,7 @@ TEST_F(WidgetSelectorTest, nestingUsageDetect)
 
     // make the front locator nesting
     selector.AddFrontLocator(frontLocator, err);
-    ASSERT_EQ(USAGE_ERROR, err.code_);
+    ASSERT_EQ(ERR_API_USAGE, err.code_);
 }
 
 TEST_F(WidgetSelectorTest, selectorDescription)

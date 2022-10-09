@@ -67,7 +67,7 @@ namespace OHOS::uitest {
 
         const FrontEndClassDef &GetFrontendClassDef() const override
         {
-            return UI_DRIVER_DEF;
+            return DRIVER_DEF;
         }
 
     private:
