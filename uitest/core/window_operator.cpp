@@ -247,7 +247,7 @@ namespace OHOS::uitest {
         }
         auto selector = WidgetSelector();
         auto matcher1 = WidgetAttrMatcher("index", std::to_string(index), EQ);
-        auto matcher2 = WidgetAttrMatcher("type", "button", EQ);
+        auto matcher2 = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "button", EQ);
         selector.AddMatcher(matcher1);
         selector.AddMatcher(matcher2);
         vector<unique_ptr<Widget>> widgets;
