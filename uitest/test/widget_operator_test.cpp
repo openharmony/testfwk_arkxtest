@@ -367,7 +367,6 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckCount_targetNotExist)
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
 
     const uint32_t expectedSearchCount[] = {3, 4, 5, 5};
-    vector<string> domFrames;
     opt_.scrollWidgetDeadZone_ = 0; // set deadzone to 0 for easy computation
     for (size_t index = 0; index < 4; index++) {
         controller_->SetDomFrames(domFrameSet[index]);
@@ -426,7 +425,6 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckCount_targetExist)
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
 
     const uint32_t expectedSearchCount[] = {1, 2, 3, 4};
-    vector<string> domFrames;
     for (size_t index = 0; index < 4; index++) {
         controller_->SetDomFrames(domFrameSet[index]);
         // check search result
