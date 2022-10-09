@@ -147,7 +147,7 @@ TEST_F(WidgetOperatorTest, scrollSearchRetrieveSubjectWidgetFailed)
     auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
     ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
     // retrieve scroll widget failed should be marked as exception
-    ASSERT_EQ(WIDGET_LOST, error.code_);
+    ASSERT_EQ(ERR_COMPONENT_LOST, error.code_);
     ASSERT_TRUE(error.message_.find(scrollWidgetSelector.Describe()) != string::npos)
                                 << "Error message should contains the scroll-widget selection description";
 }

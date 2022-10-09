@@ -28,7 +28,7 @@ namespace OHOS::uitest {
         uiController_ = UiController::GetController();
         if (uiController_ == nullptr) {
             LOG_E("%{public}s", "No available UiController currently");
-            error = ApiCallErr(INTERNAL_ERROR, "No available UiController currently");
+            error = ApiCallErr(ERR_INTERNAL, "No available UiController currently");
             return;
         }
         if (!updateUiTree) {
@@ -40,7 +40,7 @@ namespace OHOS::uitest {
         uiController_->GetUiHierarchy(hierarchies);
         if (hierarchies.empty()) {
             LOG_E("%{public}s", "Get windows failed");
-            error = ApiCallErr(INTERNAL_ERROR, "Get window nodes failed");
+            error = ApiCallErr(ERR_INTERNAL, "Get window nodes failed");
             return;
         }
         vector<unique_ptr<WidgetTree>> trees;
@@ -106,7 +106,7 @@ namespace OHOS::uitest {
         msg << "dose not exist on current UI! Check if the UI has changed after you got the widget object";
         if (recv.empty()) {
             msg << "(NoCandidates)";
-            err = ApiCallErr(WIDGET_LOST, msg.str());
+            err = ApiCallErr(ERR_COMPONENT_LOST, msg.str());
             LOG_W("%{public}s", err.message_.c_str());
             return nullptr;
         }
@@ -116,7 +116,7 @@ namespace OHOS::uitest {
         constexpr auto attrType = ATTR_NAMES[UiAttr::TYPE];
         if (widget.GetAttr(attrType, "A").compare(retrieved.GetAttr(attrType, "B")) != 0) {
             msg << " (CompareEqualsFailed)";
-            err = ApiCallErr(WIDGET_LOST, msg.str());
+            err = ApiCallErr(ERR_COMPONENT_LOST, msg.str());
             LOG_W("%{public}s", err.message_.c_str());
             return nullptr;
         }
@@ -209,6 +209,13 @@ namespace OHOS::uitest {
         }
         stringstream errorRecv;
         if (!uiController_->TakeScreenCap(savePath, errorRecv)) {
+            string errStr = errorRecv.str();
+            LOG_W("ScreenCap failed: %{public}s", errStr.c_str());
+            if (errStr.find("File opening failed") == 0) {
+                err = ApiCallErr(ERR_INVALID_INPUT, "Invalid save path or permission denied");
+            } else {
+                err = ApiCallErr(ERR_INTERNAL, errStr);
+            }
             LOG_W("ScreenCap failed: %{public}s", errorRecv.str().c_str());
         } else {
             LOG_D("ScreenCap saved to %{public}s", savePath.data());
@@ -245,7 +252,7 @@ namespace OHOS::uitest {
         stringstream msg;
         msg << "Window " << window.id_;
         msg << "dose not exist on current UI! Check if the UI has changed after you got the window object";
-        err = ApiCallErr(WINDOW_LOST, msg.str());
+        err = ApiCallErr(ERR_COMPONENT_LOST, msg.str());
         LOG_W("%{public}s", err.message_.c_str());
         return nullptr;
     }

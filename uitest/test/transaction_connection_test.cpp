@@ -303,7 +303,7 @@ TEST_F(TransactionTest, checkApiTransaction)
         this_thread::sleep_for(chrono::milliseconds(TIME_DIFF_TOLERANCE_MS));
         auto resultStr = reply.resultValue_.get<string>();
         ASSERT_EQ(expectedResults.at(idx), resultStr);
-        ASSERT_EQ(ErrCode::NO_ERROR, reply.exception_.code_);
+        ASSERT_EQ(NO_ERROR, reply.exception_.code_);
     }
     // request exit from client, should end loop immediately with success code at server end
     const uint64_t startMs = GetCurrentMillisecond();
@@ -342,7 +342,7 @@ TEST_F(TransactionTest, checkResultWhenConnectionDied)
     uint64_t startMs = GetCurrentMillisecond();
     auto reply = clientAsyncWork_.get();
     uint64_t endMs = GetCurrentMillisecond();
-    ASSERT_EQ(ErrCode::INTERNAL_ERROR, reply.exception_.code_);
+    ASSERT_EQ(ERR_INTERNAL, reply.exception_.code_);
     ASSERT_NE(string::npos, reply.exception_.message_.find("connection with uitest_daemon is dead"));
     // check return immediately after timeout
     ASSERT_NEAR(startMs, endMs, WATCH_DOG_TIMEOUT_MS * 1.02f);
@@ -356,7 +356,8 @@ TEST_F(TransactionTest, checkResultWhenConnectionDied)
     startMs = GetCurrentMillisecond();
     reply = clientAsyncWork_.get();
     endMs = GetCurrentMillisecond();
-    ASSERT_EQ(ErrCode::INTERNAL_ERROR, reply.exception_.code_);
+    ASSERT_EQ(ERR_INTERNAL, reply.exception_.code_);
+    std::cout<<reply.exception_.code_<<std::endl;
     ASSERT_NE(string::npos, reply.exception_.message_.find("connection with uitest_daemon is dead"));
     // check return immediately due-to dead connection
     ASSERT_NEAR(startMs, endMs, TIME_DIFF_TOLERANCE_MS);
@@ -378,7 +379,7 @@ TEST_F(TransactionTest, checkRejectConcurrentInvoke)
     client_.InvokeApi(call1, reply1);
     uint64_t endMs = GetCurrentMillisecond();
     // the second call should return immediately and reject the concurrent invoke
-    ASSERT_EQ(reply1.exception_.code_, ErrCode::USAGE_ERROR);
+    ASSERT_EQ(reply1.exception_.code_, ERR_API_USAGE);
     ASSERT_NE(string::npos, reply1.exception_.message_.find("uitest-api dose not allow calling concurrently"));
     ASSERT_NEAR(startMs, endMs, TIME_DIFF_TOLERANCE_MS);
 }
@@ -392,7 +393,7 @@ TEST_F(TransactionTest, checkResultAfterFinalized)
     client_.InvokeApi(call, reply);
     uint64_t endMs = GetCurrentMillisecond();
     // the second call should return immediately and reject the invoke
-    ASSERT_EQ(ErrCode::INTERNAL_ERROR, reply.exception_.code_);
+    ASSERT_EQ(ERR_INTERNAL, reply.exception_.code_);
     ASSERT_NE(string::npos, reply.exception_.message_.find("connection with uitest_daemon is dead"));
     ASSERT_NEAR(startMs, endMs, TIME_DIFF_TOLERANCE_MS);
 }
