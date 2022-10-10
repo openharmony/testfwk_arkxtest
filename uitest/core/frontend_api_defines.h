@@ -22,9 +22,8 @@
 #include "json.hpp"
 
 namespace OHOS::uitest {
-    enum ErrCode : uint32_t
-    {
-        /*Old ErrorCode*/
+    enum ErrCode : uint32_t {
+        /**Old ErrorCode*/
         NO_ERROR = 0,
         /**Internal error, not expected to happen.*/
         INTERNAL_ERROR = 1,
@@ -35,7 +34,7 @@ namespace OHOS::uitest {
         /**The user assertion failure.*/
         ASSERTION_FAILURE = 4,
         USAGE_ERROR = 5,
-        /*New ErrorCode*/
+        /**New ErrorCode*/
         /**Initialize failed.*/
         ERR_INITIALIZE_FAILED = 17000001,
         /**API does not allow calling concurrently.*/
@@ -54,8 +53,7 @@ namespace OHOS::uitest {
         ERR_NO_SYSTEM_CAPABILITY = 801,
     };
 
-    static const std::map<ErrCode, std::string> DescMap=
-    {
+    const std::map<ErrCode, std::string> ErrDescMap = {
         /**Correspondence between error codes and descriptions*/
         {NO_ERROR, "No Error"},
         {ERR_INITIALIZE_FAILED, "Initialize failed."},
@@ -79,7 +77,7 @@ namespace OHOS::uitest {
         explicit ApiCallErr(ErrCode ec)
         {
             code_ = ec;
-            message_ = DescMap.find(ec)->second;
+            message_ = ErrDescMap.find(ec)->second;
         }
 
         ApiCallErr(ErrCode ec, std::string_view msg)
@@ -423,8 +421,8 @@ namespace OHOS::uitest {
     };
 
     /** List all the frontend data-type definitions.*/
-    const auto FRONTEND_CLASS_DEFS = {&BY_DEF, &UI_DRIVER_DEF, &UI_COMPONENT_DEF, &ON_DEF, 
-    							&DRIVER_DEF, &COMPONENT_DEF, &UI_WINDOW_DEF, &POINTER_MATRIX_DEF};
+    const auto FRONTEND_CLASS_DEFS = {&BY_DEF, &UI_DRIVER_DEF, &UI_COMPONENT_DEF, &ON_DEF,
+                                      &DRIVER_DEF, &COMPONENT_DEF, &UI_WINDOW_DEF, &POINTER_MATRIX_DEF};
     const auto FRONTEND_ENUMERATOR_DEFS = {&MATCH_PATTERN_DEF, &WINDOW_MODE_DEF, &RESIZE_DIRECTION_DEF,
                                            &DISPLAY_ROTATION_DEF};
     const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF};

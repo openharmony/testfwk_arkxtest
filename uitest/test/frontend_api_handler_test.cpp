@@ -222,7 +222,7 @@ TEST_F(FrontendApiHandlerTest, callApiE2EOldAPi)
     // should always return a new By
     ASSERT_NE(ref0, ref1);
 
-    auto call2 = ApiCallInfo{.apiId_ = "UiDriver.create", .callerObjRef_ = string()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.create", .callerObjRef_ = string()};
     auto reply2 = ApiReplyInfo();
     server.Call(call2, reply2);
     ASSERT_EQ(NO_ERROR, reply2.exception_.code_);
@@ -280,7 +280,7 @@ TEST_F(FrontendApiHandlerTest, callApiE2E)
     ASSERT_NE(ref0, ref1);
 
     // should always return a new By
-    auto call2 = ApiCallInfo{.apiId_ = "Driver.create", .callerObjRef_ = string()};
+    auto call2 = ApiCallInfo {.apiId_ = "Driver.create", .callerObjRef_ = string()};
     auto reply2 = ApiReplyInfo();
     server.Call(call2, reply2);
     ASSERT_EQ(NO_ERROR, reply2.exception_.code_);

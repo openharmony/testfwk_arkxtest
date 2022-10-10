@@ -18,7 +18,6 @@
 #include "ui_controller.h"
 
 namespace OHOS::uitest {
-
 class DummyController : public UiController {
 public:
     explicit DummyController(std::string_view name) : UiController(name) {}
@@ -38,7 +37,6 @@ public:
 private:
     bool workable_ = false;
 };
-
 }
 
 #endif
