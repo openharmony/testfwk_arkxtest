@@ -78,21 +78,19 @@ namespace OHOS::uitest {
         }
     }
 
-    static string GetClassName(const string &apiName, char splitter) 
+    static string GetClassName(const string &apiName, char splitter)
     {
-        size_t classNameLen;
-        classNameLen = apiName.find(splitter);
+        auto classNameLen = apiName.find(splitter);
         if (classNameLen == std::string::npos) {
             return "";
         }
         return apiName.substr(0, classNameLen);
     }
 
-    static string CheckAndDoApiMapping(string_view apiName, char splitter, const map<string, string> &apiMap) 
+    static string CheckAndDoApiMapping(string_view apiName, char splitter, const map<string, string> &apiMap)
     {
-        size_t classNameLen;
         string output = string(apiName);
-        classNameLen = output.find(splitter);
+        auto classNameLen = output.find(splitter);
         if (classNameLen == std::string::npos) {
             return output;
         }
@@ -111,7 +109,7 @@ namespace OHOS::uitest {
         return output;
     }
 
-    FrontendApiServer::FrontendApiServer() 
+    FrontendApiServer::FrontendApiServer()
     {
         old2NewApiMap_["By"] = "On";
         old2NewApiMap_["UiDriver"] = "Driver";
@@ -125,15 +123,14 @@ namespace OHOS::uitest {
         new2OldApiMap_["Component"] = "UiComponent" ;
     }
 
-    /** 
-     * map api8 old api call to new api. 
+    /**
+     * map api8 old api call to new api.
      * return old api name if it's an old api call.
      * return empty string if it's a new api call.
      */
-    static const std::map<ErrCode, std::vector<ErrCode>> ErrMap =
-    {
+    static const std::map<ErrCode, std::vector<ErrCode>> ErrCodeMap = {
         /**Correspondence between old and new error codes*/
-        {NO_ERROR,{NO_ERROR}},
+        {NO_ERROR, {NO_ERROR}},
         {ERR_COMPONENT_LOST, {WIDGET_LOST, WINDOW_LOST}},
         {ERR_NO_SYSTEM_CAPABILITY, {USAGE_ERROR}},
         {ERR_INTERNAL, {INTERNAL_ERROR}},
@@ -144,7 +141,7 @@ namespace OHOS::uitest {
         {ERR_API_USAGE, {INTERNAL_ERROR}},
     };
     
-    string FrontendApiServer::ApiMapPre(ApiCallInfo &inModifier) const 
+    string FrontendApiServer::ApiMapPre(ApiCallInfo &inModifier) const
     {
         // 1. map method name
         const string &className = GetClassName(inModifier.apiId_, '.');
@@ -182,29 +179,30 @@ namespace OHOS::uitest {
         return oldApiName;
     }
 
-    static void ErrCodeMapping(ApiCallErr &apiErr) 
+    static void ErrCodeMapping(ApiCallErr &apiErr)
     {
         ErrCode ec = apiErr.code_;
-        std::string_view msg = apiErr.message_;
-        auto findCode = ErrMap.find(ec);
-        if (findCode != ErrMap.end() && !findCode->second.empty()) {
+        auto msg = apiErr.message_;
+        auto findCode = ErrCodeMap.find(ec);
+        if (findCode != ErrCodeMap.end() && !findCode->second.empty()) {
             apiErr = ApiCallErr(findCode->second.at(0), msg);
-        } 
+        }
     }
 
     /** map new error code and api Object to old error code and api Object. */
-    void FrontendApiServer::ApiMapPost(const string &oldApiName, ApiReplyInfo &out) const {
+    void FrontendApiServer::ApiMapPost(const string &oldApiName, ApiReplyInfo &out) const
+    {
         json &value = out.resultValue_;
         const auto type = value.type();
         // 1. error code conversion
         ErrCodeMapping(out.exception_);
-        // 2. ret value conversion 
+        // 2. ret value conversion
         const auto find = sApiArgTypesMap.find(oldApiName);
         if (find == sApiArgTypesMap.end()) {
             return;
         }
         string &retType = find->second.first.back();
-        if ( (retType == "string") || (retType == "[string]")) {
+        if ((retType == "string") || (retType == "[string]")) {
             return;
         }
         if (type == value_t::string) {
@@ -258,19 +256,20 @@ namespace OHOS::uitest {
 
     void FrontendApiServer::Call(const ApiCallInfo &in, ApiReplyInfo &out) const
     {
+        auto call = in;
         // initialize method signature
         if (sApiArgTypesMap.empty()) {
             ParseFrontendMethodsSignature();
         }
-        string oldApiName = ApiMapPre(const_cast<ApiCallInfo&>(in));
-        auto find = handlers_.find(in.apiId_);
+        string oldApiName = ApiMapPre(call);
+        auto find = handlers_.find(call.apiId_);
         if (find == handlers_.end()) {
-            out.exception_ = ApiCallErr(ERR_INTERNAL, "No handler found for api '" + in.apiId_ + "'");
+            out.exception_ = ApiCallErr(ERR_INTERNAL, "No handler found for api '" + call.apiId_ + "'");
             return;
         }
         try {
             for (auto &[name, processor] : commonPreprocessors_) {
-                processor(in, out);
+                processor(call, out);
                 if (out.exception_.code_ != NO_ERROR) {
                     out.exception_.message_ = out.exception_.message_ + "(PreProcessing: " + name + ")";
                     if (oldApiName.length() > 0) {
@@ -283,7 +282,7 @@ namespace OHOS::uitest {
             out.exception_ = ApiCallErr(ERR_INTERNAL, "Preprocessor failed: " + string(ex.what()));
         }
         try {
-            find->second(in, out);
+            find->second(call, out);
         } catch (std::exception &ex) {
             // catch possible json-parsing error
             out.exception_ = ApiCallErr(ERR_INTERNAL, "Handler failed: " + string(ex.what()));
@@ -485,9 +484,10 @@ namespace OHOS::uitest {
         out.resultValue_ = StoreBackendObject(move(selector));
     }
 
-    static void RegisterOnBuilders() {
+    static void RegisterOnBuilders()
+    {
         auto &server = FrontendApiServer::Get();
-        server.AddHandler("On.accessibilityId", GenericOnAttrBuilder<UiAttr::ACCESSIBILITY_ID, int32_t>); // ��д��.d.ts�ļ�
+        server.AddHandler("On.accessibilityId", GenericOnAttrBuilder<UiAttr::ACCESSIBILITY_ID, int32_t>);
         server.AddHandler("On.text", GenericOnAttrBuilder<UiAttr::TEXT, string>);
         server.AddHandler("On.id", GenericOnAttrBuilder<UiAttr::ID, string>);
         server.AddHandler("On.type", GenericOnAttrBuilder<UiAttr::TYPE, string>);
