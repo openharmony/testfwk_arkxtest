@@ -29,7 +29,7 @@ namespace OHOS::uitest {
     void WidgetSelector::AddFrontLocator(const WidgetSelector &selector, ApiCallErr &error)
     {
         if (!selector.rearLocators_.empty() || !selector.rearLocators_.empty()) {
-            error = ApiCallErr(ERR_API_USAGE, NEST_USAGE_ERROR);
+            error = ApiCallErr(ERR_INVALID_INPUT, NEST_USAGE_ERROR);
             return;
         }
         frontLocators_.emplace_back(selector);
