@@ -52,7 +52,7 @@ namespace OHOS::uitest {
     "   uiRecord -record,    wirte location coordinates of events into files\n"
     "   uiRecord -read,                    print file content to the console\n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "3.2.2.1";
+    const std::string VERSION = "3.2.2.2";
     int g_touchtime;
     int g_timeindex = 1000;
     int g_timeinterval = 5000;

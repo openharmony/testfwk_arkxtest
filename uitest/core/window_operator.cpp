@@ -39,7 +39,7 @@ namespace OHOS::uitest {
         std::string_view message;
     };
 
-    static const Operational OPERATIONS[28] = {
+    static constexpr Operational OPERATIONS[] = {
         {MOVETO, FULLSCREEN, false, INDEX_ZERO, "Fullscreen window can not move"},
         {MOVETO, SPLIT_PRIMARY, false, INDEX_ZERO, "SPLIT_PRIMARY window can not move"},
         {MOVETO, SPLIT_SECONDARY, false, INDEX_ZERO, "SPLIT_SECONDARY window can not move"},
@@ -70,7 +70,7 @@ namespace OHOS::uitest {
         {CLOSE, FLOATING, true, INDEX_FOUR, ""}
     };
 
-    static bool CheckOperational(const WindowAction action, const WindowMode mode, ApiReplyInfo &out, size_t &index)
+    static bool CheckOperational(WindowAction action, WindowMode mode, ApiReplyInfo &out, size_t &index)
     {
         for (unsigned long dex = 0; dex < sizeof(OPERATIONS) / sizeof(Operational); dex++) {
             if (OPERATIONS[dex].action == action && OPERATIONS[dex].windowMode == mode) {
@@ -78,12 +78,12 @@ namespace OHOS::uitest {
                     index = OPERATIONS[dex].index;
                     return true;
                 } else {
-                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, OPERATIONS[dex].message);
+                    out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, OPERATIONS[dex].message);
                     return false;
                 }
             }
         }
-        out.exception_.code_ = ERR_INTERNAL;
+        out.exception_ = ApiCallErr(ERR_INTERNAL, "No such window mode-action combination registered");
         return false;
     }
 
@@ -142,9 +142,9 @@ namespace OHOS::uitest {
         auto rect = window_.bounds_;
         if ((((direction == LEFT) || (direction == RIGHT))&& highth != rect.GetHeight()) ||
             (((direction == D_UP) || (direction == D_DOWN))&& width != rect.GetWidth())) {
-                LOG_W("The operation cannot be done in this direction");
-                return;
-            }
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "Resize cannot be done in this direction");
+            return;
+        }
         Point from, to;
         switch (direction) {
             case (LEFT):

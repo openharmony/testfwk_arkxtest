@@ -202,13 +202,12 @@ namespace OHOS::uitest {
      * transaction if any, else return the result object. */
     static napi_value UnmarshalReply(napi_env env, const TransactionContext &ctx, const ApiReplyInfo &reply)
     {
-    	LOG_D("Start to Unmarshal transaction result");
+        LOG_D("Start to Unmarshal transaction result");
         const auto &message = reply.exception_.message_;
         ErrCode code = reply.exception_.code_;
-        if(code == INTERNAL_ERROR || code == ERR_INTERNAL)
-        {
+        if (code == INTERNAL_ERROR || code == ERR_INTERNAL) {
             LOG_E("ErrorInfo: code='%{public}u', message='%{public}s'", code, message.c_str());
-        }else if(reply.exception_.code_ != NO_ERROR) {
+        } else if (reply.exception_.code_ != NO_ERROR) {
             LOG_I("ErrorInfo: code='%{public}u', message='%{public}s'", code, message.c_str());
             return CreateJsException(env, code, message);
         }
@@ -410,8 +409,8 @@ namespace OHOS::uitest {
                                               classDef.methodCount_, descs.get(), &ctor), NAPI_ERR);
         NAPI_CALL_BASE(env, napi_set_named_property(env, exports, name, ctor), NAPI_ERR);
         NAPI_CALL_BASE(env, MountJsConstructorToGlobal(env, name, ctor), NAPI_ERR);
-        if (string_view(name) == "On" ) {
-            // create seed-by with special objectRef "ON" and mount to exporter
+        if (string_view(name) == "On") {
+            // create seed-on with special objectRef "ON" and mount to exporter
             napi_value onSeed = nullptr;
             NAPI_CALL_BASE(env, napi_new_instance(env, ctor, 0, nullptr, &onSeed), NAPI_ERR);
             napi_value prop = nullptr;
