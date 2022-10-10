@@ -409,22 +409,16 @@ namespace OHOS::uitest {
                                               classDef.methodCount_, descs.get(), &ctor), NAPI_ERR);
         NAPI_CALL_BASE(env, napi_set_named_property(env, exports, name, ctor), NAPI_ERR);
         NAPI_CALL_BASE(env, MountJsConstructorToGlobal(env, name, ctor), NAPI_ERR);
-        if (string_view(name) == "On") {
-            // create seed-on with special objectRef "ON" and mount to exporter
-            napi_value onSeed = nullptr;
-            NAPI_CALL_BASE(env, napi_new_instance(env, ctor, 0, nullptr, &onSeed), NAPI_ERR);
+        if (string_view(name) == "On" || string_view(name) == "By") {
+            // create seed-On/By with special objectRef and mount to exporter
+            auto seedName = string_view(name) == "On" ? "ON" : "BY";
+            auto seedRef = string_view(name) == "On" ? REF_SEED_ON.data() : REF_SEED_BY.data();
+            napi_value seed = nullptr;
+            NAPI_CALL_BASE(env, napi_new_instance(env, ctor, 0, nullptr, &seed), NAPI_ERR);
             napi_value prop = nullptr;
-            NAPI_CALL_BASE(env, napi_create_string_utf8(env, REF_SEED_ON.data(), NAPI_AUTO_LENGTH, &prop), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_set_named_property(env, onSeed, PROP_BACKEND_OBJ_REF, prop), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_set_named_property(env, exports, "ON", onSeed), NAPI_ERR);
-        } else if (string_view(name) == "By") {
-            // create seed-by with special objectRef "By" and mount to exporter
-            napi_value bySeed = nullptr;
-            NAPI_CALL_BASE(env, napi_new_instance(env, ctor, 0, nullptr, &bySeed), NAPI_ERR);
-            napi_value prop = nullptr;
-            NAPI_CALL_BASE(env, napi_create_string_utf8(env, REF_SEED_BY.data(), NAPI_AUTO_LENGTH, &prop), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_set_named_property(env, bySeed, PROP_BACKEND_OBJ_REF, prop), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_set_named_property(env, exports, "BY", bySeed), NAPI_ERR);
+            NAPI_CALL_BASE(env, napi_create_string_utf8(env, seedRef, NAPI_AUTO_LENGTH, &prop), NAPI_ERR);
+            NAPI_CALL_BASE(env, napi_set_named_property(env, seed, PROP_BACKEND_OBJ_REF, prop), NAPI_ERR);
+            NAPI_CALL_BASE(env, napi_set_named_property(env, exports, seedName, seed), NAPI_ERR);
         }
         return napi_ok;
     }
