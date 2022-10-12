@@ -48,7 +48,7 @@ namespace OHOS::uitest {
 
         const FrontEndClassDef& GetFrontendClassDef() const override
         {
-            return BY_DEF;
+            return ON_DEF;
         }
 
     private:

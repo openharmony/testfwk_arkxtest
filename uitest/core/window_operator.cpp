@@ -39,7 +39,7 @@ namespace OHOS::uitest {
         std::string_view message;
     };
 
-    static const Operational OPERATIONS[28] = {
+    static constexpr Operational OPERATIONS[] = {
         {MOVETO, FULLSCREEN, false, INDEX_ZERO, "Fullscreen window can not move"},
         {MOVETO, SPLIT_PRIMARY, false, INDEX_ZERO, "SPLIT_PRIMARY window can not move"},
         {MOVETO, SPLIT_SECONDARY, false, INDEX_ZERO, "SPLIT_SECONDARY window can not move"},
@@ -70,7 +70,7 @@ namespace OHOS::uitest {
         {CLOSE, FLOATING, true, INDEX_FOUR, ""}
     };
 
-    static bool IsOperational(const WindowAction action, const WindowMode mode, ApiReplyInfo &out, size_t &index)
+    static bool CheckOperational(WindowAction action, WindowMode mode, ApiReplyInfo &out, size_t &index)
     {
         for (unsigned long dex = 0; dex < sizeof(OPERATIONS) / sizeof(Operational); dex++) {
             if (OPERATIONS[dex].action == action && OPERATIONS[dex].windowMode == mode) {
@@ -78,12 +78,12 @@ namespace OHOS::uitest {
                     index = OPERATIONS[dex].index;
                     return true;
                 } else {
-                    out.exception_ = ApiCallErr(ErrCode::USAGE_ERROR, OPERATIONS[dex].message);
+                    out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, OPERATIONS[dex].message);
                     return false;
                 }
             }
         }
-        out.exception_.code_ = ErrCode::INTERNAL_ERROR;
+        out.exception_ = ApiCallErr(ERR_INTERNAL, "No such window mode-action combination registered");
         return false;
     }
 
@@ -106,25 +106,24 @@ namespace OHOS::uitest {
         driver_.PerformTouch(touch, options_, out.exception_);
     }
 
-    bool WindowOperator::Focuse(ApiReplyInfo &out)
+    void WindowOperator::Focus(ApiReplyInfo &out)
     {
         if (window_.focused_) {
-            return true;
+            return;
         } else {
             auto rect = window_.bounds_;
             static constexpr uint32_t step = 10;
             Point focus(rect.GetCenterX(), rect.top_ + step);
             auto touch = GenericClick(TouchOp::CLICK, focus);
             driver_.PerformTouch(touch, options_, out.exception_);
-            return (out.exception_.code_ == ErrCode::NO_ERROR);
         }
     }
 
-    bool WindowOperator::MoveTo(uint32_t endX, uint32_t endY, ApiReplyInfo &out)
+    void WindowOperator::MoveTo(uint32_t endX, uint32_t endY, ApiReplyInfo &out)
     {
         size_t index = 0;
-        if (!IsOperational(MOVETO, window_.mode_, out, index)) {
-            return false;
+        if (!CheckOperational(MOVETO, window_.mode_, out, index)) {
+            return;
         }
         auto rect = window_.bounds_;
         static constexpr uint32_t step = 40;
@@ -132,21 +131,20 @@ namespace OHOS::uitest {
         Point to(endX + step, endY + step);
         auto touch = GenericSwipe(TouchOp::DRAG, from, to);
         driver_.PerformTouch(touch, options_, out.exception_);
-        return (out.exception_.code_ == ErrCode::NO_ERROR);
     }
 
-    bool WindowOperator::Resize(int32_t width, int32_t highth, ResizeDirection direction, ApiReplyInfo &out)
+    void WindowOperator::Resize(int32_t width, int32_t highth, ResizeDirection direction, ApiReplyInfo &out)
     {
         size_t index = 0;
-        if (!IsOperational(RESIZE, window_.mode_, out, index)) {
-            return false;
+        if (!CheckOperational(RESIZE, window_.mode_, out, index)) {
+            return;
         }
         auto rect = window_.bounds_;
         if ((((direction == LEFT) || (direction == RIGHT))&& highth != rect.GetHeight()) ||
             (((direction == D_UP) || (direction == D_DOWN))&& width != rect.GetWidth())) {
-                LOG_W("The operation cannot be done in this direction");
-                return false;
-            }
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "Resize cannot be done in this direction");
+            return;
+        }
         Point from, to;
         switch (direction) {
             case (LEFT):
@@ -186,63 +184,57 @@ namespace OHOS::uitest {
         }
         auto touch = GenericSwipe(TouchOp::DRAG, from, to);
         driver_.PerformTouch(touch, options_, out.exception_);
-        return (out.exception_.code_ == ErrCode::NO_ERROR);
     }
 
-    bool WindowOperator::Split(ApiReplyInfo &out)
+    void WindowOperator::Split(ApiReplyInfo &out)
     {
         size_t index = 0;
-        if (!IsOperational(SPLIT, window_.mode_, out, index)) {
-            return false;
+        if (!CheckOperational(SPLIT, window_.mode_, out, index)) {
+            return;
         }
         BarAction(index, out);
-        return (out.exception_.code_ == ErrCode::NO_ERROR);
     }
 
-    bool WindowOperator::Maximize(ApiReplyInfo &out)
+    void  WindowOperator::Maximize(ApiReplyInfo &out)
     {
         size_t index = 0;
-        if (!IsOperational(MAXIMIZE, window_.mode_, out, index)) {
-            return false;
+        if (!CheckOperational(MAXIMIZE, window_.mode_, out, index)) {
+            return;
         }
         BarAction(index, out);
-        return (out.exception_.code_ == ErrCode::NO_ERROR);
     }
 
-    bool WindowOperator::Resume(ApiReplyInfo &out)
+    void WindowOperator::Resume(ApiReplyInfo &out)
     {
         size_t index = 0;
-        if (!IsOperational(RESUME, window_.mode_, out, index)) {
-            return false;
+        if (!CheckOperational(RESUME, window_.mode_, out, index)) {
+            return;
         }
         BarAction(index, out);
-        return (out.exception_.code_ == ErrCode::NO_ERROR);
     }
 
-    bool WindowOperator::Minimize(ApiReplyInfo &out)
+    void WindowOperator::Minimize(ApiReplyInfo &out)
     {
         size_t index = 0;
-        if (!IsOperational(MINIMIZE, window_.mode_, out, index)) {
-            return false;
+        if (!CheckOperational(MINIMIZE, window_.mode_, out, index)) {
+            return;
         }
         BarAction(index, out);
-        return (out.exception_.code_ == ErrCode::NO_ERROR);
     }
 
-    bool WindowOperator::Close(ApiReplyInfo &out)
+    void WindowOperator::Close(ApiReplyInfo &out)
     {
         size_t index = 0;
-        if (!IsOperational(CLOSE, window_.mode_, out, index)) {
-            return false;
+        if (!CheckOperational(CLOSE, window_.mode_, out, index)) {
+            return;
         }
         BarAction(index, out);
-        return (out.exception_.code_ == ErrCode::NO_ERROR);
     }
 
     void WindowOperator::BarAction(size_t index, ApiReplyInfo &out)
     {
         CallBar(out);
-        if (out.exception_.code_ != ErrCode::NO_ERROR) {
+        if (out.exception_.code_ != NO_ERROR) {
             return;
         }
         auto selector = WidgetSelector();
@@ -252,7 +244,7 @@ namespace OHOS::uitest {
         selector.AddMatcher(matcher2);
         vector<unique_ptr<Widget>> widgets;
         driver_.FindWidgets(selector, widgets, out.exception_);
-        if (out.exception_.code_ != ErrCode::NO_ERROR) {
+        if (out.exception_.code_ != NO_ERROR) {
             return;
         }
         auto rect = widgets.front()->GetBounds();
