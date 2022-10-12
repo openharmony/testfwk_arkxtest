@@ -17,6 +17,7 @@
 
 #include <utility>
 #include "gtest/gtest.h"
+#include "dummy_controller.h"
 
 using namespace OHOS::uitest;
 using namespace std;
@@ -36,26 +37,6 @@ TEST_F(UiControllerTest, testGetControllerImplWithNoneRegistered)
 {
     ASSERT_EQ(nullptr, UiController::GetController());
 }
-
-class DummyController : public UiController {
-public:
-    explicit DummyController(string_view name) : UiController(name) {}
-
-    ~DummyController() {}
-
-    bool IsWorkable() const override
-    {
-        return workable_;
-    }
-
-    void SetWorkable(bool wb)
-    {
-        this->workable_ = wb;
-    }
-
-private:
-    bool workable_ = false;
-};
 
 TEST_F(UiControllerTest, addAndRemoveController)
 {

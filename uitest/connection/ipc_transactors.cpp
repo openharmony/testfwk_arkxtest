@@ -289,14 +289,14 @@ namespace OHOS::uitest {
 
     static void CreateResultForDiedConnection(ApiReplyInfo& reply)
     {
-        reply.exception_.code_ = ErrCode::INTERNAL_ERROR;
+        reply.exception_.code_ = ERR_INTERNAL;
         reply.exception_.message_ = "connection with uitest_daemon is dead";
     }
 
     static void CreateResultForConcurrentInvoke(string_view processing, string_view incoming, ApiReplyInfo& reply)
     {
         static constexpr string_view msg = "uitest-api dose not allow calling concurrently, current processing:";
-        reply.exception_.code_ = ErrCode::USAGE_ERROR;
+        reply.exception_.code_ = ERR_API_USAGE;
         reply.exception_.message_ = string(msg) + string(processing) + ", incoming: " + string(incoming);
     }
 
