@@ -79,12 +79,20 @@ namespace OHOS::uitest {
         ~FrontendApiServer() {}
 
     private:
-        FrontendApiServer() = default;
-        
+        /** constructor, initialize apiMap_ and apiMapReverse_*/
+        FrontendApiServer();
+        /** handle result value/error code of old api call*/
+        void ApiMapPost(const std::string &oldApiName, ApiReplyInfo &out) const;
+        /** convert old api call to new api call*/
+        std::string ApiMapPre(ApiCallInfo &inModifier) const;
         /** Command apiCall pre-processors before it's dispatched to target handler.*/
         std::map<std::string, ApiInvokeHandler> commonPreprocessors_;
         /** Registered api handlers.*/
         std::map<std::string, ApiInvokeHandler> handlers_;
+        /** mapping classes of old API to classes of new API*/
+        std::map<std::string, std::string> old2NewApiMap_;
+        /** mapping classes of new API to classes of old API*/
+        std::map<std::string, std::string> new2OldApiMap_;
     };
 
     /** Function serving external api-invocation request.*/

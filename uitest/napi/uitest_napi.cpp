@@ -101,12 +101,13 @@ namespace OHOS::uitest {
         ApiCallInfo callInfo_;
     };
 
-    static napi_value CreateJsException(napi_env env, string_view code, string_view msg)
+    static napi_value CreateJsException(napi_env env, uint32_t code, string_view msg)
     {
         napi_value codeValue, msgValue, errorValue;
-        napi_create_string_utf8(env, code.data(), NAPI_AUTO_LENGTH, &codeValue);
+        napi_create_uint32(env, code, &codeValue);
         napi_create_string_utf8(env, msg.data(), NAPI_AUTO_LENGTH, &msgValue);
-        napi_create_error(env, codeValue, msgValue, &errorValue);
+        napi_create_error(env, nullptr, msgValue, &errorValue);
+        napi_set_named_property(env, errorValue, "code", codeValue);
         return errorValue;
     }
 
@@ -153,18 +154,6 @@ namespace OHOS::uitest {
         return napi_ok;
     }
 
-    /**Get the readable name of the error enum value.*/
-    static string GetErrorName(ErrCode code)
-    {
-        static const std::map<ErrCode, std::string> names = {
-            {NO_ERROR, "NO_ERROR"},       {INTERNAL_ERROR, "INTERNAL_ERROR"},
-            {WIDGET_LOST, "WIDGET_LOST"}, {ASSERTION_FAILURE, "ASSERTION_FAILURE"},
-            {USAGE_ERROR, "USAGE_ERROR"},
-        };
-        const auto find = names.find(code);
-        return (find == names.end()) ? "UNKNOWN" : find->second;
-    }
-
     /**Unmarshal object from json, throw error and return false if the object cannot be deserialized.*/
     static napi_status UnmarshalObject(napi_env env, const json &in, napi_value *pOut, napi_value jsThis)
     {
@@ -194,7 +183,7 @@ namespace OHOS::uitest {
         if (frontendTypeName.empty()) { // plain string, return it
             return napi_ok;
         }
-        LOG_D("Convert to frondend object: '%{public}s'", frontendTypeName.c_str());
+        LOG_D("Convert to frontend object: '%{public}s'", frontendTypeName.c_str());
         // covert to wrapper object and bind the backend objectRef
         napi_value refValue = *pOut;
         napi_value constructor = nullptr;
@@ -214,13 +203,15 @@ namespace OHOS::uitest {
     static napi_value UnmarshalReply(napi_env env, const TransactionContext &ctx, const ApiReplyInfo &reply)
     {
         LOG_D("Start to Unmarshal transaction result");
-        if (reply.exception_.code_ != ErrCode::NO_ERROR) { // raise error
-            const auto code = GetErrorName(reply.exception_.code_);
-            const auto &message = reply.exception_.message_;
-            LOG_I("ErrorInfo: code='%{public}s', message='%{public}s'", code.c_str(), message.c_str());
+        const auto &message = reply.exception_.message_;
+        ErrCode code = reply.exception_.code_;
+        if (code == INTERNAL_ERROR || code == ERR_INTERNAL) {
+            LOG_E("ErrorInfo: code='%{public}u', message='%{public}s'", code, message.c_str());
+        } else if (reply.exception_.code_ != NO_ERROR) {
+            LOG_I("ErrorInfo: code='%{public}u', message='%{public}s'", code, message.c_str());
             return CreateJsException(env, code, message);
         }
-        LOG_D("Start to Unmarshal resutrn value: %{public}s", reply.resultValue_.dump().c_str());
+        LOG_D("Start to Unmarshal return value: %{public}s", reply.resultValue_.dump().c_str());
         const auto resultType = reply.resultValue_.type();
         napi_value result = nullptr;
         if (resultType == nlohmann::detail::value_t::null) { // return null
@@ -368,7 +359,7 @@ namespace OHOS::uitest {
         }
         // 3. fill-in apiId
         ctx.callInfo_.apiId_ = methodDef->name_;
-        // 4. call out, aync or async
+        // 4. call out, sync or async
         if (methodDef->fast_) {
             return TransactSync(env, ctx);
         } else {
@@ -418,32 +409,34 @@ namespace OHOS::uitest {
                                               classDef.methodCount_, descs.get(), &ctor), NAPI_ERR);
         NAPI_CALL_BASE(env, napi_set_named_property(env, exports, name, ctor), NAPI_ERR);
         NAPI_CALL_BASE(env, MountJsConstructorToGlobal(env, name, ctor), NAPI_ERR);
-        if (string_view(name) == "By") {
-            // create seed-by with special objectRef and mount to exporter
-            napi_value bySeed = nullptr;
-            NAPI_CALL_BASE(env, napi_new_instance(env, ctor, 0, nullptr, &bySeed), NAPI_ERR);
+        if (string_view(name) == "On" || string_view(name) == "By") {
+            // create seed-On/By with special objectRef and mount to exporter
+            auto seedName = string_view(name) == "On" ? "ON" : "BY";
+            auto seedRef = string_view(name) == "On" ? REF_SEED_ON.data() : REF_SEED_BY.data();
+            napi_value seed = nullptr;
+            NAPI_CALL_BASE(env, napi_new_instance(env, ctor, 0, nullptr, &seed), NAPI_ERR);
             napi_value prop = nullptr;
-            NAPI_CALL_BASE(env, napi_create_string_utf8(env, REF_SEED_BY.data(), NAPI_AUTO_LENGTH, &prop), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_set_named_property(env, bySeed, PROP_BACKEND_OBJ_REF, prop), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_set_named_property(env, exports, "BY", bySeed), NAPI_ERR);
+            NAPI_CALL_BASE(env, napi_create_string_utf8(env, seedRef, NAPI_AUTO_LENGTH, &prop), NAPI_ERR);
+            NAPI_CALL_BASE(env, napi_set_named_property(env, seed, PROP_BACKEND_OBJ_REF, prop), NAPI_ERR);
+            NAPI_CALL_BASE(env, napi_set_named_property(env, exports, seedName, seed), NAPI_ERR);
         }
         return napi_ok;
     }
 
-    /**Exports enumrator class.*/
-    static napi_status ExportEnumrator(napi_env env, napi_value exports, const FrontendEnumratorDef &enumDef)
+    /**Exports enumerator class.*/
+    static napi_status ExportEnumerator(napi_env env, napi_value exports, const FrontendEnumeratorDef &enumDef)
     {
         NAPI_ASSERT_BASE(env, exports != nullptr, "Illegal export params", NAPI_ERR);
-        napi_value enumrator;
-        NAPI_CALL_BASE(env, napi_create_object(env, &enumrator), NAPI_ERR);
+        napi_value enumerator;
+        NAPI_CALL_BASE(env, napi_create_object(env, &enumerator), NAPI_ERR);
         for (size_t idx = 0; idx < enumDef.valueCount_; idx++) {
             const auto &def = enumDef.values_[idx];
             napi_value prop = nullptr;
             NAPI_CALL_BASE(env, napi_create_string_utf8(env, def.valueJson_.data(), NAPI_AUTO_LENGTH, &prop), NAPI_ERR);
             NAPI_CALL_BASE(env, ValueStringConvert(env, prop, &prop, false), NAPI_ERR);
-            NAPI_CALL_BASE(env, napi_set_named_property(env, enumrator, def.name_.data(), prop), NAPI_ERR);
+            NAPI_CALL_BASE(env, napi_set_named_property(env, enumerator, def.name_.data(), prop), NAPI_ERR);
         }
-        NAPI_CALL_BASE(env, napi_set_named_property(env, exports, enumDef.name_.data(), enumrator), NAPI_ERR);
+        NAPI_CALL_BASE(env, napi_set_named_property(env, exports, enumDef.name_.data(), enumerator), NAPI_ERR);
         return napi_ok;
     }
 
@@ -475,12 +468,15 @@ namespace OHOS::uitest {
         NAPI_CALL(env, ExportClass(env, exports, BY_DEF));
         NAPI_CALL(env, ExportClass(env, exports, UI_DRIVER_DEF));
         NAPI_CALL(env, ExportClass(env, exports, UI_COMPONENT_DEF));
+        NAPI_CALL(env, ExportClass(env, exports, ON_DEF));
+        NAPI_CALL(env, ExportClass(env, exports, DRIVER_DEF));
+        NAPI_CALL(env, ExportClass(env, exports, COMPONENT_DEF));
         NAPI_CALL(env, ExportClass(env, exports, UI_WINDOW_DEF));
         NAPI_CALL(env, ExportClass(env, exports, POINTER_MATRIX_DEF));
-        NAPI_CALL(env, ExportEnumrator(env, exports, MATCH_PATTERN_DEF));
-        NAPI_CALL(env, ExportEnumrator(env, exports, RESIZE_DIRECTION_DEF));
-        NAPI_CALL(env, ExportEnumrator(env, exports, WINDOW_MODE_DEF));
-        NAPI_CALL(env, ExportEnumrator(env, exports, DISPLAY_ROTATION_DEF));
+        NAPI_CALL(env, ExportEnumerator(env, exports, MATCH_PATTERN_DEF));
+        NAPI_CALL(env, ExportEnumerator(env, exports, RESIZE_DIRECTION_DEF));
+        NAPI_CALL(env, ExportEnumerator(env, exports, WINDOW_MODE_DEF));
+        NAPI_CALL(env, ExportEnumerator(env, exports, DISPLAY_ROTATION_DEF));
         LOG_I("End export uitest apis");
         return exports;
     }
