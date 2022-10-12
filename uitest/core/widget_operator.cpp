@@ -71,7 +71,7 @@ namespace OHOS::uitest {
     {
         DCHECK(op >= TouchOp::CLICK && op <= TouchOp::DOUBLE_CLICK_P);
         auto retrieved = driver_.RetrieveWidget(widget_, error, true);
-        if (error.code_ != ErrCode::NO_ERROR) {
+        if (error.code_ != NO_ERROR) {
             return;
         }
         const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY());
@@ -141,11 +141,11 @@ namespace OHOS::uitest {
         selector.AddMatcher(matcher);
         vector<unique_ptr<Widget>> recv;
         driver_.FindWidgets(selector, recv, error, false);
-        if (error.code_ != ErrCode::NO_ERROR) {
+        if (error.code_ != NO_ERROR) {
             return;
         }
         if (recv.empty()) {
-            error = ApiCallErr(INTERNAL_ERROR, "Cannot find root widget");
+            error = ApiCallErr(ERR_INTERNAL, "Cannot find root widget");
             return;
         }
         auto rootBound = recv.front()->GetBounds();
@@ -154,7 +154,7 @@ namespace OHOS::uitest {
         float_t heightScale = (float_t)(rootBound.GetHeight()) / (float_t)(rectBound.GetHeight());
         float_t originalScale = min(widthScale, heightScale);
         if (scale < 0) {
-            error = ApiCallErr(USAGE_ERROR, "Please input the correct scale");
+            error = ApiCallErr(ERR_INVALID_INPUT, "Please input the correct scale");
             return;
         } else if (scale > originalScale) {
             scale = originalScale;
@@ -190,7 +190,7 @@ namespace OHOS::uitest {
                 int32_t code = KEYCODE_NONE;
                 int32_t ctrlCode = KEYCODE_NONE;
                 if (!driver_.GetUiController(error)->GetCharKeyCode(ch, code, ctrlCode)) {
-                    error = ApiCallErr(USAGE_ERROR, string("Cannot input char ") + ch);
+                    error = ApiCallErr(ERR_INVALID_INPUT, string("Cannot input char ") + ch);
                     return;
                 }
                 keyCodes.emplace_back(make_pair(code, ctrlCode));
