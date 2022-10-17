@@ -291,6 +291,12 @@ namespace OHOS::uitest {
         }
         else if (raw == XDEVICE_AGENT_TOKEN)
         {
+            ofstream fout;
+            fout.open(XDEVICE_AGENT_TOKEN, ios::out | ios::binary);
+            if (!fout) {
+                LOG_D("create shmf failed");
+                return "";
+            }
             return "/data/app/el2/100/base/com.ohos.devicetest/cache/shmf";
         }
         string procName;
