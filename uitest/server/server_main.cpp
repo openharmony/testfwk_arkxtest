@@ -294,7 +294,6 @@ namespace OHOS::uitest {
             ofstream fout;
             fout.open(XDEVICE_AGENT_TOKEN, ios::out | ios::binary);
             if (!fout) {
-                LOG_D("create shmf failed");
                 return "";
             }
             return "/data/app/el2/100/base/com.ohos.devicetest/cache/shmf";
@@ -340,6 +339,10 @@ namespace OHOS::uitest {
             return EXIT_FAILURE;
         }
         auto shmfPath = TrasnlateAppFilePath(token);
+        if (shmfPath == "") {
+            LOG_E("create shmf failed");
+            return EXIT_FAILURE;
+        }
         if (daemon(0, 0) != 0) {
             LOG_E("Failed to daemonize current process");
             return EXIT_FAILURE;
