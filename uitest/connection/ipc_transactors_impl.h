@@ -18,7 +18,6 @@
 
 #include <string_view>
 #include "ipc_transactors.h"
-#include "common_event_manager.h"
 
 namespace OHOS::uitest {
     /**Transceiver implemented basing on ohos CommonEvent.*/
@@ -38,7 +37,6 @@ namespace OHOS::uitest {
     private:
         const bool asServer_;
         const std::string token_;
-        std::shared_ptr<OHOS::EventFwk::CommonEventSubscriber> subscriber_;
     };
 
     /**Implementation TransactionServer with token.*/
