@@ -40,13 +40,13 @@ namespace OHOS::uitest {
     /**For gc usage, records the backend objRefs about to delete. */
     static queue<string> g_backendObjsAboutToDelete;
     static mutex g_gcQueueMutex;
+    /**Establish Connection future. */
+    static future<void> g_establishConnectionFuture_;
 
     // use external setup/transact/disposal callback functions
     extern bool SetupTransactionEnv(string_view token);
 
     extern void TransactionClientFunc(const ApiCallInfo &, ApiReplyInfo &);
-
-    extern void DisposeTransactionEnv();
 
     static function<void(const ApiCallInfo &, ApiReplyInfo &)> transactFunc = TransactionClientFunc;
 
@@ -67,32 +67,29 @@ namespace OHOS::uitest {
         return string(buf, bufSize);
     }
 
-    /**Lifecycle callback, setup transaction environment, called externally.*/
-    static napi_value EnvironmentSetup(napi_env env, napi_callback_info info)
+    /**Lifecycle function, establish connection async, called externally.*/
+    static napi_value ScheduleEstablishConnection(napi_env env, napi_callback_info info)
     {
-        static auto setUpDone = false;
-        if (setUpDone) {
-            return nullptr;
-        }
-        LOG_I("Begin setup transaction environment");
         size_t argc = 1;
         napi_value value = nullptr;
         napi_value argv[1] = {0};
         NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &value, nullptr));
         NAPI_ASSERT(env, argc > 0, "Need session token argument!");
-        setUpDone = SetupTransactionEnv(JsStrToCppStr(env, argv[0]));
-        LOG_I("End setup transaction environment, result=%{public}d", setUpDone);
-        NAPI_ASSERT(env, setUpDone, "SetupTransactionEnv failed");
+        auto token = JsStrToCppStr(env, argv[0]);
+        g_establishConnectionFuture_ = async(launch::async, [token]() {
+            auto result = SetupTransactionEnv(token);
+            LOG_I("End setup transaction environment, result=%{public}d", result);
+        });
         return nullptr;
     }
 
-    /**Lifecycle callback, teardown transaction environment, called externally.*/
-    static napi_value EnvironmentTeardown(napi_env env, napi_callback_info info)
+    /**Wait connection result sync if need.*/
+    static void WaitForConnectionIfNeed()
     {
-        LOG_I("Begin teardown transaction environment");
-        DisposeTransactionEnv();
-        LOG_I("End teardown transaction environment");
-        return nullptr;
+        if (g_establishConnectionFuture_.valid()) {
+            LOG_I("Begin WaitForConnection");
+            g_establishConnectionFuture_.get();
+        }
     }
 
     /**Encapsulates the data objects needed in once api transaction.*/
@@ -232,6 +229,7 @@ namespace OHOS::uitest {
     /**Call api with parameters out, wait for and return result value or throw raised exception.*/
     napi_value TransactSync(napi_env env, TransactionContext &ctx)
     {
+        WaitForConnectionIfNeed();
         LOG_D("TargetApi=%{public}s", ctx.callInfo_.apiId_.data());
         auto reply = ApiReplyInfo();
         transactFunc(ctx.callInfo_, reply);
@@ -460,8 +458,7 @@ namespace OHOS::uitest {
         LOG_I("Begin export uitest apis");
         // export transaction-environment-lifecycle callbacks and dfx functions
         napi_property_descriptor props[] = {
-            DECLARE_NAPI_STATIC_FUNCTION("setup", EnvironmentSetup),
-            DECLARE_NAPI_STATIC_FUNCTION("teardown", EnvironmentTeardown),
+            DECLARE_NAPI_STATIC_FUNCTION("scheduleEstablishConnection", ScheduleEstablishConnection),
             DECLARE_NAPI_STATIC_FUNCTION("getUnCalledJsApis", GetUnCalledJsApis),
         };
         NAPI_CALL(env, napi_define_properties(env, exports, sizeof(props) / sizeof(props[0]), props));
