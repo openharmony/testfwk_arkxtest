@@ -209,7 +209,7 @@ namespace OHOS::uitest {
                 if (child.GetComponentType() == "rootdecortag") {
                     AccessibilityElementInfo child2;
                     (ability->GetChildElementInfo(0, child, child2) == RET_OK && child2.IsVisible()) ||
-                        (ability->GetChildElementInfo(1, child, child2) == RET_OK && child2.IsVisible());
+                    (ability->GetChildElementInfo(1, child, child2) == RET_OK && child2.IsVisible());
                     child = child2;
                     isDecorBar = true;
                 }
