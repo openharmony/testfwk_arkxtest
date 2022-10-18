@@ -149,14 +149,15 @@ namespace OHOS::uitest {
         return hashFunc(strId);
     }
 
-    static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to)
+    static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to, bool isDecorBar)
     {
         to[ATTR_NAMES[UiAttr::HASHCODE].data()] = to_string(GenerateNodeHash(node));
         to[ATTR_NAMES[UiAttr::TEXT].data()] = node.GetContent();
         to[ATTR_NAMES[UiAttr::ACCESSIBILITY_ID].data()] = to_string(node.GetAccessibilityId());
         to[ATTR_NAMES[UiAttr::ID].data()] = node.GetInspectorKey();
         to[ATTR_NAMES[UiAttr::KEY].data()] = node.GetInspectorKey();
-        to[ATTR_NAMES[UiAttr::TYPE].data()] = node.GetComponentType();
+        to[ATTR_NAMES[UiAttr::TYPE].data()] = (isDecorBar ? "DecorBar" : node.GetComponentType());
+        // set rootdecortag's child type as DecorBar.
         to[ATTR_NAMES[UiAttr::ENABLED].data()] = node.IsEnabled() ? "true" : "false";
         to[ATTR_NAMES[UiAttr::FOCUSED].data()] = node.IsFocused() ? "true" : "false";
         to[ATTR_NAMES[UiAttr::SELECTED].data()] = node.IsSelected() ? "true" : "false";
@@ -191,10 +192,10 @@ namespace OHOS::uitest {
         }
     }
 
-    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index)
+    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index, bool isDecorBar)
     {
         json attributes;
-        MarshalAccessibilityNodeAttributes(from, attributes);
+        MarshalAccessibilityNodeAttributes(from, attributes, isDecorBar);
         attributes["index"] = to_string(index);
         to["attributes"] = attributes;
         auto childList = json::array();
@@ -204,18 +205,20 @@ namespace OHOS::uitest {
         for (auto idx = 0; idx < childCount; idx++) {
             auto success = ability->GetChildElementInfo(idx, from, child);
             if (success) {
+                isDecorBar = false;
                 if (child.GetComponentType() == "rootdecortag") {
                     AccessibilityElementInfo child2;
                     (ability->GetChildElementInfo(0, child, child2) && child2.IsVisible()) ||
                     (ability->GetChildElementInfo(1, child, child2) && child2.IsVisible());
                     child = child2;
+                    isDecorBar = true;
                 }
                 if (!child.IsVisible()) {
                     LOG_I("invisible node drop, id: %{public}d", child.GetAccessibilityId());
                     continue;
                 }
                 auto parcel = json();
-                MarshallAccessibilityNodeInfo(child, parcel, idx);
+                MarshallAccessibilityNodeInfo(child, parcel, idx, isDecorBar);
                 childList.push_back(parcel);
             } else {
                 LOG_W("Get Node child at index=%{public}d failed", idx);
@@ -284,7 +287,7 @@ namespace OHOS::uitest {
                 auto windowBounds = window.GetRectInScreen();
                 elementInfo.SetRectInScreen(windowBounds);
                 auto root = nlohmann::json();
-                MarshallAccessibilityNodeInfo(elementInfo, root, 0);
+                MarshallAccessibilityNodeInfo(elementInfo, root, 0, false);
                 out.push_back(make_pair(move(winInfo), move(root)));
             } else {
                 LOG_W("GetRootByWindow failed");
