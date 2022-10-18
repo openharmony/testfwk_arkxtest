@@ -433,7 +433,7 @@ namespace OHOS::uitest {
                 + pow((g_eventsvector[i].GetDisplayY() - g_eventsvector[j].GetDisplayY()), TWO);
             return distance;
         }
-        double GetSpeed(int i, int j, bool is_click, int click_eventCount) const 
+        double GetSpeed(int i, int j, bool is_click, int click_eventCount) const
         {
             double speed = 0;
             if (is_click) {
