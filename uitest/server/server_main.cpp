@@ -285,13 +285,9 @@ namespace OHOS::uitest {
     {
         constexpr uint32_t UID2ACCOUNT_DIVISOR = 200000;
         constexpr string_view XDEVICE_AGENT_TOKEN = "0123456789";
-        //constexpr string_view XDEVICE_AGENT_CACHE_PATH = "/data/app/el2/100/base/com.ohos.devicetest/cache/shmf";
-        if (access(raw.data(), F_OK) == 0)
-        {
+        if (access(raw.data(), F_OK) == 0) {
             return string(raw);
-        }
-        else if (raw == XDEVICE_AGENT_TOKEN)
-        {
+        } else if (raw == XDEVICE_AGENT_TOKEN) {
             return "/data/app/el2/100/base/com.ohos.devicetest/cache/shmf";
         }
         string procName;
