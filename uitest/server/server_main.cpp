@@ -285,17 +285,13 @@ namespace OHOS::uitest {
     {
         constexpr uint32_t UID2ACCOUNT_DIVISOR = 200000;
         constexpr string_view XDEVICE_AGENT_TOKEN = "0123456789";
+        //constexpr string_view XDEVICE_AGENT_CACHE_PATH = "/data/app/el2/100/base/com.ohos.devicetest/cache/shmf";
         if (access(raw.data(), F_OK) == 0)
         {
             return string(raw);
         }
         else if (raw == XDEVICE_AGENT_TOKEN)
         {
-            ofstream fout;
-            fout.open(XDEVICE_AGENT_TOKEN, ios::out | ios::binary);
-            if (!fout) {
-                return "";
-            }
             return "/data/app/el2/100/base/com.ohos.devicetest/cache/shmf";
         }
         string procName;
@@ -339,10 +335,6 @@ namespace OHOS::uitest {
             return EXIT_FAILURE;
         }
         auto shmfPath = TrasnlateAppFilePath(token);
-        if (shmfPath == "") {
-            LOG_E("create shmf failed");
-            return EXIT_FAILURE;
-        }
         if (daemon(0, 0) != 0) {
             LOG_E("Failed to daemonize current process");
             return EXIT_FAILURE;
