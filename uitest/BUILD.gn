@@ -51,8 +51,8 @@ ohos_static_library("uitest_core") {
 }
 
 common_external_deps = [
-  "hiviewdfx_hilog_native:libhilog",
   "c_utils:utils",
+  "hiviewdfx_hilog_native:libhilog",
 ]
 
 ohos_executable("uitest_server") {
