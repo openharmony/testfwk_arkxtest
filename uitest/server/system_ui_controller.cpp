@@ -203,13 +203,13 @@ namespace OHOS::uitest {
         AccessibilityElementInfo child;
         auto ability = AccessibilityUITestAbility::GetInstance();
         for (auto idx = 0; idx < childCount; idx++) {
-            auto success = ability->GetChildElementInfo(idx, from, child);
-            if (success) {
+            auto ret = ability->GetChildElementInfo(idx, from, child);
+            if (ret == RET_OK) {
                 isDecorBar = false;
                 if (child.GetComponentType() == "rootdecortag") {
                     AccessibilityElementInfo child2;
-                    (ability->GetChildElementInfo(0, child, child2) && child2.IsVisible()) ||
-                    (ability->GetChildElementInfo(1, child, child2) && child2.IsVisible());
+                    (ability->GetChildElementInfo(0, child, child2) == RET_OK && child2.IsVisible()) ||
+                    (ability->GetChildElementInfo(1, child, child2) == RET_OK && child2.IsVisible());
                     child = child2;
                     isDecorBar = true;
                 }
@@ -263,7 +263,7 @@ namespace OHOS::uitest {
     {
         auto ability = AccessibilityUITestAbility::GetInstance();
         vector<AccessibilityWindowInfo> windows;
-        if (!ability->GetWindows(windows)) {
+        if (ability->GetWindows(windows) != RET_OK) {
             LOG_W("GetWindows from AccessibilityUITestAbility failed");
             return;
         }
@@ -277,7 +277,7 @@ namespace OHOS::uitest {
         });
         AccessibilityElementInfo elementInfo;
         for (auto &window : windows) {
-            if (ability->GetRootByWindow(window, elementInfo)) {
+            if (ability->GetRootByWindow(window, elementInfo) == RET_OK) {
                 const auto app = elementInfo.GetBundleName();
                 LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
                 auto winInfo = Window(window.GetWindowId());
@@ -485,7 +485,7 @@ namespace OHOS::uitest {
         }
         g_monitorInstance_->SetOnAbilityConnectCallback(onConnectCallback);
         auto ability = AccessibilityUITestAbility::GetInstance();
-        if (!ability->RegisterAbilityListener(g_monitorInstance_)) {
+        if (ability->RegisterAbilityListener(g_monitorInstance_) != RET_OK) {
             LOG_E("Failed to register UiEventMonitor");
             return false;
         }
@@ -541,7 +541,7 @@ namespace OHOS::uitest {
         g_monitorInstance_->SetOnAbilityDisConnectCallback(onDisConnectCallback);
         auto ability = AccessibilityUITestAbility::GetInstance();
         LOG_I("Start disconnect from AccessibilityUITestAbility");
-        if (!ability->Disconnect()) {
+        if (ability->Disconnect() != RET_OK) {
             LOG_E("Failed to disconnect from AccessibilityUITestAbility");
             return;
         }
