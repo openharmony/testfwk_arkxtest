@@ -268,11 +268,6 @@ namespace OHOS::uitest {
             return;
         }
         sort(windows.begin(), windows.end(), [](auto &w1, auto &w2) -> bool {
-            if (w1.IsActive()) {
-                return true;
-            } else if (w2.IsActive()) {
-                return false;
-            }
             return w1.GetWindowLayer() > w2.GetWindowLayer();
         });
         AccessibilityElementInfo elementInfo;
