@@ -435,9 +435,9 @@ namespace OHOS::uitest {
         {
             double speed = 0;
             if (isClick) {
-                speed = GetDistance(i,j)/pow((g_mmitimesvector[i+clickEventCount]-g_mmitimesvector.back()), TWO);
+                speed = GetDistance(i, j) / pow((g_mmitimesvector[i + clickEventCount] - g_mmitimesvector.back()), TWO);
             } else {
-                speed = GetDistance(i,j)/pow((g_mmitimesvector[i]-g_mmitimesvector[j]), TWO);
+                speed = GetDistance(i, j) / pow((g_mmitimesvector[i] - g_mmitimesvector[j]), TWO);
             }
             return speed;
         }
@@ -471,11 +471,11 @@ namespace OHOS::uitest {
                 if (eventCount > TWO && (distance > g_maxdistance)) {
                     double threshold = 0.6;
                     if (eventCount>g_dragMonitor && GetDistance(0, g_dragMonitor)<g_maxdistance) { 
-                        g_touchop = DRAG_; 
+                        g_touchop = DRAG_;
                     } else if (speed < threshold) {
-                        g_touchop = SWIPE_; 
+                        g_touchop = SWIPE_;
                     } else {
-                        g_touchop = FLING_; 
+                        g_touchop = FLING_;
                     }
                 }else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
