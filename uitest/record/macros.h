@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef FOUNDATION_ACE_FRAMEWORKS_BASE_UTILS_MACROS_H
-#define FOUNDATION_ACE_FRAMEWORKS_BASE_UTILS_MACROS_H
+#ifndef BASE_UTILS_MACROS_H
+#define BASE_UTILS_MACROS_H
 
 #define ACE_FORCE_EXPORT __attribute__((visibility("default")))
 
@@ -70,4 +70,4 @@
 
 #endif // ACE_DEBUG
 
-#endif // FOUNDATION_ACE_FRAMEWORKS_BASE_UTILS_MACROS_H
+#endif // BASE_UTILS_MACROS_H

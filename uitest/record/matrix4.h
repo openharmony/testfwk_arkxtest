@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_MATRIX4_H
-#define FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_MATRIX4_H
+#ifndef BASE_GEOMETRY_MATRIX4_H
+#define BASE_GEOMETRY_MATRIX4_H
 
 #include <vector>
 
