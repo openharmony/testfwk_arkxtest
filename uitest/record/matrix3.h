@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_MATRIX3_H
-#define FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_MATRIX3_H
+#ifndef BASE_GEOMETRY_MATRIX3_H
+#define BASE_GEOMETRY_MATRIX3_H
 
 #include <vector>
 
@@ -216,4 +216,4 @@ private:
 };
 } // namespace OHOS::uitest
 
-#endif // FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_MATRIX3_H
+#endif // BASE_GEOMETRY_MATRIX3_H
