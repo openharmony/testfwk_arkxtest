@@ -16,6 +16,8 @@ import("//build/ohos.gni")
 
 source_root = "//test/testfwk/arkxtest/uitest"
 
+ability_runtime_path = "//foundation/ability/ability_runtime"
+
 config("uitest_common_configs") {
   include_dirs = [
     "//third_party/json/single_include/nlohmann",
@@ -51,8 +53,11 @@ ohos_static_library("uitest_core") {
 }
 
 common_external_deps = [
-  "c_utils:utils",
+  "ability_base:want",
+  "common_event_service:cesfwk_core",
+  "common_event_service:cesfwk_innerkits",
   "hiviewdfx_hilog_native:libhilog",
+  "ipc:ipc_core",
 ]
 
 ohos_executable("uitest_server") {
@@ -62,23 +67,48 @@ ohos_executable("uitest_server") {
     "${source_root}/connection/ipc_transactors_impl.cpp",
     "${source_root}/server/server_main.cpp",
     "${source_root}/server/system_ui_controller.cpp",
+    "${source_root}/record/least_square_impl.cpp",
+    "${source_root}/record/velocity_tracker.cpp",
+    "${source_root}/record/matrix3.cpp",
+    "${source_root}/record/matrix4.cpp",
+    "${source_root}/record/ui_record.cpp",
   ]
   include_dirs = [
     "${source_root}/core",
     "${source_root}/connection",
+    "${source_root}/record",
   ]
 
-  # static link the uitest_core as server end
-  deps = [ ":uitest_core" ]
+  # static link the uitest_core/uitest_record as server end
+  deps = [ ":uitest_core"]
+
+  deps += [
+    "${ability_runtime_path}/frameworks/native/appkit:app_context",
+    "${ability_runtime_path}/frameworks/native/appkit:appkit_native",
+  ]
+
+  external_deps = [ "accessibility:accessibleability" ]
+  external_deps += [
+    "ability_base:want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:runtime",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "hiviewdfx_hilog_native:libhilog",
+    "input:libmmi-client",
+    "ipc:ipc_core",
+    "samgr:samgr_proxy",
+  ]
 
   #dependencies for screencap
   deps += [
     "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client",
     "//third_party/libpng:libpng",
   ]
-  external_deps = [
-    "accessibility:accessibleability",
-    "input:libmmi-client",
+  external_deps += [
+    "c_utils:utils",
     "multimedia_image_framework:image_native",
     "window_manager:libdm",
     "window_manager:libwm",
