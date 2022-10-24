@@ -328,7 +328,7 @@ namespace OHOS::uitest {
             LOG_E("Empty transaction token");
             return EXIT_FAILURE;
         }
-	auto shmfPath = TrasnlateAppFilePath(token);
+	    auto shmfPath = TrasnlateAppFilePath(token);
         if (daemon(0, 0) != 0) {
             LOG_E("Failed to daemonize current process");
             return EXIT_FAILURE;
