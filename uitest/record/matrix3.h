@@ -24,7 +24,7 @@ namespace OHOS::uitest {
 class Matrix3N;
 class MatrixN3;
 
-class ACE_EXPORT Matrix3 {
+class UITEST_EXPORT Matrix3 {
 public:
     // Matrix dimension is 3X3.
     static constexpr int32_t DIMENSION = 3;
@@ -87,7 +87,7 @@ private:
     std::vector<std::vector<double>> matrix3X3_ = { DIMENSION, std::vector<double>(DIMENSION, 0.0) };
 };
 
-class ACE_EXPORT Matrix3N {
+class UITEST_EXPORT Matrix3N {
 public:
     // Matrix dimension is 3X3.
     static constexpr int32_t DIMENSION = 3;
@@ -154,7 +154,7 @@ private:
     int32_t columns_ = 0;
 };
 
-class ACE_EXPORT MatrixN3 {
+class UITEST_EXPORT MatrixN3 {
 public:
     // Matrix dimension is 3XN.
     static constexpr int32_t DIMENSION = 3;

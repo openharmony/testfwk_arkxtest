@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_POINT_H
-#define FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_POINT_H
+#ifndef POINT_H
+#define POINT_H
 
 #include "offset.h"
 #include "macros.h"
@@ -22,7 +22,7 @@
 
 namespace OHOS::uitest {
 
-class ACE_EXPORT Point {
+class UITEST_EXPORT Point {
 public:
     Point() = default;
     ~Point() = default;
@@ -87,4 +87,4 @@ private:
 
 } // namespace OHOS::uitest
 
-#endif // FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_POINT_H
+#endif // POINT_H

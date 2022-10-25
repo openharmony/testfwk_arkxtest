@@ -149,15 +149,14 @@ namespace OHOS::uitest {
         return hashFunc(strId);
     }
 
-    static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to, bool isDecorBar)
+    static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to)
     {
         to[ATTR_NAMES[UiAttr::HASHCODE].data()] = to_string(GenerateNodeHash(node));
         to[ATTR_NAMES[UiAttr::TEXT].data()] = node.GetContent();
         to[ATTR_NAMES[UiAttr::ACCESSIBILITY_ID].data()] = to_string(node.GetAccessibilityId());
         to[ATTR_NAMES[UiAttr::ID].data()] = node.GetInspectorKey();
         to[ATTR_NAMES[UiAttr::KEY].data()] = node.GetInspectorKey();
-        to[ATTR_NAMES[UiAttr::TYPE].data()] = (isDecorBar ? "DecorBar" : node.GetComponentType());
-        // set rootdecortag's child type as DecorBar.
+        to[ATTR_NAMES[UiAttr::TYPE].data()] = node.GetComponentType();
         to[ATTR_NAMES[UiAttr::ENABLED].data()] = node.IsEnabled() ? "true" : "false";
         to[ATTR_NAMES[UiAttr::FOCUSED].data()] = node.IsFocused() ? "true" : "false";
         to[ATTR_NAMES[UiAttr::SELECTED].data()] = node.IsSelected() ? "true" : "false";
@@ -192,10 +191,10 @@ namespace OHOS::uitest {
         }
     }
 
-    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index, bool isDecorBar)
+    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index)
     {
         json attributes;
-        MarshalAccessibilityNodeAttributes(from, attributes, isDecorBar);
+        MarshalAccessibilityNodeAttributes(from, attributes);
         attributes["index"] = to_string(index);
         to["attributes"] = attributes;
         auto childList = json::array();
@@ -203,22 +202,19 @@ namespace OHOS::uitest {
         AccessibilityElementInfo child;
         auto ability = AccessibilityUITestAbility::GetInstance();
         for (auto idx = 0; idx < childCount; idx++) {
-            auto ret = ability->GetChildElementInfo(idx, from, child);
-            if (ret == RET_OK) {
-                isDecorBar = false;
+            auto success = ability->GetChildElementInfo(idx, from, child);
+            if (success) {
                 if (child.GetComponentType() == "rootdecortag") {
                     AccessibilityElementInfo child2;
-                    (ability->GetChildElementInfo(0, child, child2) == RET_OK && child2.IsVisible()) ||
-                    (ability->GetChildElementInfo(1, child, child2) == RET_OK && child2.IsVisible());
+                    (ability->GetChildElementInfo(0, child, child2) && child2.IsVisible()) ||
+                    (ability->GetChildElementInfo(1, child, child2) && child2.IsVisible());
                     child = child2;
-                    isDecorBar = true;
                 }
                 if (!child.IsVisible()) {
-                    LOG_I("invisible node drop, id: %{public}d", child.GetAccessibilityId());
                     continue;
                 }
                 auto parcel = json();
-                MarshallAccessibilityNodeInfo(child, parcel, idx, isDecorBar);
+                MarshallAccessibilityNodeInfo(child, parcel, idx);
                 childList.push_back(parcel);
             } else {
                 LOG_W("Get Node child at index=%{public}d failed", idx);
@@ -263,16 +259,21 @@ namespace OHOS::uitest {
     {
         auto ability = AccessibilityUITestAbility::GetInstance();
         vector<AccessibilityWindowInfo> windows;
-        if (ability->GetWindows(windows) != RET_OK) {
+        if (!ability->GetWindows(windows)) {
             LOG_W("GetWindows from AccessibilityUITestAbility failed");
             return;
         }
         sort(windows.begin(), windows.end(), [](auto &w1, auto &w2) -> bool {
+            if (w1.IsActive()) {
+                return true;
+            } else if (w2.IsActive()) {
+                return false;
+            }
             return w1.GetWindowLayer() > w2.GetWindowLayer();
         });
         AccessibilityElementInfo elementInfo;
         for (auto &window : windows) {
-            if (ability->GetRootByWindow(window, elementInfo) == RET_OK) {
+            if (ability->GetRootByWindow(window, elementInfo)) {
                 const auto app = elementInfo.GetBundleName();
                 LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
                 auto winInfo = Window(window.GetWindowId());
@@ -282,7 +283,7 @@ namespace OHOS::uitest {
                 auto windowBounds = window.GetRectInScreen();
                 elementInfo.SetRectInScreen(windowBounds);
                 auto root = nlohmann::json();
-                MarshallAccessibilityNodeInfo(elementInfo, root, 0, false);
+                MarshallAccessibilityNodeInfo(elementInfo, root, 0);
                 out.push_back(make_pair(move(winInfo), move(root)));
             } else {
                 LOG_W("GetRootByWindow failed");
@@ -480,13 +481,15 @@ namespace OHOS::uitest {
         }
         g_monitorInstance_->SetOnAbilityConnectCallback(onConnectCallback);
         auto ability = AccessibilityUITestAbility::GetInstance();
-        if (ability->RegisterAbilityListener(g_monitorInstance_) != RET_OK) {
+        if (!ability->RegisterAbilityListener(g_monitorInstance_)) {
             LOG_E("Failed to register UiEventMonitor");
             return false;
         }
         LOG_I("Start connect to AccessibilityUITestAbility");
         auto ret = ability->Connect();
         switch (ret) {
+            case (RET_OK):
+                break;
             case (RET_ERR_INVALID_PARAM):
                 LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_INVALID_PARAM");
                 return false;
@@ -502,8 +505,6 @@ namespace OHOS::uitest {
             case (RET_ERR_SAMGR):
                 LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_SAMGR");
                 return false;
-            default:
-                break;
         }
         const auto timeout = chrono::milliseconds(1000);
         if (condition.wait_for(uLock, timeout) == cv_status::timeout) {
@@ -536,7 +537,7 @@ namespace OHOS::uitest {
         g_monitorInstance_->SetOnAbilityDisConnectCallback(onDisConnectCallback);
         auto ability = AccessibilityUITestAbility::GetInstance();
         LOG_I("Start disconnect from AccessibilityUITestAbility");
-        if (ability->Disconnect() != RET_OK) {
+        if (!ability->Disconnect()) {
             LOG_E("Failed to disconnect from AccessibilityUITestAbility");
             return;
         }
@@ -608,6 +609,6 @@ namespace OHOS::uitest {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
         auto displayId = displayMgr.GetDefaultDisplayId();
         auto state = displayMgr.GetDisplayState(displayId);
-        return (state != DisplayState::OFF);
+        return (state == DisplayState::ON);
     }
 } // namespace OHOS::uitest

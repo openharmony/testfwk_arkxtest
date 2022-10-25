@@ -25,7 +25,7 @@ namespace OHOS::uitest {
 class Matrix4N;
 class MatrixN4;
 
-class ACE_EXPORT Matrix4 {
+class UITEST_EXPORT Matrix4 {
 public:
     // Matrix dimension is 4X4.
     static constexpr int32_t DIMENSION = 4;
@@ -75,14 +75,14 @@ public:
     double operator[](int32_t index) const;
     inline double Get(int32_t row, int32_t col) const
     {
-        ACE_DCHECK((unsigned)row < DIMENSION);
-        ACE_DCHECK((unsigned)col < DIMENSION);
+        UITEST_DCHECK((unsigned)row < DIMENSION);
+        UITEST_DCHECK((unsigned)col < DIMENSION);
         return matrix4x4_[col][row];
     }
     inline void Set(int32_t row, int32_t col, double value)
     {
-        ACE_DCHECK((unsigned)row < DIMENSION);
-        ACE_DCHECK((unsigned)col < DIMENSION);
+        UITEST_DCHECK((unsigned)row < DIMENSION);
+        UITEST_DCHECK((unsigned)col < DIMENSION);
         matrix4x4_[col][row] = value;
     }
     double Determinant() const;
@@ -108,7 +108,7 @@ private:
     };
 };
 
-class ACE_EXPORT Matrix4N {
+class UITEST_EXPORT Matrix4N {
 public:
     // Matrix dimension is 4X4.
     static constexpr int32_t DIMENSION = 4;
@@ -165,7 +165,7 @@ private:
     int32_t columns_ = 0;
 };
 
-class ACE_EXPORT MatrixN4 {
+class UITEST_EXPORT MatrixN4 {
 public:
     // Matrix dimension is 4XN.
     static constexpr int32_t DIMENSION = 4;
@@ -218,4 +218,4 @@ private:
 
 } // namespace OHOS::uitest
 
-#endif // FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_MATRIX4_H
+#endif // MATRIX4_H

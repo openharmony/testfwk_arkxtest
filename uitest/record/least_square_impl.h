@@ -28,7 +28,7 @@ namespace OHOS::uitest {
  * the function template is a3 * x^3 + a2 * x^2 + a1 * x + a0 = y with four;
  * the function template is 0 * x^3 + a2 * x^2 + a1 * x + a0 = y with three.
  */
-class ACE_EXPORT LeastSquareImpl {
+class UITEST_EXPORT LeastSquareImpl {
 public:
     /**
      * @brief Construct a new Least Square Impl object.

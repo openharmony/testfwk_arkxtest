@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_SIZE_H
-#define FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_SIZE_H
+#ifndef SIZE_H
+#define SIZE_H
 
 #include <iomanip>
 #include <limits>
@@ -236,4 +236,4 @@ private:
 };
 } // namespace OHOS::uitest
 
-#endif // FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_SIZE_H
+#endif // SIZE_H

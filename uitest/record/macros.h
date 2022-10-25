@@ -16,41 +16,41 @@
 #ifndef BASE_UTILS_MACROS_H
 #define BASE_UTILS_MACROS_H
 
-#define ACE_FORCE_EXPORT __attribute__((visibility("default")))
+#define UITEST_FORCE_EXPORT __attribute__((visibility("default")))
 
-#ifndef ACE_EXPORT
+#ifndef UITEST_EXPORT
 #ifndef WEARABLE_PRODUCT
-#define ACE_EXPORT ACE_FORCE_EXPORT
+#define UITEST_EXPORT UITEST_FORCE_EXPORT
 #else
-#define ACE_EXPORT
+#define UITEST_EXPORT
 #endif
 #endif
 
-// The macro "ACE_FORCE_EXPORT_WITH_PREVIEW" is used to replace the macro "ACE_FORCE_EXPORT"
+// The macro "UITEST_FORCE_EXPORT_WITH_PREVIEW" is used to replace the macro "UITEST_FORCE_EXPORT"
 // when adapting the napi to the previewer.
-#ifndef ACE_FORCE_EXPORT_WITH_PREVIEW
+#ifndef UITEST_FORCE_EXPORT_WITH_PREVIEW
 #ifndef WINDOWS_PLATFORM
-#define ACE_FORCE_EXPORT_WITH_PREVIEW ACE_FORCE_EXPORT
+#define UITEST_FORCE_EXPORT_WITH_PREVIEW UITEST_FORCE_EXPORT
 #else
-#define ACE_FORCE_EXPORT_WITH_PREVIEW __declspec(dllexport)
+#define UITEST_FORCE_EXPORT_WITH_PREVIEW __declspec(dllexport)
 #endif
 #endif
 
-// The macro "ACE_EXPORT_WITH_PREVIEW" is used to replace the macro "ACE_EXPORT"
+// The macro "UITEST_EXPORT_WITH_PREVIEW" is used to replace the macro "UITEST_EXPORT"
 // when adapting the napi to the previewer.
-#ifndef ACE_EXPORT_WITH_PREVIEW
+#ifndef UITEST_EXPORT_WITH_PREVIEW
 #ifndef WINDOWS_PLATFORM
-#define ACE_EXPORT_WITH_PREVIEW ACE_EXPORT
+#define UITEST_EXPORT_WITH_PREVIEW UITEST_EXPORT
 #else
 #ifndef WEARABLE_PRODUCT
-#define ACE_EXPORT_WITH_PREVIEW __declspec(dllexport)
+#define UITEST_EXPORT_WITH_PREVIEW __declspec(dllexport)
 #else
-#define ACE_EXPORT_WITH_PREVIEW
+#define UITEST_EXPORT_WITH_PREVIEW
 #endif
 #endif
 #endif
 
-#ifdef ACE_DEBUG
+#ifdef UITEST_DEBUG
 
 #ifdef NDEBUG
 #define CANCEL_NDEBUG
@@ -64,10 +64,10 @@
 #undef CANCEL_NDEBUG
 #endif // CANCEL_NDEBUG
 
-#define ACE_DCHECK(expr) assert(expr)
+#define UITEST_DCHECK(expr) assert(expr)
 #else
-#define ACE_DCHECK(expr) ((void)0)
+#define UITEST_DCHECK(expr) ((void)0)
 
-#endif // ACE_DEBUG
+#endif // UITEST_DEBUG
 
 #endif // BASE_UTILS_MACROS_H

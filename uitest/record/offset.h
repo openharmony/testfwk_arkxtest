@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_OFFSET_H
-#define FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_OFFSET_H
+#ifndef GEOMETRY_OFFSET_H
+#define GEOMETRY_OFFSET_H
 
 #include <cmath>
 #include <limits>
@@ -23,7 +23,6 @@
 #include "utils.h"
 
 namespace OHOS::uitest {
-
 class Offset {
 public:
     Offset() = default;
@@ -147,4 +146,4 @@ private:
 };
 } // namespace OHOS::uitest
 
-#endif // FOUNDATION_ACE_FRAMEWORKS_BASE_GEOMETRY_OFFSET_H
+#endif // GEOMETRY_OFFSET_H

@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef GESTURES_VELOCITY_TRACKER_H
-#define GESTURES_VELOCITY_TRACKER_H
+#ifndef VELOCITY_TRACKER_H
+#define VELOCITY_TRACKER_H
 #include <fstream>
 #include <regex>
 #include <iostream>
@@ -25,7 +25,6 @@
 #include "velocity.h"
 
 namespace OHOS::uitest {
-
 enum class Axis {
     VERTICAL = 0,
     HORIZONTAL,
@@ -51,7 +50,7 @@ public:
 
     void UpdateTouchPoint(const TouchEventInfo& event, bool end = false);
     
-    void SetMainVelocity(double mainVelocity) 
+    void SetMainVelocity(double mainVelocity)
     {
         mainVelocity_ = mainVelocity;
     }
@@ -98,7 +97,7 @@ public:
 
     double GetInterVal() const
     {   
-        //两次down事件的间隔
+        // 两次down事件的间隔
         std::chrono::duration<double> inter = firstTrackPoint_.time- downTrackPoint_.time;
         auto interval = inter.count();
         return interval;
@@ -156,7 +155,7 @@ public:
 private:
     void UpdateVelocity();
 
-    Axis mainAxis_ { Axis::VERTICAL }; //FREE
+    Axis mainAxis_ { Axis::VERTICAL };
     TouchEventInfo firstTrackPoint_;
     TouchEventInfo currentTrackPoint_;
     TouchEventInfo lastTrackPoint_;
@@ -175,7 +174,5 @@ private:
     LeastSquareImpl yAxis_ { 3, 5 };
     bool isVelocityDone_ = false;
 };
-
 } // namespace OHOS::uitest
-
-#endif // GESTURES_VELOCITY_TRACKER_H
+#endif // VELOCITY_TRACKER_H

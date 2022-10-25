@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef FOUNDATION_ACE_FRAMEWORKS_CORE_EVENT_TOUCH_EVENT_H
-#define FOUNDATION_ACE_FRAMEWORKS_CORE_EVENT_TOUCH_EVENT_H
+#ifndef EVENT_TOUCH_EVENT_H
+#define EVENT_TOUCH_EVENT_H
 
 #include <list>
 
@@ -51,4 +51,4 @@ struct TouchEventInfo final {
 
 } // namespace OHOS::uitest
 
-#endif // FOUNDATION_ACE_FRAMEWORKS_CORE_EVENT_TOUCH_EVENT_H
+#endif // EVENT_TOUCH_EVENT_H
