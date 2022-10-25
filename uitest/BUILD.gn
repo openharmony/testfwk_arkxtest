@@ -75,14 +75,14 @@ ohos_executable("uitest_server") {
   ]
 
   # static link the uitest_core as server end
-  deps = [ ":uitest_core"]
+  deps = [ ":uitest_core" ]
 
   #dependencies for screencap
   deps += [
     "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client",
     "//third_party/libpng:libpng",
   ]
-  external_deps += [
+  external_deps = [
     "accessibility:accessibleability",
     "input:libmmi-client",
     "multimedia_image_framework:image_native",
