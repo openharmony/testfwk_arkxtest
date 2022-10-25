@@ -43,7 +43,6 @@
 using namespace std;
 using namespace std::chrono;
 
-
 namespace OHOS::uitest {
     const std::string HELP_MSG =
     "   help,                                            print help messages\n"
@@ -53,11 +52,6 @@ namespace OHOS::uitest {
     "   uiRecord -read,                    print file content to the console\n"
     "   --version,                                print current tool version\n";
     const std::string VERSION = "3.2.2.1";
-
-    namespace {
-        
- 
-    } // namespace
 
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
@@ -204,14 +198,13 @@ namespace OHOS::uitest {
         builder << "/base/" << procName << "/cache/shmf_" << procPid;
         return builder.str();
     }
-
     static int32_t StartDaemon(string_view token)
     {
         if (token.empty()) {
             LOG_E("Empty transaction token");
             return EXIT_FAILURE;
         }
-	auto shmfPath = TrasnlateAppFilePath(token);
+        auto shmfPath = TrasnlateAppFilePath(token);
         if (daemon(0, 0) != 0) {
             LOG_E("Failed to daemonize current process");
             return EXIT_FAILURE;

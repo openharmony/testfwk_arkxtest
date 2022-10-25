@@ -16,8 +16,8 @@
 
 using namespace std;
 using namespace std::chrono;
-namespace OHOS::uitest {
 
+namespace OHOS::uitest {
     std::string g_operationType[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
     enum GTouchop : uint8_t {CLICK_ = 0, LONG_CLICK_, DOUBLE_CLICK_, SWIPE_, DRAG_, FLING_};
     GTouchop g_touchop = CLICK_;
@@ -25,10 +25,9 @@ namespace OHOS::uitest {
     int g_clickEventCount = 0;
     VelocityTracker velocityTracker_;
     bool isOpDect = false;
-
     void EventData::WriteEventData(std::ofstream &outFile, VelocityTracker velocityTracker, std::string actionType)
-    {   
-        if(outFile.is_open()){
+    {
+        if (outFile.is_open()) {
             outFile << actionType << ',';
             outFile << velocityTracker.GetFirstTrackPoint().x << ',';
             outFile << velocityTracker.GetFirstTrackPoint().y << ',';
@@ -37,15 +36,15 @@ namespace OHOS::uitest {
             outFile << velocityTracker.GetInterVal() << ',';
             outFile << STEP_LENGTH << ',';
             outFile << velocityTracker.GetMainVelocity() << std::endl;
-            if(outFile.fail()){
+            if (outFile.fail()) {
                 std::cout<< " outFile failed. " <<std::endl;
             }
-        }else{
+        } else {
             std::cout << "outFile is not opened!"<< std::endl;
         }
     }
     void EventData::ReadEventLine(std::ifstream &inFile)
-    {        
+    {
         enum caseTypes : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velo };
         char buffer[50];
         std::string type;
@@ -84,41 +83,36 @@ namespace OHOS::uitest {
             usleep(interval * g_timeindex);
         }
     }
-    void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const 
+    void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const
     {
         std::cout << "keyCode" << keyEvent->GetKeyCode() << std::endl;
     }
-
-    void InputEventCallback::HandleDownEvent(TouchEventInfo& event) const 
+    void InputEventCallback::HandleDownEvent(TouchEventInfo& event) const
     {
         velocityTracker_.UpdateTouchPoint(event, false);
     }
-
     void InputEventCallback::HandleMoveEvent(TouchEventInfo& event) const
     {
         velocityTracker_.UpdateTouchPoint(event, false);
-        if(velocityTracker_.GetDuration()>=DURATIOIN_THRESHOLD && velocityTracker_.GetMoveDistance()<MAX_THRESHOLD)
-        {
+        if(velocityTracker_.GetDuration()>=DURATIOIN_THRESHOLD && velocityTracker_.GetMoveDistance()<MAX_THRESHOLD) {
             g_touchop = LONG_CLICK_;
             isOpDect = true;
             g_isClick = false;
         }
     }
-
     void InputEventCallback::HandleUpEvent(TouchEventInfo& event) const
     {
         velocityTracker_.UpdateTouchPoint(event, true);
-        if(!isOpDect)
-        {
+        if(!isOpDect) {
             double mainVelocity = velocityTracker_.GetMainAxisVelocity();
             velocityTracker_.SetMainVelocity(mainVelocity);
-            //移动距离超过15
-            if(velocityTracker_.GetDuration()>=DURATIOIN_THRESHOLD && velocityTracker_.GetMoveDistance()<MAX_THRESHOLD) {
+            // 移动距离超过15 => LONG_CLICK(中间结果)
+            if (velocityTracker_.GetDuration()>=DURATIOIN_THRESHOLD && velocityTracker_.GetMoveDistance()<MAX_THRESHOLD) {
                 g_touchop = LONG_CLICK_;
                 g_isClick = false;
-            } else if(velocityTracker_.GetMoveDistance()>MAX_THRESHOLD) {
-                //抬手速度大于45 fling
-                if(fabs(mainVelocity) > FLING_THRESHOLD) {
+            } else if (velocityTracker_.GetMoveDistance()>MAX_THRESHOLD) {
+                // 抬手速度大于45 => FLING_
+                if (fabs(mainVelocity) > FLING_THRESHOLD) {
                     g_touchop = FLING_;
                     g_isClick = false;
                 } else {
@@ -126,9 +120,9 @@ namespace OHOS::uitest {
                     g_isClick = false;
                 }
             } else {
-                //up-down>=0.6s => longClick
-                if(g_isClick && velocityTracker_.GetInterVal()<INTERVAL_THRESHOLD) {
-                    //if lastOp is click && downTime-lastDownTime < 0.1 => double_click
+                // up-down>=0.6s => longClick
+                if (g_isClick && velocityTracker_.GetInterVal() < INTERVAL_THRESHOLD) {
+                    // if lastOp is click && downTime-lastDownTime < 0.1 => double_click
                     g_touchop = DOUBLE_CLICK_;
                     g_isClick = false;
                 } else {
@@ -136,29 +130,25 @@ namespace OHOS::uitest {
                     g_isClick = true;
                 }
             }
-        } else if(isOpDect && velocityTracker_.GetMoveDistance()>=MAX_THRESHOLD) {
+        } else if (isOpDect && velocityTracker_.GetMoveDistance()>=MAX_THRESHOLD) {
             g_touchop = DRAG_;
             g_isClick = false;
         }
-        if(!g_outFile.is_open()){
+        if (!g_outFile.is_open()) {
             g_outFile.open(filePath, std::ios_base::out | std::ios_base::trunc);
         }
-        EventData::WriteEventData(g_outFile, velocityTracker_,g_operationType[g_touchop]);
-
+        EventData::WriteEventData(g_outFile, velocityTracker_, g_operationType[g_touchop]);
         std::cout << " PointerEvent:" << g_operationType[g_touchop]
                         << " xPosi:" << velocityTracker_.GetFirstTrackPoint().x
                         << " yPosi:" << velocityTracker_.GetFirstTrackPoint().y
                         << " x2Posi:" << velocityTracker_.GetLastTrackPoint().x
                         << " y2Posi:" << velocityTracker_.GetLastTrackPoint().y
-                        << " interval:" << velocityTracker_.GetInterVal() //ops interval
-                        // << " duration:" << velocityTracker_.GetDuration() //op duration
-                        << " velocity:" << velocityTracker_.GetMainVelocity() // up velocity
-                        // << " distance:" << velocityTracker_.GetMoveDistance()
+                        << " interval:" << velocityTracker_.GetInterVal()
+                        << " velocity:" << velocityTracker_.GetMainVelocity()
                         << std::endl;
         velocityTracker_.Reset();
         isOpDect = false;
     }
-
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const
     {
         MMI::PointerEvent::PointerItem item;
@@ -179,12 +169,10 @@ namespace OHOS::uitest {
             HandleUpEvent(touchEvent);
         }
     }
-
     std::shared_ptr<InputEventCallback> InputEventCallback::GetPtr()
     {
         return std::make_shared<InputEventCallback>();
     }
-
     bool InitReportFolder()
     {
         DIR *rootDir = nullptr;
@@ -197,7 +185,6 @@ namespace OHOS::uitest {
         }
         return true;
     }
-
     bool InitEventRecordFile(std::ofstream &outFile)
     {
         if (!InitReportFolder()) {
@@ -212,5 +199,4 @@ namespace OHOS::uitest {
         std::cout << "The result will be written in csv file at location: " << filePath << std::endl;
         return true;
     }
-    
 } // namespace OHOS::uitest

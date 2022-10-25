@@ -14,14 +14,12 @@
  */
 
 #include <chrono>
-
 #include "velocity_tracker.h"
 
 using namespace std;
 using namespace std::chrono;
 
 namespace OHOS::uitest {
-
 void VelocityTracker::UpdateTouchPoint(const TouchEventInfo& event, bool end)
 {
     isVelocityDone_ = false;
@@ -31,26 +29,25 @@ void VelocityTracker::UpdateTouchPoint(const TouchEventInfo& event, bool end)
         firstPosition_ = event.GetOffset();
         firstTimePoint_ = event.time;
         firstTrackPoint_ = event;
-        isFirstPoint_ = false;    
+        isFirstPoint_ = false;
     } else {
-        //计算当前事件和last事件位移
+        // 计算当前事件和last事件位移
         delta_ = event.GetOffset() - lastPosition_;
     }
     std::chrono::duration<double> diffTime = event.time - lastTimePoint_;
-    //将当前事件保存为last
+    // 将当前事件保存为last
     lastTimePoint_ = event.time;
     lastPosition_ = event.GetOffset() ;
     lastTrackPoint_ = event;
     // judge duration is 500ms.
     static const double range = 0.05;
-    //不记录抬手瞬间误操作
+    // 不记录抬手瞬间误操作
     if (delta_.IsZero() && end && (diffTime.count() < range)) {
         return;
     }
     // nanoseconds duration to seconds.
     std::chrono::duration<double> duration = event.time - firstTrackPoint_.time;
     seconds = duration.count();
-    // std::cout<< "UpdateTouchPoint: seconds: " << seconds << " ,event.x: "<<event.x<<", event.y: "<<event.y<<std::endl;
     xAxis_.UpdatePoint(seconds, event.x);
     yAxis_.UpdatePoint(seconds, event.y);
 }
@@ -75,11 +72,7 @@ void VelocityTracker::UpdateVelocity()
     if (yAxis_.GetLeastSquareParams(yAxis)) {
         yVelocity = linearParam * yAxis[0] * yValue + yAxis[1];
     }
-    // std::cout<<"xVelocity: " <<xVelocity
-            // <<",yVelocity: "<<yVelocity
-            // <<std::endl;
-    velocity_.SetOffsetPerSecond({ xVelocity, yVelocity });
+    velocity_.SetOffsetPerSecond({xVelocity, yVelocity});
     isVelocityDone_ = true;
 }
-
 } // namespace OHOS::uitest

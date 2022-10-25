@@ -22,18 +22,18 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <typeinfo>
+#include <string>
+#include <vector>
+#include <cmath>
+#include <thread>
 #include "least_square_impl.h"
 #include "touch_event.h"
 #include "offset.h"
 #include "velocity.h"
-#include <thread>
 #include "velocity_tracker.h"
 #include "ui_driver.h"
 #include "input_manager.h"
 #include "i_input_event_consumer.h"
-#include <string>
-#include <vector>
-#include <cmath>
 #include "pointer_event.h"
 
 namespace OHOS::uitest {
@@ -41,7 +41,6 @@ namespace OHOS::uitest {
     static std::ofstream g_outFile;
     static std::string defaultDir = "/data/local/tmp/layout";
     static std::string filePath;
-    
     constexpr int TIMEINTERVAL = 5000;
     constexpr double MAX_THRESHOLD = 15.0;
     constexpr double FLING_THRESHOLD = 45.0;
@@ -79,11 +78,11 @@ namespace OHOS::uitest {
     bool InitEventRecordFile(std::ofstream &outFile);
 
     static int64_t GetMillisTime()
-        {
-            auto timeNow = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-            auto tmp = std::chrono::duration_cast<std::chrono::milliseconds>(timeNow.time_since_epoch());
-            return tmp.count();
-        } 
+    {
+        auto timeNow = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+        auto tmp = std::chrono::duration_cast<std::chrono::milliseconds>(timeNow.time_since_epoch());
+        return tmp.count();
+    }
 
     class EventData {
     public:
@@ -153,7 +152,5 @@ namespace OHOS::uitest {
         std::mutex index;
         std::condition_variable expiredCond;
     };
-
 } // namespace OHOS::uitest
-
-#endif //UI_RECORD_H
+#endif // UI_RECORD_H

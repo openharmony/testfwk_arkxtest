@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef FOUNDATION_ACE_FRAMEWORKS_BASE_UTILS_UTILS_H
-#define FOUNDATION_ACE_FRAMEWORKS_BASE_UTILS_UTILS_H
+#ifndef UTILS_UTILS_H
+#define UTILS_UTILS_H
 
 #include <chrono>
 #include <cmath>
@@ -157,4 +157,4 @@ inline bool GreatNotEqual(double left, double right)
 
 } // namespace OHOS::uitest
 
-#endif // FOUNDATION_ACE_FRAMEWORKS_BASE_UTILS_UTILS_H
+#endif // UTILS_UTILS_H
