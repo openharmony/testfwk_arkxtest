@@ -17,11 +17,9 @@
 #define EVENT_TOUCH_EVENT_H
 
 #include <list>
-
 #include "offset.h"
 
 namespace OHOS::uitest {
-
 using TimeStamp = std::chrono::high_resolution_clock::time_point;
 
 struct TouchPoint final {
@@ -30,7 +28,6 @@ struct TouchPoint final {
     float y = 0.0f;
     TimeStamp downTime;
 };
-
 /**
  * @brief TouchEvent contains the active change point and a list of all touch points.
  */
@@ -48,7 +45,5 @@ struct TouchEventInfo final {
         return Offset(x, y);
     }
 };
-
 } // namespace OHOS::uitest
-
 #endif // EVENT_TOUCH_EVENT_H
