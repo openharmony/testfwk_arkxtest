@@ -65,12 +65,11 @@ namespace OHOS::uitest {
     vector<MMI::PointerEvent::PointerItem> g_eventsvector;
     vector<int> g_timesvector;
     vector<int> g_mmitimesvector;
-    enum GTouchop : uint8_t {click = 0, long_click, double_click, swipe, drag, fling};
+    enum GTouchop : uint8_t {CLICK_ = 0, LONG_CLICK_, DOUBLE_CLICK_, SWIPE_, DRAG_, FLING_};
     enum GCaseInfo : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velocity };
-    GTouchop g_touchop = click;
+    GTouchop g_touchop = CLICK_;
     bool g_isClick = false;
-    int g_clickEventCount = 0;
-
+    uint g_clickEventCount = 0;
     namespace {
         std::string g_defaultDir = "/data/local/tmp/layout";
         int64_t GetMillisTime()
@@ -389,13 +388,13 @@ namespace OHOS::uitest {
                 + pow((g_eventsvector[i].GetDisplayY() - g_eventsvector[j].GetDisplayY()), TWO);
             return distance;
         }
-        double GetSpeed(int i, int j, bool is_click, int click_eventCount) const 
+        double GetSpeed(int i, int j, bool isClick, int clickEventCount) const
         {
             double speed = 0;
-            if (is_click) {
-                speed = GetDistance(i,j)/ pow((g_mmitimesvector[i+click_eventCount] - g_mmitimesvector.back()), TWO);
+            if (isClick) {
+                speed = GetDistance(i, j) / pow((g_mmitimesvector[i + clickEventCount] - g_mmitimesvector.back()), TWO);
             } else {
-                speed = GetDistance(i,j)/ pow((g_mmitimesvector[i] - g_mmitimesvector[j]), TWO);
+                speed = GetDistance(i, j) / pow((g_mmitimesvector[i] - g_mmitimesvector[j]), TWO);
             }
             return speed;
         }
@@ -428,28 +427,28 @@ namespace OHOS::uitest {
                 double speed = GetSpeed(0, eventCount-INDEX_ONE, g_isClick, g_clickEventCount);
                 if (eventCount > TWO && (distance > g_maxdistance)) {
                     double threshold = 0.6;
-                    if (eventCount > g_dragMonitor && GetDistance(0, g_dragMonitor) < g_maxdistance) { 
-                        g_touchop = drag; 
+                    if (eventCount>g_dragMonitor && GetDistance(0, g_dragMonitor)<g_maxdistance) { 
+                        g_touchop = DRAG_;
                     } else if (speed < threshold) {
-                        g_touchop = swipe; 
+                        g_touchop = SWIPE_;
                     } else {
-                        g_touchop = fling; 
+                        g_touchop = FLING_;
                     }
                 }else {
                     if (data.interval > actionInterval && pressTime < pressDuration) {
-                        g_touchop = click;
+                        g_touchop = CLICK_;
                     } else if (data.interval < actionInterval && pressTime < pressDuration) {
-                        g_touchop = double_click;
+                        g_touchop = DOUBLE_CLICK_;
                     } else if (data.interval > actionInterval && pressTime > pressDuration) {
-                        g_touchop = long_click;
+                        g_touchop = LONG_CLICK_;
                     }
                 }
-                if (g_touchop == click) {
+                if (g_touchop == CLICK_) {
                     g_isClick = true;
                     g_clickEventCount = g_mmitimesvector.size();
                 } else {
-                    g_isClick = false;       
-                    g_clickEventCount = 0;        
+                    g_isClick = false;
+                    g_clickEventCount = 0;
                     g_mmitimesvector.clear();
                 }
                 MMI::PointerEvent::PointerItem up_event = g_eventsvector.back();
