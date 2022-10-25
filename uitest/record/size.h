@@ -20,11 +20,9 @@
 #include <limits>
 #include <sstream>
 #include <string>
-
 #include "utils.h"
 
 namespace OHOS::uitest {
-
 class Size {
 public:
     static constexpr double INFINITE_SIZE = std::numeric_limits<double>::max();

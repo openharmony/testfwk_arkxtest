@@ -94,7 +94,8 @@ namespace OHOS::uitest {
     void InputEventCallback::HandleMoveEvent(TouchEventInfo& event) const
     {
         velocityTracker_.UpdateTouchPoint(event, false);
-        if(velocityTracker_.GetDuration()>=DURATIOIN_THRESHOLD && velocityTracker_.GetMoveDistance()<MAX_THRESHOLD) {
+        if(velocityTracker_.GetDuration() >= DURATIOIN_THRESHOLD &&
+           velocityTracker_.GetMoveDistance() < MAX_THRESHOLD) {
             g_touchop = LONG_CLICK_;
             isOpDect = true;
             g_isClick = false;
@@ -103,11 +104,12 @@ namespace OHOS::uitest {
     void InputEventCallback::HandleUpEvent(TouchEventInfo& event) const
     {
         velocityTracker_.UpdateTouchPoint(event, true);
-        if(!isOpDect) {
+        if (!isOpDect) {
             double mainVelocity = velocityTracker_.GetMainAxisVelocity();
             velocityTracker_.SetMainVelocity(mainVelocity);
             // 移动距离超过15 => LONG_CLICK(中间结果)
-            if (velocityTracker_.GetDuration()>=DURATIOIN_THRESHOLD && velocityTracker_.GetMoveDistance()<MAX_THRESHOLD) {
+            if (velocityTracker_.GetDuration() >= DURATIOIN_THRESHOLD &&
+                velocityTracker_.GetMoveDistance() < MAX_THRESHOLD) {
                 g_touchop = LONG_CLICK_;
                 g_isClick = false;
             } else if (velocityTracker_.GetMoveDistance()>MAX_THRESHOLD) {

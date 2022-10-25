@@ -21,7 +21,6 @@
 #include "utils.h"
 
 namespace OHOS::uitest {
-
 class UITEST_EXPORT Point {
 public:
     Point() = default;
@@ -84,7 +83,5 @@ private:
     double x_ = 0.0;
     double y_ = 0.0;
 };
-
 } // namespace OHOS::uitest
-
 #endif // POINT_H

@@ -18,7 +18,6 @@
 #include <fstream>
 #include <regex>
 #include <iostream>
-#include <unistd.h>
 #include "least_square_impl.h"
 #include "touch_event.h"
 #include "offset.h"
@@ -96,7 +95,7 @@ public:
     }
 
     double GetInterVal() const
-    {   
+    {
         // 两次down事件的间隔
         std::chrono::duration<double> inter = firstTrackPoint_.time- downTrackPoint_.time;
         auto interval = inter.count();

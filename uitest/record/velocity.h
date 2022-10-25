@@ -15,11 +15,9 @@
 
 #ifndef GESTURES_VELOCITY_H
 #define GESTURES_VELOCITY_H
-
 #include "offset.h"
 
 namespace OHOS::uitest {
-
 class Velocity final {
 public:
     Velocity() = default;
@@ -67,7 +65,7 @@ public:
         return !operator==(velocity);
     }
 
-   const Offset& GetOffsetPerSecond() const
+    const Offset& GetOffsetPerSecond() const
     {
         return offsetPerSecond_;
     }
@@ -89,7 +87,5 @@ public:
 private:
     Offset offsetPerSecond_;
 };
-
 } // namespace OHOS::uitest
-
 #endif // GESTURES_VELOCITY_H
