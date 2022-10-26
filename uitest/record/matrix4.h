@@ -15,16 +15,12 @@
 
 #ifndef BASE_GEOMETRY_MATRIX4_H
 #define BASE_GEOMETRY_MATRIX4_H
-
 #include <vector>
-
 #include "point.h"
 
 namespace OHOS::uitest {
-
 class Matrix4N;
 class MatrixN4;
-
 class UITEST_EXPORT Matrix4 {
 public:
     // Matrix dimension is 4X4.
@@ -215,7 +211,5 @@ private:
     std::vector<std::vector<double>> matrixn4_;
     int32_t rows_ = 0;
 };
-
 } // namespace OHOS::uitest
-
 #endif // MATRIX4_H

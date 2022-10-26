@@ -15,15 +15,12 @@
 
 #ifndef BASE_GEOMETRY_MATRIX3_H
 #define BASE_GEOMETRY_MATRIX3_H
-
 #include <vector>
-
 #include "point.h"
 
 namespace OHOS::uitest {
 class Matrix3N;
 class MatrixN3;
-
 class UITEST_EXPORT Matrix3 {
 public:
     // Matrix dimension is 3X3.
@@ -215,5 +212,4 @@ private:
     int32_t rows_ = 0;
 };
 } // namespace OHOS::uitest
-
 #endif // BASE_GEOMETRY_MATRIX3_H

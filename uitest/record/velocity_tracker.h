@@ -46,6 +46,11 @@ public:
         xAxis_.Reset();
         yAxis_.Reset();
     }
+    void TrackReset()
+    {
+        downTrackPoint_.Reset();
+        firstTrackPoint_.Reset();
+    }
 
     void UpdateTouchPoint(const TouchEventInfo& event, bool end = false);
     

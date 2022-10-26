@@ -44,6 +44,12 @@ struct TouchEventInfo final {
     {
         return Offset(x, y);
     }
+    void Reset()
+    {
+        x = 0.0;
+        y = 0.0;
+        time = std::chrono::high_resolution_clock::now();
+    }
 };
 } // namespace OHOS::uitest
 #endif // EVENT_TOUCH_EVENT_H
