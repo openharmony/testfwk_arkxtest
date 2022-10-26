@@ -14,10 +14,8 @@
  */
 
 #include "matrix4.h"
-
 #include <algorithm>
 #include <cmath>
-
 #include "utils.h"
 
 namespace OHOS::uitest {

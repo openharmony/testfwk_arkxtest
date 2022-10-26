@@ -25,6 +25,7 @@ namespace OHOS::uitest {
     int g_clickEventCount = 0;
     VelocityTracker velocityTracker_;
     bool isOpDect = false;
+    bool isFirstOp = true;
     void EventData::WriteEventData(std::ofstream &outFile, VelocityTracker velocityTracker, std::string actionType)
     {
         if (outFile.is_open()) {
@@ -157,6 +158,10 @@ namespace OHOS::uitest {
         bool result = pointerEvent->GetPointerItem(pointerEvent->GetPointerId(), item);
         if (!result) {
             std::cout << "GetPointerItem Fail" << std::endl;
+        }
+        if (isFirstOp) {
+            velocityTracker_.TrackReset();
+            isFirstOp = false;
         }
         TouchEventInfo touchEvent {};
         g_touchtime = GetMillisTime();
