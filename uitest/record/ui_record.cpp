@@ -108,13 +108,11 @@ namespace OHOS::uitest {
         if (!isOpDect) {
             double mainVelocity = velocityTracker_.GetMainAxisVelocity();
             velocityTracker_.SetMainVelocity(mainVelocity);
-            // 移动距离超过15 => LONG_CLICK(中间结果)
             if (velocityTracker_.GetDuration() >= DURATIOIN_THRESHOLD &&
                 velocityTracker_.GetMoveDistance() < MAX_THRESHOLD) {
                 g_touchop = LONG_CLICK_;
                 g_isClick = false;
             } else if (velocityTracker_.GetMoveDistance()>MAX_THRESHOLD) {
-                // 抬手速度大于45 => FLING_
                 if (fabs(mainVelocity) > FLING_THRESHOLD) {
                     g_touchop = FLING_;
                     g_isClick = false;
@@ -123,9 +121,7 @@ namespace OHOS::uitest {
                     g_isClick = false;
                 }
             } else {
-                // up-down>=0.6s => longClick
                 if (g_isClick && velocityTracker_.GetInterVal() < INTERVAL_THRESHOLD) {
-                    // if lastOp is click && downTime-lastDownTime < 0.1 => double_click
                     g_touchop = DOUBLE_CLICK_;
                     g_isClick = false;
                 } else {

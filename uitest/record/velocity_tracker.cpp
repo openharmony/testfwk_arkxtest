@@ -31,17 +31,13 @@ void VelocityTracker::UpdateTouchPoint(const TouchEventInfo& event, bool end)
         firstTrackPoint_ = event;
         isFirstPoint_ = false;
     } else {
-        // 计算当前事件和last事件位移
         delta_ = event.GetOffset() - lastPosition_;
     }
     std::chrono::duration<double> diffTime = event.time - lastTimePoint_;
-    // 将当前事件保存为last
     lastTimePoint_ = event.time;
     lastPosition_ = event.GetOffset() ;
     lastTrackPoint_ = event;
-    // judge duration is 500ms.
     static const double range = 0.05;
-    // 不记录抬手瞬间误操作
     if (delta_.IsZero() && end && (diffTime.count() < range)) {
         return;
     }
