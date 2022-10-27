@@ -366,7 +366,7 @@ TEST_F(FrontendApiHandlerTest, apiMapTest) {
         "Component.getAccessibilityId",
         "Component.getId"
     };
-    for (unsigned long i = 0; i < sizeof(calls) / sizeof(ApiCallInfo); i++) {
+    for (size_t i = 0; i < sizeof(calls) / sizeof(ApiCallInfo); i++) {
         server.ApiMapPre(calls[i]);
         ASSERT_EQ(calls[i].apiId_, expectedResults[i]);
     }
