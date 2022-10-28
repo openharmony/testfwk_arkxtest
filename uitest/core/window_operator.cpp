@@ -238,10 +238,12 @@ namespace OHOS::uitest {
             return;
         }
         auto selector = WidgetSelector();
-        auto matcher1 = WidgetAttrMatcher("index", std::to_string(index), EQ);
-        auto matcher2 = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "button", EQ);
-        selector.AddMatcher(matcher1);
-        selector.AddMatcher(matcher2);
+        auto frontLocator = WidgetSelector();
+        auto matcher = WidgetAttrMatcher("index", std::to_string(index), EQ);
+        auto frontMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "DecorBar", EQ);
+        frontLocator.AddMatcher(frontMatcher);
+        selector.AddMatcher(matcher);
+        selector.AddFrontLocator(frontLocator, out.exception_);
         vector<unique_ptr<Widget>> widgets;
         driver_.FindWidgets(selector, widgets, out.exception_);
         if (out.exception_.code_ != NO_ERROR) {
