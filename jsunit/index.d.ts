@@ -70,6 +70,9 @@ export interface Assert {
     assertNull(): void
     assertThrowError(expectValue: string): void
     assertUndefined(): void
+
+    assertLargerOrEqual(expectValue: number):void
+    assertLessOrEqual(expectValue: number):void
 }
 
 export function expect(actualValue?: any): Assert
