@@ -427,7 +427,7 @@ namespace OHOS::uitest {
                 double speed = GetSpeed(0, eventCount-INDEX_ONE, g_isClick, g_clickEventCount);
                 if (eventCount > TWO && (distance > g_maxdistance)) {
                     double threshold = 0.6;
-                    if (eventCount>g_dragMonitor && GetDistance(0, g_dragMonitor)<g_maxdistance) { 
+                    if (eventCount > g_dragMonitor && GetDistance(0, g_dragMonitor) < g_maxdistance) { 
                         g_touchop = DRAG_;
                     } else if (speed < threshold) {
                         g_touchop = SWIPE_;
