@@ -208,15 +208,16 @@ class SuiteService {
             this.currentRunningSuite = this.rootSuite.childSuites[0];
         }
 
-        this.coreContext.fireEvents('task', 'taskStart');
         if (configService.isSupportAsync()) {
             let asyncExecute = async () => {
+                await this.coreContext.fireEvents('task', 'taskStart');
                 await this.rootSuite.asyncRun(this.coreContext);
             };
-            asyncExecute().then(() => {
-                this.coreContext.fireEvents('task', 'taskDone');
+            asyncExecute().then(async () => {
+                await this.coreContext.fireEvents('task', 'taskDone');
             });
         } else {
+            this.coreContext.fireEvents('task', 'taskStart');
             this.rootSuite.run(this.coreContext);
             this.coreContext.fireEvents('task', 'taskDone');
         }

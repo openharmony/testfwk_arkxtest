@@ -72,9 +72,9 @@ class TaskEvent {
         this.eventMonitors.push(service);
     }
 
-    taskStart() {
+    async taskStart() {
         for (let monitor in this.eventMonitors) {
-            this.eventMonitors[monitor]['taskStart']();
+            await this.eventMonitors[monitor]['taskStart']();
         }
     }
 
