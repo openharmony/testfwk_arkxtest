@@ -13,23 +13,36 @@
  * limitations under the License.
  */
 
-function runUiTestLifeCycleMethods() {
-  let uitest = globalThis.requireInternal('uitest')
-  if (uitest.uitestSetupCalled === true) {
+function requireModule(name) {
+  let mod = globalThis.requireNapi(name)
+  if (mod) {
+    return mod
+  }
+  mod = globalThis.ohosplugin
+  name.split('.').foreach(element => {
+    if (mod) {
+      mod = mod[element]
+    }
+  })
+  if (mod) {
+    return mod
+  }
+  mod = globalThis.systemplugin
+  name.split('.').foreach(element => {
+    if (mod) {
+      mod = mod[element]
+    }
+  })
+  return mod
+}
+
+async function scheduleConnectionAsync(uitest) {
+  let procInfo = requireModule('process')
+  if (procInfo == null) {
+    console.error('UiTestKit_exporter: Failed to require process napi module')
     return
   }
-  uitest.uitestSetupCalled = true
-  // check 'persist.ace.testmode.enabled' property
-  let parameter = globalThis.requireNapi('systemparameter')
-  if (parameter == null) {
-    console.error('UiTestKit_exporter: Failed to require systemparameter napi module!')
-    return
-  }
-  if (parameter.getSync('persist.ace.testmode.enabled', '0') !== '1') {
-    console.warn('UiTestKit_exporter: systemParameter "persist.ace.testmode.enabled" is not set!')
-  }
-  // schedule server_daemon startup
-  let registry = globalThis.requireNapi('application.abilityDelegatorRegistry')
+  let registry = requireModule('application.abilityDelegatorRegistry')
   if (registry == null) {
     console.error('UiTestKit_exporter: Failed to require AbilityDelegator napi module')
     return
@@ -37,38 +50,43 @@ function runUiTestLifeCycleMethods() {
   let delegator = registry.getAbilityDelegator()
   if (delegator == null) {
     console.warn('UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started')
+    let shmfPath = '/data/storage/el2/base/cache/shmf'
+    uitest.scheduleEstablishConnection(shmfPath)
   } else {
-    console.info('UiTestKit_lifecycle: Begin executing shell command to start server-daemon')
-    delegator.executeShellCommand('uitest start-daemon 0123456789', 1).then((value) => {
-      console.info(`UiTestKit_lifecycle: Start server-daemon finished: ${JSON.stringify(value)}`)
+    let appContext = delegator.getAppContext()
+    let shmfPath = `${appContext.cacheDir}/shmf_${procInfo.pid}`
+    let connToken = `${appContext.applicationInfo.name}@${procInfo.pid}@${procInfo.uid}@${appContext.area}`
+    console.info(`UiTestKit_exporter: ScheduleProbeAndEstablishConnection, shmf=${shmfPath}, token=${connToken}`)
+    uitest.scheduleEstablishConnection(shmfPath)
+    console.info('UiTestKit_exporter: Begin executing shell command to start server-daemon')
+    delegator.executeShellCommand(`uitest start-daemon ${connToken}`, 3).then((value) => {
+      console.info(`UiTestKit_exporter: Start server-daemon finished: ${JSON.stringify(value)}`)
     }).catch((error) => {
-      console.error(`UiTestKit_lifecycle: Start server-daemon failed: ${JSON.stringify(error)}`)
+      console.error(`UiTestKit_exporter: Start server-daemon failed: ${JSON.stringify(error)}`)
     })
   }
-  // establish connection with server_daemon sync
-  uitest.setup('0123456789')
-
-  // export teardown function
-  globalThis.teardownUiTestEnvironment = function () {
-    if (uitest.uitestSetupCalled === true) {
-      console.info('UiTestKit_lifecycle, disposal uitest')
-      uitest.teardown()
-    }
-  }
 }
 
-function requireUiTest() {
-  console.info('UiTestKit_exporter: Start running uitest_exporter')
-  runUiTestLifeCycleMethods()
-  let module = undefined
-  try {
-    module = globalThis.requireInternal('uitest')
-  } catch (error) {
-    console.error(`UiTestKit_exporter: Run exporter failed: ${JSON.stringify(error)}`)
-  } finally {
-    console.debug('UiTestKit_exporter: UiTest module=' + module)
+function loadAndSetupUiTest() {
+  let uitest = globalThis.requireInternal('uitest')
+  if (uitest.uitestSetupCalled === true) {
+    return
   }
-  return module
+  uitest.uitestSetupCalled = true
+  // check 'persist.ace.testmode.enabled' property
+  let parameter = requireModule('systemparameter')
+  if (parameter == null) {
+    console.error('UiTestKit_exporter: Failed to require systemparameter napi module!')
+    return
+  }
+  if (parameter.getSync('persist.ace.testmode.enabled', '0') !== '1') {
+    console.warn('UiTestKit_exporter: systemParameter "persist.ace.testmode.enabled" is not set!')
+  }
+  // schedule startup server_daemon and establish connection
+  scheduleConnectionAsync(uitest).catch((error) => {
+    console.error(`UiTestKit_exporter: ScheduleConnectionAsync failed: ${JSON.stringify(error)}`)
+  })
+  return uitest
 }
 
-export default requireUiTest()
+export default loadAndSetupUiTest()
