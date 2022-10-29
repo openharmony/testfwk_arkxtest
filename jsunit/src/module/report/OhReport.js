@@ -45,6 +45,7 @@ class OhReport {
             this.delegator.finishTest('your test finished!!!', 0, () => {
             });
         });
+        console.info('your test finished!!!');
     }
 
     incorrectFormat() {
