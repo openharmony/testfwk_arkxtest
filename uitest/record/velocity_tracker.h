@@ -18,6 +18,7 @@
 #include <fstream>
 #include <regex>
 #include <iostream>
+#include <cmath>
 #include "least_square_impl.h"
 #include "touch_event.h"
 #include "offset.h"
@@ -110,6 +111,16 @@ public:
     double GetMainVelocity() const
     {
         return mainVelocity_;
+    }
+
+    double GetMainVelocityAxis()
+    {
+        UpdateVelocity();
+        if (fabs(velocity_.GetVelocityX()) > fabs(velocity_.GetVelocityY())) {
+            return velocity_.GetVelocityX();
+        } else {
+            return velocity_.GetVelocityY();
+        }
     }
 
     double GetMoveDistance() const
