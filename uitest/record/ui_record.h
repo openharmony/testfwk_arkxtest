@@ -35,6 +35,9 @@
 #include "input_manager.h"
 #include "i_input_event_consumer.h"
 #include "pointer_event.h"
+#include "widget_operator.h"
+#include "window_operator.h"
+#include "widget_selector.h"
 
 namespace OHOS::uitest {
     static int g_touchtime;
