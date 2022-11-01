@@ -490,7 +490,7 @@ namespace OHOS::uitest {
             g_monitorInstance_ = make_shared<UiEventMonitor>();
         }
         g_monitorInstance_->SetOnAbilityConnectCallback(onConnectCallback);
-        g_monitorInstance_->SetOnAbilityDisConnectCallback(onDisConnectCallback);   
+        g_monitorInstance_->SetOnAbilityDisConnectCallback(onDisConnectCallback);
         auto ability = AccessibilityUITestAbility::GetInstance();
         if (ability->RegisterAbilityListener(g_monitorInstance_) != RET_OK) {
             LOG_E("Failed to register UiEventMonitor");
