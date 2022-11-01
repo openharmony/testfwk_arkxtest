@@ -74,7 +74,7 @@ namespace OHOS::uitest {
         /**Update UI controller and UI objects.*/
         void UpdateUi(bool updateUiTree, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction
-        const UiController *uiController_ = nullptr;
+        UiController *uiController_ = nullptr;
         std::unique_ptr<WidgetTree> widgetTree_ = nullptr;
         std::vector<Window> windows_;
     };

@@ -47,9 +47,9 @@ namespace OHOS::uitest {
 
         virtual ~UiController() = default;
 
-        virtual void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>>& out) const {};
+        virtual void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>>& out) {};
 
-        virtual bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec) const
+        virtual bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec) const   
         {
             return false;
         };
@@ -121,7 +121,7 @@ namespace OHOS::uitest {
         static void InstallFromProvider();
 
         /**The the currently active UiController, returns null if none is available.*/
-        static const UiController *GetController();
+        static UiController *GetController();
 
     private:
         const std::string name_;
