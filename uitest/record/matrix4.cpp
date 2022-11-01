@@ -22,12 +22,10 @@ namespace OHOS::uitest {
 namespace {
 constexpr int32_t MATRIX_LENGTH = Matrix4::DIMENSION * Matrix4::DIMENSION;
 constexpr double ANGLE_UNIT = 0.017453f; // PI / 180
-
 inline bool IsEqual(const double& left, const double& right)
 {
     return NearEqual(left, right);
 }
-
 } // namespace
 
 Matrix4 Matrix4::CreateIdentity()
