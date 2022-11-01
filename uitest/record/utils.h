@@ -41,7 +41,7 @@
 #define PRIMITIVE_CAT(x, y) x##y
 #define CAT(x, y) PRIMITIVE_CAT(x, y)
 
-#define COPY_SENTENCE(x) x = other.x;
+#define COPY_SENTENCE(x) x = other.x
 #define LOOP_COPY(x) CAT(LOOP_COPY1 x, _END)
 #define LOOP_COPY1(x) COPY_SENTENCE(x) LOOP_COPY2
 #define LOOP_COPY2(x) COPY_SENTENCE(x) LOOP_COPY1
