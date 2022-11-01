@@ -262,11 +262,11 @@ namespace OHOS::uitest {
     void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out)
     {
 		if (!connected_) {
-			LOG_I("Not connect to AccessibilityUITestAbility, try to connect it");
-			if (!this->ConnectToSysAbility()) {
-				LOG_W("Connect to AccessibilityUITestAbility failed");
-				return;
-			}
+            LOG_I("Not connect to AccessibilityUITestAbility, try to connect it");
+            if (!this->ConnectToSysAbility()) {
+                LOG_W("Connect to AccessibilityUITestAbility failed");
+                return;
+            }
 		}
         auto ability = AccessibilityUITestAbility::GetInstance();
         vector<AccessibilityWindowInfo> windows;
@@ -482,10 +482,10 @@ namespace OHOS::uitest {
             LOG_I("Success connect to AccessibilityUITestAbility");
             condition.notify_all();
         };
-		auto onDisConnectCallback = [&condition,this]() {
-			connected_ = false;
-			LOG_I("Disconnect from AccessibilityUITestAbility");
-		};
+        auto onDisConnectCallback = [&condition,this]() {
+            connected_ = false;
+            LOG_I("Disconnect from AccessibilityUITestAbility");
+        };
         if (g_monitorInstance_ == nullptr) {
             g_monitorInstance_ = make_shared<UiEventMonitor>();
         }
