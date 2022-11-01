@@ -23,7 +23,6 @@ import assertUndefined from './assertUndefined';
 import assertFalse from './assertFalse';
 import assertInstanceOf from './assertInstanceOf';
 import assertThrowError from './assertThrowError';
-
 import assertLargerOrEqual from './assertLargerOrEqual'
 import assertLessOrEqual from './assertLessOrEqual'
 class ExpectExtend {
@@ -43,7 +42,6 @@ class ExpectExtend {
         this.matchers.assertFalse = assertFalse;
         this.matchers.assertInstanceOf = assertInstanceOf;
         this.matchers.assertThrowError = assertThrowError;
-
         this.matchers.assertLargerOrEqual = assertLargerOrEqual;
         this.matchers.assertLessOrEqual = assertLessOrEqual;
     }
