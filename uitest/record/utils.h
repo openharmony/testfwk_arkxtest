@@ -154,7 +154,5 @@ inline bool GreatNotEqual(double left, double right)
     constexpr double epsilon = 0.001f;
     return (left - right) > epsilon;
 }
-
 } // namespace OHOS::uitest
-
 #endif // UTILS_UTILS_H
