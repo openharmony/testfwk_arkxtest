@@ -85,7 +85,6 @@
     DEFINE_COPY_OPERATOR_WITH_PROPERTIES(type, PROPS) DEFINE_COMPARE_OPERATOR_WITH_PROPERTIES(type, PROPS)
 
 namespace OHOS::uitest {
-
 inline bool NearEqual(const double left, const double right, const double epsilon)
 {
     return (std::abs(left - right) <= epsilon);
