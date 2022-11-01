@@ -249,6 +249,10 @@ namespace OHOS::uitest {
         if (out.exception_.code_ != NO_ERROR) {
             return;
         }
+        if (widgets.empty()) {
+            LOG_E("DecorBar not found");
+            return;
+        }
         auto rect = widgets.front()->GetBounds();
         Point widgetCenter(rect.GetCenterX(), rect.GetCenterY());
         auto touch = GenericClick(TouchOp::CLICK, widgetCenter);
