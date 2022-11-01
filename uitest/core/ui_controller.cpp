@@ -54,7 +54,7 @@ namespace OHOS::uitest {
         }
     }
 
-    const UiController *UiController::GetController()
+    UiController *UiController::GetController()
     {
         lock_guard<mutex> guard(controllerAccessMutex_);
         for (auto &ctrl : controllers_) {
