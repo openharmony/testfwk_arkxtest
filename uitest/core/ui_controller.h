@@ -49,7 +49,7 @@ namespace OHOS::uitest {
 
         virtual void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>>& out) {};
 
-        virtual bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec) const   
+        virtual bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec) const
         {
             return false;
         };
