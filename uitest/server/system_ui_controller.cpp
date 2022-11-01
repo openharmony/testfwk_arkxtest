@@ -259,8 +259,15 @@ namespace OHOS::uitest {
         }
     }
 
-    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out) const
+    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out)
     {
+		if (!connected_) {
+			LOG_I("Not connect to AccessibilityUITestAbility, try to connect it");
+			if (!this->ConnectToSysAbility()) {
+				LOG_W("Connect to AccessibilityUITestAbility failed");
+				return;
+			}
+		}
         auto ability = AccessibilityUITestAbility::GetInstance();
         vector<AccessibilityWindowInfo> windows;
         if (ability->GetWindows(windows) != RET_OK) {
@@ -369,7 +376,7 @@ namespace OHOS::uitest {
 
     bool SysUiController::IsWorkable() const
     {
-        return connected_;
+        return true;
     }
 
     bool SysUiController::GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode) const
@@ -475,10 +482,15 @@ namespace OHOS::uitest {
             LOG_I("Success connect to AccessibilityUITestAbility");
             condition.notify_all();
         };
+		auto onDisConnectCallback = [&condition,this]() {
+			connected_ = false;
+			LOG_I("Disconnect from AccessibilityUITestAbility");
+		};
         if (g_monitorInstance_ == nullptr) {
             g_monitorInstance_ = make_shared<UiEventMonitor>();
         }
         g_monitorInstance_->SetOnAbilityConnectCallback(onConnectCallback);
+		g_monitorInstance_->SetOnAbilityDisConnectCallback(onDisConnectCallback);
         auto ability = AccessibilityUITestAbility::GetInstance();
         if (ability->RegisterAbilityListener(g_monitorInstance_) != RET_OK) {
             LOG_E("Failed to register UiEventMonitor");
