@@ -90,13 +90,13 @@ class Core {
         }
     }
 
-    fireEvents(serviceName, eventName) {
+    async fireEvents(serviceName, eventName) {
         const eventObj = this.events[serviceName];
         if (!eventObj) {
             return;
         }
         for (const attr in eventObj) {
-            eventObj[attr][eventName]();
+            await eventObj[attr][eventName]();
         }
     }
 
