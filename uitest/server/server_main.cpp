@@ -282,7 +282,7 @@ namespace OHOS::uitest {
 
     static string TrasnlateAppFilePath(string_view raw)
     {
-        constexpr uint32_t UID2ACCOUNT_DIVISOR = 200000;
+        constexpr uint32_t uid2AccountDivisor = 200000;
         constexpr string_view XDEVICE_AGENT_TOKEN = "0123456789";
         if (access(raw.data(), F_OK) == 0) {
             return string(raw);
@@ -311,7 +311,7 @@ namespace OHOS::uitest {
             } else if (tokenIndex == INDEX_ONE) {
                 procPid = token;
             } else if (tokenIndex == INDEX_TWO) {
-                procAccount = to_string(stoi(token.c_str()) / UID2ACCOUNT_DIVISOR);
+                procAccount = to_string(stoi(token.c_str()) / uid2AccountDivisor);
             }
             tokenIndex++;
             tokenStart = tokenEnd + 1;
