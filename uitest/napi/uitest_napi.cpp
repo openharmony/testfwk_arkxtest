@@ -41,7 +41,7 @@ namespace OHOS::uitest {
     static queue<string> g_backendObjsAboutToDelete;
     static mutex g_gcQueueMutex;
     /**Establish Connection future. */
-    static future<void> g_establishConnectionFuture_;
+    static future<void> g_establishConnectionFuture;
 
     // use external setup/transact/disposal callback functions
     extern bool SetupTransactionEnv(string_view token);
@@ -76,7 +76,7 @@ namespace OHOS::uitest {
         NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &value, nullptr));
         NAPI_ASSERT(env, argc > 0, "Need session token argument!");
         auto token = JsStrToCppStr(env, argv[0]);
-        g_establishConnectionFuture_ = async(launch::async, [token]() {
+        g_establishConnectionFuture = async(launch::async, [token]() {
             auto result = SetupTransactionEnv(token);
             LOG_I("End setup transaction environment, result=%{public}d", result);
         });
@@ -86,9 +86,9 @@ namespace OHOS::uitest {
     /**Wait connection result sync if need.*/
     static void WaitForConnectionIfNeed()
     {
-        if (g_establishConnectionFuture_.valid()) {
+        if (g_establishConnectionFuture.valid()) {
             LOG_I("Begin WaitForConnection");
-            g_establishConnectionFuture_.get();
+            g_establishConnectionFuture.get();
         }
     }
 
