@@ -72,6 +72,11 @@ export interface Assert {
     assertUndefined(): void
     assertLargerOrEqual(expectValue: number):void
     assertLessOrEqual(expectValue: number):void
+    assertNaN():void
+    assertNegUnlimited(): void
+    assertPosUnlimited(): void
+    not(): Assert;
+    assertDeepEquals(expectValue: any):void
 }
 
 export function expect(actualValue?: any): Assert
