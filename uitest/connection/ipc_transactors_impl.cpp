@@ -83,9 +83,7 @@ namespace OHOS::uitest {
         auto pInMsg = asServer_ ? g_callMsgBuf : g_replyMsgBuf;
         g_memRwWork = async(launch::async, [pInMsg, this]() -> void {
             while (!g_shmemReleased && g_ashmem != nullptr) {
-                if (g_shmemReleased) {
-                    break;
-                } else if (!pInMsg->ready_) { // wait for incoming message
+                if (!pInMsg->ready_) { // wait for incoming message
                     this_thread::sleep_for(chrono::milliseconds(POLL_MSG_INTERVAL_MS));
                     continue;
                 }
