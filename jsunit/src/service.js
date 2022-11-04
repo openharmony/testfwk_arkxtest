@@ -602,13 +602,25 @@ class ExpectService {
 
     wrapMatchers(actualValue) {
         const _this = this;
-        const wrappedMatchers = {};
+        const wrappedMatchers = {
+            // 翻转标识
+            isNot : false,
+
+            // 翻转方法
+            not: function () {
+                this.isNot = true;
+                return this;
+            }
+        };
         const specService = _this.coreContext.getDefaultService('spec');
         const currentRunningSpec = specService.getCurrentRunningSpec();
         for (const matcherName in this.matchers) {
             if (Object.prototype.hasOwnProperty.call(this.matchers, matcherName)) {
                 wrappedMatchers[matcherName] = function () {
                     const result = _this.matchers[matcherName](actualValue, arguments);
+                    if(wrappedMatchers.isNot) {
+                        result.pass = !result.pass;
+                    }
                     result.actualValue = actualValue;
                     result.checkFunc = matcherName;
                     currentRunningSpec.addExpectationResult(result);
