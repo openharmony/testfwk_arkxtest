@@ -484,7 +484,6 @@ namespace OHOS::uitest {
         };
         auto onDisConnectCallback = [&condition, this]() {
             connected_ = false;
-            LOG_I("Disconnect from AccessibilityUITestAbility");
         };
         if (g_monitorInstance_ == nullptr) {
             g_monitorInstance_ = make_shared<UiEventMonitor>();
@@ -496,7 +495,6 @@ namespace OHOS::uitest {
             LOG_E("Failed to register UiEventMonitor");
             return false;
         }
-        LOG_I("Start connect to AccessibilityUITestAbility");
         auto ret = ability->Connect();
         switch (ret) {
             case (RET_ERR_INVALID_PARAM):
@@ -522,7 +520,6 @@ namespace OHOS::uitest {
             LOG_E("Wait connection to AccessibilityUITestAbility timed out");
             return false;
         }
-        LOG_I("Register to AccessibilityUITestAbility done");
         connected_ = true;
         return true;
     }
