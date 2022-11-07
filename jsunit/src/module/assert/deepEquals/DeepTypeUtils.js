@@ -56,7 +56,7 @@ class DeepTypeUtils {
      * @param obj
      */
     static isPromise (obj) {
-        return !!obj && obj.constructor === Promise.constructor;
+        return !!obj && obj.constructor === Promise;
   };
     /**
      *  是否是map对象
