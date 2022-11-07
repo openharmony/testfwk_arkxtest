@@ -26,9 +26,7 @@ function assertDeepEquals(actualValue, expected) {
 function eq(a, b, aStack, bStack) {
     let result = true;
     console.log('a is:' + a + ',b is:' + b);
-    const asymmetricResult = asymmetricMatch_(
-        a,
-        b);
+    const asymmetricResult = asymmetricMatch_(a,b);
     if (!DeepTypeUtils.isUndefined(asymmetricResult)) {
         return asymmetricResult;
     }
