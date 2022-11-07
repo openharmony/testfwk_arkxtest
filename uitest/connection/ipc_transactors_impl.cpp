@@ -70,6 +70,9 @@ namespace OHOS::uitest {
         char zeroBuf[MMAP_SIZE] = {0};
         write(fd, zeroBuf, MMAP_SIZE);
         g_ashmem = make_unique<OHOS::Ashmem>(fd, MMAP_SIZE);
+        if (g_ashmem == nullptr) {
+            return false;
+        }
         if (!g_ashmem->MapReadAndWriteAshmem()) {
             LOG_E("MapReadAndWriteAshmem failed");
             return false;
@@ -82,7 +85,7 @@ namespace OHOS::uitest {
         // start incoming message async polling loop
         auto pInMsg = asServer_ ? g_callMsgBuf : g_replyMsgBuf;
         g_memRwWork = async(launch::async, [pInMsg, this]() -> void {
-            while (!g_shmemReleased && g_ashmem != nullptr) {
+            while (!g_shmemReleased) {
                 if (!pInMsg->ready_) { // wait for incoming message
                     this_thread::sleep_for(chrono::milliseconds(POLL_MSG_INTERVAL_MS));
                     continue;
