@@ -236,7 +236,7 @@ function eq(a, b, aStack, bStack) {
             result = false;
             continue;
         }
-        if (!eq(a[key], b[key])) {
+        if (!eq(a[key], b[key], aStack, bStack)) {
             result = false;
         }
     }
