@@ -72,7 +72,7 @@ function eq(a, b, aStack, bStack) {
 
     // 数组
     if(aClassName === '[object ArrayBuffer]') {
-        return eq_(new Uint8Array(a), new Uint8Array(b));
+        return eq(new Uint8Array(a), new Uint8Array(b), aStack, bStack);
     }
 
     // 正则表达式
