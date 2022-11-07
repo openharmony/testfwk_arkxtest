@@ -14,7 +14,7 @@
  */
 
 class DeepTypeUtils {
-   static getType_(value) {
+    static getType_(value) {
        return Object.prototype.toString.apply(value);
    }
     static isA_(typeName, value) {
@@ -56,7 +56,7 @@ class DeepTypeUtils {
      * @param obj
      */
     static isPromise (obj) {
-    return !!obj && obj.constructor === Promise.constructor;
+        return !!obj && obj.constructor === Promise.constructor;
   };
     /**
      *  是否是map对象
