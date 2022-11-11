@@ -25,6 +25,10 @@ import assertInstanceOf from './assertInstanceOf';
 import assertThrowError from './assertThrowError';
 import assertLargerOrEqual from './assertLargerOrEqual'
 import assertLessOrEqual from './assertLessOrEqual'
+import assertNaN from './assertNaN'
+import assertNegUnlimited from './assertNegUnlimited'
+import assertPosUnlimited from './assertPosUnlimited'
+import assertDeepEquals from './deepEquals/assertDeepEquals'
 class ExpectExtend {
     constructor(attr) {
         this.id = attr.id;
@@ -44,6 +48,10 @@ class ExpectExtend {
         this.matchers.assertThrowError = assertThrowError;
         this.matchers.assertLargerOrEqual = assertLargerOrEqual;
         this.matchers.assertLessOrEqual = assertLessOrEqual;
+        this.matchers.assertNaN = assertNaN;
+        this.matchers.assertNegUnlimited = assertNegUnlimited;
+        this.matchers.assertPosUnlimited = assertPosUnlimited;
+        this.matchers.assertDeepEquals = assertDeepEquals;
     }
 
     init(coreContext) {
