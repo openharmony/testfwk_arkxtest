@@ -36,7 +36,7 @@ namespace OHOS::uitest {
     }
 
     /** Use static data buffers instead of dynamic-containers to ensure performance.*/
-    static constexpr size_t MAX_OVERLAYS = 7;
+    static constexpr size_t MAX_OVERLAYS = 64;
     static constexpr size_t MAX_COORDS = (MAX_OVERLAYS + 1) << 1;
     static constexpr size_t MAX_POINTS = MAX_COORDS * MAX_COORDS;
     static int32_t g_XCoords[MAX_COORDS];
