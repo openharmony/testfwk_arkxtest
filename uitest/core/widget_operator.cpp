@@ -59,8 +59,11 @@ namespace OHOS::uitest {
         vector<string> &leafNodes)
     {
         TreeSnapshotTaker snapshotTaker(snapshot, leafNodes);
-        if (driver.GetWidgetTree() != nullptr) {
-            driver.GetWidgetTree()->DfsTraverseDescendants(snapshotTaker, root);
+        auto tree = driver.GetWidgetTree();
+        if (tree != nullptr) {
+            tree->DfsTraverseDescendants(snapshotTaker, root);
+        } else {
+            LOG_W("WidgetTree is a nullptr currently");
         }
     }
 
