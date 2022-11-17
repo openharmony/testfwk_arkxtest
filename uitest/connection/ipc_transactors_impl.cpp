@@ -70,9 +70,6 @@ namespace OHOS::uitest {
         char zeroBuf[MMAP_SIZE] = {0};
         write(fd, zeroBuf, MMAP_SIZE);
         g_ashmem = make_unique<OHOS::Ashmem>(fd, MMAP_SIZE);
-        if (g_ashmem == nullptr) {
-            return false;
-        }
         if (!g_ashmem->MapReadAndWriteAshmem()) {
             LOG_E("MapReadAndWriteAshmem failed");
             return false;
