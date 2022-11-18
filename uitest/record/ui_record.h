@@ -121,7 +121,7 @@ namespace OHOS::uitest {
                 }
 
                 {
-                    std::lock_guard<std::mutex> locker(index);
+                    std::lock_guard<std::recursive_mutex> locker(index);
                     expired = true;
                     expiredCond.notify_one();
                 }
@@ -139,7 +139,7 @@ namespace OHOS::uitest {
 
             tryToExpire = true; // change this bool value to make timer while loop stop
             {
-                std::unique_lock<std::mutex> locker(index);
+                std::unique_lock<std::recursive_mutex> locker(index);
                 expiredCond.wait(locker, [this] {return expired == true; });
 
                 // reset the timer
@@ -152,7 +152,7 @@ namespace OHOS::uitest {
     private:
         std::atomic<bool> expired; // timer stopped status
         std::atomic<bool> tryToExpire; // timer is in stop process
-        std::mutex index;
+        std::recursive_mutex index;
         std::condition_variable expiredCond;
     };
 } // namespace OHOS::uitest
