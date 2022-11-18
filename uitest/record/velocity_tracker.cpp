@@ -20,7 +20,7 @@ using namespace std;
 using namespace std::chrono;
 
 namespace OHOS::uitest {
-void VelocityTracker::UpdateTouchPoint(const TouchEventInfo& event, bool end)
+void VelocityTracker::UpdateTouchEvent(const TouchEventInfo& event, bool end)
 {
     isVelocityDone_ = false;
     currentTrackPoint_ = event;
@@ -59,13 +59,13 @@ void VelocityTracker::UpdateVelocity()
     std::vector<double> xAxis { 3, 0 };
     auto xValue = xAxis_.GetXVals().back();
     double xVelocity = 0.0;
-    if (xAxis_.GetLeastSquareParams(xAxis)) {
+    if (xAxis_.GetLSMParams(xAxis)) {
         xVelocity = linearParam * xAxis[0] * xValue + xAxis[1];
     }
     std::vector<double> yAxis { 3, 0 };
     auto yValue = yAxis_.GetXVals().back();
     double yVelocity = 0.0;
-    if (yAxis_.GetLeastSquareParams(yAxis)) {
+    if (yAxis_.GetLSMParams(yAxis)) {
         yVelocity = linearParam * yAxis[0] * yValue + yAxis[1];
     }
     velocity_.SetOffsetPerSecond({ xVelocity, yVelocity });

@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "ui_record.h"
 
 using namespace std;
@@ -35,7 +36,7 @@ namespace OHOS::uitest {
             outFile << velocityTracker.GetLastTrackPoint().x << ',';
             outFile << velocityTracker.GetLastTrackPoint().y << ',';
             outFile << velocityTracker.GetInterVal() << ',';
-            outFile << velocityTracker.GetMoveDistance()/5 << ',';
+            outFile << (velocityTracker.GetMoveDistance()/STEP_LENGTH_COUNT) << ',';
             outFile << velocityTracker.GetMainVelocity() << std::endl;
             if (outFile.fail()) {
                 std::cout<< " outFile failed. " <<std::endl;
@@ -90,12 +91,12 @@ namespace OHOS::uitest {
     }
     void InputEventCallback::HandleDownEvent(TouchEventInfo& event) const
     {
-        velocityTracker_.UpdateTouchPoint(event, false);
+        velocityTracker_.UpdateTouchEvent(event, false);
     }
     void InputEventCallback::HandleMoveEvent(TouchEventInfo& event) const
     {
-        velocityTracker_.UpdateTouchPoint(event, false);
-        if(velocityTracker_.GetDuration() >= DURATIOIN_THRESHOLD &&
+        velocityTracker_.UpdateTouchEvent(event, false);
+        if (velocityTracker_.GetDurationTime() >= DURATIOIN_THRESHOLD &&
            velocityTracker_.GetMoveDistance() < MAX_THRESHOLD) {
             g_touchop = LONG_CLICK_;
             isOpDect = true;
@@ -104,12 +105,12 @@ namespace OHOS::uitest {
     }
     void InputEventCallback::HandleUpEvent(TouchEventInfo& event) const
     {
-        velocityTracker_.UpdateTouchPoint(event, true);
+        velocityTracker_.UpdateTouchEvent(event, true);
         if (!isOpDect) {
             double mainVelocity = velocityTracker_.GetMainVelocityAxis();
             velocityTracker_.SetMainVelocity(mainVelocity);
             // 移动距离超过15 => LONG_CLICK(中间结果)
-            if (velocityTracker_.GetDuration() >= DURATIOIN_THRESHOLD &&
+            if (velocityTracker_.GetDurationTime() >= DURATIOIN_THRESHOLD &&
                 velocityTracker_.GetMoveDistance() < MAX_THRESHOLD) {
                 g_touchop = LONG_CLICK_;
                 g_isClick = false;
@@ -149,7 +150,7 @@ namespace OHOS::uitest {
                         << " interval:" << velocityTracker_.GetInterVal()
                         << " velocity:" << velocityTracker_.GetMainVelocity()
                         << std::endl;
-        velocityTracker_.Reset();
+        velocityTracker_.Resets();
         isOpDect = false;
     }
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const
@@ -160,7 +161,7 @@ namespace OHOS::uitest {
             std::cout << "GetPointerItem Fail" << std::endl;
         }
         if (isFirstOp) {
-            velocityTracker_.TrackReset();
+            velocityTracker_.TrackResets();
             isFirstOp = false;
         }
         TouchEventInfo touchEvent {};

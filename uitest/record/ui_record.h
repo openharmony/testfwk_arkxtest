@@ -50,6 +50,7 @@ namespace OHOS::uitest {
     constexpr double DURATIOIN_THRESHOLD = 0.6;
     constexpr double INTERVAL_THRESHOLD = 0.2;
     constexpr int STEP_LENGTH = 20;
+    constexpr int STEP_LENGTH_COUNT = 5;
 
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
@@ -142,7 +143,7 @@ namespace OHOS::uitest {
                 std::unique_lock<std::mutex> locker(index);
                 expiredCond.wait(locker, [this] {return expired == true; });
 
-                // reset the timer
+                // Resets the timer
                 if (expired == true) {
                     tryToExpire = false;
                 }

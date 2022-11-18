@@ -24,9 +24,9 @@ public:
     explicit Velocity(const Offset& offsetPerSecond) : offsetPerSecond_(offsetPerSecond) {}
     ~Velocity() = default;
 
-    void Reset()
+    void Resets()
     {
-        offsetPerSecond_.Reset();
+        offsetPerSecond_.Resets();
     }
 
     void SetOffsetPerSecond(const Offset& offsetPerSecond)
@@ -69,17 +69,17 @@ public:
     {
         return offsetPerSecond_;
     }
-    double GetVelocityX() const
+    double GetVeloX() const
     {
         return offsetPerSecond_.GetX();
     }
 
-    double GetVelocityY() const
+    double GetVeloY() const
     {
         return offsetPerSecond_.GetY();
     }
 
-    double GetVelocityValue() const
+    double GetVeloValue() const
     {
         return offsetPerSecond_.GetDistance();
     }

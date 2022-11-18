@@ -14,14 +14,13 @@
  */
 
 #include "least_square_impl.h"
-#include "matrix3.h"
 #include "matrix4.h"
 #include "common_utilities_hpp.h"
 
 namespace OHOS::uitest {
-bool LeastSquareImpl::GetLeastSquareParams(std::vector<double>& params)
+bool LSMImpl::GetLSMParams(std::vector<double>& params)
 {
-    if (tVals_.size() <= 1 || ((paramsNum_ != Matrix3::DIMENSION) && (paramsNum_ != Matrix4::DIMENSION))) {
+    if (tVals_.size() <= 1 || (paramsNum_ != Matrix4::DIMENSION)) {
         LOG_E("size is invalid, %{public}d, %{public}d", static_cast<int32_t>(tVals_.size()), paramsNum_);
         return false;
     }
@@ -51,28 +50,6 @@ bool LeastSquareImpl::GetLeastSquareParams(std::vector<double>& params)
             break;
         }
     }
-    if (paramsNum_ == Matrix3::DIMENSION) {
-        MatrixN3 matrixn3 { countNum };
-        for (auto i = 0; i < countNum; i++) {
-            const auto& value = xVals[i];
-            matrixn3[i][2] = 1;
-            matrixn3[i][1] = value;
-            matrixn3[i][0] = value * value;
-        }
-        Matrix3 invert;
-        auto transpose = matrixn3.Transpose();
-        if (!(transpose * matrixn3).Invert(invert)) {
-            LOG_E("fail to invert");
-            return false;
-        }
-        auto matrix3n = invert * transpose;
-        auto ret = matrix3n.MapScalars(yVals, params);
-        if (ret) {
-            params_.assign(params.begin(), params.end());
-            isResolved_ = true;
-        }
-        return ret;
-    }
     MatrixN4 matrixn4 { countNum };
     for (auto i = 0; i < countNum; i++) {
         const auto& value = xVals[i];
@@ -84,7 +61,7 @@ bool LeastSquareImpl::GetLeastSquareParams(std::vector<double>& params)
     auto transpose = matrixn4.Transpose();
     auto inversMatrix4 = Matrix4::Invert(transpose * matrixn4);
     auto matrix4n = inversMatrix4 * transpose;
-    auto ret = matrix4n.MapScalars(yVals, params);
+    auto ret = matrix4n.ScaleMapping(yVals, params);
     if (ret) {
         params_.assign(params.begin(), params.end());
         isResolved_ = true;

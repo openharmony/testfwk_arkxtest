@@ -31,8 +31,6 @@ public:
     static Matrix4 CreateTranslate(double x, double y, double z);
     // Multiplies this matrix by another that scales coordinates by the vector (x, y, z).
     static Matrix4 CreateScale(double x, double y, double z);
-    // Multiplies this matrix by another that rotates coordinates through angle degrees about the vector (dx, dy, dz).
-    static Matrix4 CreateRotate(double angle, double dx, double dy, double dz);
 
     static Matrix4 CreateMatrix2D(double m00, double m10, double m01, double m11, double m03, double m13);
     // Multiplies this matrix by another that skew through angle degrees.
@@ -51,10 +49,6 @@ public:
         double m20, double m21, double m22, double m23,
         double m30, double m31, double m32, double m33);
     ~Matrix4() = default;
-    void SetScale(double x, double y, double z);
-    double GetScaleX() const;
-    double GetScaleY() const;
-    void Rotate(double angle, double dx, double dy, double dz);
     void SetEntry(int32_t row, int32_t col, double value);
     bool IsIdentityMatrix() const;
     int32_t Count() const;
@@ -83,11 +77,11 @@ public:
     }
     double Determinant() const;
     void Transpose();
-    void MapScalars(const double src[DIMENSION], double dst[DIMENSION]) const;
-    inline void MapScalars(double vec[DIMENSION], int length = DIMENSION) const
+    void ScaleMapping(const double src[DIMENSION], double dst[DIMENSION]) const;
+    inline void ScaleMapping(double vec[DIMENSION], int length = DIMENSION) const
     {
         if (length == DIMENSION) {
-            this->MapScalars(vec, vec);
+            this->ScaleMapping(vec, vec);
         }
     }
     std::string ToString() const;
@@ -151,10 +145,10 @@ public:
     MatrixN4 Transpose() const;
 
     // Make sure that the vector size is equal than column.
-    std::vector<double> MapScalars(const std::vector<double>& src) const;
+    std::vector<double> ScaleMapping(const std::vector<double>& src) const;
 
     // Make sure that the vector size is equal than column.
-    bool MapScalars(const std::vector<double>& src, std::vector<double>& result) const;
+    bool ScaleMapping(const std::vector<double>& src, std::vector<double>& result) const;
 
 private:
     std::vector<std::vector<double>> matrix4n_;
@@ -205,7 +199,7 @@ public:
     Matrix4N Transpose() const;
 
     // Make sure that the vector size is equal than column.
-    std::vector<double> MapScalars(const std::vector<double>& src) const;
+    std::vector<double> ScaleMapping(const std::vector<double>& src) const;
 
 private:
     std::vector<std::vector<double>> matrixn4_;

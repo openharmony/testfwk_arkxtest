@@ -199,15 +199,6 @@ public:
         }
     }
 
-    template<class T>
-    static double CalcRatio(const T& rectangle)
-    {
-        if (NearZero(static_cast<double>(rectangle.Height()))) {
-            return INFINITE_SIZE;
-        }
-        return static_cast<double>(rectangle.Width()) / static_cast<double>(rectangle.Height());
-    }
-
     std::string ToString() const
     {
         std::stringstream ss;
