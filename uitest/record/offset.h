@@ -29,7 +29,7 @@ public:
     ~Offset() = default;
     Offset(double deltaX, double deltaY) : deltaX_(deltaX), deltaY_(deltaY) {}
 
-    void Reset()
+    void Resets()
     {
         deltaX_ = 0.0;
         deltaY_ = 0.0;

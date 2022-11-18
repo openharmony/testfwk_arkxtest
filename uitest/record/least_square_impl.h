@@ -28,22 +28,22 @@ namespace OHOS::uitest {
  * the function template is a3 * x^3 + a2 * x^2 + a1 * x + a0 = y with four;
  * the function template is 0 * x^3 + a2 * x^2 + a1 * x + a0 = y with three.
  */
-class UITEST_EXPORT LeastSquareImpl {
+class UITEST_EXPORT LSMImpl {
 public:
     /**
      * @brief Construct a new Least Square Impl object.
      * @param paramsNum the right number is 4 or 3.
      */
-    explicit LeastSquareImpl(int32_t paramsNum) : paramsNum_(paramsNum) {}
+    explicit LSMImpl(int32_t paramsNum) : paramsNum_(paramsNum) {}
 
     /**
      * @brief Construct a new Least Square Impl object.
      * @param paramsNum the right number is 4 or 3.
      */
-    LeastSquareImpl(int32_t paramsNum, int32_t countNum) : paramsNum_(paramsNum), countNum_(countNum) {}
+    LSMImpl(int32_t paramsNum, int32_t countNum) : paramsNum_(paramsNum), countNum_(countNum) {}
 
-    LeastSquareImpl() = default;
-    ~LeastSquareImpl() = default;
+    LSMImpl() = default;
+    ~LSMImpl() = default;
 
     void UpdatePoint(double tVal, double pVal)
     {
@@ -69,7 +69,7 @@ public:
      * @return true get the least square result.
      * @return false failed to get the least square result.
      */
-    bool GetLeastSquareParams(std::vector<double>& params);
+    bool GetLSMParams(std::vector<double>& params);
 
     inline const std::vector<double>& GetXVals() const
     {
@@ -86,7 +86,7 @@ public:
         return tVals_.size();
     }
 
-    void Reset()
+    void Resets()
     {
         tVals_.clear();
         pVals_.clear();

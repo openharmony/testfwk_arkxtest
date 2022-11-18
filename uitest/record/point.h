@@ -46,13 +46,6 @@ public:
     {
         y_ = y;
     }
-    void Rotate(const Point& center, double angle)
-    {
-        double x = (x_ - center.GetX()) * std::cos(angle) - (y_ - center.GetY()) * std::sin(angle) + center.GetX();
-        double y = (x_ - center.GetX()) * std::sin(angle) + (y_ - center.GetY()) * std::cos(angle) + center.GetY();
-        x_ = x;
-        y_ = y;
-    }
 
     Point operator-(const Offset& offset) const
     {

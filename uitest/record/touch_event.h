@@ -44,7 +44,7 @@ struct TouchEventInfo final {
     {
         return Offset(x, y);
     }
-    void Reset()
+    void Resets()
     {
         x = 0.0;
         y = 0.0;
