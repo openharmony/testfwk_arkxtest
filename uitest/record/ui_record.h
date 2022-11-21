@@ -139,8 +139,8 @@ namespace OHOS::uitest {
 
             tryToExpire = true; // change this bool value to make timer while loop stop
             {
-                std::unique_lock<std::mutex> locker(index);
-                expiredCond.wait(locker, [this] {return expired == true; });
+                std::unique_lock<std::mutex> lk(index, std::try_to_lock);
+                expiredCond.wait(lk, [this] {return expired == true; });
 
                 // Resets the timer
                 if (expired == true) {
