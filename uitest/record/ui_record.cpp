@@ -28,7 +28,7 @@ namespace OHOS::uitest {
     bool g_isFirstOp = true;
     std::string g_filePath;
     std::string g_defaultDir = "/data/local/tmp/layout";
-    std::ofstream g_outFile;
+    static std::ofstream g_outFile;
     double MAX_THRESHOLD = 15.0;
     double FLING_THRESHOLD = 45.0;
     double DURATIOIN_THRESHOLD = 0.6;
@@ -160,7 +160,7 @@ namespace OHOS::uitest {
         }
         TouchEventInfo touchEvent {};
         g_touchTime = GetMillisTime();
-        TimeStamp t {std::chrono::duration_cast<TimeStamp::duration>(std::chrono::nanoseconds(pointerEvent->GetActionTime()*1000))};
+        TimeStamp t{std::chrono::duration_cast<TimeStamp::duration>(std::chrono::nanoseconds(pointerEvent->GetActionTime()*1000))};
         touchEvent.time = t;
         touchEvent.x = item.GetDisplayX();
         touchEvent.y = item.GetDisplayY();
