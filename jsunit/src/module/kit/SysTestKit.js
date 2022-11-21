@@ -25,17 +25,15 @@ class SysTestKit {
     static actionStart(tag) {
         console.info(JSON.stringify(tag));
         var message = '\n' + 'OHOS_REPORT_ACTIONSTART: ' + JSON.stringify(tag) + '\n';
-        SysTestKit.delegator.print(message).then(() => {
-            console.info(tag + ' actionStart print success');
-        });
+        SysTestKit.print(message);
+        console.info(tag + ' actionStart print success');
     }
 
     static actionEnd(tag) {
         console.info(JSON.stringify(tag));
         var message = '\n' + 'OHOS_REPORT_ACTIONEND: ' + JSON.stringify(tag) + '\n';
-        SysTestKit.delegator.print(message).then(() => {
-            console.info(tag + ' actionEnd print success');
-        });
+        SysTestKit.print(message);
+        console.info(tag + ' actionEnd print success');
     }
 
     static async existKeyword(keyword, timeout) {
@@ -48,6 +46,14 @@ class SysTestKit {
             searchResult = data;
         });
         return searchResult;
+    }
+    static async print(message) {
+        if (Reflect.has(SysTestKit.delegator, 'printSync')) {
+            console.debug(`printSync called ...`);
+            SysTestKit.delegator.printSync(message);
+        } else {
+            await SysTestKit.delegator.print(message);
+        }
     }
 }
 
