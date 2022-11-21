@@ -41,7 +41,7 @@
 #include "widget_selector.h"
 
 namespace OHOS::uitest {
-    static int touchTime;
+    static int g_touchTime;
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
         void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
