@@ -60,12 +60,12 @@ ohos_executable("uitest_server") {
   sources = [
     "${source_root}/connection/ipc_transactors.cpp",
     "${source_root}/connection/ipc_transactors_impl.cpp",
-    "${source_root}/server/server_main.cpp",
-    "${source_root}/server/system_ui_controller.cpp",
     "${source_root}/record/least_square_impl.cpp",
-    "${source_root}/record/velocity_tracker.cpp",
     "${source_root}/record/matrix4.cpp",
     "${source_root}/record/ui_record.cpp",
+    "${source_root}/record/velocity_tracker.cpp",
+    "${source_root}/server/server_main.cpp",
+    "${source_root}/server/system_ui_controller.cpp",
   ]
   include_dirs = [
     "${source_root}/core",
