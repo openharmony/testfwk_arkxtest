@@ -182,8 +182,7 @@ namespace OHOS::uitest {
             default:
                 break;
         }
-        auto touch = GenericSwipe(TouchOp::DRAG, from, to);
-        driver_.PerformTouch(touch, options_, out.exception_);
+        driver_.PerformTouch(GenericSwipe(TouchOp::DRAG, from, to), options_, out.exception_);
     }
 
     void WindowOperator::Split(ApiReplyInfo &out)

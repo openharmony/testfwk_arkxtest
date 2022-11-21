@@ -43,7 +43,7 @@ namespace OHOS::uitest {
 
     class UiEventMonitor final : public AccessibleAbilityListener {
     public:
-        virtual ~UiEventMonitor() = default;
+        virtual ~UiEventMonitor() override = default;
 
         void OnAbilityConnected() override;
 
@@ -95,9 +95,11 @@ namespace OHOS::uitest {
     }
 
     // the monitored events
-    static constexpr uint32_t EVENT_MASK = EventType::TYPE_VIEW_TEXT_UPDATE_EVENT
-                                           | EventType::TYPE_PAGE_STATE_UPDATE | EventType::TYPE_PAGE_CONTENT_UPDATE
-                                           | EventType::TYPE_VIEW_SCROLLED_EVENT | EventType::TYPE_WINDOW_UPDATE;
+    static constexpr uint32_t EVENT_MASK = EventType::TYPE_VIEW_TEXT_UPDATE_EVENT |
+                                           EventType::TYPE_PAGE_STATE_UPDATE |
+                                           EventType::TYPE_PAGE_CONTENT_UPDATE |
+                                           EventType::TYPE_VIEW_SCROLLED_EVENT |
+                                           EventType::TYPE_WINDOW_UPDATE;
 
     void UiEventMonitor::OnAccessibilityEvent(const AccessibilityEventInfo &eventInfo)
     {
@@ -402,12 +404,12 @@ namespace OHOS::uitest {
             {0x7F,   OHOS::MMI::KeyEvent::KEYCODE_DEL}};
         ctrlCode = KEYCODE_NONE;
         if (ch >= 'a' && ch <= 'z') {
-            code = OHOS::MMI::KeyEvent::KEYCODE_A + (int32_t)(ch - 'a');
+            code = OHOS::MMI::KeyEvent::KEYCODE_A + static_cast<int32_t>(ch - 'a');
         } else if (ch >= 'A' && ch <= 'Z') {
             ctrlCode = OHOS::MMI::KeyEvent::KEYCODE_SHIFT_LEFT;
-            code = OHOS::MMI::KeyEvent::KEYCODE_A + (int32_t)(ch - 'A');
+            code = OHOS::MMI::KeyEvent::KEYCODE_A + static_cast<int32_t>(ch - 'A');
         } else if (ch >= '0' && ch <= '9') {
-            code = OHOS::MMI::KeyEvent::KEYCODE_0 + (int32_t)(ch - '0');
+            code = OHOS::MMI::KeyEvent::KEYCODE_0 + static_cast<int32_t>(ch - '0');
         } else {
             auto find = keyMap.find(ch);
             if (find != keyMap.end()) {
@@ -482,9 +484,7 @@ namespace OHOS::uitest {
             LOG_I("Success connect to AccessibilityUITestAbility");
             condition.notify_all();
         };
-        auto onDisConnectCallback = [&condition, this]() {
-            connected_ = false;
-        };
+        auto onDisConnectCallback = [this]() { this->connected_ = false; };
         if (g_monitorInstance_ == nullptr) {
             g_monitorInstance_ = make_shared<UiEventMonitor>();
         }
