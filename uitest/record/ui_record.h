@@ -89,7 +89,7 @@ namespace OHOS::uitest {
     class EventData {
     public:
         static void WriteEventData(std::ofstream &outFile, const VelocityTracker &velocityTracker, \
-                    const std::string &actionType);
+                                   const std::string &actionType);
 
         static void ReadEventLine(std::ifstream &inFile);
     };
