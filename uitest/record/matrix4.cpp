@@ -380,10 +380,10 @@ Matrix4 Matrix4N::operator*(const MatrixN4& matrix) const
     if (columns_ != matrix.GetRowNum()) {
         return matrix4;
     }
-    for (auto i = 0; i < DIMENSION; i++) {
-        for (auto j = 0; j < DIMENSION; j++) {
+    for (int i = 0; i < DIMENSION; i++) {
+        for (int j = 0; j < DIMENSION; j++) {
             double value = 0.0;
-            for (auto k = 0; k < columns_; k++) {
+            for (int k = 0; k < columns_; k++) {
                 value += matrix4n_[i][k] * matrix[k][j];
             }
             matrix4.SetEntry(i, j, value);
