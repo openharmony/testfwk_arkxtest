@@ -14,11 +14,9 @@
  */
 
 #include "matrix3.h"
-
 #include "utils.h"
 
 namespace OHOS::uitest {
-
 bool Matrix3::Invert(Matrix3& matrix) const
 {
     static const double diff = 1e-20;
