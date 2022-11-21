@@ -48,7 +48,7 @@ class SysTestKit {
         return searchResult;
     }
     static async print(message) {
-        if (Reflect.has(SysTestKit.delegator, 'printSync')) {
+        if ('printSync' in SysTestKit.delegator) {
             console.debug(`printSync called ...`);
             SysTestKit.delegator.printSync(message);
         } else {
