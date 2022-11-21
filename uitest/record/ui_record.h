@@ -49,8 +49,6 @@ namespace OHOS::uitest {
     constexpr double FLING_THRESHOLD = 45.0;
     constexpr double DURATIOIN_THRESHOLD = 0.6;
     constexpr double INTERVAL_THRESHOLD = 0.2;
-    constexpr int STEP_LENGTH = 20;
-    constexpr int STEP_LENGTH_COUNT = 5;
 
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
@@ -90,7 +88,7 @@ namespace OHOS::uitest {
 
     class EventData {
     public:
-        static void WriteEventData(std::ofstream &outFile, VelocityTracker velocityTracker, std::string actionType);
+        static void WriteEventData(std::ofstream &outFile, const VelocityTracker &velocityTracker, const std::string &actionType);
 
         static void ReadEventLine(std::ifstream &inFile);
     };
