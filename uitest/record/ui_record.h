@@ -121,7 +121,7 @@ namespace OHOS::uitest {
                 }
 
                 {
-                    std::lock_guard<std::mutex> locker(index);
+                    std::unique_lock<std::mutex> lk(index, std::try_to_lock);
                     expired = true;
                     expiredCond.notify_one();
                 }
