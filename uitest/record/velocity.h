@@ -69,6 +69,7 @@ public:
     {
         return offsetPerSecond_;
     }
+    
     double GetVeloX() const
     {
         return offsetPerSecond_.GetX();
