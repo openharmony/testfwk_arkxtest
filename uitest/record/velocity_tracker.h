@@ -173,10 +173,10 @@ private:
     Offset firstPosition_;
     Offset lastPosition_;
     Velocity velocity_;
-    double mainVelocity_;
+    double mainVelocity_ = 0.0;
     Offset delta_;
     Offset offset_;
-    double seconds;
+    double seconds = 0;
     bool isFirstPoint_ = true;
     TimeStamp firstTimePoint_;
     TimeStamp lastTimePoint_;

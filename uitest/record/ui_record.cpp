@@ -47,42 +47,26 @@ namespace OHOS::uitest {
     }
     void EventData::ReadEventLine(std::ifstream &inFile)
     {
-        enum caseTypes : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velo };
+        enum caseTypes : uint8_t {Type = 0, XPosi, YPosi, X2Posi, Y2Posi, Interval, Length, Velo};
         char buffer[50];
-        std::string type;
-        int xPosi = -1;
-        int yPosi = -1;
-        int x2Posi = -1;
-        int y2Posi = -1;
-        int interval = -1;
-        int length = -1;
-        int velocity = -1;
         while (!inFile.eof()) {
             inFile >> buffer;
             std::string delim = ",";
             auto caseInfo = TestUtils::split(buffer, delim);
-            type = caseInfo[Type];
-            xPosi = std::stoi(caseInfo[XPosi]);
-            yPosi = std::stoi(caseInfo[YPosi]);
-            x2Posi = std::stoi(caseInfo[X2Posi]);
-            y2Posi = std::stoi(caseInfo[Y2Posi]);
-            interval = std::stoi(caseInfo[Interval]);
-            length = std::stoi(caseInfo[Length]);
-            velocity = std::stoi(caseInfo[Velo]);
             if (inFile.fail()) {
                 break;
             } else {
-                std::cout << type << ";"
-                        << xPosi << ";"
-                        << yPosi << ";"
-                        << x2Posi << ";"
-                        << y2Posi << ";"
-                        << interval << ";"
-                        << length << ";"
-                        << velocity << ";" << std::endl;
+                std::cout << caseInfo[Type] << ";"
+                        << std::stoi(caseInfo[XPosi]) << ";"
+                        << std::stoi(caseInfo[YPosi]) << ";"
+                        << std::stoi(caseInfo[X2Posi]) << ";"
+                        << std::stoi(caseInfo[Y2Posi]) << ";"
+                        << std::stoi(caseInfo[Interval]) << ";"
+                        << std::stoi(caseInfo[Length]) << ";"
+                        << std::stoi(caseInfo[Velo]) << ";" << std::endl;
             }
             int g_timeindex = 1000;
-            usleep(interval * g_timeindex);
+            usleep(std::stoi(caseInfo[Interval]) * g_timeindex);
         }
     }
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const
@@ -183,8 +167,7 @@ namespace OHOS::uitest {
     }
     bool InitReportFolder()
     {
-        DIR *rootDir = nullptr;
-        if ((rootDir = opendir(defaultDir.c_str())) == nullptr) {
+        if (opendir(defaultDir.c_str()) == nullptr) {
             int ret = mkdir(defaultDir.c_str(), S_IROTH | S_IRWXU | S_IRWXG);
             if (ret != 0) {
                 std::cerr << "failed to create dir: " << defaultDir << std::endl;
