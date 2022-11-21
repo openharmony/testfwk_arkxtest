@@ -29,6 +29,12 @@ import assertNaN from './assertNaN'
 import assertNegUnlimited from './assertNegUnlimited'
 import assertPosUnlimited from './assertPosUnlimited'
 import assertDeepEquals from './deepEquals/assertDeepEquals'
+import assertPromiseIsPending from './assertPromiseIsPending';
+import assertPromiseIsRejected from './assertPromiseIsRejected';
+import assertPromiseIsRejectedWith from './assertPromiseIsRejectedWith';
+import assertPromiseIsRejectedWithError from './assertPromiseIsRejectedWithError';
+import assertPromiseIsResolved from './assertPromiseIsResolved';
+import assertPromiseIsResolvedWith from './assertPromiseIsResolvedWith';
 class ExpectExtend {
     constructor(attr) {
         this.id = attr.id;
@@ -52,6 +58,12 @@ class ExpectExtend {
         this.matchers.assertNegUnlimited = assertNegUnlimited;
         this.matchers.assertPosUnlimited = assertPosUnlimited;
         this.matchers.assertDeepEquals = assertDeepEquals;
+        this.matchers.assertPromiseIsPending = assertPromiseIsPending;
+        this.matchers.assertPromiseIsRejected = assertPromiseIsRejected;
+        this.matchers.assertPromiseIsRejectedWith = assertPromiseIsRejectedWith;
+        this.matchers.assertPromiseIsRejectedWithError = assertPromiseIsRejectedWithError;
+        this.matchers.assertPromiseIsResolved = assertPromiseIsResolved;
+        this.matchers.assertPromiseIsResolvedWith = assertPromiseIsResolvedWith;
     }
 
     init(coreContext) {

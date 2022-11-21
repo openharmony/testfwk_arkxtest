@@ -615,7 +615,22 @@ class ExpectService {
         const specService = _this.coreContext.getDefaultService('spec');
         const currentRunningSpec = specService.getCurrentRunningSpec();
         for (const matcherName in this.matchers) {
-            if (Object.prototype.hasOwnProperty.call(this.matchers, matcherName)) {
+            let result = Object.prototype.hasOwnProperty.call(this.matchers, matcherName);
+            if (!result) {
+                continue;
+            }
+            if (matcherName.search('assertPromise') == 0) {
+                wrappedMatchers[matcherName] = async function () {
+                    await _this.matchers[matcherName](actualValue, arguments).then(function (result) {
+                        if (wrappedMatchers.isNot) {
+                            result.pass = !result.pass;
+                        }
+                        result.actualValue = actualValue;
+                        result.checkFunc = matcherName;
+                        currentRunningSpec.addExpectationResult(result);
+                    });
+                };
+            } else {
                 wrappedMatchers[matcherName] = function () {
                     const result = _this.matchers[matcherName](actualValue, arguments);
                     if(wrappedMatchers.isNot) {
