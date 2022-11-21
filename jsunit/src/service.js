@@ -12,6 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import SysTestKit from "./module/kit/SysTestKit";
+
 class AssertException extends Error {
     constructor() {
         super();
@@ -188,7 +191,7 @@ class SuiteService {
         let maxCount = Math.floor(strLen / maxLen);
 
         for (let count = 0; count <= maxCount; count++) {
-            await abilityDelegator.print(strJson.substring(count * maxLen, (count + 1) * maxLen));
+            await SysTestKit.print(strJson.substring(count * maxLen, (count + 1) * maxLen));
         }
         console.info('dryRun print success');
         abilityDelegator.finishTest('dry run finished!!!', 0, () => { });
