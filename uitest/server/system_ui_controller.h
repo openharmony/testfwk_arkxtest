@@ -24,7 +24,7 @@ namespace OHOS::uitest {
     public:
         explicit SysUiController(std::string_view name);
 
-        ~SysUiController();
+        ~SysUiController() override;
 
         void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>>& out) override;
 
