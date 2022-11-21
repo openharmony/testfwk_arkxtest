@@ -32,6 +32,7 @@
 #include "velocity.h"
 #include "velocity_tracker.h"
 #include "ui_driver.h"
+#include "ui_action.h"
 #include "input_manager.h"
 #include "i_input_event_consumer.h"
 #include "pointer_event.h"
@@ -40,26 +41,15 @@
 #include "widget_selector.h"
 
 namespace OHOS::uitest {
-    static int g_touchtime;
-    static std::ofstream g_outFile;
-    static std::string defaultDir = "/data/local/tmp/layout";
-    static std::string filePath;
-    constexpr int TIMEINTERVAL = 5000;
-    constexpr double MAX_THRESHOLD = 15.0;
-    constexpr double FLING_THRESHOLD = 45.0;
-    constexpr double DURATIOIN_THRESHOLD = 0.6;
-    constexpr double INTERVAL_THRESHOLD = 0.2;
-
+    static int touchTime;
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
-
-        virtual void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
-        
-        void HandleDownEvent(TouchEventInfo& event) const;
-        void HandleMoveEvent(TouchEventInfo& event) const;
-        void HandleUpEvent(TouchEventInfo& event) const;
-        virtual void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
-        virtual void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override {}
+        void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
+        void HandleDownEvent(const TouchEventInfo& event) const;
+        void HandleMoveEvent(const TouchEventInfo& event) const;
+        void HandleUpEvent(const TouchEventInfo& event) const;
+        void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
+        void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override {}
         static std::shared_ptr<InputEventCallback> GetPtr();
     };
 
@@ -77,7 +67,7 @@ namespace OHOS::uitest {
         };
     };
 
-    bool InitEventRecordFile(std::ofstream &outFile);
+    bool InitEventRecordFile();
 
     static int64_t GetMillisTime()
     {
@@ -91,7 +81,7 @@ namespace OHOS::uitest {
         static void WriteEventData(std::ofstream &outFile, const VelocityTracker &velocityTracker, \
                                    const std::string &actionType);
 
-        static void ReadEventLine(std::ifstream &inFile);
+        static void ReadEventLine();
     };
     
     class Timer {
@@ -116,7 +106,7 @@ namespace OHOS::uitest {
             expired = false;
             std::thread([this, interval, task]() {
                 while (!tryToExpire) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(TIMEINTERVAL));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(timeInterval));
                     task();
                 }
 
@@ -150,6 +140,7 @@ namespace OHOS::uitest {
         }
 
     private:
+        int timeInterval = 5000;
         std::atomic<bool> expired; // timer stopped status
         std::atomic<bool> tryToExpire; // timer is in stop process
         std::mutex index;
