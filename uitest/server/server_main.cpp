@@ -123,7 +123,7 @@ namespace OHOS::uitest {
             auto error = ApiCallErr(NO_ERROR);
             driver.DumpUiHierarchy(data, error);
             if (error.code_ != NO_ERROR) {
-                PrintToConsole("Dump layout failed: "+error.message_);
+                PrintToConsole("Dump layout failed: " + error.message_);
                 fout.close();
                 return EXIT_FAILURE;
             }
