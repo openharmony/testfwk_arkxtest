@@ -28,7 +28,8 @@ namespace OHOS::uitest {
     bool isOpDect = false;
     bool isFirstOp = true;
     int STEP_LENGTH_COUNT = 5;
-    void EventData::WriteEventData(std::ofstream &outFile, const VelocityTracker &velocityTracker, const std::string &actionType)
+    void EventData::WriteEventData(std::ofstream &outFile, const VelocityTracker &velocityTracker, \
+                    const std::string &actionType)
     {
         if (outFile.is_open()) {
             outFile << actionType << ',';
