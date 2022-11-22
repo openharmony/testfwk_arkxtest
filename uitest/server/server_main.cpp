@@ -60,6 +60,9 @@ namespace OHOS::uitest {
     int g_length = 20;
     int g_velocity = 600;
     int g_dragMonitor = 2;
+    int g_actionInterval = 300;
+    int g_pressDuration = 600;
+    double g_speedThreshold = 0.6;
     std::ofstream g_outfile;
     std::string g_operationType[6] = {"click", "longClick", "doubleClick", "swipe", "drag", "fling"};
     vector<MMI::PointerEvent::PointerItem> g_eventsvector;
@@ -114,6 +117,12 @@ namespace OHOS::uitest {
                 outFile << ((data.interval + g_timeindex - 1) / g_timeindex) << ',';
                 outFile << g_length << ',';
                 outFile << g_velocity << std::endl;
+                std::cout << " PointerEvent:" << g_operationType[data.actionType]
+                            << " xPosi:" << data.xPosi
+                            << " yPosi:" << data.yPosi
+                            << " x2Posi:" << data.x2Posi
+                            << " y2Posi:" << data.y2Posi
+                            << " interval:" << ((data.interval + g_timeindex - 1) / g_timeindex) << std::endl;
             }
 
             static void ReadEventLine(std::ifstream &inFile)
@@ -373,7 +382,7 @@ namespace OHOS::uitest {
         }
         void Start(int interval, std::function<void()> task)
         {
-            if (expired == false) {
+            if (!expired) {
                 return;
             }
             expired = false;
@@ -406,7 +415,7 @@ namespace OHOS::uitest {
                 expiredCond.wait(locker, [this] {return expired == true; });
 
                 // reset the timer
-                if (expired == true) {
+                if (expired) {
                     tryToExpire = false;
                 }
             }
@@ -441,10 +450,50 @@ namespace OHOS::uitest {
             }
             return speed;
         }
+        void HandleUpEvent(const TouchEventInfo& data) const
+        {
+            int eventCount = g_eventsvector.size();
+            int pressTime = GetMillisTime() - g_timesvector.back();
+            double speed = GetSpeed(0, eventCount-INDEX_ONE, g_isClick, g_clickEventCount);
+            if (eventCount > TWO && (GetDistance(0, eventCount-INDEX_ONE) > g_maxdistance)) {
+                if (eventCount > g_dragMonitor && GetDistance(0, g_dragMonitor) < g_maxdistance) {
+                    data.actionType = DRAG_;
+                } else if (speed < g_speedThreshold) {
+                    data.actionType = SWIPE_;
+                } else {
+                    data.actionType = FLING_;
+                }
+            } else {
+                if (data.interval > g_actionInterval && pressTime < g_pressDuration) {
+                    data.actionType = CLICK_;
+                } else if (data.interval < g_actionInterval && pressTime < g_pressDuration) {
+                    data.actionType = DOUBLE_CLICK_;
+                } else if (data.interval > g_actionInterval && pressTime > g_pressDuration) {
+                    data.actionType = LONG_CLICK_;
+                }
+            }
+            if (data.actionType == CLICK_) {
+                g_isClick = true;
+                g_clickEventCount = g_mmitimesvector.size();
+            } else {
+                g_isClick = false;
+                g_clickEventCount = 0;
+                g_mmitimesvector.clear();
+            }
+            data.xPosi = g_eventsvector.front().GetDisplayX();
+            data.yPosi = g_eventsvector.front().GetDisplayY();
+            data.x2Posi = g_eventsvector.back().GetDisplayX();
+            data.y2Posi = g_eventsvector.back().GetDisplayY();
+            TouchEventInfo::WriteEventData(g_outfile, data);
+            g_eventsvector.clear();
+        }
         void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override
         {
             MMI::PointerEvent::PointerItem item;
             bool result = pointerEvent->GetPointerItem(pointerEvent->GetPointerId(), item);
+            if (!result) {
+                std::cout << "GetPointerItem Fail" << std::endl;
+            }
             g_touchtime = GetMillisTime();
             TouchEventInfo::EventData data {};
             if (g_timesvector.size() > 1) {
@@ -455,60 +504,10 @@ namespace OHOS::uitest {
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
                 g_timesvector.push_back(GetMillisTime());
             }
-            if (!result) {
-                std::cout << "GetPointerItem Fail" << std::endl;
-            }
             g_eventsvector.push_back(item);
             g_mmitimesvector.push_back(g_touchtime);
             if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP)  {
-                int indexTime = GetMillisTime();
-                int eventCount = g_eventsvector.size();
-                int actionInterval = 300;
-                int pressDuration = 600;
-                int pressTime = indexTime - g_timesvector.back();
-                int distance = GetDistance(0, eventCount-INDEX_ONE);
-                double speed = GetSpeed(0, eventCount-INDEX_ONE, g_isClick, g_clickEventCount);
-                if (eventCount > TWO && (distance > g_maxdistance)) {
-                    double threshold = 0.6;
-                    if (eventCount > g_dragMonitor && GetDistance(0, g_dragMonitor) < g_maxdistance) {
-                        g_touchop = DRAG_;
-                    } else if (speed < threshold) {
-                        g_touchop = SWIPE_;
-                    } else {
-                        g_touchop = FLING_;
-                    }
-                }else {
-                    if (data.interval > actionInterval && pressTime < pressDuration) {
-                        g_touchop = CLICK_;
-                    } else if (data.interval < actionInterval && pressTime < pressDuration) {
-                        g_touchop = DOUBLE_CLICK_;
-                    } else if (data.interval > actionInterval && pressTime > pressDuration) {
-                        g_touchop = LONG_CLICK_;
-                    }
-                }
-                if (g_touchop == CLICK_) {
-                    g_isClick = true;
-                    g_clickEventCount = g_mmitimesvector.size();
-                } else {
-                    g_isClick = false;
-                    g_clickEventCount = 0;
-                    g_mmitimesvector.clear();
-                }
-                MMI::PointerEvent::PointerItem up_event = g_eventsvector.back();
-                MMI::PointerEvent::PointerItem down_event = g_eventsvector.front();
-                data.actionType = g_touchop;
-                data.xPosi = down_event.GetDisplayX();
-                data.yPosi = down_event.GetDisplayY();
-                data.x2Posi = up_event.GetDisplayX();
-                data.y2Posi = up_event.GetDisplayY();
-                TouchEventInfo::WriteEventData(g_outfile, data);
-                std::cout << " PointerEvent:" << g_operationType[data.actionType]
-                            << " xPosi:" << data.xPosi
-                            << " yPosi:" << data.yPosi
-                            << " x2Posi:" << data.x2Posi
-                            << " y2Posi:" << data.y2Posi
-                            << " interval:" << ((data.interval + g_timeindex - 1) / g_timeindex) << std::endl;
-                g_eventsvector.clear();
+                HandleUpEvent(data);
             }
         }
         void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override {}
@@ -532,7 +531,7 @@ namespace OHOS::uitest {
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
-        if (!(argc == INDEX_THREE || argc == INDEX_FOUR )) {
+        if ( ! ( argc == INDEX_THREE || argc == INDEX_FOUR )) {
             PrintToConsole(usage);
             return EXIT_FAILURE;
         }
