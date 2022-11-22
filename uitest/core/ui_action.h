@@ -28,7 +28,7 @@ namespace OHOS::uitest {
     constexpr int32_t KEYCODE_HOME = 1;
 
     /**Enumerates all the supported coordinate-based touch operations.*/
-    enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG };
+    enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG, FLING };
 
     /**Enumerates the supported Key actions.*/
     enum UiKey : uint8_t { BACK, GENERIC };
@@ -94,7 +94,7 @@ namespace OHOS::uitest {
      **/
     class UiOpArgs {
     public:
-        const uint32_t maxSwipeVelocityPps_ = 15000;
+        const uint32_t maxSwipeVelocityPps_ = 40000;
         const uint32_t minSwipeVelocityPps_ = 200;
         const uint32_t defaultSwipeVelocityPps_ = 600;
         const uint32_t maxMultiTouchFingers = 10;

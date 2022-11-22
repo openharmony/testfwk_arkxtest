@@ -29,8 +29,6 @@ public:
     Matrix3() = default;
     ~Matrix3() = default;
 
-    void SetEntry(int32_t row, int32_t col, double value);
-
     // Gets the inverse of this matrix;
     bool Invert(Matrix3& matrix) const;
 
@@ -65,17 +63,17 @@ public:
     Matrix3 Transpose() const;
 
     // Make sure that the vector size is equal than column.
-    std::vector<double> MapScalars(const std::vector<double>& src) const;
+    std::vector<double> ScaleMapping(const std::vector<double>& src) const;
 
     // Make sure that the vector size is equal than column.
-    bool MapScalars(const std::vector<double>& src, std::vector<double>& result) const;
+    bool ScaleMapping(const std::vector<double>& src, std::vector<double>& result) const;
 
     std::string ToString() const
     {
         std::string val;
         for (auto& vector : matrix3X3_) {
             std::for_each(vector.begin(), vector.end(),
-                [&val](auto& item) { val = val + "item: " + std::to_string(item) + " "; });
+                [&val](const auto& item) { val = val + "item: " + std::to_string(item) + " "; });
         }
         return val;
     }
@@ -96,8 +94,6 @@ public:
     {
         return columns_;
     }
-
-    bool SetEntry(int32_t row, int32_t col, double value);
 
     inline Matrix3N& operator*(double num)
     {
@@ -131,17 +127,17 @@ public:
     MatrixN3 Transpose() const;
 
     // Make sure that the vector size is equal than column.
-    std::vector<double> MapScalars(const std::vector<double>& src) const;
+    std::vector<double> ScaleMapping(const std::vector<double>& src) const;
 
     // Make sure that the vector size is equal than column.
-    bool MapScalars(const std::vector<double>& src, std::vector<double>& result) const;
+    bool ScaleMapping(const std::vector<double>& src, std::vector<double>& result) const;
 
     std::string ToString() const
     {
         std::string val;
         for (auto& vector : Matrix3n_) {
             std::for_each(vector.begin(), vector.end(),
-                [&val](auto& item) { val = val + "item: " + std::to_string(item) + " "; });
+                [&val](const auto& item) { val = val + "item: " + std::to_string(item) + " "; });
         }
         return val;
     }
@@ -163,8 +159,6 @@ public:
     {
         return rows_;
     }
-
-    bool SetEntry(int32_t row, int32_t col, double value);
 
     inline MatrixN3& operator*(double num)
     {
@@ -195,14 +189,14 @@ public:
     Matrix3N Transpose() const;
 
     // Make sure that the vector size is equal than column.
-    std::vector<double> MapScalars(const std::vector<double>& src) const;
+    std::vector<double> ScaleMapping(const std::vector<double>& src) const;
 
     std::string ToString() const
     {
         std::string val;
         for (auto& vector : Matrixn3_) {
             std::for_each(vector.begin(), vector.end(),
-                [&val](auto& item) { val = val + "item: " + std::to_string(item) + " "; });
+                [&val](const auto& item) { val = val + "item: " + std::to_string(item) + " "; });
         }
         return val;
     }

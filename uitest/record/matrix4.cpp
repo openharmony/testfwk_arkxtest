@@ -43,28 +43,6 @@ Matrix4 Matrix4::CreateScale(double x, double y, double z)
     return Matrix4(x, 0.0f, 0.0f, 0.0f, 0.0f, y, 0.0f, 0.0f, 0.0f, 0.0f, z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-Matrix4 Matrix4::CreateRotate(double angle, double dx, double dy, double dz)
-{
-    // (x,y,z) need normalize
-    double sum = dx * dx + dy * dy + dz * dz;
-    if (NearZero(sum)) {
-        return Matrix4::CreateIdentity();
-    }
-
-    double x = dx / sqrt(sum);
-    double y = dy / sqrt(sum);
-    double z = dz / sqrt(sum);
-    double redian = static_cast<double>(angle * (M_PI / 180.0f));
-    double cosValue = cosf(redian);
-    double sinValue = sinf(redian);
-
-    return Matrix4(cosValue + (x * x * (1.0f - cosValue)), (x * y * (1.0f - cosValue)) - (z * sinValue),
-        (x * z * (1.0f - cosValue)) + (y * sinValue), 0.0f, (y * x * (1.0f - cosValue)) + (z * sinValue),
-        cosValue + (y * y * (1.0f - cosValue)), (y * z * (1.0f - cosValue)) - (x * sinValue), 0.0f,
-        (z * x * (1.0f - cosValue)) - (y * sinValue), (z * y * (1.0f - cosValue)) + (x * sinValue),
-        cosValue + (z * z * (1.0f - cosValue)), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-}
-
 Matrix4 Matrix4::CreateMatrix2D(double m00, double m10, double m01, double m11, double m03, double m13)
 {
     return Matrix4(m00, m01, 0.0f, m03, m10, m11, 0.0f, m13, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -128,25 +106,6 @@ Matrix4::Matrix4(double m00, double m01, double m02, double m03, double m10, dou
     matrix4x4_[3][3] = m33;
 }
 
-void Matrix4::SetScale(double x, double y, double z)
-{
-    // The 4X4 matrix scale index is [0][0], [1][1], [2][2], [3][3].
-    matrix4x4_[0][0] = x;
-    matrix4x4_[1][1] = y;
-    matrix4x4_[2][2] = z;
-    matrix4x4_[3][3] = 1.0f;
-}
-
-double Matrix4::GetScaleX() const
-{
-    return matrix4x4_[0][0];
-}
-
-double Matrix4::GetScaleY() const
-{
-    return matrix4x4_[1][1];
-}
-
 void Matrix4::SetEntry(int32_t row, int32_t col, double value)
 {
     if ((row < 0 || row >= DIMENSION) || (col < 0 || col >= DIMENSION)) {
@@ -158,12 +117,6 @@ void Matrix4::SetEntry(int32_t row, int32_t col, double value)
 bool Matrix4::IsIdentityMatrix() const
 {
     return *this == CreateIdentity();
-}
-
-void Matrix4::Rotate(double angle, double dx, double dy, double dz)
-{
-    Matrix4 transform = *this;
-    *this = transform * CreateRotate(angle, dx, dy, dz);
 }
 
 int32_t Matrix4::Count() const
@@ -375,7 +328,7 @@ void Matrix4::Transpose()
     std::swap(matrix4x4_[2][3], matrix4x4_[3][2]);
 }
 
-void Matrix4::MapScalars(const double src[DIMENSION], double dst[DIMENSION]) const
+void Matrix4::ScaleMapping(const double src[DIMENSION], double dst[DIMENSION]) const
 {
     double storage[DIMENSION];
 
@@ -427,10 +380,10 @@ Matrix4 Matrix4N::operator*(const MatrixN4& matrix) const
     if (columns_ != matrix.GetRowNum()) {
         return matrix4;
     }
-    for (auto i = 0; i < DIMENSION; i++) {
-        for (auto j = 0; j < DIMENSION; j++) {
+    for (int i = 0; i < DIMENSION; i++) {
+        for (int j = 0; j < DIMENSION; j++) {
             double value = 0.0;
-            for (auto k = 0; k < columns_; k++) {
+            for (int k = 0; k < columns_; k++) {
                 value += matrix4n_[i][k] * matrix[k][j];
             }
             matrix4.SetEntry(i, j, value);
@@ -450,7 +403,7 @@ MatrixN4 Matrix4N::Transpose() const
     return matrix;
 }
 
-std::vector<double> Matrix4N::MapScalars(const std::vector<double>& src) const
+std::vector<double> Matrix4N::ScaleMapping(const std::vector<double>& src) const
 {
     std::vector<double> value { DIMENSION, 0 };
     if (static_cast<int32_t>(src.size()) != columns_) {
@@ -466,7 +419,7 @@ std::vector<double> Matrix4N::MapScalars(const std::vector<double>& src) const
     return value;
 }
 
-bool Matrix4N::MapScalars(const std::vector<double>& src, std::vector<double>& result) const
+bool Matrix4N::ScaleMapping(const std::vector<double>& src, std::vector<double>& result) const
 {
     if (static_cast<int32_t>(src.size()) != columns_) {
         return false;
@@ -507,7 +460,7 @@ Matrix4N MatrixN4::Transpose() const
     return matrix;
 }
 
-std::vector<double> MatrixN4::MapScalars(const std::vector<double>& src) const
+std::vector<double> MatrixN4::ScaleMapping(const std::vector<double>& src) const
 {
     std::vector<double> value { rows_, 0 };
     if (static_cast<int32_t>(src.size()) != DIMENSION) {
