@@ -450,7 +450,7 @@ namespace OHOS::uitest {
             }
             return speed;
         }
-        void HandleUpEvent(const TouchEventInfo::EventData& data) const
+        void HandleUpEvent(TouchEventInfo::EventData& data) const
         {
             int eventCount = g_eventsvector.size();
             int pressTime = GetMillisTime() - g_timesvector.back();
