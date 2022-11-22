@@ -77,6 +77,12 @@ export interface Assert {
     assertPosUnlimited(): void
     not(): Assert;
     assertDeepEquals(expectValue: any):void
+    assertPromiseIsPending(): void
+    assertPromiseIsRejected(): void
+    assertPromiseIsRejectedWith(expectValue?: any): void
+    assertPromiseIsRejectedWithError(...expectValue): void
+    assertPromiseIsResolved(): void
+    assertPromiseIsResolvedWith(expectValue?: any): void
 }
 
 export function expect(actualValue?: any): Assert
