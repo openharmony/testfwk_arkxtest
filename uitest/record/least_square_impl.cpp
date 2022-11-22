@@ -19,9 +19,9 @@
 #include "common_utilities_hpp.h"
 
 namespace OHOS::uitest {
-bool LeastSquareImpl::GetLeastSquareParams(std::vector<double>& params)
+bool LSMImpl::GetLSMParams(std::vector<double>& params)
 {
-    if (tVals_.size() <= 1 || ((paramsNum_ != Matrix3::DIMENSION) && (paramsNum_ != Matrix4::DIMENSION))) {
+    if (tVals_.size() <= 1 || (paramsNum_ != Matrix3::DIMENSION)) {
         LOG_E("size is invalid, %{public}d, %{public}d", static_cast<int32_t>(tVals_.size()), paramsNum_);
         return false;
     }
@@ -66,7 +66,7 @@ bool LeastSquareImpl::GetLeastSquareParams(std::vector<double>& params)
             return false;
         }
         auto matrix3n = invert * transpose;
-        auto ret = matrix3n.MapScalars(yVals, params);
+        auto ret = matrix3n.ScaleMapping(yVals, params);
         if (ret) {
             params_.assign(params.begin(), params.end());
             isResolved_ = true;
@@ -84,7 +84,7 @@ bool LeastSquareImpl::GetLeastSquareParams(std::vector<double>& params)
     auto transpose = matrixn4.Transpose();
     auto inversMatrix4 = Matrix4::Invert(transpose * matrixn4);
     auto matrix4n = inversMatrix4 * transpose;
-    auto ret = matrix4n.MapScalars(yVals, params);
+    auto ret = matrix4n.ScaleMapping(yVals, params);
     if (ret) {
         params_.assign(params.begin(), params.end());
         isResolved_ = true;

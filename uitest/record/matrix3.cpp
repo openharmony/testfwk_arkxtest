@@ -14,18 +14,9 @@
  */
 
 #include "matrix3.h"
-
 #include "utils.h"
 
 namespace OHOS::uitest {
-void Matrix3::SetEntry(int32_t row, int32_t col, double value)
-{
-    if ((row < 0 || row >= DIMENSION) || (col < 0 || col >= DIMENSION)) {
-        return;
-    }
-    matrix3X3_[row][col] = value;
-}
-
 bool Matrix3::Invert(Matrix3& matrix) const
 {
     static const double diff = 1e-20;
@@ -90,7 +81,7 @@ Matrix3 Matrix3::Transpose() const
     return matrix;
 }
 
-std::vector<double> Matrix3::MapScalars(const std::vector<double>& src) const
+std::vector<double> Matrix3::ScaleMapping(const std::vector<double>& src) const
 {
     std::vector<double> value { DIMENSION, 0 };
     if (static_cast<int32_t>(src.size()) != DIMENSION) {
@@ -106,7 +97,7 @@ std::vector<double> Matrix3::MapScalars(const std::vector<double>& src) const
     return value;
 }
 
-bool Matrix3::MapScalars(const std::vector<double>& src, std::vector<double>& result) const
+bool Matrix3::ScaleMapping(const std::vector<double>& src, std::vector<double>& result) const
 {
     if (static_cast<int32_t>(src.size()) != DIMENSION) {
         return false;
@@ -125,15 +116,6 @@ bool Matrix3::MapScalars(const std::vector<double>& src, std::vector<double>& re
 Matrix3N::Matrix3N(int32_t columns) : columns_(columns)
 {
     Matrix3n_.resize(DIMENSION, std::vector<double>(columns_, 0));
-}
-
-bool Matrix3N::SetEntry(int32_t row, int32_t col, double value)
-{
-    if (row >= DIMENSION || col >= columns_) {
-        return false;
-    }
-    Matrix3n_[row][col] = value;
-    return true;
 }
 
 Matrix3 Matrix3N::operator*(const MatrixN3& matrix) const
@@ -165,7 +147,7 @@ MatrixN3 Matrix3N::Transpose() const
     return matrix;
 }
 
-std::vector<double> Matrix3N::MapScalars(const std::vector<double>& src) const
+std::vector<double> Matrix3N::ScaleMapping(const std::vector<double>& src) const
 {
     std::vector<double> value { DIMENSION, 0 };
     if (static_cast<int32_t>(src.size()) != columns_) {
@@ -181,10 +163,10 @@ std::vector<double> Matrix3N::MapScalars(const std::vector<double>& src) const
     return value;
 }
 
-bool Matrix3N::MapScalars(const std::vector<double>& src, std::vector<double>& result) const
+bool Matrix3N::ScaleMapping(const std::vector<double>& src, std::vector<double>& result) const
 {
     if (static_cast<int32_t>(src.size()) != columns_) {
-        LOG_E("failt to MapScalars, due to %{public}d, %{public}d", static_cast<int32_t>(src.size()), columns_);
+        LOG_E("failt to ScaleMapping, due to %{public}d, %{public}d", static_cast<int32_t>(src.size()), columns_);
         return false;
     }
     result.resize(DIMENSION, 0);
@@ -203,15 +185,6 @@ MatrixN3::MatrixN3(int32_t rows) : rows_(rows)
     Matrixn3_.resize(rows, std::vector<double>(DIMENSION, 0));
 }
 
-bool MatrixN3::SetEntry(int32_t row, int32_t col, double value)
-{
-    if (row >= rows_ || col >= DIMENSION) {
-        return false;
-    }
-    Matrixn3_[row][col] = value;
-    return true;
-}
-
 Matrix3N MatrixN3::Transpose() const
 {
     Matrix3N matrix { rows_ };
@@ -223,7 +196,7 @@ Matrix3N MatrixN3::Transpose() const
     return matrix;
 }
 
-std::vector<double> MatrixN3::MapScalars(const std::vector<double>& src) const
+std::vector<double> MatrixN3::ScaleMapping(const std::vector<double>& src) const
 {
     std::vector<double> value { rows_, 0 };
     if (static_cast<int32_t>(src.size()) != DIMENSION) {

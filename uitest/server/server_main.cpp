@@ -52,7 +52,7 @@ namespace OHOS::uitest {
     "   uiRecord -read,                    print file content to the console\n"
     "   --version,                                print current tool version\n";
     const std::string VERSION = "3.2.4.0";
-
+    int TIMEINTERVAL = 5000;
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
@@ -236,7 +236,7 @@ namespace OHOS::uitest {
     static void TimerFunc()
     {
         int t = GetMillisTime();
-        int diff = t - g_touchtime;
+        int diff = t - g_touchTime;
         if (diff >= TIMEINTERVAL) {
             std::cout << "No operation detected for 5 seconds, press ctrl + c to save this file?" << std::endl;
         }
@@ -253,7 +253,7 @@ namespace OHOS::uitest {
         if (opt == "record") {
             Timer timer;
             timer.Start(TIMEINTERVAL, TimerFunc);
-            if (!InitEventRecordFile(g_outFile)) {
+            if (!InitEventRecordFile()) {
                 return OHOS::ERR_INVALID_VALUE;
             }
             auto callBackPtr = InputEventCallback::GetPtr();
@@ -273,8 +273,7 @@ namespace OHOS::uitest {
             sleep(timeToSleep);
             return OHOS::ERR_OK;
         } else if (opt == "read") {
-            std::ifstream inFile(defaultDir + "/" + "record.csv");
-            EventData::ReadEventLine(inFile);
+            EventData::ReadEventLine();
             return OHOS::ERR_OK;
         } else {
             PrintToConsole(usage);

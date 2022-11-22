@@ -38,22 +38,22 @@ public:
     explicit VelocityTracker(Axis mainAxis) : mainAxis_(mainAxis) {}
     ~VelocityTracker() = default;
 
-    void Reset()
+    void Resets()
     {
-        lastPosition_.Reset();
-        velocity_.Reset();
-        delta_.Reset();
+        lastPosition_.Resets();
+        velocity_.Resets();
+        delta_.Resets();
         isFirstPoint_ = true;
-        xAxis_.Reset();
-        yAxis_.Reset();
+        xAxis_.Resets();
+        yAxis_.Resets();
     }
-    void TrackReset()
+    void TrackResets()
     {
-        downTrackPoint_.Reset();
-        firstTrackPoint_.Reset();
+        downTrackPoint_.Resets();
+        firstTrackPoint_.Resets();
     }
 
-    void UpdateTouchPoint(const TouchEventInfo& event, bool end = false);
+    void UpdateTouchEvent(const TouchEventInfo& event, bool end = false);
     
     void SetMainVelocity(double mainVelocity)
     {
@@ -63,11 +63,6 @@ public:
     const TouchEventInfo& GetFirstTrackPoint() const
     {
         return firstTrackPoint_;
-    }
-
-    const TouchEventInfo& GetCurrentTrackPoint() const
-    {
-        return currentTrackPoint_;
     }
 
     const Offset& GetPosition() const
@@ -80,7 +75,7 @@ public:
         return delta_;
     }
 
-    const Velocity& GetVelocity()
+    const Velocity& GetVelo()
     {
         UpdateVelocity();
         return velocity_;
@@ -116,10 +111,10 @@ public:
     double GetMainVelocityAxis()
     {
         UpdateVelocity();
-        if (fabs(velocity_.GetVelocityX()) > fabs(velocity_.GetVelocityY())) {
-            return velocity_.GetVelocityX();
+        if (fabs(velocity_.GetVeloX()) > fabs(velocity_.GetVeloY())) {
+            return velocity_.GetVeloX();
         } else {
-            return velocity_.GetVelocityY();
+            return velocity_.GetVeloY();
         }
     }
 
@@ -128,7 +123,7 @@ public:
         return (lastPosition_ - firstPosition_).GetDistance();
     }
 
-    double GetDuration() const
+    double GetDurationTime() const
     {
         return seconds;
     }
@@ -152,11 +147,11 @@ public:
         UpdateVelocity();
         switch (mainAxis_) {
             case Axis::FREE:
-                return velocity_.GetVelocityValue();
+                return velocity_.GetVeloValue();
             case Axis::HORIZONTAL:
-                return velocity_.GetVelocityX();
+                return velocity_.GetVeloX();
             case Axis::VERTICAL:
-                return velocity_.GetVelocityY();
+                return velocity_.GetVeloY();
             default:
                 return 0.0;
         }
@@ -178,15 +173,15 @@ private:
     Offset firstPosition_;
     Offset lastPosition_;
     Velocity velocity_;
-    double mainVelocity_;
+    double mainVelocity_ = 0.0;
     Offset delta_;
     Offset offset_;
-    double seconds;
+    double seconds = 0;
     bool isFirstPoint_ = true;
     TimeStamp firstTimePoint_;
     TimeStamp lastTimePoint_;
-    LeastSquareImpl xAxis_ { 3, 5 };
-    LeastSquareImpl yAxis_ { 3, 5 };
+    LSMImpl xAxis_ { 3, 5 };
+    LSMImpl yAxis_ { 3, 5 };
     bool isVelocityDone_ = false;
 };
 } // namespace OHOS::uitest
