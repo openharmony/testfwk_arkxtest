@@ -531,7 +531,7 @@ namespace OHOS::uitest {
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
-        if ( ! ( argc == INDEX_THREE || argc == INDEX_FOUR )) {
+        if ( !( argc == INDEX_THREE || argc == INDEX_FOUR )) {
             PrintToConsole(usage);
             return EXIT_FAILURE;
         }
