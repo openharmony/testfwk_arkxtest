@@ -452,7 +452,7 @@ namespace OHOS::uitest {
         }
         void HandleUpEvent(TouchEventInfo::EventData& data) const
         {
-            int eventCount = g_eventsvector.size();
+            uint eventCount = g_eventsvector.size();
             int pressTime = GetMillisTime() - g_timesvector.back();
             double speed = GetSpeed(0, eventCount-INDEX_ONE, g_isClick, g_clickEventCount);
             if (eventCount > TWO && (GetDistance(0, eventCount-INDEX_ONE) > g_maxdistance)) {
