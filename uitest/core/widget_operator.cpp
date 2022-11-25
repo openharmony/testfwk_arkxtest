@@ -100,7 +100,7 @@ namespace OHOS::uitest {
             }
             prevSnapshot = snapshot;
             if (!leafNodes.empty()) {
-                targetSnapshot = (scrollingUp ? leafNodes.front() : leafNodes.back());
+                targetSnapshot = (toTop ? leafNodes.front() : leafNodes.back());
             } else {
                 targetSnapshot = "";
             }
