@@ -99,7 +99,11 @@ namespace OHOS::uitest {
                 return;
             }
             prevSnapshot = snapshot;
-            targetSnapshot = (toTop ? leafNodes.front() : leafNodes.back());
+            if (!leafNodes.empty()) {
+                targetSnapshot = (scrollingUp ? leafNodes.front() : leafNodes.back());
+            } else {
+                targetSnapshot = "";
+            }
             auto bounds = scrollWidget->GetBounds();
             if (options_.scrollWidgetDeadZone_ > 0) {
                 // scroll widget from its deadZone maybe unresponsive
@@ -221,7 +225,6 @@ namespace OHOS::uitest {
 
     unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const
     {
-        PointerMatrix scrollEvents;
         bool scrollingUp = true;
         string prevSnapshot = "", targetSnapshot = "";
         vector<reference_wrapper<const Widget>> receiver;
@@ -253,7 +256,11 @@ namespace OHOS::uitest {
                 }
             }
             prevSnapshot = snapshot;
-            targetSnapshot = (scrollingUp ? leafNodes.front() : leafNodes.back());
+            if (!leafNodes.empty()) {
+                targetSnapshot = (scrollingUp ? leafNodes.front() : leafNodes.back());
+            } else {
+                targetSnapshot = "";
+            }
             // execute scrolling on the scroll_widget without update UI
             auto bounds = scrollWidget->GetBounds();
             if (options_.scrollWidgetDeadZone_ > 0) {
