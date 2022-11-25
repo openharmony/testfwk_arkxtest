@@ -131,5 +131,6 @@ export class SysTestKit {
 
 export class Hypium {
     static setData(data: {[key: string]: any}): void
+    static setTimeConfig(systemTime: any)
     static hypiumTest(abilityDelegator: any, abilityDelegatorArguments: any, testsuite: Function): void
 }

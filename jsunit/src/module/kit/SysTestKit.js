@@ -16,6 +16,7 @@
 class SysTestKit {
 
     static delegator = null;
+    static systemTime = null;
 
     constructor() {
         this.id = 'sysTestKit';
@@ -54,6 +55,19 @@ class SysTestKit {
         } else {
             await SysTestKit.delegator.print(message);
         }
+    }
+
+    static async getRealTime() {
+        let currentTime = new Date().getTime();
+        if (SysTestKit.systemTime !== null) {
+            await SysTestKit.systemTime.getRealTime().then((time) => {
+                console.info(`systemTime.getRealTime success data: ${JSON.stringify(time)}`);
+                currentTime = time;
+            }).catch((error) => {
+                console.error(`failed to systemTime.getRealTime because ${JSON.stringify(error)}`);
+            });
+        }
+        return currentTime;
     }
 }
 
