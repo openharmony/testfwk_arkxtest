@@ -59,7 +59,7 @@ namespace OHOS::uitest {
     int g_maxdistance = 220;
     int g_length = 20;
     int g_velocity = 600;
-    int g_dragMonitor = 2;
+    uint g_dragMonitor = 2;
     int g_actionInterval = 300;
     int g_pressDuration = 600;
     double g_speedThreshold = 0.6;
@@ -543,7 +543,7 @@ namespace OHOS::uitest {
                 return OHOS::ERR_INVALID_VALUE;
             }
             if (argc == INDEX_FOUR) {
-                g_dragMonitor = atoi(argv[INDEX_THREE]);
+                g_dragMonitor = (uint)atoi(argv[INDEX_THREE]);
             }
             auto callBackPtr = InputEventCallback::GetPtr();
             if (callBackPtr == nullptr) {
