@@ -543,7 +543,7 @@ namespace OHOS::uitest {
                 return OHOS::ERR_INVALID_VALUE;
             }
             if (argc == INDEX_FOUR) {
-                g_dragMonitor = static_cast<uint>atoi(argv[INDEX_THREE]);
+                g_dragMonitor = static_cast<uint>(atoi(argv[INDEX_THREE]));
             }
             auto callBackPtr = InputEventCallback::GetPtr();
             if (callBackPtr == nullptr) {
