@@ -92,7 +92,11 @@ export default async function abilityTest() {
 | 10   | assertNull       | 检验actualvalue是否是null。                                  |
 | 11   | assertThrowError | 检验actualvalue抛出Error内容是否是expectValue。              |
 | 12   | assertUndefined  | 检验actualvalue是否是undefined。                             |
-
+| 13   | assertNaN        | 检验actualvalue是否是一个NAN                                 |
+| 14   |assertNegUnlimited| 检验actualvalue是否等于Number.NEGATIVE_INFINITY             |
+| 15   |assertPosUnlimited| 检验actualvalue是否等于Number.POSITIVE_INFINITY             |
+| 16   |not               | 断言取反                                                   |
+| 17   |assertDeepEquals  | actualvalue和expectvalue是否是一个同一个对象                  |
 示例代码：
 
 ```javascript
