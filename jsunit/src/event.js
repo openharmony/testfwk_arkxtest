@@ -25,14 +25,14 @@ class SpecEvent {
     }
 
     async specStart() {
-        for (let monitor in this.eventMonitors) {
-            await this.eventMonitors[monitor]['specStart']();
+        for (const monitor of this.eventMonitors) {
+            await monitor['specStart']();
         }
     }
 
     async specDone() {
-        for (const monitor in this.eventMonitors) {
-            await this.eventMonitors[monitor]['specDone']();
+        for (const monitor of this.eventMonitors) {
+            await monitor['specDone']();
         }
     }
 }
@@ -49,14 +49,14 @@ class SuiteEvent {
     }
 
     async suiteStart() {
-        for (let monitor in this.eventMonitors) {
-            await this.eventMonitors[monitor]['suiteStart']();
+        for (const monitor of this.eventMonitors) {
+            await monitor['suiteStart']();
         }
     }
 
     async suiteDone() {
-        for (let monitor in this.eventMonitors) {
-            await this.eventMonitors[monitor]['suiteDone']();
+        for (const monitor of this.eventMonitors) {
+            await monitor['suiteDone']();
         }
     }
 }
@@ -73,20 +73,20 @@ class TaskEvent {
     }
 
     async taskStart() {
-        for (let monitor in this.eventMonitors) {
-            await this.eventMonitors[monitor]['taskStart']();
+        for (const monitor of this.eventMonitors) {
+            await monitor['taskStart']();
         }
     }
 
     async taskDone() {
-        for (let monitor in this.eventMonitors) {
-            await this.eventMonitors[monitor]['taskDone']();
+        for (const monitor of this.eventMonitors) {
+            await monitor['taskDone']();
         }
     }
 
     incorrectFormat() {
-        for (let monitor in this.eventMonitors) {
-            this.eventMonitors[monitor]['incorrectFormat']();
+        for (const monitor of this.eventMonitors) {
+            monitor['incorrectFormat']();
         }
     }
 }
