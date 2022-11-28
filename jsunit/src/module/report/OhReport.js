@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+import SysTestKit from "../kit/SysTestKit";
+
 class OhReport {
     constructor(attr) {
         this.delegator = attr.delegator;
@@ -28,7 +30,6 @@ class OhReport {
     }
 
     taskStart() {
-        this.taskStartTime = new Date().getTime();
     }
 
     async taskDone() {
@@ -40,12 +41,11 @@ class OhReport {
         message += '\n' + 'OHOS_REPORT_CODE: ' + (summary.failure > 0 ? -1 : 0) + '\n';
         message += 'OHOS_REPORT_STATUS: taskconsuming=' + summary.duration + '\n';
         console.info(message);
-        await this.delegator.print(message).then(() => {
-            console.info('report print success');
-            this.delegator.finishTest('your test finished!!!', 0, () => {
-            });
+        await SysTestKit.print(message);
+        console.info('report print success');
+        this.delegator.finishTest('your test finished!!!', 0, () => {
+            console.info('your test finished!!!');
         });
-        console.info('your test finished!!!');
     }
 
     incorrectFormat() {
@@ -61,9 +61,7 @@ class OhReport {
         let message = '\n' + 'OHOS_REPORT_SUM: ' + this.suiteService.getCurrentRunningSuite().getSpecsNum();
         message += '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description + '\n';
         console.info(message);
-        await this.delegator.print(message).then(() => {
-            console.info(this.suiteService.getCurrentRunningSuite().description + ' print success');
-        });
+        await SysTestKit.print(message);
         console.info(this.suiteService.getCurrentRunningSuite().description + ' suiteStart print success');
     }
 
@@ -71,9 +69,7 @@ class OhReport {
         let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
         message += '\n' + 'OHOS_REPORT_STATUS: suiteconsuming=' + this.suiteService.getCurrentRunningSuite().duration + '\n';
         console.info(message);
-        await this.delegator.print(message).then(() => {
-            console.info(this.suiteService.getCurrentRunningSuite().description + ' print success');
-        });
+        await SysTestKit.print(message);
         console.info(this.suiteService.getCurrentRunningSuite().description + ' suiteDone print success');
     }
 
@@ -86,9 +82,7 @@ class OhReport {
         message += '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
         message += '\n' + 'OHOS_REPORT_STATUS_CODE: 1' + '\n';
         console.info(message);
-        await this.delegator.print(message).then(() => {
-            console.info(this.specService.currentRunningSpec.description + ' start print success');
-        });
+        await SysTestKit.print(message);
         console.info(this.specService.currentRunningSpec.description + ' specStart start print success');
     }
 
@@ -125,9 +119,7 @@ class OhReport {
         }
         message += 'OHOS_REPORT_STATUS: consuming=' + this.specService.currentRunningSpec.duration + '\n';
         console.info(message);
-        await this.delegator.print(message).then(() => {
-            console.info(this.specService.currentRunningSpec.description + ' end print success');
-        });
+        await SysTestKit.print(message);
         console.info(this.specService.currentRunningSpec.description + ' specDone end print success');
     }
 }
