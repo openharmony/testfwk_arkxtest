@@ -78,25 +78,25 @@ export default async function abilityTest() {
 断言功能列表：
 
 
-| No.  | API              | 功能说明                                                     |
-| :--- | :--------------- | ------------------------------------------------------------ |
-| 1    | assertClose      | 检验actualvalue和expectvalue(0)的接近程度是否是expectValue(1)。 |
-| 2    | assertContain    | 检验actualvalue中是否包含expectvalue。                       |
-| 3    | assertEqual      | 检验actualvalue是否等于expectvalue[0]。                      |
-| 4    | assertFail       | 抛出一个错误。                                               |
-| 5    | assertFalse      | 检验actualvalue是否是false。                                 |
-| 6    | assertTrue       | 检验actualvalue是否是true。                                  |
-| 7    | assertInstanceOf | 检验actualvalue是否是expectvalue类型。                       |
-| 8    | assertLarger     | 检验actualvalue是否大于expectvalue。                         |
-| 9    | assertLess       | 检验actualvalue是否小于expectvalue。                         |
-| 10   | assertNull       | 检验actualvalue是否是null。                                  |
-| 11   | assertThrowError | 检验actualvalue抛出Error内容是否是expectValue。              |
-| 12   | assertUndefined  | 检验actualvalue是否是undefined。                             |
-| 13   | assertNaN        | 检验actualvalue是否是一个NAN                                 |
-| 14   |assertNegUnlimited| 检验actualvalue是否等于Number.NEGATIVE_INFINITY             |
-| 15   |assertPosUnlimited| 检验actualvalue是否等于Number.POSITIVE_INFINITY             |
-| 16   |assertDeepEquals  | 检验actualvalue和expectvalue是否是一个同一个对象               |
-| 17   |not               | 断言取反,支持上面所有的断言功能                                 |
+| No.  | API               | 功能说明                                                     |
+| :--- | :------------------| ------------------------------------------------------------ |
+| 1    | assertClose        | 检验actualvalue和expectvalue(0)的接近程度是否是expectValue(1)。 |
+| 2    | assertContain      | 检验actualvalue中是否包含expectvalue。                       |
+| 3    | assertEqual        | 检验actualvalue是否等于expectvalue[0]。                      |
+| 4    | assertFail         | 抛出一个错误。                                               |
+| 5    | assertFalse        | 检验actualvalue是否是false。                                 |
+| 6    | assertTrue         | 检验actualvalue是否是true。                                  |
+| 7    | assertInstanceOf   | 检验actualvalue是否是expectvalue类型。                       |
+| 8    | assertLarger       | 检验actualvalue是否大于expectvalue。                         |
+| 9    | assertLess         | 检验actualvalue是否小于expectvalue。                         |
+| 10   | assertNull         | 检验actualvalue是否是null。                                  |
+| 11   | assertThrowError   | 检验actualvalue抛出Error内容是否是expectValue。              |
+| 12   | assertUndefined    | 检验actualvalue是否是undefined。                             |
+| 13   | assertNaN          | 检验actualvalue是否是一个NAN                                 |
+| 14   | assertNegUnlimited | 检验actualvalue是否等于Number.NEGATIVE_INFINITY             |
+| 15   | assertPosUnlimited | 检验actualvalue是否等于Number.POSITIVE_INFINITY             |
+| 16   | assertDeepEquals   | 检验actualvalue和expectvalue是否完全相等               |
+| 17   | not                | 断言取反,支持上面所有的断言功能                                 |
 
 示例代码：
 
