@@ -92,11 +92,7 @@ Available APIs:
 | 10   | assertNull       | Checks whether the actual value is null.                                 |
 | 11   | assertThrowError | Checks whether the error thrown by the actual value is the expected value.             |
 | 12   | assertUndefined  | Checks whether the actual value is **undefined**.                            |
-| 13   | assertNaN        | Checks whether the actual value is **NAN**.                                |
-| 14   |assertNegUnlimited| Checks whether the actual value is **Number.NEGATIVE_INFINITY**.            |
-| 15   |assertPosUnlimited| Checks whether the actual value is **Number.POSITIVE_INFINITY**.             |
-| 16   |not               | Checks not                                                   |
-| 17   |assertDeepEquals  | Check whether the actual value equal expected deeply                  |
+
 The sample code is as follows:
 
 ```javascript
