@@ -78,7 +78,7 @@ export default async function abilityTest() {
 断言功能列表：
 
 
-| No.  | API               | 功能说明                                                     |
+| No.  | API                | 功能说明                                                     |
 | :--- | :------------------| ------------------------------------------------------------ |
 | 1    | assertClose        | 检验actualvalue和expectvalue(0)的接近程度是否是expectValue(1)。 |
 | 2    | assertContain      | 检验actualvalue中是否包含expectvalue。                       |
