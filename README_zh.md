@@ -78,20 +78,25 @@ export default async function abilityTest() {
 断言功能列表：
 
 
-| No.  | API              | 功能说明                                                     |
-| :--- | :--------------- | ------------------------------------------------------------ |
-| 1    | assertClose      | 检验actualvalue和expectvalue(0)的接近程度是否是expectValue(1)。 |
-| 2    | assertContain    | 检验actualvalue中是否包含expectvalue。                       |
-| 3    | assertEqual      | 检验actualvalue是否等于expectvalue[0]。                      |
-| 4    | assertFail       | 抛出一个错误。                                               |
-| 5    | assertFalse      | 检验actualvalue是否是false。                                 |
-| 6    | assertTrue       | 检验actualvalue是否是true。                                  |
-| 7    | assertInstanceOf | 检验actualvalue是否是expectvalue类型。                       |
-| 8    | assertLarger     | 检验actualvalue是否大于expectvalue。                         |
-| 9    | assertLess       | 检验actualvalue是否小于expectvalue。                         |
-| 10   | assertNull       | 检验actualvalue是否是null。                                  |
-| 11   | assertThrowError | 检验actualvalue抛出Error内容是否是expectValue。              |
-| 12   | assertUndefined  | 检验actualvalue是否是undefined。                             |
+| No.  | API                | 功能说明                                                     |
+| :--- | :------------------| ------------------------------------------------------------ |
+| 1    | assertClose        | 检验actualvalue和expectvalue(0)的接近程度是否是expectValue(1)。 |
+| 2    | assertContain      | 检验actualvalue中是否包含expectvalue。                       |
+| 3    | assertEqual        | 检验actualvalue是否等于expectvalue[0]。                      |
+| 4    | assertFail         | 抛出一个错误。                                               |
+| 5    | assertFalse        | 检验actualvalue是否是false。                                 |
+| 6    | assertTrue         | 检验actualvalue是否是true。                                  |
+| 7    | assertInstanceOf   | 检验actualvalue是否是expectvalue类型。                       |
+| 8    | assertLarger       | 检验actualvalue是否大于expectvalue。                         |
+| 9    | assertLess         | 检验actualvalue是否小于expectvalue。                         |
+| 10   | assertNull         | 检验actualvalue是否是null。                                  |
+| 11   | assertThrowError   | 检验actualvalue抛出Error内容是否是expectValue。              |
+| 12   | assertUndefined    | 检验actualvalue是否是undefined。                             |
+| 13   | assertNaN          | 检验actualvalue是否是一个NAN                                 |
+| 14   | assertNegUnlimited | 检验actualvalue是否等于Number.NEGATIVE_INFINITY             |
+| 15   | assertPosUnlimited | 检验actualvalue是否等于Number.POSITIVE_INFINITY             |
+| 16   | assertDeepEquals   | 检验actualvalue和expectvalue是否完全相等               |
+| 17   | not                | 断言取反,支持上面所有的断言功能                                 |
 
 示例代码：
 
@@ -116,6 +121,68 @@ export default async function abilityTest() {
     })
     it('assertBeClose fail', 0, function () {
       expect(null).assertClose(null, 0)
+    })
+    it('assertNaN success',0, function () {
+      expect(Number.NaN).assertNaN(); // true
+    })
+    it('assertNegUnlimited success',0, function () {
+      expect(Number.NEGATIVE_INFINITY).assertNegUnlimited(); // true
+    })
+    it('assertPosUnlimited success',0, function () {
+      expect(Number.POSITIVE_INFINITY).assertPosUnlimited(); // true
+    })
+    it('not_number_true',0, function () {
+      expect(1).not().assertLargerOrEqual(2)
+    })
+    it('not_number_true_1',0, function () {
+      expect(3).not().assertLessOrEqual(2);
+    })
+    it('not_NaN_true',0, function () {
+      expect(3).not().assertNaN();
+    })
+    it('not_contain_true',0, function () {
+      let a = "abc";
+      let b= "cdf"
+      expect(a).not().assertContain(b);
+    })
+    it('not_large_true',0, function () {
+      expect(3).not().assertLarger(4);
+    })
+    it('not_less_true',0, function () {
+      expect(3).not().assertLess(2);
+    })
+    it('not_undefined_true',0, function () {
+      expect(3).not().assertUndefined();
+    })
+    it('deepEquals_null_true',0, function () {
+      // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
+      expect(null).assertDeepEquals(null)
+    })
+    it('deepEquals_array_not_have_true',0, function () {
+      // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
+      const  a= []
+      const  b= []
+      expect(a).assertDeepEquals(b)
+    })
+    it('deepEquals_map_equal_length_success',0, function () {
+      // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
+      const a =  new Map();
+      const b =  new Map();
+      a.set(1,100);
+      a.set(2,200);
+      b.set(1, 100);
+      b.set(2, 200);
+      expect(a).assertDeepEquals(b)
+    })
+    it("deepEquals_obj_success_1", 0, function () {
+      const a = {x:1};
+      const b = {x:1};
+      expect(a).assertDeepEquals(b);
+    })
+    it("deepEquals_regExp_success_0", 0, function () {
+      const a = new RegExp("/test/");
+      const b = new RegExp("/test/");
+      expect(a).assertDeepEquals(b)
     })
   })
 }
