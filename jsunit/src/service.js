@@ -468,6 +468,7 @@ SpecService.Spec = class {
             this.error = e;
         }
         coreContext.fireEvents('spec', 'specDone', this);
+        this.fn = null;
     }
 
     asyncRun(coreContext) {
@@ -516,6 +517,7 @@ SpecService.Spec = class {
                 }
             }
             await coreContext.fireEvents('spec', 'specDone', this);
+            this.fn = null;
             resolve();
         });
     }
@@ -527,12 +529,8 @@ SpecService.Spec = class {
     }
 
     addExpectationResult(expectResult) {
-        if (expectResult.pass) {
-            this.result.passExpects.push(expectResult);
-        } else {
-            this.result.failExpects.push(expectResult);
-            throw new AssertException(expectResult.message);
-        }
+        this.result.failExpects.push(expectResult);
+        throw new AssertException(expectResult.message);
     }
 };
 
@@ -629,18 +627,22 @@ class ExpectService {
                         }
                         result.actualValue = actualValue;
                         result.checkFunc = matcherName;
-                        currentRunningSpec.addExpectationResult(result);
+                        if (!result.pass) {
+                            currentRunningSpec.addExpectationResult(result);
+                        }
                     });
                 };
             } else {
                 wrappedMatchers[matcherName] = function () {
                     const result = _this.matchers[matcherName](actualValue, arguments);
-                    if(wrappedMatchers.isNot) {
+                    if (wrappedMatchers.isNot) {
                         result.pass = !result.pass;
                     }
                     result.actualValue = actualValue;
                     result.checkFunc = matcherName;
-                    currentRunningSpec.addExpectationResult(result);
+                    if (!result.pass) {
+                        currentRunningSpec.addExpectationResult(result);
+                    }
                 };
             }
         }
