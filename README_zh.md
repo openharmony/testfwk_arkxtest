@@ -97,6 +97,12 @@ export default async function abilityTest() {
 | 15   | assertPosUnlimited | 检验actualvalue是否等于Number.POSITIVE_INFINITY             |
 | 16   | assertDeepEquals   | 检验actualvalue和expectvalue是否完全相等               |
 | 17   | not                | 断言取反,支持上面所有的断言功能                                 |
+| 18   | assertPromiseIsPending | 判断promise是否处于Pending状态。                         |
+| 19   | assertPromiseIsRejected | 判断promise是否处于Rejected状态。                       |
+| 20   | assertPromiseIsRejectedWith | 判断promise是否处于Rejected状态，并且比较执行的结果值。|
+| 21   | assertPromiseIsRejectedWithError | 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。                   |
+| 22   | assertPromiseIsResolved | 判断promise是否处于Resolved状态。                       |
+| 23   | assertPromiseIsResolvedWith | 判断promise是否处于Resolved状态，并且比较执行的结果值。|
 
 示例代码：
 
@@ -184,6 +190,53 @@ export default async function abilityTest() {
       const b = new RegExp("/test/");
       expect(a).assertDeepEquals(b)
     })
+    it('test_isPending_pass_1', 0, function () {
+      let p = new Promise(function () {
+      });
+      expect(p).assertPromiseIsPending();
+    });
+    it('test_isRejected_pass_1', 0, function () {
+      let p = Promise.reject({
+        bad: 'no'
+      });
+      expect(p).assertPromiseIsRejected();
+    });
+    it('test_isRejectedWith_pass_1', 0, function () {
+      let p = Promise.reject({
+        res: 'reject value'
+      });
+      expect(p).assertPromiseIsRejectedWith({
+        res: 'reject value'
+      });
+    });
+    it('test_isRejectedWithError_pass_1', 0, function () {
+      let p1 = Promise.reject(new TypeError('number'));
+      expect(p1).assertPromiseIsRejectedWithError(TypeError);
+    });
+    it('test_isResolved_pass_1', 0, function () {
+      let p = Promise.resolve({
+        res: 'result value'
+      });
+      expect(p).assertPromiseIsResolved();
+    });
+    it('test_isResolvedTo_pass_1', 0, function () {
+      let p = Promise.resolve({
+        res: 'result value'
+      });
+      expect(p).assertPromiseIsResolvedWith({
+        res: 'result value'
+      });
+    });
+    it('test_isPending_failed_1', 0, function () {
+      let p = Promise.reject({
+        bad: 'no1'
+      });
+      expect(p).assertPromiseIsPending();
+    });
+    it('test_isRejectedWithError_failed_1', 0, function () {
+      let p = Promise.reject(new TypeError('number'));
+      expect(p).assertPromiseIsRejectedWithError(TypeError, 'number one');
+    });
   })
 }
 ```
