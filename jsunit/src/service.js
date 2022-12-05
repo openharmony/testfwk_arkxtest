@@ -468,6 +468,7 @@ SpecService.Spec = class {
             this.error = e;
         }
         coreContext.fireEvents('spec', 'specDone', this);
+        this.fn = null;
     }
 
     asyncRun(coreContext) {
@@ -517,6 +518,7 @@ SpecService.Spec = class {
                 }
             }
             await coreContext.fireEvents('spec', 'specDone', this);
+            this.fn = null;
             resolve();
         });
     }
@@ -528,12 +530,8 @@ SpecService.Spec = class {
     }
 
     addExpectationResult(expectResult) {
-        if (expectResult.pass) {
-            this.result.passExpects.push(expectResult);
-        } else {
-            this.result.failExpects.push(expectResult);
-            throw new AssertException(expectResult);
-        }
+        this.result.failExpects.push(expectResult);
+        throw new AssertException(expectResult.message);
     }
 };
 
@@ -614,7 +612,9 @@ class ExpectService {
                     const result = _this.matchers[matcherName](actualValue, arguments);
                     result.actualValue = actualValue;
                     result.checkFunc = matcherName;
-                    currentRunningSpec.addExpectationResult(result);
+                    if (!result.pass) {
+                        currentRunningSpec.addExpectationResult(result);
+                    }
                 };
             }
         }
