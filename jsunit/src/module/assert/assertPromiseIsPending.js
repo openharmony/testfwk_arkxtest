@@ -25,7 +25,7 @@ function assertPromiseIsPending(actualPromise) {
     const helper = {};
     return Promise.race([actualPromise, Promise.resolve(helper)]).then(
         function (got) {
-            return helper === got ? {pass: true}
+            return helper === got ? {pass: true, message: 'actualValue is isPending'}
                 : {
                     pass: false,
                     message: 'expect isPending, actualValue is resolve'
