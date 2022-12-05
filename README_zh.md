@@ -96,13 +96,13 @@ export default async function abilityTest() {
 | 14   | assertNegUnlimited | 检验actualvalue是否等于Number.NEGATIVE_INFINITY             |
 | 15   | assertPosUnlimited | 检验actualvalue是否等于Number.POSITIVE_INFINITY             |
 | 16   | assertDeepEquals   | 检验actualvalue和expectvalue是否完全相等               |
-| 17   | not                | 断言取反,支持上面所有的断言功能                                 |
-| 18   | assertPromiseIsPending | 判断promise是否处于Pending状态。                         |
-| 19   | assertPromiseIsRejected | 判断promise是否处于Rejected状态。                       |
-| 20   | assertPromiseIsRejectedWith | 判断promise是否处于Rejected状态，并且比较执行的结果值。|
-| 21   | assertPromiseIsRejectedWithError | 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。                   |
-| 22   | assertPromiseIsResolved | 判断promise是否处于Resolved状态。                       |
-| 23   | assertPromiseIsResolvedWith | 判断promise是否处于Resolved状态，并且比较执行的结果值。|
+| 17   | assertPromiseIsPending | 判断promise是否处于Pending状态。                         |
+| 18   | assertPromiseIsRejected | 判断promise是否处于Rejected状态。                       |
+| 19   | assertPromiseIsRejectedWith | 判断promise是否处于Rejected状态，并且比较执行的结果值。|
+| 20   | assertPromiseIsRejectedWithError | 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。                   |
+| 21   | assertPromiseIsResolved | 判断promise是否处于Resolved状态。                       |
+| 22   | assertPromiseIsResolvedWith | 判断promise是否处于Resolved状态，并且比较执行的结果值。|
+| 23   | not                | 断言取反,支持上面所有的断言功能                                 |
 
 示例代码：
 
