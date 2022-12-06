@@ -31,7 +31,7 @@ class ConfigService {
         this.class = null;
         this.notClass = null;
         this.timeout = null;
-        // 与错即停模式配置
+        // 遇错即停模式配置
         this.breakOnError = false;
     }
 
@@ -77,7 +77,7 @@ class ConfigService {
             }
         }
 
-        let paramKeys = ['dryRun', 'random, breakOnError'];
+        let paramKeys = ['dryRun', 'random', 'breakOnError'];
         for (const key of paramKeys) {
             if (paramKeys[key] !== undefined && paramKeys[key] !== 'true' && paramKeys[key] !== 'false') {
                 this.filterValid.push(`${key}:${paramKeys[key]}`);
