@@ -37,7 +37,10 @@ class SysTestKit {
     }
 
     static async existKeyword(keyword, timeout) {
-        keyword = keyword || 'jsapp';
+        let reg = new RegExp(/^[a-zA-Z0-9]{1,}$/)
+        if (!reg.test(keyword)) {
+            throw new Error('keyword must contain more than one string, and only letters and numbers are supported.')
+        }
         timeout = timeout || 4;
 
         let searchResult = false;
