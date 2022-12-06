@@ -26,7 +26,7 @@ function assertPromiseIsResolvedWith(actualPromise, expectedValue) {
     function tips(passed) {
         return (
             'Expected a promise ' + (passed ? 'not ' : '') +
-            'to be resolved to ' + JSON.stringify(expectedValue[0]));
+            'to be resolved with ' + JSON.stringify(expectedValue[0]));
     }
 
     const helper = {};
@@ -38,12 +38,12 @@ function assertPromiseIsResolvedWith(actualPromise, expectedValue) {
             if (JSON.stringify(got) == JSON.stringify(expectedValue[0])) {
                 return {
                     pass: true,
-                    message: tips(true) + '.'
+                    message: 'actualValue was resolved with ' + JSON.stringify(got) + '.'
                 };
             }
             return {
                 pass: false,
-                message: tips(false) + ' but it was resolved to ' +
+                message: tips(false) + ' but it was resolved with ' +
                     JSON.stringify(got) + '.'
             };
         },

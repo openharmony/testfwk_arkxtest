@@ -30,7 +30,7 @@ function assertPromiseIsResolved(actualPromise) {
                 pass: false,
                 message: 'expect resolve, actualValue is isPending'
             }
-                : {pass: true};
+                : {pass: true, message: 'actualValue is isResolved'};
         },
         function (rej) {
             return {
