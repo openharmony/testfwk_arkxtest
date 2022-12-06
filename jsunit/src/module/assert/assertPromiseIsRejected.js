@@ -32,7 +32,7 @@ function assertPromiseIsRejected(actualPromise) {
             };
         },
         function () {
-            return {pass: true};
+            return {pass: true, message: 'actualValue is isRejected'};
         }
     );
 }

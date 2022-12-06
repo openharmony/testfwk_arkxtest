@@ -41,7 +41,7 @@ function assertPromiseIsRejectedWithError(actualPromise, expectedValue) {
 function matchError(actualValue, expectedValue) {
     if (expectedValue.length == 1 && typeof expectedValue[0] === 'function') {
         if (expectedValue[0].name === actualValue.__proto__.name) {
-            return {pass: true};
+            return {pass: true, message: 'actual error type is ' + actualValue.name + '.'};
         }
         return {
             pass: false,
@@ -51,7 +51,7 @@ function matchError(actualValue, expectedValue) {
 
     if (expectedValue.length == 1 && typeof expectedValue[0] === 'string') {
         if (expectedValue[0] === actualValue.message) {
-            return {pass: true};
+            return {pass: true, message: 'actual error message is ' + actualValue.message + '.'};
         }
         return {
             pass: false,
@@ -69,7 +69,7 @@ function matchError(actualValue, expectedValue) {
 
     if (expectedValue.length == 2 && typeof expectedValue[0] === 'function' && expectedValue[0].name === actualValue.name) {
         if (typeof expectedValue[1] === 'string' && actualValue.message === expectedValue[1]) {
-            return {pass: true};
+            return {pass: true, message: 'actual error message is ' + actualValue.message + '.'};
         } else {
             return {
                 pass: false,
