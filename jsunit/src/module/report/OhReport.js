@@ -38,6 +38,7 @@ class OhReport {
         let message = '\n' + 'OHOS_REPORT_RESULT: stream=Tests run: ' + summary.total + ', Failure: ' + summary.failure;
         message += ', Error: ' + summary.error;
         message += ', Pass: ' + summary.pass;
+        message += ', Ignored: ' + summary.ignored;
         message += '\n' + 'OHOS_REPORT_CODE: ' + (summary.failure > 0 ? -1 : 0) + '\n';
         let isHasError = summary.failure > 0 || summary.error > 0;
         let config = this.coreContext.getDefaultService('config');

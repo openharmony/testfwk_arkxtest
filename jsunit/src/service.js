@@ -137,6 +137,7 @@ class SuiteService {
         let error = 0;
         let failure = 0;
         let pass = 0;
+        let ignored = 0;
         let duration = 0;
         let rootSuite = this.coreContext.getDefaultService('suite').rootSuite;
         if (rootSuite && rootSuite.childSuites) {
@@ -146,9 +147,9 @@ class SuiteService {
                 let specs = testsuite['specs'];
                 for (let j = 0; j < specs.length; j++) {
                     let testcase = specs[j];
-                    // 统计执行的用例总数
-                    if(testcase.isRunning) {
-                        total++;
+                    total++;
+                    if(!testcase.isRunning) {
+                        ignored ++;
                     }
                     if (testcase.error) {
                         error++;
@@ -160,7 +161,7 @@ class SuiteService {
                 }
             }
         }
-        return {total: total, failure: failure, error: error, pass: pass, duration: duration};
+        return {total: total, failure: failure, error: error, pass: pass, ignored: ignored, duration: duration};
     }
 
     init(coreContext) {
