@@ -303,8 +303,8 @@ SuiteService.Suite = class {
                 });
             }
             for (let spec in this.specs) {
-                let canRun = this.isRun(coreContext);
-                if (canRun) {
+                let isBreakOnError = this.isRun(coreContext);
+                if (isBreakOnError) {
                     break;
                 }
                 this.runHookFunc('beforeEach');
@@ -314,8 +314,8 @@ SuiteService.Suite = class {
         }
         if (this.childSuites.length > 0) {
             for (let suite in this.childSuites) {
-                let canRun = this.isRun(coreContext);
-                if (canRun) {
+                let isBreakOnError = this.isRun(coreContext);
+                if (isBreakOnError) {
                     break;
                 }
                 suite.run(coreContext);
@@ -344,9 +344,9 @@ SuiteService.Suite = class {
                     });
                 }
                 for (let i = 0; i < this.specs.length; i++) {
-                    // 发现用例有问题，直接返回，不在执行后面的it
-                    let canRun = this.isRun(coreContext);
-                    if (canRun) {
+                    // 遇错即停模式,发现用例有问题，直接返回，不在执行后面的it
+                    let isBreakOnError = this.isRun(coreContext);
+                    if (isBreakOnError) {
                         console.log("break index is," + i + "description is," + this.description);
                         break;
                     }
@@ -358,9 +358,9 @@ SuiteService.Suite = class {
 
             if (this.childSuites.length > 0) {
                 for (let i = 0; i < this.childSuites.length; i++) {
-                    // 发现用例有问题，直接返回，不在执行后面的description
-                    let canRun = this.isRun(coreContext);
-                    if (canRun) {
+                    // 遇错即停模式, 发现用例有问题，直接返回，不在执行后面的description
+                    let isBreakOnError = this.isRun(coreContext);
+                    if (isBreakOnError) {
                         console.log("childSuites break description," + this.description);
                         break;
                     }
