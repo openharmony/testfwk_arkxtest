@@ -137,7 +137,7 @@ class SuiteService {
         let error = 0;
         let failure = 0;
         let pass = 0;
-        let ignored = 0;
+        let ignore = 0;
         let duration = 0;
         let rootSuite = this.coreContext.getDefaultService('suite').rootSuite;
         if (rootSuite && rootSuite.childSuites) {
@@ -148,8 +148,8 @@ class SuiteService {
                 for (let j = 0; j < specs.length; j++) {
                     let testcase = specs[j];
                     total++;
-                    if(!testcase.isRunning) {
-                        ignored ++;
+                    if(!testcase.isExecuted) {
+                        ignore ++;
                     }
                     if (testcase.error) {
                         error++;
@@ -161,7 +161,7 @@ class SuiteService {
                 }
             }
         }
-        return {total: total, failure: failure, error: error, pass: pass, ignored: ignored, duration: duration};
+        return {total: total, failure: failure, error: error, pass: pass, ignore: ignore, duration: duration};
     }
 
     init(coreContext) {
@@ -464,7 +464,7 @@ SpecService.Spec = class {
         this.error = undefined;
         this.duration = 0;
         this.startTime = 0;
-        this.isRunning = false; // 当前用例是否执行
+        this.isExecuted = false; // 当前用例是否执行
     }
 
     setResult() {
@@ -480,7 +480,7 @@ SpecService.Spec = class {
         const specService = coreContext.getDefaultService('spec');
         specService.setCurrentRunningSpec(this);
         coreContext.fireEvents('spec', 'specStart', this);
-        this.isRunning = true;
+        this.isExecuted = true;
         try {
             let dataDriver = coreContext.getServices('dataDriver');
             if (typeof dataDriver === 'undefined') {
@@ -551,7 +551,7 @@ SpecService.Spec = class {
                     this.error = e;
                 }
             }
-            this.isRunning = true;
+            this.isExecuted = true;
             await coreContext.fireEvents('spec', 'specDone', this);
             this.fn = null;
             resolve();
