@@ -137,6 +137,7 @@ class SuiteService {
         let error = 0;
         let failure = 0;
         let pass = 0;
+        let ignore = 0;
         let duration = 0;
         let rootSuite = this.coreContext.getDefaultService('suite').rootSuite;
         if (rootSuite && rootSuite.childSuites) {
@@ -145,8 +146,11 @@ class SuiteService {
                 duration += testsuite.duration;
                 let specs = testsuite['specs'];
                 for (let j = 0; j < specs.length; j++) {
-                    total++;
                     let testcase = specs[j];
+                    total++;
+                    if(!testcase.isExecuted) {
+                        ignore ++;
+                    }
                     if (testcase.error) {
                         error++;
                     } else if (testcase.result.failExpects.length > 0) {
@@ -157,7 +161,7 @@ class SuiteService {
                 }
             }
         }
-        return {total: total, failure: failure, error: error, pass: pass, duration: duration};
+        return {total: total, failure: failure, error: error, pass: pass, ignore: ignore, duration: duration};
     }
 
     init(coreContext) {
@@ -275,6 +279,15 @@ SuiteService.Suite = class {
         return this.specs.length;
     }
 
+    isRun(coreContext) {
+        const configService = coreContext.getDefaultService('config');
+        const suiteService = coreContext.getDefaultService('suite');
+        let breakOnError = configService.isBreakOnError();
+        let summary = suiteService.getSummary();
+        let isError = summary.failure > 0 || summary.error > 0;
+        return breakOnError && isError
+    }
+
     run(coreContext) {
         const suiteService = coreContext.getDefaultService('suite');
         suiteService.setCurrentRunningSuite(this);
@@ -289,17 +302,25 @@ SuiteService.Suite = class {
                     return Math.random().toFixed(1) > 0.5 ? -1 : 1;
                 });
             }
-            this.specs.forEach(spec => {
+            for (let spec in this.specs) {
+                let isBreakOnError = this.isRun(coreContext);
+                if (isBreakOnError) {
+                    break;
+                }
                 this.runHookFunc('beforeEach');
                 spec.run(coreContext);
                 this.runHookFunc('afterEach');
-            });
+            }
         }
         if (this.childSuites.length > 0) {
-            this.childSuites.forEach(childSuite => {
-                childSuite.run(coreContext);
-                suiteService.setCurrentRunningSuite(childSuite);
-            });
+            for (let suite in this.childSuites) {
+                let isBreakOnError = this.isRun(coreContext);
+                if (isBreakOnError) {
+                    break;
+                }
+                suite.run(coreContext);
+                suiteService.setCurrentRunningSuite(suite);
+            }
         }
         this.runHookFunc('afterAll');
         if (this.description !== '') {
@@ -323,6 +344,12 @@ SuiteService.Suite = class {
                     });
                 }
                 for (let i = 0; i < this.specs.length; i++) {
+                    // 遇错即停模式,发现用例有问题，直接返回，不在执行后面的it
+                    let isBreakOnError = this.isRun(coreContext);
+                    if (isBreakOnError) {
+                        console.log("break index is," + i + "description is," + this.description);
+                        break;
+                    }
                     await this.runAsyncHookFunc('beforeEach');
                     await this.specs[i].asyncRun(coreContext);
                     await this.runAsyncHookFunc('afterEach');
@@ -331,6 +358,12 @@ SuiteService.Suite = class {
 
             if (this.childSuites.length > 0) {
                 for (let i = 0; i < this.childSuites.length; i++) {
+                    // 遇错即停模式, 发现用例有问题，直接返回，不在执行后面的description
+                    let isBreakOnError = this.isRun(coreContext);
+                    if (isBreakOnError) {
+                        console.log("childSuites break description," + this.description);
+                        break;
+                    }
                     suiteService.setCurrentRunningSuite(this.childSuites[i]);
                     await this.childSuites[i].asyncRun(coreContext);
                 }
@@ -431,6 +464,7 @@ SpecService.Spec = class {
         this.error = undefined;
         this.duration = 0;
         this.startTime = 0;
+        this.isExecuted = false; // 当前用例是否执行
     }
 
     setResult() {
@@ -446,6 +480,7 @@ SpecService.Spec = class {
         const specService = coreContext.getDefaultService('spec');
         specService.setCurrentRunningSpec(this);
         coreContext.fireEvents('spec', 'specStart', this);
+        this.isExecuted = true;
         try {
             let dataDriver = coreContext.getServices('dataDriver');
             if (typeof dataDriver === 'undefined') {
@@ -516,6 +551,7 @@ SpecService.Spec = class {
                     this.error = e;
                 }
             }
+            this.isExecuted = true;
             await coreContext.fireEvents('spec', 'specDone', this);
             this.fn = null;
             resolve();
