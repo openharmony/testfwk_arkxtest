@@ -120,7 +120,7 @@ public:
         }
     }
     int GetStepLength()
-    {   
+    {
         stepCount = xAxis_.GetXVals().size();
         std::vector<double> xs = xAxis_.GetXVals();
         std::vector<double> ys = yAxis_.GetYVals();
@@ -133,7 +133,8 @@ public:
             useToCount = stepCount;
         }
         for (int i = 1; i < useToCount; i++) {
-            totalDelta_ += Offset(xs.at(stepCount-i), ys.at(stepCount-i)) - Offset(xs.at(stepCount-i-1), ys.at(stepCount-i-1));
+            totalDelta_ += Offset(xs.at(stepCount-i), ys.at(stepCount-i)) - \
+                            Offset(xs.at(stepCount-i-1), ys.at(stepCount-i-1));
         }
         return (totalDelta_ / (useToCount-1)).GetDistance();
     }
