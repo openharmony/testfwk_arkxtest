@@ -33,7 +33,7 @@ namespace OHOS::uitest {
     double FLING_THRESHOLD = 45.0;
     double DURATIOIN_THRESHOLD = 0.6;
     double INTERVAL_THRESHOLD = 0.2;
-    int STEP_LENGTH_COUNT = 5;
+    int MaxVelocity = 40000;
 
     void EventData::WriteEventData(std::ofstream &outFile, const VelocityTracker &velocityTracker, \
                                    const std::string &actionType)
@@ -45,7 +45,7 @@ namespace OHOS::uitest {
             outFile << velocityTracker.GetLastTrackPoint().x << ',';
             outFile << velocityTracker.GetLastTrackPoint().y << ',';
             outFile << velocityTracker.GetInterVal() << ',';
-            outFile << (velocityTracker.GetMoveDistance()/STEP_LENGTH_COUNT) << ',';
+            outFile << g_velocityTracker.GetStepLength() << ',';
             outFile << velocityTracker.GetMainVelocity() << std::endl;
             if (outFile.fail()) {
                 std::cout<< " outFile failed. " <<std::endl;
@@ -101,7 +101,7 @@ namespace OHOS::uitest {
     {
         g_velocityTracker.UpdateTouchEvent(event, true);
         if (!g_isOpDect) {
-            double mainVelocity = g_velocityTracker.GetMainVelocityAxis();
+            double mainVelocity = g_velocityTracker.GetMainAxisVelocity();
             g_velocityTracker.SetMainVelocity(mainVelocity);
             // 移动距离超过15 => LONG_CLICK(中间结果)
             if (g_velocityTracker.GetDurationTime() >= DURATIOIN_THRESHOLD &&
@@ -137,12 +137,14 @@ namespace OHOS::uitest {
         }
         EventData::WriteEventData(g_outFile, g_velocityTracker, g_operationType[g_touchop]);
         std::cout << " PointerEvent:" << g_operationType[g_touchop]
-                        << " X_POSI:" << g_velocityTracker.GetFirstTrackPoint().x
-                        << " Y_POSI:" << g_velocityTracker.GetFirstTrackPoint().y
-                        << " X2_POSI:" << g_velocityTracker.GetLastTrackPoint().x
-                        << " Y2_POSI:" << g_velocityTracker.GetLastTrackPoint().y
-                        << " INTERVAL:" << g_velocityTracker.GetInterVal()
-                        << " VELOCITY:" << g_velocityTracker.GetMainVelocity()
+                        << " X_posi:" << g_velocityTracker.GetFirstTrackPoint().x
+                        << " Y_posi:" << g_velocityTracker.GetFirstTrackPoint().y
+                        << " X2_posi:" << g_velocityTracker.GetLastTrackPoint().x
+                        << " Y2_posi:" << g_velocityTracker.GetLastTrackPoint().y
+                        << " Interval:" << g_velocityTracker.GetInterVal()
+                        << " Step:" << g_velocityTracker.GetStepLength()
+                        << " Velocity:" << g_velocityTracker.GetMainVelocity()
+                        << " Max_Velocity:" << MaxVelocity
                         << std::endl;
         g_velocityTracker.Resets();
         g_isOpDect = false;
