@@ -151,15 +151,14 @@ namespace OHOS::uitest {
         return hashFunc(strId);
     }
 
-    static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to, bool isDecorBar)
+    static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to)
     {
         to[ATTR_NAMES[UiAttr::HASHCODE].data()] = to_string(GenerateNodeHash(node));
         to[ATTR_NAMES[UiAttr::TEXT].data()] = node.GetContent();
         to[ATTR_NAMES[UiAttr::ACCESSIBILITY_ID].data()] = to_string(node.GetAccessibilityId());
         to[ATTR_NAMES[UiAttr::ID].data()] = node.GetInspectorKey();
         to[ATTR_NAMES[UiAttr::KEY].data()] = node.GetInspectorKey();
-        to[ATTR_NAMES[UiAttr::TYPE].data()] = (isDecorBar ? "DecorBar" : node.GetComponentType());
-        // set rootdecortag's child type as DecorBar.
+        to[ATTR_NAMES[UiAttr::TYPE].data()] = node.GetComponentType();
         to[ATTR_NAMES[UiAttr::ENABLED].data()] = node.IsEnabled() ? "true" : "false";
         to[ATTR_NAMES[UiAttr::FOCUSED].data()] = node.IsFocused() ? "true" : "false";
         to[ATTR_NAMES[UiAttr::SELECTED].data()] = node.IsSelected() ? "true" : "false";
@@ -168,6 +167,7 @@ namespace OHOS::uitest {
         to[ATTR_NAMES[UiAttr::CLICKABLE].data()] = "false";
         to[ATTR_NAMES[UiAttr::LONG_CLICKABLE].data()] = "false";
         to[ATTR_NAMES[UiAttr::SCROLLABLE].data()] = "false";
+        to[ATTR_NAMES[UiAttr::HOST_WINDOW_ID].data()] = node.GetBundleName();
         const auto bounds = node.GetRectInScreen();
         const auto rect = Rect(bounds.GetLeftTopXScreenPostion(), bounds.GetRightBottomXScreenPostion(),
                                bounds.GetLeftTopYScreenPostion(), bounds.GetRightBottomYScreenPostion());
@@ -197,7 +197,13 @@ namespace OHOS::uitest {
     static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index, bool isDecorBar)
     {
         json attributes;
-        MarshalAccessibilityNodeAttributes(from, attributes, isDecorBar);
+        if (from.GetInspectorKey() == "ContainerModalTitleRow") {
+            isDecorBar = true;
+        }
+        MarshalAccessibilityNodeAttributes(from, attributes);
+        if (isDecorBar) {
+            attributes[ATTR_NAMES[UiAttr::TYPE].data()] = "DecorBar";
+        }
         attributes["index"] = to_string(index);
         to["attributes"] = attributes;
         auto childList = json::array();

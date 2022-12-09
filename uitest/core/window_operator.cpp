@@ -230,29 +230,52 @@ namespace OHOS::uitest {
         BarAction(index, out);
     }
 
+    bool WindowOperator::DecorBarExist(ApiReplyInfo &out)
+    {
+        auto decorBarSelector = WidgetSelector();
+        auto attrMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "DecorBar", EQ);
+        auto windowMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], window_.bundleName_, EQ);
+        decorBarSelector.AddMatcher(attrMatcher);
+        decorBarSelector.AddMatcher(windowMatcher);
+        vector<unique_ptr<Widget>> decorBar;
+        driver_.FindWidgets(decorBarSelector, decorBar, out.exception_);
+        return decorBar.empty();
+    }
+
     void WindowOperator::BarAction(size_t index, ApiReplyInfo &out)
     {
         CallBar(out);
-        if (out.exception_.code_ != NO_ERROR) {
+        if (this->DecorBarExist(out)) {
+            LOG_E("Not find target decorBar");
             return;
         }
         auto selector = WidgetSelector();
         auto frontLocator = WidgetSelector();
-        auto matcher = WidgetAttrMatcher("index", std::to_string(index), EQ);
+        auto attrMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "Button", EQ);
+        auto windowMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], window_.bundleName_, EQ);
         auto frontMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "DecorBar", EQ);
         frontLocator.AddMatcher(frontMatcher);
-        selector.AddMatcher(matcher);
+        selector.AddMatcher(attrMatcher);
+        selector.AddMatcher(windowMatcher);
         selector.AddFrontLocator(frontLocator, out.exception_);
-        vector<unique_ptr<Widget>> widgets;
-        driver_.FindWidgets(selector, widgets, out.exception_);
+        vector<reference_wrapper<const Widget>> widgets;
+        selector.Select(*driver_.GetWidgetTree(), widgets);
+        if (widgets.empty()) {
+            auto selectorForJs = WidgetSelector();
+            auto attrMatcherForJs = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "button", EQ);
+            selectorForJs.AddMatcher(attrMatcherForJs);
+            selectorForJs.AddMatcher(windowMatcher);
+            selectorForJs.AddFrontLocator(frontLocator, out.exception_);
+            selectorForJs.Select(*driver_.GetWidgetTree(), widgets);
+        }
         if (out.exception_.code_ != NO_ERROR) {
             return;
         }
-        if (widgets.empty()) {
-            LOG_E("DecorBar not found");
+        if (widgets.size() < index) {
+            LOG_E("Not find target winAction button");
             return;
         }
-        auto rect = widgets.front()->GetBounds();
+        auto rect = widgets[index - 1].get().GetBounds();
         Point widgetCenter(rect.GetCenterX(), rect.GetCenterY());
         auto touch = GenericClick(TouchOp::CLICK, widgetCenter);
         driver_.PerformTouch(touch, options_, out.exception_);
