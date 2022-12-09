@@ -167,7 +167,7 @@ namespace OHOS::uitest {
         to[ATTR_NAMES[UiAttr::CLICKABLE].data()] = "false";
         to[ATTR_NAMES[UiAttr::LONG_CLICKABLE].data()] = "false";
         to[ATTR_NAMES[UiAttr::SCROLLABLE].data()] = "false";
-        to[ATTR_NAMES[UiAttr::HOST_WINDOW_ID].data()] = node.GetBundleName();
+        to[ATTR_NAMES[UiAttr::HOST_WINDOW_ID].data()] = to_string(node.GetWindowId());
         const auto bounds = node.GetRectInScreen();
         const auto rect = Rect(bounds.GetLeftTopXScreenPostion(), bounds.GetRightBottomXScreenPostion(),
                                bounds.GetLeftTopYScreenPostion(), bounds.GetRightBottomYScreenPostion());

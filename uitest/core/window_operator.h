@@ -68,8 +68,6 @@ namespace OHOS::uitest {
 
         /**Click on the decoration bar of this window.*/
         void BarAction(size_t index, ApiReplyInfo &out);
-
-        bool DecorBarExist(ApiReplyInfo &out);
     };
 } // namespace OHOS::uitest
 
