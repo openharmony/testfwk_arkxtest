@@ -250,7 +250,7 @@ namespace OHOS::uitest {
             selectorForJs.AddMatcher(attrMatcherForJs);
             selectorForJs.AddMatcher(windowMatcher);
             selectorForJs.AddFrontLocator(frontLocator, out.exception_);
-            driver_.FindWidgets(selectorForJs, widgets, out.exception_);
+            driver_.FindWidgets(selectorForJs, widgets, out.exception_, false);
         }
         if (out.exception_.code_ != NO_ERROR) {
             return;
