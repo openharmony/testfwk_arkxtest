@@ -230,43 +230,27 @@ namespace OHOS::uitest {
         BarAction(index, out);
     }
 
-    bool WindowOperator::DecorBarExist(ApiReplyInfo &out)
-    {
-        auto decorBarSelector = WidgetSelector();
-        auto attrMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "DecorBar", EQ);
-        auto windowMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], window_.bundleName_, EQ);
-        decorBarSelector.AddMatcher(attrMatcher);
-        decorBarSelector.AddMatcher(windowMatcher);
-        vector<unique_ptr<Widget>> decorBar;
-        driver_.FindWidgets(decorBarSelector, decorBar, out.exception_);
-        return decorBar.empty();
-    }
-
     void WindowOperator::BarAction(size_t index, ApiReplyInfo &out)
     {
         CallBar(out);
-        if (this->DecorBarExist(out)) {
-            LOG_E("Not find target decorBar");
-            return;
-        }
         auto selector = WidgetSelector();
         auto frontLocator = WidgetSelector();
         auto attrMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "Button", EQ);
-        auto windowMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], window_.bundleName_, EQ);
+        auto windowMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], to_string(window_.id_), EQ);
         auto frontMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "DecorBar", EQ);
         frontLocator.AddMatcher(frontMatcher);
         selector.AddMatcher(attrMatcher);
         selector.AddMatcher(windowMatcher);
         selector.AddFrontLocator(frontLocator, out.exception_);
-        vector<reference_wrapper<const Widget>> widgets;
-        selector.Select(*driver_.GetWidgetTree(), widgets);
+        vector<unique_ptr<Widget>> widgets;
+        driver_.FindWidgets(selector, widgets, out.exception_);
         if (widgets.empty()) {
             auto selectorForJs = WidgetSelector();
             auto attrMatcherForJs = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "button", EQ);
             selectorForJs.AddMatcher(attrMatcherForJs);
             selectorForJs.AddMatcher(windowMatcher);
             selectorForJs.AddFrontLocator(frontLocator, out.exception_);
-            selectorForJs.Select(*driver_.GetWidgetTree(), widgets);
+            driver_.FindWidgets(selectorForJs, widgets, out.exception_);
         }
         if (out.exception_.code_ != NO_ERROR) {
             return;
@@ -275,7 +259,7 @@ namespace OHOS::uitest {
             LOG_E("Not find target winAction button");
             return;
         }
-        auto rect = widgets[index - 1].get().GetBounds();
+        auto rect = widgets[index - 1]->GetBounds();
         Point widgetCenter(rect.GetCenterX(), rect.GetCenterY());
         auto touch = GenericClick(TouchOp::CLICK, widgetCenter);
         driver_.PerformTouch(touch, options_, out.exception_);
