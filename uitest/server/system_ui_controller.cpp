@@ -197,11 +197,8 @@ namespace OHOS::uitest {
     static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index, bool isDecorBar)
     {
         json attributes;
-        if (from.GetInspectorKey() == "ContainerModalTitleRow") {
-            isDecorBar = true;
-        }
         MarshalAccessibilityNodeAttributes(from, attributes);
-        if (isDecorBar) {
+        if (isDecorBar || from.GetInspectorKey() == "ContainerModalTitleRow") {
             attributes[ATTR_NAMES[UiAttr::TYPE].data()] = "DecorBar";
         }
         attributes["index"] = to_string(index);
