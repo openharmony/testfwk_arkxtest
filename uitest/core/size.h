@@ -202,7 +202,7 @@ public:
     std::string ToString() const
     {
         std::stringstream ss;
-        ss << "[" << std::fixed << std::setprecision(2);
+        ss << "[" << std::fixed << std::setprecision(NUM_TWO);
         if (NearEqual(width_, INFINITE_SIZE)) {
             ss << "INFINITE";
         } else {
