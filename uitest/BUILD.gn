@@ -82,11 +82,6 @@ ohos_executable("uitest_server") {
     "//third_party/libpng:libpng",
   ]
   external_deps = [
-    "accessibility:accessibleability",
-    "input:libmmi-client",
-    "multimedia_image_framework:image_native",
-    "window_manager:libdm",
-    "window_manager:libwm",
     "ability_base:want",
     "ability_runtime:ability_context_native",
     "ability_runtime:ability_manager",
@@ -96,8 +91,13 @@ ohos_executable("uitest_server") {
     "accessibility:accessibility_common",
     "accessibility:accessibilityclient",
     "accessibility:accessibleability",
+    "accessibility:accessibleability",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
+    "input:libmmi-client",
+    "multimedia_image_framework:image_native",
+    "window_manager:libdm",
+    "window_manager:libwm",
   ]
 
   subsystem_name = "test"
