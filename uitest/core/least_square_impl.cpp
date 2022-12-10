@@ -55,7 +55,7 @@ bool LSMImpl::GetLSMParams(std::vector<double>& params)
         MatrixN3 matrixn3 { countNum };
         for (auto i = 0; i < countNum; i++) {
             const auto& value = xVals[i];
-            matrixn3[i][2] = 1;
+            matrixn3[i][NUM_TWO] = 1;
             matrixn3[i][NUM_ONE] = value;
             matrixn3[i][NUM_ZERO] = value * value;
         }
@@ -77,7 +77,7 @@ bool LSMImpl::GetLSMParams(std::vector<double>& params)
     for (auto i = 0; i < countNum; i++) {
         const auto& value = xVals[i];
         matrixn4[i][NUM_THREE] = 1;
-        matrixn4[i][2] = value;
+        matrixn4[i][NUM_TWO] = value;
         matrixn4[i][NUM_ONE] = value * value;
         matrixn4[i][NUM_ZERO] = value * value * value;
     }
