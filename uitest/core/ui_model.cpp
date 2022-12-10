@@ -91,7 +91,7 @@ namespace OHOS::uitest {
         return clone;
     }
 
-    std::map<std::string, std::string> Widget::GetAttrMap() const 
+    std::map<std::string, std::string> Widget::GetAttrMap() const
     {
         return attributes_;
     }
@@ -408,7 +408,7 @@ namespace OHOS::uitest {
     }
 
     const Widget *WidgetTree::BFSRootSearchWidget(const WidgetTree& tree, const Widget& root, \
-                            std::map<std::string, size_t> widgetChildCountMap_, float x_, float y_)  const
+                                                  std::map<std::string, size_t> widgetChildCountMap_, float x_, float y_)  const
     {
         Rect rect = root.GetBounds();
         if (x_ <= rect.right_ && x_ >= rect.left_ && y_ <= rect.bottom_ && y_ >= rect.top_) {
@@ -431,8 +431,9 @@ namespace OHOS::uitest {
         }
     }
 
-    const Widget *WidgetTree::BFSSearchWidget(const WidgetTree& tree, const Widget& root, std::map<std::string, size_t> widgetChildCountMap_, \
-                float x_, float y_, const Widget& lastRoot, uint32_t lastIndex) const
+    const Widget *WidgetTree::BFSSearchWidget(const WidgetTree& tree, const Widget& root, \
+                                              std::map<std::string, size_t> widgetChildCountMap_, float x_, float y_, \
+                                              const Widget& lastRoot, uint32_t lastIndex) const
     {
         Rect rect = root.GetBounds();
         if (x_ <= rect.right_ && x_ >= rect.left_ && y_ <= rect.bottom_ && y_ >= rect.top_) {
@@ -456,7 +457,6 @@ namespace OHOS::uitest {
         } else {
             return &lastRoot;
         }
-        
     }
 
     const Widget *WidgetTree::GetRootWidget() const

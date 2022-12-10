@@ -56,8 +56,8 @@ bool LSMImpl::GetLSMParams(std::vector<double>& params)
         for (auto i = 0; i < countNum; i++) {
             const auto& value = xVals[i];
             matrixn3[i][2] = 1;
-            matrixn3[i][1] = value;
-            matrixn3[i][0] = value * value;
+            matrixn3[i][NUM_ONE] = value;
+            matrixn3[i][NUM_ZERO] = value * value;
         }
         Matrix3 invert;
         auto transpose = matrixn3.Transpose();
@@ -76,10 +76,10 @@ bool LSMImpl::GetLSMParams(std::vector<double>& params)
     MatrixN4 matrixn4 { countNum };
     for (auto i = 0; i < countNum; i++) {
         const auto& value = xVals[i];
-        matrixn4[i][3] = 1;
+        matrixn4[i][NUM_THREE] = 1;
         matrixn4[i][2] = value;
-        matrixn4[i][1] = value * value;
-        matrixn4[i][0] = value * value * value;
+        matrixn4[i][NUM_ONE] = value * value;
+        matrixn4[i][NUM_ZERO] = value * value * value;
     }
     auto transpose = matrixn4.Transpose();
     auto inversMatrix4 = Matrix4::Invert(transpose * matrixn4);

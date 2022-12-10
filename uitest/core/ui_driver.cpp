@@ -76,7 +76,8 @@ namespace OHOS::uitest {
         widgetTree_->MarshalIntoDom(out);
     }
 
-    const Widget *UiDriver::FindWidget(float x_, float y_) {
+    const Widget *UiDriver::FindWidget(float x_, float y_)
+    {
         ApiCallErr err(NO_ERROR);
         UpdateUi(true, err);
         if (err.code_ == NO_ERROR && widgetTree_ != nullptr) {
@@ -86,7 +87,8 @@ namespace OHOS::uitest {
         }
     }
 
-    const Rect UiDriver::GetRootBounds() {
+    const Rect UiDriver::GetRootBounds()
+    {
         ApiCallErr err(NO_ERROR);
         UpdateUi(true, err);
         return widgetTree_->GetRootWidget()->GetBounds();
