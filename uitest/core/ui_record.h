@@ -84,12 +84,12 @@ namespace OHOS::uitest {
     }
 
     class EventData {
-    private:
-        VelocityTracker v;
-        std::string action;
     public:
         void WriteEventData(VelocityTracker &velocityTracker, const std::string &actionType);
         static void ReadEventLine();
+    private:
+        VelocityTracker v;
+        std::string action;
     };
 
     class DataWrapper {

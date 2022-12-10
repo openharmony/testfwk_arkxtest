@@ -15,9 +15,7 @@
 
 #ifndef VELOCITY_TRACKER_H
 #define VELOCITY_TRACKER_H
-#include <fstream>
 #include <regex>
-#include <iostream>
 #include <cmath>
 #include "least_square_impl.h"
 #include "touch_event.h"

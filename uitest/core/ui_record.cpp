@@ -20,12 +20,13 @@ using namespace std;
 using namespace std::chrono;
 
 namespace OHOS::uitest {
-    std::string g_operationType[9] = { "click", "doubleClick", "longClick", "drag", "swipe", "fling", "back", "home", "recent" };
+    std::string g_operationType[9] = { "click", "doubleClick", "longClick", "drag", "swipe", \
+                                        "fling", "back", "home", "recent" };
     TouchOp g_touchop = CLICK;
     VelocityTracker g_velocityTracker;
     bool g_isClick = false;
     int g_clickEventCount = 0;
-	int NAVI_HORIZON_THRE_V= 100;
+    int NAVI_HORIZON_THRE_V= 100;
     int NAVI_VERTI_THRE_V = 200;
     int NAVI_THRE_D = 10;
     int STEP_LENGTH_COUNT = 5;
@@ -35,14 +36,15 @@ namespace OHOS::uitest {
     double INTERVAL_THRESHOLD = 0.2;
     bool g_isOpDect = false;
     std::string g_filePath;
-	std::string g_defaultDir = "/data/local/tmp/layout";
+    std::string g_defaultDir = "/data/local/tmp/layout";
     std::ofstream g_outFile;
     auto driver = UiDriver();
     Rect windowBounds = Rect(0, 0, 0, 0);
     DataWrapper g_dataWrapper;
     TouchEventInfo eventInfo;
     int MaxVelocity = 40000;
-    std::vector<std::string> GetForeAbility() {
+    std::vector<std::string> GetForeAbility()
+    {
         std::vector<std::string> elements;
         auto amcPtr = AAFwk::AbilityManagerClient::GetInstance();
         if (amcPtr == nullptr) {
@@ -70,11 +72,10 @@ namespace OHOS::uitest {
                             << "type: " << downEvent.attributes.find("type")->second<< ", "
                             << "text: " << downEvent.attributes.find("text")->second<< ", " << std::endl;
             } else {
-                std::cout << "from Point(x:" << downEvent.x << ", y:" << downEvent.y 
-                    << ") to Point(x:" << upEvent.x << ", y:" << upEvent.y << ") " << std::endl;
+                std::cout << "from Point(x:" << downEvent.x << ", y:" << downEvent.y
+                            << ") to Point(x:" << upEvent.x << ", y:" << upEvent.y << ") " << std::endl;
             }
-            if (actionType == "fling" || actionType == "swipe")
-            {
+            if (actionType == "fling" || actionType == "swipe") {
                 std::cout << "Off-hand speed:" << g_velocityTracker.GetMainVelocity() <<", "
                             << "Step length:" << g_velocityTracker.GetStepLength() << std::endl;
             }
@@ -87,7 +88,7 @@ namespace OHOS::uitest {
             } else {
                 std::cout <<" at Point(x:" << downEvent.x << ", y:" << downEvent.y << ") "<< std::endl;
             }
-        } 
+        }
     }
     void CommonPrintLine(TouchEventInfo &downEvent, TouchEventInfo &upEvent, const std::string &actionType)
     {
@@ -138,8 +139,8 @@ namespace OHOS::uitest {
                 }
                 if (actionType == "click") {
                     std::vector<std::string> names = GetForeAbility();
-                    g_outFile << names[0] << ',';
-                    g_outFile << names[1] << ',';
+                    g_outFile << names[NUM_ZERO] << ',';
+                    g_outFile << names[NUM_ONE] << ',';
                 } else {
                     g_outFile << ",,";
                 }
@@ -155,8 +156,8 @@ namespace OHOS::uitest {
     void EventData::ReadEventLine()
     {
         std::ifstream inFile(g_defaultDir + "/" + "record.csv");
-		enum CaseTypes : uint8_t {OP_TYPE = 0, X_POSI, Y_POSI, X2_POSI, Y2_POSI, INTERVAL, LENGTH, VELO, MAX_VEL,\
-                                    W_ID, W_TYPE, W_TEXT, W2_ID, W2_TYPE, W2_TEXT, BUNDLE, ABILITY};
+		enum CaseTypes : uint8_t { OP_TYPE = 0, X_POSI, Y_POSI, X2_POSI, Y2_POSI, INTERVAL, LENGTH, VELO, MAX_VEL, \
+                                   W_ID, W_TYPE, W_TEXT, W2_ID, W2_TYPE, W2_TEXT, BUNDLE, ABILITY };
         char buffer[100];
         while (!inFile.eof()) {
             inFile >> buffer;
@@ -205,7 +206,7 @@ namespace OHOS::uitest {
         t.join();
     }
     void InputEventCallback::HandleDownEvent(TouchEventInfo& event) const
-    {    
+    {
         if (g_recordMode != "point") {
             driver.FindWidget(event.x, event.y)->SetFoundWidgetInfo(event);
         }
@@ -336,16 +337,16 @@ namespace OHOS::uitest {
                 << windowBounds.top_ << "," << windowBounds.right_ << ","
                 << windowBounds.bottom_ << ")" << std::endl;
         std::vector<std::string> names = GetForeAbility();
-        std::cout << "Current ForAbility :" << names[0] << ", " << names[1] << std::endl;
+        std::cout << "Current ForAbility :" << names[NUM_ZERO] << ", " << names[NUM_ONE] << std::endl;
         if (g_outFile.is_open()) {
             g_outFile << "windowBounds" << ',';
             g_outFile << windowBounds.left_ << ',';
             g_outFile << windowBounds.top_ << ',';
             g_outFile << windowBounds.right_ << ',';
             g_outFile << windowBounds.bottom_ << ',';
-            g_outFile << "0,0,0,0,,,,,,,";            
-            g_outFile << names[0] << ',';
-            g_outFile << names[1] << ',' << std::endl;
+            g_outFile << "0,0,0,0,,,,,,,";
+            g_outFile << names[NUM_ZERO] << ',';
+            g_outFile << names[NUM_ONE] << ',' << std::endl;
         }
     }
 } // namespace OHOS::uitest
