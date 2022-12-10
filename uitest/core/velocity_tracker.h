@@ -46,7 +46,6 @@ public:
         isFirstPoint_ = true;
         xAxis_.Resets();
         yAxis_.Resets();
-        stepCount = 0;
         totalDelta_.Resets();
     }
     void TrackResets()
@@ -62,7 +61,34 @@ public:
         mainVelocity_ = mainVelocity;
     }
 
-    const TouchEventInfo& GetFirstTrackPoint() const
+    int GetStepCount()
+    {
+        return xAxis_.GetPVals().size();
+    }
+
+    void UpdateStepLength()
+    {
+        stepCount = GetStepCount();
+        std::vector<double> xs = xAxis_.GetPVals();
+        std::vector<double> ys = yAxis_.GetPVals();
+        if (stepCount == 1) {
+            return;
+        }
+        if (stepCount < useToCount) {
+            useToCount = stepCount;
+        }
+        for (int i = 1; i < useToCount; i++) {
+            totalDelta_ += Offset(xs.at(stepCount-i), ys.at(stepCount-i)) - \
+                            Offset(xs.at(stepCount-i-1), ys.at(stepCount-i-1));
+        }
+        stepLength = (totalDelta_ / (useToCount-1)).GetDistance();
+    }
+
+    int GetStepLength()
+    {
+        return stepLength;
+    }
+    TouchEventInfo& GetFirstTrackPoint()
     {
         return firstTrackPoint_;
     }
@@ -110,34 +136,17 @@ public:
         return mainVelocity_;
     }
 
-    double GetMainVelocityAxis()
+    Axis GetMaxAxis()
     {
         UpdateVelocity();
         if (fabs(velocity_.GetVeloX()) > fabs(velocity_.GetVeloY())) {
-            return velocity_.GetVeloX();
+            maxAxis_ = Axis::HORIZONTAL;
         } else {
-            return velocity_.GetVeloY();
+            maxAxis_ = Axis::VERTICAL;
         }
+        return maxAxis_;
     }
-    int GetStepLength()
-    {
-        stepCount = xAxis_.GetXVals().size();
-        std::vector<double> xs = xAxis_.GetXVals();
-        std::vector<double> ys = yAxis_.GetYVals();
-        totalDelta_.Resets();
-        int useToCount = 4;
-        if (stepCount == 1) {
-            return 0;
-        }
-        if (stepCount < useToCount) {
-            useToCount = stepCount;
-        }
-        for (int i = 1; i < useToCount; i++) {
-            totalDelta_ += Offset(xs.at(stepCount-i), ys.at(stepCount-i)) - \
-                            Offset(xs.at(stepCount-i-1), ys.at(stepCount-i-1));
-        }
-        return (totalDelta_ / (useToCount-1)).GetDistance();
-    }
+
     double GetMoveDistance() const
     {
         return (lastPosition_ - firstPosition_).GetDistance();
@@ -167,39 +176,45 @@ public:
         UpdateVelocity();
         switch (mainAxis_) {
             case Axis::FREE:
-                return velocity_.GetVeloValue();
+                mainVelocity_ =  velocity_.GetVeloValue();
+                break;
             case Axis::HORIZONTAL:
-                return velocity_.GetVeloX();
+                mainVelocity_ = velocity_.GetVeloX();
+                break;
             case Axis::VERTICAL:
-                return velocity_.GetVeloY();
+                mainVelocity_ = velocity_.GetVeloY();
+                break;
             default:
-                return 0.0;
+                mainVelocity_ = 0.0;
         }
+        return mainVelocity_;
     }
 
-    const TouchEventInfo& GetLastTrackPoint() const
+    TouchEventInfo& GetLastTrackPoint()
     {
         return lastTrackPoint_;
     }
 
 private:
     void UpdateVelocity();
-
     Axis mainAxis_ { Axis::FREE };
+    Axis maxAxis_  {Axis::VERTICAL };
     TouchEventInfo firstTrackPoint_;
     TouchEventInfo currentTrackPoint_;
     TouchEventInfo lastTrackPoint_;
     TouchEventInfo downTrackPoint_;
     Offset firstPosition_;
     Offset lastPosition_;
+    Offset totalDelta_;
     Velocity velocity_;
     double mainVelocity_ = 0.0;
     Offset delta_;
-    Offset totalDelta_;
-    int stepCount = 0;
     Offset offset_;
     double seconds = 0;
     bool isFirstPoint_ = true;
+    int useToCount = 4;
+    int stepLength = 0;
+    int stepCount = 0;
     TimeStamp firstTimePoint_;
     TimeStamp lastTimePoint_;
     LSMImpl xAxis_ { 3, 5 };

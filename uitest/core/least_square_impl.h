@@ -71,12 +71,12 @@ public:
      */
     bool GetLSMParams(std::vector<double>& params);
 
-    inline const std::vector<double>& GetXVals() const
+    inline const std::vector<double>& GetTVals() const
     {
         return tVals_;
     }
 
-    inline const std::vector<double>& GetYVals() const
+    inline const std::vector<double>& GetPVals() const
     {
         return pVals_;
     }

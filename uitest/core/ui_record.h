@@ -25,7 +25,9 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <map>
 #include <thread>
+#include <mutex>
 #include "least_square_impl.h"
 #include "touch_event.h"
 #include "offset.h"
@@ -39,15 +41,18 @@
 #include "widget_operator.h"
 #include "window_operator.h"
 #include "widget_selector.h"
+#include "ui_model.h"
 
 namespace OHOS::uitest {
     static int g_touchTime;
+    static int TIMEINTERVAL = 5000;
+    static std::string g_recordMode = "";
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
         void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
-        void HandleDownEvent(const TouchEventInfo& event) const;
-        void HandleMoveEvent(const TouchEventInfo& event) const;
-        void HandleUpEvent(const TouchEventInfo& event) const;
+        void HandleDownEvent(TouchEventInfo& event) const;
+        void HandleMoveEvent(TouchEventInfo& event) const;
+        void HandleUpEvent(TouchEventInfo& event) const;
         void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
         void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override {}
         static std::shared_ptr<InputEventCallback> GetPtr();
@@ -69,6 +74,8 @@ namespace OHOS::uitest {
 
     bool InitEventRecordFile();
 
+    void RecordInitEnv(std::string modeOpt);
+
     static int64_t GetMillisTime()
     {
         auto timeNow = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
@@ -77,11 +84,26 @@ namespace OHOS::uitest {
     }
 
     class EventData {
+    private:
+        VelocityTracker v;
+        std::string action;
     public:
-        static void WriteEventData(std::ofstream &outFile, const VelocityTracker &velocityTracker, \
-                                   const std::string &actionType);
-
+        void WriteEventData(VelocityTracker &velocityTracker, const std::string &actionType);
         static void ReadEventLine();
+    };
+
+    class DataWrapper {
+    private:
+        EventData data;
+        UiDriver d;
+        std::mutex mut;
+    public:
+        template<typename Function>
+        void processData(Function userFunc)
+        {
+            std::lock_guard<std::mutex> lock(mut);
+            userFunc(data);
+        }
     };
     
     class Timer {
@@ -98,6 +120,14 @@ namespace OHOS::uitest {
         {
             Stop();
         }
+        static void TimerFunc()
+        {
+            int currentTime = GetMillisTime();
+            int diff = currentTime - g_touchTime;
+            if (diff >= TIMEINTERVAL) {
+                std::cout << "No operation detected for 5 seconds, press ctrl + c to save this file?" << std::endl;
+            }
+        }
         void Start(int interval, std::function<void()> task)
         {
             if (expired == false) {
@@ -106,7 +136,7 @@ namespace OHOS::uitest {
             expired = false;
             std::thread([this, interval, task]() {
                 while (!tryToExpire) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(timeInterval));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(TIMEINTERVAL));
                     task();
                 }
 

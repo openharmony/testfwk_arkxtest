@@ -17,6 +17,7 @@
 #define EVENT_TOUCH_EVENT_H
 
 #include <list>
+#include <map>
 #include "offset.h"
 
 namespace OHOS::uitest {
@@ -24,8 +25,8 @@ using TimeStamp = std::chrono::high_resolution_clock::time_point;
 
 struct TouchPoint final {
     int32_t id = 0;
-    float x = 0.0f;
-    float y = 0.0f;
+    int32_t x = 0;
+    int32_t y = 0;
     TimeStamp downTime;
 };
 /**
@@ -36,18 +37,23 @@ struct TouchEventInfo final {
     // The ID is used to identify the point of contact between the finger and the screen. Different fingers have
     // different ids.
     int32_t id = 0;
-    float x = 0.0f;
-    float y = 0.0f;
+    int32_t x = 0;
+    int32_t y = 0;
+    int32_t wx = 0;
+    int32_t wy = 0;
     // nanosecond time stamp.
     TimeStamp time;
+    std::map<std::string, std::string> attributes;
+    std::string bundleName;
+    std::string abilityName;
     Offset GetOffset() const
     {
         return Offset(x, y);
     }
     void Resets()
     {
-        x = 0.0;
-        y = 0.0;
+        x = 0;
+        y = 0;
         time = std::chrono::high_resolution_clock::now();
     }
 };
