@@ -69,13 +69,6 @@ namespace OHOS::uitest {
 
     bool InitEventRecordFile();
 
-    static int64_t GetMillisTime()
-    {
-        auto timeNow = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-        auto tmp = std::chrono::duration_cast<std::chrono::milliseconds>(timeNow.time_since_epoch());
-        return tmp.count();
-    }
-
     class EventData {
     public:
         static void WriteEventData(std::ofstream &outFile, const VelocityTracker &velocityTracker, \
