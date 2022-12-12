@@ -16,7 +16,6 @@
 #ifndef GEOMETRY_OFFSET_H
 #define GEOMETRY_OFFSET_H
 
-#include <cmath>
 #include <limits>
 
 #include "size.h"

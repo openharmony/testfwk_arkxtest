@@ -35,7 +35,7 @@ bool LSMImpl::GetLSMParams(std::vector<double>& params)
     xVals.resize(countNum, NUM_ZERO);
     std::vector<double> yVals;
     yVals.resize(countNum, NUM_ZERO);
-    int32_t size = countNum - NUM_ONE;
+    int32_t size = countNum - 1;
     for (auto iter = tVals_.rbegin(); iter != tVals_.rend(); iter++) {
         xVals[size] = *iter;
         size--;
@@ -43,11 +43,11 @@ bool LSMImpl::GetLSMParams(std::vector<double>& params)
             break;
         }
     }
-    size = countNum - NUM_ONE;
+    size = countNum - 1;
     for (auto iter = pVals_.rbegin(); iter != pVals_.rend(); iter++) {
         yVals[size] = *iter;
         size--;
-        if (size < 0) {
+        if (size < NUM_ZERO) {
             break;
         }
     }
@@ -56,8 +56,8 @@ bool LSMImpl::GetLSMParams(std::vector<double>& params)
         for (auto i = 0; i < countNum; i++) {
             const auto& value = xVals[i];
             matrixn3[i][NUM_TWO] = 1;
-            matrixn3[i][1] = value;
-            matrixn3[i][0] = value * value;
+            matrixn3[i][NUM_ONE] = value;
+            matrixn3[i][NUM_ZERO] = value * value;
         }
         Matrix3 invert;
         auto transpose = matrixn3.Transpose();
@@ -76,10 +76,10 @@ bool LSMImpl::GetLSMParams(std::vector<double>& params)
     MatrixN4 matrixn4 { countNum };
     for (auto i = 0; i < countNum; i++) {
         const auto& value = xVals[i];
-        matrixn4[i][3] = 1;
-        matrixn4[i][2] = value;
-        matrixn4[i][1] = value * value;
-        matrixn4[i][0] = value * value * value;
+        matrixn4[i][NUM_THREE] = 1;
+        matrixn4[i][NUM_TWO] = value;
+        matrixn4[i][NUM_ONE] = value * value;
+        matrixn4[i][NUM_ZERO] = value * value * value;
     }
     auto transpose = matrixn4.Transpose();
     auto inversMatrix4 = Matrix4::Invert(transpose * matrixn4);
