@@ -68,7 +68,7 @@ void VelocityTracker::UpdateVelocity()
     if (yAxis_.GetLSMParams(yAxis)) {
         yVelocity = linearParam * yAxis[ZERO] * yValue + yAxis[ONE];
     }
-    velocity_.SetOffsetPerSecond({ xVelocity, yVelocity });
+    velocity_.SetOffsetPerSecond( { xVelocity, yVelocity });
     isVelocityDone_ = true;
 }
 } // namespace OHOS::uitest

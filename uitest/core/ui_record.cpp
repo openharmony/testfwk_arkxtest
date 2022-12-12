@@ -31,7 +31,6 @@ namespace OHOS::uitest {
     constexpr float FLING_THRESHOLD = 45.0;
     constexpr float DURATIOIN_THRESHOLD = 0.6;
     constexpr float INTERVAL_THRESHOLD = 0.2;
-    constexpr int32_t BACK_KEY = 2;
     constexpr int32_t MaxVelocity = 40000;
     bool g_isOpDect = false;
     std::string g_filePath;
@@ -200,7 +199,7 @@ namespace OHOS::uitest {
     }
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const
     {
-        if (keyEvent->GetKeyCode() == BACK_KEY) {
+        if (keyEvent->GetKeyCode() == KEYCODE_BACK) {
             g_touchop = RETURN;
         }
         std::thread t(SaveEventData);
@@ -236,7 +235,6 @@ namespace OHOS::uitest {
             } else if (moveDistance > MAX_THRESHOLD) {
                 int startY = g_velocityTracker.GetFirstTrackPoint().y;
                 Axis maxAxis_ = g_velocityTracker.GetMaxAxis();
-                // 抬手速度大于45 => FLING_
                 if (fabs(mainVelocity) > FLING_THRESHOLD) {
                     g_touchop = FLING;
                     g_isClick = false;
