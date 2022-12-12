@@ -44,6 +44,7 @@ namespace OHOS::uitest {
     constexpr size_t INDEX_TWO = 2;
     constexpr size_t INDEX_THREE = 3;
     constexpr size_t INDEX_FOUR = 4;
+    constexpr int32_t NUM_TWO = 2;
     constexpr int32_t ZERO = 0;
     constexpr int32_t ONE = 1;
     constexpr int32_t TWO = 2;
