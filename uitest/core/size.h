@@ -88,7 +88,7 @@ public:
 
     bool IsEmpty() const
     {
-        return NearEqual(width_, 0.0) || NearEqual(height_, 0.0);
+        return NearEqual(width_, NUM_ZERO) || NearEqual(height_, NUM_ZERO);
     }
 
     Size& AddHeight(double height)
@@ -117,7 +117,7 @@ public:
 
     bool IsValid() const
     {
-        return width_ > 0.0 && height_ > 0.0;
+        return width_ > NUM_ZERO && height_ > NUM_ZERO;
     }
 
     Size operator+(const Size& size) const

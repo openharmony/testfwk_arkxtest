@@ -76,13 +76,6 @@ namespace OHOS::uitest {
 
     void RecordInitEnv(std::string modeOpt);
 
-    static int64_t GetMillisTime()
-    {
-        auto timeNow = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-        auto tmp = std::chrono::duration_cast<std::chrono::milliseconds>(timeNow.time_since_epoch());
-        return tmp.count();
-    }
-
     class EventData {
     public:
         void WriteEventData(VelocityTracker &velocityTracker, const std::string &actionType);
@@ -122,7 +115,7 @@ namespace OHOS::uitest {
         }
         static void TimerFunc()
         {
-            int currentTime = GetMillisTime();
+            int currentTime = GetCurrentMillisecond();
             int diff = currentTime - g_touchTime;
             if (diff >= TIMEINTERVAL) {
                 std::cout << "No operation detected for 5 seconds, press ctrl + c to save this file?" << std::endl;

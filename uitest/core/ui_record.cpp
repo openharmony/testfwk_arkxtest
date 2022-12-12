@@ -12,13 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
 #include "ui_record.h"
 #include "ability_manager_client.h"
 
 using namespace std;
 using namespace std::chrono;
-
 namespace OHOS::uitest {
     std::string g_operationType[9] = { "click", "doubleClick", "longClick", "drag", "swipe", \
                                         "fling", "back", "home", "recent" };
@@ -64,7 +62,7 @@ namespace OHOS::uitest {
     }
     void PrintLine(TouchEventInfo &downEvent, TouchEventInfo &upEvent, const std::string &actionType)
     {
-        std::cout<< g_velocityTracker.GetInterVal() << ", "<< std::endl;
+        std::cout << "Interval: " << g_velocityTracker.GetInterVal() << std::endl;
         std::cout << actionType << ": " ;
         if (actionType == "fling" || actionType == "swipe" || actionType == "drag") {
             if (downEvent.attributes.find("id")->second != "" || downEvent.attributes.find("text")->second != "") {
@@ -147,10 +145,10 @@ namespace OHOS::uitest {
             }
             g_outFile << std::endl;
             if (g_outFile.fail()) {
-                std::cout<< " g_outFile failed. " <<std::endl;
+                std::cout<< " outFile failed. " <<std::endl;
             }
         } else {
-            std::cout << "g_outFile is not opened!"<< std::endl;
+            std::cout << "outFile is not opened!"<< std::endl;
         }
     }
     void EventData::ReadEventLine()
@@ -283,7 +281,7 @@ namespace OHOS::uitest {
             std::cout << "GetPointerItem Fail" << std::endl;
         }
         TouchEventInfo touchEvent {};
-        g_touchTime = GetMillisTime();
+        g_touchTime = GetCurrentMillisecond();
         TimeStamp t {std::chrono::duration_cast<TimeStamp::duration>( \
                      std::chrono::nanoseconds(pointerEvent->GetActionTime()*1000))};
         touchEvent.time = t;
