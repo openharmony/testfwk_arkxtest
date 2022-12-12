@@ -19,12 +19,12 @@ using namespace std;
 using namespace std::chrono;
 namespace OHOS::uitest {
     std::string g_operationType[9] = { "click", "doubleClick", "longClick", "drag", "swipe", \
-                                        "fling", "back", "home", "recent" };
+                                       "fling", "back", "home", "recent" };
     TouchOp g_touchop = CLICK;
     VelocityTracker g_velocityTracker;
     bool g_isClick = false;
     int g_clickEventCount = 0;
-    constexpr int32_t NAVI_HORIZON_THRE_V= 100;
+    constexpr int32_t NAVI_HORIZON_THRE_V = 100;
     constexpr int32_t NAVI_VERTI_THRE_V = 200;
     constexpr int32_t NAVI_THRE_D = 10;
     constexpr float MAX_THRESHOLD = 15.0;
@@ -155,9 +155,9 @@ namespace OHOS::uitest {
     void EventData::ReadEventLine()
     {
         std::ifstream inFile(g_defaultDir + "/" + "record.csv");
-		enum CaseTypes : uint8_t { 
+        enum CaseTypes : uint8_t {
             OP_TYPE = 0, X_POSI, Y_POSI, X2_POSI, Y2_POSI, INTERVAL, LENGTH, VELO, \
-            MAX_VEL, W_ID, W_TYPE, W_TEXT, W2_ID, W2_TYPE, W2_TEXT, BUNDLE, ABILITY 
+            MAX_VEL, W_ID, W_TYPE, W_TEXT, W2_ID, W2_TYPE, W2_TEXT, BUNDLE, ABILITY
         };
         char buffer[100];
         while (!inFile.eof()) {
