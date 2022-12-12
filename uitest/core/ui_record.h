@@ -92,7 +92,7 @@ namespace OHOS::uitest {
         {
             std::lock_guard<std::mutex> lock(mut);
             userFunc(data);
-        }    
+        }
     private:
         EventData data;
         UiDriver d;

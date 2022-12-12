@@ -66,8 +66,8 @@ Matrix4 Matrix4::CreatePerspective(double distance)
 Matrix4 Matrix4::Invert(const Matrix4& matrix)
 {
     Matrix4 inverted = CreateInvert(matrix);
-    double determinant = matrix(ZERO, ZERO) * inverted(ZERO, ZERO) + matrix(ZERO, ONE) * inverted(ONE, ZERO) + matrix(ZERO, TWO) * inverted(TWO, ZERO) +
-                         matrix(ZERO, THREE) * inverted(THREE, ZERO);
+    double determinant = matrix(ZERO, ZERO) * inverted(ZERO, ZERO) + matrix(ZERO, ONE) * inverted(ONE, ZERO) +
+    matrix(ZERO, TWO) * inverted(TWO, ZERO) + matrix(ZERO, THREE) * inverted(THREE, ZERO);
     if (!NearZero(determinant)) {
         inverted = inverted * (1.0f / determinant);
     } else {
@@ -195,7 +195,8 @@ Matrix4 Matrix4::CreateInvert(const Matrix4& matrix)
 
 bool Matrix4::operator==(const Matrix4& matrix) const
 {
-    return std::equal(&matrix4x4_[ZERO][ZERO], &matrix4x4_[ZERO][ZERO] + MATRIX_LENGTH, &matrix.matrix4x4_[ZERO][ZERO], IsEqual);
+    return std::equal(&matrix4x4_[ZERO][ZERO], &matrix4x4_[ZERO][ZERO] + MATRIX_LENGTH,
+                      &matrix.matrix4x4_[ZERO][ZERO], IsEqual);
 }
 
 Matrix4 Matrix4::operator*(double num)
