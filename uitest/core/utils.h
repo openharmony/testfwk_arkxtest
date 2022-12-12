@@ -16,7 +16,6 @@
 #ifndef UTILS_UTILS_H
 #define UTILS_UTILS_H
 #include <cmath>
-#include <cstdint>
 #include "common_utilities_hpp.h"
 namespace OHOS::uitest {
 inline bool NearEqual(const double left, const double right, const double epsilon)

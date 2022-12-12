@@ -138,8 +138,8 @@ namespace OHOS::uitest {
                 }
                 if (actionType == "click") {
                     std::vector<std::string> names = GetForeAbility();
-                    g_outFile << names[NUM_ZERO] << ',';
-                    g_outFile << names[NUM_ONE] << ',';
+                    g_outFile << names[ZERO] << ',';
+                    g_outFile << names[ONE] << ',';
                 } else {
                     g_outFile << ",,";
                 }
@@ -338,7 +338,7 @@ namespace OHOS::uitest {
                 << windowBounds.top_ << "," << windowBounds.right_ << ","
                 << windowBounds.bottom_ << ")" << std::endl;
         std::vector<std::string> names = GetForeAbility();
-        std::cout << "Current ForAbility :" << names[NUM_ZERO] << ", " << names[NUM_ONE] << std::endl;
+        std::cout << "Current ForAbility :" << names[ZERO] << ", " << names[ONE] << std::endl;
         if (g_outFile.is_open()) {
             g_outFile << "windowBounds" << ',';
             g_outFile << windowBounds.left_ << ',';
@@ -346,8 +346,8 @@ namespace OHOS::uitest {
             g_outFile << windowBounds.right_ << ',';
             g_outFile << windowBounds.bottom_ << ',';
             g_outFile << "0,0,0,0,,,,,,,";
-            g_outFile << names[NUM_ZERO] << ',';
-            g_outFile << names[NUM_ONE] << ',' << std::endl;
+            g_outFile << names[ZERO] << ',';
+            g_outFile << names[ONE] << ',' << std::endl;
         }
     }
 } // namespace OHOS::uitest
