@@ -42,6 +42,7 @@
 
 namespace OHOS::uitest {
     static int g_touchTime;
+    int TIMEINTERVAL = 5000;
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
         void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
