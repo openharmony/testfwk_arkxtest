@@ -76,12 +76,12 @@ namespace OHOS::uitest {
         widgetTree_->MarshalIntoDom(out);
     }
 
-    const Widget *UiDriver::FindWidget(float x_, float y_)
+    const Widget *UiDriver::FindWidget(float x, float y)
     {
         ApiCallErr err(NO_ERROR);
         UpdateUi(true, err);
         if (err.code_ == NO_ERROR && widgetTree_ != nullptr) {
-            return widgetTree_ ->MarshalWidgetTree(x_, y_);
+            return widgetTree_ ->MarshalWidgetTree(x, y);
         } else {
             return nullptr;
         }
