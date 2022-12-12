@@ -21,7 +21,7 @@
 namespace OHOS::uitest {
 class Matrix4N;
 class MatrixN4;
-class UITEST_EXPORT Matrix4 {
+class Matrix4 {
 public:
     // Matrix dimension is 4X4.
     static constexpr int32_t DIMENSION = 4;
@@ -65,14 +65,14 @@ public:
     double operator[](int32_t index) const;
     inline double Get(int32_t row, int32_t col) const
     {
-        UITEST_DCHECK((unsigned)row < DIMENSION);
-        UITEST_DCHECK((unsigned)col < DIMENSION);
+        DCHECK((unsigned)row < DIMENSION);
+        DCHECK((unsigned)col < DIMENSION);
         return matrix4x4_[col][row];
     }
     inline void Set(int32_t row, int32_t col, double value)
     {
-        UITEST_DCHECK((unsigned)row < DIMENSION);
-        UITEST_DCHECK((unsigned)col < DIMENSION);
+        DCHECK((unsigned)row < DIMENSION);
+        DCHECK((unsigned)col < DIMENSION);
         matrix4x4_[col][row] = value;
     }
     double Determinant() const;
@@ -98,7 +98,7 @@ private:
     };
 };
 
-class UITEST_EXPORT Matrix4N {
+class Matrix4N {
 public:
     // Matrix dimension is 4X4.
     static constexpr int32_t DIMENSION = 4;
@@ -155,7 +155,7 @@ private:
     int32_t columns_ = 0;
 };
 
-class UITEST_EXPORT MatrixN4 {
+class MatrixN4 {
 public:
     // Matrix dimension is 4XN.
     static constexpr int32_t DIMENSION = 4;

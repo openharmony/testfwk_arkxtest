@@ -17,11 +17,10 @@
 #define POINT_H
 
 #include "offset.h"
-#include "macros.h"
 #include "utils.h"
 
 namespace OHOS::uitest {
-class UITEST_EXPORT Point {
+class Point {
 public:
     Point() = default;
     ~Point() = default;

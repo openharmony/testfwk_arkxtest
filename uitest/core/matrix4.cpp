@@ -58,7 +58,7 @@ Matrix4 Matrix4::CreatePerspective(double distance)
 {
     auto result = CreateIdentity();
     if (GreatNotEqual(distance, 0.0f)) {
-        result.matrix4x4_[NUM_TWO][NUM_THREE] = -1.0f / distance;
+        result.matrix4x4_[2][3] = -1.0f / distance;
     }
     return result;
 }
@@ -66,8 +66,8 @@ Matrix4 Matrix4::CreatePerspective(double distance)
 Matrix4 Matrix4::Invert(const Matrix4& matrix)
 {
     Matrix4 inverted = CreateInvert(matrix);
-    double determinant = matrix(NUM_ZERO, NUM_ZERO) * inverted(NUM_ZERO, NUM_ZERO) + matrix(NUM_ZERO, NUM_ONE) * inverted(NUM_ONE, NUM_ZERO) + matrix(NUM_ZERO, NUM_TWO) * inverted(NUM_TWO, NUM_ZERO) +
-                         matrix(NUM_ZERO, NUM_THREE) * inverted(NUM_THREE, NUM_ZERO);
+    double determinant = matrix(0, 0) * inverted(0, 0) + matrix(0, 1) * inverted(1, 0) + matrix(0, 2) * inverted(2, 0) +
+                         matrix(0, 3) * inverted(3, 0);
     if (!NearZero(determinant)) {
         inverted = inverted * (1.0f / determinant);
     } else {
@@ -82,33 +82,33 @@ Matrix4::Matrix4()
 
 Matrix4::Matrix4(const Matrix4& matrix)
 {
-    std::copy_n(&matrix.matrix4x4_[NUM_ZERO][NUM_ZERO], MATRIX_LENGTH, &matrix4x4_[NUM_ZERO][NUM_ZERO]);
+    std::copy_n(&matrix.matrix4x4_[0][0], MATRIX_LENGTH, &matrix4x4_[0][0]);
 }
 
 Matrix4::Matrix4(double m00, double m01, double m02, double m03, double m10, double m11, double m12, double m13,
     double m20, double m21, double m22, double m23, double m30, double m31, double m32, double m33)
 {
-    matrix4x4_[NUM_ZERO][NUM_ZERO] = m00;
-    matrix4x4_[NUM_ONE][NUM_ZERO] = m01;
-    matrix4x4_[NUM_TWO][NUM_ZERO] = m02;
-    matrix4x4_[NUM_THREE][NUM_ZERO] = m03;
-    matrix4x4_[NUM_ZERO][NUM_ONE] = m10;
-    matrix4x4_[NUM_ONE][NUM_ONE] = m11;
-    matrix4x4_[NUM_TWO][NUM_ONE] = m12;
-    matrix4x4_[NUM_THREE][NUM_ONE] = m13;
-    matrix4x4_[NUM_ZERO][NUM_TWO] = m20;
-    matrix4x4_[NUM_ONE][NUM_TWO] = m21;
-    matrix4x4_[NUM_TWO][NUM_TWO] = m22;
-    matrix4x4_[NUM_THREE][NUM_TWO] = m23;
-    matrix4x4_[NUM_ZERO][NUM_THREE] = m30;
-    matrix4x4_[NUM_ONE][NUM_THREE] = m31;
-    matrix4x4_[NUM_TWO][NUM_THREE] = m32;
-    matrix4x4_[NUM_THREE][NUM_THREE] = m33;
+    matrix4x4_[0][0] = m00;
+    matrix4x4_[1][0] = m01;
+    matrix4x4_[2][0] = m02;
+    matrix4x4_[3][0] = m03;
+    matrix4x4_[0][1] = m10;
+    matrix4x4_[1][1] = m11;
+    matrix4x4_[2][1] = m12;
+    matrix4x4_[3][1] = m13;
+    matrix4x4_[0][2] = m20;
+    matrix4x4_[1][2] = m21;
+    matrix4x4_[2][2] = m22;
+    matrix4x4_[3][2] = m23;
+    matrix4x4_[0][3] = m30;
+    matrix4x4_[1][3] = m31;
+    matrix4x4_[2][3] = m32;
+    matrix4x4_[3][3] = m33;
 }
 
 void Matrix4::SetEntry(int32_t row, int32_t col, double value)
 {
-    if ((row < NUM_ZERO || row >= DIMENSION) || (col < NUM_ZERO || col >= DIMENSION)) {
+    if ((row < 0 || row >= DIMENSION) || (col < 0 || col >= DIMENSION)) {
         return;
     }
     matrix4x4_[row][col] = value;
@@ -127,67 +127,67 @@ int32_t Matrix4::Count() const
 Matrix4 Matrix4::CreateInvert(const Matrix4& matrix)
 {
     return Matrix4(
-        matrix(NUM_ONE, NUM_ONE) * matrix(NUM_TWO, NUM_TWO) * matrix(NUM_THREE, NUM_THREE) - matrix(NUM_ONE, NUM_ONE) * matrix(NUM_TWO, NUM_THREE) * matrix(NUM_THREE, NUM_TWO) -
-            matrix(NUM_TWO, NUM_ONE) * matrix(NUM_ONE, NUM_TWO) * matrix(NUM_THREE, NUM_THREE) + matrix(NUM_TWO, NUM_ONE) * matrix(NUM_ONE, NUM_THREE) * matrix(NUM_THREE, NUM_TWO) +
-            matrix(NUM_THREE, NUM_ONE) * matrix(NUM_ONE, NUM_TWO) * matrix(NUM_TWO, NUM_THREE) - matrix(NUM_THREE, NUM_ONE) * matrix(NUM_ONE, NUM_THREE) * matrix(NUM_TWO, NUM_TWO),
-        -matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_TWO, NUM_TWO) * matrix(NUM_THREE, NUM_THREE) + matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_TWO, NUM_THREE) * matrix(NUM_THREE, NUM_TWO) +
-            matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ONE, NUM_TWO) * matrix(NUM_THREE, NUM_THREE) - matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ONE, NUM_THREE) * matrix(NUM_THREE, NUM_TWO) -
-            matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ONE, NUM_TWO) * matrix(NUM_TWO, NUM_THREE) + matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ONE, NUM_THREE) * matrix(NUM_TWO, NUM_TWO),
-        matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_TWO, NUM_ONE) * matrix(NUM_THREE, NUM_THREE) - matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_TWO, NUM_THREE) * matrix(NUM_THREE, NUM_ONE) -
-            matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ONE, NUM_ONE) * matrix(NUM_THREE, NUM_THREE) + matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ONE, NUM_THREE) * matrix(NUM_THREE, NUM_ONE) +
-            matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ONE, NUM_ONE) * matrix(NUM_TWO, NUM_THREE) - matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ONE, NUM_THREE) * matrix(NUM_TWO, NUM_ONE),
-        -matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_TWO, NUM_ONE) * matrix(NUM_THREE, NUM_TWO) + matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_TWO, NUM_TWO) * matrix(NUM_THREE, NUM_ONE) +
-            matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ONE, NUM_ONE) * matrix(NUM_THREE, NUM_TWO) - matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ONE, NUM_TWO) * matrix(NUM_THREE, NUM_ONE) -
-            matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ONE, NUM_ONE) * matrix(NUM_TWO, NUM_TWO) + matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ONE, NUM_TWO) * matrix(NUM_TWO, NUM_ONE),
-        -matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_TWO, NUM_TWO) * matrix(NUM_THREE, NUM_THREE) + matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_TWO, NUM_THREE) * matrix(NUM_THREE, NUM_TWO) +
-            matrix(NUM_TWO, NUM_ONE) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_THREE, NUM_THREE) - matrix(NUM_TWO, NUM_ONE) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_THREE, NUM_TWO) -
-            matrix(NUM_THREE, NUM_ONE) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_TWO, NUM_THREE) + matrix(NUM_THREE, NUM_ONE) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_TWO, NUM_TWO),
-        matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_TWO, NUM_TWO) * matrix(NUM_THREE, NUM_THREE) - matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_TWO, NUM_THREE) * matrix(NUM_THREE, NUM_TWO) -
-            matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_THREE, NUM_THREE) + matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_THREE, NUM_TWO) +
-            matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_TWO, NUM_THREE) - matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_TWO, NUM_TWO),
-        -matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_TWO, NUM_ONE) * matrix(NUM_THREE, NUM_THREE) + matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_TWO, NUM_THREE) * matrix(NUM_THREE, NUM_ONE) +
-            matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_THREE, NUM_THREE) - matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_THREE, NUM_ONE) -
-            matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_TWO, NUM_THREE) + matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_TWO, NUM_ONE),
-        matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_TWO, NUM_ONE) * matrix(NUM_THREE, NUM_TWO) - matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_TWO, NUM_TWO) * matrix(NUM_THREE, NUM_ONE) -
-            matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_THREE, NUM_TWO) + matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_THREE, NUM_ONE) +
-            matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_TWO, NUM_TWO) - matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_TWO, NUM_ONE),
-        matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_ONE, NUM_TWO) * matrix(NUM_THREE, NUM_THREE) - matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_ONE, NUM_THREE) * matrix(NUM_THREE, NUM_TWO) -
-            matrix(NUM_ONE, NUM_ONE) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_THREE, NUM_THREE) + matrix(NUM_ONE, NUM_ONE) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_THREE, NUM_TWO) +
-            matrix(NUM_THREE, NUM_ONE) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_ONE, NUM_THREE) - matrix(NUM_THREE, NUM_ONE) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_ONE, NUM_TWO),
-        -matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_ONE, NUM_TWO) * matrix(NUM_THREE, NUM_THREE) + matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_ONE, NUM_THREE) * matrix(NUM_THREE, NUM_TWO) +
-            matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_THREE, NUM_THREE) - matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_THREE, NUM_TWO) -
-            matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_ONE, NUM_THREE) + matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_ONE, NUM_TWO),
-        matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_ONE, NUM_ONE) * matrix(NUM_THREE, NUM_THREE) - matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_ONE, NUM_THREE) * matrix(NUM_THREE, NUM_ONE) -
-            matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_THREE, NUM_THREE) + matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_THREE, NUM_ONE) +
-            matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_ONE, NUM_THREE) - matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_ONE, NUM_ONE),
-        -matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_ONE, NUM_ONE) * matrix(NUM_THREE, NUM_TWO) + matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_ONE, NUM_TWO) * matrix(NUM_THREE, NUM_ONE) +
-            matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_THREE, NUM_TWO) - matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_THREE, NUM_ONE) -
-            matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_ONE, NUM_TWO) + matrix(NUM_THREE, NUM_ZERO) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_ONE, NUM_ONE),
-        -matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_ONE, NUM_TWO) * matrix(NUM_TWO, NUM_THREE) + matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_ONE, NUM_THREE) * matrix(NUM_TWO, NUM_TWO) +
-            matrix(NUM_ONE, NUM_ONE) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_TWO, NUM_THREE) - matrix(NUM_ONE, NUM_ONE) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_TWO, NUM_TWO) -
-            matrix(NUM_TWO, NUM_ONE) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_ONE, NUM_THREE) + matrix(NUM_TWO, NUM_ONE) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_ONE, NUM_TWO),
-        matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_ONE, NUM_TWO) * matrix(NUM_TWO, NUM_THREE) - matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_ONE, NUM_THREE) * matrix(NUM_TWO, NUM_TWO) -
-            matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_TWO, NUM_THREE) + matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_TWO, NUM_TWO) +
-            matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_ONE, NUM_THREE) - matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_ONE, NUM_TWO),
-        -matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_ONE, NUM_ONE) * matrix(NUM_TWO, NUM_THREE) + matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_ONE, NUM_THREE) * matrix(NUM_TWO, NUM_ONE) +
-            matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_TWO, NUM_THREE) - matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_TWO, NUM_ONE) -
-            matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_ONE, NUM_THREE) + matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ZERO, NUM_THREE) * matrix(NUM_ONE, NUM_ONE),
-        matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_ONE, NUM_ONE) * matrix(NUM_TWO, NUM_TWO) - matrix(NUM_ZERO, NUM_ZERO) * matrix(NUM_ONE, NUM_TWO) * matrix(NUM_TWO, NUM_ONE) -
-            matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_TWO, NUM_TWO) + matrix(NUM_ONE, NUM_ZERO) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_TWO, NUM_ONE) +
-            matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ZERO, NUM_ONE) * matrix(NUM_ONE, NUM_TWO) - matrix(NUM_TWO, NUM_ZERO) * matrix(NUM_ZERO, NUM_TWO) * matrix(NUM_ONE, NUM_ONE));
+        matrix(1, 1) * matrix(2, 2) * matrix(3, 3) - matrix(1, 1) * matrix(2, 3) * matrix(3, 2) -
+            matrix(2, 1) * matrix(1, 2) * matrix(3, 3) + matrix(2, 1) * matrix(1, 3) * matrix(3, 2) +
+            matrix(3, 1) * matrix(1, 2) * matrix(2, 3) - matrix(3, 1) * matrix(1, 3) * matrix(2, 2),
+        -matrix(1, 0) * matrix(2, 2) * matrix(3, 3) + matrix(1, 0) * matrix(2, 3) * matrix(3, 2) +
+            matrix(2, 0) * matrix(1, 2) * matrix(3, 3) - matrix(2, 0) * matrix(1, 3) * matrix(3, 2) -
+            matrix(3, 0) * matrix(1, 2) * matrix(2, 3) + matrix(3, 0) * matrix(1, 3) * matrix(2, 2),
+        matrix(1, 0) * matrix(2, 1) * matrix(3, 3) - matrix(1, 0) * matrix(2, 3) * matrix(3, 1) -
+            matrix(2, 0) * matrix(1, 1) * matrix(3, 3) + matrix(2, 0) * matrix(1, 3) * matrix(3, 1) +
+            matrix(3, 0) * matrix(1, 1) * matrix(2, 3) - matrix(3, 0) * matrix(1, 3) * matrix(2, 1),
+        -matrix(1, 0) * matrix(2, 1) * matrix(3, 2) + matrix(1, 0) * matrix(2, 2) * matrix(3, 1) +
+            matrix(2, 0) * matrix(1, 1) * matrix(3, 2) - matrix(2, 0) * matrix(1, 2) * matrix(3, 1) -
+            matrix(3, 0) * matrix(1, 1) * matrix(2, 2) + matrix(3, 0) * matrix(1, 2) * matrix(2, 1),
+        -matrix(0, 1) * matrix(2, 2) * matrix(3, 3) + matrix(0, 1) * matrix(2, 3) * matrix(3, 2) +
+            matrix(2, 1) * matrix(0, 2) * matrix(3, 3) - matrix(2, 1) * matrix(0, 3) * matrix(3, 2) -
+            matrix(3, 1) * matrix(0, 2) * matrix(2, 3) + matrix(3, 1) * matrix(0, 3) * matrix(2, 2),
+        matrix(0, 0) * matrix(2, 2) * matrix(3, 3) - matrix(0, 0) * matrix(2, 3) * matrix(3, 2) -
+            matrix(2, 0) * matrix(0, 2) * matrix(3, 3) + matrix(2, 0) * matrix(0, 3) * matrix(3, 2) +
+            matrix(3, 0) * matrix(0, 2) * matrix(2, 3) - matrix(3, 0) * matrix(0, 3) * matrix(2, 2),
+        -matrix(0, 0) * matrix(2, 1) * matrix(3, 3) + matrix(0, 0) * matrix(2, 3) * matrix(3, 1) +
+            matrix(2, 0) * matrix(0, 1) * matrix(3, 3) - matrix(2, 0) * matrix(0, 3) * matrix(3, 1) -
+            matrix(3, 0) * matrix(0, 1) * matrix(2, 3) + matrix(3, 0) * matrix(0, 3) * matrix(2, 1),
+        matrix(0, 0) * matrix(2, 1) * matrix(3, 2) - matrix(0, 0) * matrix(2, 2) * matrix(3, 1) -
+            matrix(2, 0) * matrix(0, 1) * matrix(3, 2) + matrix(2, 0) * matrix(0, 2) * matrix(3, 1) +
+            matrix(3, 0) * matrix(0, 1) * matrix(2, 2) - matrix(3, 0) * matrix(0, 2) * matrix(2, 1),
+        matrix(0, 1) * matrix(1, 2) * matrix(3, 3) - matrix(0, 1) * matrix(1, 3) * matrix(3, 2) -
+            matrix(1, 1) * matrix(0, 2) * matrix(3, 3) + matrix(1, 1) * matrix(0, 3) * matrix(3, 2) +
+            matrix(3, 1) * matrix(0, 2) * matrix(1, 3) - matrix(3, 1) * matrix(0, 3) * matrix(1, 2),
+        -matrix(0, 0) * matrix(1, 2) * matrix(3, 3) + matrix(0, 0) * matrix(1, 3) * matrix(3, 2) +
+            matrix(1, 0) * matrix(0, 2) * matrix(3, 3) - matrix(1, 0) * matrix(0, 3) * matrix(3, 2) -
+            matrix(3, 0) * matrix(0, 2) * matrix(1, 3) + matrix(3, 0) * matrix(0, 3) * matrix(1, 2),
+        matrix(0, 0) * matrix(1, 1) * matrix(3, 3) - matrix(0, 0) * matrix(1, 3) * matrix(3, 1) -
+            matrix(1, 0) * matrix(0, 1) * matrix(3, 3) + matrix(1, 0) * matrix(0, 3) * matrix(3, 1) +
+            matrix(3, 0) * matrix(0, 1) * matrix(1, 3) - matrix(3, 0) * matrix(0, 3) * matrix(1, 1),
+        -matrix(0, 0) * matrix(1, 1) * matrix(3, 2) + matrix(0, 0) * matrix(1, 2) * matrix(3, 1) +
+            matrix(1, 0) * matrix(0, 1) * matrix(3, 2) - matrix(1, 0) * matrix(0, 2) * matrix(3, 1) -
+            matrix(3, 0) * matrix(0, 1) * matrix(1, 2) + matrix(3, 0) * matrix(0, 2) * matrix(1, 1),
+        -matrix(0, 1) * matrix(1, 2) * matrix(2, 3) + matrix(0, 1) * matrix(1, 3) * matrix(2, 2) +
+            matrix(1, 1) * matrix(0, 2) * matrix(2, 3) - matrix(1, 1) * matrix(0, 3) * matrix(2, 2) -
+            matrix(2, 1) * matrix(0, 2) * matrix(1, 3) + matrix(2, 1) * matrix(0, 3) * matrix(1, 2),
+        matrix(0, 0) * matrix(1, 2) * matrix(2, 3) - matrix(0, 0) * matrix(1, 3) * matrix(2, 2) -
+            matrix(1, 0) * matrix(0, 2) * matrix(2, 3) + matrix(1, 0) * matrix(0, 3) * matrix(2, 2) +
+            matrix(2, 0) * matrix(0, 2) * matrix(1, 3) - matrix(2, 0) * matrix(0, 3) * matrix(1, 2),
+        -matrix(0, 0) * matrix(1, 1) * matrix(2, 3) + matrix(0, 0) * matrix(1, 3) * matrix(2, 1) +
+            matrix(1, 0) * matrix(0, 1) * matrix(2, 3) - matrix(1, 0) * matrix(0, 3) * matrix(2, 1) -
+            matrix(2, 0) * matrix(0, 1) * matrix(1, 3) + matrix(2, 0) * matrix(0, 3) * matrix(1, 1),
+        matrix(0, 0) * matrix(1, 1) * matrix(2, 2) - matrix(0, 0) * matrix(1, 2) * matrix(2, 1) -
+            matrix(1, 0) * matrix(0, 1) * matrix(2, 2) + matrix(1, 0) * matrix(0, 2) * matrix(2, 1) +
+            matrix(2, 0) * matrix(0, 1) * matrix(1, 2) - matrix(2, 0) * matrix(0, 2) * matrix(1, 1));
 }
 
 bool Matrix4::operator==(const Matrix4& matrix) const
 {
-    return std::equal(&matrix4x4_[NUM_ZERO][NUM_ZERO], &matrix4x4_[NUM_ZERO][NUM_ZERO] + MATRIX_LENGTH, &matrix.matrix4x4_[NUM_ZERO][NUM_ZERO], IsEqual);
+    return std::equal(&matrix4x4_[0][0], &matrix4x4_[0][0] + MATRIX_LENGTH, &matrix.matrix4x4_[0][0], IsEqual);
 }
 
 Matrix4 Matrix4::operator*(double num)
 {
     Matrix4 ret(*this);
     auto function = [num](double& v) { v *= num; };
-    auto it = &ret.matrix4x4_[NUM_ZERO][NUM_ZERO];
-    for (int32_t i = NUM_ZERO; i < MATRIX_LENGTH; ++it, ++i) {
+    auto it = &ret.matrix4x4_[0][0];
+    for (int32_t i = 0; i < MATRIX_LENGTH; ++it, ++i) {
         function(*it);
     }
     return ret;
@@ -196,38 +196,38 @@ Matrix4 Matrix4::operator*(double num)
 Matrix4 Matrix4::operator*(const Matrix4& matrix)
 {
     return Matrix4(
-        matrix4x4_[NUM_ZERO][NUM_ZERO] * matrix(NUM_ZERO, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_ZERO] * matrix(NUM_ZERO, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_ZERO] * matrix(NUM_ZERO, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_ZERO] * matrix(NUM_ZERO, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_ZERO] * matrix(NUM_ONE, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_ZERO] * matrix(NUM_ONE, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_ZERO] * matrix(NUM_ONE, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_ZERO] * matrix(NUM_ONE, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_ZERO] * matrix(NUM_TWO, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_ZERO] * matrix(NUM_TWO, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_ZERO] * matrix(NUM_TWO, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_ZERO] * matrix(NUM_TWO, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_ZERO] * matrix(NUM_THREE, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_ZERO] * matrix(NUM_THREE, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_ZERO] * matrix(NUM_THREE, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_ZERO] * matrix(NUM_THREE, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_ONE] * matrix(NUM_ZERO, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_ONE] * matrix(NUM_ZERO, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_ONE] * matrix(NUM_ZERO, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_ONE] * matrix(NUM_ZERO, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_ONE] * matrix(NUM_ONE, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_ONE] * matrix(NUM_ONE, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_ONE] * matrix(NUM_ONE, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_ONE] * matrix(NUM_ONE, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_ONE] * matrix(NUM_TWO, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_ONE] * matrix(NUM_TWO, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_ONE] * matrix(NUM_TWO, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_ONE] * matrix(NUM_TWO, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_ONE] * matrix(NUM_THREE, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_ONE] * matrix(NUM_THREE, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_ONE] * matrix(NUM_THREE, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_ONE] * matrix(NUM_THREE, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_TWO] * matrix(NUM_ZERO, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_TWO] * matrix(NUM_ZERO, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_TWO] * matrix(NUM_ZERO, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_TWO] * matrix(NUM_ZERO, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_TWO] * matrix(NUM_ONE, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_TWO] * matrix(NUM_ONE, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_TWO] * matrix(NUM_ONE, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_TWO] * matrix(NUM_ONE, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_TWO] * matrix(NUM_TWO, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_TWO] * matrix(NUM_TWO, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_TWO] * matrix(NUM_TWO, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_TWO] * matrix(NUM_TWO, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_TWO] * matrix(NUM_THREE, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_TWO] * matrix(NUM_THREE, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_TWO] * matrix(NUM_THREE, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_TWO] * matrix(NUM_THREE, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_THREE] * matrix(NUM_ZERO, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_THREE] * matrix(NUM_ZERO, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_THREE] * matrix(NUM_ZERO, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_THREE] * matrix(NUM_ZERO, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_THREE] * matrix(NUM_ONE, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_THREE] * matrix(NUM_ONE, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_THREE] * matrix(NUM_ONE, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_THREE] * matrix(NUM_ONE, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_THREE] * matrix(NUM_TWO, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_THREE] * matrix(NUM_TWO, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_THREE] * matrix(NUM_TWO, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_THREE] * matrix(NUM_TWO, NUM_THREE),
-        matrix4x4_[NUM_ZERO][NUM_THREE] * matrix(NUM_THREE, NUM_ZERO) + matrix4x4_[NUM_ONE][NUM_THREE] * matrix(NUM_THREE, NUM_ONE) + matrix4x4_[NUM_TWO][NUM_THREE] * matrix(NUM_THREE, NUM_TWO) +
-            matrix4x4_[NUM_THREE][NUM_THREE] * matrix(NUM_THREE, NUM_THREE));
+        matrix4x4_[0][0] * matrix(0, 0) + matrix4x4_[1][0] * matrix(0, 1) + matrix4x4_[2][0] * matrix(0, 2) +
+            matrix4x4_[3][0] * matrix(0, 3),
+        matrix4x4_[0][0] * matrix(1, 0) + matrix4x4_[1][0] * matrix(1, 1) + matrix4x4_[2][0] * matrix(1, 2) +
+            matrix4x4_[3][0] * matrix(1, 3),
+        matrix4x4_[0][0] * matrix(2, 0) + matrix4x4_[1][0] * matrix(2, 1) + matrix4x4_[2][0] * matrix(2, 2) +
+            matrix4x4_[3][0] * matrix(2, 3),
+        matrix4x4_[0][0] * matrix(3, 0) + matrix4x4_[1][0] * matrix(3, 1) + matrix4x4_[2][0] * matrix(3, 2) +
+            matrix4x4_[3][0] * matrix(3, 3),
+        matrix4x4_[0][1] * matrix(0, 0) + matrix4x4_[1][1] * matrix(0, 1) + matrix4x4_[2][1] * matrix(0, 2) +
+            matrix4x4_[3][1] * matrix(0, 3),
+        matrix4x4_[0][1] * matrix(1, 0) + matrix4x4_[1][1] * matrix(1, 1) + matrix4x4_[2][1] * matrix(1, 2) +
+            matrix4x4_[3][1] * matrix(1, 3),
+        matrix4x4_[0][1] * matrix(2, 0) + matrix4x4_[1][1] * matrix(2, 1) + matrix4x4_[2][1] * matrix(2, 2) +
+            matrix4x4_[3][1] * matrix(2, 3),
+        matrix4x4_[0][1] * matrix(3, 0) + matrix4x4_[1][1] * matrix(3, 1) + matrix4x4_[2][1] * matrix(3, 2) +
+            matrix4x4_[3][1] * matrix(3, 3),
+        matrix4x4_[0][2] * matrix(0, 0) + matrix4x4_[1][2] * matrix(0, 1) + matrix4x4_[2][2] * matrix(0, 2) +
+            matrix4x4_[3][2] * matrix(0, 3),
+        matrix4x4_[0][2] * matrix(1, 0) + matrix4x4_[1][2] * matrix(1, 1) + matrix4x4_[2][2] * matrix(1, 2) +
+            matrix4x4_[3][2] * matrix(1, 3),
+        matrix4x4_[0][2] * matrix(2, 0) + matrix4x4_[1][2] * matrix(2, 1) + matrix4x4_[2][2] * matrix(2, 2) +
+            matrix4x4_[3][2] * matrix(2, 3),
+        matrix4x4_[0][2] * matrix(3, 0) + matrix4x4_[1][2] * matrix(3, 1) + matrix4x4_[2][2] * matrix(3, 2) +
+            matrix4x4_[3][2] * matrix(3, 3),
+        matrix4x4_[0][3] * matrix(0, 0) + matrix4x4_[1][3] * matrix(0, 1) + matrix4x4_[2][3] * matrix(0, 2) +
+            matrix4x4_[3][3] * matrix(0, 3),
+        matrix4x4_[0][3] * matrix(1, 0) + matrix4x4_[1][3] * matrix(1, 1) + matrix4x4_[2][3] * matrix(1, 2) +
+            matrix4x4_[3][3] * matrix(1, 3),
+        matrix4x4_[0][3] * matrix(2, 0) + matrix4x4_[1][3] * matrix(2, 1) + matrix4x4_[2][3] * matrix(2, 2) +
+            matrix4x4_[3][3] * matrix(2, 3),
+        matrix4x4_[0][3] * matrix(3, 0) + matrix4x4_[1][3] * matrix(3, 1) + matrix4x4_[2][3] * matrix(3, 2) +
+            matrix4x4_[3][3] * matrix(3, 3));
 }
 
 Matrix4N Matrix4::operator*(const Matrix4N& matrix) const
@@ -250,8 +250,8 @@ Point Matrix4::operator*(const Point& point)
 {
     double x = point.GetX();
     double y = point.GetY();
-    return Point(matrix4x4_[NUM_ZERO][NUM_ZERO] * x + matrix4x4_[NUM_ONE][NUM_ZERO] * y + matrix4x4_[NUM_THREE][NUM_ZERO],
-        matrix4x4_[NUM_ZERO][NUM_ONE] * x + matrix4x4_[NUM_ONE][NUM_ONE] * y + matrix4x4_[NUM_THREE][NUM_ONE]);
+    return Point(matrix4x4_[0][0] * x + matrix4x4_[1][0] * y + matrix4x4_[3][0],
+        matrix4x4_[0][1] * x + matrix4x4_[1][1] * y + matrix4x4_[3][1]);
 }
 
 Matrix4& Matrix4::operator=(const Matrix4& matrix)
@@ -259,13 +259,13 @@ Matrix4& Matrix4::operator=(const Matrix4& matrix)
     if (this == &matrix) {
         return *this;
     }
-    std::copy_n(&matrix.matrix4x4_[NUM_ZERO][NUM_ZERO], MATRIX_LENGTH, &matrix4x4_[NUM_ZERO][NUM_ZERO]);
+    std::copy_n(&matrix.matrix4x4_[0][0], MATRIX_LENGTH, &matrix4x4_[0][0]);
     return *this;
 }
 
 double Matrix4::operator[](int32_t index) const
 {
-    if (index < NUM_ZERO || index >= MATRIX_LENGTH) {
+    if (index < 0 || index >= MATRIX_LENGTH) {
         return 0.0f;
     }
     int32_t row = index / DIMENSION;
@@ -275,7 +275,7 @@ double Matrix4::operator[](int32_t index) const
 
 double Matrix4::operator()(int32_t row, int32_t col) const
 {
-    // Caller guarantee row and col in range of [0, NUM_THREE].
+    // Caller guarantee row and col in range of [0, 3].
     return matrix4x4_[row][col];
 }
 
@@ -285,22 +285,22 @@ double Matrix4::Determinant() const
         return 1.0;
     }
 
-    double m00 = matrix4x4_[NUM_ZERO][NUM_ZERO];
-    double m01 = matrix4x4_[NUM_ZERO][NUM_ONE];
-    double m02 = matrix4x4_[NUM_ZERO][NUM_TWO];
-    double m03 = matrix4x4_[NUM_ZERO][NUM_THREE];
-    double m10 = matrix4x4_[NUM_ONE][NUM_ZERO];
-    double m11 = matrix4x4_[NUM_ONE][NUM_ONE];
-    double m12 = matrix4x4_[NUM_ONE][NUM_TWO];
-    double m13 = matrix4x4_[NUM_ONE][NUM_THREE];
-    double m20 = matrix4x4_[NUM_TWO][NUM_ZERO];
-    double m21 = matrix4x4_[NUM_TWO][NUM_ONE];
-    double m22 = matrix4x4_[NUM_TWO][NUM_TWO];
-    double m23 = matrix4x4_[NUM_TWO][NUM_THREE];
-    double m30 = matrix4x4_[NUM_THREE][NUM_ZERO];
-    double m31 = matrix4x4_[NUM_THREE][NUM_ONE];
-    double m32 = matrix4x4_[NUM_THREE][NUM_TWO];
-    double m33 = matrix4x4_[NUM_THREE][NUM_THREE];
+    double m00 = matrix4x4_[0][0];
+    double m01 = matrix4x4_[0][1];
+    double m02 = matrix4x4_[0][2];
+    double m03 = matrix4x4_[0][3];
+    double m10 = matrix4x4_[1][0];
+    double m11 = matrix4x4_[1][1];
+    double m12 = matrix4x4_[1][2];
+    double m13 = matrix4x4_[1][3];
+    double m20 = matrix4x4_[2][0];
+    double m21 = matrix4x4_[2][1];
+    double m22 = matrix4x4_[2][2];
+    double m23 = matrix4x4_[2][3];
+    double m30 = matrix4x4_[3][0];
+    double m31 = matrix4x4_[3][1];
+    double m32 = matrix4x4_[3][2];
+    double m33 = matrix4x4_[3][3];
 
     double b00 = m00 * m11 - m01 * m10;
     double b01 = m00 * m12 - m02 * m10;
@@ -320,12 +320,12 @@ double Matrix4::Determinant() const
 
 void Matrix4::Transpose()
 {
-    std::swap(matrix4x4_[NUM_ZERO][NUM_ONE], matrix4x4_[NUM_ONE][NUM_ZERO]);
-    std::swap(matrix4x4_[NUM_ZERO][NUM_TWO], matrix4x4_[NUM_TWO][NUM_ZERO]);
-    std::swap(matrix4x4_[NUM_ZERO][NUM_THREE], matrix4x4_[NUM_THREE][NUM_ZERO]);
-    std::swap(matrix4x4_[NUM_ONE][NUM_TWO], matrix4x4_[NUM_TWO][NUM_ONE]);
-    std::swap(matrix4x4_[NUM_ONE][NUM_THREE], matrix4x4_[NUM_THREE][NUM_ONE]);
-    std::swap(matrix4x4_[NUM_TWO][NUM_THREE], matrix4x4_[NUM_THREE][NUM_TWO]);
+    std::swap(matrix4x4_[0][1], matrix4x4_[1][0]);
+    std::swap(matrix4x4_[0][2], matrix4x4_[2][0]);
+    std::swap(matrix4x4_[0][3], matrix4x4_[3][0]);
+    std::swap(matrix4x4_[1][2], matrix4x4_[2][1]);
+    std::swap(matrix4x4_[1][3], matrix4x4_[3][1]);
+    std::swap(matrix4x4_[2][3], matrix4x4_[3][2]);
 }
 
 void Matrix4::ScaleMapping(const double src[DIMENSION], double dst[DIMENSION]) const

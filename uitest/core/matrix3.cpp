@@ -20,35 +20,44 @@ namespace OHOS::uitest {
 bool Matrix3::Invert(Matrix3& matrix) const
 {
     static const double diff = 1e-20;
-    double val1 = matrix3X3_[NUM_ZERO][NUM_ZERO] * matrix3X3_[NUM_ONE][NUM_ONE] * matrix3X3_[NUM_TWO][NUM_TWO];
-    double val2 = matrix3X3_[NUM_ZERO][NUM_ZERO] * matrix3X3_[NUM_ONE][NUM_TWO] * matrix3X3_[NUM_TWO][NUM_ONE];
-    double val3 = matrix3X3_[NUM_ONE][NUM_ZERO] * matrix3X3_[NUM_ZERO][NUM_ONE] * matrix3X3_[NUM_TWO][NUM_TWO];
-    double val4 = matrix3X3_[NUM_ONE][NUM_ZERO] * matrix3X3_[NUM_ZERO][NUM_TWO] * matrix3X3_[NUM_TWO][NUM_ONE];
-    double val5 = matrix3X3_[NUM_TWO][NUM_ZERO] * matrix3X3_[NUM_ZERO][NUM_ONE] * matrix3X3_[NUM_ONE][NUM_TWO];
-    double val6 = matrix3X3_[NUM_TWO][NUM_ZERO] * matrix3X3_[NUM_ZERO][NUM_TWO] * matrix3X3_[NUM_ONE][NUM_ONE];
+    double val1 = matrix3X3_[0][0] * matrix3X3_[1][1] * matrix3X3_[2][2];
+    double val2 = matrix3X3_[0][0] * matrix3X3_[1][2] * matrix3X3_[2][1];
+    double val3 = matrix3X3_[1][0] * matrix3X3_[0][1] * matrix3X3_[2][2];
+    double val4 = matrix3X3_[1][0] * matrix3X3_[0][2] * matrix3X3_[2][1];
+    double val5 = matrix3X3_[2][0] * matrix3X3_[0][1] * matrix3X3_[1][2];
+    double val6 = matrix3X3_[2][0] * matrix3X3_[0][2] * matrix3X3_[1][1];
     double detA = val1 - val2 - val3 + val4 + val5 - val6;
     if (NearZero(detA, diff)) {
         return false;
     }
     detA = 1.0 / detA;
     // a11a22 - a12a21
-    matrix[NUM_ZERO][NUM_ZERO] = matrix3X3_[NUM_ONE][NUM_ONE] * matrix3X3_[NUM_TWO][NUM_TWO] - matrix3X3_[NUM_ONE][NUM_TWO] * matrix3X3_[NUM_TWO][NUM_ONE];
+    matrix[0][0] = matrix3X3_[1][1] * matrix3X3_[2][2] - \
+    matrix3X3_[1][2] * matrix3X3_[2][1];
     // a20a21 - a01a22
-    matrix[NUM_ZERO][NUM_ONE] = matrix3X3_[NUM_ZERO][NUM_TWO] * matrix3X3_[NUM_TWO][NUM_ONE] - matrix3X3_[NUM_ZERO][NUM_ONE] * matrix3X3_[NUM_TWO][NUM_TWO];
+    matrix[0][1] = matrix3X3_[0][2] * matrix3X3_[2][1] - \
+    matrix3X3_[0][1] * matrix3X3_[2][2];
     // a01a12 - a02a11
-    matrix[NUM_ZERO][NUM_TWO] = matrix3X3_[NUM_ZERO][NUM_ONE] * matrix3X3_[NUM_ONE][NUM_TWO] - matrix3X3_[NUM_ZERO][NUM_TWO] * matrix3X3_[NUM_ONE][NUM_ONE];
+    matrix[0][2] = matrix3X3_[0][1] * matrix3X3_[1][2] - \
+    matrix3X3_[0][2] * matrix3X3_[1][1];
     // a12a20 - a10a22
-    matrix[NUM_ONE][NUM_ZERO] = matrix3X3_[NUM_ONE][NUM_TWO] * matrix3X3_[NUM_TWO][NUM_ZERO] - matrix3X3_[NUM_ONE][NUM_ZERO] * matrix3X3_[NUM_TWO][NUM_TWO];
+    matrix[1][0] = matrix3X3_[1][2] * matrix3X3_[2][0] - \
+    matrix3X3_[1][0] * matrix3X3_[2][2];
     // a00a22 - a02a20
-    matrix[NUM_ONE][NUM_ONE] = matrix3X3_[NUM_ZERO][NUM_ZERO] * matrix3X3_[NUM_TWO][NUM_TWO] - matrix3X3_[NUM_ZERO][NUM_TWO] * matrix3X3_[NUM_TWO][NUM_ZERO];
+    matrix[1][1] = matrix3X3_[0][0] * matrix3X3_[2][2] - \
+    matrix3X3_[0][2] * matrix3X3_[2][0];
     // a10a02 - a00a12
-    matrix[NUM_ONE][NUM_TWO] = matrix3X3_[NUM_ONE][NUM_ZERO] * matrix3X3_[NUM_ZERO][NUM_TWO] - matrix3X3_[NUM_ZERO][NUM_ZERO] * matrix3X3_[NUM_ONE][NUM_TWO];
+    matrix[1][2] = matrix3X3_[1][0] * matrix3X3_[0][2] - \
+    matrix3X3_[0][0] * matrix3X3_[1][2];
     // a10a21 - a11a20
-    matrix[NUM_TWO][NUM_ZERO] = matrix3X3_[NUM_ONE][NUM_ZERO] * matrix3X3_[NUM_TWO][NUM_ONE] - matrix3X3_[NUM_ONE][NUM_ONE] * matrix3X3_[NUM_TWO][NUM_ZERO];
+    matrix[2][0] = matrix3X3_[1][0] * matrix3X3_[2][1] - \
+    matrix3X3_[1][1] * matrix3X3_[2][0];
     // a01a20 - a00a21
-    matrix[NUM_TWO][NUM_ONE] = matrix3X3_[NUM_ZERO][NUM_ONE] * matrix3X3_[NUM_TWO][NUM_ZERO] - matrix3X3_[NUM_ZERO][NUM_ZERO] * matrix3X3_[NUM_TWO][NUM_ONE];
+    matrix[2][1] = matrix3X3_[0][1] * matrix3X3_[2][0] - \
+    matrix3X3_[0][0] * matrix3X3_[2][1];
     // a00a11 - a10a01
-    matrix[NUM_TWO][NUM_TWO] = matrix3X3_[NUM_ZERO][NUM_ZERO] * matrix3X3_[NUM_ONE][NUM_ONE] - matrix3X3_[NUM_ONE][NUM_ZERO] * matrix3X3_[NUM_ZERO][NUM_ONE];
+    matrix[2][2] = matrix3X3_[0][0] * matrix3X3_[1][1] - \
+    matrix3X3_[1][0] * matrix3X3_[0][1];
     // invert
     matrix* detA;
     return true;
