@@ -234,15 +234,6 @@ namespace OHOS::uitest {
         return exitCode;
     }
 
-    static void TimerFunc()
-    {
-        int t = GetCurrentMillisecond();
-        int diff = t - g_touchTime;
-        if (diff >= TIMEINTERVAL) {
-            std::cout << "No operation detected for 5 seconds, press ctrl + c to save this file?" << std::endl;
-        }
-    }
-
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
@@ -253,7 +244,7 @@ namespace OHOS::uitest {
         std::string opt = argv[2];
         if (opt == "record") {
             Timer timer;
-            timer.Start(TIMEINTERVAL, TimerFunc);
+            timer.Start(TIMEINTERVAL, Timer::TimerFunc);
             if (!InitEventRecordFile()) {
                 return OHOS::ERR_INVALID_VALUE;
             }
