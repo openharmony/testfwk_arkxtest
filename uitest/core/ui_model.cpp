@@ -408,7 +408,8 @@ namespace OHOS::uitest {
     }
 
     const Widget *WidgetTree::BFSRootSearchWidget(const WidgetTree& tree, const Widget& root, \
-                                                  std::map<std::string, size_t> widgetChildCountMap, float x, float y)  const
+                                                  std::map<std::string, size_t> widgetChildCountMap, \
+                                                  float x, float y) const
     {
         Rect rect = root.GetBounds();
         if (x <= rect.right_ && x >= rect.left_ && y <= rect.bottom_ && y >= rect.top_) {

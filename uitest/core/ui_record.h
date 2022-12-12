@@ -86,17 +86,17 @@ namespace OHOS::uitest {
     };
 
     class DataWrapper {
-    private:
-        EventData data;
-        UiDriver d;
-        std::mutex mut;
     public:
         template<typename Function>
         void ProcessData(Function userFunc)
         {
             std::lock_guard<std::mutex> lock(mut);
             userFunc(data);
-        }
+        }    
+    private:
+        EventData data;
+        UiDriver d;
+        std::mutex mut;
     };
     
     class Timer {
