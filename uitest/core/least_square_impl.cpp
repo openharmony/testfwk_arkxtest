@@ -21,33 +21,33 @@
 namespace OHOS::uitest {
 bool LSMImpl::GetLSMParams(std::vector<double>& params)
 {
-    if (tVals_.size() <= 1 || (paramsNum_ != Matrix3::DIMENSION)) {
+    if (tVals_.size() <= ONE || (paramsNum_ != Matrix3::DIMENSION)) {
         LOG_E("size is invalid, %{public}d, %{public}d", static_cast<int32_t>(tVals_.size()), paramsNum_);
         return false;
     }
-    params.resize(paramsNum_, 0);
+    params.resize(paramsNum_, ZERO);
     if (isResolved_) {
         params.assign(params_.begin(), params_.end());
         return true;
     }
     auto countNum = std::min(countNum_, static_cast<int32_t>(std::distance(tVals_.begin(), tVals_.end())));
     std::vector<double> xVals;
-    xVals.resize(countNum, 0);
+    xVals.resize(countNum, ZERO);
     std::vector<double> yVals;
-    yVals.resize(countNum, 0);
-    int32_t size = countNum - 1;
+    yVals.resize(countNum, ZERO);
+    int32_t size = countNum - ONE;
     for (auto iter = tVals_.rbegin(); iter != tVals_.rend(); iter++) {
         xVals[size] = *iter;
         size--;
-        if (size < 0) {
+        if (size < ZERO) {
             break;
         }
     }
-    size = countNum - 1;
+    size = countNum - ONE;
     for (auto iter = pVals_.rbegin(); iter != pVals_.rend(); iter++) {
         yVals[size] = *iter;
         size--;
-        if (size < 0) {
+        if (size < ZERO) {
             break;
         }
     }
@@ -55,9 +55,9 @@ bool LSMImpl::GetLSMParams(std::vector<double>& params)
         MatrixN3 matrixn3 { countNum };
         for (auto i = 0; i < countNum; i++) {
             const auto& value = xVals[i];
-            matrixn3[i][2] = 1;
-            matrixn3[i][1] = value;
-            matrixn3[i][0] = value * value;
+            matrixn3[i][TWO] = ONE;
+            matrixn3[i][ONE] = value;
+            matrixn3[i][ZERO] = value * value;
         }
         Matrix3 invert;
         auto transpose = matrixn3.Transpose();
@@ -76,10 +76,10 @@ bool LSMImpl::GetLSMParams(std::vector<double>& params)
     MatrixN4 matrixn4 { countNum };
     for (auto i = 0; i < countNum; i++) {
         const auto& value = xVals[i];
-        matrixn4[i][3] = 1;
-        matrixn4[i][2] = value;
-        matrixn4[i][1] = value * value;
-        matrixn4[i][0] = value * value * value;
+        matrixn4[i][THREE] = ONE;
+        matrixn4[i][TWO] = value;
+        matrixn4[i][ONE] = value * value;
+        matrixn4[i][ZERO] = value * value * value;
     }
     auto transpose = matrixn4.Transpose();
     auto inversMatrix4 = Matrix4::Invert(transpose * matrixn4);

@@ -21,7 +21,7 @@
 namespace OHOS::uitest {
 class Matrix4N;
 class MatrixN4;
-class UITEST_EXPORT Matrix4 {
+class Matrix4 {
 public:
     // Matrix dimension is 4X4.
     static constexpr int32_t DIMENSION = 4;
@@ -98,7 +98,7 @@ private:
     };
 };
 
-class UITEST_EXPORT Matrix4N {
+class Matrix4N {
 public:
     // Matrix dimension is 4X4.
     static constexpr int32_t DIMENSION = 4;
@@ -155,7 +155,7 @@ private:
     int32_t columns_ = 0;
 };
 
-class UITEST_EXPORT MatrixN4 {
+class MatrixN4 {
 public:
     // Matrix dimension is 4XN.
     static constexpr int32_t DIMENSION = 4;

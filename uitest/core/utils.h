@@ -15,75 +15,8 @@
 
 #ifndef UTILS_UTILS_H
 #define UTILS_UTILS_H
-
-#include <chrono>
 #include <cmath>
-#include <cstdint>
-
 #include "common_utilities_hpp.h"
-
-#define CHECK_NULL_VOID(ptr)                                            \
-    do {                                                                \
-        if (!(ptr)) {                                                   \
-            LOG_W(#ptr " is null, return on line %{public}d", __LINE__); \
-            return;                                                     \
-        }                                                               \
-    } while (0)
-
-#define CHECK_NULL_RETURN(ptr, ret)                                     \
-    do {                                                                \
-        if (!(ptr)) {                                                   \
-            LOG_W(#ptr " is null, return on line %{public}d", __LINE__); \
-            return ret;                                                 \
-        }                                                               \
-    } while (0)
-
-#define PRIMITIVE_CAT(x, y) x##y
-#define CAT(x, y) PRIMITIVE_CAT(x, y)
-
-#define COPY_SENTENCE(x) x = other.x
-#define LOOP_COPY(x) CAT(LOOP_COPY1 x, _END)
-#define LOOP_COPY1(x) COPY_SENTENCE(x) LOOP_COPY2
-#define LOOP_COPY2(x) COPY_SENTENCE(x) LOOP_COPY1
-#define LOOP_COPY1_END
-#define LOOP_COPY2_END
-
-#define COMPARE_SENTENCE(x) (x) == other.x
-#define LOOP_COMPARE(x) CAT(LOOP_COMPARE0 x, _END)
-#define LOOP_COMPARE0(x) COMPARE_SENTENCE(x) LOOP_COMPARE1
-#define LOOP_COMPARE1(x) &&COMPARE_SENTENCE(x) LOOP_COMPARE2
-#define LOOP_COMPARE2(x) &&COMPARE_SENTENCE(x) LOOP_COMPARE1
-#define LOOP_COMPARE1_END
-#define LOOP_COMPARE2_END
-
-#define DEFINE_COPY_CONSTRUCTOR(type) \
-    type(const type& other)           \
-    {                                 \
-        *this = other;                \
-    }
-
-#define DEFINE_COPY_OPERATOR_WITH_PROPERTIES(type, PROPS) \
-    type& operator=(const type& other)                    \
-    {                                                     \
-        if (&other != this) {                             \
-            LOOP_COPY(PROPS)                              \
-        }                                                 \
-        return *this;                                     \
-    }
-
-#define DEFINE_COMPARE_OPERATOR_WITH_PROPERTIES(type, PROPS) \
-    bool operator==(const type& other) const                 \
-    {                                                        \
-        if (&other != this) {                                \
-            return true;                                     \
-        }                                                    \
-        return LOOP_COMPARE(PROPS);                          \
-    }
-
-#define DEFINE_COPY_CONSTRUCTOR_AND_COPY_OPERATOR_AND_COMPARE_OPERATOR_WITH_PROPERTIES(type, PROPS) \
-    DEFINE_COPY_CONSTRUCTOR(type)                                                                   \
-    DEFINE_COPY_OPERATOR_WITH_PROPERTIES(type, PROPS) DEFINE_COMPARE_OPERATOR_WITH_PROPERTIES(type, PROPS)
-
 namespace OHOS::uitest {
 inline bool NearEqual(const double left, const double right, const double epsilon)
 {
