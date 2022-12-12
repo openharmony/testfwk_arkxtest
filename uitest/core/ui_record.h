@@ -76,7 +76,6 @@ namespace OHOS::uitest {
 
         static void ReadEventLine();
     };
-    
     class Timer {
     public:
         Timer(): expired(true), tryToExpire(false)
@@ -90,6 +89,14 @@ namespace OHOS::uitest {
         ~Timer()
         {
             Stop();
+        }
+        static void TimerFunc()
+        {
+            int currentTime = GetCurrentMillisecond();
+            int diff = currentTime - g_touchTime;
+            if (diff >= TIMEINTERVAL) {
+                std::cout << "No operation detected for 5 seconds, press ctrl + c to save this file?" << std::endl;
+            }
         }
         void Start(int interval, std::function<void()> task)
         {
