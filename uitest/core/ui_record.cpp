@@ -161,7 +161,7 @@ namespace OHOS::uitest {
             g_isFirstOp = false;
         }
         TouchEventInfo touchEvent {};
-        g_touchTime = GetMillisTime();
+        g_touchTime = GetCurrentMillisecond();
         TimeStamp t {std::chrono::duration_cast<TimeStamp::duration>( \
                      std::chrono::nanoseconds(pointerEvent->GetActionTime()*1000))};
         touchEvent.time = t;

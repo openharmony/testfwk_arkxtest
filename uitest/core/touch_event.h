@@ -16,7 +16,6 @@
 #ifndef EVENT_TOUCH_EVENT_H
 #define EVENT_TOUCH_EVENT_H
 
-#include <list>
 #include "offset.h"
 
 namespace OHOS::uitest {

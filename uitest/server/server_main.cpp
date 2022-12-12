@@ -236,7 +236,7 @@ namespace OHOS::uitest {
 
     static void TimerFunc()
     {
-        int t = GetMillisTime();
+        int t = GetCurrentMillisecond();
         int diff = t - g_touchTime;
         if (diff >= TIMEINTERVAL) {
             std::cout << "No operation detected for 5 seconds, press ctrl + c to save this file?" << std::endl;
