@@ -33,6 +33,8 @@
 #define DCHECK(cond) assert((cond))
 #endif
 
+#define UITEST_DCHECK(expr) ((void)0)
+
 #define FORCE_INLINE __attribute__((always_inline)) inline
 
 namespace OHOS::uitest {
@@ -42,11 +44,11 @@ namespace OHOS::uitest {
     constexpr size_t INDEX_TWO = 2;
     constexpr size_t INDEX_THREE = 3;
     constexpr size_t INDEX_FOUR = 4;
-    constexpr int32_t NUM_ZERO = 0;
-    constexpr int32_t NUM_ONE = 1;
-    constexpr int32_t NUM_TWO = 2;
-    constexpr int32_t NUM_THREE = 3;
-    constexpr int32_t NUM_FOUR = 4;
+    constexpr int32_t ZERO = 0;
+    constexpr int32_t ONE = 1;
+    constexpr int32_t TWO = 2;
+    constexpr int32_t THREE = 3;
+    constexpr int32_t FOUR = 4;
 
     /**Get current time millisecond.*/
     inline uint64_t GetCurrentMillisecond()
