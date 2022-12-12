@@ -59,7 +59,7 @@ namespace OHOS::uitest {
 
         void DumpUiHierarchy(nlohmann::json &out, ApiCallErr &error);
 
-        const Widget *FindWidget(float x_, float y_);
+        const Widget *FindWidget(float x, float y);
 
         const Rect GetRootBounds();
 

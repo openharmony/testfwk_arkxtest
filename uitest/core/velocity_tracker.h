@@ -76,10 +76,10 @@ public:
             useToCount = stepCount;
         }
         for (int i = 1; i < useToCount; i++) {
-            totalDelta_ += Offset(xs.at(stepCount-i), ys.at(stepCount-i)) - \
-                            Offset(xs.at(stepCount-i-1), ys.at(stepCount-i-1));
+            totalDelta_ += Offset(xs.at(stepCount - i), ys.at(stepCount - i)) - \
+                            Offset(xs.at(stepCount - i - 1), ys.at(stepCount - i - 1));
         }
-        stepLength = (totalDelta_ / (useToCount-1)).GetDistance();
+        stepLength = (totalDelta_ / (useToCount - 1)).GetDistance();
     }
 
     int GetStepLength()

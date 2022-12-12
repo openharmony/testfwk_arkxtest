@@ -24,14 +24,15 @@ namespace OHOS::uitest {
     VelocityTracker g_velocityTracker;
     bool g_isClick = false;
     int g_clickEventCount = 0;
-    int NAVI_HORIZON_THRE_V= 100;
-    int NAVI_VERTI_THRE_V = 200;
-    int NAVI_THRE_D = 10;
-    int STEP_LENGTH_COUNT = 5;
-    double MAX_THRESHOLD = 15.0;
-    double FLING_THRESHOLD = 45.0;
-    double DURATIOIN_THRESHOLD = 0.6;
-    double INTERVAL_THRESHOLD = 0.2;
+    constexpr int32_t NAVI_HORIZON_THRE_V= 100;
+    constexpr int32_t NAVI_VERTI_THRE_V = 200;
+    constexpr int32_t NAVI_THRE_D = 10;
+    constexpr float MAX_THRESHOLD = 15.0;
+    constexpr float FLING_THRESHOLD = 45.0;
+    constexpr float DURATIOIN_THRESHOLD = 0.6;
+    constexpr float INTERVAL_THRESHOLD = 0.2;
+    constexpr int32_t BACK_KEY = 2;
+    constexpr int32_t MaxVelocity = 40000;
     bool g_isOpDect = false;
     std::string g_filePath;
     std::string g_defaultDir = "/data/local/tmp/layout";
@@ -40,7 +41,7 @@ namespace OHOS::uitest {
     Rect windowBounds = Rect(0, 0, 0, 0);
     DataWrapper g_dataWrapper;
     TouchEventInfo eventInfo;
-    int MaxVelocity = 40000;
+    
     std::vector<std::string> GetForeAbility()
     {
         std::vector<std::string> elements;
@@ -54,10 +55,10 @@ namespace OHOS::uitest {
             std::cout<<"GetTopAbility GetBundleName is nullptr"<<std::endl;
             return elements;
         }
-        std::string bundleName_ = elementName.GetBundleName();
-        std::string abilityName_ = elementName.GetAbilityName();
-        elements.push_back(bundleName_);
-        elements.push_back(abilityName_);
+        std::string bundleName = elementName.GetBundleName();
+        std::string abilityName = elementName.GetAbilityName();
+        elements.push_back(bundleName);
+        elements.push_back(abilityName);
         return elements;
     }
     void PrintLine(TouchEventInfo &downEvent, TouchEventInfo &upEvent, const std::string &actionType)
@@ -154,8 +155,10 @@ namespace OHOS::uitest {
     void EventData::ReadEventLine()
     {
         std::ifstream inFile(g_defaultDir + "/" + "record.csv");
-		enum CaseTypes : uint8_t { OP_TYPE = 0, X_POSI, Y_POSI, X2_POSI, Y2_POSI, INTERVAL, LENGTH, VELO, MAX_VEL, \
-                                   W_ID, W_TYPE, W_TEXT, W2_ID, W2_TYPE, W2_TEXT, BUNDLE, ABILITY };
+		enum CaseTypes : uint8_t { 
+            OP_TYPE = 0, X_POSI, Y_POSI, X2_POSI, Y2_POSI, INTERVAL, LENGTH, VELO, \
+            MAX_VEL, W_ID, W_TYPE, W_TEXT, W2_ID, W2_TYPE, W2_TEXT, BUNDLE, ABILITY 
+        };
         char buffer[100];
         while (!inFile.eof()) {
             inFile >> buffer;
@@ -180,7 +183,7 @@ namespace OHOS::uitest {
                         << caseInfo[W2_TYPE] << ";"
                         << caseInfo[W2_TEXT] << ";"
                         << caseInfo[BUNDLE] << ";"
-                        << caseInfo[ABILITY] << ";" 
+                        << caseInfo[ABILITY] << ";"
 						<< std::endl;
             }
             int gTimeIndex = 1000;
@@ -193,11 +196,11 @@ namespace OHOS::uitest {
     }
     void SaveEventData()
     {
-        g_dataWrapper.processData(SetEventData);
+        g_dataWrapper.ProcessData(SetEventData);
     }
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const
     {
-        if (keyEvent->GetKeyCode() == 2) {
+        if (keyEvent->GetKeyCode() == BACK_KEY) {
             g_touchop = RETURN;
         }
         std::thread t(SaveEventData);
@@ -261,7 +264,7 @@ namespace OHOS::uitest {
                     g_isClick = true;
                 }
             }
-        } else if (moveDistance>=MAX_THRESHOLD) {
+        } else if (moveDistance >= MAX_THRESHOLD) {
             g_touchop = DRAG;
             g_isClick = false;
         }

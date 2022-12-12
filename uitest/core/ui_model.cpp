@@ -396,11 +396,11 @@ namespace OHOS::uitest {
         return widgetChildCountMap;
     }
 
-    const Widget *WidgetTree::MarshalWidgetTree(float x_, float y_) const
+    const Widget *WidgetTree::MarshalWidgetTree(float x, float y) const
     {
         auto root = this->GetRootWidget();
         if (root != nullptr) {
-            auto widget = BFSRootSearchWidget(*this, *root, SetWidgetChildCountMap(*this), x_, y_);
+            auto widget = BFSRootSearchWidget(*this, *root, SetWidgetChildCountMap(*this), x, y);
             return widget;
         } else {
             return nullptr;
@@ -408,22 +408,22 @@ namespace OHOS::uitest {
     }
 
     const Widget *WidgetTree::BFSRootSearchWidget(const WidgetTree& tree, const Widget& root, \
-                                                  std::map<std::string, size_t> widgetChildCountMap_, float x_, float y_)  const
+                                                  std::map<std::string, size_t> widgetChildCountMap, float x, float y)  const
     {
         Rect rect = root.GetBounds();
-        if (x_ <= rect.right_ && x_ >= rect.left_ && y_ <= rect.bottom_ && y_ >= rect.top_) {
+        if (x <= rect.right_ && x >= rect.left_ && y <= rect.bottom_ && y >= rect.top_) {
             auto hierarchy = root.GetHierarchy();
             uint32_t childIndex = 0;
             uint32_t childCount = 0;
-            if (widgetChildCountMap_.find(hierarchy) != widgetChildCountMap_.end()) {
-                childCount = widgetChildCountMap_.find(hierarchy)->second;
+            if (widgetChildCountMap.find(hierarchy) != widgetChildCountMap.end()) {
+                childCount = widgetChildCountMap.find(hierarchy)->second;
             }
             if (childCount > childIndex) {
                 auto child = tree.GetChildWidget(root, childIndex);
                 if (child == nullptr) {
                     return &root;
                 }
-                return BFSSearchWidget(tree, *child, widgetChildCountMap_, x_, y_, root, childIndex);
+                return BFSSearchWidget(tree, *child, widgetChildCountMap, x, y, root, childIndex);
             }
             return &root;
         } else {
@@ -432,28 +432,28 @@ namespace OHOS::uitest {
     }
 
     const Widget *WidgetTree::BFSSearchWidget(const WidgetTree& tree, const Widget& root, \
-                                              std::map<std::string, size_t> widgetChildCountMap_, float x_, float y_, \
+                                              std::map<std::string, size_t> widgetChildCountMap, float x, float y, \
                                               const Widget& lastRoot, uint32_t lastIndex) const
     {
         Rect rect = root.GetBounds();
-        if (x_ <= rect.right_ && x_ >= rect.left_ && y_ <= rect.bottom_ && y_ >= rect.top_) {
+        if (x <= rect.right_ && x >= rect.left_ && y <= rect.bottom_ && y >= rect.top_) {
             auto hierarchy = root.GetHierarchy();
             uint32_t childIndex = 0;
             uint32_t childCount = 0;
-            if (widgetChildCountMap_.find(hierarchy) != widgetChildCountMap_.end()) {
-                childCount = widgetChildCountMap_.find(hierarchy)->second;
+            if (widgetChildCountMap.find(hierarchy) != widgetChildCountMap.end()) {
+                childCount = widgetChildCountMap.find(hierarchy)->second;
             }
             if (childCount > childIndex) {
                 auto child = tree.GetChildWidget(root, childIndex);
                 if (child == nullptr) {
                     return &root;
                 }
-                return BFSSearchWidget(tree, *child, widgetChildCountMap_, x_, y_, root, childIndex);
+                return BFSSearchWidget(tree, *child, widgetChildCountMap, x, y, root, childIndex);
             }
             return &root;
-        } else if (widgetChildCountMap_.find(lastRoot.GetHierarchy())->second > (lastIndex + 1)) {
+        } else if (widgetChildCountMap.find(lastRoot.GetHierarchy())->second > (lastIndex + 1)) {
             auto next = tree.GetChildWidget(lastRoot, lastIndex + 1);
-            return BFSSearchWidget(tree, *next, widgetChildCountMap_, x_, y_, lastRoot, lastIndex+1);
+            return BFSSearchWidget(tree, *next, widgetChildCountMap, x, y, lastRoot, lastIndex+1);
         } else {
             return &lastRoot;
         }

@@ -92,7 +92,7 @@ namespace OHOS::uitest {
         std::mutex mut;
     public:
         template<typename Function>
-        void processData(Function userFunc)
+        void ProcessData(Function userFunc)
         {
             std::lock_guard<std::mutex> lock(mut);
             userFunc(data);

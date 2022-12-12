@@ -253,14 +253,14 @@ namespace OHOS::uitest {
         std::map<std::string, size_t> SetWidgetChildCountMap(const WidgetTree& tree) const;
 
         /* Parse the WidgetTree according to the down point return the corresponding widget */
-        const Widget *MarshalWidgetTree(float x_, float y_) const;
+        const Widget *MarshalWidgetTree(float x, float y) const;
 
         const Widget *BFSSearchWidget(const WidgetTree& tree, const Widget& root, \
-                                      std::map<std::string, size_t> widgetChildCountMap_,float x_, float y_, \
+                                      std::map<std::string, size_t> widgetChildCountMap,float x, float y, \
                                       const Widget& lastRoot, uint32_t lastIndex) const;
         
         const Widget *BFSRootSearchWidget(const WidgetTree& tree, const Widget& root, \
-                                          std::map<std::string, size_t> widgetChildCountMap_, float x_, float y_) const;
+                                          std::map<std::string, size_t> widgetChildCountMap, float x, float y) const;
 
         const std::map<std::string, Widget> GetWidgetMap() const
         {
