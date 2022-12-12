@@ -122,8 +122,8 @@ public:
     int GetStepLength()
     {
         stepCount = xAxis_.GetXVals().size();
-        std::vector<double> xs = xAxis_.GetXVals();
-        std::vector<double> ys = yAxis_.GetYVals();
+        std::vector<double> xs = xAxis_.GetPVals();
+        std::vector<double> ys = yAxis_.GetPVals();
         totalDelta_.Resets();
         int useToCount = 4;
         if (stepCount == 1) {
