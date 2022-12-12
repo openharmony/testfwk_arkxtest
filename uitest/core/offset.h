@@ -129,7 +129,7 @@ public:
     std::string ToString() const
     {
         std::stringstream ss;
-        ss << "Offset (" << std::fixed << std::setprecision(NUM_TWO) << deltaX_ << ", " << deltaY_ << ")";
+        ss << "Offset (" << std::fixed << std::setprecision(TWO) << deltaX_ << ", " << deltaY_ << ")";
         std::string output = ss.str();
         return output;
     }

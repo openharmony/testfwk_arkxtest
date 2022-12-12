@@ -91,12 +91,12 @@ namespace OHOS::uitest {
 
         FORCE_INLINE int32_t GetCenterX() const
         {
-            return (left_ + right_) / NUM_TWO;
+            return (left_ + right_) / TWO;
         }
 
         FORCE_INLINE int32_t GetCenterY() const
         {
-            return (top_ + bottom_) / NUM_TWO;
+            return (top_ + bottom_) / TWO;
         }
 
         FORCE_INLINE int32_t GetWidth() const

@@ -239,10 +239,10 @@ namespace OHOS::uitest {
             PrintToConsole(usage);
             return EXIT_FAILURE;
         }
-        std::string opt = argv[NUM_TWO];
+        std::string opt = argv[TWO];
         std::string modeOpt;
         if (argc == INDEX_FOUR) {
-            modeOpt = argv[NUM_THREE];
+            modeOpt = argv[THREE];
         }
         if (opt == "record") {
             if (!InitEventRecordFile()) {
