@@ -24,7 +24,6 @@ namespace OHOS::uitest {
     VelocityTracker g_velocityTracker;
     bool g_isClick = false;
     int g_clickEventCount = 0;
-    constexpr int32_t NAVI_HORIZON_THRE_V = 100;
     constexpr int32_t NAVI_VERTI_THRE_V = 200;
     constexpr int32_t NAVI_THRE_D = 10;
     constexpr float MAX_THRESHOLD = 15.0;
