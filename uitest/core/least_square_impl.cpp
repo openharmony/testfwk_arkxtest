@@ -19,7 +19,7 @@
 #include "common_utilities_hpp.h"
 
 namespace OHOS::uitest {
-bool LSMImpl::GetLSMParams(std::vector<double>& params)
+bool LeastSquareImpl::GetLSMParams(std::vector<double>& params)
 {
     if (tVals_.size() <= ONE || (paramsNum_ != Matrix3::DIMENSION)) {
         LOG_E("size is invalid, %{public}d, %{public}d", static_cast<int32_t>(tVals_.size()), paramsNum_);

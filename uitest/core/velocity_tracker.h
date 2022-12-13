@@ -15,9 +15,7 @@
 
 #ifndef VELOCITY_TRACKER_H
 #define VELOCITY_TRACKER_H
-#include <fstream>
 #include <regex>
-#include <iostream>
 #include <cmath>
 #include "least_square_impl.h"
 #include "touch_event.h"
@@ -202,8 +200,8 @@ private:
     bool isFirstPoint_ = true;
     TimeStamp firstTimePoint_;
     TimeStamp lastTimePoint_;
-    LSMImpl xAxis_ { 3, 5 };
-    LSMImpl yAxis_ { 3, 5 };
+    LeastSquareImpl xAxis_ { 3, 5 };
+    LeastSquareImpl yAxis_ { 3, 5 };
     bool isVelocityDone_ = false;
 };
 } // namespace OHOS::uitest

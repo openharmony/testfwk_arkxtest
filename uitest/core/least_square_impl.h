@@ -27,22 +27,22 @@ namespace OHOS::uitest {
  * the function template is a3 * x^3 + a2 * x^2 + a1 * x + a0 = y with four;
  * the function template is 0 * x^3 + a2 * x^2 + a1 * x + a0 = y with three.
  */
-class LSMImpl {
+class LeastSquareImpl {
 public:
     /**
      * @brief Construct a new Least Square Impl object.
      * @param paramsNum the right number is 4 or 3.
      */
-    explicit LSMImpl(int32_t paramsNum) : paramsNum_(paramsNum) {}
+    explicit LeastSquareImpl(int32_t paramsNum) : paramsNum_(paramsNum) {}
 
     /**
      * @brief Construct a new Least Square Impl object.
      * @param paramsNum the right number is 4 or 3.
      */
-    LSMImpl(int32_t paramsNum, int32_t countNum) : paramsNum_(paramsNum), countNum_(countNum) {}
+    LeastSquareImpl(int32_t paramsNum, int32_t countNum) : paramsNum_(paramsNum), countNum_(countNum) {}
 
-    LSMImpl() = default;
-    ~LSMImpl() = default;
+    LeastSquareImpl() = default;
+    ~LeastSquareImpl() = default;
 
     void UpdatePoint(double tVal, double pVal)
     {
