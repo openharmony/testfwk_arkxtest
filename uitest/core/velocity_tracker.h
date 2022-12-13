@@ -215,8 +215,8 @@ private:
     int stepCount = 0;
     TimeStamp firstTimePoint_;
     TimeStamp lastTimePoint_;
-    LSMImpl xAxis_ { 3, 5 };
-    LSMImpl yAxis_ { 3, 5 };
+    LeastSquareImpl xAxis_ { 3, 5 };
+    LeastSquareImpl yAxis_ { 3, 5 };
     bool isVelocityDone_ = false;
 };
 } // namespace OHOS::uitest
