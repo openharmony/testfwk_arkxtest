@@ -18,8 +18,8 @@
 using namespace std;
 using namespace std::chrono;
 namespace OHOS::uitest {
-    std::string g_operationType[9] = { "click", "doubleClick", "longClick", "drag", "swipe", \
-                                       "fling", "back", "home", "recent" };
+    std::string g_operationType[9] = { "click", "longClick", "doubleClick", "swipe", "drag", \
+                                       "fling", "home", "recent", "back" };
     TouchOp g_touchop = CLICK;
     VelocityTracker g_velocityTracker;
     bool g_isClick = false;
