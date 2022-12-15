@@ -54,7 +54,7 @@ namespace OHOS::uitest {
         {SPLIT, FLOATING, true, INDEX_ONE, ""},
         {MAXIMIZE, FULLSCREEN, false, INDEX_TWO, "Fullscreen window is already maximized"},
         {MAXIMIZE, SPLIT_PRIMARY, true, INDEX_ONE, ""},
-        {MAXIMIZE, SPLIT_SECONDARY, true, INDEX_TWO, "SPLIT_SECONDARY window can not maximize"},
+        {MAXIMIZE, SPLIT_SECONDARY, true, INDEX_TWO, ""},
         {MAXIMIZE, FLOATING, true, INDEX_TWO, ""},
         {RESUME, FULLSCREEN, true, INDEX_TWO, ""},
         {RESUME, SPLIT_PRIMARY, true, INDEX_ONE, ""},
