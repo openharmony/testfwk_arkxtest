@@ -503,7 +503,6 @@ SpecService.Spec = class {
             this.error = e;
         }
         coreContext.fireEvents('spec', 'specDone', this);
-        this.fn = null;
     }
 
     asyncRun(coreContext) {
@@ -553,7 +552,6 @@ SpecService.Spec = class {
             }
             this.isExecuted = true;
             await coreContext.fireEvents('spec', 'specDone', this);
-            this.fn = null;
             resolve();
         });
     }
