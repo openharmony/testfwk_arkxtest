@@ -70,15 +70,15 @@ namespace OHOS::uitest {
         {CLOSE, FLOATING, true, INDEX_FOUR, ""}
     };
 
-    static bool CheckOperational(WindowAction action, WindowMode mode, ApiReplyInfo &out, size_t &index)
+    static bool CheckOperational(WindowAction action, WindowMode mode, ApiReplyInfo &out, size_t &targetIndex)
     {
-        for (unsigned long dex = 0; dex < sizeof(OPERATIONS) / sizeof(Operational); dex++) {
-            if (OPERATIONS[dex].action == action && OPERATIONS[dex].windowMode == mode) {
-                if (OPERATIONS[dex].support) {
-                    index = OPERATIONS[dex].index;
+        for (unsigned long index = 0; index < sizeof(OPERATIONS) / sizeof(Operational); index++) {
+            if (OPERATIONS[index].action == action && OPERATIONS[index].windowMode == mode) {
+                if (OPERATIONS[index].support) {
+                    targetIndex = OPERATIONS[index].index;
                     return true;
                 } else {
-                    out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, OPERATIONS[dex].message);
+                    out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, OPERATIONS[index].message);
                     return false;
                 }
             }
