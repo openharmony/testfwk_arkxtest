@@ -76,6 +76,24 @@ namespace OHOS::uitest {
         widgetTree_->MarshalIntoDom(out);
     }
 
+    const Widget *UiDriver::FindWidget(float x, float y)
+    {
+        ApiCallErr err(NO_ERROR);
+        UpdateUi(true, err);
+        if (err.code_ == NO_ERROR && widgetTree_ != nullptr) {
+            return widgetTree_ ->MarshalWidgetTree(x, y);
+        } else {
+            return nullptr;
+        }
+    }
+
+    const Rect UiDriver::GetRootBounds()
+    {
+        ApiCallErr err(NO_ERROR);
+        UpdateUi(true, err);
+        return widgetTree_->GetRootWidget()->GetBounds();
+    }
+
     static unique_ptr<Widget> CloneFreeWidget(const Widget &from, const WidgetSelector &selector)
     {
         auto clone = from.Clone("NONE", from.GetHierarchy());

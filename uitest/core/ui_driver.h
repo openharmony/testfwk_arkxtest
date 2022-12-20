@@ -59,6 +59,10 @@ namespace OHOS::uitest {
 
         void DumpUiHierarchy(nlohmann::json &out, ApiCallErr &error);
 
+        const Widget *FindWidget(float x, float y);
+
+        const Rect GetRootBounds();
+
         /** Get current UI tree.*/
         const WidgetTree *GetWidgetTree() const;
 

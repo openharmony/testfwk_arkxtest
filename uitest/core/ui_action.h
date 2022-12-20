@@ -28,7 +28,7 @@ namespace OHOS::uitest {
     constexpr int32_t KEYCODE_HOME = 1;
 
     /**Enumerates all the supported coordinate-based touch operations.*/
-    enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG, FLING };
+    enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG, FLING, HOME, RECENT, RETURN };
 
     /**Enumerates the supported Key actions.*/
     enum UiKey : uint8_t { BACK, GENERIC };
