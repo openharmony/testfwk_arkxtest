@@ -16,7 +16,6 @@
 #ifndef GEOMETRY_OFFSET_H
 #define GEOMETRY_OFFSET_H
 
-#include <cmath>
 #include <limits>
 
 #include "size.h"
@@ -130,7 +129,7 @@ public:
     std::string ToString() const
     {
         std::stringstream ss;
-        ss << "Offset (" << std::fixed << std::setprecision(2) << deltaX_ << ", " << deltaY_ << ")";
+        ss << "Offset (" << std::fixed << std::setprecision(TWO) << deltaX_ << ", " << deltaY_ << ")";
         std::string output = ss.str();
         return output;
     }
