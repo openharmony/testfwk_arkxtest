@@ -88,7 +88,7 @@ public:
 
     bool IsEmpty() const
     {
-        return NearEqual(width_, ZERO) || NearEqual(height_, ZERO);
+        return NearEqual(width_, 0.0) || NearEqual(height_, 0.0);
     }
 
     Size& AddHeight(double height)
@@ -117,7 +117,7 @@ public:
 
     bool IsValid() const
     {
-        return width_ > ZERO && height_ > ZERO;
+        return width_ > 0.0 && height_ > 0.0;
     }
 
     Size operator+(const Size& size) const
@@ -202,7 +202,7 @@ public:
     std::string ToString() const
     {
         std::stringstream ss;
-        ss << "[" << std::fixed << std::setprecision(TWO);
+        ss << "[" << std::fixed << std::setprecision(2);
         if (NearEqual(width_, INFINITE_SIZE)) {
             ss << "INFINITE";
         } else {
