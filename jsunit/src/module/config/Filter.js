@@ -44,7 +44,7 @@ class NotClassFilter {
     }
 
     filterIt() {
-        return this.params.includes(this.suiteName + '#' + this.itName);
+        return this.params.split(',').some(item => item == (this.suiteName + '#' + this.itName));
     }
 }
 
