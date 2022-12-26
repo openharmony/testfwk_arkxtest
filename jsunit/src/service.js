@@ -90,12 +90,13 @@ class SuiteService {
     }
 
     describe(desc, func) {
-        if (this.coreContext.getDefaultService('config').filterSuite(desc)) {
+        const configService = this.coreContext.getDefaultService('config');
+        if (configService.filterSuite(desc)) {
             console.info('filter suite :' + desc);
             return;
         }
         const suite = new SuiteService.Suite({description: desc});
-        if (typeof this.coreContext.getServices('dataDriver') !== 'undefined') {
+        if (typeof this.coreContext.getServices('dataDriver') !== 'undefined' && configService['dryRun'] !== 'true') {
             let suiteStress = this.coreContext.getServices('dataDriver').dataDriver.getSuiteStress(desc);
             for (let i = 1; i < suiteStress; i++) {
                 this.currentRunningSuite.childSuites.push(suite);
@@ -431,7 +432,7 @@ class SpecService {
             let processedFunc = processFunc(this.coreContext, func);
             const spec = new SpecService.Spec({description: desc, fi: filter, fn: processedFunc});
             const suiteService = this.coreContext.getDefaultService('suite');
-            if (typeof this.coreContext.getServices('dataDriver') !== 'undefined') {
+            if (typeof this.coreContext.getServices('dataDriver') !== 'undefined' && configService['dryRun'] !== 'true') {
                 let specStress = this.coreContext.getServices('dataDriver').dataDriver.getSpecStress(desc);
                 for (let i = 1; i < specStress; i++) {
                     suiteService.getCurrentRunningSuite().pushSpec(spec);
