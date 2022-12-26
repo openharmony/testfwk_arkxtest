@@ -282,9 +282,9 @@ SuiteService.Suite = class {
     isRun(coreContext) {
         const configService = coreContext.getDefaultService('config');
         const suiteService = coreContext.getDefaultService('suite');
-        const specService = coreContext.getDefaultService('spec');
         let breakOnError = configService.isBreakOnError();
-        let isError = specService.getStatus();
+        let summary = suiteService.getSummary();
+        let isError = summary.failure > 0 || summary.error > 0;
         return breakOnError && isError
     }
 
@@ -552,7 +552,7 @@ SpecService.Spec = class {
                 let dataDriver = coreContext.getServices('dataDriver');
                 if (typeof dataDriver === 'undefined') {
                     const p = Promise.race([this.fn(), timeoutPromise()]);
-                    await p.then(() => {this.setResult();});
+                    await p.then(() => {this.setResult(coreContext);});
                 } else {
                     let suiteParams = dataDriver.dataDriver.getSuiteParams();
                     let specParams = dataDriver.dataDriver.getSpecParams();
