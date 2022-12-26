@@ -452,11 +452,15 @@ class SpecService {
                     suiteService.getCurrentRunningSuite().pushSpec(spec);
                 }
             }
-            let stress =  configService.getStress(); // 命令配置压力测试
-            console.info('stress it is,' + stress);
-            for (let i = 1; i < stress; i++) {
-                this.totalTest ++;
-                suiteService.getCurrentRunningSuite().pushSpec(spec);
+
+            // dryRun 状态下不统计压力测试重复数据
+            if(configService['dryRun'] !== 'true') {
+                let stress =  configService.getStress(); // 命令配置压力测试
+                console.info('stress it is,' + stress);
+                for (let i = 1; i < stress; i++) {
+                    this.totalTest ++;
+                    suiteService.getCurrentRunningSuite().pushSpec(spec);
+                }
             }
             this.totalTest ++;
             suiteService.getCurrentRunningSuite().pushSpec(spec);
