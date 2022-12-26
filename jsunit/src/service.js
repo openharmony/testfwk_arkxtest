@@ -283,9 +283,9 @@ SuiteService.Suite = class {
     isRun(coreContext) {
         const configService = coreContext.getDefaultService('config');
         const suiteService = coreContext.getDefaultService('suite');
+        const specService = coreContext.getDefaultService('spec');
         let breakOnError = configService.isBreakOnError();
-        let summary = suiteService.getSummary();
-        let isError = summary.failure > 0 || summary.error > 0;
+        let isError = specService.getStatus();
         return breakOnError && isError
     }
 
