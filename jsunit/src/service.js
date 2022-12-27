@@ -458,8 +458,9 @@ class SpecService {
                 let stress =  configService.getStress(); // 命令配置压力测试
                 console.info('stress it is,' + stress);
                 for (let i = 1; i < stress; i++) {
+                    const specItem = new SpecService.Spec({description: desc, fi: filter, fn: processedFunc});
                     this.totalTest ++;
-                    suiteService.getCurrentRunningSuite().pushSpec(spec);
+                    suiteService.getCurrentRunningSuite().pushSpec(specItem);
                 }
             }
             this.totalTest ++;

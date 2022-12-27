@@ -33,6 +33,7 @@ class ConfigService {
         this.timeout = null;
         // 遇错即停模式配置
         this.breakOnError = false;
+        this.stressRule = /^[1-9]\d*$/;
         // 压力测试配置
         this.stress = null;
     }
@@ -50,8 +51,7 @@ class ConfigService {
         if(this.stress == undefined || this.stress == '' || this.stress == null) {
             return 1;
         }
-        let stressRule  = /^[1-9]\d*$/;
-        return !this.stress.match(stressRule) ? 1 : Number.parseInt(this.stress);
+        return !this.stress.match(this.stressRule) ? 1 : Number.parseInt(this.stress);
     }
 
     basicParamValidCheck(params) {
@@ -96,8 +96,7 @@ class ConfigService {
 
         // 压力测试参数验证,正整数
         if(params.stress !== undefined && params.stress !== '' && params.stress !== null) {
-            let stressRule  = /^[1-9]\d*$/;
-            if(!params.stress.match(stressRule)){
+            if(!params.stress.match(this.stressRule)){
                 this.filterValid.push('stress:' + params.stress);
             }
         }
