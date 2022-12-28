@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "ui_record.h"
+#include "ability_manager_client.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -41,7 +42,6 @@ namespace OHOS::uitest {
     auto driver = UiDriver();
     Rect windowBounds = Rect(0, 0, 0, 0);
     DataWrapper g_dataWrapper;
-    TouchEventInfo eventInfo;
     
     std::vector<std::string> GetForeAbility()
     {
