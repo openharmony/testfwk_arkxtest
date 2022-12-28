@@ -21,7 +21,6 @@
 #include "common_utilities_hpp.h"
 #include "frontend_api_handler.h"
 #include "json.hpp"
-#include "touch_event.h"
 
 namespace OHOS::uitest {
     /**Enumerates the supported UiComponent attributes.*/
@@ -202,8 +201,6 @@ namespace OHOS::uitest {
 
         std::map<std::string, std::string> GetAttrMap() const;
 
-        void SetFoundWidgetInfo(TouchEventInfo& event) const;
-
     private:
         const std::string hierarchy_;
         std::string hostTreeId_;
@@ -249,23 +246,6 @@ namespace OHOS::uitest {
         void DfsTraverseRears(WidgetVisitor &visitor, const Widget &pivot) const;
 
         void DfsTraverseDescendants(WidgetVisitor &visitor, const Widget &root) const;
-        
-        std::map<std::string, size_t> SetWidgetChildCountMap(const WidgetTree& tree) const;
-
-        /* Parse the WidgetTree according to the down point return the corresponding widget */
-        const Widget *MarshalWidgetTree(float x, float y) const;
-
-        const Widget *BFSSearchWidget(const WidgetTree& tree, const Widget& root, \
-                                      std::map<std::string, size_t> widgetChildCountMap,float x, float y, \
-                                      const Widget& lastRoot, uint32_t lastIndex) const;
-        
-        const Widget *BFSRootSearchWidget(const WidgetTree& tree, const Widget& root, \
-                                          std::map<std::string, size_t> widgetChildCountMap, float x, float y) const;
-
-        const std::map<std::string, Widget> GetWidgetMap() const
-        {
-            return widgetMap_;
-        }
 
         /**
          * Get the root widget node.
