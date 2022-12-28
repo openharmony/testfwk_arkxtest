@@ -12,17 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "widget_matcher.h"
+#ifndef FIND_WIDGET_H
+#define FIND_WIDGET_H
+
 #include "ui_driver.h"
 #include "ui_model.h"
 #include "widget_operator.h"
-#include "window_operator.h"
 #include "widget_selector.h"
-#include <cmath>
-#include <algorithm>
-#include <map>
-#include <iostream>
-#include <vector>
+#include "widget_matcher.h"
 #include "frontend_api_defines.h"
 namespace OHOS::uitest {
     const Widget FindWidget(UiDriver &driver, float x, float y);
@@ -30,7 +27,8 @@ namespace OHOS::uitest {
     public:
         WidgetMatcherByCoord() = delete;
 
-        explicit WidgetMatcherByCoord(float x, float y) {
+        explicit WidgetMatcherByCoord(float x, float y)
+        {
             x_ = x;
             y_ = y;
         }
@@ -38,12 +36,6 @@ namespace OHOS::uitest {
 
         bool Matches(const Widget &widget) const override;
 
-        float GetX() const {
-            return x_;
-        }
-        float GetY() const {
-            return y_;
-        }
     private:
         float x_;
         float y_;
@@ -60,7 +52,8 @@ namespace OHOS::uitest {
 
         int32_t GetDept(const Widget &widget) const;
         
-        const Widget GetMaxDepWidget() {
+        const Widget GetMaxDepWidget()
+        {
             return receiver_.find(maxDep)->second;
         }
 

@@ -12,10 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "findWidgetByCoord.h"
+#include "find_widget.h"
 using namespace std;
 namespace OHOS::uitest {
-    const Widget FindWidget(UiDriver &driver, float x, float y) {
+    const Widget FindWidget(UiDriver &driver, float x, float y)
+    {
         ApiCallErr err(NO_ERROR);
         auto selector = WidgetSelector();
         vector<std::unique_ptr<Widget>> rev;
@@ -31,7 +32,8 @@ namespace OHOS::uitest {
     {
         return "Match widget by coordinates point";
     }
-    bool WidgetMatcherByCoord::Matches(const Widget &widget) const{
+    bool WidgetMatcherByCoord::Matches(const Widget &widget) const
+    {
         Rect rect = widget.GetBounds();
         if (x_ <= rect.right_ && x_ >= rect.left_ && y_ <= rect.bottom_ && y_ >= rect.top_) {
             return true;
@@ -40,7 +42,8 @@ namespace OHOS::uitest {
         }
     }
 
-    int32_t WidgetCollector::GetDept(const Widget &widget) const{
+    int32_t WidgetCollector::GetDept(const Widget &widget) const
+    {
         return widget.GetHierarchy().length();
     }
 
