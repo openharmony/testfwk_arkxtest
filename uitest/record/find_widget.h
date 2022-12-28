@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef FIND_WIDGET_H
 #define FIND_WIDGET_H
 
@@ -62,4 +63,6 @@ namespace OHOS::uitest {
         std::map<float, Widget> &receiver_;
         int32_t maxDep;
     };
-}
+}// namespace OHOS::uitest
+
+#endif // FIND_WIDGET_H

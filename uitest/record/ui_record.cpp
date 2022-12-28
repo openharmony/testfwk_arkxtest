@@ -13,13 +13,14 @@
  * limitations under the License.
  */
 #include "ui_record.h"
-#include "ability_manager_client.h"
 
 using namespace std;
 using namespace std::chrono;
 namespace OHOS::uitest {
-    enum TouchOpt : uint8_t { OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
-                                 OP_FLING, OP_HOME, OP_RECENT, OP_RETURN };
+    enum TouchOpt : uint8_t {
+        OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
+        OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
+    };
     std::string g_operationType[9] = { "click", "longClick", "doubleClick", "swipe", "drag", \
                                        "fling", "home", "recent", "back" };
     TouchOpt g_touchop = OP_CLICK;
