@@ -42,6 +42,7 @@
 #include "window_operator.h"
 #include "widget_selector.h"
 #include "ui_model.h"
+#include "findWidgetByCoord.h"
 
 namespace OHOS::uitest {
     static int g_touchTime;
