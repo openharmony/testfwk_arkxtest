@@ -43,7 +43,6 @@
 #include "widget_selector.h"
 #include "ui_model.h"
 #include "find_widget.h"
-#include "ability_manager_client.h"
 
 namespace OHOS::uitest {
     static int g_touchTime;
