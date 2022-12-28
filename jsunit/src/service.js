@@ -283,9 +283,9 @@ SuiteService.Suite = class {
     isRun(coreContext) {
         const configService = coreContext.getDefaultService('config');
         const suiteService = coreContext.getDefaultService('suite');
+        const specService = coreContext.getDefaultService('spec');
         let breakOnError = configService.isBreakOnError();
-        let summary = suiteService.getSummary();
-        let isError = summary.failure > 0 || summary.error > 0;
+        let isError = specService.getStatus();
         return breakOnError && isError
     }
 
@@ -409,6 +409,8 @@ SuiteService.Suite = class {
 class SpecService {
     constructor(attr) {
         this.id = attr.id;
+        this.totalTest = 0;
+        this.hasError = false;
     }
 
     init(coreContext) {
@@ -417,6 +419,18 @@ class SpecService {
 
     setCurrentRunningSpec(spec) {
         this.currentRunningSpec = spec;
+    }
+
+    setStatus(obj) {
+        this.hasError = obj;
+    }
+
+    getStatus() {
+        return this.hasError;
+    }
+
+    getTestTotal() {
+        return this.totalTest;
     }
 
     getCurrentRunningSpec() {
@@ -435,9 +449,22 @@ class SpecService {
             if (typeof this.coreContext.getServices('dataDriver') !== 'undefined' && configService['dryRun'] !== 'true') {
                 let specStress = this.coreContext.getServices('dataDriver').dataDriver.getSpecStress(desc);
                 for (let i = 1; i < specStress; i++) {
+                    this.totalTest ++;
                     suiteService.getCurrentRunningSuite().pushSpec(spec);
                 }
             }
+
+            // dryRun 状态下不统计压力测试重复数据
+            if(configService['dryRun'] !== 'true') {
+                let stress =  configService.getStress(); // 命令配置压力测试
+                console.info('stress it is,' + stress);
+                for (let i = 1; i < stress; i++) {
+                    const specItem = new SpecService.Spec({description: desc, fi: filter, fn: processedFunc});
+                    this.totalTest ++;
+                    suiteService.getCurrentRunningSuite().pushSpec(specItem);
+                }
+            }
+            this.totalTest ++;
             suiteService.getCurrentRunningSuite().pushSpec(spec);
         }
     }
@@ -468,9 +495,11 @@ SpecService.Spec = class {
         this.isExecuted = false; // 当前用例是否执行
     }
 
-    setResult() {
+    setResult(coreContext) {
+        const specService = coreContext.getDefaultService('spec');
         if (this.result.failExpects.length > 0) {
             this.result.pass = false;
+            specService.setStatus(true);
         } else {
             this.result.pass = true;
         }
@@ -499,9 +528,10 @@ SpecService.Spec = class {
                     specParams.forEach(paramItem => this.fn(Object.assign({}, paramItem, suiteParams)));
                 }
             }
-            this.setResult();
+            this.setResult(coreContext);
         } catch (e) {
             this.error = e;
+            specService.setStatus(true);
         }
         coreContext.fireEvents('spec', 'specDone', this);
     }
@@ -524,7 +554,7 @@ SpecService.Spec = class {
                 let dataDriver = coreContext.getServices('dataDriver');
                 if (typeof dataDriver === 'undefined') {
                     const p = Promise.race([this.fn(), timeoutPromise()]);
-                    await p.then(() => {this.setResult();});
+                    await p.then(() => {this.setResult(coreContext);});
                 } else {
                     let suiteParams = dataDriver.dataDriver.getSuiteParams();
                     let specParams = dataDriver.dataDriver.getSpecParams();
@@ -532,23 +562,25 @@ SpecService.Spec = class {
                     console.info('[spec params] ' + JSON.stringify(specParams));
                     if (this.fn.length === 0) {
                         const p = Promise.race([this.fn(), timeoutPromise()]);
-                        await p.then(() => {this.setResult();});
+                        await p.then(() => {this.setResult(coreContext);});
                     } else if (specParams.length === 0) {
                         const p = Promise.race([this.fn(suiteParams), timeoutPromise()]);
-                        await p.then(() => {this.setResult();});
+                        await p.then(() => {this.setResult(coreContext);});
                     } else {
                         for (const paramItem of specParams) {
                             const p = Promise.race([this.fn(Object.assign({}, paramItem, suiteParams)),
                             timeoutPromise()]);
-                            await p.then(() => {this.setResult();});
+                            await p.then(() => {this.setResult(coreContext);});
                         }
                     }
                 }
             } catch (e) {
                 if (e instanceof AssertException) {
                     this.fail = e;
+                    specService.setStatus(true);
                 } else {
                     this.error = e;
+                    specService.setStatus(true);
                 }
             }
             this.isExecuted = true;
