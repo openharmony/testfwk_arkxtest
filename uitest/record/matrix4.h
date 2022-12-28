@@ -65,14 +65,14 @@ public:
     double operator[](int32_t index) const;
     inline double Get(int32_t row, int32_t col) const
     {
-        UITEST_DCHECK((unsigned)row < DIMENSION);
-        UITEST_DCHECK((unsigned)col < DIMENSION);
+        DCHECK((unsigned)row < DIMENSION);
+        DCHECK((unsigned)col < DIMENSION);
         return matrix4x4_[col][row];
     }
     inline void Set(int32_t row, int32_t col, double value)
     {
-        UITEST_DCHECK((unsigned)row < DIMENSION);
-        UITEST_DCHECK((unsigned)col < DIMENSION);
+        DCHECK((unsigned)row < DIMENSION);
+        DCHECK((unsigned)col < DIMENSION);
         matrix4x4_[col][row] = value;
     }
     double Determinant() const;

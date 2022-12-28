@@ -65,23 +65,23 @@ namespace OHOS::uitest {
         std::cout << actionType << ": " ;
         if (actionType == "fling" || actionType == "swipe" || actionType == "drag") {
             if (downEvent.attributes.find("id")->second != "" || downEvent.attributes.find("text")->second != "") {
-                std::cout << "from Widget(id: " << downEvent.attributes.find("id")->second<< ", "
-                            << "type: " << downEvent.attributes.find("type")->second<< ", "
-                            << "text: " << downEvent.attributes.find("text")->second<< ", " << std::endl;
+                std::cout << "from Widget(id: " << downEvent.attributes.find("id")->second << ", "
+                            << "type: " << downEvent.attributes.find("type")->second << ", "
+                            << "text: " << downEvent.attributes.find("text")->second << ") " << std::endl;
             } else {
                 std::cout << "from Point(x:" << downEvent.x << ", y:" << downEvent.y
                             << ") to Point(x:" << upEvent.x << ", y:" << upEvent.y << ") " << std::endl;
             }
             if (actionType == "fling" || actionType == "swipe") {
-                std::cout << "Off-hand speed:" << g_velocityTracker.GetMainVelocity() <<", "
+                std::cout << "Off-hand speed:" << g_velocityTracker.GetMainVelocity() << ", "
                             << "Step length:" << g_velocityTracker.GetStepLength() << std::endl;
             }
         } else if (actionType == "click" || actionType == "longClick" || actionType == "doubleClick") {
             std::cout << actionType << ": " ;
             if (downEvent.attributes.find("id")->second != "" || downEvent.attributes.find("text")->second != "") {
-                std::cout << " at Widget(id: " << downEvent.attributes.find("id")->second<< ", "
-                        << "text: " << downEvent.attributes.find("text")->second
-                        << "type: " << downEvent.attributes.find("type")->second<< ", "<< std::endl;
+                std::cout << " at Widget( id: " << downEvent.attributes.find("id")->second << ", "
+                        << "text: " << downEvent.attributes.find("text")->second << ", "
+                        << "type: " << downEvent.attributes.find("type")->second<< ") "<< std::endl;
             } else {
                 std::cout <<" at Point(x:" << downEvent.x << ", y:" << downEvent.y << ") "<< std::endl;
             }
@@ -207,7 +207,7 @@ namespace OHOS::uitest {
     void InputEventCallback::HandleDownEvent(TouchEventInfo& event) const
     {
         if (g_recordMode != "point") {
-            driver.FindWidget(event.x, event.y)->SetFoundWidgetInfo(event);
+            event.attributes = FindWidget(driver, event.x, event.y).GetAttrMap();
         }
         g_velocityTracker.UpdateTouchEvent(event, false);
     }
@@ -266,7 +266,7 @@ namespace OHOS::uitest {
             g_isClick = false;
         }
         if (g_touchop == DRAG && g_recordMode != "point") {
-            driver.FindWidget(event.x, event.y)->SetFoundWidgetInfo(g_velocityTracker.GetLastTrackPoint());
+            g_velocityTracker.GetLastTrackPoint().attributes = FindWidget(driver, event.x, event.y).GetAttrMap();
         }
         std::thread t(SaveEventData);
         t.join();
