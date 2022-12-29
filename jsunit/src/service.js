@@ -581,7 +581,7 @@ SpecService.Spec = class {
                     this.setResult(coreContext);
                 } else {
                     for (const paramItem of specParams) {
-                        await this.fn();
+                        await this.fn(Object.assign({}, paramItem, suiteParams));
                         this.setResult(coreContext);
                     }
                 }
