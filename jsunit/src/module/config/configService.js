@@ -14,6 +14,7 @@
  */
 
 import {ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter} from './Filter';
+const STRESS_RULE = /^[1-9]\d*$/;
 
 class ConfigService {
     constructor(attr) {
@@ -47,11 +48,10 @@ class ConfigService {
     }
 
     getStress() {
-        if(this.stress == undefined || this.stress == '' || this.stress == null) {
+        if(this.stress === undefined || this.stress === '' || this.stress === null) {
             return 1;
         }
-        let stressRule  = /^[1-9]\d*$/;
-        return !this.stress.match(stressRule) ? 1 : Number.parseInt(this.stress);
+        return !this.stress.match(STRESS_RULE) ? 1 : Number.parseInt(this.stress);
     }
 
     basicParamValidCheck(params) {
@@ -96,8 +96,7 @@ class ConfigService {
 
         // 压力测试参数验证,正整数
         if(params.stress !== undefined && params.stress !== '' && params.stress !== null) {
-            let stressRule  = /^[1-9]\d*$/;
-            if(!params.stress.match(stressRule)){
+            if(!params.stress.match(STRESS_RULE)){
                 this.filterValid.push('stress:' + params.stress);
             }
         }
