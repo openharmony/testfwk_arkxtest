@@ -63,6 +63,6 @@ namespace OHOS::uitest {
         std::map<float, Widget> &receiver_;
         int32_t maxDep;
     };
-}// namespace OHOS::uitest
+} // namespace OHOS::uitest
 
 #endif // FIND_WIDGET_H
