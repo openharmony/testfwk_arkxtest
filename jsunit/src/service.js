@@ -16,9 +16,10 @@
 import SysTestKit from "./module/kit/SysTestKit";
 
 class AssertException extends Error {
-    constructor() {
+    constructor(message) {
         super();
         this.name = "AssertException";
+        this.message = message;
     }
 }
 
@@ -307,41 +308,38 @@ SuiteService.Suite = class {
         }
     }
 
-    asyncRun(coreContext) {
+    async asyncRun(coreContext) {
         const suiteService = coreContext.getDefaultService('suite');
         suiteService.setCurrentRunningSuite(this);
-        return new Promise(async resolve => {
-            if (this.description !== '') {
-                await coreContext.fireEvents('suite', 'suiteStart', this);
+        if (this.description !== '') {
+            await coreContext.fireEvents('suite', 'suiteStart', this);
+        }
+        await this.runAsyncHookFunc('beforeAll');
+        if (this.specs.length > 0) {
+            const configService = coreContext.getDefaultService('config');
+            if (configService.isRandom()) {
+                this.specs.sort(function () {
+                    return Math.random().toFixed(1) > 0.5 ? -1 : 1;
+                });
             }
-            await this.runAsyncHookFunc('beforeAll');
-            if (this.specs.length > 0) {
-                const configService = coreContext.getDefaultService('config');
-                if (configService.isRandom()) {
-                    this.specs.sort(function () {
-                        return Math.random().toFixed(1) > 0.5 ? -1 : 1;
-                    });
-                }
-                for (let i = 0; i < this.specs.length; i++) {
-                    await this.runAsyncHookFunc('beforeEach');
-                    await this.specs[i].asyncRun(coreContext);
-                    await this.runAsyncHookFunc('afterEach');
-                }
+            for (let i = 0; i < this.specs.length; i++) {
+                await this.runAsyncHookFunc('beforeEach');
+                await this.specs[i].asyncRun(coreContext);
+                await this.runAsyncHookFunc('afterEach');
             }
+        }
 
-            if (this.childSuites.length > 0) {
-                for (let i = 0; i < this.childSuites.length; i++) {
-                    suiteService.setCurrentRunningSuite(this.childSuites[i]);
-                    await this.childSuites[i].asyncRun(coreContext);
-                }
+        if (this.childSuites.length > 0) {
+            for (let i = 0; i < this.childSuites.length; i++) {
+                suiteService.setCurrentRunningSuite(this.childSuites[i]);
+                await this.childSuites[i].asyncRun(coreContext);
             }
+        }
 
-            await this.runAsyncHookFunc('afterAll');
-            if (this.description !== '') {
-                await coreContext.fireEvents('suite', 'suiteDone');
-            }
-            resolve();
-        });
+        await this.runAsyncHookFunc('afterAll');
+        if (this.description !== '') {
+            await coreContext.fireEvents('suite', 'suiteDone');
+        }
     }
 
     runHookFunc(hookName) {
@@ -471,55 +469,50 @@ SpecService.Spec = class {
         coreContext.fireEvents('spec', 'specDone', this);
     }
 
-    asyncRun(coreContext) {
+    async asyncRun(coreContext) {
         const specService = coreContext.getDefaultService('spec');
         specService.setCurrentRunningSpec(this);
         this.startTime = new Date().getTime();
         const config = coreContext.getDefaultService('config');
         const timeout = + (config.timeout === undefined ? 5000 : config.timeout);
-        return new Promise(async resolve => {
-            await coreContext.fireEvents('spec', 'specStart', this);
+        let timeoutPromise = new Promise((resolve, reject) => {
+            setTimeout(() => reject(new Error('execute timeout ' + timeout + 'ms')), timeout);
+        });
 
-            function timeoutPromise() {
-                return new Promise(function (resolve, reject) {
-                    setTimeout(() => reject(new Error('execute timeout ' + timeout + 'ms')), timeout);
-                });
-            }
-
-            try {
-                let dataDriver = coreContext.getServices('dataDriver');
-                if (typeof dataDriver === 'undefined') {
-                    const p = Promise.race([this.fn(), timeoutPromise()]);
+        await coreContext.fireEvents('spec', 'specStart', this);
+        try {
+            let dataDriver = coreContext.getServices('dataDriver');
+            if (typeof dataDriver === 'undefined') {
+                const p = Promise.race([this.fn(), timeoutPromise]);
+                await p.then(() => {this.setResult();});
+            } else {
+                let suiteParams = dataDriver.dataDriver.getSuiteParams();
+                let specParams = dataDriver.dataDriver.getSpecParams();
+                console.info('[suite params] ' + JSON.stringify(suiteParams));
+                console.info('[spec params] ' + JSON.stringify(specParams));
+                if (this.fn.length === 0) {
+                    const p = Promise.race([this.fn(), timeoutPromise]);
+                    await p.then(() => {this.setResult();});
+                } else if (specParams.length === 0) {
+                    const p = Promise.race([this.fn(suiteParams), timeoutPromise]);
                     await p.then(() => {this.setResult();});
                 } else {
-                    let suiteParams = dataDriver.dataDriver.getSuiteParams();
-                    let specParams = dataDriver.dataDriver.getSpecParams();
-                    console.info('[suite params] ' + JSON.stringify(suiteParams));
-                    console.info('[spec params] ' + JSON.stringify(specParams));
-                    if (this.fn.length === 0) {
-                        const p = Promise.race([this.fn(), timeoutPromise()]);
+                    for (const paramItem of specParams) {
+                        const p = Promise.race([this.fn(Object.assign({}, paramItem, suiteParams)),
+                            timeoutPromise]);
                         await p.then(() => {this.setResult();});
-                    } else if (specParams.length === 0) {
-                        const p = Promise.race([this.fn(suiteParams), timeoutPromise()]);
-                        await p.then(() => {this.setResult();});
-                    } else {
-                        for (const paramItem of specParams) {
-                            const p = Promise.race([this.fn(Object.assign({}, paramItem, suiteParams)),
-                            timeoutPromise()]);
-                            await p.then(() => {this.setResult();});
-                        }
                     }
                 }
-            } catch (e) {
-                if (e instanceof AssertException) {
-                    this.fail = e;
-                } else {
-                    this.error = e;
-                }
             }
-            await coreContext.fireEvents('spec', 'specDone', this);
-            resolve();
-        });
+        } catch (e) {
+            if (e instanceof AssertException) {
+                this.fail = e;
+            } else {
+                this.error = e;
+            }
+        }
+        await coreContext.fireEvents('spec', 'specDone', this);
+        timeoutPromise = null;
     }
 
     filterCheck(coreContext) {
@@ -529,7 +522,9 @@ SpecService.Spec = class {
     }
 
     addExpectationResult(expectResult) {
-        this.result.failExpects.push(expectResult);
+        if (this.result.failExpects.length === 0) {
+            this.result.failExpects.push(expectResult);
+        }
         throw new AssertException(expectResult.message);
     }
 };
