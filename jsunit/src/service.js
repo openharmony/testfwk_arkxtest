@@ -577,6 +577,7 @@ SpecService.Spec = class {
                 specService.setStatus(true);
             }
         }
+        this.isExecuted = true;
         await coreContext.fireEvents('spec', 'specDone', this);
         timeoutPromise = null;
     }
