@@ -149,7 +149,11 @@ ohos_shared_library("uitest_client") {
   part_name = "arkXtest"
   output_name = "uitest"
   external_deps = common_external_deps
-  external_deps += [ "napi:ace_napi" ]
+  external_deps += [
+    "multimedia_image_framework:image_native",
+    "napi:ace_napi",
+    "pasteboard:pasteboard_client",
+  ]
   relative_install_dir = "module"
   defines = [
     "__OHOS__=1",
