@@ -22,6 +22,8 @@ namespace OHOS::uitest {
     // frequently used keys.
     constexpr int32_t KEYCODE_NONE = 0;
     constexpr int32_t KEYCODE_BACK = 2;
+    constexpr int32_t KEYCODE_DPAD_RIGHT = 2015;
+    constexpr int32_t KEYCODE_DEL = 2055;
     constexpr int32_t KEYCODE_CTRL = 2072;
     constexpr int32_t KEYCODE_V = 2038;
     constexpr int32_t KEYCODE_POWER = 18;

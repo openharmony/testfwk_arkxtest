@@ -171,6 +171,35 @@ namespace OHOS::uitest {
         auto touch = GenericPinch(rectBound, scale);
         driver_.PerformTouch(touch, options_, error);
     }
+
+    static bool TextToKeyAction(string_view text, std::vector<KeyEvent> &events, UiDriver &driver, ApiCallErr &error)
+    {
+        static constexpr uint32_t typeCharTimeMs = 50;
+        if (!text.empty()) {
+            vector<char> chars(text.begin(), text.end()); // decompose to sing-char input sequence
+            vector<pair<int32_t, int32_t>> keyCodes;
+            for (auto ch : chars) {
+                int32_t code = KEYCODE_NONE;
+                int32_t ctrlCode = KEYCODE_NONE;
+                if (!driver.GetUiController(error)->GetCharKeyCode(ch, code, ctrlCode)) {
+                    return false;
+                }
+                keyCodes.emplace_back(make_pair(code, ctrlCode));
+            }
+            for (auto &pair : keyCodes) {
+                if (pair.second != KEYCODE_NONE) {
+                    events.emplace_back(KeyEvent {ActionStage::DOWN, pair.second, 0});
+                }
+                events.emplace_back(KeyEvent {ActionStage::DOWN, pair.first, typeCharTimeMs});
+                events.emplace_back(KeyEvent {ActionStage::UP, pair.first, 0});
+                if (pair.second != KEYCODE_NONE) {
+                    events.emplace_back(KeyEvent {ActionStage::UP, pair.second, 0});
+                }
+            }
+        }
+        return true;
+    }
+
     void WidgetOperator::InputText(string_view text, ApiCallErr &error) const
     {
         auto retrieved = driver_.RetrieveWidget(widget_, error);
@@ -186,41 +215,30 @@ namespace OHOS::uitest {
         vector<KeyEvent> events;
         if (!origText.empty()) {
             for (size_t index = 0; index < origText.size(); index++) {
-                events.emplace_back(KeyEvent {ActionStage::DOWN, 2015, typeCharTimeMs});
-                events.emplace_back(KeyEvent {ActionStage::UP, 2015, 0});
-                events.emplace_back(KeyEvent {ActionStage::DOWN, 2055, typeCharTimeMs});
-                events.emplace_back(KeyEvent {ActionStage::UP, 2055, 0});
-            }
-        }
-        if (!text.empty()) {
-            vector<char> chars(text.begin(), text.end()); // decompose to sing-char input sequence
-            vector<pair<int32_t, int32_t>> keyCodes;
-            for (auto ch : chars) {
-                int32_t code = KEYCODE_NONE;
-                int32_t ctrlCode = KEYCODE_NONE;
-                if (!driver_.GetUiController(error)->GetCharKeyCode(ch, code, ctrlCode)) {
-                    error = ApiCallErr(ERR_INVALID_INPUT, string("Cannot input char ") + ch);
-                    return;
-                }
-                keyCodes.emplace_back(make_pair(code, ctrlCode));
-            }
-            for (auto &pair : keyCodes) {
-                if (pair.second != KEYCODE_NONE) {
-                    events.emplace_back(KeyEvent {ActionStage::DOWN, pair.second, 0});
-                }
-                events.emplace_back(KeyEvent {ActionStage::DOWN, pair.first, typeCharTimeMs});
-                events.emplace_back(KeyEvent {ActionStage::UP, pair.first, 0});
-                if (pair.second != KEYCODE_NONE) {
-                    events.emplace_back(KeyEvent {ActionStage::UP, pair.second, 0});
-                }
+                events.emplace_back(KeyEvent {ActionStage::DOWN, KEYCODE_DPAD_RIGHT, typeCharTimeMs});
+                events.emplace_back(KeyEvent {ActionStage::UP, KEYCODE_DPAD_RIGHT, 0});
+                events.emplace_back(KeyEvent {ActionStage::DOWN, KEYCODE_DEL, typeCharTimeMs});
+                events.emplace_back(KeyEvent {ActionStage::UP, KEYCODE_DEL, 0});
             }
         }
         const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY());
         auto touch = OHOS::uitest::GenericClick(TouchOp::CLICK, center);
         driver_.PerformTouch(touch, options_, error);
         driver_.DelayMs(focusTimeMs); // short delay to ensure focus gaining
-        auto keyAction = KeysForwarder(events);
-        driver_.TriggerKey(keyAction, options_, error);
+        auto keyActionForDelete = KeysForwarder(events);
+        driver_.TriggerKey(keyActionForDelete, options_, error);
+        events.clear();
+        if (!text.empty()) {
+            if (TextToKeyAction(text, events, driver_, error)) {
+                LOG_I("inputText by Keycode");
+                auto keyActionForInput = KeysForwarder(events);
+                driver_.TriggerKey(keyActionForInput, options_, error);
+            } else {
+                LOG_I("inputText by pasteBoard");
+                auto actionForPatse = CombinedKeys(KEYCODE_CTRL, KEYCODE_V, KEYCODE_NONE);
+                driver_.TriggerKey(actionForPatse, options_, error);
+            }
+        }
     }
 
     unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const

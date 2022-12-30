@@ -21,6 +21,7 @@
 #include <string>
 #include <unistd.h>
 #include "json.hpp"
+#include "pasteboard_client.h"
 #include "common_utilities_hpp.h"
 #include "frontend_api_defines.h"
 
@@ -321,6 +322,14 @@ namespace OHOS::uitest {
         return napi_ok;
     }
 
+    static void SetPasteBoardData(string_view text)
+    {
+        auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
+        pasteBoardMgr->Clear();
+        auto pasteData = MiscServices::PasteboardClient::GetInstance()->CreatePlainTextData(string(text));
+        pasteBoardMgr->SetPasteData(*pasteData);
+    }
+
     /**Generic js-api callback.*/
     static napi_value GenericCallback(napi_env env, napi_callback_info info)
     {
@@ -357,6 +366,10 @@ namespace OHOS::uitest {
         }
         // 3. fill-in apiId
         ctx.callInfo_.apiId_ = methodDef->name_;
+        if (ctx.callInfo_.apiId_  == "Component.inputText") {
+            auto text = ctx.callInfo_.paramList_.at(INDEX_ZERO).get<string>();
+            SetPasteBoardData(text);
+        }
         // 4. call out, sync or async
         if (methodDef->fast_) {
             return TransactSync(env, ctx);
