@@ -394,8 +394,6 @@ namespace OHOS::uitest {
             code = OHOS::MMI::KeyEvent::KEYCODE_A + static_cast<int32_t>(ch - 'A');
         } else if (ch >= '0' && ch <= '9') {
             code = OHOS::MMI::KeyEvent::KEYCODE_0 + static_cast<int32_t>(ch - '0');
-        } else if (ch == 0x7F) {
-            code = OHOS::MMI::KeyEvent::KEYCODE_DEL;
         } else {
             return false;
         }
