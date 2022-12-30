@@ -497,6 +497,7 @@ SpecService.Spec = class {
     async asyncRun(coreContext) {
         const specService = coreContext.getDefaultService('spec');
         specService.setCurrentRunningSpec(this);
+        this.startTime = new Date().getTime();
 
         await coreContext.fireEvents('spec', 'specStart', this);
         try {
