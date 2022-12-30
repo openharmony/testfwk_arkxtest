@@ -297,7 +297,7 @@ namespace OHOS::uitest {
                 MarshallAccessibilityNodeInfo(elementInfo, root, 0, false);
                 out.push_back(make_pair(move(winInfo), move(root)));
             } else {
-                LOG_W("GetRootByWindow failed");
+                LOG_W("GetRootByWindow failed, windowId: %{public}d", window.GetWindowId());
             }
         }
     }
