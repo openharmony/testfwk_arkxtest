@@ -497,7 +497,6 @@ SpecService.Spec = class {
     async asyncRun(coreContext) {
         const specService = coreContext.getDefaultService('spec');
         specService.setCurrentRunningSpec(this);
-        this.startTime = new Date().getTime();
 
         await coreContext.fireEvents('spec', 'specStart', this);
         try {
@@ -656,24 +655,25 @@ class ReportService {
     }
 
     taskStart() {
-        this.taskStartTime = new Date().getTime();
         console.info('[start] start run suites');
     }
 
-    suiteStart() {
+    async suiteStart() {
         console.info('[suite start]' + this.suiteService.getCurrentRunningSuite().description);
     }
 
-    specStart() {
+    async specStart() {
         console.info('start running case \'' + this.specService.currentRunningSpec.description + '\'');
         this.index = this.index + 1;
+        let spec = this.specService.currentRunningSpec;
+        spec.startTime = await SysTestKit.getRealTime();
     }
 
-    specDone() {
+    async specDone() {
         let msg = '';
         let spec = this.specService.currentRunningSpec;
-        spec.duration = new Date().getTime() - spec.startTime;
         let suite = this.suiteService.currentRunningSuite;
+        spec.duration = await SysTestKit.getRealTime() - spec.startTime;
         suite.duration += spec.duration;
         if (spec.error) {
             this.formatPrint('error', spec.description + ' ; consuming ' + spec.duration + 'ms');

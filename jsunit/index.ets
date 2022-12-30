@@ -30,6 +30,10 @@ class Hypium {
         core.addService('dataDriver', dataDriver);
     }
 
+    static setTimeConfig(systemTime) {
+        SysTestKit.systemTime = systemTime;
+    }
+
     static hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite) {
         const core = Core.getInstance();
         const expectExtend = new ExpectExtend({
