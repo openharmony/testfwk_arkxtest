@@ -32,10 +32,25 @@ function processFunc(coreContext, func) {
         .filter(String);
     let funcLen = func.length;
     let processedFunc;
-    coreContext.getDefaultService('config').setSupportAsync(true);
+    const config = coreContext.getDefaultService('config');
+    config.setSupportAsync(true);
+    const timeout = + (config.timeout === undefined ? 5000 : config.timeout);
     switch (funcLen) {
         case 0: {
-            processedFunc = func;
+            processedFunc = function () {
+                return new Promise(async (resolve, reject) => {
+                    let timer = setTimeout(() => {
+                        reject(new Error('execute timeout ' + timeout + 'ms'));
+                    }, timeout);
+                    try {
+                        await func();
+                    } catch (err) {
+                        reject(err);
+                    }
+                    resolve();
+                    clearTimeout(timer);
+                });
+            };
             break;
         }
         case 1: {
@@ -45,14 +60,19 @@ function processFunc(coreContext, func) {
                 };
             } else {
                 processedFunc = function () {
-                    return new Promise((resolve, reject) => {
+                    return new Promise(async (resolve, reject) => {
+                        let timer = setTimeout(() => {
+                            reject(new Error('execute timeout ' + timeout + 'ms'));
+                        }, timeout);
                         function done() {
+                            clearTimeout(timer);
                             resolve();
                         }
-
-                        let funcType = func(done);
-                        if (funcType instanceof Promise) {
-                            funcType.catch(err => {reject(err);});
+                        try {
+                            await func(done);
+                        } catch (err) {
+                            clearTimeout(timer);
+                            reject(err);
                         }
                     });
                 };
@@ -61,14 +81,19 @@ function processFunc(coreContext, func) {
         }
         default: {
             processedFunc = function (paramItem) {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
+                    let timer = setTimeout(() => {
+                        reject(new Error('execute timeout ' + timeout + 'ms'));
+                    }, timeout);
                     function done() {
+                        clearTimeout(timer);
                         resolve();
                     }
-
-                    let funcType = func(done, paramItem);
-                    if (funcType instanceof Promise) {
-                        funcType.catch(err => {reject(err);});
+                    try {
+                        await func(done, paramItem);
+                    } catch (err) {
+                        clearTimeout(timer);
+                        reject(err);
                     }
                 });
             };
@@ -536,34 +561,28 @@ SpecService.Spec = class {
     async asyncRun(coreContext) {
         const specService = coreContext.getDefaultService('spec');
         specService.setCurrentRunningSpec(this);
-        const config = coreContext.getDefaultService('config');
-        const timeout = + (config.timeout === undefined ? 5000 : config.timeout);
-        let timeoutPromise = new Promise((resolve, reject) => {
-            setTimeout(() => reject(new Error('execute timeout ' + timeout + 'ms')), timeout);
-        });
 
         await coreContext.fireEvents('spec', 'specStart', this);
         try {
             let dataDriver = coreContext.getServices('dataDriver');
             if (typeof dataDriver === 'undefined') {
-                const p = Promise.race([this.fn(), timeoutPromise]);
-                await p.then(() => {this.setResult(coreContext);});
+                await this.fn();
+                this.setResult(coreContext);
             } else {
                 let suiteParams = dataDriver.dataDriver.getSuiteParams();
                 let specParams = dataDriver.dataDriver.getSpecParams();
                 console.info('[suite params] ' + JSON.stringify(suiteParams));
                 console.info('[spec params] ' + JSON.stringify(specParams));
                 if (this.fn.length === 0) {
-                    const p = Promise.race([this.fn(), timeoutPromise]);
-                    await p.then(() => {this.setResult(coreContext);});
+                    await this.fn();
+                    this.setResult(coreContext);
                 } else if (specParams.length === 0) {
-                    const p = Promise.race([this.fn(suiteParams), timeoutPromise]);
-                    await p.then(() => {this.setResult(coreContext);});
+                    await this.fn(suiteParams);
+                    this.setResult(coreContext);
                 } else {
                     for (const paramItem of specParams) {
-                        const p = Promise.race([this.fn(Object.assign({}, paramItem, suiteParams)),
-                            timeoutPromise]);
-                        await p.then(() => {this.setResult(coreContext);});
+                        await this.fn(Object.assign({}, paramItem, suiteParams));
+                        this.setResult(coreContext);
                     }
                 }
             }
@@ -578,7 +597,6 @@ SpecService.Spec = class {
         }
         this.isExecuted = true;
         await coreContext.fireEvents('spec', 'specDone', this);
-        timeoutPromise = null;
     }
 
     filterCheck(coreContext) {
