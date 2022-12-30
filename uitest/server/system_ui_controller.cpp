@@ -386,25 +386,6 @@ namespace OHOS::uitest {
 
     bool SysUiController::GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode) const
     {
-        static const map<char, int32_t> keyMap = {
-            {'*',    OHOS::MMI::KeyEvent::KEYCODE_STAR},
-            {'#',    OHOS::MMI::KeyEvent::KEYCODE_POUND},
-            {',',    OHOS::MMI::KeyEvent::KEYCODE_COMMA},
-            {'.',    OHOS::MMI::KeyEvent::KEYCODE_PERIOD},
-            {'`',    OHOS::MMI::KeyEvent::KEYCODE_GRAVE},
-            {'-',    OHOS::MMI::KeyEvent::KEYCODE_MINUS},
-            {'=',    OHOS::MMI::KeyEvent::KEYCODE_EQUALS},
-            {'[',    OHOS::MMI::KeyEvent::KEYCODE_LEFT_BRACKET},
-            {']',    OHOS::MMI::KeyEvent::KEYCODE_RIGHT_BRACKET},
-            {'\\',   OHOS::MMI::KeyEvent::KEYCODE_BACKSLASH},
-            {';',    OHOS::MMI::KeyEvent::KEYCODE_SEMICOLON},
-            {'\'',   OHOS::MMI::KeyEvent::KEYCODE_APOSTROPHE},
-            {'/',    OHOS::MMI::KeyEvent::KEYCODE_SLASH},
-            {'@',    OHOS::MMI::KeyEvent::KEYCODE_AT},
-            {'+',    OHOS::MMI::KeyEvent::KEYCODE_PLUS},
-            {'    ', OHOS::MMI::KeyEvent::KEYCODE_TAB},
-            {' ',    OHOS::MMI::KeyEvent::KEYCODE_SPACE},
-            {0x7F,   OHOS::MMI::KeyEvent::KEYCODE_DEL}};
         ctrlCode = KEYCODE_NONE;
         if (ch >= 'a' && ch <= 'z') {
             code = OHOS::MMI::KeyEvent::KEYCODE_A + static_cast<int32_t>(ch - 'a');
@@ -413,14 +394,10 @@ namespace OHOS::uitest {
             code = OHOS::MMI::KeyEvent::KEYCODE_A + static_cast<int32_t>(ch - 'A');
         } else if (ch >= '0' && ch <= '9') {
             code = OHOS::MMI::KeyEvent::KEYCODE_0 + static_cast<int32_t>(ch - '0');
+        } else if (ch == 0x7F) {
+            code = OHOS::MMI::KeyEvent::KEYCODE_DEL;
         } else {
-            auto find = keyMap.find(ch);
-            if (find != keyMap.end()) {
-                code = find->second;
-            } else {
-                LOG_W("No keyCode found for char '%{public}c'", ch);
-                return false;
-            }
+            return false;
         }
         return true;
     }
