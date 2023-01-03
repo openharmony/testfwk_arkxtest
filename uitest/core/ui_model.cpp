@@ -64,11 +64,6 @@ namespace OHOS::uitest {
         // save bounds attribute as structured data
         SetAttr(ATTR_NAMES[UiAttr::BOUNDS], Rect2JsonStr(bounds_));
     }
-    
-    void Widget::SetFoundWidgetInfo(TouchEventInfo& event) const
-    {
-        event.attributes = this->GetAttrMap();
-    }
 
     string Widget::ToStr() const
     {
@@ -376,87 +371,6 @@ namespace OHOS::uitest {
         }
         if (root != nullptr) {
             DfsMarshalWidget(*this, *root, dom, widgetChildCountMap);
-        }
-    }
-
-    std::map<std::string, size_t> WidgetTree::SetWidgetChildCountMap(const WidgetTree& tree) const
-    {
-        std::map<std::string, size_t> widgetChildCountMap;
-        for (auto &hirearchy : widgetHierarchyIdDfsOrder_) {
-            if (hirearchy == ROOT_HIERARCHY) {
-                continue;
-            }
-            auto parentHierarchy = WidgetHierarchyBuilder::GetParentWidgetHierarchy(hirearchy);
-            if (widgetChildCountMap.find(parentHierarchy) == widgetChildCountMap.end()) {
-                widgetChildCountMap[parentHierarchy] = 1;
-            } else {
-                widgetChildCountMap[parentHierarchy] = widgetChildCountMap[parentHierarchy] + 1;
-            }
-        }
-        return widgetChildCountMap;
-    }
-
-    const Widget *WidgetTree::MarshalWidgetTree(float x, float y) const
-    {
-        auto root = this->GetRootWidget();
-        if (root != nullptr) {
-            auto widget = BFSRootSearchWidget(*this, *root, SetWidgetChildCountMap(*this), x, y);
-            return widget;
-        } else {
-            return nullptr;
-        }
-    }
-
-    const Widget *WidgetTree::BFSRootSearchWidget(const WidgetTree& tree, const Widget& root, \
-                                                  std::map<std::string, size_t> widgetChildCountMap, \
-                                                  float x, float y) const
-    {
-        Rect rect = root.GetBounds();
-        if (x <= rect.right_ && x >= rect.left_ && y <= rect.bottom_ && y >= rect.top_) {
-            auto hierarchy = root.GetHierarchy();
-            uint32_t childIndex = 0;
-            uint32_t childCount = 0;
-            if (widgetChildCountMap.find(hierarchy) != widgetChildCountMap.end()) {
-                childCount = widgetChildCountMap.find(hierarchy)->second;
-            }
-            if (childCount > childIndex) {
-                auto child = tree.GetChildWidget(root, childIndex);
-                if (child == nullptr) {
-                    return &root;
-                }
-                return BFSSearchWidget(tree, *child, widgetChildCountMap, x, y, root, childIndex);
-            }
-            return &root;
-        } else {
-            return nullptr;
-        }
-    }
-
-    const Widget *WidgetTree::BFSSearchWidget(const WidgetTree& tree, const Widget& root, \
-                                              std::map<std::string, size_t> widgetChildCountMap, float x, float y, \
-                                              const Widget& lastRoot, uint32_t lastIndex) const
-    {
-        Rect rect = root.GetBounds();
-        if (x <= rect.right_ && x >= rect.left_ && y <= rect.bottom_ && y >= rect.top_) {
-            auto hierarchy = root.GetHierarchy();
-            uint32_t childIndex = 0;
-            uint32_t childCount = 0;
-            if (widgetChildCountMap.find(hierarchy) != widgetChildCountMap.end()) {
-                childCount = widgetChildCountMap.find(hierarchy)->second;
-            }
-            if (childCount > childIndex) {
-                auto child = tree.GetChildWidget(root, childIndex);
-                if (child == nullptr) {
-                    return &root;
-                }
-                return BFSSearchWidget(tree, *child, widgetChildCountMap, x, y, root, childIndex);
-            }
-            return &root;
-        } else if (widgetChildCountMap.find(lastRoot.GetHierarchy())->second > (lastIndex + 1)) {
-            auto next = tree.GetChildWidget(lastRoot, lastIndex + 1);
-            return BFSSearchWidget(tree, *next, widgetChildCountMap, x, y, lastRoot, lastIndex+1);
-        } else {
-            return &lastRoot;
         }
     }
 

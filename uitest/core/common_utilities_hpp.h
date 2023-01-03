@@ -33,8 +33,6 @@
 #define DCHECK(cond) assert((cond))
 #endif
 
-#define UITEST_DCHECK(expr) ((void)0)
-
 #define FORCE_INLINE __attribute__((always_inline)) inline
 
 namespace OHOS::uitest {

@@ -18,9 +18,13 @@
 using namespace std;
 using namespace std::chrono;
 namespace OHOS::uitest {
+    enum TouchOpt : uint8_t {
+        OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
+        OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
+    };
     std::string g_operationType[9] = { "click", "longClick", "doubleClick", "swipe", "drag", \
                                        "fling", "home", "recent", "back" };
-    TouchOp g_touchop = CLICK;
+    TouchOpt g_touchop = OP_CLICK;
     VelocityTracker g_velocityTracker;
     bool g_isClick = false;
     int g_clickEventCount = 0;
@@ -38,7 +42,6 @@ namespace OHOS::uitest {
     auto driver = UiDriver();
     Rect windowBounds = Rect(0, 0, 0, 0);
     DataWrapper g_dataWrapper;
-    TouchEventInfo eventInfo;
     
     std::vector<std::string> GetForeAbility()
     {
@@ -65,26 +68,28 @@ namespace OHOS::uitest {
         std::cout << actionType << ": " ;
         if (actionType == "fling" || actionType == "swipe" || actionType == "drag") {
             if (downEvent.attributes.find("id")->second != "" || downEvent.attributes.find("text")->second != "") {
-                std::cout << "from Widget(id: " << downEvent.attributes.find("id")->second<< ", "
-                            << "type: " << downEvent.attributes.find("type")->second<< ", "
-                            << "text: " << downEvent.attributes.find("text")->second<< ", " << std::endl;
+                std::cout << "from Widget(id: " << downEvent.attributes.find("id")->second << ", "
+                            << "type: " << downEvent.attributes.find("type")->second << ", "
+                            << "text: " << downEvent.attributes.find("text")->second << ") " << std::endl;
             } else {
                 std::cout << "from Point(x:" << downEvent.x << ", y:" << downEvent.y
                             << ") to Point(x:" << upEvent.x << ", y:" << upEvent.y << ") " << std::endl;
             }
             if (actionType == "fling" || actionType == "swipe") {
-                std::cout << "Off-hand speed:" << g_velocityTracker.GetMainVelocity() <<", "
+                std::cout << "Off-hand speed:" << g_velocityTracker.GetMainVelocity() << ", "
                             << "Step length:" << g_velocityTracker.GetStepLength() << std::endl;
             }
         } else if (actionType == "click" || actionType == "longClick" || actionType == "doubleClick") {
             std::cout << actionType << ": " ;
             if (downEvent.attributes.find("id")->second != "" || downEvent.attributes.find("text")->second != "") {
-                std::cout << " at Widget(id: " << downEvent.attributes.find("id")->second<< ", "
-                        << "text: " << downEvent.attributes.find("text")->second
-                        << "type: " << downEvent.attributes.find("type")->second<< ", "<< std::endl;
+                std::cout << " at Widget( id: " << downEvent.attributes.find("id")->second << ", "
+                        << "text: " << downEvent.attributes.find("text")->second << ", "
+                        << "type: " << downEvent.attributes.find("type")->second<< ") "<< std::endl;
             } else {
                 std::cout <<" at Point(x:" << downEvent.x << ", y:" << downEvent.y << ") "<< std::endl;
             }
+        } else {
+            std::cout << std::endl;
         }
     }
     void CommonPrintLine(TouchEventInfo &downEvent, TouchEventInfo &upEvent, const std::string &actionType)
@@ -199,7 +204,7 @@ namespace OHOS::uitest {
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const
     {
         if (keyEvent->GetKeyCode() == KEYCODE_BACK) {
-            g_touchop = RETURN;
+            g_touchop = OP_RETURN;
         }
         std::thread t(SaveEventData);
         t.join();
@@ -207,7 +212,7 @@ namespace OHOS::uitest {
     void InputEventCallback::HandleDownEvent(TouchEventInfo& event) const
     {
         if (g_recordMode != "point") {
-            driver.FindWidget(event.x, event.y)->SetFoundWidgetInfo(event);
+            event.attributes = FindWidget(driver, event.x, event.y).GetAttrMap();
         }
         g_velocityTracker.UpdateTouchEvent(event, false);
     }
@@ -216,7 +221,7 @@ namespace OHOS::uitest {
         g_velocityTracker.UpdateTouchEvent(event, false);
         if (g_velocityTracker.GetDurationTime() >= DURATIOIN_THRESHOLD &&
            g_velocityTracker.GetMoveDistance() < MAX_THRESHOLD) {
-            g_touchop = LONG_CLICK;
+            g_touchop = OP_LONG_CLICK;
             g_isOpDect = true;
             g_isClick = false;
         }
@@ -229,24 +234,24 @@ namespace OHOS::uitest {
             double mainVelocity = g_velocityTracker.GetMainAxisVelocity();
             if (g_velocityTracker.GetDurationTime() >= DURATIOIN_THRESHOLD &&
                 moveDistance < MAX_THRESHOLD) {
-                g_touchop = LONG_CLICK;
+                g_touchop = OP_LONG_CLICK;
                 g_isClick = false;
             } else if (moveDistance > MAX_THRESHOLD) {
                 int startY = g_velocityTracker.GetFirstTrackPoint().y;
                 Axis maxAxis_ = g_velocityTracker.GetMaxAxis();
                 if (fabs(mainVelocity) > FLING_THRESHOLD) {
-                    g_touchop = FLING;
+                    g_touchop = OP_FLING;
                     g_isClick = false;
                     if ((windowBounds.bottom_ - startY <= NAVI_THRE_D) && (maxAxis_ == Axis::VERTICAL) && \
 						(moveDistance >= NAVI_VERTI_THRE_V)) {
-                        g_touchop = HOME;
+                        g_touchop = OP_HOME;
                     }
                 } else {
-                    g_touchop = SWIPE;
+                    g_touchop = OP_SWIPE;
                     g_isClick = false;
                     if ((windowBounds.bottom_ - startY <= NAVI_THRE_D) && (maxAxis_ == Axis::VERTICAL) && \
 						(moveDistance >= NAVI_VERTI_THRE_V)) {
-                        g_touchop = RECENT;
+                        g_touchop = OP_RECENT;
                     }
                 }
                 g_velocityTracker.UpdateStepLength();
@@ -254,19 +259,19 @@ namespace OHOS::uitest {
                 // up-down>=0.6s => longClick
                 if (g_isClick && g_velocityTracker.GetInterVal() < INTERVAL_THRESHOLD) {
                     // if lastOp is click && downTime-lastDownTime < 0.1 => double_click
-                    g_touchop = DOUBLE_CLICK_P;
+                    g_touchop = OP_DOUBLE_CLICK;
                     g_isClick = false;
                 } else {
-                    g_touchop = CLICK;
+                    g_touchop = OP_CLICK;
                     g_isClick = true;
                 }
             }
         } else if (moveDistance >= MAX_THRESHOLD) {
-            g_touchop = DRAG;
+            g_touchop = OP_DRAG;
             g_isClick = false;
         }
-        if (g_touchop == DRAG && g_recordMode != "point") {
-            driver.FindWidget(event.x, event.y)->SetFoundWidgetInfo(g_velocityTracker.GetLastTrackPoint());
+        if (g_touchop == OP_DRAG && g_recordMode != "point") {
+            g_velocityTracker.GetLastTrackPoint().attributes = FindWidget(driver, event.x, event.y).GetAttrMap();
         }
         std::thread t(SaveEventData);
         t.join();
@@ -330,7 +335,12 @@ namespace OHOS::uitest {
     {
         g_recordMode = modeOpt;
         g_velocityTracker.TrackResets();
-        windowBounds = driver.GetRootBounds();
+        ApiCallErr err(NO_ERROR);
+        auto selector = WidgetSelector();
+        vector<std::unique_ptr<Widget>> rev;
+        driver.FindWidgets(selector, rev, err, true);
+        auto tree = driver.GetWidgetTree();
+        windowBounds = tree->GetRootWidget()->GetBounds();
         std::cout<< "windowBounds : (" << windowBounds.left_ << ","
                 << windowBounds.top_ << "," << windowBounds.right_ << ","
                 << windowBounds.bottom_ << ")" << std::endl;
