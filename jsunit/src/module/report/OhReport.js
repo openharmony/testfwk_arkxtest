@@ -38,7 +38,14 @@ class OhReport {
         let message = '\n' + 'OHOS_REPORT_RESULT: stream=Tests run: ' + summary.total + ', Failure: ' + summary.failure;
         message += ', Error: ' + summary.error;
         message += ', Pass: ' + summary.pass;
+        message += ', Ignore: ' + summary.ignore;
         message += '\n' + 'OHOS_REPORT_CODE: ' + (summary.failure > 0 ? -1 : 0) + '\n';
+        let isHasError = summary.failure > 0 || summary.error > 0;
+        let config = this.coreContext.getDefaultService('config');
+        if(config.isBreakOnError() && isHasError){
+            // 未执行全部说明
+            message += '\n' + 'OHOS_REPORT_RESULT: breakOnError model, Stopping whole test suite if one specific test case failed or error' + '\n';
+        }
         message += 'OHOS_REPORT_STATUS: taskconsuming=' + summary.duration + '\n';
         console.info(message);
         await SysTestKit.print(message);
@@ -77,7 +84,7 @@ class OhReport {
         let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
         message += '\n' + 'OHOS_REPORT_STATUS: current=' + (++this.index);
         message += '\n' + 'OHOS_REPORT_STATUS: id=JS';
-        message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.suiteService.getSummary().total;
+        message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.specService.getTestTotal();
         message += '\n' + 'OHOS_REPORT_STATUS: stream=';
         message += '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
         message += '\n' + 'OHOS_REPORT_STATUS_CODE: 1' + '\n';
@@ -90,7 +97,7 @@ class OhReport {
         let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
         message += '\n' + 'OHOS_REPORT_STATUS: current=' + (this.index);
         message += '\n' + 'OHOS_REPORT_STATUS: id=JS';
-        message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.suiteService.getSummary().total;
+        message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.specService.getTestTotal();
         let emsg = '';
         if (this.specService.currentRunningSpec.error) {
             message += '\n' + 'OHOS_REPORT_STATUS: stack=' + this.specService.currentRunningSpec.error.message;
