@@ -49,38 +49,23 @@ ohos_static_library("uitest_core") {
     "LOG_TAG=\"UiTestKit_Base\"",
   ]
 }
-
-common_external_deps = [
-  "c_utils:utils",
-  "hiviewdfx_hilog_native:libhilog",
-]
-
-ohos_executable("uitest_server") {
+ohos_static_library("uitest_record") {
+  use_exceptions = true
   configs = [ ":uitest_common_configs" ]
   sources = [
-    "${source_root}/connection/ipc_transactors.cpp",
-    "${source_root}/connection/ipc_transactors_impl.cpp",
-    "${source_root}/core/least_square_impl.cpp",
-    "${source_root}/core/matrix3.cpp",
-    "${source_root}/core/matrix4.cpp",
-    "${source_root}/core/ui_record.cpp",
-    "${source_root}/core/velocity_tracker.cpp",
-    "${source_root}/server/server_main.cpp",
-    "${source_root}/server/system_ui_controller.cpp",
+    "${source_root}/record/find_widget.cpp",
+    "${source_root}/record/least_square_impl.cpp",
+    "${source_root}/record/matrix3.cpp",
+    "${source_root}/record/matrix4.cpp",
+    "${source_root}/record/ui_record.cpp",
+    "${source_root}/record/velocity_tracker.cpp",
   ]
-  include_dirs = [
-    "${source_root}/core",
-    "${source_root}/connection",
-  ]
-
-  # static link the uitest_core as server end
   deps = [ ":uitest_core" ]
-
-  #dependencies for screencap
-  deps += [
-    "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client",
-    "//third_party/libpng:libpng",
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"UiTestKit_Base\"",
   ]
+  include_dirs = [ "${source_root}/core" ]
   external_deps = [
     "ability_base:want",
     "ability_runtime:ability_context_native",
@@ -93,6 +78,43 @@ ohos_executable("uitest_server") {
     "accessibility:accessibleability",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
+    "hiviewdfx_hilog_native:libhilog",
+    "input:libmmi-client",
+    "multimedia_image_framework:image_native",
+  ]
+}
+common_external_deps = [
+  "c_utils:utils",
+  "hiviewdfx_hilog_native:libhilog",
+]
+
+ohos_executable("uitest_server") {
+  configs = [ ":uitest_common_configs" ]
+  sources = [
+    "${source_root}/connection/ipc_transactors.cpp",
+    "${source_root}/connection/ipc_transactors_impl.cpp",
+    "${source_root}/server/server_main.cpp",
+    "${source_root}/server/system_ui_controller.cpp",
+  ]
+  include_dirs = [
+    "${source_root}/core",
+    "${source_root}/connection",
+    "${source_root}/record",
+  ]
+
+  # static link the uitest_core as server end
+  deps = [
+    ":uitest_core",
+    ":uitest_record",
+  ]
+
+  #dependencies for screencap
+  deps += [
+    "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client",
+    "//third_party/libpng:libpng",
+  ]
+  external_deps = [
+    "accessibility:accessibleability",
     "input:libmmi-client",
     "multimedia_image_framework:image_native",
     "window_manager:libdm",
