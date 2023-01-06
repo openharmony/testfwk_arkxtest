@@ -59,7 +59,7 @@ public:
         mainVelocity_ = mainVelocity;
     }
 
-    int GetStepCount()
+    int GetStepCount() const
     {
         return xAxis_.GetPVals().size();
     }
@@ -82,7 +82,7 @@ public:
         stepLength = (totalDelta_ / (useToCount - 1)).GetDistance();
     }
 
-    int GetStepLength()
+    int GetStepLength() const
     {
         return stepLength;
     }

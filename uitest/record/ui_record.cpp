@@ -62,7 +62,7 @@ namespace OHOS::uitest {
         elements.push_back(abilityName);
         return elements;
     }
-    void PrintLine(TouchEventInfo &downEvent, TouchEventInfo &upEvent, const std::string &actionType)
+    void PrintLine(const TouchEventInfo &downEvent, const TouchEventInfo &upEvent, const std::string &actionType)
     {
         std::cout << "Interval: " << g_velocityTracker.GetInterVal() << std::endl;
         std::cout << actionType << ": " ;
@@ -105,7 +105,7 @@ namespace OHOS::uitest {
                     << " Max_Velocity:" << MaxVelocity
                     << std::endl;
     }
-    void EventData::WriteEventData(VelocityTracker &velocityTracker, const std::string &actionType)
+    void EventData::WriteEventData(const VelocityTracker &velocityTracker, const std::string &actionType)
     {
         v = velocityTracker;
         action = actionType;
@@ -216,7 +216,7 @@ namespace OHOS::uitest {
         }
         g_velocityTracker.UpdateTouchEvent(event, false);
     }
-    void InputEventCallback::HandleMoveEvent(TouchEventInfo& event) const
+    void InputEventCallback::HandleMoveEvent(const TouchEventInfo& event) const
     {
         g_velocityTracker.UpdateTouchEvent(event, false);
         if (g_velocityTracker.GetDurationTime() >= DURATIOIN_THRESHOLD &&
@@ -226,7 +226,7 @@ namespace OHOS::uitest {
             g_isClick = false;
         }
     }
-    void InputEventCallback::HandleUpEvent(TouchEventInfo& event) const
+    void InputEventCallback::HandleUpEvent(const TouchEventInfo& event) const
     {
         g_velocityTracker.UpdateTouchEvent(event, true);
         int moveDistance = g_velocityTracker.GetMoveDistance();
@@ -331,7 +331,7 @@ namespace OHOS::uitest {
         std::cout << "The result will be written in csv file at location: " << g_filePath << std::endl;
         return true;
     }
-    void RecordInitEnv(std::string modeOpt)
+    void RecordInitEnv(const std::string &modeOpt)
     {
         g_recordMode = modeOpt;
         g_velocityTracker.TrackResets();

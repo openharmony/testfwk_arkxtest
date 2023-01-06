@@ -119,7 +119,7 @@ bool Matrix4::IsIdentityMatrix() const
     return *this == CreateIdentity();
 }
 
-int32_t Matrix4::Count() const
+int32_t Matrix4::Count()
 {
     return MATRIX_LENGTH;
 }
@@ -367,7 +367,7 @@ void Matrix4::ScaleMapping(const double src[DIMENSION], double dst[DIMENSION]) c
 std::string Matrix4::ToString() const
 {
     std::string out;
-    for (auto& i : matrix4x4_) {
+    for (const auto& i : matrix4x4_) {
         for (double j : i) {
             out += std::to_string(j);
             out += ",";
