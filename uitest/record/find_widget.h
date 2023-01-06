@@ -61,7 +61,7 @@ namespace OHOS::uitest {
     private:
         const WidgetMatcherByCoord &matcher_;
         std::map<float, Widget> &receiver_;
-        int32_t maxDep;
+        int32_t maxDep = 0;
     };
 } // namespace OHOS::uitest
 
