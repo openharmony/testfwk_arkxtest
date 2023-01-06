@@ -52,8 +52,8 @@ namespace OHOS::uitest {
     public:
         void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
         void HandleDownEvent(TouchEventInfo& event) const;
-        void HandleMoveEvent(TouchEventInfo& event) const;
-        void HandleUpEvent(TouchEventInfo& event) const;
+        void HandleMoveEvent(const TouchEventInfo& event) const;
+        void HandleUpEvent(const TouchEventInfo& event) const;
         void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
         void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override {}
         static std::shared_ptr<InputEventCallback> GetPtr();
@@ -75,11 +75,11 @@ namespace OHOS::uitest {
 
     bool InitEventRecordFile();
 
-    void RecordInitEnv(std::string modeOpt);
+    void RecordInitEnv(const std::string &modeOpt);
 
     class EventData {
     public:
-        void WriteEventData(VelocityTracker &velocityTracker, const std::string &actionType);
+        void WriteEventData(const VelocityTracker &velocityTracker, const std::string &actionType);
         static void ReadEventLine();
     private:
         VelocityTracker v;
@@ -104,12 +104,6 @@ namespace OHOS::uitest {
     public:
         Timer(): expired(true), tryToExpire(false)
         {}
-        Timer(const Timer& timer)
-        {
-            expired = timer.expired.load();
-            tryToExpire = timer.tryToExpire.load();
-        }
-        Timer& operator = (const Timer& timer);
         ~Timer()
         {
             Stop();
@@ -164,7 +158,6 @@ namespace OHOS::uitest {
         }
 
     private:
-        int timeInterval = 5000;
         std::atomic<bool> expired; // timer stopped status
         std::atomic<bool> tryToExpire; // timer is in stop process
         std::mutex index;
