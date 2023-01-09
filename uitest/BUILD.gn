@@ -89,6 +89,22 @@ common_external_deps = [
   "hiviewdfx_hilog_native:libhilog",
 ]
 
+ohos_static_library("uitest_ipc") {
+  configs = [ ":uitest_common_configs" ]
+  sources = [ "${source_root}/connection/ipc_transactor.cpp" ]
+  include_dirs = [ "${source_root}/core" ]
+  external_deps = [
+    "ability_base:want",
+    "common_event_service:cesfwk_innerkits",
+    "ipc:ipc_core",
+  ]
+  external_deps += common_external_deps
+
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"UiTestKit_Conn\"",
+  ]
+}
 
 ohos_executable("uitest_server") {
   configs = [ ":uitest_common_configs" ]
