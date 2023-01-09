@@ -33,13 +33,14 @@
 #include <string>
 #include <vector>
 #include <cmath>
-#include "ipc_transactors_impl.h"
+#include "ipc_transactor.h"
 #include "system_ui_controller.h"
 #include "input_manager.h"
 #include "i_input_event_consumer.h"
 #include "pointer_event.h"
 #include "ui_driver.h"
 #include "ui_record.h"
+
 using namespace std;
 using namespace std::chrono;
 
@@ -156,67 +157,31 @@ namespace OHOS::uitest {
         return EXIT_SUCCESS;
     }
 
-    static string TrasnlateAppFilePath(string_view raw)
+    static string TranslateToken(string_view raw)
     {
-        constexpr uint32_t uid2AccountDivisor = 200000;
-        constexpr string_view XDEVICE_AGENT_TOKEN = "0123456789";
-        if (access(raw.data(), F_OK) == 0) {
-            return string(raw);
-        } else if (raw == XDEVICE_AGENT_TOKEN) {
-            return "/data/app/el2/100/base/com.ohos.devicetest/cache/shmf";
-        }
-        string procName;
-        string procPid;
-        string procAccount;
-        string procArea;
-        size_t tokenIndex = 0;
-        size_t tokenStart = 0;
-        size_t tokenEnd = raw.find_first_of('@');
-        if (tokenEnd == string_view::npos) {
-            LOG_I("Apply raw token: %{public}s", raw.data());
+        if (raw.find_first_of('@') != string_view::npos) {
             return string(raw);
         }
-        while (true) {
-            if (tokenEnd == string_view::npos) {
-                procArea = string("el") + to_string(stoi(raw.substr(tokenStart).data()) + INDEX_ONE);
-                break;
-            }
-            string token = string(raw.data() + tokenStart, tokenEnd - tokenStart);
-            if (tokenIndex == INDEX_ZERO) {
-                procName = token;
-            } else if (tokenIndex == INDEX_ONE) {
-                procPid = token;
-            } else if (tokenIndex == INDEX_TWO) {
-                procAccount = to_string(stoi(token.c_str()) / uid2AccountDivisor);
-            }
-            tokenIndex++;
-            tokenStart = tokenEnd + 1;
-            tokenEnd = raw.find_first_of('@', tokenStart);
-        }
-        stringstream builder;
-        builder << "/data/app/" << procArea << "/" << procAccount;
-        builder << "/base/" << procName << "/cache/shmf_" << procPid;
-        return builder.str();
+        return "default";
     }
+    
     static int32_t StartDaemon(string_view token)
     {
         if (token.empty()) {
             LOG_E("Empty transaction token");
             return EXIT_FAILURE;
         }
-        auto shmfPath = TrasnlateAppFilePath(token);
+        auto transalatedToken = TranslateToken(token);
         if (daemon(0, 0) != 0) {
             LOG_E("Failed to daemonize current process");
             return EXIT_FAILURE;
         }
         LOG_I("Server starting up");
-        TransactionServerImpl server(shmfPath);
-        if (!server.Initialize()) {
+        ApiTransactor apiTransactServer(true);
+        if (!apiTransactServer.InitAndConnectPeer(transalatedToken, ApiTransact)) {
             LOG_E("Failed to initialize server");
             return EXIT_FAILURE;
         }
-        // set actual api handlerFunc provided by uitest_core
-        server.SetCallFunction(ApiTransact);
         // set delayed UiController
         auto controllerProvider = [](list<unique_ptr<UiController>> &receiver) {
             auto controller = make_unique<SysUiController>("sys_ui_controller");
@@ -225,12 +190,18 @@ namespace OHOS::uitest {
             }
         };
         UiController::RegisterControllerProvider(controllerProvider);
+        mutex mtx;
+        unique_lock<mutex> lock(mtx);
+        condition_variable condVar;
+        apiTransactServer.SetDeathCallback([&condVar]() {
+            condVar.notify_one();
+        });
         LOG_I("UiTest-daemon running, pid=%{public}d", getpid());
-        auto exitCode = server.RunLoop();
-        LOG_I("Server exiting with code: %{public}d", exitCode);
-        server.Finalize();
-        _Exit(exitCode);
-        return exitCode;
+        condVar.wait(lock);
+        LOG_I("Server exit");
+        apiTransactServer.Finalize();
+        _Exit(0);
+        return 0;
     }
 
     static int32_t UiRecord(int32_t argc, char *argv[])

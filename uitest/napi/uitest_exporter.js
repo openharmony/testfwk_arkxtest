@@ -50,14 +50,12 @@ async function scheduleConnectionAsync(uitest) {
   let delegator = registry.getAbilityDelegator()
   if (delegator == null) {
     console.warn('UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started')
-    let shmfPath = '/data/storage/el2/base/cache/shmf'
-    uitest.scheduleEstablishConnection(shmfPath)
+    uitest.scheduleEstablishConnection('default')
   } else {
     let appContext = delegator.getAppContext()
-    let shmfPath = `${appContext.cacheDir}/shmf_${procInfo.pid}`
     let connToken = `${appContext.applicationInfo.name}@${procInfo.pid}@${procInfo.uid}@${appContext.area}`
-    console.info(`UiTestKit_exporter: ScheduleProbeAndEstablishConnection, shmf=${shmfPath}, token=${connToken}`)
-    uitest.scheduleEstablishConnection(shmfPath)
+    console.info(`UiTestKit_exporter: ScheduleProbeAndEstablishConnection, token=${connToken}`)
+    uitest.scheduleEstablishConnection(connToken)
     console.info('UiTestKit_exporter: Begin executing shell command to start server-daemon')
     delegator.executeShellCommand(`uitest start-daemon ${connToken}`, 3).then((value) => {
       console.info(`UiTestKit_exporter: Start server-daemon finished: ${JSON.stringify(value)}`)
