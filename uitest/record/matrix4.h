@@ -51,7 +51,7 @@ public:
     ~Matrix4() = default;
     void SetEntry(int32_t row, int32_t col, double value);
     bool IsIdentityMatrix() const;
-    int32_t Count() const;
+    static int32_t Count();
 
     bool operator==(const Matrix4& matrix) const;
     Matrix4 operator*(double num);
