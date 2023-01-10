@@ -81,11 +81,6 @@ namespace OHOS::uitest {
     public:
         Timer(): expired(true), tryToExpire(false)
         {}
-        Timer(const Timer& timer)
-        {
-            expired = timer.expired.load();
-            tryToExpire = timer.tryToExpire.load();
-        }
         Timer& operator = (const Timer& timer);
         ~Timer()
         {
@@ -107,7 +102,7 @@ namespace OHOS::uitest {
             expired = false;
             std::thread([this, interval, task]() {
                 while (!tryToExpire) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(timeInterval));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(TIMEINTERVAL));
                     task();
                 }
 
@@ -141,7 +136,6 @@ namespace OHOS::uitest {
         }
 
     private:
-        int timeInterval = 5000;
         std::atomic<bool> expired; // timer stopped status
         std::atomic<bool> tryToExpire; // timer is in stop process
         std::mutex index;
