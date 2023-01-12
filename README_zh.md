@@ -369,8 +369,8 @@ export default function ActsAbilityTest() {
             when(mockfunc)('test').afterReturnNothing();
 
             //5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
-            //执行成功案例，参数为'test'，这时候 我们执行原对象claser.method_1的方法，会发生变化
-            // 这时候执行的claser.method_1不会再返回'888888'，而是我们设定的afterReturnNothing()生效//不返回任何值;
+            //执行成功案例，参数为'test'，这时候执行原对象claser.method_1的方法，会发生变化
+            // 这时候执行的claser.method_1不会再返回'888888'，而是设定的afterReturnNothing()生效//不返回任何值;
             expect(claser.method_1('test')).assertUndefined(); //执行通过
 
             // 执行失败案例，参数传为 123
@@ -557,7 +557,7 @@ export default function ActsAbilityTest() {
             mocker.mockFunc(claser, claser.method_1);
             mocker.mockFunc(claser, claser.method_2);
 
-            //4.我们来做一些调用，如下
+            //4.方法调用如下
             claser.method_1('abc', 'ppp');
             claser.method_1('abc');
             claser.method_1('xyz');
@@ -614,7 +614,7 @@ export default function ActsAbilityTest() {
             when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
             when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
 
-            //5.我们来做一些调用，如下
+            //5.方法调用如下
             console.log(claser.method_1(123)); //执行结果是4，符合步骤4中的预期
             console.log(claser.method_2(456)); //执行结果是5，符合步骤4中的预期
 
@@ -666,7 +666,7 @@ export default function ActsAbilityTest() {
             when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
             when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
 
-            //5.我们来做一些调用，如下
+            //5.方法调用如下
             //expect(claser.method_1(123)).assertEqual('4');//ok 符合预期
             //expect(claser.method_2(456)).assertEqual('5');//ok 符合预期
 
@@ -709,7 +709,7 @@ export default function ActsAbilityTest() {
             //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
             let mockfunc = mocker.mockFunc(claser, claser.method_1);
 
-            //4.根据自己需求进行选择 执行完毕后的动作，比如这里我选择afterReturnNothing();即不返回任何值
+            //4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterReturnNothing();即不返回任何值
             when(mockfunc)('test').afterThrow('error xxx');
 
             //5.执行mock后的函数，捕捉异常并使用assertEqual对比msg否符合预期
@@ -757,7 +757,7 @@ export default function ActsAbilityTest() {
             //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
             let mockfunc = mocker.mockFunc(claser, claser.method_1);
 
-            //4.根据自己需求进行选择 执行完毕后的动作，比如这里我选择afterRetrun; 可以自定义返回一个promise
+            //4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterRetrun; 可以自定义返回一个promise
             when(mockfunc)('test').afterReturn(new Promise((res, rej) => {
                 console.log("do something");
                 res('success something');
