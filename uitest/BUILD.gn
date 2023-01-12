@@ -49,6 +49,7 @@ ohos_static_library("uitest_core") {
     "LOG_TAG=\"UiTestKit_Base\"",
   ]
 }
+
 ohos_static_library("uitest_record") {
   use_exceptions = true
   configs = [ ":uitest_common_configs" ]
@@ -88,11 +89,26 @@ common_external_deps = [
   "hiviewdfx_hilog_native:libhilog",
 ]
 
+ohos_static_library("uitest_ipc") {
+  configs = [ ":uitest_common_configs" ]
+  sources = [ "${source_root}/connection/ipc_transactor.cpp" ]
+  include_dirs = [ "${source_root}/core" ]
+  external_deps = [
+    "ability_base:want",
+    "common_event_service:cesfwk_innerkits",
+    "ipc:ipc_core",
+  ]
+  external_deps += common_external_deps
+
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"UiTestKit_Conn\"",
+  ]
+}
+
 ohos_executable("uitest_server") {
   configs = [ ":uitest_common_configs" ]
   sources = [
-    "${source_root}/connection/ipc_transactors.cpp",
-    "${source_root}/connection/ipc_transactors_impl.cpp",
     "${source_root}/server/server_main.cpp",
     "${source_root}/server/system_ui_controller.cpp",
   ]
@@ -105,6 +121,7 @@ ohos_executable("uitest_server") {
   # static link the uitest_core as server end
   deps = [
     ":uitest_core",
+    ":uitest_ipc",
     ":uitest_record",
   ]
 
@@ -154,11 +171,7 @@ gen_js_obj("uitest_exporter_abc") {
 
 ohos_shared_library("uitest_client") {
   configs = [ ":uitest_common_configs" ]
-  sources = [
-    "${source_root}/connection/ipc_transactors.cpp",
-    "${source_root}/connection/ipc_transactors_impl.cpp",
-    "${source_root}/napi/uitest_napi.cpp",
-  ]
+  sources = [ "${source_root}/napi/uitest_napi.cpp" ]
   include_dirs = [
     "${source_root}/core",
     "${source_root}/connection",
@@ -166,6 +179,7 @@ ohos_shared_library("uitest_client") {
   deps = [
     ":uitest_exporter_abc",
     ":uitest_exporter_js",
+    ":uitest_ipc",
   ]
   subsystem_name = "test"
   part_name = "arkXtest"
@@ -188,7 +202,6 @@ ohos_unittest("uitest_core_unittest") {
     "${source_root}/test/common_utilities_test.cpp",
     "${source_root}/test/frontend_api_handler_test.cpp",
     "${source_root}/test/rect_algorithm_test.cpp",
-    "${source_root}/test/transaction_connection_test.cpp",
     "${source_root}/test/ui_action_test.cpp",
     "${source_root}/test/ui_controller_test.cpp",
     "${source_root}/test/ui_driver_test.cpp",
@@ -197,7 +210,6 @@ ohos_unittest("uitest_core_unittest") {
     "${source_root}/test/widget_operator_test.cpp",
     "${source_root}/test/widget_selector_test.cpp",
   ]
-  sources += [ "${source_root}/connection/ipc_transactors.cpp" ]
   deps = [
     ":uitest_core",
     "//third_party/googletest:gtest_main",
@@ -206,11 +218,29 @@ ohos_unittest("uitest_core_unittest") {
     "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
     "//third_party/json/single_include/nlohmann",
     "${source_root}/core",
-    "${source_root}/connection",
   ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   use_exceptions = true
+  module_out_path = "uitestkit/unittest"
+  testonly = true
+  subsystem_name = "test"
+  part_name = "arkXtest"
+}
+
+ohos_unittest("uitest_ipc_unittest") {
+  sources = [ "${source_root}/test/ipc_transactor_test.cpp" ]
+  deps = [
+    ":uitest_ipc",
+    "//third_party/googletest:gtest_main",
+  ]
+  include_dirs = [
+    "${source_root}/connection",
+    "${source_root}/core",
+    "//third_party/json/single_include/nlohmann",
+  ]
+  cflags = [ "-g" ]
+  cflags_cc = [ "-g" ]
   module_out_path = "uitestkit/unittest"
   testonly = true
   subsystem_name = "test"
@@ -226,5 +256,8 @@ group("uitestkit") {
 
 group("uitestkit_test") {
   testonly = true
-  deps = [ ":uitest_core_unittest" ]
+  deps = [
+    ":uitest_core_unittest",
+    ":uitest_ipc_unittest",
+  ]
 }

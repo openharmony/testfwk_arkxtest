@@ -24,6 +24,7 @@
 #include "pasteboard_client.h"
 #include "common_utilities_hpp.h"
 #include "frontend_api_defines.h"
+#include "ipc_transactor.h"
 
 namespace OHOS::uitest {
     using namespace nlohmann;
@@ -41,15 +42,9 @@ namespace OHOS::uitest {
     /**For gc usage, records the backend objRefs about to delete. */
     static queue<string> g_backendObjsAboutToDelete;
     static mutex g_gcQueueMutex;
-    /**Establish Connection future. */
+    /**IPC client. */
+    static ApiTransactor g_apiTransactClient(false);
     static future<void> g_establishConnectionFuture;
-
-    // use external setup/transact/disposal callback functions
-    extern bool SetupTransactionEnv(string_view token);
-
-    extern void TransactionClientFunc(const ApiCallInfo &, ApiReplyInfo &);
-
-    static function<void(const ApiCallInfo &, ApiReplyInfo &)> transactFunc = TransactionClientFunc;
 
     /** Convert js string to cpp string.*/
     static string JsStrToCppStr(napi_env env, napi_value jsStr)
@@ -78,8 +73,8 @@ namespace OHOS::uitest {
         NAPI_ASSERT(env, argc > 0, "Need session token argument!");
         auto token = JsStrToCppStr(env, argv[0]);
         g_establishConnectionFuture = async(launch::async, [token]() {
-            auto result = SetupTransactionEnv(token);
-            LOG_I("End setup transaction environment, result=%{public}d", result);
+            auto result = g_apiTransactClient.InitAndConnectPeer(token, nullptr);
+            LOG_I("End setup transaction connection, result=%{public}d", result);
         });
         return nullptr;
     }
@@ -233,7 +228,7 @@ namespace OHOS::uitest {
         WaitForConnectionIfNeed();
         LOG_D("TargetApi=%{public}s", ctx.callInfo_.apiId_.data());
         auto reply = ApiReplyInfo();
-        transactFunc(ctx.callInfo_, reply);
+        g_apiTransactClient.Transact(ctx.callInfo_, reply);
         auto resultValue = UnmarshalReply(env, ctx, reply);
         auto isError = false;
         NAPI_CALL(env, napi_is_error(env, resultValue, &isError));
@@ -251,7 +246,7 @@ namespace OHOS::uitest {
             }
             lock.unlock();
             auto gcReply = ApiReplyInfo();
-            transactFunc(gcCall, gcReply);
+            g_apiTransactClient.Transact(gcCall, gcReply);
         }
         return resultValue;
     }
@@ -283,7 +278,7 @@ namespace OHOS::uitest {
                 auto aCtx = reinterpret_cast<AsyncTransactionCtx *>(data);
                 // NOT:: use 'auto&' rather than 'auto', or the result will be set to copy-constructed temp-object
                 auto &ctx = aCtx->ctx_;
-                transactFunc(ctx.callInfo_, aCtx->reply_);
+                g_apiTransactClient.Transact(ctx.callInfo_, aCtx->reply_);
             },
             [](napi_env env, napi_status status, void *data) {
                 auto aCtx = reinterpret_cast<AsyncTransactionCtx *>(data);
