@@ -72,9 +72,9 @@ static constexpr InitConnTestParams ParamSuite[] = {
     {true, 6000, 0000, false, "BadConnection-ClientDelayOutofTolerance"},
     {true, 0000, 6000, false, "BadConnection-ServerDelayOutofTolerance"},
 };
-static constexpr size_t suiteSize = sizeof(ParamSuite) / sizeof(ParamSuite[0]);
+static constexpr uint32_t suiteSize = 6U;
 
-class ApiTransactorConnectionTest : public ::testing::TestWithParam<size_t> {};
+class ApiTransactorConnectionTest : public ::testing::TestWithParam<uint32_t> {};
 
 TEST_P(ApiTransactorConnectionTest, testInitConnection)
 {
@@ -113,7 +113,7 @@ TEST_P(ApiTransactorConnectionTest, testInitConnection)
     ASSERT_TRUE(clientOutput.find(" FAILED ") == string::npos);
 }
 
-INSTANTIATE_TEST_SUITE_P(_, ApiTransactorConnectionTest, testing::Range(0U, suiteSize));
+INSTANTIATE_TEST_SUITE_P(_, ApiTransactorConnectionTest, testing::Range(0U, suiteSize, 1U));
 
 TEST(ApiTransactorTest, testApiTransaction)
 {
