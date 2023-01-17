@@ -104,6 +104,7 @@ namespace OHOS::uitest {
         Point to(rect.GetCenterX(), rect.top_ + step2);
         auto touch = GenericSwipe(TouchOp::DRAG, from, to);
         driver_.PerformTouch(touch, options_, out.exception_);
+        driver_.DelayMs(options_.uiSteadyThresholdMs_);
     }
 
     void WindowOperator::Focus(ApiReplyInfo &out)
