@@ -81,7 +81,6 @@ namespace OHOS::uitest {
     public:
         Timer(): expired(true), tryToExpire(false)
         {}
-        Timer& operator = (const Timer& timer);
         ~Timer()
         {
             Stop();
