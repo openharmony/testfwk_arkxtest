@@ -195,10 +195,10 @@ namespace OHOS::uitest {
 
     /** Rect jsonObject definition.*/
     constexpr FrontEndJsonPropDef RECT_PROPERTIES[] = {
-        {"leftX", "int", true},
-        {"topY", "int", true},
-        {"rightX", "int", true},
-        {"bottomY", "int", true},
+        {"left", "int", true},
+        {"top", "int", true},
+        {"right", "int", true},
+        {"bottom", "int", true},
     };
     constexpr FrontEndJsonDef RECT_DEF = {
         "Rect",
