@@ -25,10 +25,10 @@ namespace OHOS::uitest {
     static string Rect2JsonStr(const Rect &rect)
     {
         json data;
-        data["leftX"] = rect.left_;
-        data["topY"] = rect.top_;
-        data["rightX"] = rect.right_;
-        data["bottomY"] = rect.bottom_;
+        data["left"] = rect.left_;
+        data["top"] = rect.top_;
+        data["right"] = rect.right_;
+        data["bottom"] = rect.bottom_;
         return data.dump();
     }
 
