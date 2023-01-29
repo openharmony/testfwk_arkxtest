@@ -839,10 +839,10 @@ namespace OHOS::uitest {
         if (attrName == ATTR_NAMES[UiAttr::BOUNDS]) { // getBounds
             const auto bounds = snapshot->GetBounds();
             json data;
-            data["leftX"] = bounds.left_;
-            data["topY"] = bounds.top_;
-            data["rightX"] = bounds.right_;
-            data["bottomY"] = bounds.bottom_;
+            data["left"] = bounds.left_;
+            data["top"] = bounds.top_;
+            data["right"] = bounds.right_;
+            data["bottom"] = bounds.bottom_;
             out.resultValue_ = data;
             return;
         }
@@ -944,10 +944,10 @@ namespace OHOS::uitest {
                 out.resultValue_ = snapshot->bundleName_;
             } else if (in.apiId_ == "UiWindow.getBounds") {
                 json data;
-                data["leftX"] = snapshot->bounds_.left_;
-                data["topY"] = snapshot->bounds_.top_;
-                data["rightX"] = snapshot->bounds_.right_;
-                data["bottomY"] = snapshot->bounds_.bottom_;
+                data["left"] = snapshot->bounds_.left_;
+                data["top"] = snapshot->bounds_.top_;
+                data["right"] = snapshot->bounds_.right_;
+                data["bottom"] = snapshot->bounds_.bottom_;
                 out.resultValue_ = data;
             } else if (in.apiId_ == "UiWindow.getTitle") {
                 out.resultValue_ = snapshot->title_;
