@@ -567,7 +567,7 @@ export default function ActsAbilityTest() {
             claser.method_2('111');
             claser.method_2('111', '222');
 
-            //5.现在对mock后的两个函数进行验证，验证他们的调用情况
+            //5.现在对mock后的两个函数进行验证，验证调用情况
             mocker.verify('method_1', []).atLeast(3); //结果为failed
             //解释：验证函数'method_1'，参数列表为空：[] 的函数，至少执行过3次，
             //执行结果为failed，因为'method_1'且无参数 在4中只执行过2次
