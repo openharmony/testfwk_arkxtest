@@ -78,20 +78,31 @@ export default async function abilityTest() {
 断言功能列表：
 
 
-| No.  | API              | 功能说明                                                     |
-| :--- | :--------------- | ------------------------------------------------------------ |
-| 1    | assertClose      | 检验actualvalue和expectvalue(0)的接近程度是否是expectValue(1)。 |
-| 2    | assertContain    | 检验actualvalue中是否包含expectvalue。                       |
-| 3    | assertEqual      | 检验actualvalue是否等于expectvalue[0]。                      |
-| 4    | assertFail       | 抛出一个错误。                                               |
-| 5    | assertFalse      | 检验actualvalue是否是false。                                 |
-| 6    | assertTrue       | 检验actualvalue是否是true。                                  |
-| 7    | assertInstanceOf | 检验actualvalue是否是expectvalue类型。                       |
-| 8    | assertLarger     | 检验actualvalue是否大于expectvalue。                         |
-| 9    | assertLess       | 检验actualvalue是否小于expectvalue。                         |
-| 10   | assertNull       | 检验actualvalue是否是null。                                  |
-| 11   | assertThrowError | 检验actualvalue抛出Error内容是否是expectValue。              |
-| 12   | assertUndefined  | 检验actualvalue是否是undefined。                             |
+| No.  | API                | 功能说明                                                     |
+| :--- | :------------------| ------------------------------------------------------------ |
+| 1    | assertClose        | 检验actualvalue和expectvalue(0)的接近程度是否是expectValue(1)。 |
+| 2    | assertContain      | 检验actualvalue中是否包含expectvalue。                       |
+| 3    | assertEqual        | 检验actualvalue是否等于expectvalue[0]。                      |
+| 4    | assertFail         | 抛出一个错误。                                               |
+| 5    | assertFalse        | 检验actualvalue是否是false。                                 |
+| 6    | assertTrue         | 检验actualvalue是否是true。                                  |
+| 7    | assertInstanceOf   | 检验actualvalue是否是expectvalue类型。                       |
+| 8    | assertLarger       | 检验actualvalue是否大于expectvalue。                         |
+| 9    | assertLess         | 检验actualvalue是否小于expectvalue。                         |
+| 10   | assertNull         | 检验actualvalue是否是null。                                  |
+| 11   | assertThrowError   | 检验actualvalue抛出Error内容是否是expectValue。              |
+| 12   | assertUndefined    | 检验actualvalue是否是undefined。                             |
+| 13   | assertNaN          | 检验actualvalue是否是一个NAN                                 |
+| 14   | assertNegUnlimited | 检验actualvalue是否等于Number.NEGATIVE_INFINITY             |
+| 15   | assertPosUnlimited | 检验actualvalue是否等于Number.POSITIVE_INFINITY             |
+| 16   | assertDeepEquals   | 检验actualvalue和expectvalue是否完全相等               |
+| 17   | assertPromiseIsPending | 判断promise是否处于Pending状态。                         |
+| 18   | assertPromiseIsRejected | 判断promise是否处于Rejected状态。                       |
+| 19   | assertPromiseIsRejectedWith | 判断promise是否处于Rejected状态，并且比较执行的结果值。|
+| 20   | assertPromiseIsRejectedWithError | 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。                   |
+| 21   | assertPromiseIsResolved | 判断promise是否处于Resolved状态。                       |
+| 22   | assertPromiseIsResolvedWith | 判断promise是否处于Resolved状态，并且比较执行的结果值。|
+| 23   | not                | 断言取反,支持上面所有的断言功能                                 |
 
 示例代码：
 
@@ -117,6 +128,115 @@ export default async function abilityTest() {
     it('assertBeClose fail', 0, function () {
       expect(null).assertClose(null, 0)
     })
+    it('assertNaN success',0, function () {
+      expect(Number.NaN).assertNaN(); // true
+    })
+    it('assertNegUnlimited success',0, function () {
+      expect(Number.NEGATIVE_INFINITY).assertNegUnlimited(); // true
+    })
+    it('assertPosUnlimited success',0, function () {
+      expect(Number.POSITIVE_INFINITY).assertPosUnlimited(); // true
+    })
+    it('not_number_true',0, function () {
+      expect(1).not().assertLargerOrEqual(2)
+    })
+    it('not_number_true_1',0, function () {
+      expect(3).not().assertLessOrEqual(2);
+    })
+    it('not_NaN_true',0, function () {
+      expect(3).not().assertNaN();
+    })
+    it('not_contain_true',0, function () {
+      let a = "abc";
+      let b= "cdf"
+      expect(a).not().assertContain(b);
+    })
+    it('not_large_true',0, function () {
+      expect(3).not().assertLarger(4);
+    })
+    it('not_less_true',0, function () {
+      expect(3).not().assertLess(2);
+    })
+    it('not_undefined_true',0, function () {
+      expect(3).not().assertUndefined();
+    })
+    it('deepEquals_null_true',0, function () {
+      // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
+      expect(null).assertDeepEquals(null)
+    })
+    it('deepEquals_array_not_have_true',0, function () {
+      // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
+      const  a= []
+      const  b= []
+      expect(a).assertDeepEquals(b)
+    })
+    it('deepEquals_map_equal_length_success',0, function () {
+      // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
+      const a =  new Map();
+      const b =  new Map();
+      a.set(1,100);
+      a.set(2,200);
+      b.set(1, 100);
+      b.set(2, 200);
+      expect(a).assertDeepEquals(b)
+    })
+    it("deepEquals_obj_success_1", 0, function () {
+      const a = {x:1};
+      const b = {x:1};
+      expect(a).assertDeepEquals(b);
+    })
+    it("deepEquals_regExp_success_0", 0, function () {
+      const a = new RegExp("/test/");
+      const b = new RegExp("/test/");
+      expect(a).assertDeepEquals(b)
+    })
+    it('test_isPending_pass_1', 0, function () {
+      let p = new Promise(function () {
+      });
+      expect(p).assertPromiseIsPending();
+    });
+    it('test_isRejected_pass_1', 0, function () {
+      let p = Promise.reject({
+        bad: 'no'
+      });
+      expect(p).assertPromiseIsRejected();
+    });
+    it('test_isRejectedWith_pass_1', 0, function () {
+      let p = Promise.reject({
+        res: 'reject value'
+      });
+      expect(p).assertPromiseIsRejectedWith({
+        res: 'reject value'
+      });
+    });
+    it('test_isRejectedWithError_pass_1', 0, function () {
+      let p1 = Promise.reject(new TypeError('number'));
+      expect(p1).assertPromiseIsRejectedWithError(TypeError);
+    });
+    it('test_isResolved_pass_1', 0, function () {
+      let p = Promise.resolve({
+        res: 'result value'
+      });
+      expect(p).assertPromiseIsResolved();
+    });
+    it('test_isResolvedTo_pass_1', 0, function () {
+      let p = Promise.resolve({
+        res: 'result value'
+      });
+      expect(p).assertPromiseIsResolvedWith({
+        res: 'result value'
+      });
+    });
+    it('test_isPending_failed_1', 0, function () {
+      let p = Promise.reject({
+        bad: 'no1'
+      });
+      expect(p).assertPromiseIsPending();
+    });
+    it('test_isRejectedWithError_failed_1', 0, function () {
+      let p = Promise.reject(new TypeError('number'));
+      expect(p).assertPromiseIsRejectedWithError(TypeError, 'number one');
+    });
   })
 }
 ```
@@ -249,8 +369,8 @@ export default function ActsAbilityTest() {
             when(mockfunc)('test').afterReturnNothing();
 
             //5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
-            //执行成功案例，参数为'test'，这时候 我们执行原对象claser.method_1的方法，会发生变化
-            // 这时候执行的claser.method_1不会再返回'888888'，而是我们设定的afterReturnNothing()生效//不返回任何值;
+            //执行成功案例，参数为'test'，这时候执行原对象claser.method_1的方法，会发生变化
+            // 这时候执行的claser.method_1不会再返回'888888'，而是设定的afterReturnNothing()生效//不返回任何值;
             expect(claser.method_1('test')).assertUndefined(); //执行通过
 
             // 执行失败案例，参数传为 123
@@ -437,7 +557,7 @@ export default function ActsAbilityTest() {
             mocker.mockFunc(claser, claser.method_1);
             mocker.mockFunc(claser, claser.method_2);
 
-            //4.我们来做一些调用，如下
+            //4.方法调用如下
             claser.method_1('abc', 'ppp');
             claser.method_1('abc');
             claser.method_1('xyz');
@@ -447,7 +567,7 @@ export default function ActsAbilityTest() {
             claser.method_2('111');
             claser.method_2('111', '222');
 
-            //5.现在对mock后的两个函数进行验证，验证他们的调用情况
+            //5.现在对mock后的两个函数进行验证，验证调用情况
             mocker.verify('method_1', []).atLeast(3); //结果为failed
             //解释：验证函数'method_1'，参数列表为空：[] 的函数，至少执行过3次，
             //执行结果为failed，因为'method_1'且无参数 在4中只执行过2次
@@ -494,7 +614,7 @@ export default function ActsAbilityTest() {
             when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
             when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
 
-            //5.我们来做一些调用，如下
+            //5.方法调用如下
             console.log(claser.method_1(123)); //执行结果是4，符合步骤4中的预期
             console.log(claser.method_2(456)); //执行结果是5，符合步骤4中的预期
 
@@ -546,7 +666,7 @@ export default function ActsAbilityTest() {
             when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
             when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
 
-            //5.我们来做一些调用，如下
+            //5.方法调用如下
             //expect(claser.method_1(123)).assertEqual('4');//ok 符合预期
             //expect(claser.method_2(456)).assertEqual('5');//ok 符合预期
 
@@ -589,7 +709,7 @@ export default function ActsAbilityTest() {
             //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
             let mockfunc = mocker.mockFunc(claser, claser.method_1);
 
-            //4.根据自己需求进行选择 执行完毕后的动作，比如这里我选择afterReturnNothing();即不返回任何值
+            //4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterReturnNothing();即不返回任何值
             when(mockfunc)('test').afterThrow('error xxx');
 
             //5.执行mock后的函数，捕捉异常并使用assertEqual对比msg否符合预期
@@ -637,7 +757,7 @@ export default function ActsAbilityTest() {
             //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
             let mockfunc = mocker.mockFunc(claser, claser.method_1);
 
-            //4.根据自己需求进行选择 执行完毕后的动作，比如这里我选择afterRetrun; 可以自定义返回一个promise
+            //4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterRetrun; 可以自定义返回一个promise
             when(mockfunc)('test').afterReturn(new Promise((res, rej) => {
                 console.log("do something");
                 res('success something');
