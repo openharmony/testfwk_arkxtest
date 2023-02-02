@@ -140,8 +140,9 @@ namespace OHOS::uitest {
         if (!CheckOperational(RESIZE, window_.mode_, out, index)) {
             return;
         }
-        if ((((direction == LEFT) || (direction == RIGHT)) && highth != rect.GetHeight()) ||
-            (((direction == D_UP) || (direction == D_DOWN)) && width != rect.GetWidth())) {
+        if ((((direction == LEFT) || (direction == RIGHT)) && highth != window_.bounds_.GetHeight()) ||
+            (((direction == D_UP) || (direction == D_DOWN)) && width != window_.bounds_.GetWidth()))
+        {
             out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "Resize cannot be done in this direction");
             return;
         }
