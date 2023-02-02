@@ -233,7 +233,6 @@ class SuiteService {
         const configService = this.coreContext.getDefaultService('config');
         let testSuitesObj = {};
         let suitesArray = [];
-        console.info(this.rootSuite.childSuites[0]);
         for (const suiteItem of this.rootSuite.childSuites) {
             let obj = {};
             this.traversalSuites(suiteItem, obj, configService);
