@@ -327,6 +327,8 @@ namespace OHOS::uitest {
                 pinterItem.SetPressed(events.At(finger, step).stage_ != ActionStage::UP);
                 pointerEvent->AddPointerItem(pinterItem);
                 pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
+                DisplayManager &displayMgr = DisplayManager::GetInstance();
+                pointerEvent->SetTargetDisplayId(displayMgr.GetDefaultDisplayId());
                 InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
                 if (events.At(finger, step).holdMs_ > 0) {
                 this_thread::sleep_for(chrono::milliseconds(events.At(finger, step).holdMs_));
