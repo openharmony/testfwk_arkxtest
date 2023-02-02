@@ -94,6 +94,8 @@ common_external_deps = [
 ohos_executable("uitest_server") {
   configs = [ ":uitest_common_configs" ]
   sources = [
+    "${source_root}/connection/ipc_transactors.cpp",
+    "${source_root}/connection/ipc_transactors_impl.cpp",
     "${source_root}/server/server_main.cpp",
     "${source_root}/server/system_ui_controller.cpp",
   ]
@@ -105,7 +107,7 @@ ohos_executable("uitest_server") {
 
   # static link the uitest_core as server end
   deps = [ ":uitest_core",
-  	   ":uitest_record"
+  	":uitest_record"
   ]
 
   #dependencies for screencap
