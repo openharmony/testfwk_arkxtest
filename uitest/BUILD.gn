@@ -50,21 +50,50 @@ ohos_static_library("uitest_core") {
   ]
 }
 
-common_external_deps = [
-  "c_utils:utils",
-  "hiviewdfx_hilog_native:libhilog",
-]
-
-ohos_executable("uitest_server") {
+ohos_static_library("uitest_record") {
+  use_exceptions = true
   configs = [ ":uitest_common_configs" ]
   sources = [
-    "${source_root}/connection/ipc_transactors.cpp",
-    "${source_root}/connection/ipc_transactors_impl.cpp",
+    "${source_root}/record/find_widget.cpp",
     "${source_root}/record/least_square_impl.cpp",
     "${source_root}/record/matrix3.cpp",
     "${source_root}/record/matrix4.cpp",
     "${source_root}/record/ui_record.cpp",
     "${source_root}/record/velocity_tracker.cpp",
+  ]
+  deps = [ ":uitest_core" ]
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"UiTestKit_Base\"",
+  ]
+  include_dirs = [ "${source_root}/core" ]
+  external_deps = [
+    "ability_base:want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_manager",
+    "ability_runtime:runtime",
+    "accessibility:accessibility_common",
+    "accessibility:accessibilityclient",
+    "accessibility:accessibleability",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "hiviewdfx_hilog_native:libhilog",
+    "input:libmmi-client",
+    "multimedia_image_framework:image_native",
+  ]
+}
+
+common_external_deps = [
+  "c_utils:utils",
+  "hiviewdfx_hilog_native:libhilog",
+]
+
+
+ohos_executable("uitest_server") {
+  configs = [ ":uitest_common_configs" ]
+  sources = [
     "${source_root}/server/server_main.cpp",
     "${source_root}/server/system_ui_controller.cpp",
   ]
@@ -75,7 +104,9 @@ ohos_executable("uitest_server") {
   ]
 
   # static link the uitest_core as server end
-  deps = [ ":uitest_core" ]
+  deps = [ ":uitest_core",
+  	   ":uitest_record"
+  ]
 
   #dependencies for screencap
   deps += [
