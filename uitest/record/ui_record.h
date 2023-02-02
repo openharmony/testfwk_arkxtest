@@ -25,7 +25,9 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <map>
 #include <thread>
+#include <mutex>
 #include "least_square_impl.h"
 #include "touch_event.h"
 #include "offset.h"
@@ -39,14 +41,17 @@
 #include "widget_operator.h"
 #include "window_operator.h"
 #include "widget_selector.h"
+#include "ui_model.h"
+#include "find_widget.h"
 
 namespace OHOS::uitest {
     static int g_touchTime;
     static int TIMEINTERVAL = 5000;
+    static std::string g_recordMode = "";
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
         void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
-        void HandleDownEvent(const TouchEventInfo& event) const;
+        void HandleDownEvent(TouchEventInfo& event) const;
         void HandleMoveEvent(const TouchEventInfo& event) const;
         void HandleUpEvent(const TouchEventInfo& event) const;
         void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
@@ -70,13 +75,31 @@ namespace OHOS::uitest {
 
     bool InitEventRecordFile();
 
+    void RecordInitEnv(const std::string &modeOpt);
+
     class EventData {
     public:
-        static void WriteEventData(std::ofstream &outFile, const VelocityTracker &velocityTracker, \
-                                   const std::string &actionType);
-
+        void WriteEventData(const VelocityTracker &velocityTracker, const std::string &actionType);
         static void ReadEventLine();
+    private:
+        VelocityTracker v;
+        std::string action;
     };
+
+    class DataWrapper {
+    public:
+        template<typename Function>
+        void ProcessData(Function userFunc)
+        {
+            std::lock_guard<std::mutex> lock(mut);
+            userFunc(data);
+        }
+    private:
+        EventData data;
+        UiDriver d;
+        std::mutex mut;
+    };
+    
     class Timer {
     public:
         Timer(): expired(true), tryToExpire(false)
