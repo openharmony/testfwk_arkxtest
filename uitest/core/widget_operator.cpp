@@ -86,7 +86,8 @@ namespace OHOS::uitest {
 
     void WidgetOperator::ScrollToEnd(bool toTop, ApiCallErr &error) const
     {
-        string prevSnapshot = "", targetSnapshot = "";
+        string prevSnapshot = "";
+        string targetSnapshot = "";
         while (true) {
             auto scrollWidget = driver_.RetrieveWidget(widget_, error);
             if (scrollWidget == nullptr || error.code_ != NO_ERROR) {
@@ -110,7 +111,8 @@ namespace OHOS::uitest {
                 bounds.top_ += options_.scrollWidgetDeadZone_;
                 bounds.bottom_ -= options_.scrollWidgetDeadZone_;
             }
-            Point topPoint(bounds.GetCenterX(), bounds.top_), bottomPoint(bounds.GetCenterX(), bounds.bottom_);
+            Point topPoint(bounds.GetCenterX(), bounds.top_);
+            Point bottomPoint(bounds.GetCenterX(), bounds.bottom_);
             if (toTop) {
                 auto touch = GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint);
                 driver_.PerformTouch(touch, options_, error);
@@ -244,7 +246,8 @@ namespace OHOS::uitest {
     unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const
     {
         bool scrollingUp = true;
-        string prevSnapshot = "", targetSnapshot = "";
+        string prevSnapshot = "";
+        string targetSnapshot = "";
         vector<reference_wrapper<const Widget>> receiver;
         while (true) {
             auto scrollWidget = driver_.RetrieveWidget(widget_, error);
@@ -286,14 +289,11 @@ namespace OHOS::uitest {
                 bounds.top_ += options_.scrollWidgetDeadZone_;
                 bounds.bottom_ -= options_.scrollWidgetDeadZone_;
             }
-            Point topPoint(bounds.GetCenterX(), bounds.top_), bottomPoint(bounds.GetCenterX(), bounds.bottom_);
-            if (scrollingUp) {
-                auto touch = GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint);
-                driver_.PerformTouch(touch, options_, error);
-            } else {
-                auto touch = GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
-                driver_.PerformTouch(touch, options_, error);
-            }
+            Point topPoint(bounds.GetCenterX(), bounds.top_);
+            Point bottomPoint(bounds.GetCenterX(), bounds.bottom_);
+            auto touch = (scrollingUp) ? GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint) :
+                                         GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
+            driver_.PerformTouch(touch, options_, error);
         }
     }
 } // namespace OHOS::uitest
