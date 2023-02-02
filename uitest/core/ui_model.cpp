@@ -327,7 +327,9 @@ namespace OHOS::uitest {
         attributesData[ATTR_NAMES[UiAttr::BOUNDS].data()] = stream.str();
 
         auto childrenData = json::array();
-        uint32_t childIndex = 0, childCount = 0, visitCount = 0;
+        uint32_t childIndex = 0;
+        uint32_t childCount = 0;
+        uint32_t visitCount = 0;
         auto hierarchy = root.GetHierarchy();
         if (widgetChildCountMap.find(hierarchy) != widgetChildCountMap.end()) {
             childCount = widgetChildCountMap.find(hierarchy)->second;
