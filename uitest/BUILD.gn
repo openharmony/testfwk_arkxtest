@@ -84,7 +84,6 @@ ohos_static_library("uitest_record") {
     "multimedia_image_framework:image_native",
   ]
 }
-
 common_external_deps = [
   "c_utils:utils",
   "hiviewdfx_hilog_native:libhilog",
@@ -106,8 +105,9 @@ ohos_executable("uitest_server") {
   ]
 
   # static link the uitest_core as server end
-  deps = [ ":uitest_core",
-  	":uitest_record"
+  deps = [
+    ":uitest_core",
+    ":uitest_record",
   ]
 
   #dependencies for screencap
