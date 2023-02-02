@@ -140,45 +140,45 @@ namespace OHOS::uitest {
         if (!CheckOperational(RESIZE, window_.mode_, out, index)) {
             return;
         }
-        auto rect = window_.bounds_;
-        if ((((direction == LEFT) || (direction == RIGHT))&& highth != rect.GetHeight()) ||
-            (((direction == D_UP) || (direction == D_DOWN))&& width != rect.GetWidth())) {
+        if ((((direction == LEFT) || (direction == RIGHT)) && highth != window_.bounds_.GetHeight()) ||
+            (((direction == D_UP) || (direction == D_DOWN)) && width != window_.bounds_.GetWidth())) {
             out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "Resize cannot be done in this direction");
             return;
         }
-        Point from, to;
+        Point from;
+        Point to;
         switch (direction) {
             case (LEFT):
-                from = Point(rect.left_, rect.GetCenterY());
-                to = Point((rect.right_ - width), rect.GetCenterY());
+                from = Point(window_.bounds_.left_, window_.bounds_.GetCenterY());
+                to = Point((window_.bounds_.right_ - width), window_.bounds_.GetCenterY());
                 break;
             case (RIGHT):
-                from = Point(rect.right_, rect.GetCenterY());
-                to = Point((rect.left_ + width), rect.GetCenterY());
+                from = Point(window_.bounds_.right_, window_.bounds_.GetCenterY());
+                to = Point((window_.bounds_.left_ + width), window_.bounds_.GetCenterY());
                 break;
             case (D_UP):
-                from = Point(rect.GetCenterX(), rect.top_);
-                to = Point(rect.GetCenterX(), rect.bottom_ - highth);
+                from = Point(window_.bounds_.GetCenterX(), window_.bounds_.top_);
+                to = Point(window_.bounds_.GetCenterX(), window_.bounds_.bottom_ - highth);
                 break;
             case (D_DOWN):
-                from = Point(rect.GetCenterX(), rect.bottom_);
-                to = Point(rect.GetCenterX(), rect.top_ + highth);
+                from = Point(window_.bounds_.GetCenterX(), window_.bounds_.bottom_);
+                to = Point(window_.bounds_.GetCenterX(), window_.bounds_.top_ + highth);
                 break;
             case (LEFT_UP):
-                from = Point(rect.left_, rect.top_);
-                to = Point(rect.right_ - width, rect.bottom_ - highth);
+                from = Point(window_.bounds_.left_, window_.bounds_.top_);
+                to = Point(window_.bounds_.right_ - width, window_.bounds_.bottom_ - highth);
                 break;
             case (LEFT_DOWN):
-                from = Point(rect.left_, rect.bottom_);
-                to = Point(rect.right_ - width, rect.top_ + highth);
+                from = Point(window_.bounds_.left_, window_.bounds_.bottom_);
+                to = Point(window_.bounds_.right_ - width, window_.bounds_.top_ + highth);
                 break;
             case (RIGHT_UP):
-                from = Point(rect.right_, rect.top_);
-                to = Point(rect.left_ + width, rect.bottom_ - highth);
+                from = Point(window_.bounds_.right_, window_.bounds_.top_);
+                to = Point(window_.bounds_.left_ + width, window_.bounds_.bottom_ - highth);
                 break;
             case (RIGHT_DOWN):
-                from = Point(rect.right_, rect.bottom_);
-                to = Point(rect.left_ + width, rect.top_ + highth);
+                from = Point(window_.bounds_.right_, window_.bounds_.bottom_);
+                to = Point(window_.bounds_.left_ + width, window_.bounds_.top_ + highth);
                 break;
             default:
                 break;
