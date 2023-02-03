@@ -86,6 +86,11 @@ namespace OHOS::uitest {
         return clone;
     }
 
+    std::map<std::string, std::string> Widget::GetAttrMap() const
+    {
+        return attributes_;
+    }
+
     class WidgetHierarchyBuilder {
     public:
         static string Build(string_view parentWidgetHierarchy, uint32_t childIndex)
