@@ -112,7 +112,7 @@ class SuiteService {
         this.id = attr.id;
         this.rootSuite = new SuiteService.Suite({});
         this.currentRunningSuite = this.rootSuite;
-        this.suitesStack = [];
+        this.suitesStack = [this.rootSuite];
     }
 
     describe(desc, func) {
@@ -132,8 +132,14 @@ class SuiteService {
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);
         func.call();
-        this.suitesStack.pop();
-        this.currentRunningSuite = this.suitesStack.pop();
+        let childSuite = this.suitesStack.pop();
+        if (this.suitesStack.length === 0) {
+            this.currentRunningSuite = childSuite;
+            this.suitesStack.push(childSuite);
+        }
+        if (this.suitesStack.length > 1) {
+            this.currentRunningSuite = this.suitesStack.pop();
+        }
     }
 
     beforeAll(func) {
@@ -423,8 +429,13 @@ SuiteService.Suite = class {
         await this.runAsyncHookFunc('afterAll');
         if (this.description !== '') {
             await coreContext.fireEvents('suite', 'suiteDone');
-            suiteService.suitesStack.pop();
-            suiteService.setCurrentRunningSuite(suiteService.suitesStack.pop());
+            let childSuite = suiteService.suitesStack.pop();
+            if (suiteService.suitesStack.length === 0) {
+                suiteService.suitesStack.push(childSuite);
+            }
+            if (suiteService.suitesStack.length > 1) {
+                suiteService.setCurrentRunningSuite(suiteService.suitesStack.pop());
+            }
         }
     }
 
