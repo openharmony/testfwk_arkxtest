@@ -51,7 +51,7 @@ namespace OHOS::uitest {
     "   uiRecord -record,    wirte location coordinates of events into files\n"
     "   uiRecord -read,                    print file content to the console\n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "3.2.4.0";
+    const std::string VERSION = "3.2.5.0";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
@@ -236,17 +236,26 @@ namespace OHOS::uitest {
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
-        if (!(argc == INDEX_THREE)) {
+        if (!(argc == INDEX_THREE || argc == INDEX_FOUR)) {
             PrintToConsole(usage);
             return EXIT_FAILURE;
         }
-        std::string opt = argv[2];
+        std::string opt = argv[TWO];
+        std::string modeOpt;
+        if (argc == INDEX_FOUR) {
+            modeOpt = argv[THREE];
+        }
         if (opt == "record") {
-            Timer timer;
-            timer.Start(TIMEINTERVAL, Timer::TimerFunc);
             if (!InitEventRecordFile()) {
                 return OHOS::ERR_INVALID_VALUE;
             }
+            auto controller = make_unique<SysUiController>("sys_ui_controller");
+            if (!controller->ConnectToSysAbility()) {
+                PrintToConsole("Failed, cannot connect to AMMS ");
+                return EXIT_FAILURE;
+            }
+            UiController::RegisterController(move(controller), Priority::MEDIUM);
+            RecordInitEnv(modeOpt);
             auto callBackPtr = InputEventCallback::GetPtr();
             if (callBackPtr == nullptr) {
                 std::cout << "nullptr" << std::endl;
@@ -257,6 +266,8 @@ namespace OHOS::uitest {
                 std::cout << "Startup Failed!" << std::endl;
                 return OHOS::ERR_INVALID_VALUE;
             }
+            Timer timer;
+            timer.Start(TIMEINTERVAL, Timer::TimerFunc);
             std::cout << "Started Recording Successfully..." << std::endl;
             int flag = getc(stdin);
             std::cout << flag << std::endl;

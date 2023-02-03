@@ -90,12 +90,12 @@ namespace OHOS::uitest {
 
         FORCE_INLINE int32_t GetCenterX() const
         {
-            return (left_ + right_) / NUM_TWO;
+            return (left_ + right_) / TWO;
         }
 
         FORCE_INLINE int32_t GetCenterY() const
         {
-            return (top_ + bottom_) / NUM_TWO;
+            return (top_ + bottom_) / TWO;
         }
 
         FORCE_INLINE int32_t GetWidth() const
@@ -198,6 +198,8 @@ namespace OHOS::uitest {
         std::string ToStr() const;
 
         std::unique_ptr<Widget> Clone(std::string_view hostTreeId, std::string_view hierarchy) const;
+
+        std::map<std::string, std::string> GetAttrMap() const;
 
     private:
         const std::string hierarchy_;
