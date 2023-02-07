@@ -174,9 +174,6 @@ class SuiteService {
                 for (let j = 0; j < specs.length; j++) {
                     let testcase = specs[j];
                     total++;
-                    if (!testcase.isExecuted) {
-                        ignore++;
-                    }
                     if (testcase.error) {
                         error++;
                     } else if (testcase.result.failExpects.length > 0) {
@@ -187,6 +184,9 @@ class SuiteService {
                 }
             }
         }
+
+        // 统计未执行的用例数量
+        ignore = total - failure - error - pass;
         return {total: total, failure: failure, error: error, pass: pass, ignore: ignore, duration: duration};
     }
 
@@ -481,9 +481,8 @@ class SpecService {
                 let stress = configService.getStress(); // 命令配置压力测试
                 console.info('stress it is,' + stress);
                 for (let i = 1; i < stress; i++) {
-                    const specItem = new SpecService.Spec({description: desc, fi: filter, fn: processedFunc});
                     this.totalTest++;
-                    suiteService.getCurrentRunningSuite().pushSpec(specItem);
+                    suiteService.getCurrentRunningSuite().pushSpec(spec);
                 }
             }
             this.totalTest++;
@@ -514,7 +513,6 @@ SpecService.Spec = class {
         this.error = undefined;
         this.duration = 0;
         this.startTime = 0;
-        this.isExecuted = false; // 当前用例是否执行
     }
 
     setResult(coreContext) {
@@ -532,7 +530,6 @@ SpecService.Spec = class {
         const specService = coreContext.getDefaultService('spec');
         specService.setCurrentRunningSpec(this);
         coreContext.fireEvents('spec', 'specStart', this);
-        this.isExecuted = true;
         try {
             let dataDriver = coreContext.getServices('dataDriver');
             if (typeof dataDriver === 'undefined') {
@@ -595,7 +592,6 @@ SpecService.Spec = class {
                 specService.setStatus(true);
             }
         }
-        this.isExecuted = true;
         await coreContext.fireEvents('spec', 'specDone', this);
     }
 
