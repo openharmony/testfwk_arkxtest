@@ -92,6 +92,7 @@ namespace OHOS::uitest {
         std::string apiId_;
         std::string callerObjRef_;
         nlohmann::json paramList_ = nlohmann::json::array();
+        int32_t fdParamIndex_ = -1; // support fd as param
     };
 
     /**Structure wraps the api-call reply.*/
