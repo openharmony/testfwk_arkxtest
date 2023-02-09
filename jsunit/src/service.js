@@ -112,6 +112,7 @@ class SuiteService {
         this.id = attr.id;
         this.rootSuite = new SuiteService.Suite({});
         this.currentRunningSuite = this.rootSuite;
+        this.suitesStack = [this.rootSuite];
     }
 
     describe(desc, func) {
@@ -127,11 +128,18 @@ class SuiteService {
                 this.currentRunningSuite.childSuites.push(suite);
             }
         }
-        const currentSuiteCache = this.currentRunningSuite;
         this.currentRunningSuite.childSuites.push(suite);
         this.currentRunningSuite = suite;
+        this.suitesStack.push(suite);
         func.call();
-        this.currentRunningSuite = currentSuiteCache;
+        let childSuite = this.suitesStack.pop();
+        if (this.suitesStack.length === 0) {
+            this.currentRunningSuite = childSuite;
+            this.suitesStack.push(childSuite);
+        }
+        if (this.suitesStack.length > 1) {
+            this.currentRunningSuite = this.suitesStack.pop();
+        }
     }
 
     beforeAll(func) {
@@ -158,40 +166,73 @@ class SuiteService {
         this.currentRunningSuite = suite;
     }
 
-    getSummary() {
-        let total = 0;
-        let error = 0;
-        let failure = 0;
-        let pass = 0;
-        let ignore = 0;
-        let duration = 0;
-        let rootSuite = this.coreContext.getDefaultService('suite').rootSuite;
-        if (rootSuite && rootSuite.childSuites) {
-            for (let i = 0; i < rootSuite.childSuites.length; i++) {
-                let testsuite = rootSuite.childSuites[i];
-                duration += testsuite.duration;
-                let specs = testsuite['specs'];
-                for (let j = 0; j < specs.length; j++) {
-                    let testcase = specs[j];
-                    total++;
-                    if (!testcase.isExecuted) {
-                        ignore++;
-                    }
-                    if (testcase.error) {
-                        error++;
-                    } else if (testcase.result.failExpects.length > 0) {
-                        failure++;
-                    } else if (testcase.result.pass === true) {
-                        pass++;
-                    }
+    traversalResults(suite, obj) {
+        if (suite.childSuites.length === 0 && suite.specs.length === 0) {
+            return obj;
+        }
+        if (suite.specs.length > 0) {
+            for (const itItem of suite.specs) {
+                obj.total++;
+                if (!itItem.isExecuted) {
+                    obj.ignore++;
+                }
+                if (itItem.error) {
+                    obj.error++;
+                } else if (itItem.result.failExpects.length > 0) {
+                    obj.failure++;
+                } else if (itItem.result.pass === true) {
+                    obj.pass++;
                 }
             }
         }
-        return {total: total, failure: failure, error: error, pass: pass, ignore: ignore, duration: duration};
+
+        if (suite.childSuites.length > 0) {
+            obj.duration += suite.duration;
+            for (const suiteItem of suite.childSuites) {
+                obj.duration += suiteItem.duration;
+                this.traversalResults(suiteItem, obj);
+            }
+        }
+    }
+
+    getSummary() {
+        let rootSuite = this.coreContext.getDefaultService('suite').rootSuite;
+        let obj = {total: 0, failure: 0, error: 0, pass: 0, ignore: 0, duration: 0};
+        for (const suiteItem of rootSuite.childSuites) {
+            this.traversalResults(suiteItem, obj);
+        }
+        return obj;
     }
 
     init(coreContext) {
         this.coreContext = coreContext;
+    }
+
+    traversalSuites(suite, obj, configService) {
+        if (suite.childSuites.length === 0 && suite.specs.length === 0) {
+            return [];
+        }
+        if (suite.specs.length > 0) {
+            let itArray = [];
+            for (const itItem of suite['specs']) {
+                if (!configService.filterDesc(suite.description, itItem.description, itItem.fi, null)) {
+                    itArray.push({'itName': itItem.description});
+                }
+            }
+            obj[suite.description] = itArray;
+        }
+
+        if (suite.childSuites.length > 0) {
+            let suiteArray = [];
+            for (const suiteItem of suite.childSuites) {
+                let suiteObj = {};
+                this.traversalSuites(suiteItem, suiteObj, configService);
+                if (!configService.filterSuite(suiteItem.description)) {
+                    suiteArray.push(suiteObj);
+                }
+            }
+            obj.suites = suiteArray;
+        }
     }
 
     async dryRun(abilityDelegator) {
@@ -199,18 +240,9 @@ class SuiteService {
         let testSuitesObj = {};
         let suitesArray = [];
         for (const suiteItem of this.rootSuite.childSuites) {
-            let itArray = [];
-            let suiteName = suiteItem['description'];
-            for (const itItem of suiteItem['specs']) {
-                let itName = itItem['description'];
-                let filter = itItem['fi'];
-                if (!configService.filterDesc(suiteName, itName, filter, this.coreContext)) {
-                    itArray.push({'itName': itItem['description']});
-                }
-            }
-            if (!configService.filterSuite(suiteName) && (itArray.length > 0)) {
-                let obj = {};
-                obj[suiteName] = itArray;
+            let obj = {};
+            this.traversalSuites(suiteItem, obj, configService);
+            if (!configService.filterSuite(suiteItem.description)) {
                 suitesArray.push(obj);
             }
         }
@@ -357,6 +389,7 @@ SuiteService.Suite = class {
     async asyncRun(coreContext) {
         const suiteService = coreContext.getDefaultService('suite');
         suiteService.setCurrentRunningSuite(this);
+        suiteService.suitesStack.push(this);
         if (this.description !== '') {
             await coreContext.fireEvents('suite', 'suiteStart', this);
         }
@@ -389,7 +422,6 @@ SuiteService.Suite = class {
                     console.log("childSuites break description," + this.description);
                     break;
                 }
-                suiteService.setCurrentRunningSuite(this.childSuites[i]);
                 await this.childSuites[i].asyncRun(coreContext);
             }
         }
@@ -397,6 +429,13 @@ SuiteService.Suite = class {
         await this.runAsyncHookFunc('afterAll');
         if (this.description !== '') {
             await coreContext.fireEvents('suite', 'suiteDone');
+            let childSuite = suiteService.suitesStack.pop();
+            if (suiteService.suitesStack.length === 0) {
+                suiteService.suitesStack.push(childSuite);
+            }
+            if (suiteService.suitesStack.length > 1) {
+                suiteService.setCurrentRunningSuite(suiteService.suitesStack.pop());
+            }
         }
     }
 
@@ -791,7 +830,7 @@ class ReportService {
 
     suiteDone() {
         let suite = this.suiteService.currentRunningSuite;
-        console.info('[suite end]' + ' consuming ' + suite.duration + 'ms');
+        console.info(`[suite end] ${suite.description} consuming ${suite.duration} ms`);
     }
 
     taskDone() {
