@@ -139,6 +139,9 @@ class SuiteService {
         }
         if (this.suitesStack.length > 1) {
             this.currentRunningSuite = this.suitesStack.pop();
+        } else {
+            this.currentRunningSuite = this.suitesStack.pop();
+            this.suitesStack.push(this.currentRunningSuite);
         }
     }
 
@@ -444,6 +447,10 @@ SuiteService.Suite = class {
             }
             if (suiteService.suitesStack.length > 1) {
                 suiteService.setCurrentRunningSuite(suiteService.suitesStack.pop());
+            } else {
+                let currentRunningSuite = suiteService.suitesStack.pop();
+                suiteService.setCurrentRunningSuite(currentRunningSuite);
+                suiteService.suitesStack.push(currentRunningSuite);
             }
         }
     }
@@ -480,6 +487,7 @@ class SpecService {
     constructor(attr) {
         this.id = attr.id;
         this.totalTest = 0;
+        this.executedNum = 0; // 执行用例数量统计
         this.hasError = false;
     }
 
