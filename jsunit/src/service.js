@@ -139,6 +139,9 @@ class SuiteService {
         }
         if (this.suitesStack.length > 1) {
             this.currentRunningSuite = this.suitesStack.pop();
+        } else {
+            this.currentRunningSuite = this.suitesStack.pop();
+            this.suitesStack.push(this.currentRunningSuite);
         }
     }
 
@@ -435,6 +438,10 @@ SuiteService.Suite = class {
             }
             if (suiteService.suitesStack.length > 1) {
                 suiteService.setCurrentRunningSuite(suiteService.suitesStack.pop());
+            } else {
+                let currentRunningSuite = suiteService.suitesStack.pop();
+                suiteService.setCurrentRunningSuite(currentRunningSuite);
+                suiteService.suitesStack.push(currentRunningSuite);
             }
         }
     }
