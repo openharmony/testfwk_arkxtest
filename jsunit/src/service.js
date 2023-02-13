@@ -487,7 +487,6 @@ class SpecService {
     constructor(attr) {
         this.id = attr.id;
         this.totalTest = 0;
-        this.executedNum = 0; // 执行用例数量统计
         this.hasError = false;
     }
 
