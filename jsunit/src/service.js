@@ -616,6 +616,7 @@ SpecService.Spec = class {
     async asyncRun(coreContext) {
         const specService = coreContext.getDefaultService('spec');
         specService.setCurrentRunningSpec(this);
+
         await coreContext.fireEvents('spec', 'specStart', this);
         try {
             let dataDriver = coreContext.getServices('dataDriver');
