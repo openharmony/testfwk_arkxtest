@@ -169,15 +169,17 @@ class SuiteService {
         this.currentRunningSuite = suite;
     }
 
-    traversalResults(suite, obj) {
+    traversalResults(suite, obj, breakOnError) {
         if (suite.childSuites.length === 0 && suite.specs.length === 0) {
             return obj;
         }
         if (suite.specs.length > 0) {
             for (const itItem of suite.specs) {
                 obj.total++;
-                if (!itItem.isExecuted) {
-                    obj.ignore++;
+                if(breakOnError) { // breakOnError模式
+                    if(obj.error > 0 || obj.failure > 0) {
+                        continue;
+                    }
                 }
                 if (itItem.error) {
                     obj.error++;
@@ -193,17 +195,24 @@ class SuiteService {
             obj.duration += suite.duration;
             for (const suiteItem of suite.childSuites) {
                 obj.duration += suiteItem.duration;
-                this.traversalResults(suiteItem, obj);
+                this.traversalResults(suiteItem, obj, breakOnError);
             }
         }
     }
 
     getSummary() {
-        let rootSuite = this.coreContext.getDefaultService('suite').rootSuite;
+        let suiteService = this.coreContext.getDefaultService('suite');
+        let rootSuite = suiteService.rootSuite;
+        const specService = this.coreContext.getDefaultService('spec');
+        const configService = this.coreContext.getDefaultService('config');
+        let breakOnError = configService.isBreakOnError();
+        let isError = specService.getStatus();
+        let isBreaKOnError =  breakOnError && isError;
         let obj = {total: 0, failure: 0, error: 0, pass: 0, ignore: 0, duration: 0};
         for (const suiteItem of rootSuite.childSuites) {
-            this.traversalResults(suiteItem, obj);
+            this.traversalResults(suiteItem, obj, isBreaKOnError);
         }
+        obj.ignore = obj.total - obj.pass - obj.failure - obj.error;
         return obj;
     }
 
@@ -527,9 +536,8 @@ class SpecService {
                 let stress = configService.getStress(); // 命令配置压力测试
                 console.info('stress it is,' + stress);
                 for (let i = 1; i < stress; i++) {
-                    const specItem = new SpecService.Spec({description: desc, fi: filter, fn: processedFunc});
                     this.totalTest++;
-                    suiteService.getCurrentRunningSuite().pushSpec(specItem);
+                    suiteService.getCurrentRunningSuite().pushSpec(spec);
                 }
             }
             this.totalTest++;
