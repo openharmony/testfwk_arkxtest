@@ -23,6 +23,57 @@ class AssertException extends Error {
     }
 }
 
+function getFuncWithArgsZero(func, timeout) {
+    return new Promise(async (resolve, reject) => {
+        let timer = setTimeout(() => {
+            reject(new Error('execute timeout ' + timeout + 'ms'));
+        }, timeout);
+        try {
+            await func();
+        } catch (err) {
+            reject(err);
+        }
+        resolve();
+        clearTimeout(timer);
+    });
+}
+
+function getFuncWithArgsOne(func, timeout) {
+    return new Promise(async (resolve, reject) => {
+        let timer = setTimeout(() => {
+            reject(new Error('execute timeout ' + timeout + 'ms'));
+        }, timeout);
+        function done() {
+            clearTimeout(timer);
+            resolve();
+        }
+        try {
+            await func(done);
+        } catch (err) {
+            clearTimeout(timer);
+            reject(err);
+        }
+    });
+}
+
+function getFuncWithArgsTwo(func, timeout, paramItem) {
+    return new Promise(async (resolve, reject) => {
+        let timer = setTimeout(() => {
+            reject(new Error('execute timeout ' + timeout + 'ms'));
+        }, timeout);
+        function done() {
+            clearTimeout(timer);
+            resolve();
+        }
+        try {
+            await func(done, paramItem);
+        } catch (err) {
+            clearTimeout(timer);
+            reject(err);
+        }
+    });
+}
+
 function processFunc(coreContext, func) {
     let argNames = ((func || '').toString()
         .replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, '')
@@ -38,18 +89,7 @@ function processFunc(coreContext, func) {
     switch (funcLen) {
         case 0: {
             processedFunc = function () {
-                return new Promise(async (resolve, reject) => {
-                    let timer = setTimeout(() => {
-                        reject(new Error('execute timeout ' + timeout + 'ms'));
-                    }, timeout);
-                    try {
-                        await func();
-                    } catch (err) {
-                        reject(err);
-                    }
-                    resolve();
-                    clearTimeout(timer);
-                });
+                return getFuncWithArgsZero(func, timeout);
             };
             break;
         }
@@ -60,42 +100,14 @@ function processFunc(coreContext, func) {
                 };
             } else {
                 processedFunc = function () {
-                    return new Promise(async (resolve, reject) => {
-                        let timer = setTimeout(() => {
-                            reject(new Error('execute timeout ' + timeout + 'ms'));
-                        }, timeout);
-                        function done() {
-                            clearTimeout(timer);
-                            resolve();
-                        }
-                        try {
-                            await func(done);
-                        } catch (err) {
-                            clearTimeout(timer);
-                            reject(err);
-                        }
-                    });
+                    return getFuncWithArgsOne(func, timeout);
                 };
             }
             break;
         }
         default: {
             processedFunc = function (paramItem) {
-                return new Promise(async (resolve, reject) => {
-                    let timer = setTimeout(() => {
-                        reject(new Error('execute timeout ' + timeout + 'ms'));
-                    }, timeout);
-                    function done() {
-                        clearTimeout(timer);
-                        resolve();
-                    }
-                    try {
-                        await func(done, paramItem);
-                    } catch (err) {
-                        clearTimeout(timer);
-                        reject(err);
-                    }
-                });
+                return getFuncWithArgsTwo(func, timeout, paramItem);
             };
             break;
         }
@@ -176,10 +188,8 @@ class SuiteService {
         if (suite.specs.length > 0) {
             for (const itItem of suite.specs) {
                 obj.total++;
-                if(breakOnError) { // breakOnError模式
-                    if(obj.error > 0 || obj.failure > 0) {
-                        continue;
-                    }
+                if (breakOnError && (obj.error > 0 || obj.failure > 0)) { // breakOnError模式
+                    continue;
                 }
                 if (itItem.error) {
                     obj.error++;
@@ -191,10 +201,10 @@ class SuiteService {
             }
         }
 
+        obj.duration += suite.duration;
+
         if (suite.childSuites.length > 0) {
-            obj.duration += suite.duration;
             for (const suiteItem of suite.childSuites) {
-                obj.duration += suiteItem.duration;
                 this.traversalResults(suiteItem, obj, breakOnError);
             }
         }
@@ -207,7 +217,7 @@ class SuiteService {
         const configService = this.coreContext.getDefaultService('config');
         let breakOnError = configService.isBreakOnError();
         let isError = specService.getStatus();
-        let isBreaKOnError =  breakOnError && isError;
+        let isBreaKOnError = breakOnError && isError;
         let obj = {total: 0, failure: 0, error: 0, pass: 0, ignore: 0, duration: 0};
         for (const suiteItem of rootSuite.childSuites) {
             this.traversalResults(suiteItem, obj, isBreaKOnError);

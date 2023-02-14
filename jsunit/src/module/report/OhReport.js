@@ -14,6 +14,7 @@
  */
 
 import SysTestKit from "../kit/SysTestKit";
+import {collectCoverageData} from '../coverage/coverageCollect';
 
 class OhReport {
     constructor(attr) {
@@ -35,6 +36,10 @@ class OhReport {
     async taskDone() {
         this.taskDoneTime = new Date().getTime();
         let summary = this.suiteService.getSummary();
+        const configService = this.coreContext.getDefaultService('config');
+        if (configService['coverage'] === 'true') {
+            await collectCoverageData();
+        }
         let message = '\n' + 'OHOS_REPORT_RESULT: stream=Tests run: ' + summary.total + ', Failure: ' + summary.failure;
         message += ', Error: ' + summary.error;
         message += ', Pass: ' + summary.pass;
@@ -42,7 +47,7 @@ class OhReport {
         message += '\n' + 'OHOS_REPORT_CODE: ' + (summary.failure > 0 ? -1 : 0) + '\n';
         let isHasError = summary.failure > 0 || summary.error > 0;
         let config = this.coreContext.getDefaultService('config');
-        if(config.isBreakOnError() && isHasError){
+        if (config.isBreakOnError() && isHasError) {
             // 未执行全部说明
             message += '\n' + 'OHOS_REPORT_RESULT: breakOnError model, Stopping whole test suite if one specific test case failed or error' + '\n';
         }
