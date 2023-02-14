@@ -87,10 +87,10 @@ class ConfigService {
             }
         }
 
-        let paramKeys = ['dryRun', 'random', 'breakOnError'];
+        let paramKeys = ['dryRun', 'random', 'breakOnError', 'coverage'];
         for (const key of paramKeys) {
-            if (paramKeys[key] !== undefined && paramKeys[key] !== 'true' && paramKeys[key] !== 'false') {
-                this.filterValid.push(`${key}:${paramKeys[key]}`);
+            if (params[key] !== undefined && params[key] !== 'true' && params[key] !== 'false') {
+                this.filterValid.push(`${key}:${params[key]}`);
             }
         }
 
@@ -101,25 +101,12 @@ class ConfigService {
             }
         }
 
-        let classes = params.class;
         let nameRule = /^[A-Za-z]{1}[\w#,.]*$/;
-        if (classes !== undefined && classes !== '' && classes !== null) {
-            let classArray = classes.split(',');
-            for (let className of classArray) {
-                if (!className.match(nameRule)) {
-                    this.filterValid.push('class:' + classes);
-                    break;
-                }
-            }
-        }
-        let notClasses = params.notClass;
-        if (notClasses !== undefined && notClasses !== '' && notClasses !== null) {
-            let notClassArray = notClasses.split(',');
-            for (let notClassName of notClassArray) {
-                if (!notClassName.match(nameRule)) {
-                    this.filterValid.push('notClass:' + notClasses);
-                    break;
-                }
+        let paramClassKeys = ['class', 'notClass'];
+        for (const key of paramClassKeys) {
+            if (params[key] !== undefined && params[key] !== '' && params[key] !== null) {
+                let classArray = params[key].split(',');
+                classArray.forEach(item => !item.match(nameRule) ? this.filterValid.push(`${key}:${params[key]}`) : null);
             }
         }
     }
@@ -142,6 +129,7 @@ class ConfigService {
             this.breakOnError = params.breakOnError;
             this.random = params.random === 'true' ? true : false;
             this.stress = params.stress;
+            this.coverage = params.coverage;
             this.filterParam = {
                 testType: {
                     'function': 1,
@@ -263,8 +251,10 @@ class ConfigService {
         const keySet = new Set([
             '-s class', '-s notClass', '-s suite', '-s itName',
             '-s level', '-s testType', '-s size', '-s timeout',
-            '-s dryRun', '-s random', '-s breakOnError', '-s stress', 'class', 'notClass', 'suite', 'itName',
-            'level', 'testType', 'size', 'timeout', 'dryRun', 'random', 'breakOnError', 'stress'
+            '-s dryRun', '-s random', '-s breakOnError', '-s stress',
+            '-s coverage', 'class', 'notClass', 'suite', 'itName',
+            'level', 'testType', 'size', 'timeout', 'dryRun', 'random',
+            'breakOnError', 'stress', 'coverage'
         ]);
         let targetParams = {};
         for (const key in parameters) {
@@ -279,8 +269,10 @@ class ConfigService {
         const keySet = new Set([
             '-s class', '-s notClass', '-s suite', '-s itName',
             '-s level', '-s testType', '-s size', '-s timeout',
-            '-s dryRun', '-s random', '-s breakOnError', '-s stress', 'class', 'notClass', 'suite', 'itName',
-            'level', 'testType', 'size', 'timeout', 'dryRun', 'random', 'breakOnError', 'stress'
+            '-s dryRun', '-s random', '-s breakOnError', '-s stress',
+            '-s coverage','class', 'notClass', 'suite', 'itName',
+            'level', 'testType', 'size', 'timeout', 'dryRun', 'random',
+            'breakOnError', 'stress', 'coverage'
         ]);
         let targetParams = '';
         for (const key in parameters) {
