@@ -495,8 +495,8 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecksOne)
     call11.paramList_.emplace_back(6);
     call11.paramList_.emplace_back(1);
     auto arg1 = json();
-    arg1["X"] = 9;
-    arg1["Y"] = 10;
+    arg1["x"] = 9;
+    arg1["y"] = 10;
     call11.paramList_.emplace_back(arg1);
     auto reply11 = ApiReplyInfo();
     server.Call(call11, reply11);
@@ -513,8 +513,8 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecksOne)
     call13.paramList_.emplace_back(5);
     call13.paramList_.emplace_back(11);
     auto arg2 = json();
-    arg2["X"] = 9;
-    arg2["Y"] = 10;
+    arg2["x"] = 9;
+    arg2["y"] = 10;
     call13.paramList_.emplace_back(arg2);
     auto reply13 = ApiReplyInfo();
     server.Call(call13, reply13);
@@ -530,11 +530,11 @@ TEST_F(FrontendApiHandlerTest, injectMultiPointerActionparameterPreChecks)
     server.Call(call2, reply2);
     auto call3 = ApiCallInfo {.apiId_ = "UiDriver.fling", .callerObjRef_ = reply2.resultValue_.get<string>()};
     auto from = json();
-    from["X"] = 30;
-    from["Y"] = 40;
+    from["x"] = 30;
+    from["y"] = 40;
     auto to = json();
-    to["X"] = 300;
-    to["Y"] = 400;
+    to["x"] = 300;
+    to["y"] = 400;
     call3.paramList_.emplace_back(from);
     call3.paramList_.emplace_back(to);
     call3.paramList_.emplace_back(0);
@@ -562,8 +562,8 @@ TEST_F(FrontendApiHandlerTest, injectMultiPointerActionparameterPreChecks)
     server.Call(call6, reply6);
     auto call7 = ApiCallInfo {.apiId_ = "UiDriver.fling", .callerObjRef_ = reply6.resultValue_.get<string>()};
     auto from3 = json();
-    from3["X"] = "";
-    from3["Y"] = "";
+    from3["x"] = "";
+    from3["y"] = "";
     call7.paramList_.emplace_back(from3);
     call7.paramList_.emplace_back(to);
     call7.paramList_.emplace_back(500);

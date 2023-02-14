@@ -208,8 +208,8 @@ namespace OHOS::uitest {
 
     /** Point jsonObject definition.*/
     constexpr FrontEndJsonPropDef POINT_PROPERTIES[] = {
-        {"X", "int", true},
-        {"Y", "int", true},
+        {"x", "int", true},
+        {"y", "int", true},
     };
     constexpr FrontEndJsonDef POINT_DEF = {
         "Point",
