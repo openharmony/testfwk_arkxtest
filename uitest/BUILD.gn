@@ -69,19 +69,9 @@ ohos_static_library("uitest_record") {
   include_dirs = [ "${source_root}/core" ]
   external_deps = [
     "ability_base:want",
-    "ability_runtime:ability_context_native",
     "ability_runtime:ability_manager",
-    "ability_runtime:abilitykit_native",
-    "ability_runtime:app_manager",
-    "ability_runtime:runtime",
-    "accessibility:accessibility_common",
-    "accessibility:accessibilityclient",
-    "accessibility:accessibleability",
-    "bundle_framework:appexecfwk_base",
-    "bundle_framework:appexecfwk_core",
     "hiviewdfx_hilog_native:libhilog",
     "input:libmmi-client",
-    "multimedia_image_framework:image_native",
   ]
 }
 common_external_deps = [
