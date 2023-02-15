@@ -729,8 +729,8 @@ namespace OHOS::uitest {
                 out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Point cannot be empty");
                 return;
             }
-            const auto point0 = Point(pointJson0["X"], pointJson0["Y"]);
-            const auto point1 = Point(pointJson1["X"], pointJson1["Y"]);
+            const auto point0 = Point(pointJson0["x"], pointJson0["y"]);
+            const auto point1 = Point(pointJson1["x"], pointJson1["y"]);
             const auto stepLength = ReadCallArg<uint32_t>(in, INDEX_TWO);
             uiOpArgs.swipeVelocityPps_  = ReadCallArg<uint32_t>(in, INDEX_THREE);
             CheckSwipeVelocityPps(uiOpArgs);
@@ -797,14 +797,14 @@ namespace OHOS::uitest {
             } else if (in.apiId_ == "Driver.getDisplaySize") {
                 auto result = controller->GetDisplaySize();
                 json data;
-                data["X"] = result.px_;
-                data["Y"] = result.py_;
+                data["x"] = result.px_;
+                data["y"] = result.py_;
                 out.resultValue_ = data;
             } else if (in.apiId_ == "Driver.getDisplayDensity") {
                 auto result = controller->GetDisplayDensity();
                 json data;
-                data["X"] = result.px_;
-                data["Y"] = result.py_;
+                data["x"] = result.px_;
+                data["y"] = result.py_;
                 out.resultValue_ = data;
             }
         };
@@ -831,8 +831,8 @@ namespace OHOS::uitest {
         if (attrName == ATTR_NAMES[UiAttr::BOUNDSCENTER]) { // getBoundsCenter
             const auto bounds = snapshot->GetBounds();
             json data;
-            data["X"] = bounds.GetCenterX();
-            data["Y"] = bounds.GetCenterY();
+            data["x"] = bounds.GetCenterX();
+            data["y"] = bounds.GetCenterY();
             out.resultValue_ = data;
             return;
         }
@@ -1062,7 +1062,7 @@ namespace OHOS::uitest {
                 out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Point cannot be empty");
                 return;
             }
-            const auto point = Point(pointJson["X"], pointJson["Y"]);
+            const auto point = Point(pointJson["x"], pointJson["y"]);
             pointer.At(finger, step).point_ = point;
             pointer.At(finger, step).flags_ = 1;
         };
