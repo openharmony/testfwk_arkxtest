@@ -169,6 +169,7 @@ TEST(ApiTransactorTest, testApiTransaction)
     ASSERT_TRUE(clientOutput.find(" FAILED ") == string::npos);
 }
 
+#ifdef MFD_ALLOW_SEALING
 TEST(ApiTransactorTest, testHandleFdParam)
 {
     constexpr string_view token = "testHandleFdParam";
@@ -220,6 +221,7 @@ TEST(ApiTransactorTest, testHandleFdParam)
     cout << clientOutput << endl;
     ASSERT_TRUE(clientOutput.find(" FAILED ") == string::npos);
 }
+#endif
 
 TEST(ApiTransactorTest, testDetectConcurrentTransaction)
 {
