@@ -66,7 +66,7 @@ async function scheduleConnectionAsync(uitest) {
 }
 
 function loadAndSetupUiTest() {
-  let uitest  = globalThis.requireInternal('UiTest')
+  let uitest = globalThis.requireInternal('UiTest')
   if (uitest.uitestSetupCalled === true) {
     return
   }
