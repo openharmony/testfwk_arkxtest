@@ -491,7 +491,7 @@ namespace OHOS::uitest {
         .nm_flags = 0,
         .nm_filename = nullptr,
         .nm_register_func = Export,
-        .nm_modname = "uitest",
+        .nm_modname = "UiTest",
         .nm_priv = ((void *)0),
         .reserved = {0},
     };
@@ -508,7 +508,7 @@ extern const char _binary_uitest_exporter_js_end[];
 extern const char _binary_uitest_exporter_abc_start[];
 extern const char _binary_uitest_exporter_abc_end[];
 
-extern "C" __attribute__((visibility("default"))) void NAPI_uitest_GetJSCode(const char **buf, int *bufLen)
+extern "C" __attribute__((visibility("default"))) void NAPI_UiTest_GetJSCode(const char **buf, int *bufLen)
 {
     if (buf != nullptr) {
         *buf = _binary_uitest_exporter_js_start;
@@ -518,7 +518,7 @@ extern "C" __attribute__((visibility("default"))) void NAPI_uitest_GetJSCode(con
     }
 }
 
-extern "C" __attribute__((visibility("default"))) void NAPI_uitest_GetABCCode(const char **buf, int *bufLen)
+extern "C" __attribute__((visibility("default"))) void NAPI_UiTest_GetABCCode(const char **buf, int *bufLen)
 {
     if (buf != nullptr) {
         *buf = _binary_uitest_exporter_abc_start;
