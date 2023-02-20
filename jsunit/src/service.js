@@ -417,7 +417,7 @@ SuiteService.Suite = class {
                 // 遇错即停模式,发现用例有问题，直接返回，不在执行后面的it
                 let isBreakOnError = this.isRun(coreContext);
                 if (isBreakOnError) {
-                    console.log("break description :" + i + this.description);
+                    console.log("break description :" + this.description);
                     break;
                 }
                 await this.runAsyncHookFunc('beforeEach');
@@ -431,7 +431,7 @@ SuiteService.Suite = class {
                 // 遇错即停模式, 发现用例有问题，直接返回，不在执行后面的description
                 let isBreakOnError = this.isRun(coreContext);
                 if (isBreakOnError) {
-                    console.log("break description :" + i + this.description);
+                    console.log("break description :" + this.description);
                     break;
                 }
                 await this.childSuites[i].asyncRun(coreContext);
