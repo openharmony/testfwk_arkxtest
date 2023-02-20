@@ -417,7 +417,7 @@ SuiteService.Suite = class {
                 // 遇错即停模式,发现用例有问题，直接返回，不在执行后面的it
                 let isBreakOnError = this.isRun(coreContext);
                 if (isBreakOnError) {
-                    console.log("break index is," + i + "description is," + this.description);
+                    console.log("break description :" + this.description);
                     break;
                 }
                 await this.runAsyncHookFunc('beforeEach');
@@ -431,7 +431,7 @@ SuiteService.Suite = class {
                 // 遇错即停模式, 发现用例有问题，直接返回，不在执行后面的description
                 let isBreakOnError = this.isRun(coreContext);
                 if (isBreakOnError) {
-                    console.log("childSuites break description," + this.description);
+                    console.log("break description :" + this.description);
                     break;
                 }
                 await this.childSuites[i].asyncRun(coreContext);
@@ -534,7 +534,7 @@ class SpecService {
             // dryRun 状态下不统计压力测试重复数据
             if (configService['dryRun'] !== 'true') {
                 let stress = configService.getStress(); // 命令配置压力测试
-                console.info('stress it is,' + stress);
+                console.info('stress length :' + stress);
                 for (let i = 1; i < stress; i++) {
                     this.totalTest++;
                     suiteService.getCurrentRunningSuite().pushSpec(spec);
