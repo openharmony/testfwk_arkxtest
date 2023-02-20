@@ -169,13 +169,18 @@ class SuiteService {
         this.currentRunningSuite = suite;
     }
 
-    traversalResults(suite, obj) {
+    traversalResults(suite, obj, breakOnError) {
         if (suite.childSuites.length === 0 && suite.specs.length === 0) {
             return obj;
         }
         if (suite.specs.length > 0) {
             for (const itItem of suite.specs) {
                 obj.total++;
+                if(breakOnError) { // breakOnError模式
+                    if(obj.error > 0 || obj.failure > 0) {
+                        continue;
+                    }
+                }
                 if (itItem.error) {
                     obj.error++;
                 } else if (itItem.result.failExpects.length > 0) {
@@ -196,10 +201,16 @@ class SuiteService {
     }
 
     getSummary() {
-        let rootSuite = this.coreContext.getDefaultService('suite').rootSuite;
+        let suiteService = this.coreContext.getDefaultService('suite');
+        let rootSuite = suiteService.rootSuite;
+        const specService = this.coreContext.getDefaultService('spec');
+        const configService = this.coreContext.getDefaultService('config');
+        let breakOnError = configService.isBreakOnError();
+        let isError = specService.getStatus();
+        let isBreaKOnError =  breakOnError && isError;
         let obj = {total: 0, failure: 0, error: 0, pass: 0, ignore: 0, duration: 0};
         for (const suiteItem of rootSuite.childSuites) {
-            this.traversalResults(suiteItem, obj);
+            this.traversalResults(suiteItem, obj, isBreaKOnError);
         }
         obj.ignore = obj.total - obj.pass - obj.failure - obj.error;
         return obj;
@@ -338,6 +349,15 @@ SuiteService.Suite = class {
         return this.specs.length;
     }
 
+    isRun(coreContext) {
+        const configService = coreContext.getDefaultService('config');
+        const suiteService = coreContext.getDefaultService('suite');
+        const specService = coreContext.getDefaultService('spec');
+        let breakOnError = configService.isBreakOnError();
+        let isError = specService.getStatus();
+        return breakOnError && isError;
+    }
+
     run(coreContext) {
         const suiteService = coreContext.getDefaultService('suite');
         suiteService.setCurrentRunningSuite(this);
@@ -352,17 +372,25 @@ SuiteService.Suite = class {
                     return Math.random().toFixed(1) > 0.5 ? -1 : 1;
                 });
             }
-             this.specs.forEach(spec => {
+            for (let spec in this.specs) {
+                let isBreakOnError = this.isRun(coreContext);
+                if (isBreakOnError) {
+                    break;
+                }
                 this.runHookFunc('beforeEach');
                 spec.run(coreContext);
                 this.runHookFunc('afterEach');
-            });
+            }
         }
         if (this.childSuites.length > 0) {
-            this.childSuites.forEach(childSuite => {
-                childSuite.run(coreContext);
-                suiteService.setCurrentRunningSuite(childSuite);
-            });
+            for (let suite in this.childSuites) {
+                let isBreakOnError = this.isRun(coreContext);
+                if (isBreakOnError) {
+                    break;
+                }
+                suite.run(coreContext);
+                suiteService.setCurrentRunningSuite(suite);
+            }
         }
         this.runHookFunc('afterAll');
         if (this.description !== '') {
@@ -386,6 +414,12 @@ SuiteService.Suite = class {
                 });
             }
             for (let i = 0; i < this.specs.length; i++) {
+                // 遇错即停模式,发现用例有问题，直接返回，不在执行后面的it
+                let isBreakOnError = this.isRun(coreContext);
+                if (isBreakOnError) {
+                    console.log("break index is," + i + "description is," + this.description);
+                    break;
+                }
                 await this.runAsyncHookFunc('beforeEach');
                 await this.specs[i].asyncRun(coreContext);
                 await this.runAsyncHookFunc('afterEach');
@@ -394,6 +428,12 @@ SuiteService.Suite = class {
 
         if (this.childSuites.length > 0) {
             for (let i = 0; i < this.childSuites.length; i++) {
+                // 遇错即停模式, 发现用例有问题，直接返回，不在执行后面的description
+                let isBreakOnError = this.isRun(coreContext);
+                if (isBreakOnError) {
+                    console.log("childSuites break description," + this.description);
+                    break;
+                }
                 await this.childSuites[i].asyncRun(coreContext);
             }
         }
@@ -486,6 +526,16 @@ class SpecService {
             if (typeof this.coreContext.getServices('dataDriver') !== 'undefined' && configService['dryRun'] !== 'true') {
                 let specStress = this.coreContext.getServices('dataDriver').dataDriver.getSpecStress(desc);
                 for (let i = 1; i < specStress; i++) {
+                    this.totalTest++;
+                    suiteService.getCurrentRunningSuite().pushSpec(spec);
+                }
+            }
+
+            // dryRun 状态下不统计压力测试重复数据
+            if (configService['dryRun'] !== 'true') {
+                let stress = configService.getStress(); // 命令配置压力测试
+                console.info('stress it is,' + stress);
+                for (let i = 1; i < stress; i++) {
                     this.totalTest++;
                     suiteService.getCurrentRunningSuite().pushSpec(spec);
                 }
@@ -685,7 +735,16 @@ class ExpectService {
 
     wrapMatchers(actualValue) {
         const _this = this;
-        const wrappedMatchers = {};
+        const wrappedMatchers = {
+            // 翻转标识
+            isNot: false,
+
+            // 翻转方法
+            not: function () {
+                this.isNot = true;
+                return this;
+            }
+        };
         const specService = _this.coreContext.getDefaultService('spec');
         const currentRunningSpec = specService.getCurrentRunningSpec();
         for (const matcherName in this.matchers) {
@@ -701,6 +760,9 @@ class ExpectService {
                         }
                         result.actualValue = actualValue;
                         result.checkFunc = matcherName;
+                        if (!result.pass) {
+                            currentRunningSpec.addExpectationResult(result);
+                        }
                     });
                 };
             } else {

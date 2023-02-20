@@ -23,6 +23,12 @@ import assertUndefined from './assertUndefined';
 import assertFalse from './assertFalse';
 import assertInstanceOf from './assertInstanceOf';
 import assertThrowError from './assertThrowError';
+import assertLargerOrEqual from './assertLargerOrEqual'
+import assertLessOrEqual from './assertLessOrEqual'
+import assertNaN from './assertNaN'
+import assertNegUnlimited from './assertNegUnlimited'
+import assertPosUnlimited from './assertPosUnlimited'
+import assertDeepEquals from './deepEquals/assertDeepEquals'
 import assertPromiseIsPending from './assertPromiseIsPending';
 import assertPromiseIsRejected from './assertPromiseIsRejected';
 import assertPromiseIsRejectedWith from './assertPromiseIsRejectedWith';
@@ -46,6 +52,12 @@ class ExpectExtend {
         this.matchers.assertFalse = assertFalse;
         this.matchers.assertInstanceOf = assertInstanceOf;
         this.matchers.assertThrowError = assertThrowError;
+        this.matchers.assertLargerOrEqual = assertLargerOrEqual;
+        this.matchers.assertLessOrEqual = assertLessOrEqual;
+        this.matchers.assertNaN = assertNaN;
+        this.matchers.assertNegUnlimited = assertNegUnlimited;
+        this.matchers.assertPosUnlimited = assertPosUnlimited;
+        this.matchers.assertDeepEquals = assertDeepEquals;
         this.matchers.assertPromiseIsPending = assertPromiseIsPending;
         this.matchers.assertPromiseIsRejected = assertPromiseIsRejected;
         this.matchers.assertPromiseIsRejectedWith = assertPromiseIsRejectedWith;
