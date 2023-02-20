@@ -32,8 +32,6 @@ class ConfigService {
         this.class = null;
         this.notClass = null;
         this.timeout = null;
-        // 遇错即停模式配置
-        this.breakOnError = false;
         // 压力测试配置
         this.stress = null;
     }
@@ -87,7 +85,7 @@ class ConfigService {
             }
         }
 
-        let paramKeys = ['dryRun', 'random', 'breakOnError'];
+        let paramKeys = ['dryRun', 'random'];
         for (const key of paramKeys) {
             if (paramKeys[key] !== undefined && paramKeys[key] !== 'true' && paramKeys[key] !== 'false') {
                 this.filterValid.push(`${key}:${paramKeys[key]}`);
@@ -247,10 +245,6 @@ class ConfigService {
         return this.random || false;
     }
 
-    isBreakOnError() {
-        return this.breakOnError !== 'true' ? false : true;
-    }
-
     setSupportAsync(value) {
         this.supportAsync = value;
     }
@@ -263,8 +257,8 @@ class ConfigService {
         const keySet = new Set([
             '-s class', '-s notClass', '-s suite', '-s itName',
             '-s level', '-s testType', '-s size', '-s timeout',
-            '-s dryRun', '-s random', '-s breakOnError', '-s stress', 'class', 'notClass', 'suite', 'itName',
-            'level', 'testType', 'size', 'timeout', 'dryRun', 'random', 'breakOnError', 'stress'
+            '-s dryRun', '-s random', '-s stress', 'class', 'notClass', 'suite', 'itName',
+            'level', 'testType', 'size', 'timeout', 'dryRun', 'random', 'stress'
         ]);
         let targetParams = {};
         for (const key in parameters) {
@@ -279,8 +273,8 @@ class ConfigService {
         const keySet = new Set([
             '-s class', '-s notClass', '-s suite', '-s itName',
             '-s level', '-s testType', '-s size', '-s timeout',
-            '-s dryRun', '-s random', '-s breakOnError', '-s stress', 'class', 'notClass', 'suite', 'itName',
-            'level', 'testType', 'size', 'timeout', 'dryRun', 'random', 'breakOnError', 'stress'
+            '-s dryRun', '-s random', '-s stress', 'class', 'notClass', 'suite', 'itName',
+            'level', 'testType', 'size', 'timeout', 'dryRun', 'random', 'stress'
         ]);
         let targetParams = '';
         for (const key in parameters) {
