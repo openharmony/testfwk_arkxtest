@@ -169,18 +169,13 @@ class SuiteService {
         this.currentRunningSuite = suite;
     }
 
-    traversalResults(suite, obj, breakOnError) {
+    traversalResults(suite, obj) {
         if (suite.childSuites.length === 0 && suite.specs.length === 0) {
             return obj;
         }
         if (suite.specs.length > 0) {
             for (const itItem of suite.specs) {
                 obj.total++;
-                if(breakOnError) { // breakOnError模式
-                    if(obj.error > 0 || obj.failure > 0) {
-                        continue;
-                    }
-                }
                 if (itItem.error) {
                     obj.error++;
                 } else if (itItem.result.failExpects.length > 0) {
@@ -201,16 +196,10 @@ class SuiteService {
     }
 
     getSummary() {
-        let suiteService = this.coreContext.getDefaultService('suite');
-        let rootSuite = suiteService.rootSuite;
-        const specService = this.coreContext.getDefaultService('spec');
-        const configService = this.coreContext.getDefaultService('config');
-        let breakOnError = configService.isBreakOnError();
-        let isError = specService.getStatus();
-        let isBreaKOnError =  breakOnError && isError;
+        let rootSuite = this.coreContext.getDefaultService('suite').rootSuite;
         let obj = {total: 0, failure: 0, error: 0, pass: 0, ignore: 0, duration: 0};
         for (const suiteItem of rootSuite.childSuites) {
-            this.traversalResults(suiteItem, obj, isBreaKOnError);
+            this.traversalResults(suiteItem, obj);
         }
         obj.ignore = obj.total - obj.pass - obj.failure - obj.error;
         return obj;
