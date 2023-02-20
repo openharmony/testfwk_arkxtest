@@ -735,16 +735,7 @@ class ExpectService {
 
     wrapMatchers(actualValue) {
         const _this = this;
-        const wrappedMatchers = {
-            // 翻转标识
-            isNot: false,
-
-            // 翻转方法
-            not: function () {
-                this.isNot = true;
-                return this;
-            }
-        };
+        const wrappedMatchers = {};
         const specService = _this.coreContext.getDefaultService('spec');
         const currentRunningSpec = specService.getCurrentRunningSpec();
         for (const matcherName in this.matchers) {
@@ -760,9 +751,6 @@ class ExpectService {
                         }
                         result.actualValue = actualValue;
                         result.checkFunc = matcherName;
-                        if (!result.pass) {
-                            currentRunningSpec.addExpectationResult(result);
-                        }
                     });
                 };
             } else {

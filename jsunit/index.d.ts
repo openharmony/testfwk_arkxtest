@@ -70,11 +70,6 @@ export interface Assert {
     assertNull(): void
     assertThrowError(expectValue: string): void
     assertUndefined(): void
-    assertNaN():void
-    assertNegUnlimited(): void
-    assertPosUnlimited(): void
-    not(): Assert;
-    assertDeepEquals(expectValue: any):void
     assertPromiseIsPending(): void
     assertPromiseIsRejected(): void
     assertPromiseIsRejectedWith(expectValue?: any): void
