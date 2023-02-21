@@ -14,7 +14,6 @@
  */
 
 import {ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter} from './Filter';
-const STRESS_RULE = /^[1-9]\d*$/;
 
 class ConfigService {
     constructor(attr) {
@@ -32,10 +31,6 @@ class ConfigService {
         this.class = null;
         this.notClass = null;
         this.timeout = null;
-        // 遇错即停模式配置
-        this.breakOnError = false;
-        // 压力测试配置
-        this.stress = null;
     }
 
     init(coreContext) {
@@ -45,13 +40,6 @@ class ConfigService {
     isNormalInteger(str) {
         const n = Math.floor(Number(str));
         return n !== Infinity && String(n) === String(str) && n >= 0;
-    }
-
-    getStress() {
-        if(this.stress === undefined || this.stress === '' || this.stress === null) {
-            return 1;
-        }
-        return !this.stress.match(STRESS_RULE) ? 1 : Number.parseInt(this.stress);
     }
 
     basicParamValidCheck(params) {
@@ -87,17 +75,10 @@ class ConfigService {
             }
         }
 
-        let paramKeys = ['dryRun', 'random', 'breakOnError'];
+        let paramKeys = ['dryRun', 'random'];
         for (const key of paramKeys) {
             if (paramKeys[key] !== undefined && paramKeys[key] !== 'true' && paramKeys[key] !== 'false') {
                 this.filterValid.push(`${key}:${paramKeys[key]}`);
-            }
-        }
-
-        // 压力测试参数验证,正整数
-        if(params.stress !== undefined && params.stress !== '' && params.stress !== null) {
-            if(!params.stress.match(STRESS_RULE)){
-                this.filterValid.push('stress:' + params.stress);
             }
         }
 
@@ -139,9 +120,7 @@ class ConfigService {
             this.size = params.size;
             this.timeout = params.timeout;
             this.dryRun = params.dryRun;
-            this.breakOnError = params.breakOnError
             this.random = params.random === 'true' ? true : false;
-            this.stress = params.stress
             this.filterParam = {
                 testType: {
                     'function': 1,
@@ -247,10 +226,6 @@ class ConfigService {
         return this.random || false;
     }
 
-    isBreakOnError() {
-        return this.breakOnError !== 'true' ? false : true;
-    }
-
     setSupportAsync(value) {
         this.supportAsync = value;
     }
@@ -263,8 +238,8 @@ class ConfigService {
         const keySet = new Set([
             '-s class', '-s notClass', '-s suite', '-s itName',
             '-s level', '-s testType', '-s size', '-s timeout',
-            '-s dryRun', '-s random', '-s breakOnError', '-s stress', 'class', 'notClass', 'suite', 'itName',
-            'level', 'testType', 'size', 'timeout', 'dryRun', 'random', 'breakOnError', 'stress'
+            '-s dryRun', '-s random', 'class', 'notClass', 'suite', 'itName',
+            'level', 'testType', 'size', 'timeout', 'dryRun', 'random'
         ]);
         let targetParams = {};
         for (const key in parameters) {
