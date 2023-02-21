@@ -72,7 +72,7 @@ class ConfigService {
         let testType = params.testType;
         if (testType !== undefined && testType !== '' && testType !== null) {
             let testTypeArray = ['function', 'performance', 'power', 'reliability', 'security',
-            'global', 'compatibility', 'user', 'standard', 'safety', 'resilience'];
+                'global', 'compatibility', 'user', 'standard', 'safety', 'resilience'];
             if (testTypeArray.indexOf(testType) === -1) {
                 this.filterValid.push('testType:' + testType);
             }
