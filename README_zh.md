@@ -965,39 +965,39 @@ export default function abilityTest() {
 
 ## Ui测试框架功能特性
 
-| No.  | 特性        | 功能说明                                                     |
-| ---- | ----------- | ------------------------------------------------------------ |
-| 1    | UiDriver    | Ui测试的入口，提供查找控件，检查控件存在性以及注入按键能力。 |
-| 2    | By          | 用于描述目标控件特征(文本、id、类型等)，`UiDriver`根据`By`描述的控件特征信息来查找控件。 |
-| 3    | UiComponent | UiDriver查找返回的控件对象，提供查询控件属性，滑动查找等触控和检视能力。 |
-| 4    | UiWindow    | UiDriver查找返回的窗口对象，提供获取窗口属性、操作窗口的能力。 |
+| No.  | 特性        | 功能说明                                            |
+| ---- |-----------|-------------------------------------------------|
+| 1    | Driver    | Ui测试的入口，提供查找控件，检查控件存在性以及注入按键能力。                 |
+| 2    | On        | 用于描述目标控件特征(文本、id、类型等)，`Driver`根据`On`描述的控件特征信息来查找控件。 |
+| 3    | Component | Driver查找返回的控件对象，提供查询控件属性，滑动查找等触控和检视能力。          |
+| 4    | UiWindow  | Driver查找返回的窗口对象，提供获取窗口属性、操作窗口的能力。               |
 
 **使用者在测试脚本通过如下方式引入使用：**
 
 ```typescript
-import {UiDriver,BY,UiComponent,Uiwindow,MatchPattern} from '@ohos.uitest'
+import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.uitest'
 ```
 
 > 须知
-> 1. `By`类提供的接口全部是同步接口，使用者可以使用`builder`模式链式调用其接口构造控件筛选条件。
-> 2. `UiDriver`和`UiComponent`类提供的接口全部是异步接口(`Promise`形式)，**需使用`await`语法**。
+> 1. `On`类提供的接口全部是同步接口，使用者可以使用`builder`模式链式调用其接口构造控件筛选条件。
+> 2. `Driver`和`Component`类提供的接口全部是异步接口(`Promise`形式)，**需使用`await`语法**。
 > 3. Ui测试用例均需使用**异步**语法编写用例，需遵循单元测试框架异步用例编写规范。
 
    
 
-在测试用例文件中import `By/UiDriver/UiComponent`类，然后调用API接口编写测试用例。
+在测试用例文件中import `On/Driver/Component`类，然后调用API接口编写测试用例。
 
 ```javascript
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '@ohos/hypium'
-import {BY, UiDriver, UiComponent, MatchPattern} from '@ohos.uitest'
+import {ON, Driver, Component, MatchPattern} from '@ohos.uitest'
 
 export default async function abilityTest() {
   describe('uiTestDemo', function() {
     it('uitest_demo0', 0, async function() {
-      // create UiDriver
-      let driver = await UiDriver.create()
+      // create Driver
+      let driver = await Driver.create()
       // find component by text
-      let button = await driver.findComponent(BY.text('hello').enabled(true))
+      let button = await driver.findComponent(ON.text('hello').enabled(true))
       // click component
       await button.click()
       // get and assert component text
@@ -1008,35 +1008,35 @@ export default async function abilityTest() {
 }
 ```
 
-### UiDriver使用说明
+### Driver使用说明
 
-`UiDriver`类作为UiTest测试框架的总入口，提供查找控件，注入按键，单击坐标，滑动控件，手势操作，截图等能力。
+`Driver`类作为UiTest测试框架的总入口，提供查找控件，注入按键，单击坐标，滑动控件，手势操作，截图等能力。
 
-| No.  | API                                                          | 功能描述                 |
-| ---- | ------------------------------------------------------------ | ------------------------ |
-| 1    | create():Promise<UiDriver>                                   | 静态方法，构造UiDriver。 |
-| 2    | findComponent(b:By):Promise<UiComponent>                     | 查找匹配控件。           |
-| 3    | pressBack():Promise<void>                                    | 单击BACK键。             |
-| 4    | click(x:number, y:number):Promise<void>                      | 基于坐标点的单击。       |
-| 5    | swipe(x1:number, y1:number, x2:number, y2:number):Promise<void> | 基于坐标点的滑动。       |
-| 6    | assertComponentExist(b:By):Promise<void>                     | 断言匹配的控件存在。     |
-| 7    | delayMs(t:number):Promise<void>                              | 延时。                   |
-| 8    | screenCap(s:path):Promise<void>                              | 截屏。                   |
-| 9    | findWindow(filter: WindowFilter): Promise<UiWindow>          | 查找匹配窗口。           |
+| No.  | API                                                             | 功能描述               |
+| ---- |-----------------------------------------------------------------| ---------------------- |
+| 1    | create():Promise<Driver>                                        | 静态方法，构造Driver。 |
+| 2    | findComponent(b:On):Promise<Component>                          | 查找匹配控件。         |
+| 3    | pressBack():Promise<void>                                       | 单击BACK键。           |
+| 4    | click(x:number, y:number):Promise<void>                         | 基于坐标点的单击。      |
+| 5    | swipe(x1:number, y1:number, x2:number, y2:number):Promise<void> | 基于坐标点的滑动。      |
+| 6    | assertComponentExist(b:On):Promise<void>                        | 断言匹配的控件存在。     |
+| 7    | delayMs(t:number):Promise<void>                                 | 延时。                 |
+| 8    | screenCap(s:path):Promise<void>                                 | 截屏。                 |
+| 9    | findWindow(filter: WindowFilter): Promise<UiWindow>             | 查找匹配窗口。         |
 
 其中assertComponentExist接口是断言API，用于断言当前界面存在目标控件；如果控件不存在，该API将抛出JS异常，使当前测试用例失败。
 
 ```javascript
-import {BY,UiDriver,UiComponent} from '@ohos.uitest'
+import {ON,Driver,Component} from '@ohos.uitest'
 
 export default async function abilityTest() {
   describe('UiTestDemo', function() {
     it('Uitest_demo0', 0, async function(done) {
       try{
-        // create UiDriver
-        let driver = await UiDriver.create()
+        // create Driver
+        let driver = await Driver.create()
         // assert text 'hello' exists on current Ui
-        await assertComponentExist(BY.text('hello'))
+        await assertComponentExist(ON.text('hello'))
       } finally {
         done()
       }
@@ -1045,118 +1045,123 @@ export default async function abilityTest() {
 }
 ```
 
-`UiDriver`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#uidriver)。
+`Driver`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#driver9)。
 
-### By使用说明
+### On使用说明
 
-Ui测试框架通过`By`类提供了丰富的控件特征描述API，用来匹配查找要操作或检视的目标控件。`By`提供的API能力具有以下特点：
+Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹配查找要操作或检视的目标控件。`On`提供的API能力具有以下特点：
 
 - 支持匹配单属性和匹配多属性组合，例如同时指定目标控件text和id。
 - 控件属性支持多种匹配模式(等于，包含，`STARTS_WITH`，`ENDS_WITH`)。
 - 支持相对定位控件，可通过`isBefore`和`isAfter`等API限定邻近控件特征进行辅助定位。
 
-| No.  | API                                | 功能描述                                         |
-| ---- | ---------------------------------- | ------------------------------------------------ |
-| 1    | id(i:number):By                    | 指定控件id。                                     |
-| 2    | text(t:string, p?:MatchPattern):By | 指定控件文本，可指定匹配模式。                   |
-| 3    | type(t:string)):By                 | 指定控件类型。                                   |
-| 4    | enabled(e:bool):By                 | 指定控件使能状态。                               |
-| 5    | clickable(c:bool):By               | 指定控件可单击状态。                             |
-| 6    | focused(f:bool):By                 | 指定控件获焦状态。                               |
-| 7    | scrollable(s:bool):By              | 指定控件可滑动状态。                             |
-| 8    | selected(s:bool):By                | 指定控件选中状态。                               |
-| 9    | isBefore(b:By):By                  | **相对定位**，限定目标控件位于指定特征控件之前。 |
-| 10   | isAfter(b:By):By                   | **相对定位**，限定目标控件位于指定特征控件之后。 |
+| No. | API                                | 功能描述                       |
+|-----|------------------------------------|----------------------------|
+| 1   | id(i:string):On                    | 指定控件id。                    |
+| 2   | text(t:string, p?:MatchPattern):On | 指定控件文本，可指定匹配模式。            |
+| 3   | type(t:string)):On                 | 指定控件类型。                    |
+| 4   | enabled(e:bool):On                 | 指定控件使能状态。                  |
+| 5   | clickable(c:bool):On               | 指定控件可单击状态。                 |
+| 6   | longClickable(l:bool):On           | 指定控件可长按状态。                 |
+| 7   | focused(f:bool):On                 | 指定控件获焦状态。                  |
+| 8   | scrollable(s:bool):On              | 指定控件可滑动状态。                 |
+| 9   | selected(s:bool):On                | 指定控件选中状态。                  |
+| 10  | checked(c:bool):On                 | 指定控件选择状态。                  |
+| 11  | checkable(c:bool):On               | 指定控件可选择状态。                 |
+| 12  | isBefore(b:On):On                  | **相对定位**，限定目标控件位于指定特征控件之前。 |
+| 13  | isAfter(b:On):On                   | **相对定位**，限定目标控件位于指定特征控件之后。 |
 
 其中，`text`属性支持{`MatchPattern.EQUALS`，`MatchPattern.CONTAINS`，`MatchPattern.STARTS_WITH`，`MatchPattern.ENDS_WITH`}四种匹配模式，缺省使用`MatchPattern.EQUALS`模式。
 
-`By`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#by)。
+`On`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#on9)。
 
 #### 控件绝对定位
 
 **示例代码1**：查找id是`Id_button`的控件。
 
 ```javascript
-let button = await driver.findComponent(BY.id(Id_button))
+let button = await driver.findComponent(ON.id(Id_button))
 ```
 
  **示例代码2**：查找id是`Id_button`并且状态是`enabled`的控件，适用于无法通过单一属性定位的场景。
 
 ```javascript
-let button = await driver.findComponent(BY.id(Id_button).enabled(true))
+let button = await driver.findComponent(ON.id(Id_button).enabled(true))
 ```
 
-通过`By.id(x).enabled(y)`来指定目标控件的多个属性。
+通过`On.id(x).enabled(y)`来指定目标控件的多个属性。
 
 **示例代码3**：查找文本中包含`hello`的控件，适用于不能完全确定控件属性取值的场景。
 
 ```javascript
-let txt = await driver.findComponent(BY.text("hello", MatchPattern.CONTAINS))
+let txt = await driver.findComponent(ON.text("hello", MatchPattern.CONTAINS))
 ```
 
-通过向`By.text()`方法传入第二个参数`MatchPattern.CONTAINS`来指定文本匹配规则；默认规则是`MatchPattern.EQUALS`，即目标控件text属性必须严格等于给定值。
+通过向`On.text()`方法传入第二个参数`MatchPattern.CONTAINS`来指定文本匹配规则；默认规则是`MatchPattern.EQUALS`，即目标控件text属性必须严格等于给定值。
 
 ####  控件相对定位
 
 **示例代码1**：查找位于文本控件`Item3_3`后面的，id是`ResourceTable.Id_switch`的Switch控件。
 
 ```javascript
-let switch = await driver.findComponent(BY.id(Id_switch).isAfter(BY.text("Item3_3")))
+let switch = await driver.findComponent(ON.id(Id_switch).isAfter(ON.text("Item3_3")))
 ```
 
-通过`By.isAfter`方法，指定位于目标控件前面的特征控件属性，通过该特征控件进行相对定位。一般地，特征控件是某个具有全局唯一特征的控件(例如具有唯一的id或者唯一的text)。
+通过`On.isAfter`方法，指定位于目标控件前面的特征控件属性，通过该特征控件进行相对定位。一般地，特征控件是某个具有全局唯一特征的控件(例如具有唯一的id或者唯一的text)。
 
-类似的，可以使用`By.isBefore`控件指定位于目标控件后面的特征控件属性，实现相对定位。
+类似的，可以使用`On.isBefore`控件指定位于目标控件后面的特征控件属性，实现相对定位。
 
-### UiComponent使用说明
+### Component使用说明
 
-`UiComponent`类代表了Ui界面上的一个控件，一般是通过`UiDriver.findComponent(by)`方法查找到的。通过该类的实例，用户可以获取控件属性，单击控件，滑动查找，注入文本等操作。
+`Component`类代表了Ui界面上的一个控件，一般是通过`Driver.findComponent(on)`方法查找到的。通过该类的实例，用户可以获取控件属性，单击控件，滑动查找，注入文本等操作。
 
-`UiComponent`包含的常用API：
+`Component`包含的常用API：
 
-| No.  | API                               | 功能描述                                       |
-| ---- | --------------------------------- | ---------------------------------------------- |
-| 1    | click():Promise<void>             | 单击该控件。                                   |
-| 2    | inputText(t:string):Promise<void> | 向控件中输入文本(适用于文本框控件)。           |
-| 3    | scrollSearch(s:By):Promise<bool>  | 在该控件上滑动查找目标控件(适用于List等控件)。 |
-| 4    | getText():Promise<string>         | 获取控件text。                                 |
-| 5    | getId():Promise<number>           | 获取控件id。                                   |
-| 6    | getType():Promise<string>         | 获取控件类型。                                 |
-| 7    | isEnabled():Promise<bool>         | 获取控件使能状态。                             |
+| No. | API                                | 功能描述                       |
+|-----|------------------------------------|----------------------------|
+| 1   | click():Promise<void>              | 单击该控件。                     |
+| 2   | inputText(t:string):Promise<void>  | 向控件中输入文本(适用于文本框控件)。        |
+| 3   | scrollSearch(s:On):Promise<Component>   | 在该控件上滑动查找目标控件(适用于List等控件)。 |
+| 4   | scrollToTop(s:number):Promise<void>    | 滑动到该控件顶部(适用于List等控件)。      |
+| 5   | scrollTobottom(s:number):Promise<void> | 滑动到该控件底部(适用于List等控件)。      |
+| 6   | getText():Promise<string>          | 获取控件text。                  |
+| 7   | getId():Promise<number>            | 获取控件id。                    |
+| 8   | getType():Promise<string>          | 获取控件类型。                    |
+| 9   | isEnabled():Promise<bool>          | 获取控件使能状态。                  |
 
-`UiComponent`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#uicomponent)。
+`Component`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#component9)。
 
 **示例代码1**：单击控件。
 
 ```javascript
-let button = await driver.findComponent(BY.id(Id_button))
+let button = await driver.findComponent(ON.id(Id_button))
 await button.click()
 ```
 
 **示例代码2**：通过get接口获取控件属性后，可以使用单元测试框架提供的assert*接口做断言检查。
 
 ```javascript
-let component = await driver.findComponent(BY.id(Id_title))
+let component = await driver.findComponent(ON.id(Id_title))
 expect(component !== null).assertTrue()
 ```
 
 **示例代码3**：在List控件中滑动查找text是`Item3_3`的子控件。
 
 ```javascript
-let list = await driver.findComponent(BY.id(Id_list))
-let found = await list.scrollSearch(BY.text("Item3_3"))
+let list = await driver.findComponent(ON.id(Id_list))
+let found = await list.scrollSearch(ON.text("Item3_3"))
 expect(found).assertTrue()
 ```
 
 **示例代码4**：向输入框控件中输入文本。
 
 ```javascript
-let editText = await driver.findComponent(BY.type('InputText'))
+let editText = await driver.findComponent(ON.type('InputText'))
 await editText.inputText("user_name")
 ```
 ### UiWindow使用说明
 
-`UiWindow`类代表了Ui界面上的一个窗口，一般是通过`UiDriver.findWindow(by)`方法查找到的。通过该类的实例，用户可以获取窗口属性，并进行窗口拖动、调整窗口大小等操作。
+`UiWindow`类代表了Ui界面上的一个窗口，一般是通过`Driver.findWindow(on)`方法查找到的。通过该类的实例，用户可以获取窗口属性，并进行窗口拖动、调整窗口大小等操作。
 
 `UiWindow`包含的常用API：
 
@@ -1170,7 +1175,7 @@ await editText.inputText("user_name")
 | 6    | split(): Promise<bool>                                       | 将窗口模式切换为分屏模式(适用于支持分屏的窗口)。   |
 | 7    | close(): Promise<bool>                                       | 关闭当前窗口。                                     |
 
-`UiWindow`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#uiwindow9)。
+`UiWindow`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#uiwindow9)。
 
 **示例代码1**：获取窗口属性。
 
@@ -1199,7 +1204,7 @@ await window.close()
   UI测试框架使能需要执行如下命令。
 
 >```shell
-> hdc_std shell param set persist.ace.testmode.enabled 1
+> hdc shell param set persist.ace.testmode.enabled 1
 >```
 ### UI测试框架自构建方式
 
@@ -1215,11 +1220,11 @@ await window.close()
 #### 推送位置
 
 ```shell
-hdc_std target mount
-hdc_std shell mount -o rw,remount /
-hdc_std file send uitest /system/bin/uitest
-hdc_std file send libuitest.z.so /system/lib/module/libuitest.z.so
-hdc_std shell chmod +x /system/bin/uitest
+hdc target mount
+hdc shell mount -o rw,remount /
+hdc file send uitest /system/bin/uitest
+hdc file send libuitest.z.so /system/lib/module/libuitest.z.so
+hdc shell chmod +x /system/bin/uitest
 ```
 
 ### 版本信息
