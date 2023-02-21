@@ -996,7 +996,7 @@ export default async function abilityTest() {
     it('uitest_demo0', 0, async function() {
       // create Driver
       let driver = await Driver.create()
-      // find component on text
+      // find component by text
       let button = await driver.findComponent(ON.text('hello').enabled(true))
       // click component
       await button.click()
@@ -1117,17 +1117,17 @@ let switch = await driver.findComponent(ON.id(Id_switch).isAfter(ON.text("Item3_
 
 `Component`包含的常用API：
 
-| No.  | API                                | 功能描述                       |
-| ---- |------------------------------------|----------------------------|
-| 1    | click():Promise<void>              | 单击该控件。                     |
-| 2    | inputText(t:string):Promise<void>  | 向控件中输入文本(适用于文本框控件)。        |
-| 3    | scrollSearch(s:On):Promise<Component>   | 在该控件上滑动查找目标控件(适用于List等控件)。 |
-| 3    | scrollToTop(s:number):Promise<bool>    | 滑动到该控件顶部(适用于List等控件)。      |
-| 3    | scrollTobottom(s:number):Promise<bool> | 滑动到该控件底部(适用于List等控件)。      |
-| 4    | getText():Promise<string>          | 获取控件text。                  |
-| 5    | getId():Promise<number>            | 获取控件id。                    |
-| 6    | getType():Promise<string>          | 获取控件类型。                    |
-| 7    | isEnabled():Promise<bool>          | 获取控件使能状态。                  |
+| No. | API                                | 功能描述                       |
+|-----|------------------------------------|----------------------------|
+| 1   | click():Promise<void>              | 单击该控件。                     |
+| 2   | inputText(t:string):Promise<void>  | 向控件中输入文本(适用于文本框控件)。        |
+| 3   | scrollSearch(s:On):Promise<Component>   | 在该控件上滑动查找目标控件(适用于List等控件)。 |
+| 4   | scrollToTop(s:number):Promise<void>    | 滑动到该控件顶部(适用于List等控件)。      |
+| 5   | scrollTobottom(s:number):Promise<void> | 滑动到该控件底部(适用于List等控件)。      |
+| 6   | getText():Promise<string>          | 获取控件text。                  |
+| 7   | getId():Promise<number>            | 获取控件id。                    |
+| 8   | getType():Promise<string>          | 获取控件类型。                    |
+| 9   | isEnabled():Promise<bool>          | 获取控件使能状态。                  |
 
 `Component`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#component9)。
 
