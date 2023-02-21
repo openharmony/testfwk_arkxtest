@@ -371,9 +371,9 @@ SuiteService.Suite = class {
             for (let i = 0; i < this.specs.length; i++) {
                 // 遇错即停模式,发现用例有问题，直接返回，不在执行后面的it
                 let isBreakOnError = this.isRun(coreContext);
-                if (isBreakOnError) {
-                    console.log("break index is," + i + "description is," + this.description);
-                    break;
+                 if (isBreakOnError) {
+                     console.log("break index is," + i + "description is," + this.description);
+                     break;
                 }
                 await this.runAsyncHookFunc('beforeEach');
                 await this.specs[i].asyncRun(coreContext);
@@ -385,9 +385,9 @@ SuiteService.Suite = class {
             for (let i = 0; i < this.childSuites.length; i++) {
                 // 遇错即停模式, 发现用例有问题，直接返回，不在执行后面的description
                 let isBreakOnError = this.isRun(coreContext);
-                if (isBreakOnError) {
-                    console.log("childSuites break description," + this.description);
-                    break;
+                 if (isBreakOnError) {
+                     console.log("childSuites break description," + this.description);
+                     break;
                 }
                 suiteService.setCurrentRunningSuite(this.childSuites[i]);
                 await this.childSuites[i].asyncRun(coreContext);
@@ -750,7 +750,7 @@ class ReportService {
                 this.formatPrint('fail', spec.description + ' ; consuming ' + spec.duration + 'ms');
                 spec.result.failExpects.forEach(failExpect => {
                     msg = failExpect.message || ('expect ' + failExpect.actualValue + ' '
-                    + failExpect.checkFunc + ' ' + (failExpect.expectValue));
+                        + failExpect.checkFunc + ' ' + (failExpect.expectValue));
                     this.formatPrint('failDetail', msg);
                 });
             } else {
