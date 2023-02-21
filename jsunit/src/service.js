@@ -385,9 +385,9 @@ SuiteService.Suite = class {
             for (let i = 0; i < this.childSuites.length; i++) {
                 // 遇错即停模式, 发现用例有问题，直接返回，不在执行后面的description
                 let isBreakOnError = this.isRun(coreContext);
-                 if (isBreakOnError) {
-                     console.log("childSuites break description," + this.description);
-                     break;
+                if (isBreakOnError) {
+                    console.log("childSuites break description," + this.description);
+                    break;
                 }
                 suiteService.setCurrentRunningSuite(this.childSuites[i]);
                 await this.childSuites[i].asyncRun(coreContext);
