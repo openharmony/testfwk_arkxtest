@@ -1045,7 +1045,7 @@ export default async function abilityTest() {
 }
 ```
 
-`Driver`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#uidriver)。
+`Driver`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#uidriver)。
 
 ### On使用说明
 
@@ -1073,7 +1073,7 @@ Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹�
 
 其中，`text`属性支持{`MatchPattern.EQUALS`，`MatchPattern.CONTAINS`，`MatchPattern.STARTS_WITH`，`MatchPattern.ENDS_WITH`}四种匹配模式，缺省使用`MatchPattern.EQUALS`模式。
 
-`On`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#by)。
+`On`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#on9)。
 
 #### 控件绝对定位
 
@@ -1113,7 +1113,7 @@ let switch = await driver.findComponent(ON.id(Id_switch).isAfter(ON.text("Item3_
 
 ### Component使用说明
 
-`Component`类代表了Ui界面上的一个控件，一般是通过`Driver.findComponent(by)`方法查找到的。通过该类的实例，用户可以获取控件属性，单击控件，滑动查找，注入文本等操作。
+`Component`类代表了Ui界面上的一个控件，一般是通过`Driver.findComponent(on)`方法查找到的。通过该类的实例，用户可以获取控件属性，单击控件，滑动查找，注入文本等操作。
 
 `Component`包含的常用API：
 
@@ -1129,7 +1129,7 @@ let switch = await driver.findComponent(ON.id(Id_switch).isAfter(ON.text("Item3_
 | 6    | getType():Promise<string>          | 获取控件类型。                    |
 | 7    | isEnabled():Promise<bool>          | 获取控件使能状态。                  |
 
-`Component`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#uicomponent)。
+`Component`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#component9)。
 
 **示例代码1**：单击控件。
 
@@ -1161,7 +1161,7 @@ await editText.inputText("user_name")
 ```
 ### UiWindow使用说明
 
-`UiWindow`类代表了Ui界面上的一个窗口，一般是通过`Driver.findWindow(by)`方法查找到的。通过该类的实例，用户可以获取窗口属性，并进行窗口拖动、调整窗口大小等操作。
+`UiWindow`类代表了Ui界面上的一个窗口，一般是通过`Driver.findWindow(on)`方法查找到的。通过该类的实例，用户可以获取窗口属性，并进行窗口拖动、调整窗口大小等操作。
 
 `UiWindow`包含的常用API：
 
@@ -1175,7 +1175,7 @@ await editText.inputText("user_name")
 | 6    | split(): Promise<bool>                                       | 将窗口模式切换为分屏模式(适用于支持分屏的窗口)。   |
 | 7    | close(): Promise<bool>                                       | 关闭当前窗口。                                     |
 
-`UiWindow`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#uiwindow9)。
+`UiWindow`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-uitest.md#uiwindow9)。
 
 **示例代码1**：获取窗口属性。
 
