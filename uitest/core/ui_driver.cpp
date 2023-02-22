@@ -22,16 +22,29 @@ namespace OHOS::uitest {
 
     static constexpr string_view DUMMY_ATTRNAME_SELECTION = "selectionDesc";
 
+    std::unique_ptr<UiController> UiDriver::uiController_;
+
+    void UiDriver::RegisterController(std::unique_ptr<UiController> controller)
+    {
+        uiController_ = move(controller);
+    }
+
+    bool UiDriver::CheckStatus(bool isConnected, ApiCallErr &error)
+    {
+        DCHECK(uiController_);
+        if (isConnected && !uiController_->IsWorkable()) {
+            error = ApiCallErr(ERR_INITIALIZE_FAILED, "Not connect to AAMS");
+            return false;
+        }
+        return true;
+    }
+
     void UiDriver::UpdateUi(bool updateUiTree, ApiCallErr &error)
     {
-        UiController::InstallFromProvider();
-        uiController_ = UiController::GetController();
-        if (uiController_ == nullptr) {
-            LOG_E("%{public}s", "No available UiController currently");
-            error = ApiCallErr(ERR_INTERNAL, "No available UiController currently");
+        if (!updateUiTree) {
             return;
         }
-        if (!updateUiTree) {
+        if (!CheckStatus(true, error)) {
             return;
         }
         windows_.clear();
@@ -52,19 +65,6 @@ namespace OHOS::uitest {
             trees.push_back(move(tree));
         }
         WidgetTree::MergeTrees(trees, *widgetTree_);
-    }
-
-    /** Get current UI tree.*/
-    const WidgetTree *UiDriver::GetWidgetTree() const
-    {
-        return widgetTree_ == nullptr? nullptr : widgetTree_.get();
-    }
-
-    /** Get current UI controller.*/
-    const UiController *UiDriver::GetUiController(ApiCallErr &error)
-    {
-        this->UpdateUi(false, error);
-        return uiController_;
     }
 
     void UiDriver::DumpUiHierarchy(nlohmann::json &out, ApiCallErr &error)
@@ -125,8 +125,7 @@ namespace OHOS::uitest {
 
     void UiDriver::TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error)
     {
-        UpdateUi(false, error);
-        if (error.code_ != NO_ERROR) {
+        if (!CheckStatus(false, error)) {
             return;
         }
         vector<KeyEvent> events;
@@ -188,8 +187,7 @@ namespace OHOS::uitest {
 
     void UiDriver::PerformTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err)
     {
-        UpdateUi(false, err);
-        if (err.code_ != NO_ERROR) {
+        if (!CheckStatus(false, err)) {
             return;
         }
         PointerMatrix events;
@@ -203,8 +201,7 @@ namespace OHOS::uitest {
 
     void UiDriver::TakeScreenCap(string_view savePath, ApiCallErr &err)
     {
-        UpdateUi(false, err);
-        if (err.code_ != NO_ERROR) {
+        if (!CheckConnected(err)) {
             return;
         }
         stringstream errorRecv;
@@ -255,5 +252,86 @@ namespace OHOS::uitest {
         err = ApiCallErr(ERR_COMPONENT_LOST, msg.str());
         LOG_W("%{public}s", err.message_.c_str());
         return nullptr;
+    }
+
+    void UiDriver::SetDisplayRotation(DisplayRotation rotation, ApiCallErr &error)
+    {
+        if (!CheckStatus(false, error)) {
+            return;
+        }
+        uiController_->SetDisplayRotation(rotation);
+    }
+
+    DisplayRotation UiDriver::GetDisplayRotation(ApiCallErr &error)
+    {
+        if (!CheckStatus(false, error)) {
+            return ROTATION_0;
+        }
+        return uiController_->GetDisplayRotation();
+    }
+
+    void UiDriver::SetDisplayRotationEnabled(bool enabled, ApiCallErr &error)
+    {
+        if (!CheckStatus(false, error)) {
+            return;
+        }
+        uiController_->SetDisplayRotationEnabled(enabled);
+    }
+
+    bool UiDriver::WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec, ApiCallErr &error)
+    {
+        if (!CheckStatus(false, error)) {
+            return false;
+        }
+        return uiController_->WaitForUiSteady(idleThresholdMs, timeoutSec);
+    }
+
+    void UiDriver::WakeUpDisplay(ApiCallErr &error)
+    {
+        if (!CheckStatus(false, error)) {
+            return;
+        }
+        if (uiController_->IsScreenOn()) {
+            return;
+        } else {
+            LOG_I("screen is off, turn it on");
+            UiOpArgs uiOpArgs;
+            this->TriggerKey(Power(), uiOpArgs, error);
+        }
+    }
+
+    Point UiDriver::GetDisplaySize(ApiCallErr &error)
+    {
+        if (!CheckStatus(false, error)) {
+            return Point(0, 0);
+        }
+        return uiController_->GetDisplaySize();
+    }
+
+    Point UiDriver::GetDisplayDensity(ApiCallErr &error)
+    {
+        if (!CheckStatus(false, error)) {
+            return Point(0, 0);
+        }
+        return uiController_->GetDisplayDensity();
+    }
+
+    bool UiDriver::GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode, ApiCallErr &error)
+    {
+        if (!CheckStatus(false, error)) {
+            return false;
+        }
+        return uiController_->GetCharKeyCode(ch, code, ctrlCode);
+    }
+
+    void UiDriver::DfsTraverseTree(WidgetVisitor &visitor, const Widget *widget)
+    {
+        if (widgetTree_ == nullptr) {
+            return;
+        }
+        if (widget == nullptr) {
+            widgetTree_->DfsTraverse(visitor);
+        }
+        widgetTree_->DfsTraverseDescendants(visitor, *widget);
     }
 } // namespace OHOS::uitest

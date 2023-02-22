@@ -23,6 +23,26 @@
 #include "json.hpp"
 
 namespace OHOS::uitest {
+    using namespace std;
+
+    enum ResizeDirection : uint8_t {
+        LEFT,
+        RIGHT,
+        D_UP,
+        D_DOWN,
+        LEFT_UP,
+        LEFT_DOWN,
+        RIGHT_UP,
+        RIGHT_DOWN
+    };
+
+    enum DisplayRotation : uint32_t {
+        ROTATION_0,
+        ROTATION_90,
+        ROTATION_180,
+        ROTATION_270
+    };
+
     /**Enumerates the supported UiComponent attributes.*/
     enum UiAttr : uint8_t {
         ACCESSIBILITY_ID,
@@ -44,6 +64,7 @@ namespace OHOS::uitest {
         HASHCODE,
         BOUNDSCENTER,
         HOST_WINDOW_ID,
+        VISIBLE,
     };
 
     /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
@@ -66,6 +87,7 @@ namespace OHOS::uitest {
         "hashcode",      // HASHCODE
         "boundsCenter",  // BOUNDSCENTER
         "hostWindowId",  // HOST_WINDOW_ID
+        "visible",       // VISIBLE
     };
 
     struct Point {
@@ -201,6 +223,11 @@ namespace OHOS::uitest {
 
         std::map<std::string, std::string> GetAttrMap() const;
 
+        bool IsVisible() const
+        {
+            return GetAttr(ATTR_NAMES[UiAttr::VISIBLE], "") == "true";
+        }
+
     private:
         const std::string hierarchy_;
         std::string hostTreeId_;
@@ -301,6 +328,19 @@ namespace OHOS::uitest {
 
         /**Generated an unique tree-identifier.*/
         static std::string GenerateTreeId();
+    };
+    
+    class TreeSnapshotTaker : public WidgetVisitor {
+    public:
+        explicit TreeSnapshotTaker(vector<string> &displayNodes, vector<string> &allNodes)
+            : displayNodes_(displayNodes), allNodes_(allNodes) {};
+
+        ~TreeSnapshotTaker() {}
+
+        void Visit(const Widget &widget) override;
+    private:
+        vector<string> &displayNodes_;
+        vector<string> &allNodes_;
     };
 
     /**Enumerates the supported UiComponent attributes.*/

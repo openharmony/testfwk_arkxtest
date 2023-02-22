@@ -32,41 +32,6 @@ namespace OHOS::uitest {
         const vector<KeyEvent> &events_;
     };
 
-    class TreeSnapshotTaker : public WidgetVisitor {
-    public:
-        explicit TreeSnapshotTaker(string &receiver, vector<string> &leafNodes) : receiver_(receiver),
-            leafNodes_(leafNodes) {};
-
-        ~TreeSnapshotTaker() {}
-
-        void Visit(const Widget &widget) override
-        {
-            auto type = widget.GetAttr(ATTR_NAMES[UiAttr::TYPE], "") + "/";
-            auto value =  widget.GetAttr(ATTR_NAMES[UiAttr::TEXT], "") + "/";
-            auto hashcode =  widget.GetAttr(ATTR_NAMES[UiAttr::HASHCODE], "") + ";";
-            receiver_ = receiver_ + type + value + hashcode;
-            if (value != "/") {
-                leafNodes_.push_back(type + value + hashcode);
-            }
-        }
-
-    private:
-        string &receiver_;
-        vector<string> &leafNodes_;
-    };
-
-    static void TakeScopeUiSnapshot(const UiDriver &driver, const Widget &root, string &snapshot,
-        vector<string> &leafNodes)
-    {
-        TreeSnapshotTaker snapshotTaker(snapshot, leafNodes);
-        auto tree = driver.GetWidgetTree();
-        if (tree != nullptr) {
-            tree->DfsTraverseDescendants(snapshotTaker, root);
-        } else {
-            LOG_W("WidgetTree is a nullptr currently");
-        }
-    }
-
     WidgetOperator::WidgetOperator(UiDriver &driver, const Widget &widget, const UiOpArgs &options)
         : driver_(driver), widget_(widget), options_(options)
     {
@@ -86,28 +51,32 @@ namespace OHOS::uitest {
 
     void WidgetOperator::ScrollToEnd(bool toTop, ApiCallErr &error) const
     {
-        string prevSnapshot = "";
-        string targetSnapshot = "";
+        auto displaySize = driver_.GetDisplaySize(error);
         while (true) {
             auto scrollWidget = driver_.RetrieveWidget(widget_, error);
             if (scrollWidget == nullptr || error.code_ != NO_ERROR) {
                 return;
             }
-            string snapshot;
-            vector<string> leafNodes;
-            TakeScopeUiSnapshot(driver_, *scrollWidget, snapshot, leafNodes);
-            if ((prevSnapshot == snapshot) || (snapshot.find(targetSnapshot) != string::npos && targetSnapshot != "")) {
+            vector<string> visibleNodes;
+            vector<string> allNodes;
+            TreeSnapshotTaker snapshotTaker(visibleNodes, allNodes);
+            driver_.DfsTraverseTree(snapshotTaker, scrollWidget);
+            if (visibleNodes.empty() && allNodes.empty()) {
                 return;
             }
-            prevSnapshot = snapshot;
-            if (!leafNodes.empty()) {
-                targetSnapshot = (toTop ? leafNodes.front() : leafNodes.back());
-            } else {
-                targetSnapshot = "";
+            auto mark1 = toTop ? visibleNodes.front() : visibleNodes.back();
+            auto mark2 = toTop ? allNodes.front() : allNodes.back();
+            if (mark1 == mark2) {
+                return;
             }
             auto bounds = scrollWidget->GetBounds();
             if (options_.scrollWidgetDeadZone_ > 0) {
                 // scroll widget from its deadZone maybe unresponsive
+                if (displaySize.py_ - bounds.bottom_ <= options_.scrollWidgetDeadZone_ ||
+                    bounds.top_ <= options_.scrollWidgetDeadZone_) {
+                        bounds.top_ += options_.scrollWidgetDeadZone_;
+                        bounds.bottom_ -= options_.scrollWidgetDeadZone_;
+                    }
                 bounds.top_ += options_.scrollWidgetDeadZone_;
                 bounds.bottom_ -= options_.scrollWidgetDeadZone_;
             }
@@ -183,7 +152,7 @@ namespace OHOS::uitest {
             for (auto ch : chars) {
                 int32_t code = KEYCODE_NONE;
                 int32_t ctrlCode = KEYCODE_NONE;
-                if (!driver.GetUiController(error)->GetCharKeyCode(ch, code, ctrlCode)) {
+                if (!driver.GetCharKeyCode(ch, code, ctrlCode, error)) {
                     return false;
                 }
                 keyCodes.emplace_back(make_pair(code, ctrlCode));
@@ -246,46 +215,49 @@ namespace OHOS::uitest {
     unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const
     {
         bool scrollingUp = true;
-        string prevSnapshot = "";
-        string targetSnapshot = "";
-        vector<reference_wrapper<const Widget>> receiver;
+        vector<unique_ptr<Widget>> receiver;
+        auto displaySize = driver_.GetDisplaySize(error);
         while (true) {
             auto scrollWidget = driver_.RetrieveWidget(widget_, error);
             if (scrollWidget == nullptr || error.code_ != NO_ERROR) {
                 return nullptr;
             }
-            selector.Select(*(driver_.GetWidgetTree()), receiver);
+            driver_.FindWidgets(selector, receiver, error, false);
             if (!receiver.empty()) {
-                auto& first = receiver.front().get();
-                auto clone = first.Clone("NONE", first.GetHierarchy());
+                auto first = receiver.begin();
+                auto clone = (*first)->Clone("NONE", (*first)->GetHierarchy());
                 // save the selection desc as dummy attribute
                 clone->SetAttr("selectionDesc", selector.Describe());
                 return clone;
             }
-            string snapshot;
-            vector<string> leafNodes;
-            TakeScopeUiSnapshot(driver_, *scrollWidget, snapshot, leafNodes);
-            if ((snapshot == prevSnapshot) || (snapshot.find(targetSnapshot) != string::npos && targetSnapshot != "")) {
+            vector<string> visibleNodes;
+            vector<string> allNodes;
+            TreeSnapshotTaker snapshotTaker(visibleNodes, allNodes);
+            driver_.DfsTraverseTree(snapshotTaker, scrollWidget);
+            if (visibleNodes.empty() && allNodes.empty()) {
+                return nullptr;
+            }
+            auto mark1 = scrollingUp ? visibleNodes.front() : visibleNodes.back();
+            auto mark2 = scrollingUp ? allNodes.front() : allNodes.back();
+            if (mark1 == mark2) {
                 // scrolling down to bottom, search completed with failure
                 if (!scrollingUp) {
-                    auto msg = string("Scroll search widget failed: ") + selector.Describe();
-                    LOG_W("%{public}s", msg.c_str());
+                    LOG_W("Scroll search widget failed: %{public}s", selector.Describe().data());
                     return nullptr;
                 } else {
                     // scrolling down to top, change direction
                     scrollingUp = false;
                 }
             }
-            prevSnapshot = snapshot;
-            if (!leafNodes.empty()) {
-                targetSnapshot = (scrollingUp ? leafNodes.front() : leafNodes.back());
-            } else {
-                targetSnapshot = "";
-            }
             // execute scrolling on the scroll_widget without update UI
             auto bounds = scrollWidget->GetBounds();
             if (options_.scrollWidgetDeadZone_ > 0) {
                 // scroll widget from its deadZone maybe unresponsive
+                if (displaySize.py_ - bounds.bottom_ <= options_.scrollWidgetDeadZone_ ||
+                    bounds.top_ <= options_.scrollWidgetDeadZone_) {
+                        bounds.top_ += options_.scrollWidgetDeadZone_;
+                        bounds.bottom_ -= options_.scrollWidgetDeadZone_;
+                    }
                 bounds.top_ += options_.scrollWidgetDeadZone_;
                 bounds.bottom_ -= options_.scrollWidgetDeadZone_;
             }

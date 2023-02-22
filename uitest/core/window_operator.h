@@ -19,17 +19,6 @@
 #include "ui_driver.h"
 
 namespace OHOS::uitest {
-    enum ResizeDirection : uint8_t {
-        LEFT,
-        RIGHT,
-        D_UP,
-        D_DOWN,
-        LEFT_UP,
-        LEFT_DOWN,
-        RIGHT_UP,
-        RIGHT_DOWN
-    };
-
     class WindowOperator {
     public:
        WindowOperator(UiDriver &driver, const Window &window, UiOpArgs &options);

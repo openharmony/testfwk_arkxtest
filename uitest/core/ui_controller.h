@@ -26,24 +26,9 @@
 #include "ui_action.h"
 
 namespace OHOS::uitest {
-    enum Priority : uint8_t {
-        HIGH = 3, MEDIUM = 2, LOW = 1
-    };
-
-    enum DisplayRotation : uint32_t {
-        ROTATION_0,
-        ROTATION_90,
-        ROTATION_180,
-        ROTATION_270
-    };
-
-    class UiController;
-    // Prototype of function that provides UiControllers, used to install controllers on demand.
-    using UiControllerProvider = std::function<void(std::list<std::unique_ptr<UiController>> &)>;
-
     class UiController {
     public:
-        explicit UiController(std::string_view name);
+        UiController() {};
 
         virtual ~UiController() = default;
 
@@ -98,39 +83,6 @@ namespace OHOS::uitest {
          * Tells if this controller is effective for current UI.
          * */
         virtual bool IsWorkable() const = 0;
-
-        std::string GetName() const
-        {
-            return name_;
-        }
-
-        void SetPriority(Priority val)
-        {
-            this->priority_ = val;
-        }
-
-        static void RegisterControllerProvider(UiControllerProvider func);
-
-        static void RegisterController(std::unique_ptr<UiController> controller, Priority priority);
-
-        static void RemoveController(std::string_view name);
-
-        static void RemoveAllControllers();
-
-        /**Install UiControllers with registered controllerProvider.*/
-        static void InstallFromProvider();
-
-        /**The the currently active UiController, returns null if none is available.*/
-        static UiController *GetController();
-
-    private:
-        const std::string name_;
-        Priority priority_ = Priority::MEDIUM;
-        static std::mutex controllerAccessMutex_;
-        static std::list<std::unique_ptr<UiController>> controllers_;
-        static UiControllerProvider controllerProvider_;
-
-        static bool Comparator(const std::unique_ptr<UiController> &c1, const std::unique_ptr<UiController> &c2);
     };
 }
 

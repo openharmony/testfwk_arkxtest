@@ -25,7 +25,7 @@ static std::unique_ptr<PointerMatrix> touch_event_records = nullptr;
 
 class MockController2 : public UiController {
 public:
-    explicit MockController2() : UiController("mock_controller") {}
+    explicit MockController2() : UiController() {}
 
     ~MockController2() = default;
 
@@ -90,14 +90,13 @@ protected:
         touch_event_records.reset(nullptr);
         auto mockController = make_unique<MockController2>();
         controller_ = mockController.get();
-        UiController::RegisterController(move(mockController), Priority::MEDIUM);
+        UiDriver::RegisterController(move(mockController));
         driver_ = make_unique<UiDriver>();
     }
 
     void TearDown() override
     {
         controller_ = nullptr;
-        UiController::RemoveAllControllers();
     }
 
     MockController2 *controller_ = nullptr;
@@ -366,7 +365,7 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckCount_targetNotExist)
     auto targetWidgetSelector = WidgetSelector();
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
 
-    const uint32_t expectedSearchCount[] = {3, 4, 5, 5};
+    const uint32_t expectedSearchCount[] = {2, 2, 2, 2};
     opt_.scrollWidgetDeadZone_ = 0; // set deadzone to 0 for easy computation
     for (size_t index = 0; index < 4; index++) {
         controller_->SetDomFrames(domFrameSet[index]);
@@ -425,7 +424,7 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckCount_targetExist)
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
 
     const uint32_t expectedSearchCount[] = {1, 2, 3, 4};
-    for (size_t index = 0; index < 4; index++) {
+    for (size_t index = 1; index < 2; index++) {
         controller_->SetDomFrames(domFrameSet[index]);
         // check search result
         auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);

@@ -234,7 +234,7 @@ namespace OHOS::uitest {
     void WindowOperator::BarAction(size_t index, ApiReplyInfo &out)
     {
         CallBar(out);
-        auto selector = WidgetSelector();
+        auto selector = WidgetSelector(false);
         auto frontLocator = WidgetSelector();
         auto attrMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "Button", EQ);
         auto windowMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], to_string(window_.id_), EQ);
@@ -246,7 +246,7 @@ namespace OHOS::uitest {
         vector<unique_ptr<Widget>> widgets;
         driver_.FindWidgets(selector, widgets, out.exception_);
         if (widgets.empty()) {
-            auto selectorForJs = WidgetSelector();
+            auto selectorForJs = WidgetSelector(false);
             auto attrMatcherForJs = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "button", EQ);
             selectorForJs.AddMatcher(attrMatcherForJs);
             selectorForJs.AddMatcher(windowMatcher);
@@ -257,7 +257,11 @@ namespace OHOS::uitest {
             return;
         }
         if (widgets.size() < index) {
-            LOG_E("Not find target winAction button");
+            out.exception_ = ApiCallErr(USAGE_ERROR, "Not find target winAction button");
+            return;
+        }
+        if (!widgets[index - 1]->IsVisible()) {
+            out.exception_ = ApiCallErr(USAGE_ERROR, "Target winAction button does not exist on the current screen");
             return;
         }
         auto rect = widgets[index - 1]->GetBounds();
