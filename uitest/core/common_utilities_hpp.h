@@ -25,7 +25,7 @@
 #endif
 
 #ifdef NDEBUG
-#define DCHECK(cond) do { (void)sizeof(cond);} while (0)
+#define DCHECK(cond) do { if (!(cond)) {abort();}} while (0)
 #else
 
 #include <cassert>

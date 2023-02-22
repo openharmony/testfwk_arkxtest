@@ -339,8 +339,8 @@ namespace OHOS::uitest {
         auto selector = WidgetSelector();
         vector<std::unique_ptr<Widget>> rev;
         driver.FindWidgets(selector, rev, err, true);
-        auto tree = driver.GetWidgetTree();
-        windowBounds = tree->GetRootWidget()->GetBounds();
+        auto screenSize = driver.GetDisplaySize(err);
+        windowBounds = Rect(0, 0, screenSize.px_, screenSize.py_);
         std::cout<< "windowBounds : (" << windowBounds.left_ << ","
                 << windowBounds.top_ << "," << windowBounds.right_ << ","
                 << windowBounds.bottom_ << ")" << std::endl;

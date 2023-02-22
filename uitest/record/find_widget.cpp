@@ -21,11 +21,10 @@ namespace OHOS::uitest {
         auto selector = WidgetSelector();
         vector<std::unique_ptr<Widget>> rev;
         driver.FindWidgets(selector, rev, err, true);
-        auto tree = driver.GetWidgetTree();
         std::map<float, Widget> recv;
         auto matcher = WidgetMatcherByCoord(x, y);
         auto visitor = WidgetCollector(matcher, recv);
-        tree->DfsTraverse(visitor);
+        driver.DfsTraverseTree(visitor);
         return visitor.GetMaxDepWidget();
     }
     std::string WidgetMatcherByCoord::Describe() const

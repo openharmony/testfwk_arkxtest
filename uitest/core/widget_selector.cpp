@@ -21,6 +21,15 @@ namespace OHOS::uitest {
 
     static constexpr auto NEST_USAGE_ERROR = "Nesting By usage like 'BY.before(BY.after(...))' is not supported";
 
+    WidgetSelector::WidgetSelector(bool addVisibleMatcher)
+    {
+        if (!addVisibleMatcher) {
+            return;
+        }
+        auto visibleMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::VISIBLE], "true", EQ);
+        selfMatchers_.emplace_back(visibleMatcher);
+    }
+
     void WidgetSelector::AddMatcher(const WidgetAttrMatcher &matcher)
     {
         selfMatchers_.emplace_back(matcher);

@@ -26,7 +26,7 @@ namespace OHOS::uitest {
      * */
     class WidgetSelector : public BackendClass {
     public:
-        WidgetSelector() = default;
+        explicit WidgetSelector(bool addVisibleMatcher = true);
 
         ~WidgetSelector() override {};
 

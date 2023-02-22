@@ -59,22 +59,38 @@ namespace OHOS::uitest {
 
         void DumpUiHierarchy(nlohmann::json &out, ApiCallErr &error);
 
-        /** Get current UI tree.*/
-        const WidgetTree *GetWidgetTree() const;
-
-        /** Get current UI controller.*/
-        const UiController *GetUiController(ApiCallErr &error);
-
         const FrontEndClassDef &GetFrontendClassDef() const override
         {
             return DRIVER_DEF;
         }
 
+        void SetDisplayRotation(DisplayRotation rotation, ApiCallErr &error);
+
+        DisplayRotation GetDisplayRotation(ApiCallErr &error);
+
+        void SetDisplayRotationEnabled(bool enabled, ApiCallErr &error);
+
+        bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec, ApiCallErr &error);
+
+        void WakeUpDisplay(ApiCallErr &error);
+
+        Point GetDisplaySize(ApiCallErr &error);
+
+        Point GetDisplayDensity(ApiCallErr &error);
+
+        bool GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode, ApiCallErr &error);
+
+        void DfsTraverseTree(WidgetVisitor &visitor, const Widget *widget = nullptr);
+
+        static void RegisterController(std::unique_ptr<UiController> controller);
+
+        bool CheckStatus(bool isConnected, ApiCallErr &error);
+
     private:
         /**Update UI controller and UI objects.*/
         void UpdateUi(bool updateUiTree, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction
-        UiController *uiController_ = nullptr;
+        static std::unique_ptr<UiController> uiController_;
         std::unique_ptr<WidgetTree> widgetTree_ = nullptr;
         std::vector<Window> windows_;
     };

@@ -298,7 +298,8 @@ namespace OHOS::uitest {
             } else {
                 // amend bounds, intersect with parent, compute visibility
                 auto parentBounds = findParent->second.GetBounds();
-                if (!RectAlgorithm::ComputeIntersection(bounds, parentBounds, newBounds)) {
+                if (parentBounds.GetWidth() == 0 ||
+                    !RectAlgorithm::ComputeIntersection(bounds, parentBounds, newBounds)) {
                     newBounds = Rect(0, 0, 0, 0);
                 }
             }
@@ -307,11 +308,10 @@ namespace OHOS::uitest {
                 LOG_D("Amend bounds %{public}s from %{public}s", widget.ToStr().c_str(), Rect2JsonStr(bounds).c_str());
             }
             if (!amendBounds || (newBounds.GetWidth() > 0 && newBounds.GetHeight() > 0)) {
-                widgetMap_.insert(make_pair(hierarchy, move(widget)));
-                widgetHierarchyIdDfsOrder_.emplace_back(hierarchy);
-            } else {
-                LOG_D("Discard invisible node '%{public}s'and its descendants", widget.ToStr().c_str());
+                widget.SetAttr(ATTR_NAMES[UiAttr::VISIBLE], "true");
             }
+            widgetMap_.insert(make_pair(hierarchy, move(widget)));
+            widgetHierarchyIdDfsOrder_.emplace_back(hierarchy);
         }
         widgetsConstructed_ = true;
     }
@@ -343,6 +343,10 @@ namespace OHOS::uitest {
             auto child = tree.GetChildWidget(root, childIndex);
             childIndex++;
             if (child == nullptr) {
+                continue;
+            }
+            if (!child->IsVisible()) {
+                visitCount++;
                 continue;
             }
             auto childData = json();
@@ -522,6 +526,7 @@ namespace OHOS::uitest {
         }
         to.widgetsConstructed_ = true;
         auto virtualRoot = Widget(ROOT_HIERARCHY);
+        virtualRoot.SetAttr(ATTR_NAMES[UiAttr::VISIBLE], "true");
         virtualRoot.SetHostTreeId(to.identifier_);
         // insert virtual root node into tree
         to.widgetHierarchyIdDfsOrder_.emplace_back(ROOT_HIERARCHY);
@@ -552,5 +557,20 @@ namespace OHOS::uitest {
         }
         // amend bounds of the virtual root
         vitualRootWidget.SetBounds(visitor.GetMergedBounds());
+    }
+
+    void TreeSnapshotTaker::Visit(const Widget &widget)
+    {
+        auto type = widget.GetAttr(ATTR_NAMES[UiAttr::TYPE], "") + "/";
+        auto value = widget.GetAttr(ATTR_NAMES[UiAttr::TEXT], "") + "/";
+        auto hashcode = widget.GetAttr(ATTR_NAMES[UiAttr::HASHCODE], "") + ";";
+        if (value != "/")
+        {
+            allNodes_.push_back(type + value + hashcode);
+            if ((widget.GetAttr(ATTR_NAMES[UiAttr::VISIBLE], "")) == "true")
+            {
+                displayNodes_.push_back(type + value + hashcode);
+            }
+        }
     }
 } // namespace OHOS::uitest
