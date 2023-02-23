@@ -564,11 +564,9 @@ namespace OHOS::uitest {
         auto type = widget.GetAttr(ATTR_NAMES[UiAttr::TYPE], "") + "/";
         auto value = widget.GetAttr(ATTR_NAMES[UiAttr::TEXT], "") + "/";
         auto hashcode = widget.GetAttr(ATTR_NAMES[UiAttr::HASHCODE], "") + ";";
-        if (value != "/")
-        {
+        if (value != "/") {
             allNodes_.push_back(type + value + hashcode);
-            if ((widget.GetAttr(ATTR_NAMES[UiAttr::VISIBLE], "")) == "true")
-            {
+            if ((widget.GetAttr(ATTR_NAMES[UiAttr::VISIBLE], "")) == "true") {
                 displayNodes_.push_back(type + value + hashcode);
             }
         }
