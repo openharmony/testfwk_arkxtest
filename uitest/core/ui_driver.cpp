@@ -201,7 +201,7 @@ namespace OHOS::uitest {
 
     void UiDriver::TakeScreenCap(string_view savePath, ApiCallErr &err)
     {
-        if (!CheckConnected(err)) {
+        if (!CheckStatus(false, err)) {
             return;
         }
         stringstream errorRecv;
