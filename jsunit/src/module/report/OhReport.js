@@ -113,7 +113,7 @@ class OhReport {
             message += '\n' + 'OHOS_REPORT_STATUS: current=' + (this.index);
             message += '\n' + 'OHOS_REPORT_STATUS: id=JS';
             message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.specService.getTestTotal();
-            let emsg = '';
+            let errorMsg = '';
             if (this.specService.currentRunningSpec.error) {
                 message += '\n' + 'OHOS_REPORT_STATUS: stack=' + this.specService.currentRunningSpec.error.message;
                 message += '\n' + 'OHOS_REPORT_STATUS: stream=';
@@ -124,12 +124,12 @@ class OhReport {
             } else if (this.specService.currentRunningSpec.result) {
                 if (this.specService.currentRunningSpec.result.failExpects.length > 0) {
                     this.specService.currentRunningSpec.result.failExpects.forEach(failExpect => {
-                        emsg = failExpect.message || ('expect ' + failExpect.actualValue + ' ' + failExpect.checkFunc + ' ' + (failExpect.expectValue));
+                        errorMsg = failExpect.message || ('expect ' + failExpect.actualValue + ' ' + failExpect.checkFunc + ' ' + (failExpect.expectValue));
                     });
-                    message += '\n' + 'OHOS_REPORT_STATUS: stack=' + emsg;
+                    message += '\n' + 'OHOS_REPORT_STATUS: stack=' + errorMsg;
                     message += '\n' + 'OHOS_REPORT_STATUS: stream=';
                     message += '\n' + 'Error in ' + this.specService.currentRunningSpec.description;
-                    message += '\n' + emsg + '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
+                    message += '\n' + errorMsg + '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
                     message += '\n' + 'OHOS_REPORT_STATUS_CODE: -2' + '\n';
                 } else {
                     message += '\n' + 'OHOS_REPORT_STATUS: stream=';
