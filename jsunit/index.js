@@ -41,7 +41,8 @@ class Hypium {
         });
         core.addService('expect', expectExtend);
         const ohReport = new OhReport({
-            'delegator': abilityDelegator
+            'delegator': abilityDelegator,
+            'abilityDelegatorArguments': abilityDelegatorArguments
         });
         SysTestKit.delegator = abilityDelegator;
         core.addService('report', ohReport);
@@ -50,9 +51,14 @@ class Hypium {
         core.subscribeEvent('suite', ohReport);
         core.subscribeEvent('task', ohReport);
         const configService = core.getDefaultService('config');
-        let testParameters = configService.translateParams(abilityDelegatorArguments.parameters);
+
+        let testParameters = {};
+        if (abilityDelegatorArguments !== null) {
+            testParameters = configService.translateParams(abilityDelegatorArguments.parameters);
+        }
         console.info('parameters:' + JSON.stringify(testParameters));
         configService.setConfig(testParameters);
+
         testsuite();
         if (Object.prototype.hasOwnProperty.call(globalThis, 'setupUiTestEnvironment')) {
             globalThis.setupUiTestEnvironment().then(() => {
