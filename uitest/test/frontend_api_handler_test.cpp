@@ -21,6 +21,7 @@
 #include "frontend_api_handler.h"
 #include "dummy_controller.h"
 #include "widget_selector.h"
+#include "ui_driver.h"
 
 using namespace OHOS::uitest;
 using namespace std;
@@ -33,16 +34,15 @@ public:
 protected:
     void SetUp() override
     {
-        auto dummyController = make_unique<DummyController>("dummyController");
+        auto dummyController = make_unique<DummyController>();
         dummyController->SetWorkable(true);
-        UiController::RegisterController(move(dummyController), HIGH);
+        UiDriver::RegisterController(move(dummyController));
     }
 
     void TearDown() override
     {
         // common-preprocessors works on all apiCall, delete after testing
         FrontendApiServer::Get().RemoveCommonPreprocessor("dummyProcessor");
-        UiController::RemoveController("dummyController");
     }
 };
 

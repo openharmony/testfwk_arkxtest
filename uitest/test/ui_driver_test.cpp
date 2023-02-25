@@ -25,7 +25,7 @@ static vector<TouchEvent> touch_event_records;
 
 class MockController : public UiController {
 public:
-    explicit MockController() : UiController("mock_controller") {}
+    MockController() : UiController() {}
 
     ~MockController() = default;
 
@@ -58,14 +58,13 @@ protected:
         touch_event_records.clear();
         auto mockController = make_unique<MockController>();
         controller_ = mockController.get();
-        UiController::RegisterController(move(mockController), Priority::MEDIUM);
+        UiDriver::RegisterController(move(mockController));
         driver_ = make_unique<UiDriver>();
     }
 
     void TearDown() override
     {
         controller_ = nullptr;
-        UiController::RemoveAllControllers();
     }
 
     MockController *controller_ = nullptr;
@@ -74,16 +73,6 @@ protected:
 
     ~UiDriverTest() override = default;
 };
-
-TEST_F(UiDriverTest, internalError)
-{
-    // give no UiController, should cause internal error
-    UiController::RemoveAllControllers();
-    auto error = ApiCallErr(NO_ERROR);
-    auto key = Back();
-    driver_->TriggerKey(key, opt_, error);
-    ASSERT_EQ(ERR_INTERNAL, error.code_);
-}
 
 TEST_F(UiDriverTest, normalInteraction)
 {
