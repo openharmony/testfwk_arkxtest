@@ -102,7 +102,7 @@ namespace OHOS::uitest {
             PrintToConsole("Error path:" + savePath);
             return EXIT_FAILURE;
         }
-        auto controller = make_unique<SysUiController>("sys_ui_controller");
+        auto controller = make_unique<SysUiController>();
         if (!controller->ConnectToSysAbility()) {
             PrintToConsole("Dump layout failed, cannot connect to AAMS");
             fout.close();
@@ -117,7 +117,7 @@ namespace OHOS::uitest {
             }
             fout << array.dump();
         } else {
-            UiController::RegisterController(move(controller), Priority::MEDIUM);
+            UiDriver::RegisterController(move(controller));
             auto data = nlohmann::json();
             auto driver = UiDriver();
             auto error = ApiCallErr(NO_ERROR);
@@ -147,7 +147,7 @@ namespace OHOS::uitest {
         if (iter != params.end()) {
             savePath = iter->second;
         }
-        auto controller = SysUiController("sys_ui_controller");
+        auto controller = SysUiController();
         stringstream errorRecv;
         if (!controller.TakeScreenCap(savePath, errorRecv)) {
             PrintToConsole("ScreenCap failed: " + errorRecv.str());
@@ -183,13 +183,12 @@ namespace OHOS::uitest {
             return EXIT_FAILURE;
         }
         // set delayed UiController
-        auto controllerProvider = [](list<unique_ptr<UiController>> &receiver) {
-            auto controller = make_unique<SysUiController>("sys_ui_controller");
-            if (controller->ConnectToSysAbility()) {
-                receiver.push_back(move(controller));
-            }
-        };
-        UiController::RegisterControllerProvider(controllerProvider);
+
+        auto controller = make_unique<SysUiController>();
+        if (!controller->ConnectToSysAbility()) {
+            return EXIT_FAILURE;
+        }
+        UiDriver::RegisterController(move(controller));
         mutex mtx;
         unique_lock<mutex> lock(mtx);
         condition_variable condVar;
@@ -220,12 +219,12 @@ namespace OHOS::uitest {
             if (!InitEventRecordFile()) {
                 return OHOS::ERR_INVALID_VALUE;
             }
-            auto controller = make_unique<SysUiController>("sys_ui_controller");
+            auto controller = make_unique<SysUiController>();
             if (!controller->ConnectToSysAbility()) {
                 PrintToConsole("Failed, cannot connect to AMMS ");
                 return EXIT_FAILURE;
             }
-            UiController::RegisterController(move(controller), Priority::MEDIUM);
+            UiDriver::RegisterController(move(controller));
             RecordInitEnv(modeOpt);
             auto callBackPtr = InputEventCallback::GetPtr();
             if (callBackPtr == nullptr) {

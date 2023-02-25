@@ -20,7 +20,7 @@
 namespace OHOS::uitest {
 class DummyController : public UiController {
 public:
-    explicit DummyController(std::string_view name) : UiController(name) {}
+    DummyController() : UiController() {}
 
     ~DummyController() {}
 

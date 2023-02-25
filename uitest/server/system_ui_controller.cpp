@@ -134,7 +134,7 @@ namespace OHOS::uitest {
         return WaitEventIdle(idleThresholdMs, timeoutMs - sliceMs);
     }
 
-    SysUiController::SysUiController(string_view name) : UiController(name) {}
+    SysUiController::SysUiController() : UiController() {}
 
     SysUiController::~SysUiController()
     {
@@ -168,6 +168,7 @@ namespace OHOS::uitest {
         to[ATTR_NAMES[UiAttr::LONG_CLICKABLE].data()] = "false";
         to[ATTR_NAMES[UiAttr::SCROLLABLE].data()] = "false";
         to[ATTR_NAMES[UiAttr::HOST_WINDOW_ID].data()] = to_string(node.GetWindowId());
+        to[ATTR_NAMES[UiAttr::VISIBLE].data()] = "false";
         const auto bounds = node.GetRectInScreen();
         const auto rect = Rect(bounds.GetLeftTopXScreenPostion(), bounds.GetRightBottomXScreenPostion(),
                                bounds.GetLeftTopYScreenPostion(), bounds.GetRightBottomYScreenPostion());
@@ -175,6 +176,9 @@ namespace OHOS::uitest {
         // "[%d,%d][%d,%d]", rect.left, rect.top, rect.right, rect.bottom
         stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
         to[ATTR_NAMES[UiAttr::BOUNDS].data()] = stream.str();
+        if (!node.IsVisible()) {
+            to[ATTR_NAMES[UiAttr::BOUNDS].data()] = "[0,0,0,0]";
+        }
         auto actionList = node.GetActionList();
         for (auto &action : actionList) {
             switch (action.GetActionType()) {
@@ -218,10 +222,6 @@ namespace OHOS::uitest {
                     child = child2;
                     isDecorBar = true;
                 }
-                if (!child.IsVisible()) {
-                    LOG_I("invisible node drop, id: %{public}d", child.GetAccessibilityId());
-                    continue;
-                }
                 auto parcel = json();
                 MarshallAccessibilityNodeInfo(child, parcel, idx, isDecorBar);
                 childList.push_back(parcel);
@@ -264,6 +264,19 @@ namespace OHOS::uitest {
         }
     }
 
+    static Accessibility::Rect GetVisibleRect(Point screenSize, Accessibility::Rect windowBounds)
+    {
+        auto leftX = windowBounds.GetLeftTopXScreenPostion();
+        auto topY = windowBounds.GetLeftTopYScreenPostion();
+        auto rightX = windowBounds.GetRightBottomXScreenPostion();
+        auto bottomY = windowBounds.GetRightBottomYScreenPostion();
+        Accessibility::Rect newBounds((leftX < 0) ? 0 : leftX,
+                                      (topY < 0) ? 0 : topY,
+                                      (rightX > screenSize.px_) ? screenSize.px_ : rightX,
+                                      (bottomY > screenSize.py_) ? screenSize.py_ : bottomY);
+        return newBounds;
+    }
+
     void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out)
     {
         if (!connected_) {
@@ -282,17 +295,19 @@ namespace OHOS::uitest {
         sort(windows.begin(), windows.end(), [](auto &w1, auto &w2) -> bool {
             return w1.GetWindowLayer() > w2.GetWindowLayer();
         });
+        auto screenSize = GetDisplaySize();
         AccessibilityElementInfo elementInfo;
         for (auto &window : windows) {
             if (ability->GetRootByWindow(window, elementInfo) == RET_OK) {
                 const auto app = elementInfo.GetBundleName();
                 LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
+                // apply window bounds as root node bounds
+                Accessibility::Rect windowBounds = window.GetRectInScreen();
+                auto visibleBounds = GetVisibleRect(screenSize, windowBounds);
+                elementInfo.SetRectInScreen(visibleBounds);
                 auto winInfo = Window(window.GetWindowId());
                 InflateWindowInfo(window, winInfo);
                 winInfo.bundleName_ = app;
-                // apply window bounds as root node bounds
-                auto windowBounds = window.GetRectInScreen();
-                elementInfo.SetRectInScreen(windowBounds);
                 auto root = nlohmann::json();
                 MarshallAccessibilityNodeInfo(elementInfo, root, 0, false);
                 out.push_back(make_pair(move(winInfo), move(root)));
@@ -383,7 +398,7 @@ namespace OHOS::uitest {
 
     bool SysUiController::IsWorkable() const
     {
-        return true;
+        return connected_;
     }
 
     bool SysUiController::GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode) const
@@ -575,7 +590,6 @@ namespace OHOS::uitest {
 
     Point SysUiController::GetDisplaySize() const
     {
-        LOG_I("SysUiController::GetDisplaySize");
         auto display = DisplayManager::GetInstance().GetDefaultDisplay();
         auto width = display->GetWidth();
         auto height = display->GetHeight();

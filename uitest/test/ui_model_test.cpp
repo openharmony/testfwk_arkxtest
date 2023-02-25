@@ -102,6 +102,10 @@ public:
 
     void Visit(const Widget &widget) override
     {
+        if (!widget.IsVisible()) {
+            firstWidget_ = false;
+            return;
+        }
         if (!firstWidget_) {
             attrValueSequence_ << ",";
         } else {
@@ -155,6 +159,9 @@ class BoundsVisitor : public WidgetVisitor {
 public:
     void Visit(const Widget &widget) override
     {
+        if (!widget.IsVisible()) {
+            return;
+        }
         boundsList_.emplace_back(widget.GetBounds());
     }
 

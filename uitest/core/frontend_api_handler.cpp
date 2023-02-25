@@ -603,8 +603,7 @@ namespace OHOS::uitest {
         auto &server = FrontendApiServer::Get();
         auto create = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto driver = make_unique<UiDriver>();
-            driver->GetUiController(out.exception_);
-            if (out.exception_.code_ == NO_ERROR) {
+            if (driver->CheckStatus(true, out.exception_)) {
                 out.resultValue_ = StoreBackendObject(move(driver));
             } else {
                 out.exception_ = ApiCallErr(ERR_INITIALIZE_FAILED);
@@ -622,7 +621,6 @@ namespace OHOS::uitest {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             driver.TakeScreenCap(ReadCallArg<string>(in, INDEX_ZERO), out.exception_);
             out.resultValue_ = (out.exception_.code_ == NO_ERROR);
-            out.exception_.code_ = NO_ERROR;
         };
         server.AddHandler("Driver.screenCap", screenCap);
 
@@ -770,38 +768,28 @@ namespace OHOS::uitest {
         auto &server = FrontendApiServer::Get();
         auto genericDisplayOperator = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
-            auto controller = driver.GetUiController(out.exception_);
-            if (out.exception_.code_ != NO_ERROR) {
-                return;
-            }
             if (in.apiId_ == "Driver.setDisplayRotation") {
                 auto rotation = ReadCallArg<DisplayRotation>(in, INDEX_ZERO);
-                controller->SetDisplayRotation(rotation);
+                driver.SetDisplayRotation(rotation, out.exception_);
             } else if (in.apiId_ == "Driver.getDisplayRotation") {
-                out.resultValue_ = controller->GetDisplayRotation();
+                out.resultValue_ = driver.GetDisplayRotation(out.exception_);
             } else if (in.apiId_ == "Driver.setDisplayRotationEnabled") {
                 auto enabled = ReadCallArg<bool>(in, INDEX_ZERO);
-                controller->SetDisplayRotationEnabled(enabled);
+                driver.SetDisplayRotationEnabled(enabled, out.exception_);
             } else if (in.apiId_ == "Driver.waitForIdle") {
                 auto idleTime = ReadCallArg<uint32_t>(in, INDEX_ZERO);
                 auto timeout = ReadCallArg<uint32_t>(in, INDEX_ONE);
-                out.resultValue_ = controller->WaitForUiSteady(idleTime, timeout);
+                out.resultValue_ = driver.WaitForUiSteady(idleTime, timeout, out.exception_);
             } else if (in.apiId_ == "Driver.wakeUpDisplay") {
-                if (controller->IsScreenOn()) {
-                    return;
-                } else {
-                    LOG_I("screen is off, turn it on");
-                    UiOpArgs uiOpArgs;
-                    driver.TriggerKey(Power(), uiOpArgs, out.exception_);
-                }
+                driver.WakeUpDisplay(out.exception_);
             } else if (in.apiId_ == "Driver.getDisplaySize") {
-                auto result = controller->GetDisplaySize();
+                auto result = driver.GetDisplaySize(out.exception_);
                 json data;
                 data["x"] = result.px_;
                 data["y"] = result.py_;
                 out.resultValue_ = data;
             } else if (in.apiId_ == "Driver.getDisplayDensity") {
-                auto result = controller->GetDisplayDensity();
+                auto result = driver.GetDisplayDensity(out.exception_);
                 json data;
                 data["x"] = result.px_;
                 data["y"] = result.py_;
