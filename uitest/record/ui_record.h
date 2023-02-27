@@ -124,7 +124,7 @@ namespace OHOS::uitest {
             expired = false;
             std::thread([this, interval, task]() {
                 while (!tryToExpire) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(TIMEINTERVAL));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(interval));
                     task();
                 }
 
