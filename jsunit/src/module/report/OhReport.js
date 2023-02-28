@@ -58,9 +58,7 @@ class OhReport {
             await SysTestKit.print(message);
         }
         console.info('report print success');
-        this.delegator.finishTest('your test finished!!!', 0, () => {
-            console.info('your test finished!!!');
-        });
+        this.delegator.finishTest('your test finished!!!', 0, () => { });
     }
 
     incorrectFormat() {
