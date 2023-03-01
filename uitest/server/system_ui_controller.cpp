@@ -141,6 +141,11 @@ namespace OHOS::uitest {
         DisConnectFromSysAbility();
     }
 
+    bool SysUiController::Initialize()
+    {
+        return this->ConnectToSysAbility();
+    }
+
     static size_t GenerateNodeHash(AccessibilityElementInfo &node)
     {
         static constexpr auto SHIFT_BITS = 32U;

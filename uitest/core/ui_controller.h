@@ -32,6 +32,8 @@ namespace OHOS::uitest {
 
         virtual ~UiController() = default;
 
+        virtual bool Initialize() { return true; };
+
         virtual void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>>& out) {};
 
         virtual bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec) const
