@@ -103,12 +103,12 @@ namespace OHOS::uitest {
             return EXIT_FAILURE;
         }
         auto controller = make_unique<SysUiController>();
-        if (!controller->ConnectToSysAbility()) {
-            PrintToConsole("Dump layout failed, cannot connect to AAMS");
-            fout.close();
-            return EXIT_FAILURE;
-        }
         if (params.find('i') != params.end()) {
+            if (!controller->ConnectToSysAbility()) {
+                PrintToConsole("Dump layout failed, cannot connect to AAMS");
+                fout.close();
+                return EXIT_FAILURE;
+            }
             vector<pair<Window, nlohmann::json>> datas;
             controller->GetUiHierarchy(datas);
             auto array = nlohmann::json::array();
@@ -177,18 +177,12 @@ namespace OHOS::uitest {
             return EXIT_FAILURE;
         }
         LOG_I("Server starting up");
+        UiDriver::RegisterController(make_unique<SysUiController>());
         ApiTransactor apiTransactServer(true);
         if (!apiTransactServer.InitAndConnectPeer(transalatedToken, ApiTransact)) {
             LOG_E("Failed to initialize server");
             return EXIT_FAILURE;
         }
-        // set delayed UiController
-
-        auto controller = make_unique<SysUiController>();
-        if (!controller->ConnectToSysAbility()) {
-            return EXIT_FAILURE;
-        }
-        UiDriver::RegisterController(move(controller));
         mutex mtx;
         unique_lock<mutex> lock(mtx);
         condition_variable condVar;
