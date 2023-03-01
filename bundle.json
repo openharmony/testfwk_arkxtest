@@ -46,7 +46,8 @@
       },
       "build": {
         "sub_component": [
-            "//test/testfwk/arkxtest/uitest:uitestkit"
+            "//test/testfwk/arkxtest/uitest:uitestkit",
+            "//test/testfwk/arkxtest/gcov_dump_sign:gcov_dump_sign"
         ],
     "test": [
       "//test/testfwk/arkxtest/uitest:uitestkit_test"
