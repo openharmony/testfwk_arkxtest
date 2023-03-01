@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,11 +13,8 @@
  * limitations under the License.
  */
 
-#include <cstdio>
-#include <cstdlib>
 #include <csignal>
 #include <iostream>
-#include <unistd.h>
 
 extern "C" void __gcov_dump();
 
@@ -28,8 +25,8 @@ static void sighandler(int signo)
     __gcov_dump();
     cout << "######gcov_dump_end" << endl;
 }
-__attribute__((constructor))
-static void ctor()
+
+__attribute__((constructor)) static void ctor()
 {
     int sigs[] = {
     SIGTTIN
@@ -39,9 +36,12 @@ static void ctor()
     sa.sa_handler = sighandler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
-    for (i = 0; i < sizeof(sigs) / sizeof(sigs[0]); ++i) {
-        if (sigaction(sigs[i], &sa, nullptr) == -1) {
-            cout << "Could not set signal handler" << endl;
+    for (i = 0; i < sizeof(sigs) / sizeof(sigs[0]); ++i)
+        {
+            if (sigaction(sigs[i], &sa, nullptr) == -1)
+                {
+                    cout << "Could not set signal handler" << endl;
+                }
         }
-    }
 }
+
