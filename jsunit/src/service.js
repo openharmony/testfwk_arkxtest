@@ -23,52 +23,65 @@ class AssertException extends Error {
     }
 }
 
-function getFuncWithArgsZero(func, timeout) {
+function getFuncWithArgsZero(func, timeout, isStressTest) {
     return new Promise(async (resolve, reject) => {
-        let timer = setTimeout(() => {
-            reject(new Error('execute timeout ' + timeout + 'ms'));
-        }, timeout);
+        let timer = null;
+        if (!isStressTest) {
+            timer = setTimeout(() => {
+                reject(new Error('execute timeout ' + timeout + 'ms'));
+            }, timeout);
+        }
         try {
             await func();
         } catch (err) {
             reject(err);
         }
+        timer !== null ? clearTimeout(timer) : null;
         resolve();
-        clearTimeout(timer);
     });
 }
 
-function getFuncWithArgsOne(func, timeout) {
+function getFuncWithArgsOne(func, timeout, isStressTest) {
     return new Promise(async (resolve, reject) => {
-        let timer = setTimeout(() => {
-            reject(new Error('execute timeout ' + timeout + 'ms'));
-        }, timeout);
+        let timer = null;
+        if (!isStressTest) {
+            timer = setTimeout(() => {
+                reject(new Error('execute timeout ' + timeout + 'ms'));
+            }, timeout);;
+        }
+
         function done() {
-            clearTimeout(timer);
+            timer !== null ? clearTimeout(timer) : null;
             resolve();
         }
+
         try {
             await func(done);
         } catch (err) {
-            clearTimeout(timer);
+            timer !== null ? clearTimeout(timer) : null;
             reject(err);
         }
     });
 }
 
-function getFuncWithArgsTwo(func, timeout, paramItem) {
+function getFuncWithArgsTwo(func, timeout, paramItem, isStressTest) {
     return new Promise(async (resolve, reject) => {
-        let timer = setTimeout(() => {
-            reject(new Error('execute timeout ' + timeout + 'ms'));
-        }, timeout);
+        let timer = null;
+        if (!isStressTest) {
+            timer = setTimeout(() => {
+                reject(new Error('execute timeout ' + timeout + 'ms'));
+            }, timeout);
+        }
+
         function done() {
-            clearTimeout(timer);
+            timer !== null ? clearTimeout(timer) : null;
             resolve();
         }
+
         try {
             await func(done, paramItem);
         } catch (err) {
-            clearTimeout(timer);
+            timer !== null ? clearTimeout(timer) : null;
             reject(err);
         }
     });
@@ -86,10 +99,11 @@ function processFunc(coreContext, func) {
     const config = coreContext.getDefaultService('config');
     config.setSupportAsync(true);
     const timeout = + (config.timeout === undefined ? 5000 : config.timeout);
+    const isStressTest = (coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1);
     switch (funcLen) {
         case 0: {
             processedFunc = function () {
-                return getFuncWithArgsZero(func, timeout);
+                return getFuncWithArgsZero(func, timeout, isStressTest);
             };
             break;
         }
@@ -100,14 +114,14 @@ function processFunc(coreContext, func) {
                 };
             } else {
                 processedFunc = function () {
-                    return getFuncWithArgsOne(func, timeout);
+                    return getFuncWithArgsOne(func, timeout, isStressTest);
                 };
             }
             break;
         }
         default: {
             processedFunc = function (paramItem) {
-                return getFuncWithArgsTwo(func, timeout, paramItem);
+                return getFuncWithArgsTwo(func, timeout, paramItem, isStressTest);
             };
             break;
         }
