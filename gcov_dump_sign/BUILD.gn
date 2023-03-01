@@ -12,20 +12,15 @@
 # limitations under the License.
 
 import("//build//ohos.gni")
-ohos_shared_library("gcov_dump_sign"){
-  sources = [
-    "src/sign.cpp",
-  ]
+ohos_shared_library("gcov_dump_sign") {
+  sources = [ "src/sign.cpp" ]
   cflags = [
     "-Wall",
     "-Werror",
-    "--coverage"
+    "--coverage",
   ]
-  ldflags = [
-    "--coverage"
-  ]
+  ldflags = [ "--coverage" ]
   subsystem_name = "test"
   part_name = "arkXtest"
   output_name = "gcov_dump_sign"
 }
-
