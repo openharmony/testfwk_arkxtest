@@ -16,12 +16,17 @@
 import SysTestKit from "../kit/SysTestKit";
 
 export async function collectCoverageData() {
-    const strJson = JSON.stringify(globalThis.__coverage__ || {});
+    const errorMsg = 'Coverage data generation failed. Please clean up the project and rerun';
+    let strJson = globalThis.__coverage__ === undefined ? errorMsg : JSON.stringify(globalThis.__coverage__);
     const strLen = strJson.length;
     const maxLen = 500;
     const maxCount = Math.floor(strLen / maxLen);
+
     const OHOS_REPORT_COVERAGE_DATA = 'OHOS_REPORT_COVERAGE_DATA:';
+    const OHOS_REPORT_ERROR_MESSAGE = 'OHOS_REPORT_ERROR_MESSAGE:';
+    let OHOS_REPORT_COVERAGE_KEY = globalThis.__coverage__ === undefined ? OHOS_REPORT_ERROR_MESSAGE : OHOS_REPORT_COVERAGE_DATA;
+
     for (let count = 0; count <= maxCount; count++) {
-        await SysTestKit.print(`${OHOS_REPORT_COVERAGE_DATA} ${strJson.substring(count * maxLen, (count + 1) * maxLen)}`);
+        await SysTestKit.print(`${OHOS_REPORT_COVERAGE_KEY} ${strJson.substring(count * maxLen, (count + 1) * maxLen)}`);
     }
 }
