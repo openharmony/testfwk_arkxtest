@@ -24,6 +24,8 @@ namespace OHOS::uitest {
 
     std::unique_ptr<UiController> UiDriver::uiController_;
 
+    static bool g_uiControllerInitialized = false;
+
     void UiDriver::RegisterController(std::unique_ptr<UiController> controller)
     {
         uiController_ = move(controller);
@@ -32,6 +34,13 @@ namespace OHOS::uitest {
     bool UiDriver::CheckStatus(bool isConnected, ApiCallErr &error)
     {
         DCHECK(uiController_);
+        if (!g_uiControllerInitialized) {
+            g_uiControllerInitialized = true;
+            if (!uiController_->Initialize()) {
+                LOG_E("Initialize uiController failed");
+                return false;
+            }
+        }
         if (isConnected && !uiController_->IsWorkable()) {
             error = ApiCallErr(ERR_INITIALIZE_FAILED, "Not connect to AAMS");
             return false;
