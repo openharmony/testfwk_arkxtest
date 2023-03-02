@@ -19,15 +19,13 @@
 extern "C" void __gcov_dump();
 
 using namespace std;
-static void sighandler(int signo)
-{
+static void sighandler(int signo){
     cout << "######gcov_dump_start" << endl;
     __gcov_dump();
     cout << "######gcov_dump_end" << endl;
 }
 
-__attribute__((constructor)) static void ctor()
-{
+__attribute__((constructor)) static void ctor(){
     int sigs[] = {
     SIGTTIN
     };
@@ -36,12 +34,10 @@ __attribute__((constructor)) static void ctor()
     sa.sa_handler = sighandler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
-    for (i = 0; i < sizeof(sigs) / sizeof(sigs[0]); ++i)
-        {
-            if (sigaction(sigs[i], &sa, nullptr) == -1)
-                {
-                    cout << "Could not set signal handler" << endl;
-                }
-        }
+    for (i = 0; i < sizeof(sigs) / sizeof(sigs[0]); ++i) {
+         if (sigaction(sigs[i], &sa, nullptr) == -1) {
+             cout << "Could not set signal handler" << endl;
+         }
+    }
 }
 
