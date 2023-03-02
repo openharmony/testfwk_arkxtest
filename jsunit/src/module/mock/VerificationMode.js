@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import {expect} from "@ohos/hypium";
+import {expect} from '../../interface';
 
 class VerificationMode {
     constructor(times) {
