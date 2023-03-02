@@ -46,7 +46,8 @@
       },
       "build": {
         "sub_component": [
-            "//test/testfwk/arkxtest/uitest:uitestkit"
+            "//test/testfwk/arkxtest/uitest:uitestkit",
+            "//test/testfwk/arkxtest/coverage_signal_handler:coverage_signal_handler"
         ],
     "test": [
       "//test/testfwk/arkxtest/uitest:uitestkit_test"
