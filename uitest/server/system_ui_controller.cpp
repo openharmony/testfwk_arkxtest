@@ -426,8 +426,7 @@ namespace OHOS::uitest {
         if (mouseOpArgs.key1_ != KEYCODE_NONE) {
             auto dwonEvent1 = CreateSingleKeyEvent(mouseOpArgs.key1_, ActionStage::DOWN);
             InputManager::GetInstance()->SimulateInputEvent(dwonEvent1);
-            if (mouseOpArgs.key2_ != KEYCODE_NONE)
-            {
+            if (mouseOpArgs.key2_ != KEYCODE_NONE) {
                 auto dwonEvent2 = CreateSingleKeyEvent(mouseOpArgs.key2_, ActionStage::DOWN);
                 InputManager::GetInstance()->SimulateInputEvent(dwonEvent2);
             }

@@ -172,7 +172,6 @@ namespace OHOS::uitest {
         uint32_t waitWidgetMaxMs_ = 5000;
         int32_t scrollWidgetDeadZone_ = 20;
         uint16_t swipeStepsCounts_ = 50;
-        uint16_t touchDevice = 0;
     };
 
     class TouchAction {
