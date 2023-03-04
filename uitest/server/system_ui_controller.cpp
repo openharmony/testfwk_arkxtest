@@ -357,6 +357,130 @@ namespace OHOS::uitest {
         }
     }
 
+    static std::shared_ptr<OHOS::MMI::PointerEvent> CreateMouseActionEvent(Point point, const MouseButton button, int32_t distance,
+        const MouseAction action, const int32_t windowId)
+    {
+        auto pointerEvent = PointerEvent::Create();
+        pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
+        pointerEvent->SetPointerId(0);
+        switch (action) {
+            case MouseAction::M_MOVE:
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_MOVE);
+                break;
+            case MouseAction::AXIS_BEGIN:
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
+                break;
+            case MouseAction::AXIS_END:
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_END);
+                break;
+            case MouseAction::BUTTON_DOWN:
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_DOWN);
+                break;
+            case MouseAction::BUTTON_UP:
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_UP);
+                break;
+            default:
+                break;
+        }
+        PointerEvent::PointerItem item;
+        if (action == MouseAction::AXIS_BEGIN || action == MouseAction::AXIS_END) {
+            pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, static_cast<double>(distance));
+            item.SetDownTime(0);
+        } else if (action == MouseAction::BUTTON_DOWN || action == MouseAction::BUTTON_UP) {
+            pointerEvent->SetButtonId(button);
+            pointerEvent->SetButtonPressed(button);
+        }
+        item.SetDisplayX(point.px_);
+        item.SetDisplayY(point.py_);
+        item.SetPressed(action == MouseAction::BUTTON_DOWN);
+        pointerEvent->SetTargetWindowId(windowId);
+        pointerEvent->AddPointerItem(item);
+        return pointerEvent;
+    }
+
+    static std::shared_ptr<OHOS::MMI::KeyEvent> CreateSingleKeyEvent(int32_t key, ActionStage action)
+    {
+        auto keyEvent = OHOS::MMI::KeyEvent::Create();
+        keyEvent->SetKeyCode(key);
+        switch (action) {
+            case ActionStage::DOWN:
+                keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_DOWN);
+                break;
+            case ActionStage::UP:
+                keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_UP);
+                break;
+            default:
+                break;
+        }
+        OHOS::MMI::KeyEvent::KeyItem keyItem;
+        keyItem.SetKeyCode(key);
+        keyItem.SetPressed(true);
+        keyEvent->AddKeyItem(keyItem);
+        return keyEvent;
+    }
+
+    void SysUiController::InjectMouseClick(Point point, MouseButton button, int32_t windowId, int32_t key1, int32_t key2) const
+    {
+        if (key1 != KEYCODE_NONE) {
+            auto dwonEvent1 = CreateSingleKeyEvent(key1, ActionStage::DOWN);
+            InputManager::GetInstance()->SimulateInputEvent(dwonEvent1);
+            if (key2 != KEYCODE_NONE) {
+                auto dwonEvent2 = CreateSingleKeyEvent(key2, ActionStage::DOWN);
+                InputManager::GetInstance()->SimulateInputEvent(dwonEvent2);
+            }
+        }
+        auto mouseDown = CreateMouseActionEvent(point, button, 0, MouseAction::BUTTON_DOWN, windowId);
+        InputManager::GetInstance()->SimulateInputEvent(mouseDown);
+        auto mouseUp = CreateMouseActionEvent(point, button, 0, MouseAction::BUTTON_UP, windowId);
+        InputManager::GetInstance()->SimulateInputEvent(mouseUp);
+        if (key2 != KEYCODE_NONE) {
+            auto dwonUp2 = CreateSingleKeyEvent(key2, ActionStage::UP);
+            InputManager::GetInstance()->SimulateInputEvent(dwonUp2);
+        }
+        if (key1 != KEYCODE_NONE) {
+            auto dwonUp1 = CreateSingleKeyEvent(key1, ActionStage::UP);
+            InputManager::GetInstance()->SimulateInputEvent(dwonUp1);
+        }
+    }
+
+    void SysUiController::InjectMouseScroll(Point point, bool adown, int32_t scrollValue, int32_t windowId, int32_t key1, int32_t key2) const
+    {
+        if (key1 != KEYCODE_NONE) {
+            auto dwonEvent1 = CreateSingleKeyEvent(key1, ActionStage::DOWN);
+            InputManager::GetInstance()->SimulateInputEvent(dwonEvent1);
+            if (key2 != KEYCODE_NONE) {
+                auto dwonEvent2 = CreateSingleKeyEvent(key2, ActionStage::DOWN);
+                InputManager::GetInstance()->SimulateInputEvent(dwonEvent2);
+            }
+        }
+        auto mouseMove = CreateMouseActionEvent(point, MouseButton::BUTTON_NONE, 0, MouseAction::M_MOVE, windowId);
+        InputManager::GetInstance()->SimulateInputEvent(mouseMove);
+        constexpr int32_t axialValue = 15;
+        constexpr uint32_t focusTimeMs = 40;
+        auto injectAxialValue = adown ? axialValue : -axialValue;
+        for (auto index = 0; index < scrollValue; index++) {
+            auto mouseScroll1 = CreateMouseActionEvent(point, MouseButton::BUTTON_NONE, injectAxialValue, MouseAction::AXIS_BEGIN, windowId);
+            InputManager::GetInstance()->SimulateInputEvent(mouseScroll1);
+            auto mouseScroll2 = CreateMouseActionEvent(point, MouseButton::BUTTON_NONE, injectAxialValue, MouseAction::AXIS_END, windowId);
+            InputManager::GetInstance()->SimulateInputEvent(mouseScroll2);
+            this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
+        }
+        if (key2 != KEYCODE_NONE) {
+            auto dwonUp2 = CreateSingleKeyEvent(key2, ActionStage::UP);
+            InputManager::GetInstance()->SimulateInputEvent(dwonUp2);
+        }
+        if (key1 != KEYCODE_NONE) {
+            auto dwonUp1 = CreateSingleKeyEvent(key1, ActionStage::UP);
+            InputManager::GetInstance()->SimulateInputEvent(dwonUp1);
+        }
+    }
+
+    void SysUiController::InjectMouseMove(Point point, int32_t windowId) const
+    {
+        auto event = CreateMouseActionEvent(point, MouseButton::BUTTON_NONE, 0, MouseAction::M_MOVE, windowId);
+        InputManager::GetInstance()->SimulateInputEvent(event);
+    }
+
     void SysUiController::InjectKeyEventSequence(const vector<KeyEvent> &events) const
     {
         vector<int32_t> downKeys;
@@ -422,19 +546,27 @@ namespace OHOS::uitest {
         return true;
     }
 
-    bool SysUiController::TakeScreenCap(string_view savePath, stringstream &errReceiver) const
+    bool SysUiController::TakeScreenCap(int32_t fd, std::stringstream &errReceiver, Rect rect) const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
         // get PixelMap from DisplayManager API
-        shared_ptr<PixelMap> pixelMap = displayMgr.GetScreenshot(displayMgr.GetDefaultDisplayId());
+        shared_ptr<PixelMap> pixelMap;
+        if (rect.GetWidth() == 0) {
+            pixelMap = displayMgr.GetScreenshot(displayMgr.GetDefaultDisplayId());
+        } else {
+            Media::Rect region = {.left = rect.left_, .top = rect.top_,
+                .width = rect.right_ - rect.left_, .height = rect.bottom_ - rect.top_};
+            Media::Size size = {.width = rect.right_ - rect.left_, .height = rect.bottom_ - rect.top_};
+            pixelMap = displayMgr.GetScreenshot(displayMgr.GetDefaultDisplayId(), region, size, 0);
+        }
         if (pixelMap == nullptr) {
             errReceiver << "Failed to get display pixelMap";
             return false;
         }
-        FILE *fp = fopen(savePath.data(), "wb");
+        FILE *fp = fdopen(fd, "wb");
         if (fp == nullptr) {
             perror("File opening failed");
-            errReceiver << "File opening failed: " << savePath;
+            errReceiver << "File opening failed";
             return false;
         }
         png_structp pngStruct = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);

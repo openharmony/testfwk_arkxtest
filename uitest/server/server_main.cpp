@@ -149,11 +149,13 @@ namespace OHOS::uitest {
         }
         auto controller = SysUiController();
         stringstream errorRecv;
-        if (!controller.TakeScreenCap(savePath, errorRecv)) {
+        auto fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
+        if (!controller.TakeScreenCap(fd, errorRecv)) {
             PrintToConsole("ScreenCap failed: " + errorRecv.str());
             return EXIT_FAILURE;
         }
         PrintToConsole("ScreenCap saved to " + savePath);
+        (void) close(fd);
         return EXIT_SUCCESS;
     }
 
