@@ -356,30 +356,24 @@ namespace OHOS::uitest {
         widgetTree_->DfsTraverseDescendants(visitor, *widget);
     }
 
-    void UiDriver::MouseClick(Point point, MouseButton button, ApiCallErr &error, int32_t key1, int32_t key2)
+    void UiDriver::InjectMouseAction(MouseOpArgs mouseOpArgs, ApiCallErr &error)
     {
         auto id = GetActiveWindowId(error);
         if (error.code_ != NO_ERROR) {
             return;
         }
-        uiController_->InjectMouseClick(point, button, id, key1, key2);
-    }
-
-    void UiDriver::MouseMove(Point point, ApiCallErr &error)
-    {
-        auto id = GetActiveWindowId(error);
-        if (error.code_ != NO_ERROR) {
-            return;
+        switch (mouseOpArgs.action_) {
+            case MouseOp::M_MOVETO:
+                uiController_->InjectMouseMove(mouseOpArgs, id);
+                break;
+            case MouseOp::M_CLICK:
+                uiController_->InjectMouseClick(mouseOpArgs, id);
+                break;
+            case MouseOp::M_SCROLL:
+                uiController_->InjectMouseScroll(mouseOpArgs, id);
+                break;
+            default:
+                return;
         }
-        uiController_->InjectMouseMove(point, id);
-    }
-
-    void UiDriver::MouseScroll(Point point, bool adown, int32_t scrollValue, ApiCallErr &error, int32_t key1, int32_t key2)
-    {
-        auto id = GetActiveWindowId(error);
-        if (error.code_ != NO_ERROR) {
-            return;
-        }
-        uiController_->InjectMouseScroll(point, adown, scrollValue, id, key1, key2);
     }
 } // namespace OHOS::uitest

@@ -85,11 +85,7 @@ namespace OHOS::uitest {
 
         void DfsTraverseTree(WidgetVisitor &visitor, const Widget *widget = nullptr);
 
-        void MouseClick(Point point, MouseButton button, ApiCallErr &error, int32_t key1, int32_t key2);
-
-        void MouseMove(Point point, ApiCallErr &error);
-
-        void MouseScroll(Point point, bool adown, int32_t scrollValue, ApiCallErr &error, int32_t key1, int32_t key2);
+        void InjectMouseAction(MouseOpArgs mouseOpArgs, ApiCallErr &error);
 
         static void RegisterController(std::unique_ptr<UiController> controller);
 

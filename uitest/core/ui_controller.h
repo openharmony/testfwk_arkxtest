@@ -89,11 +89,11 @@ namespace OHOS::uitest {
          * */
         virtual bool IsWorkable() const = 0;
 
-        virtual void InjectMouseClick(Point point, MouseButton button, int32_t windowId, int32_t key1, int32_t key2) const {};
+        virtual void InjectMouseClick(MouseOpArgs mouseOpArgs, int32_t windowId) const {};
 
-        virtual void InjectMouseMove(Point point, int32_t windowId) const {};
+        virtual void InjectMouseMove(MouseOpArgs mouseOpArgs, int32_t windowId) const {};
 
-        virtual void InjectMouseScroll(Point point, bool adown, int32_t scrollValue, int32_t windowId, int32_t key1, int32_t key2) const {};
+        virtual void InjectMouseScroll(MouseOpArgs mouseOpArgs, int32_t windowId) const {};
 
         virtual void InjectMouseEventSequence(const PointerMatrix &events, int32_t windowId) const {};
     };
