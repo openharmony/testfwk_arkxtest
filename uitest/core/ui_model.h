@@ -25,24 +25,6 @@
 namespace OHOS::uitest {
     using namespace std;
 
-    enum ResizeDirection : uint8_t {
-        LEFT,
-        RIGHT,
-        D_UP,
-        D_DOWN,
-        LEFT_UP,
-        LEFT_DOWN,
-        RIGHT_UP,
-        RIGHT_DOWN
-    };
-
-    enum DisplayRotation : uint32_t {
-        ROTATION_0,
-        ROTATION_90,
-        ROTATION_180,
-        ROTATION_270
-    };
-
     /**Enumerates the supported UiComponent attributes.*/
     enum UiAttr : uint8_t {
         ACCESSIBILITY_ID,
@@ -271,6 +253,8 @@ namespace OHOS::uitest {
         void DfsTraverseFronts(WidgetVisitor &visitor, const Widget &pivot) const;
 
         void DfsTraverseRears(WidgetVisitor &visitor, const Widget &pivot) const;
+
+        void DfsTraverseParents(WidgetVisitor &visitor, const Widget &pivot) const;
 
         void DfsTraverseDescendants(WidgetVisitor &visitor, const Widget &root) const;
 

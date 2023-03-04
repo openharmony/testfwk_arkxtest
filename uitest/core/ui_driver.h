@@ -45,6 +45,9 @@ namespace OHOS::uitest {
         /**Retrieve window from updated UI.*/
         const Window *RetrieveWindow(const Window &window, ApiCallErr &err);
 
+        /**Get the id of actived window.*/
+        int32_t GetActiveWindowId(ApiCallErr &err);
+
         /**Trigger the given key action. */
         void TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error);
 
@@ -55,7 +58,7 @@ namespace OHOS::uitest {
         static void DelayMs(uint32_t ms);
 
         /**Take screen capture, save to given file path as PNG.*/
-        void TakeScreenCap(std::string_view savePath, ApiCallErr &err);
+        void TakeScreenCap(int32_t fd, ApiCallErr &err, Rect rect);
 
         void DumpUiHierarchy(nlohmann::json &out, ApiCallErr &error);
 
@@ -81,6 +84,12 @@ namespace OHOS::uitest {
         bool GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode, ApiCallErr &error);
 
         void DfsTraverseTree(WidgetVisitor &visitor, const Widget *widget = nullptr);
+
+        void MouseClick(Point point, MouseButton button, ApiCallErr &error, int32_t key1, int32_t key2);
+
+        void MouseMove(Point point, ApiCallErr &error);
+
+        void MouseScroll(Point point, bool adown, int32_t scrollValue, ApiCallErr &error, int32_t key1, int32_t key2);
 
         static void RegisterController(std::unique_ptr<UiController> controller);
 

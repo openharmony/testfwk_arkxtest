@@ -39,6 +39,8 @@ namespace OHOS::uitest {
         /**Add a selector as the rear locator widget requirement.*/
         void AddRearLocator(const WidgetSelector &selector, ApiCallErr &error);
 
+        void AddParentLocator(const WidgetSelector &selector, ApiCallErr &error);
+
         /**Select all the matched widgets on the given tree. Results are arranged in the
          * receiver in <b>DFS</b> order. */
         void Select(const WidgetTree &tree, std::vector<std::reference_wrapper<const Widget>> &results) const;
@@ -55,6 +57,7 @@ namespace OHOS::uitest {
         std::vector<WidgetAttrMatcher> selfMatchers_;
         std::vector<WidgetSelector> frontLocators_;
         std::vector<WidgetSelector> rearLocators_;
+        std::vector<WidgetSelector> parentLocators_;
     };
 }
 

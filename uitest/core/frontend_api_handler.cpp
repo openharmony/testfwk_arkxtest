@@ -14,6 +14,7 @@
  */
 
 #include <sstream>
+#include <unistd.h>
 #include "ui_driver.h"
 #include "widget_operator.h"
 #include "window_operator.h"
@@ -25,9 +26,9 @@ namespace OHOS::uitest {
     using namespace nlohmann::detail;
 
     /** API argument type list map.*/
-    static map<string, pair<vector<string>, bool>> sApiArgTypesMap;
+    static multimap<string, pair<vector<string>, size_t>> sApiArgTypesMap;
 
-    static void ParseMethodSignature(string_view signature, vector<string> &types, bool &defArg)
+    static void ParseMethodSignature(string_view signature, vector<string> &types, size_t &defArg)
     {
         int charIndex = 0;
         constexpr size_t BUF_LEN = 32;
@@ -40,7 +41,6 @@ namespace OHOS::uitest {
                 buf[tokenLen++] = ch;
             } else if (ch == '?') {
                 defArgCount++;
-                DCHECK(defArgCount == 1); // only one defaultArg allowed
             } else if (ch == ',' || ch == '?' || ch == ')') {
                 if (tokenLen > 0) {
                     token = string_view(buf, tokenLen);
@@ -57,7 +57,7 @@ namespace OHOS::uitest {
             }
             charIndex++;
         }
-        defArg = defArgCount > 0;
+        defArg = defArgCount;
     }
 
     /** Parse frontend method definitions to collect type information.*/
@@ -71,7 +71,7 @@ namespace OHOS::uitest {
             for (size_t idx = 0; idx < classDef->methodCount_; idx++) {
                 auto methodDef = classDef->methods_[idx];
                 auto paramTypes = vector<string>();
-                auto hasDefaultArg = false;
+                size_t hasDefaultArg = 0;
                 ParseMethodSignature(methodDef.signature_, paramTypes, hasDefaultArg);
                 sApiArgTypesMap.insert(make_pair(string(methodDef.name_), make_pair(paramTypes, hasDefaultArg)));
             }
@@ -360,26 +360,45 @@ namespace OHOS::uitest {
     /** Checks ApiCallInfo data, deliver exception and abort invocation if check fails.*/
     static void APiCallInfoChecker(const ApiCallInfo &in, ApiReplyInfo &out)
     {
+        auto count = sApiArgTypesMap.count(in.apiId_);
         // return nullptr by default
         out.resultValue_ = nullptr;
-        const auto find = sApiArgTypesMap.find(in.apiId_);
-        if (find == sApiArgTypesMap.end()) {
-            return;
-        }
-        const auto &types = find->second.first;
-        const auto argSupportDefault = find->second.second;
-        // check argument count.(last item of "types" is return value type)
-        const auto maxArgc = types.size() - 1;
-        const auto minArgc = argSupportDefault ? maxArgc - 1 : maxArgc;
-        const auto argc = in.paramList_.size();
-        CHECK_CALL_ARG(argc <= maxArgc && argc >= minArgc, ERR_INVALID_INPUT, "Illegal argument count", out.exception_);
-        // check argument type
-        for (size_t idx = 0; idx < argc; idx++) {
-            CheckCallArgType(types.at(idx), in.paramList_.at(idx), out.exception_);
-            if (out.exception_.code_ != NO_ERROR) {
-                out.exception_.message_ = "Check arg" + to_string(idx) + " failed: " + out.exception_.message_;
+        auto find = sApiArgTypesMap.find(in.apiId_);
+        size_t index = 0;
+        while (index < count) {
+            if (find == sApiArgTypesMap.end()) {
                 return;
             }
+            bool checkArgNum = false;
+            bool checkArgType = true;
+            out.exception_ = {NO_ERROR, "No Error"};
+            auto &types = find->second.first;
+            auto argSupportDefault = find->second.second;
+            // check argument count.(last item of "types" is return value type)
+            auto maxArgc = types.size() - 1;
+            auto minArgc = maxArgc - argSupportDefault;
+            auto argc = in.paramList_.size();
+            checkArgNum = argc <= maxArgc && argc >= minArgc;
+            if (!checkArgNum) {
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Illegal argument count");
+                ++find;
+                ++index;
+                continue;
+            }
+            // check argument type
+            for (size_t idx = 0; idx < argc; idx++) {
+                CheckCallArgType(types.at(idx), in.paramList_.at(idx), out.exception_);
+                if (out.exception_.code_ != NO_ERROR) {
+                    out.exception_.message_ = "Check arg" + to_string(idx) + " failed: " + out.exception_.message_;
+                    checkArgType = false;
+                    break;
+                }
+            }
+            if (checkArgNum && checkArgType) {
+                return;
+            }
+            ++find;
+            ++index;
         }
     }
 
@@ -510,14 +529,18 @@ namespace OHOS::uitest {
             if (attrName == "isBefore") {
                 auto &that = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
                 selector->AddRearLocator(that, out.exception_);
-            } else {
+            } else if (attrName == "isAfter") {
                 auto &that = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
                 selector->AddFrontLocator(that, out.exception_);
+            } else if (attrName == "within") {
+                auto &that = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
+                selector->AddParentLocator(that, out.exception_);
             }
             out.resultValue_ = StoreBackendObject(move(selector));
         };
         server.AddHandler("On.isBefore", genericRelativeBuilder);
         server.AddHandler("On.isAfter", genericRelativeBuilder);
+        server.AddHandler("On.within", genericRelativeBuilder);
     }
 
     static void RegisterUiDriverComponentFinders()
@@ -598,7 +621,7 @@ namespace OHOS::uitest {
         FrontendApiServer::Get().AddHandler("Driver.findWindow", findWindowHandler);
     }
 
-    static void RegisterUiDriverMiscMethods()
+    static void RegisterUiDriverMiscMethods1()
     {
         auto &server = FrontendApiServer::Get();
         auto create = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -619,11 +642,24 @@ namespace OHOS::uitest {
 
         auto screenCap = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
-            driver.TakeScreenCap(ReadCallArg<string>(in, INDEX_ZERO), out.exception_);
+            auto null = json();
+            auto rectJson = ReadCallArg<json>(in, INDEX_ONE, null);
+            Rect rect = {0, 0, 0, 0};
+            if (!rectJson.empty()) {
+                rect = Rect(rectJson["left"], rectJson["right"], rectJson["top"], rectJson["bottom"]);
+            }
+            auto fd = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+            driver.TakeScreenCap(fd, out.exception_, rect);
             out.resultValue_ = (out.exception_.code_ == NO_ERROR);
+            (void) close(fd);
         };
         server.AddHandler("Driver.screenCap", screenCap);
+        server.AddHandler("Driver.screenCapture", screenCap);
+    }
 
+    static void RegisterUiDriverMiscMethods2()
+    {
+        auto &server = FrontendApiServer::Get();
         auto pressBack = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
@@ -714,37 +750,77 @@ namespace OHOS::uitest {
         return true;
     }
 
-    static void RegisterUiDriverMultiPointerOperators()
+    static void CreateFlingPoint(Point &to, Point &from, Point screenSize, Direction direction)
+    {
+        to = Point(screenSize.px_ / INDEX_TWO, screenSize.py_ / INDEX_TWO);
+        switch (direction) {
+            case TO_LEFT:
+                from.px_ = to.px_ - screenSize.px_ / INDEX_FOUR;
+                from.py_ = to.py_;
+                break;
+            case TO_RIGHT:
+                from.px_ = to.px_ + screenSize.px_ / INDEX_FOUR;
+                from.py_ = to.py_;
+                break;
+            case TO_UP:
+                from.px_ = to.px_;
+                from.py_ = to.py_ - screenSize.py_ / INDEX_FOUR;
+                break;
+            case TO_DOWN:
+                from.px_ = to.px_;
+                from.py_ = to.py_ + screenSize.py_ / INDEX_FOUR;
+                break;
+            default:
+                break;
+        }
+    }
+
+    static void RegisterUiDriverFlingOperators()
     {
         auto &server = FrontendApiServer::Get();
         auto genericFling = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             auto op = TouchOp::SWIPE;
-            auto pointJson0 = ReadCallArg<json>(in, INDEX_ZERO);
-            auto pointJson1 = ReadCallArg<json>(in, INDEX_ONE);
-            if (pointJson0.empty() || pointJson1.empty()) {
-                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Point cannot be empty");
-                return;
+            auto params = in.paramList_;
+            Point from;
+            Point to;
+            if (params.size() == INDEX_TWO) {
+                auto screenSize = driver.GetDisplaySize(out.exception_);
+                auto direction = ReadCallArg<Direction>(in, INDEX_ZERO);
+                CreateFlingPoint(to, from, screenSize, direction);
+                uiOpArgs.swipeStepsCounts_ = INDEX_TWO;
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_ONE);
+            } else {
+                auto pointJson0 = ReadCallArg<json>(in, INDEX_ZERO);
+                auto pointJson1 = ReadCallArg<json>(in, INDEX_ONE);
+                if (pointJson0.empty() || pointJson1.empty()) {
+                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Point cannot be empty");
+                    return;
+                }
+                from = Point(pointJson0["x"], pointJson0["y"]);
+                to = Point(pointJson1["x"], pointJson1["y"]);
+                auto stepLength = ReadCallArg<uint32_t>(in, INDEX_TWO);
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_THREE);
+                const int32_t distanceX = to.px_ - from.px_;
+                const int32_t distanceY = to.py_ - from.py_;
+                const uint32_t distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+                if (stepLength <= 0 || stepLength > distance) {
+                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "The stepLen is out of range");
+                    return;
+                }
+                uiOpArgs.swipeStepsCounts_ = distance / stepLength;
             }
-            const auto point0 = Point(pointJson0["x"], pointJson0["y"]);
-            const auto point1 = Point(pointJson1["x"], pointJson1["y"]);
-            const auto stepLength = ReadCallArg<uint32_t>(in, INDEX_TWO);
-            uiOpArgs.swipeVelocityPps_  = ReadCallArg<uint32_t>(in, INDEX_THREE);
             CheckSwipeVelocityPps(uiOpArgs);
-            const int32_t distanceX = point1.px_ - point0.px_;
-            const int32_t distanceY = point1.py_ - point0.py_;
-            const uint32_t distance = sqrt(distanceX * distanceX + distanceY * distanceY);
-            if (stepLength <= 0 || stepLength > distance) {
-                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "The stepLen is out of range");
-                return;
-            }
-            uiOpArgs.swipeStepsCounts_ = distance / stepLength;
-            auto touch = GenericSwipe(op, point0, point1);
+            auto touch = GenericSwipe(op, from, to);
             driver.PerformTouch(touch, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.fling", genericFling);
+    }
 
+    static void RegisterUiDriverMultiPointerOperators()
+    {
+        auto &server = FrontendApiServer::Get();
         auto multiPointerAction = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto &pointer = GetBackendObject<PointerMatrix>(ReadCallArg<string>(in, INDEX_ZERO));
@@ -761,6 +837,37 @@ namespace OHOS::uitest {
             out.resultValue_ = (out.exception_.code_ == NO_ERROR);
         };
         server.AddHandler("Driver.injectMultiPointerAction", multiPointerAction);
+
+        auto mouseClick = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
+            auto point = Point(pointJson["x"], pointJson["y"]);
+            auto button = ReadCallArg<MouseButton>(in, INDEX_ONE);
+            auto key1 = ReadCallArg<int32_t>(in, INDEX_TWO, KEYCODE_NONE);
+            auto key2 = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
+            driver.MouseClick(point, button, out.exception_, key1, key2);
+        };
+        server.AddHandler("Driver.mouseClick", mouseClick);
+
+        auto mouseMove = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
+            auto point = Point(pointJson["x"], pointJson["y"]);
+            driver.MouseMove(point, out.exception_);
+        };
+        server.AddHandler("Driver.mouseMoveTo", mouseMove);
+
+        auto mouseScroll = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
+            auto point = Point(pointJson["x"], pointJson["y"]);
+            bool adown = ReadCallArg<bool>(in, INDEX_ONE);
+            auto scrollValue = ReadCallArg<int32_t>(in, INDEX_TWO);
+            auto key1 = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
+            auto key2 = ReadCallArg<int32_t>(in, INDEX_FOUR, KEYCODE_NONE);
+            driver.MouseScroll(point, adown, scrollValue, out.exception_, key1, key2);
+        };
+        server.AddHandler("Driver.mouseScroll", mouseScroll);
     }
 
     static void RegisterUiDriverDisplayOperators()
@@ -1066,7 +1173,8 @@ namespace OHOS::uitest {
         RegisterOnBuilders();
         RegisterUiDriverComponentFinders();
         RegisterUiDriverWindowFinder();
-        RegisterUiDriverMiscMethods();
+        RegisterUiDriverMiscMethods1();
+        RegisterUiDriverMiscMethods2();
         RegisterUiDriverTouchOperators();
         RegisterUiComponentAttrGetters();
         RegisterUiComponentOperators();
@@ -1074,6 +1182,7 @@ namespace OHOS::uitest {
         RegisterUiWindowOperators();
         RegisterUiWinBarOperators();
         RegisterPointerMatrixOperators();
+        RegisterUiDriverFlingOperators();
         RegisterUiDriverMultiPointerOperators();
         RegisterUiDriverDisplayOperators();
     }

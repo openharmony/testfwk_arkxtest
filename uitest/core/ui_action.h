@@ -39,6 +39,46 @@ namespace OHOS::uitest {
         DOWN = 0, MOVE = 1, UP = 2
     };
 
+    enum MouseAction : int32_t {
+        M_MOVE = 3,
+        AXIS_BEGIN = 5,
+        AXIS_END = 7,
+        BUTTON_DOWN = 8,
+        BUTTON_UP = 9
+    };
+
+    enum ResizeDirection : uint8_t {
+        LEFT,
+        RIGHT,
+        D_UP,
+        D_DOWN,
+        LEFT_UP,
+        LEFT_DOWN,
+        RIGHT_UP,
+        RIGHT_DOWN
+    };
+
+    enum DisplayRotation : uint32_t {
+        ROTATION_0,
+        ROTATION_90,
+        ROTATION_180,
+        ROTATION_270
+    };
+
+    enum MouseButton : int32_t {
+        BUTTON_NONE = -1,
+        BUTTON_LEFT = 0,
+        BUTTON_RIGHT = 1,
+        BUTTON_MIDDLE = 2
+    };
+
+    enum Direction : uint32_t {
+        TO_LEFT,
+        TO_RIGHT,
+        TO_UP,
+        TO_DOWN
+    };
+
     struct TouchEvent {
         ActionStage stage_;
         Point point_;
@@ -111,6 +151,7 @@ namespace OHOS::uitest {
         uint32_t waitWidgetMaxMs_ = 5000;
         int32_t scrollWidgetDeadZone_ = 20;
         uint16_t swipeStepsCounts_ = 50;
+        uint16_t touchDevice = 0;
     };
 
     class TouchAction {

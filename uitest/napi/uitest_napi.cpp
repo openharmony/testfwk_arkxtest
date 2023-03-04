@@ -195,6 +195,10 @@ namespace OHOS::uitest {
      * transaction if any, else return the result object. */
     static napi_value UnmarshalReply(napi_env env, const TransactionContext &ctx, const ApiReplyInfo &reply)
     {
+        if (ctx.callInfo_.fdParamIndex_ >= 0) {
+            auto fd = ctx.callInfo_.paramList_.at(INDEX_ZERO).get<int>();
+            (void) close(fd);
+        }
         LOG_D("Start to Unmarshal transaction result");
         const auto &message = reply.exception_.message_;
         ErrCode code = reply.exception_.code_;
@@ -325,6 +329,25 @@ namespace OHOS::uitest {
         pasteBoardMgr->SetPasteData(*pasteData);
     }
 
+    static void PreprocessTransaction(napi_env env, TransactionContext &ctx, napi_value &error)
+    {
+        if (ctx.callInfo_.apiId_  == "Component.inputText") {
+            auto text = ctx.callInfo_.paramList_.at(INDEX_ZERO).get<string>();
+            SetPasteBoardData(text);
+        }
+        auto id = ctx.callInfo_.apiId_ ;
+        if (id  == "Driver.screenCap" || id  == "UiDriver.screenCap" || id  == "Driver.screenCapture") {
+            auto path = ctx.callInfo_.paramList_.at(INDEX_ZERO).get<string>();
+            auto fd = open(path.c_str(), O_RDWR | O_CREAT, 0666);
+            if (fd == -1) {
+                LOG_E("Invalid file path: %{public}s", path.data());
+                error = CreateJsException(env, ERR_INVALID_INPUT, "Invalid file path:" + path);
+            }
+            ctx.callInfo_.fdParamIndex_ = INDEX_ZERO;
+            ctx.callInfo_.paramList_[INDEX_ZERO] = fd;
+        }
+    }
+
     /**Generic js-api callback.*/
     static napi_value GenericCallback(napi_env env, napi_callback_info info)
     {
@@ -361,9 +384,12 @@ namespace OHOS::uitest {
         }
         // 3. fill-in apiId
         ctx.callInfo_.apiId_ = methodDef->name_;
-        if (ctx.callInfo_.apiId_  == "Component.inputText") {
-            auto text = ctx.callInfo_.paramList_.at(INDEX_ZERO).get<string>();
-            SetPasteBoardData(text);
+        napi_value error = nullptr;
+        PreprocessTransaction(env, ctx, error);
+        if (error != nullptr) {
+            NAPI_CALL(env, napi_throw(env, error));
+            NAPI_CALL(env, napi_get_undefined(env, &error));
+            return error;
         }
         // 4. call out, sync or async
         if (methodDef->fast_) {
@@ -482,6 +508,8 @@ namespace OHOS::uitest {
         NAPI_CALL(env, ExportEnumerator(env, exports, RESIZE_DIRECTION_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, WINDOW_MODE_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, DISPLAY_ROTATION_DEF));
+        NAPI_CALL(env, ExportEnumerator(env, exports, MOUSE_BUTTON_DEF));
+        NAPI_CALL(env, ExportEnumerator(env, exports, UI_DIRECTION_DEF));
         LOG_I("End export uitest apis");
         return exports;
     }
