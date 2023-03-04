@@ -34,11 +34,11 @@ namespace OHOS::uitest {
 
         void InjectTouchEventSequence(const PointerMatrix &events) const override;
 
-        void InjectMouseClick(Point point, MouseButton button, int32_t windowId, int32_t key1, int32_t key2) const override;
+        void InjectMouseClick(MouseOpArgs mouseOpArgs, int32_t windowId) const override;
 
-        void InjectMouseScroll(Point point, bool adown, int32_t scrollValue, int32_t windowId, int32_t key1, int32_t key2) const override;
+        void InjectMouseScroll(MouseOpArgs mouseOpArgs, int32_t windowId) const override;
 
-        void InjectMouseMove(Point point, int32_t windowId) const override;
+        void InjectMouseMove(MouseOpArgs mouseOpArgs, int32_t windowId) const override;
 
         void InjectKeyEventSequence(const std::vector<KeyEvent> &events) const override;
 

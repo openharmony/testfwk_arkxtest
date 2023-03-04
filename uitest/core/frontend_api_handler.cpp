@@ -837,35 +837,45 @@ namespace OHOS::uitest {
             out.resultValue_ = (out.exception_.code_ == NO_ERROR);
         };
         server.AddHandler("Driver.injectMultiPointerAction", multiPointerAction);
+    }
 
+    static void RegisterUiDriverMouseOperators()
+    {
+        auto &server = FrontendApiServer::Get();
         auto mouseClick = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            MouseOpArgs mouseOpArgs;
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto point = Point(pointJson["x"], pointJson["y"]);
-            auto button = ReadCallArg<MouseButton>(in, INDEX_ONE);
-            auto key1 = ReadCallArg<int32_t>(in, INDEX_TWO, KEYCODE_NONE);
-            auto key2 = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
-            driver.MouseClick(point, button, out.exception_, key1, key2);
+            mouseOpArgs.point_ = Point(pointJson["x"], pointJson["y"]);
+            mouseOpArgs.button_ = ReadCallArg<MouseButton>(in, INDEX_ONE);
+            mouseOpArgs.key1_ = ReadCallArg<int32_t>(in, INDEX_TWO, KEYCODE_NONE);
+            mouseOpArgs.key2_ = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
+            mouseOpArgs.action_ = MouseOp::M_CLICK;
+            driver.InjectMouseAction(mouseOpArgs, out.exception_);
         };
         server.AddHandler("Driver.mouseClick", mouseClick);
 
         auto mouseMove = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            MouseOpArgs mouseOpArgs;
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto point = Point(pointJson["x"], pointJson["y"]);
-            driver.MouseMove(point, out.exception_);
+            mouseOpArgs.point_ = Point(pointJson["x"], pointJson["y"]);
+            mouseOpArgs.action_ = MouseOp::M_MOVETO;
+            driver.InjectMouseAction(mouseOpArgs, out.exception_);
         };
         server.AddHandler("Driver.mouseMoveTo", mouseMove);
 
         auto mouseScroll = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            MouseOpArgs mouseOpArgs;
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto point = Point(pointJson["x"], pointJson["y"]);
-            bool adown = ReadCallArg<bool>(in, INDEX_ONE);
-            auto scrollValue = ReadCallArg<int32_t>(in, INDEX_TWO);
-            auto key1 = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
-            auto key2 = ReadCallArg<int32_t>(in, INDEX_FOUR, KEYCODE_NONE);
-            driver.MouseScroll(point, adown, scrollValue, out.exception_, key1, key2);
+            mouseOpArgs.point_ = Point(pointJson["x"], pointJson["y"]);
+            mouseOpArgs.adown_ = ReadCallArg<bool>(in, INDEX_ONE);
+            mouseOpArgs.scrollValue_ = ReadCallArg<int32_t>(in, INDEX_TWO);
+            mouseOpArgs.key1_ = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
+            mouseOpArgs.key2_ = ReadCallArg<int32_t>(in, INDEX_FOUR, KEYCODE_NONE);
+            mouseOpArgs.action_ = MouseOp::M_SCROLL;
+            driver.InjectMouseAction(mouseOpArgs, out.exception_);
         };
         server.AddHandler("Driver.mouseScroll", mouseScroll);
     }
@@ -1185,5 +1195,6 @@ namespace OHOS::uitest {
         RegisterUiDriverFlingOperators();
         RegisterUiDriverMultiPointerOperators();
         RegisterUiDriverDisplayOperators();
+        RegisterUiDriverMouseOperators();
     }
 } // namespace OHOS::uitest

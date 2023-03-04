@@ -39,7 +39,14 @@ namespace OHOS::uitest {
         DOWN = 0, MOVE = 1, UP = 2
     };
 
-    enum MouseAction : int32_t {
+    enum MouseOp : int32_t {
+        UNDEFINE = -1,
+        M_MOVETO = 0,
+        M_CLICK = 1,
+        M_SCROLL = 2,
+    };
+
+    enum MouseEventType : int32_t {
         M_MOVE = 3,
         AXIS_BEGIN = 5,
         AXIS_END = 7,
@@ -91,6 +98,20 @@ namespace OHOS::uitest {
         ActionStage stage_;
         int32_t code_;
         uint32_t holdMs_;
+    };
+
+    /**
+     * Options of the mouse operations, initialized with system default values.
+     **/
+    class MouseOpArgs {
+    public:
+        Point point_ = Point(0, 0);
+        MouseButton button_ = MouseButton::BUTTON_NONE;
+        bool adown_ = true;
+        int32_t scrollValue_ = 0;
+        int32_t key1_ = KEYCODE_NONE;
+        int32_t key2_ = KEYCODE_NONE;
+        MouseOp action_ = MouseOp::UNDEFINE;
     };
 
     class PointerMatrix : public BackendClass {
