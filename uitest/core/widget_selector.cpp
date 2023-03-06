@@ -53,15 +53,32 @@ namespace OHOS::uitest {
         rearLocators_.emplace_back(selector);
     }
 
-    static bool CheckHasLocator(const WidgetTree &tree, const Widget &widget, const WidgetMatcher &matcher, bool front)
+    void WidgetSelector::AddParentLocator(const WidgetSelector &selector, ApiCallErr &error)
+    {
+        if (!selector.rearLocators_.empty() || !selector.frontLocators_.empty()) {
+            error = ApiCallErr(ERR_INVALID_INPUT, NEST_USAGE_ERROR);
+            return;
+        }
+        parentLocators_.emplace_back(selector);
+    }
+
+    static bool CheckHasLocator(const WidgetTree &tree, const Widget &widget, const WidgetMatcher &matcher, size_t idx)
     {
         vector<reference_wrapper<const Widget>> locators;
         locators.clear();
         MatchedWidgetCollector collector(matcher, locators);
-        if (front) {
-            tree.DfsTraverseFronts(collector, widget);
-        } else {
-            tree.DfsTraverseRears(collector, widget);
+        switch (idx) {
+            case INDEX_ZERO:
+                tree.DfsTraverseFronts(collector, widget);
+                break;
+            case INDEX_ONE:
+                tree.DfsTraverseRears(collector, widget);
+                break;
+            case INDEX_TWO:
+                tree.DfsTraverseParents(collector, widget);
+                break;
+            default:
+                break;
         }
         return !locators.empty();
     }
@@ -78,15 +95,15 @@ namespace OHOS::uitest {
 
         vector<uint32_t> discardWidgetOffsets;
         // check locators at each direction and filter out unsatisfied widgets
-        for (size_t idx = 0; idx < INDEX_TWO; idx++) {
+        std::vector<std::vector<WidgetSelector>> allLocators = {frontLocators_, rearLocators_, parentLocators_};
+        for (size_t idx = 0; idx < INDEX_THREE; idx++) {
             discardWidgetOffsets.clear();
             uint32_t offset = 0;
             for (auto &result:results) {
-                const bool front = idx == 0;
-                const auto &locators = front ? frontLocators_ : rearLocators_;
+                const auto &locators = allLocators[idx];
                 for (auto &locator:locators) {
                     auto locatorMatcher = All(locator.selfMatchers_);
-                    if (!CheckHasLocator(tree, result.get(), locatorMatcher, front)) {
+                    if (!CheckHasLocator(tree, result.get(), locatorMatcher, idx)) {
                         // this means not all the required front locator are found, exclude this candidate
                         discardWidgetOffsets.emplace_back(offset);
                         break;

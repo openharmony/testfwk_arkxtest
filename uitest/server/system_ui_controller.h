@@ -34,11 +34,17 @@ namespace OHOS::uitest {
 
         void InjectTouchEventSequence(const PointerMatrix &events) const override;
 
+        void InjectMouseClick(MouseOpArgs mouseOpArgs, int32_t windowId) const override;
+
+        void InjectMouseScroll(MouseOpArgs mouseOpArgs, int32_t windowId) const override;
+
+        void InjectMouseMove(MouseOpArgs mouseOpArgs, int32_t windowId) const override;
+
         void InjectKeyEventSequence(const std::vector<KeyEvent> &events) const override;
 
         void PutTextToClipboard(std::string_view text) const override;
 
-        bool TakeScreenCap(std::string_view savePath, std::stringstream &errReceiver) const override;
+        bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, Rect rect = {0, 0, 0, 0}) const override;
 
         bool GetCharKeyCode(char ch, int32_t& code, int32_t& ctrlCode) const override;
 

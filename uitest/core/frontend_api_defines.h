@@ -193,6 +193,31 @@ namespace OHOS::uitest {
         sizeof(DISPLAY_ROTATION_VALUES) / sizeof(FrontendEnumValueDef),
     };
 
+    /** Describes the Button of the mouse.*/
+    constexpr FrontendEnumValueDef MOUSE_BUTTON_VALUES[] = {
+        {"MOUSE_BUTTON_LEFT", "0"},
+        {"MOUSE_BUTTON_RIGHT", "1"},
+        {"MOUSE_BUTTON_MIDDLE", "2"},
+    };
+    constexpr FrontendEnumeratorDef MOUSE_BUTTON_DEF = {
+        "MouseButton",
+        MOUSE_BUTTON_VALUES,
+        sizeof(MOUSE_BUTTON_VALUES) / sizeof(FrontendEnumValueDef),
+    };
+
+    /** Describes the direction of the UI operation.*/
+    constexpr FrontendEnumValueDef UI_DIRECTION_VALUES[] = {
+        {"LEFT", "0"},
+        {"RIGHT", "1"},
+        {"UP", "2"},
+        {"DOWN", "3"},
+    };
+    constexpr FrontendEnumeratorDef UI_DIRECTION_DEF = {
+        "UiDirection",
+        UI_DIRECTION_VALUES,
+        sizeof(UI_DIRECTION_VALUES) / sizeof(FrontendEnumValueDef),
+    };
+
     /** Rect jsonObject definition.*/
     constexpr FrontEndJsonPropDef RECT_PROPERTIES[] = {
         {"left", "int", true},
@@ -257,7 +282,7 @@ namespace OHOS::uitest {
         {"UiDriver.delayMs", "(int):void", false, false},
         {"UiDriver.findComponent", "(By):UiComponent", false, false},
         {"UiDriver.findComponents", "(By):[UiComponent]", false, false},
-        {"UiDriver.screenCap", "(string):bool", false, false},
+        {"UiDriver.screenCap", "(int):bool", false, false}, // fliePath as fileDescription.
         {"UiDriver.assertComponentExist", "(By):void", false, false},
         {"UiDriver.pressBack", "():void", false, false},
         {"UiDriver.triggerKey", "(int):void", false, false},
@@ -310,6 +335,7 @@ namespace OHOS::uitest {
         {"On.checked", "(bool?):On", false, true},
         {"On.isBefore", "(On):On", false, true},
         {"On.isAfter", "(On):On", false, true},
+        {"On.within", "(On):On", false, true},
     };
 
     constexpr std::string_view REF_SEED_ON = "On#seed";
@@ -327,7 +353,8 @@ namespace OHOS::uitest {
         {"Driver.findWindow", "(WindowFilter):UiWindow", false, false},
         {"Driver.findComponents", "(On):[Component]", false, false},
         {"Driver.waitForComponent", "(On,int):Component", false, false},
-        {"Driver.screenCap", "(string):bool", false, false},
+        {"Driver.screenCap", "(int):bool", false, false},            // fliePath as fileDescription.
+        {"Driver.screenCapture", "(int, Rect?):bool", false, false}, // fliePath as fileDescription.
         {"Driver.assertComponentExist", "(On):void", false, false},
         {"Driver.pressBack", "():void", false, false},
         {"Driver.triggerKey", "(int):void", false, false},
@@ -346,7 +373,11 @@ namespace OHOS::uitest {
         {"Driver.pressHome", "():void", false, false},
         {"Driver.waitForIdle", "(int,int):bool", false, false},
         {"Driver.fling", "(Point,Point,int,int):void", false, false},
+        {"Driver.fling", "(int,int):void", false, false},
         {"Driver.injectMultiPointerAction", "(PointerMatrix, int?):bool", false, false},
+        {"Driver.mouseClick", "(Point,int,int?,int?):void", false, false},
+        {"Driver.mouseMoveTo", "(Point):void", false, false},
+        {"Driver.mouseScroll", "(Point,bool,int,int?,int?):void", false, false},
     };
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",
@@ -425,7 +456,7 @@ namespace OHOS::uitest {
     const auto FRONTEND_CLASS_DEFS = {&BY_DEF, &UI_DRIVER_DEF, &UI_COMPONENT_DEF, &ON_DEF,
                                       &DRIVER_DEF, &COMPONENT_DEF, &UI_WINDOW_DEF, &POINTER_MATRIX_DEF};
     const auto FRONTEND_ENUMERATOR_DEFS = {&MATCH_PATTERN_DEF, &WINDOW_MODE_DEF, &RESIZE_DIRECTION_DEF,
-                                           &DISPLAY_ROTATION_DEF};
+                                           &DISPLAY_ROTATION_DEF, &MOUSE_BUTTON_DEF, &UI_DIRECTION_DEF};
     const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF};
     /** The allowed in/out data type scope of frontend apis.*/
     const std::initializer_list<std::string_view> DATA_TYPE_SCOPE = {

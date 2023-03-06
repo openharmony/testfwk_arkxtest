@@ -208,13 +208,13 @@ namespace OHOS::uitest {
         uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
     }
 
-    void UiDriver::TakeScreenCap(string_view savePath, ApiCallErr &err)
+    void UiDriver::TakeScreenCap(int32_t fd, ApiCallErr &err, Rect rect)
     {
         if (!CheckStatus(false, err)) {
             return;
         }
         stringstream errorRecv;
-        if (!uiController_->TakeScreenCap(savePath, errorRecv)) {
+        if (!uiController_->TakeScreenCap(fd, errorRecv, rect)) {
             string errStr = errorRecv.str();
             LOG_W("ScreenCap failed: %{public}s", errStr.c_str());
             if (errStr.find("File opening failed") == 0) {
@@ -224,7 +224,7 @@ namespace OHOS::uitest {
             }
             LOG_W("ScreenCap failed: %{public}s", errorRecv.str().c_str());
         } else {
-            LOG_D("ScreenCap saved to %{public}s", savePath.data());
+            LOG_D("ScreenCap successed");
         }
     }
 
@@ -261,6 +261,18 @@ namespace OHOS::uitest {
         err = ApiCallErr(ERR_COMPONENT_LOST, msg.str());
         LOG_W("%{public}s", err.message_.c_str());
         return nullptr;
+    }
+
+    int32_t UiDriver::GetActiveWindowId(ApiCallErr &err)
+    {
+        UpdateUi(true, err);
+        for (auto window : windows_) {
+            if (window.actived_) {
+                return window.id_;
+            }
+        }
+        err = ApiCallErr(ERR_INTERNAL, "NO active window currently");
+        return 0;
     }
 
     void UiDriver::SetDisplayRotation(DisplayRotation rotation, ApiCallErr &error)
@@ -342,5 +354,26 @@ namespace OHOS::uitest {
             widgetTree_->DfsTraverse(visitor);
         }
         widgetTree_->DfsTraverseDescendants(visitor, *widget);
+    }
+
+    void UiDriver::InjectMouseAction(MouseOpArgs mouseOpArgs, ApiCallErr &error)
+    {
+        auto id = GetActiveWindowId(error);
+        if (error.code_ != NO_ERROR) {
+            return;
+        }
+        switch (mouseOpArgs.action_) {
+            case MouseOp::M_MOVETO:
+                uiController_->InjectMouseMove(mouseOpArgs, id);
+                break;
+            case MouseOp::M_CLICK:
+                uiController_->InjectMouseClick(mouseOpArgs, id);
+                break;
+            case MouseOp::M_SCROLL:
+                uiController_->InjectMouseScroll(mouseOpArgs, id);
+                break;
+            default:
+                return;
+        }
     }
 } // namespace OHOS::uitest

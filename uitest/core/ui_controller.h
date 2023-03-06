@@ -50,7 +50,7 @@ namespace OHOS::uitest {
 
         virtual void PutTextToClipboard(std::string_view text) const {};
 
-        virtual bool TakeScreenCap(std::string_view savePath, std::stringstream &errReceiver) const
+        virtual bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, Rect rect) const
         {
             return false;
         };
@@ -88,6 +88,14 @@ namespace OHOS::uitest {
          * Tells if this controller is effective for current UI.
          * */
         virtual bool IsWorkable() const = 0;
+
+        virtual void InjectMouseClick(MouseOpArgs mouseOpArgs, int32_t windowId) const {};
+
+        virtual void InjectMouseMove(MouseOpArgs mouseOpArgs, int32_t windowId) const {};
+
+        virtual void InjectMouseScroll(MouseOpArgs mouseOpArgs, int32_t windowId) const {};
+
+        virtual void InjectMouseEventSequence(const PointerMatrix &events, int32_t windowId) const {};
     };
 }
 
