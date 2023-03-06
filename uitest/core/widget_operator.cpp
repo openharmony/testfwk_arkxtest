@@ -74,8 +74,8 @@ namespace OHOS::uitest {
                 // scroll widget from its deadZone maybe unresponsive
                 if (displaySize.py_ - bounds.bottom_ <= options_.scrollWidgetDeadZone_ ||
                     bounds.top_ <= options_.scrollWidgetDeadZone_) {
-                        bounds.top_ += options_.scrollWidgetDeadZone_;
-                        bounds.bottom_ -= options_.scrollWidgetDeadZone_;
+                        bounds.top_ += options_.scrollWidgetDeadZone_ * INDEX_FOUR;
+                        bounds.bottom_ -= options_.scrollWidgetDeadZone_ * INDEX_FOUR;
                     }
                 bounds.top_ += options_.scrollWidgetDeadZone_;
                 bounds.bottom_ -= options_.scrollWidgetDeadZone_;
@@ -255,8 +255,8 @@ namespace OHOS::uitest {
                 // scroll widget from its deadZone maybe unresponsive
                 if (displaySize.py_ - bounds.bottom_ <= options_.scrollWidgetDeadZone_ ||
                     bounds.top_ <= options_.scrollWidgetDeadZone_) {
-                        bounds.top_ += options_.scrollWidgetDeadZone_;
-                        bounds.bottom_ -= options_.scrollWidgetDeadZone_;
+                        bounds.top_ += options_.scrollWidgetDeadZone_ * INDEX_FOUR;
+                        bounds.bottom_ -= options_.scrollWidgetDeadZone_ * INDEX_FOUR;
                     }
                 bounds.top_ += options_.scrollWidgetDeadZone_;
                 bounds.bottom_ -= options_.scrollWidgetDeadZone_;

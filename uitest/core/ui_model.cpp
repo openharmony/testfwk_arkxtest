@@ -231,6 +231,25 @@ namespace OHOS::uitest {
         }
     }
 
+    void WidgetTree::DfsTraverseParents(WidgetVisitor &visitor, const Widget &pivot) const
+    {
+        DCHECK(widgetsConstructed_);
+        DCHECK(CheckIsMyNode(pivot));
+        auto root = GetRootWidget();
+        if (root == nullptr) {
+            return;
+        }
+        auto pivotHierarchy = pivot.GetHierarchy();
+        auto parent = this->GetParentWidget(pivot);
+        while (true) {
+            if (parent == nullptr) {
+                break;
+            }
+            visitor.Visit(*parent);
+            parent = this->GetParentWidget(*parent);
+        }
+    }
+
     void WidgetTree::DfsTraverseDescendants(WidgetVisitor &visitor, const Widget &root) const
     {
         DCHECK(widgetsConstructed_);

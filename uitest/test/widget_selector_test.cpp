@@ -503,3 +503,303 @@ TEST_F(WidgetSelectorTest, selectorDescription)
     ASSERT_TRUE(pos4 != string::npos && pos4 > pos3);
     ASSERT_TRUE(pos5 != string::npos && pos5 > pos4);
 }
+
+TEST_F(WidgetSelectorTest, singleParentLocatorAndExistsNoTarget)
+{
+    ApiCallErr err(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Use USB to", EQ);
+    selector.AddMatcher(matcher0);
+
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id5", EQ);
+    auto parentLocator = WidgetSelector();
+    parentLocator.AddMatcher(parentMatcher);
+    selector.AddParentLocator(parentLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    // "Use USB to" is not a chilid of "id5", so no widget should be selected
+    ASSERT_EQ(0, receiver.size());
+}
+
+TEST_F(WidgetSelectorTest, singleParentLocatorAndExistsSingleTarget)
+{
+    ApiCallErr err(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id4", EQ);
+    selector.AddMatcher(matcher0);
+
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id3", EQ);
+    auto parentLocator = WidgetSelector();
+    parentLocator.AddMatcher(parentMatcher);
+    selector.AddParentLocator(parentLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(1, receiver.size());
+    ASSERT_EQ("Use USB to", receiver.at(0).get().GetAttr(ATTR_TEXT, ""));
+}
+
+TEST_F(WidgetSelectorTest, singleParentLocatorAndExistMultiTargets)
+{
+    ApiCallErr err(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
+    selector.AddMatcher(matcher0);
+
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id2", EQ);
+    auto parentLocator = WidgetSelector();
+    parentLocator.AddMatcher(parentMatcher);
+    selector.AddParentLocator(parentLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(2, receiver.size());
+    ASSERT_EQ("id3", receiver.at(0).get().GetAttr("resource-id", ""));
+    ASSERT_EQ("id4", receiver.at(1).get().GetAttr("resource-id", ""));
+}
+
+TEST_F(WidgetSelectorTest, frontAndParentLocatorsAndExistsNoTarget)
+{
+    ApiCallErr err(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
+    selector.AddMatcher(matcher0);
+
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id2", EQ);
+    auto parentLocator = WidgetSelector();
+    parentLocator.AddMatcher(parentMatcher);
+    selector.AddParentLocator(parentLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id4", EQ);
+    auto frontLocator = WidgetSelector();
+    frontLocator.AddMatcher(frontMatcher);
+    selector.AddFrontLocator(frontLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(0, receiver.size());
+}
+
+TEST_F(WidgetSelectorTest, frontAndParentLocatorsAndExistsSingleTarget)
+{
+    ApiCallErr err(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
+    selector.AddMatcher(matcher0);
+
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id2", EQ);
+    auto parentLocator = WidgetSelector();
+    parentLocator.AddMatcher(parentMatcher);
+    selector.AddParentLocator(parentLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id3", EQ);
+    auto frontLocator = WidgetSelector();
+    frontLocator.AddMatcher(frontMatcher);
+    selector.AddFrontLocator(frontLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(1, receiver.size());
+    ASSERT_EQ("id4", receiver.at(0).get().GetAttr("resource-id", ""));
+}
+
+TEST_F(WidgetSelectorTest, frontAndParentLocatorsAndExistsMultiTargets)
+{
+    ApiCallErr err(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
+    selector.AddMatcher(matcher0);
+
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id2", EQ);
+    auto parentLocator = WidgetSelector();
+    parentLocator.AddMatcher(parentMatcher);
+    selector.AddParentLocator(parentLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id1", EQ);
+    auto frontLocator = WidgetSelector();
+    frontLocator.AddMatcher(frontMatcher);
+    selector.AddFrontLocator(frontLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(2, receiver.size());
+    ASSERT_EQ("id3", receiver.at(0).get().GetAttr("resource-id", ""));
+    ASSERT_EQ("id4", receiver.at(1).get().GetAttr("resource-id", ""));
+}
+
+TEST_F(WidgetSelectorTest, rearAndParentLocatorsAndExistsNoTarget)
+{
+    ApiCallErr err(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
+    selector.AddMatcher(matcher0);
+
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id2", EQ);
+    auto parentLocator = WidgetSelector();
+    parentLocator.AddMatcher(parentMatcher);
+    selector.AddParentLocator(parentLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id3", EQ);
+    auto rearLocator = WidgetSelector();
+    rearLocator.AddMatcher(rearMatcher);
+    selector.AddRearLocator(rearLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(0, receiver.size());
+}
+
+TEST_F(WidgetSelectorTest, rearAndParentLocatorsAndExistsSingleTarget)
+{
+    ApiCallErr err(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
+    selector.AddMatcher(matcher0);
+
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id2", EQ);
+    auto parentLocator = WidgetSelector();
+    parentLocator.AddMatcher(parentMatcher);
+    selector.AddParentLocator(parentLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id4", EQ);
+    auto rearLocator = WidgetSelector();
+    rearLocator.AddMatcher(rearMatcher);
+    selector.AddRearLocator(rearLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(1, receiver.size());
+    ASSERT_EQ("id3", receiver.at(0).get().GetAttr("resource-id", ""));
+}
+
+TEST_F(WidgetSelectorTest, rearAndParentLocatorsAndExistsMultiTargets)
+{
+    ApiCallErr err(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
+    selector.AddMatcher(matcher0);
+
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id5", EQ);
+    auto parentLocator = WidgetSelector();
+    parentLocator.AddMatcher(parentMatcher);
+    selector.AddParentLocator(parentLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id8", EQ);
+    auto rearLocator = WidgetSelector();
+    rearLocator.AddMatcher(rearMatcher);
+    selector.AddRearLocator(rearLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(2, receiver.size());
+    ASSERT_EQ("id6", receiver.at(0).get().GetAttr("resource-id", ""));
+    ASSERT_EQ("id7", receiver.at(1).get().GetAttr("resource-id", ""));
+}
+
+TEST_F(WidgetSelectorTest, frontAndrearAndParentLocatorsAndExistsNoTargets)
+{
+    ApiCallErr err(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
+    selector.AddMatcher(matcher0);
+
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id5", EQ);
+    auto parentLocator = WidgetSelector();
+    parentLocator.AddMatcher(parentMatcher);
+    selector.AddParentLocator(parentLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id8", EQ);
+    auto rearLocator = WidgetSelector();
+    rearLocator.AddMatcher(rearMatcher);
+    selector.AddRearLocator(rearLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id7", EQ);
+    auto frontLocator = WidgetSelector();
+    frontLocator.AddMatcher(frontMatcher);
+    selector.AddFrontLocator(frontLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(0, receiver.size());
+}
+
+TEST_F(WidgetSelectorTest, frontAndrearAndParentLocatorsAndExistsSingleTarget)
+{
+    ApiCallErr err(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
+    selector.AddMatcher(matcher0);
+
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id5", EQ);
+    auto parentLocator = WidgetSelector();
+    parentLocator.AddMatcher(parentMatcher);
+    selector.AddParentLocator(parentLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id8", EQ);
+    auto rearLocator = WidgetSelector();
+    rearLocator.AddMatcher(rearMatcher);
+    selector.AddRearLocator(rearLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id6", EQ);
+    auto frontLocator = WidgetSelector();
+    frontLocator.AddMatcher(frontMatcher);
+    selector.AddFrontLocator(frontLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(1, receiver.size());
+    ASSERT_EQ("id7", receiver.at(0).get().GetAttr("resource-id", ""));
+}
+
+TEST_F(WidgetSelectorTest, frontAndrearAndParentLocatorsAndExistsMultiTargets)
+{
+    ApiCallErr err(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
+    selector.AddMatcher(matcher0);
+
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id5", EQ);
+    auto parentLocator = WidgetSelector();
+    parentLocator.AddMatcher(parentMatcher);
+    selector.AddParentLocator(parentLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id9", EQ);
+    auto rearLocator = WidgetSelector();
+    rearLocator.AddMatcher(rearMatcher);
+    selector.AddRearLocator(rearLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id6", EQ);
+    auto frontLocator = WidgetSelector();
+    frontLocator.AddMatcher(frontMatcher);
+    selector.AddFrontLocator(frontLocator, err);
+    ASSERT_EQ(NO_ERROR, err.code_);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(2, receiver.size());
+    ASSERT_EQ("id7", receiver.at(0).get().GetAttr("resource-id", ""));
+}
