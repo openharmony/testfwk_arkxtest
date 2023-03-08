@@ -17,10 +17,49 @@ import DeepTypeUtils from './DeepTypeUtils'
 function assertDeepEquals(actualValue, expected) {
     console.log('actualValue:' + actualValue + ',expected:' + expected[0]);
     let result = eq(actualValue, expected[0],[], [])
+    let msg = logMsg(actualValue, expected[0]);
     return {
         pass: result,
-        message: (actualValue) +  ' is not deep equal ' +  expected[0]
+        message: msg
     };
+}
+
+/**
+ * 获取失败显示日志
+ * @param actualValue 实际对象
+ * @param expected 期待比较对象
+ */
+function logMsg(actualValue, expected) {
+    // 获取a的对象名称
+    const aClassName = Object.prototype.toString.call(actualValue);
+    const bClassName = Object.prototype.toString.call(expected);
+    let actualMsg;
+    let expectMsg;
+    if(aClassName == "[object Function]") {
+        actualMsg = "actualValue Function"
+    }else if(aClassName == "[object Promise]") {
+        actualMsg = "actualValue Promise"
+    }else if(aClassName == "[object Set]" || aClassName == "[object Map]") {
+        actualMsg = JSON.stringify(Array.from(actualValue));;
+    }else if(aClassName == "[object RegExp]") {
+        actualMsg = JSON.stringify(actualValue.source.replace("\\",""));;
+    }
+    else{
+        actualMsg = JSON.stringify(actualValue);
+    }
+    if(bClassName == "[object Function]") {
+        expectMsg = "expected Function"
+    }else if(bClassName == "[object Promise]") {
+        expectMsg = "expected Promise"
+    }else if(aClassName == "[object Set]" || bClassName == "[object Map]") {
+        expectMsg = JSON.stringify(Array.from(expected));
+    }else if(aClassName == "[object RegExp]") {
+        expectMsg = JSON.stringify(expected.source.replace("\\",""));;
+    }
+    else{
+        expectMsg = JSON.stringify(expected);
+    }
+    return actualMsg + " is not deep equal " + expectMsg;
 }
 
 function eq(a, b, aStack, bStack) {
