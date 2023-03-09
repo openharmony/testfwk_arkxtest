@@ -62,7 +62,7 @@ class SysTestKit {
 
     static async getRealTime() {
         let currentTime = new Date().getTime();
-        if (SysTestKit.systemTime !== null) {
+        if (SysTestKit.systemTime !== null && SysTestKit.systemTime !== undefined) {
             await SysTestKit.systemTime.getRealTime().then((time) => {
                 console.info(`systemTime.getRealTime success data: ${JSON.stringify(time)}`);
                 currentTime = time;
