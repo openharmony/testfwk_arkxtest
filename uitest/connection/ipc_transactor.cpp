@@ -142,7 +142,7 @@ namespace OHOS::uitest {
                    data.WriteInt32(call.fdParamIndex_);
         auto fdIndex = call.fdParamIndex_;
         if (ret && fdIndex >= 0) {
-            DCHECK(fdIndex < call.paramList_.size());
+            DCHECK(static_cast<size_t>(fdIndex) < call.paramList_.size());
             DCHECK(call.paramList_.at(fdIndex).type() == nlohmann::detail::value_t::number_unsigned);
             if (!data.WriteFileDescriptor(call.paramList_.at(fdIndex).get<uint32_t>())) {
                 ret = false;
