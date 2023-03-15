@@ -248,8 +248,8 @@ function eq(a, b, aStack, bStack) {
             bCtor = b.constructor;
         if (
         aCtor !== bCtor &&
-        DeepTypeUtils.isFunction(aCtor) &&
-        DeepTypeUtils.isFunction(bCtor) &&
+        DeepTypeUtils.isFunction_(aCtor) &&
+        DeepTypeUtils.isFunction_(bCtor) &&
         a instanceof aCtor &&
         b instanceof bCtor &&
         !(aCtor instanceof aCtor && bCtor instanceof bCtor)
