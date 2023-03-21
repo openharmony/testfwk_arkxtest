@@ -41,6 +41,10 @@ namespace OHOS::uitest {
 
         void AddParentLocator(const WidgetSelector &selector, ApiCallErr &error);
 
+        void AddAppLocator(string app);
+
+        std::string GetAppLocator() const;
+
         /**Select all the matched widgets on the given tree. Results are arranged in the
          * receiver in <b>DFS</b> order. */
         void Select(const WidgetTree &tree, std::vector<std::reference_wrapper<const Widget>> &results) const;
@@ -58,6 +62,7 @@ namespace OHOS::uitest {
         std::vector<WidgetSelector> frontLocators_;
         std::vector<WidgetSelector> rearLocators_;
         std::vector<WidgetSelector> parentLocators_;
+        string appLocator_ = "";
     };
 }
 

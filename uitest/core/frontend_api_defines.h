@@ -336,6 +336,7 @@ namespace OHOS::uitest {
         {"On.isBefore", "(On):On", false, true},
         {"On.isAfter", "(On):On", false, true},
         {"On.within", "(On):On", false, true},
+        {"On.inWindow", "(string):On", false, true},
     };
 
     constexpr std::string_view REF_SEED_ON = "On#seed";
