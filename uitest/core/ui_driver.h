@@ -45,6 +45,8 @@ namespace OHOS::uitest {
         /**Retrieve window from updated UI.*/
         const Window *RetrieveWindow(const Window &window, ApiCallErr &err);
 
+        string GetHostApp(const Widget &widget);
+
         /**Get the id of actived window.*/
         int32_t GetActiveWindowId(ApiCallErr &err);
 
@@ -93,7 +95,7 @@ namespace OHOS::uitest {
 
     private:
         /**Update UI controller and UI objects.*/
-        void UpdateUi(bool updateUiTree, ApiCallErr &error);
+        void UpdateUi(bool updateUiTree, ApiCallErr &error, string targetWin = "");
         // UI objects that are needed to be updated before each interaction and used in the interaction
         static std::unique_ptr<UiController> uiController_;
         std::unique_ptr<WidgetTree> widgetTree_ = nullptr;

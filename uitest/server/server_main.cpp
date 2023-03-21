@@ -99,7 +99,7 @@ namespace OHOS::uitest {
         ofstream fout;
         fout.open(savePath, ios::out | ios::binary);
         if (!fout) {
-            PrintToConsole("Error path:" + savePath);
+            PrintToConsole("Error path:" + savePath + strerror(errno));
             return EXIT_FAILURE;
         }
         auto controller = make_unique<SysUiController>();
