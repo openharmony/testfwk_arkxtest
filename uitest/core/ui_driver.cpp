@@ -111,7 +111,7 @@ namespace OHOS::uitest {
 
     const Widget *UiDriver::RetrieveWidget(const Widget &widget, ApiCallErr &err, bool updateUi)
     {
-        if (updateUi) { 
+        if (updateUi) {
             auto hostApp = this->GetHostApp(widget);
             UpdateUi(true, err, hostApp);
             if (err.code_ != NO_ERROR) {
