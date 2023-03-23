@@ -33,6 +33,7 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <fcntl.h>
 #include "ipc_transactor.h"
 #include "system_ui_controller.h"
 #include "input_manager.h"
