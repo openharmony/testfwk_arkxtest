@@ -52,7 +52,7 @@ namespace OHOS::uitest {
     "   uiRecord -record,    wirte location coordinates of events into files\n"
     "   uiRecord -read,                    print file content to the console\n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "3.2.5.0";
+    const std::string VERSION = "3.2.6.0";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
@@ -99,7 +99,7 @@ namespace OHOS::uitest {
         ofstream fout;
         fout.open(savePath, ios::out | ios::binary);
         if (!fout) {
-            PrintToConsole("Error path:" + savePath);
+            PrintToConsole("Error path:" + savePath + strerror(errno));
             return EXIT_FAILURE;
         }
         auto controller = make_unique<SysUiController>();

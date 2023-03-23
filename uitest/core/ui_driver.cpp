@@ -48,7 +48,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void UiDriver::UpdateUi(bool updateUiTree, ApiCallErr &error)
+    void UiDriver::UpdateUi(bool updateUiTree, ApiCallErr &error, string targetWin)
     {
         if (!updateUiTree) {
             return;
@@ -59,7 +59,7 @@ namespace OHOS::uitest {
         windows_.clear();
         widgetTree_ = make_unique<WidgetTree>("");
         vector<pair<Window, nlohmann::json>> hierarchies;
-        uiController_->GetUiHierarchy(hierarchies);
+        uiController_->GetUiHierarchy(hierarchies, targetWin);
         if (hierarchies.empty()) {
             LOG_E("%{public}s", "Get windows failed");
             error = ApiCallErr(ERR_INTERNAL, "Get window nodes failed");
@@ -93,10 +93,27 @@ namespace OHOS::uitest {
         return clone;
     }
 
+    string UiDriver::GetHostApp(const Widget &widget)
+    {
+        auto winId = widget.GetAttr(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], "0");
+        auto id = atoi(winId.c_str());
+        for (auto window: windows_) {
+            if (id == window.id_) {
+                // If not a actived window, get all.
+                if (window.actived_ == false) {
+                    return "";
+                }
+                return window.bundleName_;
+            }
+        }
+        return "";
+    }
+
     const Widget *UiDriver::RetrieveWidget(const Widget &widget, ApiCallErr &err, bool updateUi)
     {
         if (updateUi) {
-            UpdateUi(true, err);
+            auto hostApp = this->GetHostApp(widget);
+            UpdateUi(true, err, hostApp);
             if (err.code_ != NO_ERROR) {
                 return nullptr;
             }
@@ -150,7 +167,8 @@ namespace OHOS::uitest {
         ApiCallErr &err, bool updateUi)
     {
         if (updateUi) {
-            UpdateUi(true, err);
+            auto hostApp = select.GetAppLocator();
+            UpdateUi(true, err, hostApp);
             if (err.code_ != NO_ERROR) {
                 return;
             }
@@ -352,8 +370,9 @@ namespace OHOS::uitest {
         }
         if (widget == nullptr) {
             widgetTree_->DfsTraverse(visitor);
+        } else {
+            widgetTree_->DfsTraverseDescendants(visitor, *widget);
         }
-        widgetTree_->DfsTraverseDescendants(visitor, *widget);
     }
 
     void UiDriver::InjectMouseAction(MouseOpArgs mouseOpArgs, ApiCallErr &error)
