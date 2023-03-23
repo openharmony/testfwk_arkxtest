@@ -394,7 +394,7 @@ namespace OHOS::uitest {
                     break;
                 }
             }
-            if (checkArgNum && checkArgType) {
+            if (checkArgType) {
                 return;
             }
             ++find;
