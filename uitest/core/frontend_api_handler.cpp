@@ -394,7 +394,7 @@ namespace OHOS::uitest {
                     break;
                 }
             }
-            if (checkArgNum && checkArgType) {
+            if (checkArgType) {
                 return;
             }
             ++find;
@@ -535,12 +535,16 @@ namespace OHOS::uitest {
             } else if (attrName == "within") {
                 auto &that = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
                 selector->AddParentLocator(that, out.exception_);
+            } else if (attrName == "inWindow") {
+                auto hostApp = ReadCallArg<string>(in, INDEX_ZERO);
+                selector->AddAppLocator(hostApp);
             }
             out.resultValue_ = StoreBackendObject(move(selector));
         };
         server.AddHandler("On.isBefore", genericRelativeBuilder);
         server.AddHandler("On.isAfter", genericRelativeBuilder);
         server.AddHandler("On.within", genericRelativeBuilder);
+        server.AddHandler("On.inWindow", genericRelativeBuilder);
     }
 
     static void RegisterUiDriverComponentFinders()

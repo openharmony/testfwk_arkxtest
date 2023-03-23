@@ -282,7 +282,7 @@ namespace OHOS::uitest {
         return newBounds;
     }
 
-    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out)
+    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out, string targetApp)
     {
         if (!connected_) {
             LOG_I("Not connect to AccessibilityUITestAbility, try to connect it");
@@ -306,6 +306,9 @@ namespace OHOS::uitest {
             if (ability->GetRootByWindow(window, elementInfo) == RET_OK) {
                 const auto app = elementInfo.GetBundleName();
                 LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
+                if (targetApp != "" && app != targetApp) {
+                    continue;
+                }
                 // apply window bounds as root node bounds
                 Accessibility::Rect windowBounds = window.GetRectInScreen();
                 auto visibleBounds = GetVisibleRect(screenSize, windowBounds);
@@ -316,6 +319,7 @@ namespace OHOS::uitest {
                 auto root = nlohmann::json();
                 MarshallAccessibilityNodeInfo(elementInfo, root, 0, false);
                 out.push_back(make_pair(move(winInfo), move(root)));
+                LOG_D("Get node at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
             } else {
                 LOG_W("GetRootByWindow failed, windowId: %{public}d", window.GetWindowId());
             }

@@ -62,6 +62,16 @@ namespace OHOS::uitest {
         parentLocators_.emplace_back(selector);
     }
 
+    void WidgetSelector::AddAppLocator(string app)
+    {
+        appLocator_ = app;
+    }
+
+    string WidgetSelector::GetAppLocator() const
+    {
+        return appLocator_;
+    }
+
     static bool CheckHasLocator(const WidgetTree &tree, const Widget &widget, const WidgetMatcher &matcher, size_t idx)
     {
         vector<reference_wrapper<const Widget>> locators;

@@ -239,7 +239,6 @@ namespace OHOS::uitest {
         if (root == nullptr) {
             return;
         }
-        auto pivotHierarchy = pivot.GetHierarchy();
         auto parent = this->GetParentWidget(pivot);
         while (true) {
             if (parent == nullptr) {
