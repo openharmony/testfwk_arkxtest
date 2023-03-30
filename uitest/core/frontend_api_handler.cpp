@@ -632,8 +632,6 @@ namespace OHOS::uitest {
             auto driver = make_unique<UiDriver>();
             if (driver->CheckStatus(true, out.exception_)) {
                 out.resultValue_ = StoreBackendObject(move(driver));
-            } else {
-                out.exception_ = ApiCallErr(ERR_INITIALIZE_FAILED);
             }
         };
         server.AddHandler("Driver.create", create);
