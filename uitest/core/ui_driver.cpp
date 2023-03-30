@@ -42,8 +42,11 @@ namespace OHOS::uitest {
             }
         }
         if (isConnected && !uiController_->IsWorkable()) {
-            error = ApiCallErr(ERR_INITIALIZE_FAILED, "Not connect to AAMS");
-            return false;
+            LOG_I("Not connect to AAMS, try to reconnect");
+            if (!uiController_->Initialize()) {
+                error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS");
+                return false;
+            }
         }
         return true;
     }
