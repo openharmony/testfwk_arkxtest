@@ -16,7 +16,7 @@
 #ifndef BASE_GEOMETRY_MATRIX3_H
 #define BASE_GEOMETRY_MATRIX3_H
 #include <vector>
-#include "point.h"
+#include <string>
 
 namespace OHOS::uitest {
 class Matrix3N;

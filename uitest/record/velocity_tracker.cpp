@@ -23,7 +23,6 @@ namespace OHOS::uitest {
 void VelocityTracker::UpdateTouchEvent(const TouchEventInfo& event, bool end)
 {
     isVelocityDone_ = false;
-    currentTrackPoint_ = event;
     if (isFirstPoint_) {
         downTrackPoint_ = firstTrackPoint_;
         firstPosition_ = event.GetOffset();
@@ -39,6 +38,7 @@ void VelocityTracker::UpdateTouchEvent(const TouchEventInfo& event, bool end)
     lastTrackPoint_ = event;
     static const double range = 0.05;
     if (delta_.IsZero() && end && (diffTime.count() < range)) {
+        //TouchEvent无位移,up,当前动作的event
         return;
     }
     // nanoseconds duration to seconds.

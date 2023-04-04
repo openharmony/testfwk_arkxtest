@@ -56,7 +56,6 @@ ohos_static_library("uitest_record") {
     "${source_root}/record/find_widget.cpp",
     "${source_root}/record/least_square_impl.cpp",
     "${source_root}/record/matrix3.cpp",
-    "${source_root}/record/matrix4.cpp",
     "${source_root}/record/ui_record.cpp",
     "${source_root}/record/velocity_tracker.cpp",
   ]
