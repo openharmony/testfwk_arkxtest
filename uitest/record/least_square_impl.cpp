@@ -15,7 +15,6 @@
 
 #include "least_square_impl.h"
 #include "matrix3.h"
-#include "matrix4.h"
 #include "common_utilities_hpp.h"
 
 namespace OHOS::uitest {
@@ -52,6 +51,7 @@ bool LeastSquareImpl::GetLSMParams(std::vector<double>& params)
         }
     }
     if (paramsNum_ == Matrix3::DIMENSION) {
+        LOG_D("MatrixN3_USING");
         MatrixN3 matrixn3 { countNum };
         for (auto i = 0; i < countNum; i++) {
             const auto& value = xVals[i];
@@ -71,24 +71,10 @@ bool LeastSquareImpl::GetLSMParams(std::vector<double>& params)
             params_.assign(params.begin(), params.end());
             isResolved_ = true;
         }
+        LOG_D("MatrixN3_USING_Finished");
         return ret;
     }
-    MatrixN4 matrixn4 { countNum };
-    for (auto i = 0; i < countNum; i++) {
-        const auto& value = xVals[i];
-        matrixn4[i][THREE] = ONE;
-        matrixn4[i][TWO] = value;
-        matrixn4[i][ONE] = value * value;
-        matrixn4[i][ZERO] = value * value * value;
-    }
-    auto transpose = matrixn4.Transpose();
-    auto inversMatrix4 = Matrix4::Invert(transpose * matrixn4);
-    auto matrix4n = inversMatrix4 * transpose;
-    auto ret = matrix4n.ScaleMapping(yVals, params);
-    if (ret) {
-        params_.assign(params.begin(), params.end());
-        isResolved_ = true;
-    }
-    return ret;
+    LOG_E("MatrixN4_USING_NEED");
+    return false;
 }
 } // namespace OHOS::uitest
