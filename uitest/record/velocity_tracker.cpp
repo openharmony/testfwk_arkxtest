@@ -23,7 +23,6 @@ namespace OHOS::uitest {
 void VelocityTracker::UpdateTouchEvent(const TouchEventInfo& event, bool end)
 {
     isVelocityDone_ = false;
-    currentTrackPoint_ = event;
     if (isFirstPoint_) {
         downTrackPoint_ = firstTrackPoint_;
         firstPosition_ = event.GetOffset();
