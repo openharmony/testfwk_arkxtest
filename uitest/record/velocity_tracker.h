@@ -198,7 +198,6 @@ private:
     Axis mainAxis_ { Axis::FREE };
     Axis maxAxis_  {Axis::VERTICAL };
     TouchEventInfo firstTrackPoint_;
-    TouchEventInfo currentTrackPoint_;
     TouchEventInfo lastTrackPoint_;
     TouchEventInfo downTrackPoint_;
     Offset firstPosition_;
@@ -207,7 +206,6 @@ private:
     Velocity velocity_;
     double mainVelocity_ = 0.0;
     Offset delta_;
-    Offset offset_;
     double seconds = 0;
     bool isFirstPoint_ = true;
     int useToCount = 4;
