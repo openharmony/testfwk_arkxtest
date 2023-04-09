@@ -284,6 +284,7 @@ namespace OHOS::uitest {
 
     void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out, string targetApp)
     {
+        static mutex dumpMutex; // disallow concurrent dumpUi
         if (!connected_) {
             LOG_I("Not connect to AccessibilityUITestAbility, try to connect it");
             if (!this->ConnectToSysAbility()) {
@@ -291,10 +292,12 @@ namespace OHOS::uitest {
                 return;
             }
         }
+        dumpMutex.lock();
         auto ability = AccessibilityUITestAbility::GetInstance();
         vector<AccessibilityWindowInfo> windows;
         if (ability->GetWindows(windows) != RET_OK) {
             LOG_W("GetWindows from AccessibilityUITestAbility failed");
+            dumpMutex.unlock();
             return;
         }
         sort(windows.begin(), windows.end(), [](auto &w1, auto &w2) -> bool {
@@ -324,6 +327,7 @@ namespace OHOS::uitest {
                 LOG_W("GetRootByWindow failed, windowId: %{public}d", window.GetWindowId());
             }
         }
+        dumpMutex.unlock();
     }
 
 

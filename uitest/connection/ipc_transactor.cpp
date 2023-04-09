@@ -348,4 +348,95 @@ namespace OHOS::uitest {
         remoteCaller_->Call(call, reply);
         processingApi_.clear();
     }
+
+    // functions for sending/handling broadcast commands
+    BroadcastCommandHandler g_broadcastCommandHandler = nullptr;
+    shared_ptr<CommonEventForwarder> g_broadcastCommandSubscriber = nullptr;
+    void ApiTransactor::SendBroadcastCommand(const OHOS::AAFwk::Want &cmd, ApiCallErr &err)
+    {
+        LOG_I("Send uitest.broadcast.command begin");
+        CommonEventData event;
+        auto want = OHOS::AAFwk::Want(cmd);
+        want.SetAction("uitest.broadcast.command");
+        event.SetWant(want);
+        if (!CommonEventManager::PublishCommonEvent(event)) {
+            err = ApiCallErr(ERR_INTERNAL, "Failed to publish uitest.broadcast.command");
+            return;
+        }
+        LOG_I("Send uitest.broadcast.command end");
+        MatchingSkills matchingSkills;
+        matchingSkills.AddEvent("uitest.broadcast.command.reply");
+        CommonEventSubscribeInfo info(matchingSkills);
+        mutex mtx;
+        unique_lock<mutex> lock(mtx);
+        condition_variable condition;
+        auto onEvent = [&err, &condition](const CommonEventData &data) {
+            const auto &reply = data.GetWant();
+            auto code = static_cast<ErrCode>(reply.GetIntParam("code", 0));
+            err = ApiCallErr(code, reply.GetStringParam("message"));
+            condition.notify_one();
+        };
+        auto broadcastReplySubscriber = make_shared<CommonEventForwarder>(info, onEvent);
+        if (!CommonEventManager::SubscribeCommonEvent(broadcastReplySubscriber)) {
+            err = ApiCallErr(INTERNAL_ERROR, "Fail to subscribe uitest.broadcast.command.reply");
+        }
+        const auto timeout = chrono::milliseconds(WAIT_CONN_TIMEOUT_MS << 1);
+        if (condition.wait_for(lock, timeout) == cv_status::timeout) {
+            err = ApiCallErr(INTERNAL_ERROR, "Wait for subscribe uitest.broadcast.command.reply timeout");
+        }
+        CommonEventManager::UnSubscribeCommonEvent(broadcastReplySubscriber);
+        LOG_I("Receive uitest.broadcast.command.reply end");
+    }
+
+    void ApiTransactor::SetBroadcaseCommandHandler(BroadcastCommandHandler handler)
+    {
+        if (handler == nullptr) {
+            LOG_W("BroadcastCommandHandler is null");
+            return;
+        }
+        g_broadcastCommandHandler = handler;
+        if (g_broadcastCommandSubscriber != nullptr) {
+            return;
+        }
+        MatchingSkills matchingSkills;
+        matchingSkills.AddEvent("uitest.broadcast.command");
+        CommonEventSubscribeInfo info(matchingSkills);
+        auto onEvent = [](const CommonEventData &commandData) {
+            auto commandWant = OHOS::AAFwk::Want(commandData.GetWant());
+            // handle command in new thread, do not block in CommonEvent dispatching thread
+            auto _ = async(launch::async, [&commandWant]() {
+                LOG_I("HandleBroadcastCommand begin");
+                auto replyWant = OHOS::AAFwk::Want();
+                ApiCallErr err = ApiCallErr(NO_ERROR);
+                if (g_broadcastCommandHandler == nullptr) {
+                    err = ApiCallErr(INTERNAL_ERROR, "Received uitest.broadcast.command but handler is null!");
+                } else {
+                    g_broadcastCommandHandler(commandWant, err);
+                }
+                replyWant.SetAction("uitest.broadcast.command.reply");
+                replyWant.SetParam("code", (int)(err.code_));
+                replyWant.SetParam("message", err.message_);
+                CommonEventData replyData;
+                replyData.SetWant(replyWant);
+                if (!CommonEventManager::PublishCommonEvent(replyData)) {
+                    LOG_E("Fail to publish uitest.broadcast.command.reply");
+                }
+                LOG_I("HandleBroadcastCommand end");
+            });
+        };
+        g_broadcastCommandSubscriber = make_shared<CommonEventForwarder>(info, onEvent);
+        if (!CommonEventManager::SubscribeCommonEvent(g_broadcastCommandSubscriber)) {
+            LOG_E("Fail to subscribe uitest.broadcast.command");
+        }
+    }
+
+    void ApiTransactor::UnsetBroadcaseCommandHandler()
+    {
+        if (g_broadcastCommandSubscriber != nullptr) {
+            CommonEventManager::UnSubscribeCommonEvent(g_broadcastCommandSubscriber);
+        }
+        if (g_broadcastCommandHandler == nullptr) {
+            g_broadcastCommandHandler = nullptr;
+        }
+    }
 } // namespace OHOS::uitest
