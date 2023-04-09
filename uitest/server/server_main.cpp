@@ -53,7 +53,7 @@ namespace OHOS::uitest {
     "   uiRecord -record,    wirte location coordinates of events into files\n"
     "   uiRecord -read,                    print file content to the console\n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "3.2.6.0";
+    const std::string VERSION = "3.2.7.0";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
@@ -84,6 +84,29 @@ namespace OHOS::uitest {
         return EXIT_SUCCESS;
     }
 
+    static void DumpLayoutImpl(string_view path, bool listWindows, bool initController, ApiCallErr &err)
+    {
+        ofstream fout;
+        fout.open(path, ios::out | ios::binary);
+        if (!fout) {
+            err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(path) + strerror(errno));
+            return;
+        }
+        if (initController) {
+            UiDriver::RegisterController(make_unique<SysUiController>());
+        }
+        auto driver = UiDriver();
+        auto data = nlohmann::json();
+        driver.DumpUiHierarchy(data, listWindows, err);
+        if (err.code_ != NO_ERROR) {
+            fout.close();
+            return;
+        }
+        fout << data.dump();
+        fout.close();
+        return;
+    }
+
     static int32_t DumpLayout(int32_t argc, char *argv[])
     {
         auto ts = to_string(GetCurrentMicroseconds());
@@ -97,42 +120,29 @@ namespace OHOS::uitest {
         if (iter != params.end()) {
             savePath = iter->second;
         }
-        ofstream fout;
-        fout.open(savePath, ios::out | ios::binary);
-        if (!fout) {
-            PrintToConsole("Error path:" + savePath + strerror(errno));
+        const bool listWindows = params.find('i') != params.end();
+        auto err = ApiCallErr(NO_ERROR);
+        DumpLayoutImpl(savePath, listWindows, true, err);
+        if (err.code_ == NO_ERROR) {
+            PrintToConsole("DumpLayout saved to:" + savePath);
+            return EXIT_SUCCESS;
+        } else if (err.code_ != ERR_INITIALIZE_FAILED) {
+            PrintToConsole("DumpLayout failed:" + err.message_);
             return EXIT_FAILURE;
         }
-        auto controller = make_unique<SysUiController>();
-        if (params.find('i') != params.end()) {
-            if (!controller->ConnectToSysAbility()) {
-                PrintToConsole("Dump layout failed, cannot connect to AAMS");
-                fout.close();
-                return EXIT_FAILURE;
-            }
-            vector<pair<Window, nlohmann::json>> datas;
-            controller->GetUiHierarchy(datas);
-            auto array = nlohmann::json::array();
-            for (auto& data : datas) {
-                array.push_back(data.second);
-            }
-            fout << array.dump();
+        // Cannot connect to AAMS, broadcast request to running uitest-daemon if any
+        err = ApiCallErr(NO_ERROR);
+        auto cmd = OHOS::AAFwk::Want();
+        cmd.SetParam("savePath", string(savePath));
+        cmd.SetParam("listWindows", listWindows);
+        ApiTransactor::SendBroadcastCommand(cmd, err);
+        if (err.code_ == NO_ERROR) {
+            PrintToConsole("DumpLayout saved to:" + savePath);
+            return EXIT_SUCCESS;
         } else {
-            UiDriver::RegisterController(move(controller));
-            auto data = nlohmann::json();
-            auto driver = UiDriver();
-            auto error = ApiCallErr(NO_ERROR);
-            driver.DumpUiHierarchy(data, error);
-            if (error.code_ != NO_ERROR) {
-                PrintToConsole("Dump layout failed: " + error.message_);
-                fout.close();
-                return EXIT_FAILURE;
-            }
-            fout << data.dump();
+            PrintToConsole("DumpLayout failed:" + err.message_);
+            return EXIT_FAILURE;
         }
-        PrintToConsole("DumpLayout saved to:" + savePath);
-        fout.close();
-        return EXIT_SUCCESS;
     }
 
     static int32_t ScreenCap(int32_t argc, char *argv[])
@@ -186,6 +196,10 @@ namespace OHOS::uitest {
             LOG_E("Failed to initialize server");
             return EXIT_FAILURE;
         }
+        // accept remopte dump request during deamon running (initController=false)
+        ApiTransactor::SetBroadcaseCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
+            DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, err);
+        });
         mutex mtx;
         unique_lock<mutex> lock(mtx);
         condition_variable condVar;
@@ -196,6 +210,7 @@ namespace OHOS::uitest {
         condVar.wait(lock);
         LOG_I("Server exit");
         apiTransactServer.Finalize();
+        ApiTransactor::UnsetBroadcaseCommandHandler();
         _Exit(0);
         return 0;
     }
