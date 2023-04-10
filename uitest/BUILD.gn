@@ -225,6 +225,7 @@ ohos_unittest("uitest_ipc_unittest") {
     "${source_root}/connection",
     "${source_root}/core",
     "//third_party/json/single_include/nlohmann",
+    "//third_party/json/single_include",
   ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
