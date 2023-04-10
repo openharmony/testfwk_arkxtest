@@ -139,7 +139,7 @@ class MockKit {
     findName(obj, value) {
         let properties = this.findProperties(obj);
         let name = null;
-        properties.forEach(
+        properties.filter(item => (item !== 'caller' && item !== 'arguments')).forEach(
             function (va1, idx, array) {
                 if (obj[va1] === value) {
                     name = va1;
