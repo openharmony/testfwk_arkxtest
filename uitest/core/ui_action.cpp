@@ -171,11 +171,12 @@ namespace OHOS::uitest {
                 if (distance < 1) {
                     return;
                 }
+                auto holdMs = intervalMs + stayMs;
                 if (step == 0) {
-                    matrix.PushAction(TouchEvent{ActionStage::DOWN, {pxFrom, pyFrom}, 0, intervalMs + stayMs});
+                    matrix.PushAction(TouchEvent {ActionStage::DOWN, {pxFrom, pyFrom}, 0, holdMs});
                 } else {
                     timeOffsetMs += intervalMs;
-                    matrix.PushAction(TouchEvent{ActionStage::MOVE, {pxFrom, pyFrom}, timeOffsetMs, intervalMs + stayMs});
+                    matrix.PushAction(TouchEvent {ActionStage::MOVE, {pxFrom, pyFrom}, timeOffsetMs, holdMs});
                 }
             }
             auto endPx = pointers_.At(finger, pointers_.GetSteps() - 1).point_.px_;
