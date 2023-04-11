@@ -154,7 +154,7 @@ namespace OHOS::uitest {
     void MultiPointerAction::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
     {
         PointerMatrix matrix(pointers_.GetFingers(), pointers_.GetSteps() + 1);
-        constexpr int32_t flag = 0x10000; // set the low 16 bits of data  as coordinates.
+        constexpr int32_t flag = 0x10000; // set the low 16 bits of data as coordinates.
         for (uint32_t finger = 0; finger < pointers_.GetFingers(); finger++) {
             uint32_t timeOffsetMs = 0;
             uint32_t intervalMs = 0;
