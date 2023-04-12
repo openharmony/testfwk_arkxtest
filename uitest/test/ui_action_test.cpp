@@ -288,8 +288,8 @@ TEST_F(UiActionTest, computeMultiPointerMatrixAction)
     PointerMatrix events;
     action.Decompose(events, opt);
     // there should be more than 1 touches
-    ASSERT_EQ(8, events.GetSize());
-    ASSERT_EQ(4, events.GetSteps());
+    ASSERT_EQ(10, events.GetSize());
+    ASSERT_EQ(5, events.GetSteps());
     for (uint32_t eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
         for (uint32_t eventFinger = 0; eventFinger < events.GetFingers(); eventFinger++) {
             if (eventStep == 0) {
@@ -334,8 +334,8 @@ TEST_F(UiActionTest, computeMultiPointerMatrixAction1)
     PointerMatrix events;
     action.Decompose(events, opt);
     // there should be more than 1 touches
-    ASSERT_EQ(16, events.GetSize());
-    ASSERT_EQ(4, events.GetSteps());
+    ASSERT_EQ(20, events.GetSize());
+    ASSERT_EQ(5, events.GetSteps());
     for (uint32_t eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
         for (uint32_t eventFinger = 0; eventFinger < events.GetFingers(); eventFinger++) {
             if (eventStep == 0) {
