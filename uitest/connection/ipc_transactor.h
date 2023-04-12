@@ -19,6 +19,7 @@
 #include <iremote_broker.h>
 #include <iremote_stub.h>
 #include <iremote_proxy.h>
+#include <want.h>
 #include <string>
 #include <string_view>
 #include <functional>
@@ -70,6 +71,7 @@ namespace OHOS::uitest {
 
     /**Represents the api transaction participant(client/server).*/
     enum ConnectionStat : uint8_t { UNINIT, CONNECTED, DISCONNECTED };
+    using BroadcastCommandHandler = std::function<void(const OHOS::AAFwk::Want &cmd, ApiCallErr &err)>;
     class ApiTransactor {
     public:
         ApiTransactor() = delete;
@@ -80,6 +82,10 @@ namespace OHOS::uitest {
         void Transact(const ApiCallInfo &call, ApiReplyInfo &reply);
         void SetDeathCallback(std::function<void()> callback);
         ConnectionStat GetConnectionStat() const;
+        // functions for sending/handling broadcast commands
+        static void SendBroadcastCommand(const OHOS::AAFwk::Want &cmd, ApiCallErr &err);
+        static void SetBroadcaseCommandHandler(BroadcastCommandHandler handler);
+        static void UnsetBroadcaseCommandHandler();
 
     private:
         const bool asServer_ = false;

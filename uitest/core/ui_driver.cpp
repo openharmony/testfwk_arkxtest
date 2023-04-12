@@ -70,13 +70,25 @@ namespace OHOS::uitest {
         WidgetTree::MergeTrees(trees, *widgetTree_);
     }
 
-    void UiDriver::DumpUiHierarchy(nlohmann::json &out, ApiCallErr &error)
+    void UiDriver::DumpUiHierarchy(nlohmann::json &out, bool listWindows, ApiCallErr &error)
     {
-        UpdateUi(true, error);
-        if (error.code_ != NO_ERROR || widgetTree_ == nullptr) {
-            return;
+        if (listWindows) {
+            if (!CheckStatus(true, error)) {
+                return;
+            }
+            vector<pair<Window, nlohmann::json>> datas;
+            uiController_->GetUiHierarchy(datas);
+            out = nlohmann::json::array();
+            for (auto& data : datas) {
+                out.push_back(data.second);
+            }
+        } else {
+            UpdateUi(true, error);
+            if (error.code_ != NO_ERROR || widgetTree_ == nullptr) {
+                return;
+            }
+            widgetTree_->MarshalIntoDom(out);
         }
-        widgetTree_->MarshalIntoDom(out);
     }
 
     static unique_ptr<Widget> CloneFreeWidget(const Widget &from, const WidgetSelector &selector)
