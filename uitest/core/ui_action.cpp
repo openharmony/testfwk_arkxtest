@@ -178,7 +178,7 @@ namespace OHOS::uitest {
                 }
             }
             auto endPx = (pointers_.At(finger, pointers_.GetSteps() - 1).point_.px_) % flag;
-            auto endPy = pointers_.At(finger, pointers_.GetSteps() - 1).point_.py_; 
+            auto endPy = pointers_.At(finger, pointers_.GetSteps() - 1).point_.py_;
             auto endTime = (pointers_.At(finger, pointers_.GetSteps() - 1).point_.px_) / flag;
             auto endStayTime = (endTime == 0) ? intervalMs : endTime;
             matrix.PushAction(TouchEvent {ActionStage::MOVE, {endPx, endPy}, timeOffsetMs, endStayTime});
