@@ -17,12 +17,23 @@
 #define VELOCITY_TRACKER_H
 #include <regex>
 #include <cmath>
+#include <iostream>
+#include <atomic>
 #include "least_square_impl.h"
 #include "touch_event.h"
 #include "offset.h"
 #include "velocity.h"
 
 namespace OHOS::uitest {
+
+constexpr int32_t NAVI_VERTI_THRE_V = 200;
+constexpr int32_t NAVI_THRE_D = 10;
+constexpr float MAX_THRESHOLD = 15.0;
+constexpr float FLING_THRESHOLD = 45.0;
+constexpr float DURATIOIN_THRESHOLD = 0.6;
+constexpr float INTERVAL_THRESHOLD = 0.2;
+constexpr int32_t MaxVelocity = 40000;
+
 enum class Axis {
     VERTICAL = 0,
     HORIZONTAL,
@@ -33,6 +44,29 @@ enum class Axis {
 class VelocityTracker final {
 public:
     VelocityTracker() = default;
+    VelocityTracker(const VelocityTracker& other) {
+        mainAxis_ = other.mainAxis_;
+        maxAxis_ = other.maxAxis_;
+        firstTrackPoint_ = other.firstTrackPoint_;
+        lastTrackPoint_ = other.lastTrackPoint_;
+        downTrackPoint_ = other.downTrackPoint_;
+        firstPosition_ = other.firstPosition_;
+        lastPosition_ = other.lastPosition_;
+        totalDelta_ = other.totalDelta_;
+        velocity_ = other.velocity_;
+        mainVelocity_ = other.mainVelocity_;
+        delta_ = other.delta_;
+        seconds  = other.seconds;
+        isFirstPoint_ = other.isFirstPoint_;
+        useToCount  = other.useToCount;
+        stepLength  = other.stepLength;
+        stepCount  = other.stepCount;
+        firstTimePoint_ = other.firstTimePoint_;
+        lastTimePoint_ = other.lastTimePoint_;
+        xAxis_  = other.xAxis_;
+        yAxis_  = other.yAxis_;
+        isVelocityDone_  = other.isVelocityDone_;
+    }
     explicit VelocityTracker(Axis mainAxis) : mainAxis_(mainAxis) {}
     ~VelocityTracker() = default;
 
@@ -45,6 +79,8 @@ public:
         xAxis_.Resets();
         yAxis_.Resets();
         totalDelta_.Resets();
+        stepLength = 0;
+        mainVelocity_ = 0.0;
     }
     void TrackResets()
     {
@@ -105,6 +141,11 @@ public:
     {
         UpdateVelocity();
         return velocity_;
+    }
+
+    int GetClickcount() const
+    {
+        return clickcount;
     }
 
     double GetMainAxisPos() const
@@ -216,6 +257,7 @@ private:
     LeastSquareImpl xAxis_ { 3, 5 };
     LeastSquareImpl yAxis_ { 3, 5 };
     bool isVelocityDone_ = false;
+    std::atomic<int> clickcount = 0;
 };
 } // namespace OHOS::uitest
 #endif // VELOCITY_TRACKER_H
