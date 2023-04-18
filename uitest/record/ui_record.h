@@ -28,11 +28,15 @@
 #include <map>
 #include <thread>
 #include <mutex>
+#include <memory>
+#include <queue>
+#include <condition_variable>
 #include "least_square_impl.h"
 #include "touch_event.h"
 #include "offset.h"
 #include "velocity.h"
 #include "velocity_tracker.h"
+#include "keyevent_tracker.h"
 #include "ui_driver.h"
 #include "ui_action.h"
 #include "input_manager.h"
@@ -43,20 +47,32 @@
 #include "widget_selector.h"
 #include "ui_model.h"
 #include "find_widget.h"
+#include "key_event.h"
+#include "key_option.h"
 
 namespace OHOS::uitest {
     static int g_touchTime;
     static int TIMEINTERVAL = 5000;
     static std::string g_recordMode = "";
+    static std::string g_recordOpt = "";
+    static shared_ptr<queue<std::string>> g_eventQueue;
+    static shared_ptr<mutex> g_socket_lock;
+    static shared_ptr<mutex> g_cout_lock = make_shared<std::mutex>();
+    static shared_ptr<mutex> g_csv_lock = make_shared<std::mutex>();
+    static bool g_useSocket;
     class InputEventCallback : public MMI::IInputEventConsumer {
-    public:
-        void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
-        void HandleDownEvent(TouchEventInfo& event) const;
-        void HandleMoveEvent(const TouchEventInfo& event) const;
-        void HandleUpEvent(const TouchEventInfo& event) const;
-        void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
-        void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override {}
-        static std::shared_ptr<InputEventCallback> GetPtr();
+        public:
+            void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
+            void HandleDownEvent(TouchEventInfo& event) const;
+            void HandleMoveEvent(const TouchEventInfo& event) const;
+            void HandleUpEvent(const TouchEventInfo& event) const;
+            void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
+            void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override;
+            static std::shared_ptr<InputEventCallback> GetPtr();
+
+        private:
+            shared_ptr<queue<std::string>> eventQueue_;
+            shared_ptr<mutex> lock_;
     };
 
     class TestUtils {
@@ -72,18 +88,18 @@ namespace OHOS::uitest {
             return res;
         };
     };
+    
+    void SetSocketUtils(const bool useSocket, const shared_ptr<mutex> lock, const shared_ptr<queue<string>> eventQueue);
 
     bool InitEventRecordFile();
 
-    void RecordInitEnv(const std::string &modeOpt);
+    void RecordInitEnv(const std::string &modeOpt, const std::string opt);
 
     class EventData {
     public:
-        void WriteEventData(const VelocityTracker &velocityTracker, const std::string &actionType);
+        void WriteEventData(const VelocityTracker &velocityTracker, const std::string &actionType) const;
+        void WriteEventData(const KeyeventTracker &keyeventTracker) const;
         static void ReadEventLine();
-    private:
-        VelocityTracker v;
-        std::string action;
     };
 
     class DataWrapper {

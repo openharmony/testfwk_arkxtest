@@ -12,6 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <chrono>
+#include <thread>
 #include "ui_record.h"
 #include "ability_manager_client.h"
 
@@ -22,19 +24,18 @@ namespace OHOS::uitest {
         OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
         OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
     };
+
+    const string UITEST_RECORD = "record";
+    const string UITEST_DAEMON = "daemon";
+
     std::string g_operationType[9] = { "click", "longClick", "doubleClick", "swipe", "drag", \
                                        "fling", "home", "recent", "back" };
     TouchOpt g_touchop = OP_CLICK;
     VelocityTracker g_velocityTracker;
+    KeyeventTracker g_keyeventTracker;
+    EventData g_eventData;
     bool g_isClick = false;
     int g_clickEventCount = 0;
-    constexpr int32_t NAVI_VERTI_THRE_V = 200;
-    constexpr int32_t NAVI_THRE_D = 10;
-    constexpr float MAX_THRESHOLD = 15.0;
-    constexpr float FLING_THRESHOLD = 45.0;
-    constexpr float DURATIOIN_THRESHOLD = 0.6;
-    constexpr float INTERVAL_THRESHOLD = 0.2;
-    constexpr int32_t MaxVelocity = 40000;
     bool g_isOpDect = false;
     std::string g_filePath;
     std::string g_defaultDir = "/data/local/tmp/layout";
@@ -42,22 +43,33 @@ namespace OHOS::uitest {
     auto driver = UiDriver();
     Rect windowBounds = Rect(0, 0, 0, 0);
     DataWrapper g_dataWrapper;
-    
+    auto selector = WidgetSelector();
+    vector<std::unique_ptr<Widget>> rev;
+    ApiCallErr err(NO_ERROR);
     std::vector<std::string> GetForeAbility()
     {
         std::vector<std::string> elements;
+        std::string bundleName, abilityName;
         auto amcPtr = AAFwk::AbilityManagerClient::GetInstance();
         if (amcPtr == nullptr) {
             std::cout<<"AbilityManagerClient is nullptr"<<std::endl;
-            return elements;
+            abilityName = "";
+            bundleName = "";
+        } else {
+            auto elementName = amcPtr->GetTopAbility();
+            if (elementName.GetBundleName().empty()) {
+                std::cout<<"GetTopAbility GetBundleName is nullptr"<<std::endl;
+                bundleName = "";
+            } else {
+                bundleName = elementName.GetBundleName();
+            }
+            if (elementName.GetAbilityName().empty()) {
+                std::cout<<"GetTopAbility GetAbilityName is nullptr"<<std::endl;
+                abilityName = "";
+            } else {
+                abilityName = elementName.GetAbilityName();
+            }
         }
-        auto elementName = amcPtr->GetTopAbility();
-        if (elementName.GetBundleName().empty()) {
-            std::cout<<"GetTopAbility GetBundleName is nullptr"<<std::endl;
-            return elements;
-        }
-        std::string bundleName = elementName.GetBundleName();
-        std::string abilityName = elementName.GetAbilityName();
         elements.push_back(bundleName);
         elements.push_back(abilityName);
         return elements;
@@ -80,7 +92,6 @@ namespace OHOS::uitest {
                             << "Step length:" << g_velocityTracker.GetStepLength() << std::endl;
             }
         } else if (actionType == "click" || actionType == "longClick" || actionType == "doubleClick") {
-            std::cout << actionType << ": " ;
             if (downEvent.attributes.find("id")->second != "" || downEvent.attributes.find("text")->second != "") {
                 std::cout << " at Widget( id: " << downEvent.attributes.find("id")->second << ", "
                         << "text: " << downEvent.attributes.find("text")->second << ", "
@@ -105,54 +116,86 @@ namespace OHOS::uitest {
                     << " Max_Velocity:" << MaxVelocity
                     << std::endl;
     }
-    void EventData::WriteEventData(const VelocityTracker &velocityTracker, const std::string &actionType)
+    void EventData::WriteEventData(const VelocityTracker &velocityTracker, const std::string &actionType) const
     {
-        v = velocityTracker;
-        action = actionType;
-        TouchEventInfo downEvent = v.GetFirstTrackPoint();
-        TouchEventInfo upEvent = v.GetLastTrackPoint();
-        if (g_recordMode == "point") {
-            CommonPrintLine(downEvent, upEvent, action);
-        } else {
-            PrintLine(downEvent, upEvent, action);
-        }
-        if (g_outFile.is_open()) {
-            g_outFile << actionType << ',';
-            g_outFile << downEvent.x << ',';
-            g_outFile << downEvent.y << ',';
-            g_outFile << upEvent.x << ',';
-            g_outFile << upEvent.y << ',';
-            g_outFile << v.GetInterVal() << ',';
-            g_outFile << v.GetStepLength() << ',';
-            g_outFile << v.GetMainVelocity() << ',';
-            g_outFile << MaxVelocity << ',';
-            if (g_recordMode == "point") {
-                g_outFile << ",,,,,,,,";
+        VelocityTracker velo = VelocityTracker(velocityTracker);
+        // velo = velocityTracker;
+        TouchEventInfo downEvent = velo.GetFirstTrackPoint();
+        TouchEventInfo upEvent = velo.GetLastTrackPoint();
+        if (g_useSocket) {
+            auto data = nlohmann::json();
+            data["OP_TYPE"] = actionType;
+            data["X_POSI"] = std::to_string(downEvent.x);
+            data["Y_POSI"] = std::to_string(downEvent.y);
+            data["X2_POSI"] = std::to_string(upEvent.x);
+            data["Y2_POSI"] = std::to_string(upEvent.y);
+            data["W1_ID"] = downEvent.attributes.find("id")->second;
+            data["W1_Type"] = downEvent.attributes.find("type")->second;
+            data["W1_Text"] = downEvent.attributes.find("text")->second;
+            data["W1_BOUNDS"] = downEvent.attributes.find("bounds")->second;
+            data["W1_HIER"] = downEvent.attributes.find("hierarchy")->second;
+            data["INTERVAL"] = std::to_string(velo.GetInterVal());
+            data["LENGTH"] = std::to_string(velo.GetStepLength());
+            data["VELO"] = std::to_string(velo.GetMainVelocity());
+            data["MAX_VEL"] = std::to_string(MaxVelocity);
+            if (actionType == "drag") {
+                data["W2_ID"] = upEvent.attributes.find("id")->second;
+                data["W2_Type"] = upEvent.attributes.find("type")->second;
+                data["W2_Text"] = upEvent.attributes.find("text")->second;
+                data["W2_BOUNDS"] = upEvent.attributes.find("bounds")->second;
+                data["W2_HIER"] = upEvent.attributes.find("hierarchy")->second;
             } else {
-                g_outFile << downEvent.attributes.find("id")->second << ',';
-                g_outFile << downEvent.attributes.find("type")->second << ',';
-                g_outFile << downEvent.attributes.find("text")->second << ',';
+                data["W2_ID"] = "";
+                data["W2_Type"] = "";
+                data["W2_Text"] = "";
+                data["W2_BOUNDS"] = "";
+                data["W2_HIER"] = "";
+            }
+            if (actionType == "click") {
+                std::vector<std::string> names = GetForeAbility();
+                data["BUNDLE"] = names[0];
+                data["ABILITY"] = names[1];
+            } else {
+                data["BUNDLE"] = "";
+                data["ABILITY"] = "";
+            }
+            std::lock_guard<mutex> guard(*g_socket_lock);
+            g_eventQueue->push("AA" + data.dump() + "BB");
+        } else {
+            std::string eventItems[9]={actionType, std::to_string(downEvent.x), std::to_string(downEvent.y), std::to_string(upEvent.x), \
+            std::to_string(upEvent.y), std::to_string(velo.GetInterVal()), std::to_string(velo.GetStepLength()), std::to_string(velo.GetMainVelocity()), \
+            std::to_string(MaxVelocity)};
+            std::string eventData;
+            for (int i = 0; i < 9; i++) {
+                eventData += eventItems[i] + ",";
+            }
+            if (g_recordMode == "point") {
+                eventData += ",,,,,,,,";
+                CommonPrintLine(downEvent, upEvent, actionType);
+            } else {
+                eventData += downEvent.attributes.find("id")->second + ",";
+                eventData += downEvent.attributes.find("type")->second + ',';
+                eventData += downEvent.attributes.find("text")->second + ',';
                 if (actionType == "drag") {
-                    g_outFile << upEvent.attributes.find("id")->second << ',';
-                    g_outFile << upEvent.attributes.find("type")->second << ',';
-                    g_outFile << upEvent.attributes.find("text")->second << ',';
+                    eventData += upEvent.attributes.find("id")->second + ',';
+                    eventData += upEvent.attributes.find("type")->second + ',';
+                    eventData += upEvent.attributes.find("text")->second + ',';
                 } else {
-                    g_outFile << ",,,";
+                    eventData += ",,,";
                 }
                 if (actionType == "click") {
                     std::vector<std::string> names = GetForeAbility();
-                    g_outFile << names[ZERO] << ',';
-                    g_outFile << names[ONE] << ',';
+                    eventData += names[ZERO] + ',';
+                    eventData += names[ONE] + ',';
                 } else {
-                    g_outFile << ",,";
+                    eventData += ",,";
                 }
+                PrintLine(downEvent, upEvent, actionType);
             }
-            g_outFile << std::endl;
+            g_outFile << eventData << std::endl;
             if (g_outFile.fail()) {
                 std::cout<< " outFile failed. " <<std::endl;
             }
-        } else {
-            std::cout << "outFile is not opened!"<< std::endl;
         }
     }
     void EventData::ReadEventLine()
@@ -201,14 +244,56 @@ namespace OHOS::uitest {
     {
         g_dataWrapper.ProcessData(SetEventData);
     }
+
+    // KEY_ACTION
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const
     {
-        if (keyEvent->GetKeyCode() == KEYCODE_BACK) {
-            g_touchop = OP_RETURN;
+        // std :: cout << "@@@@@KeyCode:" << keyEvent->GetKeyCode() 
+        //         << " KeyAction:"<< keyEvent->GetKeyAction() 
+        //         << " KeyActionTime:"<< keyEvent->GetActionTime() <<std::endl;
+        if (keyEvent->GetKeyCode() == MMI::KeyEvent::KEYCODE_BACK || keyEvent->GetKeyCode() == MMI::KeyEvent::KEYCODE_HOME){
+            if (keyEvent->GetKeyAction() != MMI::KeyEvent::KEY_ACTION_UP) {
+                return;
+            }
+            if (keyEvent->GetKeyCode()== MMI::KeyEvent::KEYCODE_BACK ){
+                g_touchop = OP_RETURN;
+            }else if(keyEvent->GetKeyCode()== MMI::KeyEvent::KEYCODE_HOME){
+                g_touchop = OP_HOME;
+            }
+            g_eventData.WriteEventData(g_velocityTracker, g_operationType[g_touchop]);
+            return;
         }
-        std::thread t(SaveEventData);
-        t.join();
+        auto item = keyEvent->GetKeyItem(keyEvent->GetKeyCode());
+        if (!item) {
+            std::cout << "GetPointerItem Fail" << std::endl;
+        }
+        KeyEventInfo info;
+        info.SetActionTime(keyEvent->GetActionTime());
+        info.SetKeyCode(keyEvent->GetKeyCode());
+        if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
+            g_keyeventTracker.AddDownKeyEvent(info);
+        } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_CANCEL) {
+            g_keyeventTracker.AddCancelKeyEvent(info);
+        } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
+            //获取快照
+            KeyeventTracker snapshootKeyTracker = g_keyeventTracker.AddUpKeyEvent(info);
+            // cout打印 + record.csv保存
+            if(snapshootKeyTracker.GetisNeedRecord() && !g_useSocket){
+                snapshootKeyTracker.WriteData(g_cout_lock);
+                snapshootKeyTracker.WriteData(g_outFile,g_csv_lock);
+            }
+            // daemon socket输出,编json
+            if(snapshootKeyTracker.GetisNeedRecord() && g_useSocket){
+                snapshootKeyTracker.WriteData(g_eventQueue,g_socket_lock);
+            }
+        }
     }
+
+    // AXIS_ACTION
+    void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const { 
+    }
+
+    // POINTER_ACTION
     void InputEventCallback::HandleDownEvent(TouchEventInfo& event) const
     {
         if (g_recordMode != "point") {
@@ -228,6 +313,7 @@ namespace OHOS::uitest {
     }
     void InputEventCallback::HandleUpEvent(const TouchEventInfo& event) const
     {
+        std::cout << "@@@@@@@@@@@touch up" << std::endl;
         g_velocityTracker.UpdateTouchEvent(event, true);
         int moveDistance = g_velocityTracker.GetMoveDistance();
         if (!g_isOpDect) {
@@ -262,6 +348,18 @@ namespace OHOS::uitest {
                     g_touchop = OP_DOUBLE_CLICK;
                     g_isClick = false;
                 } else {
+                    // std::cout << "clickcount before while:" << g_velocityTracker.GetClickcount() <<std::endl;
+                    // auto end = chrono::system_clock::now() +  chrono::duration<double, std::ratio<1, 5>>(INTERVAL_THRESHOLD); // 计算结束时间点
+                    // while (g_velocityTracker.GetClickcount() == 0 && chrono::system_clock::now() < end ){
+                    //     std::cout << "clickcount in while: " << g_velocityTracker.GetClickcount() <<std::endl;
+                    // }
+                    // std::cout << "clickcount after while:" << g_velocityTracker.GetClickcount() <<std::endl;
+                    this_thread::sleep_for(chrono::milliseconds((long)INTERVAL_THRESHOLD*5000));
+                    std::cout << "clickcount after sleep:" << g_velocityTracker.GetClickcount() <<std::endl;
+                    if (g_velocityTracker.GetClickcount() != 0){
+                        std::cout << "in return" <<std::endl;
+                        return;
+                    }
                     g_touchop = OP_CLICK;
                     g_isClick = true;
                 }
@@ -272,14 +370,16 @@ namespace OHOS::uitest {
         }
         if (g_touchop == OP_DRAG && g_recordMode != "point") {
             g_velocityTracker.GetLastTrackPoint().attributes = FindWidget(driver, event.x, event.y).GetAttrMap();
-        }
-        std::thread t(SaveEventData);
-        t.join();
-        g_velocityTracker.Resets();
+        } 
         g_isOpDect = false;
+        sleep(1); //�������ꨰ3??��?��a����3��
+        driver.FindWidgets(selector, rev, err, true);
+        g_eventData.WriteEventData(g_velocityTracker, g_operationType[g_touchop]);
+        g_velocityTracker.Resets();
     }
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const
     {
+        std::cout << "@@@@@@@@@@@touch event" << std::endl;
         MMI::PointerEvent::PointerItem item;
         bool result = pointerEvent->GetPointerItem(pointerEvent->GetPointerId(), item);
         if (!result) {
@@ -299,7 +399,9 @@ namespace OHOS::uitest {
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
             HandleMoveEvent(touchEvent);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP) {
-            HandleUpEvent(touchEvent);
+            std::thread t1([&](){ HandleUpEvent(touchEvent); });
+	        t1.join();
+            // HandleUpEvent(touchEvent);
         }
     }
     std::shared_ptr<InputEventCallback> InputEventCallback::GetPtr()
@@ -317,6 +419,11 @@ namespace OHOS::uitest {
         }
         return true;
     }
+    void SetSocketUtils(const bool useSocket, const shared_ptr<mutex> lock, const shared_ptr<queue<string>> eventQueue) {
+        g_useSocket = useSocket;
+        g_socket_lock = lock;
+        g_eventQueue = eventQueue;
+    }
     bool InitEventRecordFile()
     {
         if (!InitReportFolder()) {
@@ -331,30 +438,30 @@ namespace OHOS::uitest {
         std::cout << "The result will be written in csv file at location: " << g_filePath << std::endl;
         return true;
     }
-    void RecordInitEnv(const std::string &modeOpt)
+    void RecordInitEnv(const std::string &modeOpt, const std::string opt)
     {
         g_recordMode = modeOpt;
+        g_recordOpt = opt;
         g_velocityTracker.TrackResets();
-        ApiCallErr err(NO_ERROR);
-        auto selector = WidgetSelector();
-        vector<std::unique_ptr<Widget>> rev;
         driver.FindWidgets(selector, rev, err, true);
         auto screenSize = driver.GetDisplaySize(err);
-        windowBounds = Rect(0, 0, screenSize.px_, screenSize.py_);
-        std::cout<< "windowBounds : (" << windowBounds.left_ << ","
-                << windowBounds.top_ << "," << windowBounds.right_ << ","
-                << windowBounds.bottom_ << ")" << std::endl;
-        std::vector<std::string> names = GetForeAbility();
-        std::cout << "Current ForAbility :" << names[ZERO] << ", " << names[ONE] << std::endl;
-        if (g_outFile.is_open()) {
-            g_outFile << "windowBounds" << ',';
-            g_outFile << windowBounds.left_ << ',';
-            g_outFile << windowBounds.top_ << ',';
-            g_outFile << windowBounds.right_ << ',';
-            g_outFile << windowBounds.bottom_ << ',';
-            g_outFile << "0,0,0,0,,,,,,,";
-            g_outFile << names[ZERO] << ',';
-            g_outFile << names[ONE] << ',' << std::endl;
+        windowBounds = Rect(0, screenSize.px_, 0,  screenSize.py_);
+        if (opt == "record") {
+            std::cout<< "windowBounds : (" << windowBounds.left_ << ","
+                    << windowBounds.top_ << "," << windowBounds.right_ << ","
+                    << windowBounds.bottom_ << ")" << std::endl;
+            std::vector<std::string> names = GetForeAbility();
+            std::cout << "Current ForAbility :" << names[ZERO] << ", " << names[ONE] << std::endl;
+            if (g_outFile.is_open()) {
+                g_outFile << "windowBounds" << ',';
+                g_outFile << windowBounds.left_ << ',';
+                g_outFile << windowBounds.top_ << ',';
+                g_outFile << windowBounds.right_ << ',';
+                g_outFile << windowBounds.bottom_ << ',';
+                g_outFile << "0,0,0,0,,,,,,,";
+                g_outFile << names[ZERO] << ',';
+                g_outFile << names[ONE] << ',' << std::endl;
+            }
         }
     }
 } // namespace OHOS::uitest

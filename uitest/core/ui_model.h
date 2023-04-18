@@ -47,6 +47,8 @@ namespace OHOS::uitest {
         BOUNDSCENTER,
         HOST_WINDOW_ID,
         VISIBLE,
+        ABILITYNAME,
+        BUNDLENAME,
     };
 
     /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
@@ -70,6 +72,8 @@ namespace OHOS::uitest {
         "boundsCenter",  // BOUNDSCENTER
         "hostWindowId",  // HOST_WINDOW_ID
         "visible",       // VISIBLE
+        "abilityName",
+        "bundleName",
     };
 
     struct Point {
