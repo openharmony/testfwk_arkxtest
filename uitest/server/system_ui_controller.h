@@ -17,8 +17,12 @@
 #define SYSTEM_UI_CONTROLLER_H
 
 #include "ui_controller.h"
+#include "accessibility_event_info.h"
+#include "accessibility_ui_test_ability.h"
+#include "ability_manager_client.h"
 
 namespace OHOS::uitest {
+    using namespace OHOS::Accessibility;
     /**The default UiController of ohos, which is effective for all apps.*/
     class SysUiController final : public UiController {
     public:

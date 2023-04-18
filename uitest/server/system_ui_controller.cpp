@@ -21,8 +21,6 @@
 #include <thread>
 #include <utility>
 #include <condition_variable>
-#include "accessibility_event_info.h"
-#include "accessibility_ui_test_ability.h"
 #include "display_manager.h"
 #include "screen_manager.h"
 #include "input_manager.h"
@@ -308,6 +306,8 @@ namespace OHOS::uitest {
         for (auto &window : windows) {
             if (ability->GetRootByWindow(window, elementInfo) == RET_OK) {
                 const auto app = elementInfo.GetBundleName();
+                auto amcPtr = AAFwk::AbilityManagerClient::GetInstance();
+                const auto foreAbility = amcPtr->GetTopAbility();
                 LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
                 if (targetApp != "" && app != targetApp) {
                     continue;
@@ -320,6 +320,10 @@ namespace OHOS::uitest {
                 InflateWindowInfo(window, winInfo);
                 winInfo.bundleName_ = app;
                 auto root = nlohmann::json();
+                root["bundleName"] = app;
+                if (app == foreAbility.GetBundleName()) {
+                    root["abilityName"] = foreAbility.GetAbilityName();
+                }
                 MarshallAccessibilityNodeInfo(elementInfo, root, 0, false);
                 out.push_back(make_pair(move(winInfo), move(root)));
                 LOG_D("Get node at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
