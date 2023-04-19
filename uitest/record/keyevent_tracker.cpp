@@ -68,7 +68,6 @@ namespace OHOS::uitest{
         auto cinfoit = std::find_if(cancelInfos_.begin(), cancelInfos_.end(), [keyCode](const KeyEventInfo& info) {
             return info.GetKeyCode() == keyCode;
         });
-        bool f = cinfoit != infos_.end();
         if(cinfoit != infos_.end()){
             cancelInfos_.erase(cinfoit);
             return;
