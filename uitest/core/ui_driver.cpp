@@ -287,7 +287,7 @@ namespace OHOS::uitest {
         return nullptr;
     }
 
-    int32_t UiDriver::GetInjectedWindowId(Point point, ApiCallErr &err)
+    int32_t UiDriver::GetTouchedWindowId(const Point point, ApiCallErr &err)
     {
         UpdateUi(true, err);
         for (auto window : windows_) {
@@ -385,7 +385,7 @@ namespace OHOS::uitest {
 
     void UiDriver::InjectMouseAction(MouseOpArgs mouseOpArgs, ApiCallErr &error)
     {
-        auto id = GetMatchedWinId(mouseOpArgs.point_, error);
+        auto id = GetTouchedWindowId(mouseOpArgs.point_, error);
         if (error.code_ != NO_ERROR) {
             return;
         }
