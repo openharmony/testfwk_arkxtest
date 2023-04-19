@@ -424,7 +424,7 @@ namespace OHOS::uitest {
         }
         OHOS::MMI::KeyEvent::KeyItem keyItem;
         keyItem.SetKeyCode(key);
-        keyItem.SetPressed(true);
+        keyItem.SetPressed(action == ActionStage::DOWN);
         keyEvent->AddKeyItem(keyItem);
         return keyEvent;
     }
