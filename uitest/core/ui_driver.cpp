@@ -385,7 +385,7 @@ namespace OHOS::uitest {
 
     void UiDriver::InjectMouseAction(MouseOpArgs mouseOpArgs, ApiCallErr &error)
     {
-        auto id = GetInjectedWindowId(mouseOpArgs.point_, error);
+        auto id = GetMatchedWinId(mouseOpArgs.point_, error);
         if (error.code_ != NO_ERROR) {
             return;
         }

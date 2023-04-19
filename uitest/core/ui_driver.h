@@ -48,7 +48,7 @@ namespace OHOS::uitest {
         string GetHostApp(const Widget &widget);
 
         /**Get the id of window into which the mouse action inject.*/
-        int32_t GetInjectedWindowId(Point point,ApiCallErr &err);
+        int32_t GetMatchedWinId(Point point, ApiCallErr &err);
 
         /**Trigger the given key action. */
         void TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error);
