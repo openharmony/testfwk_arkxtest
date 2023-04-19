@@ -17,9 +17,11 @@
 #include "ui_record.h"
 #include "ability_manager_client.h"
 
-using namespace std;
-using namespace std::chrono;
+
 namespace OHOS::uitest {
+    using namespace std;
+    using namespace std::chrono;
+    using nlohmann::json;
     enum TouchOpt : uint8_t {
         OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
         OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
@@ -74,6 +76,75 @@ namespace OHOS::uitest {
         elements.push_back(abilityName);
         return elements;
     }
+
+    void InputEventCallback::SubscribeMonitorInit()
+    {
+        // 电源键按下订阅
+        std::set<int32_t> preKeys;
+        std::shared_ptr<MMI::KeyOption> keyOption = std::make_shared<MMI::KeyOption>();
+        keyOption->SetPreKeys(preKeys);
+        keyOption->SetFinalKey(MMI::KeyEvent::KEYCODE_POWER);
+        keyOption->SetFinalKeyDown(true);
+        keyOption->SetFinalKeyDownDuration(10);
+        subscribeId1_ = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption,
+            [this](std::shared_ptr<MMI::KeyEvent> keyEvent) {
+            OnInputEvent(keyEvent);
+        });
+
+        // 电源键抬起订阅
+        std::shared_ptr<MMI::KeyOption> keyOption2 = std::make_shared<MMI::KeyOption>();
+        keyOption2->SetPreKeys(preKeys);
+        keyOption2->SetFinalKey(MMI::KeyEvent::KEYCODE_POWER);
+        keyOption2->SetFinalKeyDown(false);
+        keyOption2->SetFinalKeyDownDuration(0);
+        subscribeId2_ = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption2,
+            [this](std::shared_ptr<MMI::KeyEvent> keyEvent) {
+            OnInputEvent(keyEvent);
+        });
+
+        // 音量UP键按下订阅
+        std::shared_ptr<MMI::KeyOption> keyOption3 = std::make_shared<MMI::KeyOption>();
+        keyOption3->SetPreKeys(preKeys);
+        keyOption3->SetFinalKey(MMI::KeyEvent::KEYCODE_VOLUME_UP);
+        keyOption3->SetFinalKeyDown(true);
+        keyOption3->SetFinalKeyDownDuration(0);
+        subscribeId3_ = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption3,
+            [this](std::shared_ptr<MMI::KeyEvent> keyEvent) {
+            OnInputEvent(keyEvent);
+        });
+
+        // 音量DOWN键按下订阅
+        std::shared_ptr<MMI::KeyOption> keyOption4 = std::make_shared<MMI::KeyOption>();
+        keyOption4->SetPreKeys(preKeys);
+        keyOption4->SetFinalKey(MMI::KeyEvent::KEYCODE_VOLUME_DOWN);
+        keyOption4->SetFinalKeyDown(true);
+        keyOption4->SetFinalKeyDownDuration(0);
+        subscribeId4_ = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption4,
+            [this](std::shared_ptr<MMI::KeyEvent> keyEvent) {
+            OnInputEvent(keyEvent);
+        });
+    }
+    // key取消订阅
+    void InputEventCallback::SubscribeMonitorCancel()
+    {
+        MMI::InputManager* inputManager = MMI::InputManager::GetInstance();
+        if (inputManager == nullptr) {
+            return;
+        }
+        if (subscribeId1_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(subscribeId1_);
+        }
+        if (subscribeId2_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(subscribeId2_);
+        }
+        if (subscribeId3_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(subscribeId3_);
+        }
+        if (subscribeId4_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(subscribeId4_);
+        }
+    }
+    
     void PrintLine(const TouchEventInfo &downEvent, const TouchEventInfo &upEvent, const std::string &actionType)
     {
         std::cout << "Interval: " << g_velocityTracker.GetInterVal() << std::endl;
@@ -251,6 +322,7 @@ namespace OHOS::uitest {
         // std :: cout << "@@@@@KeyCode:" << keyEvent->GetKeyCode() 
         //         << " KeyAction:"<< keyEvent->GetKeyAction() 
         //         << " KeyActionTime:"<< keyEvent->GetActionTime() <<std::endl;
+        // g_keyeventTracker.printEventItems();
         if (keyEvent->GetKeyCode() == MMI::KeyEvent::KEYCODE_BACK || keyEvent->GetKeyCode() == MMI::KeyEvent::KEYCODE_HOME){
             if (keyEvent->GetKeyAction() != MMI::KeyEvent::KEY_ACTION_UP) {
                 return;
@@ -313,7 +385,7 @@ namespace OHOS::uitest {
     }
     void InputEventCallback::HandleUpEvent(const TouchEventInfo& event) const
     {
-        std::cout << "@@@@@@@@@@@touch up" << std::endl;
+        // std::cout << "@@@@@@@@@@@touch up" << std::endl;
         g_velocityTracker.UpdateTouchEvent(event, true);
         int moveDistance = g_velocityTracker.GetMoveDistance();
         if (!g_isOpDect) {
@@ -379,7 +451,7 @@ namespace OHOS::uitest {
     }
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const
     {
-        std::cout << "@@@@@@@@@@@touch event" << std::endl;
+        // std::cout << "@@@@@@@@@@@touch event" << std::endl;
         MMI::PointerEvent::PointerItem item;
         bool result = pointerEvent->GetPointerItem(pointerEvent->GetPointerId(), item);
         if (!result) {
