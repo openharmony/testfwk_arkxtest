@@ -72,6 +72,7 @@ namespace OHOS::uitest {
             bool WriteData(ofstream &outFile , shared_ptr<mutex> &csv_lock);
             // daemon socket
             bool WriteData(shared_ptr<queue<string>> &eventQueue,shared_ptr<mutex> &socket_lock);
+            void printEventItems();
 
         private:
             void KeyCodeDone(int32_t keyCode);
@@ -79,6 +80,7 @@ namespace OHOS::uitest {
             void buildEventItems();
         private:
             std::vector<KeyEventInfo> infos_;
+            std::vector<KeyEventInfo> cancelInfos_;
             bool isDownStage = false;  
             bool isNeedRecord = false;
             int64_t actionStartTime = 0;
