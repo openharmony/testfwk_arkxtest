@@ -282,6 +282,8 @@ namespace OHOS::uitest {
                 std::cout << "nullptr" << std::endl;
                 return OHOS::ERR_INVALID_VALUE;
             }
+            // 按键订阅
+            callBackPtr->SubscribeMonitorInit();
             int32_t id1 = MMI::InputManager::GetInstance()->AddMonitor(callBackPtr);
             if (id1 == -1) {
                 std::cout << "Startup Failed!" << std::endl;
@@ -379,6 +381,8 @@ namespace OHOS::uitest {
                     // break;
                 }
                 close(listenfd);
+                // 取消按键订阅
+                callBackPtr->SubscribeMonitorCancel();
                 MMI::InputManager::GetInstance()->RemoveMonitor(id1);
                 return 0;
             } else {
@@ -389,6 +393,8 @@ namespace OHOS::uitest {
                 std::cout << flag << std::endl;
                 constexpr int timeToSleep = 3600;
                 sleep(timeToSleep);
+                // 取消按键订阅
+                callBackPtr->SubscribeMonitorCancel();
                 return OHOS::ERR_OK;
             }
         } else if (opt == "read") {

@@ -68,11 +68,17 @@ namespace OHOS::uitest {
             void HandleUpEvent(const TouchEventInfo& event) const;
             void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
             void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override;
+            void SubscribeMonitorInit();
+            void SubscribeMonitorCancel();
             static std::shared_ptr<InputEventCallback> GetPtr();
 
         private:
             shared_ptr<queue<std::string>> eventQueue_;
             shared_ptr<mutex> lock_;
+            int32_t subscribeId1_;
+            int32_t subscribeId2_;
+            int32_t subscribeId3_;
+            int32_t subscribeId4_;
     };
 
     class TestUtils {
