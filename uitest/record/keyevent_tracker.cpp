@@ -131,7 +131,7 @@ namespace OHOS::uitest{
         auto data = nlohmann::json();
         data["ActionStartTime"] = eventItems[0];
         data["ActionDurationTime"] = eventItems[1];
-        data["EventType"] =  eventItems[2];
+        data["OP_TYPE"] =  eventItems[2];
         data["keyItemsCount"] = eventItems[3];
         data["KeyCode1"] = eventItems[4];
         data["KeyCode2"] = eventItems[5];
