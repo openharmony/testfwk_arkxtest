@@ -975,7 +975,7 @@ export default function abilityTest() {
 **使用者在测试脚本通过如下方式引入使用：**
 
 ```typescript
-import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.uitest'
+import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.UiTest'
 ```
 
 > 须知
@@ -989,7 +989,7 @@ import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.uitest'
 
 ```javascript
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '@ohos/hypium'
-import {ON, Driver, Component, MatchPattern} from '@ohos.uitest'
+import {ON, Driver, Component, MatchPattern} from '@ohos.UiTest'
 
 export default async function abilityTest() {
   describe('uiTestDemo', function() {
@@ -1027,7 +1027,7 @@ export default async function abilityTest() {
 其中assertComponentExist接口是断言API，用于断言当前界面存在目标控件；如果控件不存在，该API将抛出JS异常，使当前测试用例失败。
 
 ```javascript
-import {ON,Driver,Component} from '@ohos.uitest'
+import {ON,Driver,Component} from '@ohos.UiTest'
 
 export default async function abilityTest() {
   describe('UiTestDemo', function() {
