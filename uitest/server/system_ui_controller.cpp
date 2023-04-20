@@ -359,7 +359,7 @@ namespace OHOS::uitest {
                 pointerEvent->SetTargetDisplayId(displayMgr.GetDefaultDisplayId());
                 InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
                 if (events.At(finger, step).holdMs_ > 0) {
-                this_thread::sleep_for(chrono::milliseconds(events.At(finger, step).holdMs_));
+                    this_thread::sleep_for(chrono::milliseconds(events.At(finger, step).holdMs_));
                 }
             }
         }
@@ -424,19 +424,25 @@ namespace OHOS::uitest {
         }
         OHOS::MMI::KeyEvent::KeyItem keyItem;
         keyItem.SetKeyCode(key);
-        keyItem.SetPressed(true);
+        keyItem.SetPressed(action == ActionStage::DOWN);
         keyEvent->AddKeyItem(keyItem);
         return keyEvent;
     }
 
     void SysUiController::InjectMouseClick(MouseOpArgs mouseOpArgs, int32_t windowId) const
     {
+        constexpr uint32_t focusTimeMs = 40;
+        auto mouseMove = CreateMouseActionEvent(mouseOpArgs, MouseEventType::M_MOVE, windowId);
+        InputManager::GetInstance()->SimulateInputEvent(mouseMove);
+        this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
         if (mouseOpArgs.key1_ != KEYCODE_NONE) {
             auto dwonEvent1 = CreateSingleKeyEvent(mouseOpArgs.key1_, ActionStage::DOWN);
             InputManager::GetInstance()->SimulateInputEvent(dwonEvent1);
+            this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
             if (mouseOpArgs.key2_ != KEYCODE_NONE) {
                 auto dwonEvent2 = CreateSingleKeyEvent(mouseOpArgs.key2_, ActionStage::DOWN);
                 InputManager::GetInstance()->SimulateInputEvent(dwonEvent2);
+                this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
             }
         }
         auto mouseDown = CreateMouseActionEvent(mouseOpArgs, MouseEventType::BUTTON_DOWN, windowId);
@@ -446,10 +452,12 @@ namespace OHOS::uitest {
         if (mouseOpArgs.key2_ != KEYCODE_NONE) {
             auto upEvent = CreateSingleKeyEvent(mouseOpArgs.key2_, ActionStage::UP);
             InputManager::GetInstance()->SimulateInputEvent(upEvent);
+            this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
         }
         if (mouseOpArgs.key1_ != KEYCODE_NONE) {
             auto upEvent = CreateSingleKeyEvent(mouseOpArgs.key1_, ActionStage::UP);
             InputManager::GetInstance()->SimulateInputEvent(upEvent);
+            this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
         }
     }
 
