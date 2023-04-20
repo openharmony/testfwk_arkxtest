@@ -287,15 +287,17 @@ namespace OHOS::uitest {
         return nullptr;
     }
 
-    int32_t UiDriver::GetActiveWindowId(ApiCallErr &err)
+    int32_t UiDriver::GetTouchedWindowId(const Point point, ApiCallErr &err)
     {
         UpdateUi(true, err);
         for (auto window : windows_) {
-            if (window.actived_) {
-                return window.id_;
-            }
+            if ((point.px_ <= window.bounds_.right_ && point.px_ >= window.bounds_.left_) &&
+                (point.py_ <= window.bounds_.bottom_ && point.py_ >= window.bounds_.top_)) {
+                    LOG_I("Target window id: %{public}d", window.id_);
+                    return window.id_;
+                }
         }
-        err = ApiCallErr(ERR_INTERNAL, "NO active window currently");
+        err = ApiCallErr(ERR_INTERNAL, "NO target window currently");
         return 0;
     }
 
@@ -383,7 +385,7 @@ namespace OHOS::uitest {
 
     void UiDriver::InjectMouseAction(MouseOpArgs mouseOpArgs, ApiCallErr &error)
     {
-        auto id = GetActiveWindowId(error);
+        auto id = GetTouchedWindowId(mouseOpArgs.point_, error);
         if (error.code_ != NO_ERROR) {
             return;
         }
