@@ -1079,7 +1079,7 @@ await window.close()
 >```
 ### Building UiTest
 
-> UiTest is not built with OpenHarmony 3.1 Release and needs to be manually built. For details, see [Pushing UiTest to a Device](https://gitee.com/lijialang/testfwk_arkxtest/blob/OpenHarmony-3.2-Release/README_en.md).
+> UiTest is not built with OpenHarmony 3.1 Release and needs to be manually built. For details.
 
 If you want to modify UiTest code and verify the modification, use the following commands.
 
