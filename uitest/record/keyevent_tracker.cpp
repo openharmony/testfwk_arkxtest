@@ -48,7 +48,8 @@ namespace OHOS::uitest{
             snapshootKeyTracker.infos_ =  infos_;
             snapshootKeyTracker.actionUpTime = info.GetActionTime();
             snapshootKeyTracker.isNeedRecord = true;
-        }// false ->抬起阶段,只干掉抬起键即可
+        }// false ->抬起阶段,只干掉抬起键即可        
+        // snapshootKeyTracker.printEventItems();
         KeyCodeDone(info.GetKeyCode());
         return snapshootKeyTracker;
     }
@@ -68,11 +69,11 @@ namespace OHOS::uitest{
         auto cinfoit = std::find_if(cancelInfos_.begin(), cancelInfos_.end(), [keyCode](const KeyEventInfo& info) {
             return info.GetKeyCode() == keyCode;
         });
-        if(cinfoit != infos_.end()){
+        if(cinfoit != cancelInfos_.end()){
             cancelInfos_.erase(cinfoit);
             return;
         }
-        std::cout << "keyCode:" << keyCode << " has already up or cancle" << std::endl;
+        std::cout << "keyCode:" << keyCode << " donot have down action" << std::endl;
     }
 
     void KeyeventTracker::KeyCodeCancel(int32_t keyCode){
