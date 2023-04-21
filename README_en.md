@@ -921,7 +921,7 @@ export default async function abilityTest() {
 }
 ```
 
-For details about the APIs of `UiDriver`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts) and [UiDriver](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#uidriver).
+For details about the APIs of `UiDriver`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts) and [UiDriver](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#uidriver).
 
 ### Using By
 
@@ -946,7 +946,7 @@ UiTest provides a wide range of UI component feature description APIs in the `By
 
 The `text` attribute supports match patterns `MatchPattern.EQUALS`, `MatchPattern.CONTAINS`, `MatchPattern.STARTS_WITH`, and `MatchPattern.ENDS_WITH`. The default match pattern is `MatchPattern.EQUALS`.
 
-For details about the APIs of `By`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts) and [By](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#by).
+For details about the APIs of `By`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts) and [By](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#by).
 
 #### Absolute Positioning of a Component
 
@@ -1000,7 +1000,7 @@ The `UiComponent` class represents a UI component, which can be located by using
 | 6    | getType():Promise<string>         | Obtains the component type.                                |
 | 7    | isEnabled():Promise<bool>         | Obtains the component state, which can be enabled or disabled.                            |
 
-For details about the APIs of `UiComponent`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts) and [UiComponent](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#uicomponent).
+For details about the APIs of `UiComponent`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts) and [UiComponent](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#uicomponent).
 
 Example 1: Click a component.
 
@@ -1046,7 +1046,7 @@ The `UiWindow` class represents a UI window, which can be located by using `UiDr
 | 6    | split(): Promise<bool>                                       | Splits the current window. This API is applicable to the windows that support split-screen mode.  |
 | 7    | close(): Promise<bool>                                       | Closes the current window.                                    |
 
-For details about the APIs of `UiWindow`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts) and [UiWindow](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#uiwindow9).
+For details about the APIs of `UiWindow`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts) and [UiWindow](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#uiwindow9).
 
 Example 1: Obtain the window attributes.
 
@@ -1079,7 +1079,7 @@ await window.close()
 >```
 ### Building UiTest
 
-> UiTest is not built with OpenHarmony 3.1 Release and needs to be manually built. For details, see [Pushing UiTest to a Device](https://gitee.com/openharmony/arkXtest/blob/OpenHarmony-3.1-Release/README_en.md#%E6%8E%A8%E9%80%81ui%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E8%87%B3%E8%AE%BE%E5%A4%87).
+> UiTest is not built with OpenHarmony 3.1 Release and needs to be manually built.
 
 If you want to modify UiTest code and verify the modification, use the following commands.
 
