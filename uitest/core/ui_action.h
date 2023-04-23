@@ -171,7 +171,7 @@ namespace OHOS::uitest {
         uint32_t waitUiSteadyMaxMs_ = 3000;
         uint32_t waitWidgetMaxMs_ = 5000;
         int32_t scrollWidgetDeadZone_ = 80; // make sure the scrollWidget does not slide more than one page.
-        int32_t pinchWidgetDeadZone_ = 20;
+        int32_t pinchWidgetDeadZone_ = 20;  // pinching the edges of the widget has no effect.
         uint16_t swipeStepsCounts_ = 50;
     };
 
