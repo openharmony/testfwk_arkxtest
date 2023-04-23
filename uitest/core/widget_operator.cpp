@@ -71,8 +71,13 @@ namespace OHOS::uitest {
             auto bounds = scrollWidget->GetBounds();
             if (options_.scrollWidgetDeadZone_ > 0) {
                 // scroll widget from its deadZone maybe unresponsive
-                bounds.top_ += options_.scrollWidgetDeadZone_;
-                bounds.bottom_ -= options_.scrollWidgetDeadZone_;
+                if (bounds.top_ + options_.scrollWidgetDeadZone_ >= bounds.bottom_ - options_.scrollWidgetDeadZone_) {
+                    bounds.top_ += (bounds.bottom_ - bounds.top_) / INDEX_FOUR;
+                    bounds.bottom_ -= (bounds.bottom_ - bounds.top_) / INDEX_FOUR;
+                } else {
+                    bounds.top_ += options_.scrollWidgetDeadZone_;
+                    bounds.bottom_ -= options_.scrollWidgetDeadZone_;
+                }
             }
             Point topPoint(bounds.GetCenterX(), bounds.top_);
             Point bottomPoint(bounds.GetCenterX(), bounds.bottom_);
@@ -246,8 +251,13 @@ namespace OHOS::uitest {
             auto bounds = scrollWidget->GetBounds();
             if (options_.scrollWidgetDeadZone_ > 0) {
                 // scroll widget from its deadZone maybe unresponsive
-                bounds.top_ += options_.scrollWidgetDeadZone_;
-                bounds.bottom_ -= options_.scrollWidgetDeadZone_;
+                if (bounds.top_ + options_.scrollWidgetDeadZone_ >= bounds.bottom_ - options_.scrollWidgetDeadZone_) {
+                    bounds.top_ += (bounds.bottom_ - bounds.top_) / INDEX_FOUR;
+                    bounds.bottom_ -= (bounds.bottom_ - bounds.top_) / INDEX_FOUR;
+                } else {
+                    bounds.top_ += options_.scrollWidgetDeadZone_;
+                    bounds.bottom_ -= options_.scrollWidgetDeadZone_;
+                }
             }
             Point topPoint(bounds.GetCenterX(), bounds.top_);
             Point bottomPoint(bounds.GetCenterX(), bounds.bottom_);
