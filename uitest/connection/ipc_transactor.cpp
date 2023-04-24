@@ -435,7 +435,7 @@ namespace OHOS::uitest {
         if (g_broadcastCommandSubscriber != nullptr) {
             CommonEventManager::UnSubscribeCommonEvent(g_broadcastCommandSubscriber);
         }
-        if (g_broadcastCommandHandler == nullptr) {
+        if (g_broadcastCommandHandler != nullptr) {
             g_broadcastCommandHandler = nullptr;
         }
     }
