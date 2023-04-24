@@ -975,7 +975,7 @@ export default function abilityTest() {
 **使用者在测试脚本通过如下方式引入使用：**
 
 ```typescript
-import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.uitest'
+import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.UiTest'
 ```
 
 > 须知
@@ -989,13 +989,13 @@ import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.uitest'
 
 ```javascript
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '@ohos/hypium'
-import {ON, Driver, Component, MatchPattern} from '@ohos.uitest'
+import {ON, Driver, Component, MatchPattern} from '@ohos.UiTest'
 
 export default async function abilityTest() {
   describe('uiTestDemo', function() {
     it('uitest_demo0', 0, async function() {
       // create Driver
-      let driver = await Driver.create()
+      let driver = Driver.create()
       // find component by text
       let button = await driver.findComponent(ON.text('hello').enabled(true))
       // click component
@@ -1015,11 +1015,11 @@ export default async function abilityTest() {
 | No.  | API                                                             | 功能描述               |
 | ---- |-----------------------------------------------------------------| ---------------------- |
 | 1    | create():Promise<Driver>                                        | 静态方法，构造Driver。 |
-| 2    | findComponent(b:On):Promise<Component>                          | 查找匹配控件。         |
+| 2    | findComponent(on:On):Promise<Component>                         | 查找匹配控件。         |
 | 3    | pressBack():Promise<void>                                       | 单击BACK键。           |
 | 4    | click(x:number, y:number):Promise<void>                         | 基于坐标点的单击。      |
 | 5    | swipe(x1:number, y1:number, x2:number, y2:number):Promise<void> | 基于坐标点的滑动。      |
-| 6    | assertComponentExist(b:On):Promise<void>                        | 断言匹配的控件存在。     |
+| 6    | assertComponentExist(on:On):Promise<void>                       | 断言匹配的控件存在。     |
 | 7    | delayMs(t:number):Promise<void>                                 | 延时。                 |
 | 8    | screenCap(s:path):Promise<void>                                 | 截屏。                 |
 | 9    | findWindow(filter: WindowFilter): Promise<UiWindow>             | 查找匹配窗口。         |
@@ -1027,14 +1027,14 @@ export default async function abilityTest() {
 其中assertComponentExist接口是断言API，用于断言当前界面存在目标控件；如果控件不存在，该API将抛出JS异常，使当前测试用例失败。
 
 ```javascript
-import {ON,Driver,Component} from '@ohos.uitest'
+import {ON,Driver,Component} from '@ohos.UiTest'
 
 export default async function abilityTest() {
   describe('UiTestDemo', function() {
     it('Uitest_demo0', 0, async function(done) {
       try{
         // create Driver
-        let driver = await Driver.create()
+        let driver = Driver.create()
         // assert text 'hello' exists on current Ui
         await assertComponentExist(ON.text('hello'))
       } finally {
@@ -1101,7 +1101,7 @@ let txt = await driver.findComponent(ON.text("hello", MatchPattern.CONTAINS))
 
 ####  控件相对定位
 
-**示例代码1**：查找位于文本控件`Item3_3`后面的，id是`ResourceTable.Id_switch`的Switch控件。
+**示例代码1**：查找位于文本控件`Item3_3`后面的，id是`Id_switch`的Switch控件。
 
 ```javascript
 let switch = await driver.findComponent(ON.id(Id_switch).isAfter(ON.text("Item3_3")))
@@ -1161,7 +1161,7 @@ await editText.inputText("user_name")
 ```
 ### UiWindow使用说明
 
-`UiWindow`类代表了Ui界面上的一个窗口，一般是通过`Driver.findWindow(on)`方法查找到的。通过该类的实例，用户可以获取窗口属性，并进行窗口拖动、调整窗口大小等操作。
+`UiWindow`类代表了Ui界面上的一个窗口，一般是通过`Driver.findWindow(WindowFilter)`方法查找到的。通过该类的实例，用户可以获取窗口属性，并进行窗口拖动、调整窗口大小等操作。
 
 `UiWindow`包含的常用API：
 
@@ -1170,7 +1170,7 @@ await editText.inputText("user_name")
 | 1    | getBundleName(): Promise<string>                             | 获取窗口所属应用包名。                             |
 | 2    | getTitle(): Promise<string>                                  | 获取窗口标题信息。                                 |
 | 3    | focus(): Promise<bool>                                       | 使得当前窗口获取焦点。                             |
-| 4    | moveTo(x: number, y: number): Promise<bool>;                 | 将当前窗口移动到指定位置（适用于支持移动的窗口）。 |
+| 4    | moveTo(x: number, y: number): Promise<bool>                  | 将当前窗口移动到指定位置（适用于支持移动的窗口）。 |
 | 5    | resize(wide: number, height: number, direction: ResizeDirection): Promise<bool> | 调整窗口大小（适用于支持调整大小的窗口）。         |
 | 6    | split(): Promise<bool>                                       | 将窗口模式切换为分屏模式(适用于支持分屏的窗口)。   |
 | 7    | close(): Promise<bool>                                       | 关闭当前窗口。                                     |
@@ -1238,3 +1238,4 @@ hdc shell chmod +x /system/bin/uitest
 | 3.2.6.0 | 1、增加模拟鼠标操作能力接口<br />2、增加指定应用的窗口下查找目标控件接口 |
 | 4.0.1.1 | 1、支持在daemon运行时执行uitest dumpLayout                   |
 | 4.0.1.2 | 1、模拟鼠标动作、键鼠协同功能优化                            |
+| 4.0.1.3 | 1、示例代码更新<br />2、滑动控件进行滑动查找、滑动到尾部/顶部功能优化 |
