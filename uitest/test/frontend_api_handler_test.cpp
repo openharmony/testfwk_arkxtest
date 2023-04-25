@@ -372,7 +372,26 @@ TEST_F(FrontendApiHandlerTest, apiMapTest) {
     }
 }
 
-TEST_F(FrontendApiHandlerTest, parameterPreChecks)
+TEST_F(FrontendApiHandlerTest, parameterPreChecks1)
+{
+    const auto& server =  FrontendApiServer::Get();
+    // set the optional parameter as undefined.
+    auto call0 = ApiCallInfo{.apiId_ = "On.text", .callerObjRef_ = string(REF_SEED_BY)};
+    call0.paramList_.emplace_back("wyz");
+    call0.paramList_.emplace_back(NULL);
+    auto reply0 = ApiReplyInfo();
+    server.Call(call0, reply0);
+    ASSERT_EQ(NO_ERROR, reply0.exception_.code_);
+    // set the mandatory parameter as undefined.
+    auto call1 = ApiCallInfo{.apiId_ = "On.text", .callerObjRef_ = string(REF_SEED_BY)};
+    call1.paramList_.emplace_back(NULL);
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply1.exception_.code_);
+    ASSERT_TRUE(reply1.exception_.message_.find("failed: Expect string") != string::npos);
+}
+
+TEST_F(FrontendApiHandlerTest, parameterPreChecks2)
 {
     const auto& server =  FrontendApiServer::Get();
     // call with argument missing
