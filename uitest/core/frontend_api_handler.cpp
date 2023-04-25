@@ -390,7 +390,7 @@ namespace OHOS::uitest {
             }
             // check argument type
             for (size_t idx = 0; idx < argc; idx++) {
-                bool isDefArg = (argc - idx <= argSupportDefault) ? true : false;
+                auto isDefArg = (argc - idx <= argSupportDefault) ? true : false;
                 CheckCallArgType(types.at(idx), in.paramList_.at(idx), isDefArg, out.exception_);
                 if (out.exception_.code_ != NO_ERROR) {
                     out.exception_.message_ = "Check arg" + to_string(idx) + " failed: " + out.exception_.message_;
