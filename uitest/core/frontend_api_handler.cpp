@@ -348,7 +348,7 @@ namespace OHOS::uitest {
                 }
                 copy.erase(propName);
                 // check json property value type recursive
-                CheckCallArgType(def->type_, value[propName], def->required_, error);
+                CheckCallArgType(def->type_, value[propName], !def->required_, error);
                 if (error.code_ != NO_ERROR) {
                     error.message_ = "Illegal value of property '" + propName + "': " + error.message_;
                     return;
