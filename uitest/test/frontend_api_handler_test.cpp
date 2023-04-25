@@ -389,6 +389,29 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks1)
     server.Call(call1, reply1);
     ASSERT_EQ(ERR_INVALID_INPUT, reply1.exception_.code_);
     ASSERT_TRUE(reply1.exception_.message_.find("failed: Expect string") != string::npos);
+    // set the mandatory parameter of FRONTEND_JSON_DEFS as undefined.
+    auto call3 = ApiCallInfo{ .apiId_ = "Driver.create" };
+    auto reply3 = ApiReplyInfo();
+    server.Call(call3, reply3);
+    auto call4 = ApiCallInfo{ .apiId_ = "Driver.click", .callerObjRef_ = reply3.resultValue_.get<string>() };
+    auto arg1 = json();
+    arg1["x"] = 100;
+    arg1["y"] = "null";
+    call4.paramList_.emplace_back(arg1);
+    auto reply4 = ApiReplyInfo();
+    server.Call(call4, reply4);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply4.exception_.code_);
+    ASSERT_TRUE(reply1.exception_.message_.find("failed: Expect string") != string::npos);
+    // set the optional parameter of FRONTEND_JSON_DEFS as undefined.
+    auto call5 = ApiCallInfo{ .apiId_ = "Driver.findWindow", .callerObjRef_ = reply3.resultValue_.get<string>() };
+    auto arg2 = json();
+    arg2["bundleName"] = "xyz";
+    arg2["title"] = "null";
+    call5.paramList_.emplace_back(arg2);
+    auto reply5 = ApiReplyInfo();
+    server.Call(call5, reply5);
+    // cheak parameter pass, but updateUi failed.
+    ASSERT_EQ("Get window nodes failed", reply5.exception_.message_);
 }
 
 TEST_F(FrontendApiHandlerTest, parameterPreChecks2)
