@@ -376,24 +376,24 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks1)
 {
     const auto& server =  FrontendApiServer::Get();
     // set the optional parameter as undefined.
-    auto call0 = ApiCallInfo{ .apiId_ = "On.text", .callerObjRef_ = string(REF_SEED_BY) };
+    auto call0 = ApiCallInfo {.apiId_ = "On.text", .callerObjRef_ = string(REF_SEED_BY)};
     call0.paramList_.emplace_back("wyz");
     call0.paramList_.emplace_back(nullptr);
     auto reply0 = ApiReplyInfo();
     server.Call(call0, reply0);
     ASSERT_EQ(NO_ERROR, reply0.exception_.code_);
     // set the mandatory parameter as undefined.
-    auto call1 = ApiCallInfo{ .apiId_ = "On.type", .callerObjRef_ = string(REF_SEED_BY) };
+    auto call1 = ApiCallInfo {.apiId_ = "On.type", .callerObjRef_ = string(REF_SEED_BY)};
     call1.paramList_.emplace_back(nullptr);
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
     ASSERT_EQ(ERR_INVALID_INPUT, reply1.exception_.code_);
     ASSERT_TRUE(reply1.exception_.message_.find("failed: Expect string") != string::npos);
     // set the mandatory parameter of FRONTEND_JSON_DEFS as undefined.
-    auto call3 = ApiCallInfo{ .apiId_ = "Driver.create" };
+    auto call3 = ApiCallInfo {.apiId_ = "Driver.create"};
     auto reply3 = ApiReplyInfo();
     server.Call(call3, reply3);
-    auto call4 = ApiCallInfo{ .apiId_ = "Driver.click", .callerObjRef_ = reply3.resultValue_.get<string>() };
+    auto call4 = ApiCallInfo {.apiId_ = "Driver.click", .callerObjRef_ = reply3.resultValue_.get<string>()};
     auto arg1 = json();
     arg1["x"] = 1;
     arg1["y"] = "null";
@@ -403,7 +403,7 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks1)
     ASSERT_EQ(ERR_INVALID_INPUT, reply4.exception_.code_);
     ASSERT_TRUE(reply1.exception_.message_.find("failed: Expect string") != string::npos);
     // set the optional parameter of FRONTEND_JSON_DEFS as undefined.
-    auto call5 = ApiCallInfo{ .apiId_ = "Driver.findWindow", .callerObjRef_ = reply3.resultValue_.get<string>() };
+    auto call5 = ApiCallInfo {.apiId_ = "Driver.findWindow", .callerObjRef_ = reply3.resultValue_.get<string>()};
     auto arg2 = json();
     arg2["bundleName"] = "xyz";
     arg2["title"] = "null";
