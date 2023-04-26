@@ -1239,3 +1239,4 @@ hdc shell chmod +x /system/bin/uitest
 | 4.0.1.1 | 1、支持在daemon运行时执行uitest dumpLayout                   |
 | 4.0.1.2 | 1、模拟鼠标动作、键鼠协同功能优化                            |
 | 4.0.1.3 | 1、示例代码更新<br />2、滑动控件进行滑动查找、滑动到尾部/顶部功能优化 |
+| 4.0.1.4 | 1、可选参数传入undefined时，当作默认值处理                   |
