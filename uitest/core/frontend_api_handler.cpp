@@ -311,9 +311,12 @@ namespace OHOS::uitest {
     }
 
     /** Check if the json value represents and illegal data of expected type.*/
-    static void CheckCallArgType(string_view expect, const json &value, ApiCallErr &error)
+    static void CheckCallArgType(string_view expect, const json &value, bool isDefAgc, ApiCallErr &error)
     {
         const auto type = value.type();
+        if (isDefAgc && type == value_t::null) {
+            return;
+        }
         const auto isInteger = type == value_t::number_integer || type == value_t::number_unsigned;
         auto begin0 = FRONTEND_CLASS_DEFS.begin();
         auto end0 = FRONTEND_CLASS_DEFS.end();
@@ -345,7 +348,7 @@ namespace OHOS::uitest {
                 }
                 copy.erase(propName);
                 // check json property value type recursive
-                CheckCallArgType(def->type_, value[propName], error);
+                CheckCallArgType(def->type_, value[propName], !def->required_, error);
                 if (error.code_ != NO_ERROR) {
                     error.message_ = "Illegal value of property '" + propName + "': " + error.message_;
                     return;
@@ -387,7 +390,8 @@ namespace OHOS::uitest {
             }
             // check argument type
             for (size_t idx = 0; idx < argc; idx++) {
-                CheckCallArgType(types.at(idx), in.paramList_.at(idx), out.exception_);
+                auto isDefArg = (argc - idx <= argSupportDefault) ? true : false;
+                CheckCallArgType(types.at(idx), in.paramList_.at(idx), isDefArg, out.exception_);
                 if (out.exception_.code_ != NO_ERROR) {
                     out.exception_.message_ = "Check arg" + to_string(idx) + " failed: " + out.exception_.message_;
                     checkArgType = false;
@@ -478,7 +482,12 @@ namespace OHOS::uitest {
         if (index >= in.paramList_.size()) {
             return defValue;
         }
-        return in.paramList_.at(index).get<T>();
+        auto type = in.paramList_.at(index).type();
+        if (type == value_t::null) {
+            return defValue;
+        } else {
+            return in.paramList_.at(index).get<T>();
+        }
     }
 
     template <UiAttr kAttr, typename T> static void GenericOnAttrBuilder(const ApiCallInfo &in, ApiReplyInfo &out)
