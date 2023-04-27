@@ -120,11 +120,6 @@ public:
         return velocity_;
     }
 
-    int GetClickcount() const
-    {
-        return clickcount;
-    }
-
     double GetMainAxisPos() const
     {
         switch (mainAxis_) {
@@ -250,7 +245,6 @@ private:
     LeastSquareImpl yAxis_ { 3, 5 };
     bool isVelocityDone_ = false;
     double clickInterVal = 0;
-    volatile int clickcount = 0;
 };
 } // namespace OHOS::uitest
 #endif // VELOCITY_TRACKER_H
