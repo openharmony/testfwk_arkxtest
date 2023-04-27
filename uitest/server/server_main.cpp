@@ -290,6 +290,10 @@ namespace OHOS::uitest {
                 return OHOS::ERR_INVALID_VALUE;
             }
             if (opt == "daemon") {
+                // 补充click打印线程
+                std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, callBackPtr);
+                // widget 线程
+                std::thread widgetThread(&InputEventCallback::FindWidgetsFunction, callBackPtr);
                 bool useSocket = true;
                 auto lock = make_shared<std::mutex>();
                 auto eventQueue = make_shared<std::queue<string>>();
@@ -384,10 +388,16 @@ namespace OHOS::uitest {
                 // 取消按键订阅
                 callBackPtr->SubscribeMonitorCancel();
                 MMI::InputManager::GetInstance()->RemoveMonitor(id1);
+                clickThread.join();
+                widgetThread.join();
                 return 0;
             } else {
-                Timer timer;
-                timer.Start(TIMEINTERVAL, Timer::TimerFunc);
+                // 补充click打印线程
+                std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, callBackPtr);
+                // touch计时线程
+                std::thread toughTimerThread(&InputEventCallback::TimerTouchCheckFunction, callBackPtr);
+                // widget 线程
+                std::thread widgetThread(&InputEventCallback::FindWidgetsFunction, callBackPtr);
                 std::cout << "Started Recording Successfully..." << std::endl;
                 int flag = getc(stdin);
                 std::cout << flag << std::endl;
@@ -395,6 +405,9 @@ namespace OHOS::uitest {
                 sleep(timeToSleep);
                 // 取消按键订阅
                 callBackPtr->SubscribeMonitorCancel();
+                clickThread.join();
+                toughTimerThread.join();
+                widgetThread.join();
                 return OHOS::ERR_OK;
             }
         } else if (opt == "read") {
