@@ -1,5 +1,5 @@
 {
-    "name": "@openharmony/arkXtest",
+    "name": "@openharmony/arkxtest",
     "version": "3.1",
     "description": "test framwork",
     "publishAs": "code-segment",
@@ -12,8 +12,8 @@
     "repository": "",
     "license": "Apache License 2.0",
     "component": {
-      "name": "arkXtest",
-      "subsystem": "arkXtest",
+      "name": "arkxtest",
+      "subsystem": "testfwk",
       "syscap": [ "SystemCapability.Test.UiTest" ],
       "adapted_system_type": [ 
         "standard"

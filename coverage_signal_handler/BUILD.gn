@@ -21,7 +21,7 @@ ohos_shared_library("coverage_signal_handler") {
     "--coverage",
   ]
   ldflags = [ "--coverage" ]
-  subsystem_name = "test"
-  part_name = "arkXtest"
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
   output_name = "coverage_signal_handler"
 }
