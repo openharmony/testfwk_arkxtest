@@ -449,6 +449,7 @@ namespace OHOS::uitest {
             g_isLastClick = false;
             g_eventData.WriteEventData(snapshootVelocityTracker, g_operationType[g_touchop]);
         }
+        
         canFindWidgets = true;
         widgetsCon.notify_all();
     }
@@ -468,8 +469,7 @@ namespace OHOS::uitest {
             if (g_isLastClick){
                 g_isLastClick = false;
                 g_eventData.WriteEventData(g_velocityTracker, g_operationType[g_touchop]);
-                std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // 确保界面已更新
-                driver.FindWidgets(selector, rev, err, true);
+
                 canFindWidgets = true;
                 widgetsCon.notify_all();
             }
