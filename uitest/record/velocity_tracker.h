@@ -44,29 +44,6 @@ enum class Axis {
 class VelocityTracker final {
 public:
     VelocityTracker() = default;
-    VelocityTracker(const VelocityTracker& other) {
-        mainAxis_ = other.mainAxis_;
-        maxAxis_ = other.maxAxis_;
-        firstTrackPoint_ = other.firstTrackPoint_;
-        lastTrackPoint_ = other.lastTrackPoint_;
-        downTrackPoint_ = other.downTrackPoint_;
-        firstPosition_ = other.firstPosition_;
-        lastPosition_ = other.lastPosition_;
-        totalDelta_ = other.totalDelta_;
-        velocity_ = other.velocity_;
-        mainVelocity_ = other.mainVelocity_;
-        delta_ = other.delta_;
-        seconds  = other.seconds;
-        isFirstPoint_ = other.isFirstPoint_;
-        useToCount  = other.useToCount;
-        stepLength  = other.stepLength;
-        stepCount  = other.stepCount;
-        firstTimePoint_ = other.firstTimePoint_;
-        lastTimePoint_ = other.lastTimePoint_;
-        xAxis_  = other.xAxis_;
-        yAxis_  = other.yAxis_;
-        isVelocityDone_  = other.isVelocityDone_;
-    }
     explicit VelocityTracker(Axis mainAxis) : mainAxis_(mainAxis) {}
     ~VelocityTracker() = default;
 
@@ -234,6 +211,21 @@ public:
         return lastTrackPoint_;
     }
 
+    void SetClickInterVal(double interVal){
+        clickInterVal = interVal;
+    }
+
+    double GetEventInterVal(){
+        auto result = GetInterVal();
+        if (result < INTERVAL_THRESHOLD){
+            return clickInterVal;
+        }
+        return result;
+    }
+    TouchEventInfo GetDownTrackPoint(){
+        return downTrackPoint_;
+    }
+
 private:
     void UpdateVelocity();
     Axis mainAxis_ { Axis::FREE };
@@ -257,7 +249,8 @@ private:
     LeastSquareImpl xAxis_ { 3, 5 };
     LeastSquareImpl yAxis_ { 3, 5 };
     bool isVelocityDone_ = false;
-    std::atomic<int> clickcount = 0;
+    double clickInterVal = 0;
+    volatile int clickcount = 0;
 };
 } // namespace OHOS::uitest
 #endif // VELOCITY_TRACKER_H

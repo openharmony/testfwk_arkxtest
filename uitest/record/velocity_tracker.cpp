@@ -28,12 +28,6 @@ void VelocityTracker::UpdateTouchEvent(const TouchEventInfo& event, bool end)
         firstPosition_ = event.GetOffset();
         firstTimePoint_ = event.time;
         firstTrackPoint_ = event;
-        if (GetInterVal() < INTERVAL_THRESHOLD){
-            // std::cout << "count++" <<std::endl;
-            clickcount ++;
-        }else{
-            clickcount = 0;
-        }
         isFirstPoint_ = false;
     } else {
         delta_ = event.GetOffset() - lastPosition_;
