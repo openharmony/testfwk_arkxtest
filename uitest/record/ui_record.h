@@ -51,7 +51,13 @@
 #include "key_option.h"
 
 namespace OHOS::uitest {
-    static int g_touchTime;
+    enum TouchOpt : uint8_t {
+        OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
+        OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
+    };
+    static std::string g_operationType[9] = { "click", "longClick", "doubleClick", "swipe", "drag", \
+                                       "fling", "home", "recent", "back" };
+
     static int TIMEINTERVAL = 5000;
     static std::string g_recordMode = "";
     static std::string g_recordOpt = "";
@@ -60,6 +66,23 @@ namespace OHOS::uitest {
     static shared_ptr<mutex> g_cout_lock = make_shared<std::mutex>();
     static shared_ptr<mutex> g_csv_lock = make_shared<std::mutex>();
     static bool g_useSocket;
+    
+    // class ThreadFunction{
+    // public:
+    //     volatile int g_touchTime = 0;
+    //     volatile bool g_isLastClick = false;
+    //     volatile bool g_isSpecialclick = false;
+    //     std::mutex g_clickMut;
+    //     std::condition_variable clickCon;
+    // public:
+    //     ThreadFunction(){}
+    //     ~ThreadFunction(){}
+    //     void SE ();
+    // };
+
+    // extern ThreadFunction g_threadFunction;
+    // ThreadFunction g_threadFunction;
+    
     class InputEventCallback : public MMI::IInputEventConsumer {
         public:
             void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
@@ -70,6 +93,9 @@ namespace OHOS::uitest {
             void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override;
             void SubscribeMonitorInit();
             void SubscribeMonitorCancel();
+            void TimerReprintClickFunction ();
+            void TimerTouchCheckFunction();
+            void FindWidgetsFunction();
             static std::shared_ptr<InputEventCallback> GetPtr();
 
         private:
@@ -79,6 +105,16 @@ namespace OHOS::uitest {
             int32_t subscribeId2_;
             int32_t subscribeId3_;
             int32_t subscribeId4_;
+        public:
+            mutable volatile int g_touchTime = 0;
+            mutable volatile bool g_isLastClick = false;
+            mutable volatile bool g_isSpecialclick = false;
+            mutable std::mutex g_clickMut;
+            mutable std::condition_variable clickCon;
+            // mutable volatile bool canThreadWidgets = true;
+            mutable volatile bool canFindWidgets = false;
+            mutable std::mutex widgetsMut;
+            mutable std::condition_variable widgetsCon;
     };
 
     class TestUtils {
@@ -129,14 +165,7 @@ namespace OHOS::uitest {
         {
             Stop();
         }
-        static void TimerFunc()
-        {
-            int currentTime = GetCurrentMillisecond();
-            int diff = currentTime - g_touchTime;
-            if (diff >= TIMEINTERVAL) {
-                std::cout << "No operation detected for 5 seconds, press ctrl + c to save this file?" << std::endl;
-            }
-        }
+
         void Start(int interval, std::function<void()> task)
         {
             if (expired == false) {
@@ -148,7 +177,6 @@ namespace OHOS::uitest {
                     std::this_thread::sleep_for(std::chrono::milliseconds(interval));
                     task();
                 }
-
                 {
                     std::unique_lock<std::mutex> lk(index, std::try_to_lock);
                     expired = true;
@@ -177,12 +205,14 @@ namespace OHOS::uitest {
                 }
             }
         }
-
     private:
         std::atomic<bool> expired; // timer stopped status
         std::atomic<bool> tryToExpire; // timer is in stop process
         std::mutex index;
         std::condition_variable expiredCond;
     };
+
+
+    
 } // namespace OHOS::uitest
 #endif // UI_RECORD_H
