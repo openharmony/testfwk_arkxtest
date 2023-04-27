@@ -14,7 +14,7 @@
 import("//arkcompiler/ets_frontend/ts2panda/ts2abc_config.gni")
 import("//build/ohos.gni")
 
-source_root = "//test/testfwk/arkxtest/uitest"
+source_root = "//test/testfwk/arkXtest/uitest"
 
 config("uitest_common_configs") {
   include_dirs = [
@@ -126,8 +126,8 @@ ohos_executable("uitest_server") {
     "window_manager:libwm",
   ]
 
-  subsystem_name = "test"
-  part_name = "arkXtest"
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
   output_name = "uitest"
   install_enable = true
   external_deps += common_external_deps
@@ -169,8 +169,8 @@ ohos_shared_library("uitest_client") {
     ":uitest_exporter_js",
     ":uitest_ipc",
   ]
-  subsystem_name = "test"
-  part_name = "arkXtest"
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
   output_name = "uitest"
   external_deps = common_external_deps
   external_deps += [
@@ -211,8 +211,8 @@ ohos_unittest("uitest_core_unittest") {
   use_exceptions = true
   module_out_path = "uitestkit/unittest"
   testonly = true
-  subsystem_name = "test"
-  part_name = "arkXtest"
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
 }
 
 ohos_unittest("uitest_ipc_unittest") {
@@ -231,8 +231,8 @@ ohos_unittest("uitest_ipc_unittest") {
   cflags_cc = [ "-g" ]
   module_out_path = "uitestkit/unittest"
   testonly = true
-  subsystem_name = "test"
-  part_name = "arkXtest"
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
 }
 
 group("uitestkit") {
