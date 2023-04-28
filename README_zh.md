@@ -86,7 +86,7 @@ export default async function abilityTest() {
 | 4    | assertFail         | 抛出一个错误。                                               |
 | 5    | assertFalse        | 检验actualvalue是否是false。                                 |
 | 6    | assertTrue         | 检验actualvalue是否是true。                                  |
-| 7    | assertInstanceOf   | 检验actualvalue是否是expectvalue类型。                       |
+| 7    | assertInstanceOf   | 检验actualvalue是否是expectvalue类型，支持基础类型。                |
 | 8    | assertLarger       | 检验actualvalue是否大于expectvalue。                         |
 | 9    | assertLess         | 检验actualvalue是否小于expectvalue。                         |
 | 10   | assertNull         | 检验actualvalue是否是null。                                  |
@@ -110,31 +110,35 @@ export default async function abilityTest() {
 import { describe, it, expect } from '@ohos/hypium'
 export default async function abilityTest() {
   describe('assertClose', function () {
-    it('assertBeClose success', 0, function () {
+    it('assertBeClose_success', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(99, b)
     })
-    it('assertBeClose fail', 0, function () {
+    it('assertBeClose_fail', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(1, b)
     })
-    it('assertBeClose fail', 0, function () {
+    it('assertBeClose_fail', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(null, b)
     })
-    it('assertBeClose fail', 0, function () {
+    it('assertBeClose_fail', 0, function () {
       expect(null).assertClose(null, 0)
     })
-    it('assertNaN success',0, function () {
+    it('assertInstanceOf_success', 0, function () {
+      let a = 'strTest'
+      expect(a).assertInstanceOf('String')
+    })
+    it('assertNaN_success',0, function () {
       expect(Number.NaN).assertNaN(); // true
     })
-    it('assertNegUnlimited success',0, function () {
+    it('assertNegUnlimited_success',0, function () {
       expect(Number.NEGATIVE_INFINITY).assertNegUnlimited(); // true
     })
-    it('assertPosUnlimited success',0, function () {
+    it('assertPosUnlimited_success',0, function () {
       expect(Number.POSITIVE_INFINITY).assertPosUnlimited(); // true
     })
     it('not_number_true',0, function () {
