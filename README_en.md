@@ -78,20 +78,20 @@ export default async function abilityTest() {
 Available APIs:
 
 
-| No.  | API              | Description                                                    |
+| No.  | API              | Description                                                  |
 | :--- | :--------------- | ------------------------------------------------------------ |
-| 1    | assertClose      | Checks whether the proximity between the actual value and the expected value (0) is the expected value (1).|
-| 2    | assertContain    | Checks whether the actual value contains the expected value.                      |
-| 3    | assertEqual      | Checks whether the actual value is equal to the expected value.                     |
-| 4    | assertFail       | Throws an error.                                              |
-| 5    | assertFalse      | Check whether the actual value is **false**.                                |
-| 6    | assertTrue       | Checks whether the actual value is **true**.                                 |
-| 7    | assertInstanceOf | Checks whether the actual value is of the type specified by the expected value.                      |
-| 8    | assertLarger     | Checks whether the actual value is greater than the expected value.                        |
-| 9    | assertLess       | Checks whether the actual value is less than the expected value.                        |
-| 10   | assertNull       | Checks whether the actual value is null.                                 |
-| 11   | assertThrowError | Checks whether the error thrown by the actual value is the expected value.             |
-| 12   | assertUndefined  | Checks whether the actual value is **undefined**.                            |
+| 1    | assertClose      | Checks whether the proximity between the actual value and the expected value (0) is the expected value (1). |
+| 2    | assertContain    | Checks whether the actual value contains the expected value. |
+| 3    | assertEqual      | Checks whether the actual value is equal to the expected value. |
+| 4    | assertFail       | Throws an error.                                             |
+| 5    | assertFalse      | Check whether the actual value is **false**.                 |
+| 6    | assertTrue       | Checks whether the actual value is **true**.                 |
+| 7    | assertInstanceOf | Checks whether the actual value is of the type specified by the expected value,basic types are supported. |
+| 8    | assertLarger     | Checks whether the actual value is greater than the expected value. |
+| 9    | assertLess       | Checks whether the actual value is less than the expected value. |
+| 10   | assertNull       | Checks whether the actual value is null.                     |
+| 11   | assertThrowError | Checks whether the error thrown by the actual value is the expected value. |
+| 12   | assertUndefined  | Checks whether the actual value is **undefined**.            |
 
 The sample code is as follows:
 
@@ -99,23 +99,27 @@ The sample code is as follows:
 import { describe, it, expect } from '@ohos/hypium'
 export default async function abilityTest() {
   describe('assertClose', function () {
-    it('assertBeClose success', 0, function () {
+    it('assertBeClose_success', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(99, b)
     })
-    it('assertBeClose fail', 0, function () {
+    it('assertBeClose_fail', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(1, b)
     })
-    it('assertBeClose fail', 0, function () {
+    it('assertBeClose_fail', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(null, b)
     })
-    it('assertBeClose fail', 0, function () {
+    it('assertBeClose_fail', 0, function () {
       expect(null).assertClose(null, 0)
+    })
+    it('assertInstanceOf_success', 0, function () {
+      let a = 'strTest'
+      expect(a).assertInstanceOf('String')
     })
   })
 }
