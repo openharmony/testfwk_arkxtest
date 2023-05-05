@@ -71,7 +71,8 @@ namespace OHOS::uitest {
     const std::string VERSION = "4.0.1.1";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
-        {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
+        {"dump all UI trees in json array format", no_argument, nullptr, 'I'},
+        {"dump all UI trees in json array format", no_argument, nullptr, 'r'},
     };
     /* *Print to the console of this shell process. */
     static inline void PrintToConsole(string_view message)
@@ -91,6 +92,9 @@ namespace OHOS::uitest {
                 case 'i':
                     params.insert(pair<char, string>(opt, "true"));
                     break;
+                case 'r':
+                    params.insert(pair<char, string>(opt, "true"));
+                    break;
                 default:
                     params.insert(pair<char, string>(opt, optarg));
                     break;
@@ -99,27 +103,33 @@ namespace OHOS::uitest {
         return EXIT_SUCCESS;
     }
 
-    static void DumpLayoutImpl(string_view path, bool listWindows, bool initController, ApiCallErr &err)
+    static void DumpLayoutImpl(string_view path, bool listWindows, bool initController, bool recent, ApiCallErr &err)
     {
-        ofstream fout;
-        fout.open(path, ios::out | ios::binary);
-        if (!fout) {
-            err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(path) + strerror(errno));
-            return;
-        }
         if (initController) {
             UiDriver::RegisterController(make_unique<SysUiController>());
         }
-        auto driver = UiDriver();
-        auto data = nlohmann::json();
-        driver.DumpUiHierarchy(data, listWindows, err);
-        if (err.code_ != NO_ERROR) {
+        if (recent) {
+            LOG_I("ZZZZZZZZZZZZZZ");
+            auto driver = UiDriver();
+            driver.recent(err);
+        } else {
+            ofstream fout;
+            fout.open(path, ios::out | ios::binary);
+            if (!fout) {
+                err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(path) + strerror(errno));
+                return;
+            }
+            auto driver = UiDriver();
+            auto data = nlohmann::json();
+            driver.DumpUiHierarchy(data, listWindows, err);
+            if (err.code_ != NO_ERROR) {
+                fout.close();
+                return;
+            }
+            fout << data.dump();
             fout.close();
             return;
         }
-        fout << data.dump();
-        fout.close();
-        return;
     }
 
     static int32_t DumpLayout(int32_t argc, char *argv[])
@@ -128,16 +138,19 @@ namespace OHOS::uitest {
         auto savePath = "/data/local/tmp/layout_" + ts + ".json";
         map<char, string> params;
         static constexpr string_view usage = "USAGE: uitestkit dumpLayout -p <path>";
-        if (GetParam(argc, argv, "p:i", usage, params) == EXIT_FAILURE) {
-            return EXIT_FAILURE;
+        if (GetParam(argc, argv, "p:r", usage, params) == EXIT_FAILURE) {
+            if (GetParam(argc, argv, "p:i", usage, params) == EXIT_FAILURE) {
+                return EXIT_FAILURE;
+            }
         }
         auto iter = params.find('p');
         if (iter != params.end()) {
             savePath = iter->second;
         }
         const bool listWindows = params.find('i') != params.end();
+        const bool recent = params.find('r') != params.end();
         auto err = ApiCallErr(NO_ERROR);
-        DumpLayoutImpl(savePath, listWindows, true, err);
+        DumpLayoutImpl(savePath, listWindows, true, recent, err);
         if (err.code_ == NO_ERROR) {
             PrintToConsole("DumpLayout saved to:" + savePath);
             return EXIT_SUCCESS;
@@ -213,7 +226,7 @@ namespace OHOS::uitest {
         }
         // accept remopte dump request during deamon running (initController=false)
         ApiTransactor::SetBroadcaseCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
-            DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, err);
+            DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, false, err);
         });
         mutex mtx;
         unique_lock<mutex> lock(mtx);
