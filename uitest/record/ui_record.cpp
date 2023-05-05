@@ -316,20 +316,17 @@ namespace OHOS::uitest {
     // KEY_ACTION
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const
     {
-        // std :: cout << "@@@@@KeyCode:" << keyEvent->GetKeyCode() 
-        //         << " KeyAction:"<< keyEvent->GetKeyAction() 
-        //         << " KeyActionTime:"<< keyEvent->GetActionTime() <<std::endl;
+        std :: cout << "@@@@@KeyCode:" << keyEvent->GetKeyCode() 
+                << " KeyAction:"<< keyEvent->GetKeyAction() 
+                << " KeyActionTime:"<< keyEvent->GetActionTime() <<std::endl;
         // g_keyeventTracker.printEventItems();
-        if (keyEvent->GetKeyCode() == MMI::KeyEvent::KEYCODE_BACK || keyEvent->GetKeyCode() == MMI::KeyEvent::KEYCODE_HOME){
+        auto iter = SPECIAL_KET_MAP.find(keyEvent->GetKeyCode());
+        if (iter!=SPECIAL_KET_MAP.end()){
             if (keyEvent->GetKeyAction() != MMI::KeyEvent::KEY_ACTION_UP) {
                 g_isSpecialclick = true;
                 return;
             }
-            if (keyEvent->GetKeyCode()== MMI::KeyEvent::KEYCODE_BACK ){
-                g_touchop = OP_RETURN;
-            }else if(keyEvent->GetKeyCode()== MMI::KeyEvent::KEYCODE_HOME){
-                g_touchop = OP_HOME;
-            }
+            g_touchop =  iter->second;
             g_isSpecialclick = false;
             g_eventData.WriteEventData(g_velocityTracker, g_operationType[g_touchop]);
             return;
@@ -342,21 +339,36 @@ namespace OHOS::uitest {
         info.SetActionTime(keyEvent->GetActionTime());
         info.SetKeyCode(keyEvent->GetKeyCode());
         if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
-            g_keyeventTracker.AddDownKeyEvent(info);
-        } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_CANCEL) {
-            g_keyeventTracker.AddCancelKeyEvent(info);
+            if(KeyeventTracker::isCombinationKey(info.GetKeyCode())){
+                g_keyeventTracker.SetisCombination(true);
+                g_keyeventTracker.SetisNeedRecord(true);
+                g_keyeventTracker.AddDownKeyEvent(info);
+            } else {
+                g_keyeventTracker.SetisNeedRecord(false);
+                KeyeventTracker snapshootKeyTracker = g_keyeventTracker.GetSnapshootKey(info);
+                if(!g_useSocket){ // cout打印 + record.csv保存
+                    snapshootKeyTracker.WriteSingleData(info,g_cout_lock);
+                    snapshootKeyTracker.WriteSingleData(info,g_outFile,g_csv_lock);
+                } else {// daemon socket输出,编json
+                    snapshootKeyTracker.WriteSingleData(info,g_eventQueue,g_socket_lock);
+                }
+            }
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
-            //获取快照
-            KeyeventTracker snapshootKeyTracker = g_keyeventTracker.AddUpKeyEvent(info);
-            // cout打印 + record.csv保存
-            if(snapshootKeyTracker.GetisNeedRecord() && !g_useSocket){
-                snapshootKeyTracker.WriteData(g_cout_lock);
-                snapshootKeyTracker.WriteData(g_outFile,g_csv_lock);
+            if (!KeyeventTracker::isCombinationKey(info.GetKeyCode())){
+                return;
             }
-            // daemon socket输出,编json
-            if(snapshootKeyTracker.GetisNeedRecord() && g_useSocket){
-                snapshootKeyTracker.WriteData(g_eventQueue,g_socket_lock);
+            if(g_keyeventTracker.GetisNeedRecord()){
+                g_keyeventTracker.SetisNeedRecord(false);
+                KeyeventTracker snapshootKeyTracker = g_keyeventTracker.GetSnapshootKey(info);
+                if(!g_useSocket){ // cout打印 + record.csv保存
+                    snapshootKeyTracker.WriteCombinationData(g_cout_lock);
+                    snapshootKeyTracker.WriteCombinationData(g_outFile,g_csv_lock);
+                } else {// daemon socket输出,编json
+                    snapshootKeyTracker.WriteCombinationData(g_eventQueue,g_socket_lock);
+                }
             }
+            g_keyeventTracker.AddUpKeyEvent(info);
+ 
         }
     }
 
@@ -429,11 +441,6 @@ namespace OHOS::uitest {
             g_velocityTracker.GetLastTrackPoint().attributes = FindWidget(driver, event.x, event.y).GetAttrMap();
         } 
         g_isOpDect = false;
-        // 补充打印上一次的click
-        // if (g_isLastClick && g_touchop != OP_DOUBLE_CLICK){
-        //     g_isLastClick = false;
-        //     g_eventData.WriteEventData(snapshootVelocityTracker, g_operationType[OP_CLICK]);
-        // }
         snapshootVelocityTracker = VelocityTracker(g_velocityTracker);
         g_velocityTracker.Resets();
         if (!g_isSpecialclick && g_touchop == OP_CLICK){
@@ -442,10 +449,9 @@ namespace OHOS::uitest {
             clickCon.notify_all();
             return;
         }
-        // back or home
-        if(g_isSpecialclick) {}
-        // 非click,正常输出
-        else if(g_touchop != OP_CLICK){
+
+        // 非click,非back or home正常输出
+        if(g_touchop != OP_CLICK && !g_isSpecialclick){
             g_isLastClick = false;
             g_eventData.WriteEventData(snapshootVelocityTracker, g_operationType[g_touchop]);
         }
@@ -490,15 +496,12 @@ namespace OHOS::uitest {
     void InputEventCallback::FindWidgetsFunction(){
         while (true){
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
-
-            std::cout << "@@@@@canFindWidgets in thread: " << canFindWidgets <<std::endl;
             while(!canFindWidgets){
                 widgetsCon.wait(widgetsLck);
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // 确保界面已更新
             driver.FindWidgets(selector, rev, err, true);
-            std::cout << "@@@@WIDGETS ERROR: " << err.message_ << std::endl;
-            std::cout << "@@@@@@@@@@@@@@@@ widgets in main @@@@@@@@@@@@@@@@@@@" <<std::endl;
+            std::cout << "@@@@@@@@@@@@@@@@ widgets find finished @@@@@@@@@@@@@@@@@@@" <<std::endl;
             canFindWidgets = false;
             widgetsCon.notify_all();
         }
@@ -522,19 +525,16 @@ namespace OHOS::uitest {
         touchEvent.wx = item.GetWindowX();
         touchEvent.wy = item.GetWindowY();
         if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
-            
-            std::cout <<"@@@@@@@@ touch down"<< std::endl;
+            // std::cout <<"@@@@@@@@ touch down"<< std::endl;
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
-            std::cout << "@@@@@canFindWidgets in main: " << canFindWidgets <<std::endl;
             while(canFindWidgets){
                 widgetsCon.wait(widgetsLck);
             }
-
             HandleDownEvent(touchEvent);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
             HandleMoveEvent(touchEvent);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP) {
-            std::cout <<"@@@@@@@@ touch up"<< std::endl;
+            // std::cout <<"@@@@@@@@ touch up"<< std::endl;
             HandleUpEvent(touchEvent);
         }
     }

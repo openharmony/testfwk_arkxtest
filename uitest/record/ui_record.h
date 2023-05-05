@@ -55,9 +55,15 @@ namespace OHOS::uitest {
         OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
         OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
     };
+
+
     static std::string g_operationType[9] = { "click", "longClick", "doubleClick", "swipe", "drag", \
                                        "fling", "home", "recent", "back" };
 
+    static const std::map <int32_t, TouchOpt> SPECIAL_KET_MAP= {
+        {MMI::KeyEvent::KEYCODE_BACK,TouchOpt::OP_RETURN},
+        {MMI::KeyEvent::KEYCODE_HOME,TouchOpt::OP_HOME},
+    };
     static int TIMEINTERVAL = 5000;
     static std::string g_recordMode = "";
     static std::string g_recordOpt = "";
@@ -66,22 +72,6 @@ namespace OHOS::uitest {
     static shared_ptr<mutex> g_cout_lock = make_shared<std::mutex>();
     static shared_ptr<mutex> g_csv_lock = make_shared<std::mutex>();
     static bool g_useSocket;
-    
-    // class ThreadFunction{
-    // public:
-    //     volatile int g_touchTime = 0;
-    //     volatile bool g_isLastClick = false;
-    //     volatile bool g_isSpecialclick = false;
-    //     std::mutex g_clickMut;
-    //     std::condition_variable clickCon;
-    // public:
-    //     ThreadFunction(){}
-    //     ~ThreadFunction(){}
-    //     void SE ();
-    // };
-
-    // extern ThreadFunction g_threadFunction;
-    // ThreadFunction g_threadFunction;
     
     class InputEventCallback : public MMI::IInputEventConsumer {
         public:
@@ -111,7 +101,6 @@ namespace OHOS::uitest {
             mutable volatile bool g_isSpecialclick = false;
             mutable std::mutex g_clickMut;
             mutable std::condition_variable clickCon;
-            // mutable volatile bool canThreadWidgets = true;
             mutable volatile bool canFindWidgets = false;
             mutable std::mutex widgetsMut;
             mutable std::condition_variable widgetsCon;
@@ -156,63 +145,5 @@ namespace OHOS::uitest {
         UiDriver d;
         std::mutex mut;
     };
-    
-    class Timer {
-    public:
-        Timer(): expired(true), tryToExpire(false)
-        {}
-        ~Timer()
-        {
-            Stop();
-        }
-
-        void Start(int interval, std::function<void()> task)
-        {
-            if (expired == false) {
-                return;
-            }
-            expired = false;
-            std::thread([this, interval, task]() {
-                while (!tryToExpire) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-                    task();
-                }
-                {
-                    std::unique_lock<std::mutex> lk(index, std::try_to_lock);
-                    expired = true;
-                    expiredCond.notify_one();
-                }
-            }).detach();
-        }
-        void Stop()
-        {
-            if (expired) {
-                return;
-            }
-
-            if (tryToExpire) {
-                return;
-            }
-
-            tryToExpire = true; // change this bool value to make timer while loop stop
-            {
-                std::unique_lock<std::mutex> lk(index, std::try_to_lock);
-                expiredCond.wait(lk, [this] {return expired == true; });
-
-                // Resets the timer
-                if (expired == true) {
-                    tryToExpire = false;
-                }
-            }
-        }
-    private:
-        std::atomic<bool> expired; // timer stopped status
-        std::atomic<bool> tryToExpire; // timer is in stop process
-        std::mutex index;
-        std::condition_variable expiredCond;
-    };
-
-
-    
 } // namespace OHOS::uitest
 #endif // UI_RECORD_H

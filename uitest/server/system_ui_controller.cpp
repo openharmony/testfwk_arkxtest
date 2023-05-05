@@ -179,6 +179,7 @@ namespace OHOS::uitest {
         // "[%d,%d][%d,%d]", rect.left, rect.top, rect.right, rect.bottom
         stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
         to[ATTR_NAMES[UiAttr::BOUNDS].data()] = stream.str();
+        to[ATTR_NAMES[UiAttr::ORIGBOUNDS].data()] = stream.str();
         if (!node.IsVisible()) {
             to[ATTR_NAMES[UiAttr::BOUNDS].data()] = "[0,0,0,0]";
         }
@@ -323,6 +324,7 @@ namespace OHOS::uitest {
                 root["bundleName"] = app;
                 if (app == foreAbility.GetBundleName()) {
                     root["abilityName"] = foreAbility.GetAbilityName();
+                    root["pagePath"] = elementInfo.GetPagePath();
                 }
                 MarshallAccessibilityNodeInfo(elementInfo, root, 0, false);
                 out.push_back(make_pair(move(winInfo), move(root)));
