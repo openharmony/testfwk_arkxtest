@@ -284,6 +284,9 @@ namespace OHOS::uitest {
         if (root.find("bundleName") != root.end()) {
             attributeDict["bundleName"] = root["bundleName"];
         }
+        if (root.find("pagePath") != root.end()) {
+            attributeDict["pagePath"] = root["pagePath"];
+        }
         for (auto &item : attributesData.items()) {
             attributeDict[item.key()] = item.value();
         }
@@ -354,6 +357,9 @@ namespace OHOS::uitest {
         }
         if (root.HasAttr("bundleName")) {
             attributesData["bundleName"] = root.GetAttr("bundleName", "");
+        }
+        if (root.HasAttr("pagePath")) {
+            attributesData["pagePath"] = root.GetAttr("pagePath", "");
         }
         stringstream stream;
         auto rect = root.GetBounds();

@@ -41,6 +41,7 @@ namespace OHOS::uitest {
         SCROLLABLE,
         CHECKABLE,
         CHECKED,
+        ORIGBOUNDS,
         // inner used attributes
         HIERARCHY,
         HASHCODE,
@@ -49,6 +50,7 @@ namespace OHOS::uitest {
         VISIBLE,
         ABILITYNAME,
         BUNDLENAME,
+        PAGEPATH,
     };
 
     /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
