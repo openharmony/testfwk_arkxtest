@@ -93,6 +93,7 @@ namespace OHOS::uitest {
 
         bool CheckStatus(bool isConnected, ApiCallErr &error);
 
+        void recent(ApiCallErr &err);
     private:
         /**Update UI controller and UI objects.*/
         void UpdateUi(bool updateUiTree, ApiCallErr &error, string targetWin = "");
