@@ -43,6 +43,17 @@ namespace OHOS::uitest {
     auto selector = WidgetSelector();
     vector<std::unique_ptr<Widget>> rev;
     ApiCallErr err(NO_ERROR);
+
+    bool SpecialKeyMapExistKey(int32_t keyCode,TouchOpt &touchop){
+        auto iter = SPECIAL_KET_MAP.find(keyCode);
+        if (iter!=SPECIAL_KET_MAP.end()){
+            touchop = iter->second;
+            return true;
+        }
+        return false;
+    }
+
+
     std::vector<std::string> GetForeAbility()
     {
         std::vector<std::string> elements;
@@ -320,16 +331,17 @@ namespace OHOS::uitest {
                 << " KeyAction:"<< keyEvent->GetKeyAction() 
                 << " KeyActionTime:"<< keyEvent->GetActionTime() <<std::endl;
         // g_keyeventTracker.printEventItems();
-        auto iter = SPECIAL_KET_MAP.find(keyEvent->GetKeyCode());
-        if (iter!=SPECIAL_KET_MAP.end()){
-            if (keyEvent->GetKeyAction() != MMI::KeyEvent::KEY_ACTION_UP) {
+        if (SpecialKeyMapExistKey(keyEvent->GetKeyCode(),g_touchop)){
+            if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
                 g_isSpecialclick = true;
                 return;
+            } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP){
+                g_isSpecialclick = false;
+                g_eventData.WriteEventData(g_velocityTracker, g_operationType[g_touchop]);
+                canFindWidgets = true;
+                widgetsCon.notify_all();
+                return;
             }
-            g_touchop =  iter->second;
-            g_isSpecialclick = false;
-            g_eventData.WriteEventData(g_velocityTracker, g_operationType[g_touchop]);
-            return;
         }
         auto item = keyEvent->GetKeyItem(keyEvent->GetKeyCode());
         if (!item) {
@@ -454,10 +466,9 @@ namespace OHOS::uitest {
         if(g_touchop != OP_CLICK && !g_isSpecialclick){
             g_isLastClick = false;
             g_eventData.WriteEventData(snapshootVelocityTracker, g_operationType[g_touchop]);
+            canFindWidgets = true;
+            widgetsCon.notify_all();
         }
-        
-        canFindWidgets = true;
-        widgetsCon.notify_all();
     }
 
     void InputEventCallback::TimerReprintClickFunction (){
