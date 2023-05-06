@@ -24,7 +24,9 @@ namespace OHOS::uitest{
         MMI::KeyEvent::KEYCODE_ALT_RIGHT,
         MMI::KeyEvent::KEYCODE_SHIFT_LEFT,
         MMI::KeyEvent::KEYCODE_SHIFT_RIGHT,
-        MMI::KeyEvent::KEYCODE_FN,
+        MMI::KeyEvent::KEYCODE_META_LEFT,
+        MMI::KeyEvent::KEYCODE_META_RIGHT,
+        // MMI::KeyEvent::KEYCODE_FN,
         MMI::KeyEvent::KEYCODE_POWER
     };
 
