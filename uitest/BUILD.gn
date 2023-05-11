@@ -161,8 +161,12 @@ gen_js_obj("uitest_exporter_abc") {
 
 ohos_shared_library("uitest_client") {
   configs = [ ":uitest_common_configs" ]
-  sources = [ "${source_root}/napi/uitest_napi.cpp" ]
+  sources = [
+    "${source_root}/napi/uitest_napi.cpp",
+    "${source_root}/napi/ui_event_observer_napi.cpp",
+  ]
   include_dirs = [
+    "//third_party/libuv/include",
     "${source_root}/core",
     "${source_root}/connection",
   ]

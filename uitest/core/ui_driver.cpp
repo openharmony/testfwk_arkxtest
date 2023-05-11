@@ -29,6 +29,11 @@ namespace OHOS::uitest {
         uiController_ = move(controller);
     }
 
+    void UiDriver::RegisterUiEventListener(std::unique_ptr<UiEventListener> listener)
+    {
+        uiController_->RegisterUiEventListener(move(listener));
+    }
+
     bool UiDriver::CheckStatus(bool isConnected, ApiCallErr &error)
     {
         DCHECK(uiController_);
