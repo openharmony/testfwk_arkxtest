@@ -15,15 +15,114 @@
 
 #include <sstream>
 #include <unistd.h>
+#include <thread>
 #include "ui_driver.h"
 #include "widget_operator.h"
 #include "window_operator.h"
 #include "frontend_api_handler.h"
+#include "ui_controller.h"
 
 namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
     using namespace nlohmann::detail;
+
+    class UiEventObserver : public BackendClass {
+    public:
+        UiEventObserver() {};
+
+        const FrontEndClassDef &GetFrontendClassDef() const override
+        {
+            return UI_EVENT_OBSERVER_DEF;
+        };
+
+    };
+
+    class UiEventFowarder : public UiEventListener
+    {
+    public:
+        UiEventFowarder(){};
+
+        static void AddCountMap(string ref)
+        {
+            auto find = refCountMap_.find(ref);
+            if (find != refCountMap_.end()) {
+                find->second++;
+            } else {
+                refCountMap_.insert(make_pair(ref, 1));
+            }
+        }
+
+        static bool removeRef(string ref)
+        {
+            auto find = refCountMap_.find(ref);
+            if (find != refCountMap_.end()) {
+                find->second--;
+            }
+            if (find->second == 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        void OnEvent(std::string event, UiEventSourceInfo source) override
+        {
+            constexpr uint32_t waitTimeMs = 10;
+            json uiElementInfo;
+            uiElementInfo["bundleName"] = source.bundleName_;
+            uiElementInfo["type"] = source.type_;
+            uiElementInfo["text"] = source.text_;
+            auto count = eventToRefMap_.count(event);
+            auto find = eventToRefMap_.find(event);
+            size_t index = 0;
+            while (index < count) {
+                if (find == eventToRefMap_.end()) {
+                    return;
+                }
+                auto observerRef = find->second.first;
+                auto cbRef = find->second.second;
+                eventToRefMap_.erase(find);
+                ApiCallInfo in;
+                ApiReplyInfo out;
+                in.apiId_ = "UiEventObserver.once";
+                in.callerObjRef_ = observerRef;
+                in.paramList_.push_back(uiElementInfo);
+                in.paramList_.push_back(cbRef);
+                in.paramList_.push_back(removeRef(observerRef));
+                in.paramList_.push_back(removeRef(cbRef));
+                auto &server = FrontendApiServer::Get();
+                server.Callback(in, out);
+                this_thread::sleep_for(chrono::milliseconds(waitTimeMs));
+                find++;
+                index++;
+            }
+        }
+
+        static void AddEvent(string event, string observerRef, string cbRef)
+        {
+            auto count = eventToRefMap_.count(event);
+            auto find = eventToRefMap_.find(event);
+            for (size_t index = 0; index < count; index++) {
+                while (find != eventToRefMap_.end()) {
+                    if (find->second.first == observerRef && find->second.second == cbRef) {
+                        return;
+                    }
+                    find++;
+                }
+            }
+            eventToRefMap_.insert(make_pair(event, make_pair(observerRef, cbRef)));
+            AddCountMap(observerRef);
+            AddCountMap(cbRef);
+        }
+
+    private:
+        static multimap<string, pair<string, string>> eventToRefMap_;
+        static map<string, int> refCountMap_;
+    };
+
+    multimap<string, pair<string, string>> UiEventFowarder::eventToRefMap_;
+    map<string, int> UiEventFowarder::refCountMap_;
 
     /** API argument type list map.*/
     static multimap<string, pair<vector<string>, size_t>> sApiArgTypesMap;
@@ -230,6 +329,20 @@ namespace OHOS::uitest {
         handlers_.insert(make_pair(apiId, handler));
     }
 
+    void FrontendApiServer::SetCallbackHandler(ApiInvokeHandler handler)
+    {
+        callbackHandler_ = handler;
+    }
+
+    void FrontendApiServer::Callback(const ApiCallInfo& in, ApiReplyInfo& out) const
+    {
+        if (callbackHandler_ == nullptr) {
+            out.exception_ = ApiCallErr(ERR_INTERNAL, "No callback handler set!");
+            return;
+        }
+        callbackHandler_(in, out);
+    }
+
     bool FrontendApiServer::HasHandlerFor(std::string_view apiId) const
     {
         string apiIdstr = CheckAndDoApiMapping(apiId, '.', old2NewApiMap_);
@@ -256,6 +369,7 @@ namespace OHOS::uitest {
 
     void FrontendApiServer::Call(const ApiCallInfo &in, ApiReplyInfo &out) const
     {
+        LOG_D("Begin to invoke api '%{public}s'", in.apiId_.data());
         auto call = in;
         // initialize method signature
         if (sApiArgTypesMap.empty()) {
@@ -645,6 +759,12 @@ namespace OHOS::uitest {
         };
         server.AddHandler("Driver.create", create);
 
+        auto createUiEventObserver = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto observer = make_unique<UiEventObserver>();
+            out.resultValue_ = StoreBackendObject(move(observer), in.callerObjRef_);
+        };
+        server.AddHandler("Driver.createUiEventObserver", createUiEventObserver);
+
         auto delay = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             driver.DelayMs(ReadCallArg<uint32_t>(in, INDEX_ZERO));
@@ -700,6 +820,25 @@ namespace OHOS::uitest {
             driver.TriggerKey(keyAction, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.triggerCombineKeys", triggerCombineKeys);
+    }
+
+    static void RegisterUiEventObserverMethods()
+    {
+        static bool observerDelegateRegistered = false;
+        auto &server = FrontendApiServer::Get();
+        auto once = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            LOG_I("zzzzzzzzzzzzzz UiEventObserver.once");
+            auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            auto event = ReadCallArg<string>(in, INDEX_ZERO);
+            auto cbRef = ReadCallArg<string>(in, INDEX_ONE);
+            LOG_I("zzzzz event: %{public}s,  callerObjRef_: %{public}s, funRef: %{public}s", event.data(), in.callerObjRef_.data(), cbRef.data());
+            UiEventFowarder::AddEvent(event, in.callerObjRef_, cbRef);
+            if (!observerDelegateRegistered) {
+                driver.RegisterUiEventListener(make_unique<UiEventFowarder>());
+                observerDelegateRegistered = true;
+            }
+        };
+        server.AddHandler("UiEventObserver.once", once);
     }
 
     static void CheckSwipeVelocityPps(UiOpArgs& args)
@@ -1207,5 +1346,6 @@ namespace OHOS::uitest {
         RegisterUiDriverMultiPointerOperators();
         RegisterUiDriverDisplayOperators();
         RegisterUiDriverMouseOperators();
+        RegisterUiEventObserverMethods();
     }
 } // namespace OHOS::uitest

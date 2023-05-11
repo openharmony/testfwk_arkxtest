@@ -26,6 +26,19 @@
 #include "ui_action.h"
 
 namespace OHOS::uitest {
+    struct UiEventSourceInfo {
+        std::string bundleName_;
+        std::string text_;
+        std::string type_;
+    };
+
+    class UiEventListener {
+    public:
+        UiEventListener() = default;
+        virtual ~UiEventListener() = default;
+        virtual void OnEvent(std::string event, UiEventSourceInfo source) {};
+    };
+
     class UiController {
     public:
         UiController() {};
@@ -96,6 +109,8 @@ namespace OHOS::uitest {
         virtual void InjectMouseScroll(MouseOpArgs mouseOpArgs, int32_t windowId) const {};
 
         virtual void InjectMouseEventSequence(const PointerMatrix &events, int32_t windowId) const {};
+
+        virtual void RegisterUiEventListener(std::unique_ptr<UiEventListener> listener) const {};
     };
 }
 

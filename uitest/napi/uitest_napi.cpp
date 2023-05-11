@@ -25,6 +25,7 @@
 #include "common_utilities_hpp.h"
 #include "frontend_api_defines.h"
 #include "ipc_transactor.h"
+#include "ui_event_observer_napi.h"
 
 namespace OHOS::uitest {
     using namespace nlohmann;
@@ -72,8 +73,11 @@ namespace OHOS::uitest {
         NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &value, nullptr));
         NAPI_ASSERT(env, argc > 0, "Need session token argument!");
         auto token = JsStrToCppStr(env, argv[0]);
-        g_establishConnectionFuture = async(launch::async, [token]() {
-            auto result = g_apiTransactClient.InitAndConnectPeer(token, nullptr);
+        g_establishConnectionFuture = async(launch::async, [env, token]() {
+            auto &instance = UiEventObserverNapi::Get();
+            using namespace std::placeholders;
+            auto callbackHandler = std::bind(&UiEventObserverNapi::HandleEventCallback, &instance, env, _1, _2);
+            auto result = g_apiTransactClient.InitAndConnectPeer(token, callbackHandler);
             LOG_I("End setup transaction connection, result=%{public}d", result);
         });
         return nullptr;
@@ -91,6 +95,7 @@ namespace OHOS::uitest {
     /**Encapsulates the data objects needed in once api transaction.*/
     struct TransactionContext {
         napi_value jsThis_ = nullptr;
+        napi_value *jsArgs_ = nullptr;
         ApiCallInfo callInfo_;
     };
 
@@ -331,20 +336,32 @@ namespace OHOS::uitest {
 
     static void PreprocessTransaction(napi_env env, TransactionContext &ctx, napi_value &error)
     {
-        if (ctx.callInfo_.apiId_  == "Component.inputText") {
-            auto text = ctx.callInfo_.paramList_.at(INDEX_ZERO).get<string>();
+        auto &paramList = ctx.callInfo_.paramList_;
+        const auto &id = ctx.callInfo_.apiId_;
+        if (id  == "Component.inputText" && paramList.size() > 0) {
+            auto text = paramList.at(INDEX_ZERO).get<string>();
             SetPasteBoardData(text);
-        }
-        auto id = ctx.callInfo_.apiId_ ;
-        if (id  == "Driver.screenCap" || id  == "UiDriver.screenCap" || id  == "Driver.screenCapture") {
-            auto path = ctx.callInfo_.paramList_.at(INDEX_ZERO).get<string>();
+        } else if (id  == "Driver.screenCap" || id  == "UiDriver.screenCap" || id  == "Driver.screenCapture") {
+            if (paramList.size() < 1 || paramList.at(0).type() != nlohmann::detail::value_t::string) {
+                LOG_E("Missing file path argument");
+                error = CreateJsException(env, ERR_INVALID_INPUT, "Missing file path argument");
+                return;
+            }
+            auto path = paramList.at(INDEX_ZERO).get<string>();
             auto fd = open(path.c_str(), O_RDWR | O_CREAT, 0666);
             if (fd == -1) {
                 LOG_E("Invalid file path: %{public}s", path.data());
                 error = CreateJsException(env, ERR_INVALID_INPUT, "Invalid file path:" + path);
+                return;
             }
+            paramList[INDEX_ZERO] = fd;
             ctx.callInfo_.fdParamIndex_ = INDEX_ZERO;
-            ctx.callInfo_.paramList_[INDEX_ZERO] = fd;
+        } else if (id  == "UiEventObserver.once") {
+            auto err = ApiCallErr(NO_ERROR);
+            UiEventObserverNapi::Get().PreprocessCallOnce(env, ctx.callInfo_, ctx.jsThis_, ctx.jsArgs_, err);
+            if (err.code_ != NO_ERROR) {
+                error = CreateJsException(env, err.code_, err.message_);
+            }
         }
     }
 
@@ -357,7 +374,12 @@ namespace OHOS::uitest {
         auto count = NAPI_MAX_ARG_COUNT;
         void *pData = nullptr;
         NAPI_CALL(env, napi_get_cb_info(env, info, &count, argv, &(ctx.jsThis_), &pData));
+        if (count > 1)
+        {
+            LOG_I("zzzzzz Arg1=%{public}p",argv[1]);
+        }
         NAPI_ASSERT(env, pData != nullptr, "Null methodDef");
+        ctx.jsArgs_ = argv;
         auto methodDef = reinterpret_cast<const FrontendMethodDef *>(pData);
         g_unCalledJsFuncNames.erase(string(methodDef->name_)); // api used
         // 1. marshal parameters into json-array
@@ -504,12 +526,14 @@ namespace OHOS::uitest {
         NAPI_CALL(env, ExportClass(env, exports, COMPONENT_DEF));
         NAPI_CALL(env, ExportClass(env, exports, UI_WINDOW_DEF));
         NAPI_CALL(env, ExportClass(env, exports, POINTER_MATRIX_DEF));
+        NAPI_CALL(env, ExportClass(env, exports, UI_EVENT_OBSERVER_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, MATCH_PATTERN_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, RESIZE_DIRECTION_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, WINDOW_MODE_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, DISPLAY_ROTATION_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, MOUSE_BUTTON_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, UI_DIRECTION_DEF));
+        
         LOG_I("End export uitest apis");
         return exports;
     }
