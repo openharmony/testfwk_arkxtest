@@ -374,10 +374,6 @@ namespace OHOS::uitest {
         auto count = NAPI_MAX_ARG_COUNT;
         void *pData = nullptr;
         NAPI_CALL(env, napi_get_cb_info(env, info, &count, argv, &(ctx.jsThis_), &pData));
-        if (count > 1)
-        {
-            LOG_I("zzzzzz Arg1=%{public}p",argv[1]);
-        }
         NAPI_ASSERT(env, pData != nullptr, "Null methodDef");
         ctx.jsArgs_ = argv;
         auto methodDef = reinterpret_cast<const FrontendMethodDef *>(pData);

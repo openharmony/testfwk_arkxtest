@@ -192,7 +192,11 @@ namespace OHOS::uitest {
         LOG_I("Server starting up");
         UiDriver::RegisterController(make_unique<SysUiController>());
         ApiTransactor apiTransactServer(true);
-        if (!apiTransactServer.InitAndConnectPeer(transalatedToken, ApiTransact)) {
+        auto &apiServer = FrontendApiServer::Get();
+        auto apiHandler = std::bind(&FrontendApiServer::Call, &apiServer, placeholders::_1, placeholders::_2);
+        auto cbHandler = std::bind(&ApiTransactor::Transact, &apiTransactServer, placeholders::_1, placeholders::_2);
+        apiServer.SetCallbackHandler(cbHandler); // used for callback from server to client
+        if (!apiTransactServer.InitAndConnectPeer(transalatedToken, apiHandler)) {
             LOG_E("Failed to initialize server");
             return EXIT_FAILURE;
         }

@@ -19,8 +19,8 @@
 #include "ui_driver.h"
 #include "widget_operator.h"
 #include "window_operator.h"
-#include "frontend_api_handler.h"
 #include "ui_controller.h"
+#include "frontend_api_handler.h"
 
 namespace OHOS::uitest {
     using namespace std;
@@ -30,18 +30,15 @@ namespace OHOS::uitest {
     class UiEventObserver : public BackendClass {
     public:
         UiEventObserver() {};
-
         const FrontEndClassDef &GetFrontendClassDef() const override
         {
             return UI_EVENT_OBSERVER_DEF;
         };
-
     };
 
-    class UiEventFowarder : public UiEventListener
-    {
+    class UiEventFowarder : public UiEventListener {
     public:
-        UiEventFowarder(){};
+        UiEventFowarder() {};
 
         static void AddCountMap(string ref)
         {
