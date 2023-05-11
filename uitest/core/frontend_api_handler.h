@@ -72,6 +72,18 @@ namespace OHOS::uitest {
         void Call(const ApiCallInfo& in, ApiReplyInfo& out) const;
 
         /**
+         * Set handler to handle api callback from server.
+         *
+         * */
+        void SetCallbackHandler(ApiInvokeHandler handler);
+
+        /**
+         * Handle api callback.
+         *
+         * */
+        void Callback(const ApiCallInfo& in, ApiReplyInfo& out) const;
+
+        /**
          * Get the singleton instance.
          * */
         static FrontendApiServer &Get();
@@ -93,10 +105,9 @@ namespace OHOS::uitest {
         std::map<std::string, std::string> old2NewApiMap_;
         /** mapping classes of new API to classes of old API*/
         std::map<std::string, std::string> new2OldApiMap_;
+        // function used for callback
+        ApiInvokeHandler callbackHandler_ = nullptr;
     };
-
-    /** Function serving external api-invocation request.*/
-    void ApiTransact(const ApiCallInfo& in, ApiReplyInfo& out);
 }
 
 #endif
