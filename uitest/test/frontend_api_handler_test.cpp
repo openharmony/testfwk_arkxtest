@@ -639,11 +639,12 @@ TEST_F(FrontendApiHandlerTest, callback)
 TEST_F(FrontendApiHandlerTest, onEventCallback)
 {
     auto& server = FrontendApiServer::Get();
-    auto call1 = ApiCallInfo{.apiId_ = "Driver.create"};
+    auto call1 = ApiCallInfo {.apiId_ = "Driver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
 
-    auto call2 = ApiCallInfo{.apiId_ = "Driver.createUiEventObserver", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "Driver.createUiEventObserver",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto reply2 = ApiReplyInfo();
     server.Call(call2, reply2);
     ASSERT_EQ(NO_ERROR, reply2.exception_.code_);
@@ -657,7 +658,8 @@ TEST_F(FrontendApiHandlerTest, onEventCallback)
     };
     server.SetCallbackHandler(jsCallback);
     auto jsCbId = to_string(reinterpret_cast<uintptr_t>(&jsCallback));
-    auto call3 = ApiCallInfo{.apiId_ = "UiEventObserver.once", .callerObjRef_ = reply2.resultValue_.get<string>() };
+    auto call3 = ApiCallInfo {.apiId_ = "UiEventObserver.once",
+                              .callerObjRef_ = reply2.resultValue_.get<string>()};
     call3.paramList_.push_back("toastShow");
     call3.paramList_.push_back(jsCbId);
     auto reply3 = ApiReplyInfo();
