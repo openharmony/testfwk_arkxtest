@@ -15,7 +15,6 @@
 
 #include <sstream>
 #include <unistd.h>
-#include <thread>
 #include "ui_driver.h"
 #include "widget_operator.h"
 #include "window_operator.h"
@@ -40,7 +39,7 @@ namespace OHOS::uitest {
     public:
         UiEventFowarder() {};
 
-        void AddCountMap(string ref)
+        void IncRef(string ref)
         {
             auto find = refCountMap_.find(ref);
             if (find != refCountMap_.end()) {
@@ -50,17 +49,18 @@ namespace OHOS::uitest {
             }
         }
 
-        bool removeRef(string ref)
+        uint32_t DecAndGetRef(string ref)
         {
             auto find = refCountMap_.find(ref);
             if (find != refCountMap_.end()) {
                 find->second--;
+                if (find->second == 0) {
+                    refCountMap_.erase(find);
+                    return 0;
+                }
+                return find->second;
             }
-            if (find->second == 0) {
-                return true;
-            } else {
-                return false;
-            }
+            return 0;
         }
 
         void OnEvent(std::string event, UiEventSourceInfo source) override
@@ -70,54 +70,51 @@ namespace OHOS::uitest {
             uiElementInfo["bundleName"] = source.bundleName_;
             uiElementInfo["type"] = source.type_;
             uiElementInfo["text"] = source.text_;
-            auto count = eventToRefMap_.count(event);
+            auto count = callBackInfos_.count(event);
             auto index = 0;
             while (index < count) {
-                auto find = eventToRefMap_.find(event);
-                if (find == eventToRefMap_.end()) {
+                auto find = callBackInfos_.find(event);
+                if (find == callBackInfos_.end()) {
                     return;
                 }
-                auto observerRef = find->second.first;
-                auto cbRef = find->second.second;
-                eventToRefMap_.erase(find);
+                auto &observerRef = find->second.first;
+                auto &callbackRef = find->second.second;
                 ApiCallInfo in;
                 ApiReplyInfo out;
                 in.apiId_ = "UiEventObserver.once";
                 in.callerObjRef_ = observerRef;
                 in.paramList_.push_back(uiElementInfo);
-                in.paramList_.push_back(cbRef);
-                in.paramList_.push_back(removeRef(observerRef));
-                in.paramList_.push_back(removeRef(cbRef));
+                in.paramList_.push_back(callbackRef);
+                in.paramList_.push_back(DecAndGetRef(observerRef) == 0);
+                in.paramList_.push_back(DecAndGetRef(callbackRef) == 0);
                 server.Callback(in, out);
-                this_thread::sleep_for(chrono::milliseconds(waitTimeMs));
+                callBackInfos_.erase(find);
                 index++;
             }
         }
 
-        void AddEvent(string event, string observerRef, string cbRef)
+        void AddCallbackInfo(string event, string observerRef, string cbRef)
         {
-            auto count = eventToRefMap_.count(event);
-            auto find = eventToRefMap_.find(event);
+            auto count = callBackInfos_.count(event);
+            auto find = callBackInfos_.find(event);
             for (size_t index = 0; index < count; index++) {
-                if (find != eventToRefMap_.end()) {
+                if (find != callBackInfos_.end()) {
                     if (find->second.first == observerRef && find->second.second == cbRef) {
                         return;
                     }
                     find++;
                 }
             }
-            eventToRefMap_.insert(make_pair(event, make_pair(observerRef, cbRef)));
-            AddCountMap(observerRef);
-            AddCountMap(cbRef);
+            callBackInfos_.insert(make_pair(event, make_pair(observerRef, cbRef)));
+            printMap();
+            IncRef(observerRef);
+            IncRef(cbRef);
         }
 
     private:
-        static multimap<string, pair<string, string>> eventToRefMap_;
-        static map<string, int> refCountMap_;
+        multimap<string, pair<string, string>> callBackInfos_;
+        map<string, int> refCountMap_;
     };
-
-    multimap<string, pair<string, string>> UiEventFowarder::eventToRefMap_;
-    map<string, int> UiEventFowarder::refCountMap_;
 
     /** API argument type list map.*/
     static multimap<string, pair<vector<string>, size_t>> sApiArgTypesMap;
@@ -820,13 +817,13 @@ namespace OHOS::uitest {
     static void RegisterUiEventObserverMethods()
     {
         static bool observerDelegateRegistered = false;
+        static auto fowarder = std::make_shared<UiEventFowarder>();
         auto &server = FrontendApiServer::Get();
         auto once = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
             auto event = ReadCallArg<string>(in, INDEX_ZERO);
             auto cbRef = ReadCallArg<string>(in, INDEX_ONE);
-            auto fowarder = std::make_shared<UiEventFowarder>();
-            fowarder->AddEvent(event, in.callerObjRef_, cbRef);
+            fowarder->AddCallbackInfo(event, in.callerObjRef_, cbRef);
             if (!observerDelegateRegistered) {
                 driver.RegisterUiEventListener(fowarder);
                 observerDelegateRegistered = true;
