@@ -62,7 +62,7 @@ namespace OHOS::uitest {
             napi_ref ref = nullptr;
             NAPI_CALL_RETURN_VOID(env, napi_create_reference(env, jsThis, 1, &ref));
             LOG_D("Hold reference of %{public}s", call.callerObjRef_.c_str());
-            g_jsRefs.insert( {call.callerObjRef_, ref} );
+            g_jsRefs.insert({ call.callerObjRef_, ref });
         }
         auto jsCallback = argv[1];
         const auto jsCbId = string("js_callback#") + to_string(++g_incJsCbId);
@@ -71,7 +71,7 @@ namespace OHOS::uitest {
         NAPI_CALL_RETURN_VOID(env, napi_create_reference(env, jsCallback, 1, &ref));
         LOG_I("CbId = %{public}s, CbRef = %{public}p", jsCbId.c_str(), ref);
         LOG_D("Hold reference of %{public}s", jsCbId.c_str());
-        g_jsRefs.insert( {jsCbId, ref} );
+        g_jsRefs.insert({ jsCbId, ref });
         // pass jsCbId instread of the function body
         paramList.at(1) = jsCbId; // observer.once(type, cllbackId)
     }
