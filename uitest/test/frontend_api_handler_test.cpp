@@ -27,6 +27,8 @@ using namespace OHOS::uitest;
 using namespace std;
 using namespace nlohmann;
 
+vector<shared_ptr<UiEventListener>> DummyEventMonitor::listeners_;
+
 // test fixture
 class FrontendApiHandlerTest : public testing::Test {
 public:
@@ -661,7 +663,11 @@ TEST_F(FrontendApiHandlerTest, onEventCallback)
     auto reply3 = ApiReplyInfo();
     server.Call(call3, reply3);
     ASSERT_EQ(NO_ERROR, reply3.exception_.code_);
-    ASSERT_EQ(1, g_monitorInstance_->GetListenerCount());
-    g_monitorInstance_->OnEvent("toastShow");
+    auto monitor = DummyEventMonitor::GetInstance();
+    ASSERT_EQ(1, monitor.GetListenerCount());
+    monitor.OnEvent("toastShow");
+    ASSERT_EQ("UiEventObserver.onceabc", result);
+    // Works once
+    monitor.OnEvent("toastShow");
     ASSERT_EQ("UiEventObserver.onceabc", result);
 }

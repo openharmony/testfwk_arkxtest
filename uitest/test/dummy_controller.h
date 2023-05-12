@@ -20,13 +20,15 @@
 namespace OHOS::uitest {
 class DummyEventMonitor {
 public:
-    DummyEventMonitor() {};
-
-    ~DummyEventMonitor() {};
-
-    static void OnEvent(string eventInfo)
+    static DummyEventMonitor &GetInstance()
     {
-        UiEventSourceInfo uiEventSourceInfo{"", "", ""};
+        static DummyEventMonitor instance;
+        return instance;
+    }
+
+    void OnEvent(string eventInfo)
+    {
+        UiEventSourceInfo uiEventSourceInfo{"", "", eventInfo};
         for (auto &listener : listeners_) {
             listener->OnEvent(eventInfo, uiEventSourceInfo);
         }
@@ -42,10 +44,9 @@ public:
         return listeners_.size();
     }
 private:
+    DummyEventMonitor() = default;
     static vector<shared_ptr<UiEventListener>> listeners_;
 };
-vector<shared_ptr<UiEventListener>>  DummyEventMonitor::listeners_;
-auto static g_monitorInstance_ = make_shared<DummyEventMonitor>();
 
 class DummyController : public UiController {
 public:
@@ -65,7 +66,7 @@ public:
 
     void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const override
     {
-        g_monitorInstance_->RegisterUiEventListener(listener);
+        DummyEventMonitor::GetInstance().RegisterUiEventListener(listener);
     }
 
 private:
