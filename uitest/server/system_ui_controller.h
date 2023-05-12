@@ -72,7 +72,7 @@ namespace OHOS::uitest {
 
         bool IsScreenOn() const override;
 
-        void RegisterUiEventListener(std::unique_ptr<UiEventListener> listener) const override;
+        void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const override;
 
     private:
         bool connected_ = false;

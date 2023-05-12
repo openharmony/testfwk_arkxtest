@@ -110,7 +110,7 @@ namespace OHOS::uitest {
 
         virtual void InjectMouseEventSequence(const PointerMatrix &events, int32_t windowId) const {};
 
-        virtual void RegisterUiEventListener(std::unique_ptr<UiEventListener> listener) const {};
+        virtual void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const {};
     };
 }
 

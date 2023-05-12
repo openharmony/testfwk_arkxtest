@@ -40,7 +40,7 @@ namespace OHOS::uitest {
     public:
         UiEventFowarder() {};
 
-        static void AddCountMap(string ref)
+        void AddCountMap(string ref)
         {
             auto find = refCountMap_.find(ref);
             if (find != refCountMap_.end()) {
@@ -50,7 +50,7 @@ namespace OHOS::uitest {
             }
         }
 
-        static bool removeRef(string ref)
+        bool removeRef(string ref)
         {
             auto find = refCountMap_.find(ref);
             if (find != refCountMap_.end()) {
@@ -65,13 +65,12 @@ namespace OHOS::uitest {
 
         void OnEvent(std::string event, UiEventSourceInfo source) override
         {
-            constexpr uint32_t waitTimeMs = 10;
+            auto &server = FrontendApiServer::Get();
             json uiElementInfo;
             uiElementInfo["bundleName"] = source.bundleName_;
             uiElementInfo["type"] = source.type_;
             uiElementInfo["text"] = source.text_;
             auto count = eventToRefMap_.count(event);
-            LOG_I("zzzzz find count   %{public}d",count);
             auto index = 0;
             while (index < count) {
                 auto find = eventToRefMap_.find(event);
@@ -89,14 +88,13 @@ namespace OHOS::uitest {
                 in.paramList_.push_back(cbRef);
                 in.paramList_.push_back(removeRef(observerRef));
                 in.paramList_.push_back(removeRef(cbRef));
-                auto &server = FrontendApiServer::Get();
                 server.Callback(in, out);
                 this_thread::sleep_for(chrono::milliseconds(waitTimeMs));
                 index++;
             }
         }
 
-        static void AddEvent(string event, string observerRef, string cbRef)
+        void AddEvent(string event, string observerRef, string cbRef)
         {
             auto count = eventToRefMap_.count(event);
             auto find = eventToRefMap_.find(event);
@@ -826,10 +824,11 @@ namespace OHOS::uitest {
         auto once = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
             auto event = ReadCallArg<string>(in, INDEX_ZERO);
-            auto cbRef = ReadCallArg<string>(in, INDEX_ONE);        
-            UiEventFowarder::AddEvent(event, in.callerObjRef_, cbRef);
+            auto cbRef = ReadCallArg<string>(in, INDEX_ONE);
+            auto fowarder = std::make_shared<UiEventFowarder>();
+            fowarder->AddEvent(event, in.callerObjRef_, cbRef);
             if (!observerDelegateRegistered) {
-                driver.RegisterUiEventListener(make_unique<UiEventFowarder>());
+                driver.RegisterUiEventListener(fowarder);
                 observerDelegateRegistered = true;
             }
         };
