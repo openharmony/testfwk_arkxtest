@@ -67,9 +67,9 @@ namespace OHOS::uitest {
         {
             auto &server = FrontendApiServer::Get();
             json uiElementInfo;
-            uiElementInfo["bundleName"] = source.bundleName_;
-            uiElementInfo["type"] = source.type_;
-            uiElementInfo["text"] = source.text_;
+            uiElementInfo["bundleName"] = source.bundleName;
+            uiElementInfo["type"] = source.type;
+            uiElementInfo["text"] = source.text;
             auto count = callBackInfos_.count(event);
             auto index = 0;
             while (index < count) {
