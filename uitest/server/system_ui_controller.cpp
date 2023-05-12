@@ -64,31 +64,32 @@ namespace OHOS::uitest {
 
         bool WaitEventIdle(uint32_t idleThresholdMs, uint32_t timeoutMs);
 
-        void RegisterUiEventListener(unique_ptr<UiEventListener> listerner);
+        void RegisterUiEventListener(shared_ptr<UiEventListener> listerner);
 
     private:
         function<void()> onConnectCallback_ = nullptr;
         function<void()> onDisConnectCallback_ = nullptr;
         atomic<uint64_t> lastEventMillis_ = 0;
-        vector<unique_ptr<UiEventListener>> listeners_;
+        vector<shared_ptr<UiEventListener>> listeners_;
     };
 
-    struct watchEvent {
+    struct EventSpec {
         std::string_view componentTyep_;
         int32_t eventType_;
         std::string_view event_;
     };
 
-    static constexpr watchEvent WATCHEVENTS[] = {
+    static constexpr EventSpec WATCHED_EVENTS[] = {
         {"Toast", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "toastShow"},
         {"Dialog", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "dialogShow"}
     };
 
-    static std::string_view GetWatchedEvent(string componentType, int32_t eventType)
+    static std::string_view GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
     {
-        for (unsigned long index = 0; index < sizeof(WATCHEVENTS) / sizeof(watchEvent); index++) {
-            if (WATCHEVENTS[index].componentTyep_ == componentType && WATCHEVENTS[index].eventType_ == eventType) {
-                return WATCHEVENTS[index].event_;
+        for (unsigned long index = 0; index < sizeof(WATCHED_EVENTS) / sizeof(WATCHED_EVENTS); index++) {
+            if (WATCHED_EVENTS[index].componentTyep_ == eventInfo.GetComponentType() &&
+                WATCHED_EVENTS[index].eventType_ == eventInfo.GetWindowContentChangeTypes()) {
+                return WATCHED_EVENTS[index].event_;
             }
         }
         return "";
@@ -128,14 +129,15 @@ namespace OHOS::uitest {
                                            EventType::TYPE_VIEW_SCROLLED_EVENT |
                                            EventType::TYPE_WINDOW_UPDATE;
 
-    void UiEventMonitor::RegisterUiEventListener(unique_ptr<UiEventListener> listerners)
+    void UiEventMonitor::RegisterUiEventListener(std::shared_ptr<UiEventListener> listerners)
     {
-        listeners_.emplace_back(move(listerners));
+        listeners_.emplace_back(listerners);
     }
 
     void UiEventMonitor::OnAccessibilityEvent(const AccessibilityEventInfo &eventInfo)
     {
-        auto event = GetWatchedEvent(eventInfo.GetComponentType(), eventInfo.GetWindowContentChangeTypes());
+        LOG_W("OnEvent:0x%{public}x", eventInfo.GetEventType());
+        auto event = GetWatchedEvent(eventInfo);
         if (event != "") {
             for (auto &listener : listeners_) {
                 auto bundleName = eventInfo.GetBundleName();
@@ -711,9 +713,9 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void SysUiController::RegisterUiEventListener(std::unique_ptr<UiEventListener> listener) const
+    void SysUiController::RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const
     {
-        g_monitorInstance_->RegisterUiEventListener(move(listener));
+        g_monitorInstance_->RegisterUiEventListener(listener);
     }
 
     bool SysUiController::WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const
