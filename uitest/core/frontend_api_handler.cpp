@@ -106,7 +106,6 @@ namespace OHOS::uitest {
                 }
             }
             callBackInfos_.insert(make_pair(event, make_pair(observerRef, cbRef)));
-            printMap();
             IncRef(observerRef);
             IncRef(cbRef);
         }
