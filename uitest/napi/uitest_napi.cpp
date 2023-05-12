@@ -529,7 +529,6 @@ namespace OHOS::uitest {
         NAPI_CALL(env, ExportEnumerator(env, exports, DISPLAY_ROTATION_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, MOUSE_BUTTON_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, UI_DIRECTION_DEF));
-        
         LOG_I("End export uitest apis");
         return exports;
     }
