@@ -27,9 +27,9 @@
 
 namespace OHOS::uitest {
     struct UiEventSourceInfo {
-        std::string bundleName_;
-        std::string text_;
-        std::string type_;
+        std::string bundleName;
+        std::string text;
+        std::string type;
     };
 
     class UiEventListener {
