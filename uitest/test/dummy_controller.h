@@ -28,7 +28,7 @@ public:
 
     void OnEvent(string eventInfo)
     {
-        UiEventSourceInfo uiEventSourceInfo{"", "", eventInfo};
+        UiEventSourceInfo uiEventSourceInfo{ "", "", eventInfo };
         for (auto &listener : listeners_) {
             listener->OnEvent(eventInfo, uiEventSourceInfo);
         }
