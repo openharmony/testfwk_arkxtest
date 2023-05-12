@@ -74,9 +74,9 @@ namespace OHOS::uitest {
     };
 
     struct EventSpec {
-        std::string_view componentTyep_;
-        int32_t eventType_;
-        std::string_view event_;
+        std::string_view componentTyep;
+        int32_t eventType;
+        std::string_view event;
     };
 
     static constexpr EventSpec WATCHED_EVENTS[] = {
@@ -87,9 +87,9 @@ namespace OHOS::uitest {
     static std::string GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
     {
         for (unsigned long index = 0; index < sizeof(WATCHED_EVENTS) / sizeof(WATCHED_EVENTS); index++) {
-            if (WATCHED_EVENTS[index].componentTyep_ == eventInfo.GetComponentType() &&
-                WATCHED_EVENTS[index].eventType_ == eventInfo.GetWindowContentChangeTypes()) {
-                return string(WATCHED_EVENTS[index].event_);
+            if (WATCHED_EVENTS[index].componentTyep == eventInfo.GetComponentType() &&
+                WATCHED_EVENTS[index].eventType == eventInfo.GetWindowContentChangeTypes()) {
+                return string(WATCHED_EVENTS[index].event);
             }
         }
         return "undefine";
