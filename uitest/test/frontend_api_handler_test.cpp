@@ -634,7 +634,7 @@ TEST_F(FrontendApiHandlerTest, callback)
     ASSERT_EQ("wyzAmm", reply.resultValue_.get<string>());
 }
 
-TEST_F(FrontendApiHandlerTest, UiEventObserver)
+TEST_F(FrontendApiHandlerTest, onEventCallback)
 {
     auto& server = FrontendApiServer::Get();
     auto call1 = ApiCallInfo{.apiId_ = "Driver.create"};
@@ -649,9 +649,11 @@ TEST_F(FrontendApiHandlerTest, UiEventObserver)
     const auto ref2 = reply2.resultValue_.get<string>();
     ASSERT_TRUE(ref2.find("UiEventObserver#") != string::npos);
 
-    auto jsCallback = [](const ApiCallInfo& in, ApiReplyInfo& out) {
-        out.resultValue_ = in.apiId_ + "cb";
+    string result = "abc";
+    auto jsCallback = [&result](const ApiCallInfo& in, ApiReplyInfo& out) {
+        result = in.apiId_ + result;
     };
+    server.SetCallbackHandler(jsCallback);
     auto jsCbId = to_string(reinterpret_cast<uintptr_t>(&jsCallback));
     auto call3 = ApiCallInfo{.apiId_ = "UiEventObserver.once", .callerObjRef_ = reply2.resultValue_.get<string>() };
     call3.paramList_.push_back("toastShow");
@@ -659,4 +661,7 @@ TEST_F(FrontendApiHandlerTest, UiEventObserver)
     auto reply3 = ApiReplyInfo();
     server.Call(call3, reply3);
     ASSERT_EQ(NO_ERROR, reply3.exception_.code_);
+    ASSERT_EQ(1, g_monitorInstance_->GetListenerCount());
+    g_monitorInstance_->OnEvent("toastShow");
+    ASSERT_EQ("UiEventObserver.onceabc", result);
 }

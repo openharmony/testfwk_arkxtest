@@ -82,15 +82,15 @@ namespace OHOS::uitest {
         {"Dialog", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "dialogShow"}
     };
 
-    static std::string_view GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
+    static std::string GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
     {
         for (unsigned long index = 0; index < sizeof(WATCHED_EVENTS) / sizeof(WATCHED_EVENTS); index++) {
             if (WATCHED_EVENTS[index].componentTyep_ == eventInfo.GetComponentType() &&
                 WATCHED_EVENTS[index].eventType_ == eventInfo.GetWindowContentChangeTypes()) {
-                return WATCHED_EVENTS[index].event_;
+                return string(WATCHED_EVENTS[index].event_);
             }
         }
-        return "";
+        return "undefine";
     }
 
     // UiEventMonitor instance.
@@ -127,23 +127,23 @@ namespace OHOS::uitest {
                                            EventType::TYPE_VIEW_SCROLLED_EVENT |
                                            EventType::TYPE_WINDOW_UPDATE;
 
-    void UiEventMonitor::RegisterUiEventListener(std::shared_ptr<UiEventListener> listerners)
+    void UiEventMonitor::RegisterUiEventListener(std::shared_ptr<UiEventListener> listerner)
     {
-        listeners_.emplace_back(listerners);
+        listeners_.emplace_back(listerner);
     }
 
     void UiEventMonitor::OnAccessibilityEvent(const AccessibilityEventInfo &eventInfo)
     {
         LOG_W("OnEvent:0x%{public}x", eventInfo.GetEventType());
-        auto event = GetWatchedEvent(eventInfo);
-        if (event != "") {
-            for (auto &listener : listeners_) {
+        auto capturedEvent = GetWatchedEvent(eventInfo);
+        if (capturedEvent != "undefine") {
                 auto bundleName = eventInfo.GetBundleName();
                 auto contentList = eventInfo.GetContentList();
                 auto text = contentList.empty() ? contentList[0] : "";
                 auto type = eventInfo.GetComponentType();
                 UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type};
-                listener->OnEvent(string(event), uiEventSourceInfo);
+            for (auto &listener : listeners_) {
+                listener->OnEvent(capturedEvent, uiEventSourceInfo);
             }
         }
         if ((eventInfo.GetEventType() & EVENT_MASK) > 0) {
