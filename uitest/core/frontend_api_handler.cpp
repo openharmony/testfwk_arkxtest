@@ -71,9 +71,10 @@ namespace OHOS::uitest {
             uiElementInfo["type"] = source.type_;
             uiElementInfo["text"] = source.text_;
             auto count = eventToRefMap_.count(event);
-            auto find = eventToRefMap_.find(event);
-            size_t index = 0;
+            LOG_I("zzzzz find count   %{public}d",count);
+            auto index = 0;
             while (index < count) {
+                auto find = eventToRefMap_.find(event);
                 if (find == eventToRefMap_.end()) {
                     return;
                 }
@@ -91,7 +92,6 @@ namespace OHOS::uitest {
                 auto &server = FrontendApiServer::Get();
                 server.Callback(in, out);
                 this_thread::sleep_for(chrono::milliseconds(waitTimeMs));
-                find++;
                 index++;
             }
         }
@@ -101,7 +101,7 @@ namespace OHOS::uitest {
             auto count = eventToRefMap_.count(event);
             auto find = eventToRefMap_.find(event);
             for (size_t index = 0; index < count; index++) {
-                while (find != eventToRefMap_.end()) {
+                if (find != eventToRefMap_.end()) {
                     if (find->second.first == observerRef && find->second.second == cbRef) {
                         return;
                     }
@@ -824,11 +824,9 @@ namespace OHOS::uitest {
         static bool observerDelegateRegistered = false;
         auto &server = FrontendApiServer::Get();
         auto once = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            LOG_I("zzzzzzzzzzzzzz UiEventObserver.once");
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
             auto event = ReadCallArg<string>(in, INDEX_ZERO);
-            auto cbRef = ReadCallArg<string>(in, INDEX_ONE);
-            LOG_I("zzzzz event: %{public}s,  callerObjRef_: %{public}s, funRef: %{public}s", event.data(), in.callerObjRef_.data(), cbRef.data());
+            auto cbRef = ReadCallArg<string>(in, INDEX_ONE);        
             UiEventFowarder::AddEvent(event, in.callerObjRef_, cbRef);
             if (!observerDelegateRegistered) {
                 driver.RegisterUiEventListener(make_unique<UiEventFowarder>());
