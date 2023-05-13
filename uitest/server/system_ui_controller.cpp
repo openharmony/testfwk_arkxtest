@@ -139,7 +139,7 @@ namespace OHOS::uitest {
         if (capturedEvent != "undefine") {
                 auto bundleName = eventInfo.GetBundleName();
                 auto contentList = eventInfo.GetContentList();
-                auto text = contentList.empty() ? contentList[0] : "";
+                auto text = !contentList.empty() ? contentList[0] : "";
                 auto type = eventInfo.GetComponentType();
                 UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type};
             for (auto &listener : listeners_) {
