@@ -81,12 +81,12 @@ namespace OHOS::uitest {
 
     static constexpr EventSpec WATCHED_EVENTS[] = {
         {"Toast", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "toastShow"},
-        {"Dialog", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "dialogShow"}
+        {"AlertDialog", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "dialogShow"}
     };
 
     static std::string GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
     {
-        for (unsigned long index = 0; index < sizeof(WATCHED_EVENTS) / sizeof(WATCHED_EVENTS); index++) {
+        for (unsigned long index = 0; index < sizeof(WATCHED_EVENTS) / sizeof(EventSpec); index++) {
             if (WATCHED_EVENTS[index].componentTyep == eventInfo.GetComponentType() &&
                 WATCHED_EVENTS[index].eventType == eventInfo.GetWindowContentChangeTypes()) {
                 return string(WATCHED_EVENTS[index].event);
