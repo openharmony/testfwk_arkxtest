@@ -64,11 +64,39 @@ namespace OHOS::uitest {
 
         bool WaitEventIdle(uint32_t idleThresholdMs, uint32_t timeoutMs);
 
+        void RegisterUiEventListener(shared_ptr<UiEventListener> listerner);
+
     private:
         function<void()> onConnectCallback_ = nullptr;
         function<void()> onDisConnectCallback_ = nullptr;
         atomic<uint64_t> lastEventMillis_ = 0;
+        vector<shared_ptr<UiEventListener>> listeners_;
     };
+
+    struct EventSpec {
+        std::string_view componentTyep;
+        int32_t eventType;
+        std::string_view event;
+    };
+
+    static constexpr EventSpec WATCHED_EVENTS[] = {
+        {"Toast", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "toastShow"},
+        {"AlertDialog", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "dialogShow"}
+    };
+
+    static std::string GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
+    {
+        for (unsigned long index = 0; index < sizeof(WATCHED_EVENTS) / sizeof(EventSpec); index++) {
+            if (WATCHED_EVENTS[index].componentTyep == eventInfo.GetComponentType() &&
+                WATCHED_EVENTS[index].eventType == eventInfo.GetWindowContentChangeTypes()) {
+                return string(WATCHED_EVENTS[index].event);
+            }
+        }
+        return "undefine";
+    }
+
+    // UiEventMonitor instance.
+    static shared_ptr<UiEventMonitor> g_monitorInstance_;
 
     void UiEventMonitor::SetOnAbilityConnectCallback(function<void()> onConnectCb)
     {
@@ -101,9 +129,25 @@ namespace OHOS::uitest {
                                            EventType::TYPE_VIEW_SCROLLED_EVENT |
                                            EventType::TYPE_WINDOW_UPDATE;
 
+    void UiEventMonitor::RegisterUiEventListener(std::shared_ptr<UiEventListener> listerner)
+    {
+        listeners_.emplace_back(listerner);
+    }
+
     void UiEventMonitor::OnAccessibilityEvent(const AccessibilityEventInfo &eventInfo)
     {
         LOG_W("OnEvent:0x%{public}x", eventInfo.GetEventType());
+        auto capturedEvent = GetWatchedEvent(eventInfo);
+        if (capturedEvent != "undefine") {
+                auto bundleName = eventInfo.GetBundleName();
+                auto contentList = eventInfo.GetContentList();
+                auto text = !contentList.empty() ? contentList[0] : "";
+                auto type = eventInfo.GetComponentType();
+                UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type};
+            for (auto &listener : listeners_) {
+                listener->OnEvent(capturedEvent, uiEventSourceInfo);
+            }
+        }
         if ((eventInfo.GetEventType() & EVENT_MASK) > 0) {
             lastEventMillis_.store(GetCurrentMillisecond());
         }
@@ -617,9 +661,6 @@ namespace OHOS::uitest {
         return true;
     }
 
-    // UiEventMonitor instance.
-    static shared_ptr<UiEventMonitor> g_monitorInstance_;
-
     bool SysUiController::ConnectToSysAbility()
     {
         if (connected_) {
@@ -670,6 +711,11 @@ namespace OHOS::uitest {
         }
         connected_ = true;
         return true;
+    }
+
+    void SysUiController::RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const
+    {
+        g_monitorInstance_->RegisterUiEventListener(listener);
     }
 
     bool SysUiController::WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const
