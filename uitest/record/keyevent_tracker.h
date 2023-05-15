@@ -22,6 +22,7 @@
 #include <queue>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include "utils.h"
 #include "key_event.h"
 #include "key_option.h"
 
