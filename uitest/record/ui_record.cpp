@@ -83,52 +83,32 @@ namespace OHOS::uitest {
         return elements;
     }
 
-    void InputEventCallback::SubscribeMonitorInit()
-    {
-        // 电源键按下订阅
+    void InputEventCallback::SubscribeDemo(int32_t keyCode,bool isDown, int32_t subId_){
         std::set<int32_t> preKeys;
         std::shared_ptr<MMI::KeyOption> keyOption = std::make_shared<MMI::KeyOption>();
         keyOption->SetPreKeys(preKeys);
-        keyOption->SetFinalKey(MMI::KeyEvent::KEYCODE_POWER);
-        keyOption->SetFinalKeyDown(true);
-        keyOption->SetFinalKeyDownDuration(10);
-        subscribeId1_ = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption,
+        keyOption->SetFinalKey(keyCode);
+        keyOption->SetFinalKeyDown(isDown);
+        keyOption->SetFinalKeyDownDuration(0);
+        subId_ = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption,
             [this](std::shared_ptr<MMI::KeyEvent> keyEvent) {
             OnInputEvent(keyEvent);
         });
+    }
+
+    void InputEventCallback::SubscribeMonitorInit()
+    {
+        // 电源键按下订阅
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_POWER, true, powerDownSubId_);
 
         // 电源键抬起订阅
-        std::shared_ptr<MMI::KeyOption> keyOption2 = std::make_shared<MMI::KeyOption>();
-        keyOption2->SetPreKeys(preKeys);
-        keyOption2->SetFinalKey(MMI::KeyEvent::KEYCODE_POWER);
-        keyOption2->SetFinalKeyDown(false);
-        keyOption2->SetFinalKeyDownDuration(0);
-        subscribeId2_ = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption2,
-            [this](std::shared_ptr<MMI::KeyEvent> keyEvent) {
-            OnInputEvent(keyEvent);
-        });
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_POWER, false, powerUpSubId_);
 
         // 音量UP键按下订阅
-        std::shared_ptr<MMI::KeyOption> keyOption3 = std::make_shared<MMI::KeyOption>();
-        keyOption3->SetPreKeys(preKeys);
-        keyOption3->SetFinalKey(MMI::KeyEvent::KEYCODE_VOLUME_UP);
-        keyOption3->SetFinalKeyDown(true);
-        keyOption3->SetFinalKeyDownDuration(0);
-        subscribeId3_ = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption3,
-            [this](std::shared_ptr<MMI::KeyEvent> keyEvent) {
-            OnInputEvent(keyEvent);
-        });
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_VOLUME_UP, true, volumeUpDownId_);
 
         // 音量DOWN键按下订阅
-        std::shared_ptr<MMI::KeyOption> keyOption4 = std::make_shared<MMI::KeyOption>();
-        keyOption4->SetPreKeys(preKeys);
-        keyOption4->SetFinalKey(MMI::KeyEvent::KEYCODE_VOLUME_DOWN);
-        keyOption4->SetFinalKeyDown(true);
-        keyOption4->SetFinalKeyDownDuration(0);
-        subscribeId4_ = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption4,
-            [this](std::shared_ptr<MMI::KeyEvent> keyEvent) {
-            OnInputEvent(keyEvent);
-        });
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_VOLUME_DOWN, true, volumeDownDownId_);
     }
     // key取消订阅
     void InputEventCallback::SubscribeMonitorCancel()
@@ -137,17 +117,17 @@ namespace OHOS::uitest {
         if (inputManager == nullptr) {
             return;
         }
-        if (subscribeId1_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(subscribeId1_);
+        if (powerDownSubId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(powerDownSubId_);
         }
-        if (subscribeId2_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(subscribeId2_);
+        if (powerUpSubId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(powerUpSubId_);
         }
-        if (subscribeId3_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(subscribeId3_);
+        if (volumeUpDownId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(volumeUpDownId_);
         }
-        if (subscribeId4_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(subscribeId4_);
+        if (volumeDownDownId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(volumeDownDownId_);
         }
     }
 
@@ -327,10 +307,6 @@ namespace OHOS::uitest {
     // KEY_ACTION
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const
     {
-        std :: cout << "@@@@@KeyCode:" << keyEvent->GetKeyCode() 
-                << " KeyAction:"<< keyEvent->GetKeyAction() 
-                << " KeyActionTime:"<< keyEvent->GetActionTime() <<std::endl;
-        // g_keyeventTracker.printEventItems();
         if (SpecialKeyMapExistKey(keyEvent->GetKeyCode(),g_touchop)){
             if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
                 g_isSpecialclick = true;
@@ -515,7 +491,6 @@ namespace OHOS::uitest {
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // 确保界面已更新
             driver.FindWidgets(selector, rev, err, true);
-            std::cout << "@@@@@@@@@@@@@@@@ widgets find finished @@@@@@@@@@@@@@@@@@@" <<std::endl;
             canFindWidgets = false;
             widgetsCon.notify_all();
         }
@@ -539,7 +514,6 @@ namespace OHOS::uitest {
         touchEvent.wx = item.GetWindowX();
         touchEvent.wy = item.GetWindowY();
         if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
-            // std::cout <<"@@@@@@@@ touch down"<< std::endl;
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
             while(canFindWidgets){
                 widgetsCon.wait(widgetsLck);
@@ -548,7 +522,6 @@ namespace OHOS::uitest {
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
             HandleMoveEvent(touchEvent);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP) {
-            // std::cout <<"@@@@@@@@ touch up"<< std::endl;
             HandleUpEvent(touchEvent);
         }
     }
