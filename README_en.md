@@ -78,20 +78,20 @@ export default async function abilityTest() {
 Available APIs:
 
 
-| No.  | API              | Description                                                    |
+| No.  | API              | Description                                                  |
 | :--- | :--------------- | ------------------------------------------------------------ |
-| 1    | assertClose      | Checks whether the proximity between the actual value and the expected value (0) is the expected value (1).|
-| 2    | assertContain    | Checks whether the actual value contains the expected value.                      |
-| 3    | assertEqual      | Checks whether the actual value is equal to the expected value.                     |
-| 4    | assertFail       | Throws an error.                                              |
-| 5    | assertFalse      | Check whether the actual value is **false**.                                |
-| 6    | assertTrue       | Checks whether the actual value is **true**.                                 |
-| 7    | assertInstanceOf | Checks whether the actual value is of the type specified by the expected value.                      |
-| 8    | assertLarger     | Checks whether the actual value is greater than the expected value.                        |
-| 9    | assertLess       | Checks whether the actual value is less than the expected value.                        |
-| 10   | assertNull       | Checks whether the actual value is null.                                 |
-| 11   | assertThrowError | Checks whether the error thrown by the actual value is the expected value.             |
-| 12   | assertUndefined  | Checks whether the actual value is **undefined**.                            |
+| 1    | assertClose      | Checks whether the proximity between the actual value and the expected value (0) is the expected value (1). |
+| 2    | assertContain    | Checks whether the actual value contains the expected value. |
+| 3    | assertEqual      | Checks whether the actual value is equal to the expected value. |
+| 4    | assertFail       | Throws an error.                                             |
+| 5    | assertFalse      | Check whether the actual value is **false**.                 |
+| 6    | assertTrue       | Checks whether the actual value is **true**.                 |
+| 7    | assertInstanceOf | Checks whether the actual value is of the type specified by the expected value,basic types are supported. |
+| 8    | assertLarger     | Checks whether the actual value is greater than the expected value. |
+| 9    | assertLess       | Checks whether the actual value is less than the expected value. |
+| 10   | assertNull       | Checks whether the actual value is null.                     |
+| 11   | assertThrowError | Checks whether the error thrown by the actual value is the expected value. |
+| 12   | assertUndefined  | Checks whether the actual value is **undefined**.            |
 
 The sample code is as follows:
 
@@ -99,23 +99,27 @@ The sample code is as follows:
 import { describe, it, expect } from '@ohos/hypium'
 export default async function abilityTest() {
   describe('assertClose', function () {
-    it('assertBeClose success', 0, function () {
+    it('assertBeClose_success', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(99, b)
     })
-    it('assertBeClose fail', 0, function () {
+    it('assertBeClose_fail', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(1, b)
     })
-    it('assertBeClose fail', 0, function () {
+    it('assertBeClose_fail', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(null, b)
     })
-    it('assertBeClose fail', 0, function () {
+    it('assertBeClose_fail', 0, function () {
       expect(null).assertClose(null, 0)
+    })
+    it('assertInstanceOf_success', 0, function () {
+      let a = 'strTest'
+      expect(a).assertInstanceOf('String')
     })
   })
 }
@@ -921,7 +925,7 @@ export default async function abilityTest() {
 }
 ```
 
-For details about the APIs of `UiDriver`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts) and [UiDriver](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#uidriver).
+For details about the APIs of `UiDriver`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts) and [UiDriver](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#uidriver).
 
 ### Using By
 
@@ -946,7 +950,7 @@ UiTest provides a wide range of UI component feature description APIs in the `By
 
 The `text` attribute supports match patterns `MatchPattern.EQUALS`, `MatchPattern.CONTAINS`, `MatchPattern.STARTS_WITH`, and `MatchPattern.ENDS_WITH`. The default match pattern is `MatchPattern.EQUALS`.
 
-For details about the APIs of `By`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts) and [By](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#by).
+For details about the APIs of `By`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts) and [By](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#by).
 
 #### Absolute Positioning of a Component
 
@@ -1000,7 +1004,7 @@ The `UiComponent` class represents a UI component, which can be located by using
 | 6    | getType():Promise<string>         | Obtains the component type.                                |
 | 7    | isEnabled():Promise<bool>         | Obtains the component state, which can be enabled or disabled.                            |
 
-For details about the APIs of `UiComponent`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts) and [UiComponent](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#uicomponent).
+For details about the APIs of `UiComponent`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts) and [UiComponent](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#uicomponent).
 
 Example 1: Click a component.
 
@@ -1046,7 +1050,7 @@ The `UiWindow` class represents a UI window, which can be located by using `UiDr
 | 6    | split(): Promise<bool>                                       | Splits the current window. This API is applicable to the windows that support split-screen mode.  |
 | 7    | close(): Promise<bool>                                       | Closes the current window.                                    |
 
-For details about the APIs of `UiWindow`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.uitest.d.ts) and [UiWindow](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#uiwindow9).
+For details about the APIs of `UiWindow`, see [@ohos.uitest.d.ts](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts) and [UiWindow](https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis/js-apis-uitest.md#uiwindow9).
 
 Example 1: Obtain the window attributes.
 
@@ -1079,7 +1083,7 @@ await window.close()
 >```
 ### Building UiTest
 
-> UiTest is not built with OpenHarmony 3.1 Release and needs to be manually built. For details, see [Pushing UiTest to a Device](https://gitee.com/openharmony/arkXtest/blob/OpenHarmony-3.1-Release/README_en.md#%E6%8E%A8%E9%80%81ui%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E8%87%B3%E8%AE%BE%E5%A4%87).
+> UiTest is not built with OpenHarmony 3.1 Release and needs to be manually built.
 
 If you want to modify UiTest code and verify the modification, use the following commands.
 

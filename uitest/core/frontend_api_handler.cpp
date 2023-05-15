@@ -18,12 +18,102 @@
 #include "ui_driver.h"
 #include "widget_operator.h"
 #include "window_operator.h"
+#include "ui_controller.h"
 #include "frontend_api_handler.h"
 
 namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
     using namespace nlohmann::detail;
+
+    class UiEventObserver : public BackendClass {
+    public:
+        UiEventObserver() {};
+        const FrontEndClassDef &GetFrontendClassDef() const override
+        {
+            return UI_EVENT_OBSERVER_DEF;
+        };
+    };
+
+    class UiEventFowarder : public UiEventListener {
+    public:
+        UiEventFowarder() {};
+
+        void IncRef(string ref)
+        {
+            auto find = refCountMap_.find(ref);
+            if (find != refCountMap_.end()) {
+                find->second++;
+            } else {
+                refCountMap_.insert(make_pair(ref, 1));
+            }
+        }
+
+        uint32_t DecAndGetRef(string ref)
+        {
+            auto find = refCountMap_.find(ref);
+            if (find != refCountMap_.end()) {
+                find->second--;
+                if (find->second == 0) {
+                    refCountMap_.erase(find);
+                    return 0;
+                }
+                return find->second;
+            }
+            return 0;
+        }
+
+        void OnEvent(std::string event, UiEventSourceInfo source) override
+        {
+            auto &server = FrontendApiServer::Get();
+            json uiElementInfo;
+            uiElementInfo["bundleName"] = source.bundleName;
+            uiElementInfo["type"] = source.type;
+            uiElementInfo["text"] = source.text;
+            auto count = callBackInfos_.count(event);
+            auto index = 0;
+            while (index < count) {
+                auto find = callBackInfos_.find(event);
+                if (find == callBackInfos_.end()) {
+                    return;
+                }
+                auto &observerRef = find->second.first;
+                auto &callbackRef = find->second.second;
+                ApiCallInfo in;
+                ApiReplyInfo out;
+                in.apiId_ = "UiEventObserver.once";
+                in.callerObjRef_ = observerRef;
+                in.paramList_.push_back(uiElementInfo);
+                in.paramList_.push_back(callbackRef);
+                in.paramList_.push_back(DecAndGetRef(observerRef) == 0);
+                in.paramList_.push_back(DecAndGetRef(callbackRef) == 0);
+                server.Callback(in, out);
+                callBackInfos_.erase(find);
+                index++;
+            }
+        }
+
+        void AddCallbackInfo(string event, string observerRef, string cbRef)
+        {
+            auto count = callBackInfos_.count(event);
+            auto find = callBackInfos_.find(event);
+            for (size_t index = 0; index < count; index++) {
+                if (find != callBackInfos_.end()) {
+                    if (find->second.first == observerRef && find->second.second == cbRef) {
+                        return;
+                    }
+                    find++;
+                }
+            }
+            callBackInfos_.insert(make_pair(event, make_pair(observerRef, cbRef)));
+            IncRef(observerRef);
+            IncRef(cbRef);
+        }
+
+    private:
+        multimap<string, pair<string, string>> callBackInfos_;
+        map<string, int> refCountMap_;
+    };
 
     /** API argument type list map.*/
     static multimap<string, pair<vector<string>, size_t>> sApiArgTypesMap;
@@ -230,6 +320,20 @@ namespace OHOS::uitest {
         handlers_.insert(make_pair(apiId, handler));
     }
 
+    void FrontendApiServer::SetCallbackHandler(ApiInvokeHandler handler)
+    {
+        callbackHandler_ = handler;
+    }
+
+    void FrontendApiServer::Callback(const ApiCallInfo& in, ApiReplyInfo& out) const
+    {
+        if (callbackHandler_ == nullptr) {
+            out.exception_ = ApiCallErr(ERR_INTERNAL, "No callback handler set!");
+            return;
+        }
+        callbackHandler_(in, out);
+    }
+
     bool FrontendApiServer::HasHandlerFor(std::string_view apiId) const
     {
         string apiIdstr = CheckAndDoApiMapping(apiId, '.', old2NewApiMap_);
@@ -256,6 +360,7 @@ namespace OHOS::uitest {
 
     void FrontendApiServer::Call(const ApiCallInfo &in, ApiReplyInfo &out) const
     {
+        LOG_D("Begin to invoke api '%{public}s'", in.apiId_.data());
         auto call = in;
         // initialize method signature
         if (sApiArgTypesMap.empty()) {
@@ -311,9 +416,12 @@ namespace OHOS::uitest {
     }
 
     /** Check if the json value represents and illegal data of expected type.*/
-    static void CheckCallArgType(string_view expect, const json &value, ApiCallErr &error)
+    static void CheckCallArgType(string_view expect, const json &value, bool isDefAgc, ApiCallErr &error)
     {
         const auto type = value.type();
+        if (isDefAgc && type == value_t::null) {
+            return;
+        }
         const auto isInteger = type == value_t::number_integer || type == value_t::number_unsigned;
         auto begin0 = FRONTEND_CLASS_DEFS.begin();
         auto end0 = FRONTEND_CLASS_DEFS.end();
@@ -345,7 +453,7 @@ namespace OHOS::uitest {
                 }
                 copy.erase(propName);
                 // check json property value type recursive
-                CheckCallArgType(def->type_, value[propName], error);
+                CheckCallArgType(def->type_, value[propName], !def->required_, error);
                 if (error.code_ != NO_ERROR) {
                     error.message_ = "Illegal value of property '" + propName + "': " + error.message_;
                     return;
@@ -387,7 +495,8 @@ namespace OHOS::uitest {
             }
             // check argument type
             for (size_t idx = 0; idx < argc; idx++) {
-                CheckCallArgType(types.at(idx), in.paramList_.at(idx), out.exception_);
+                auto isDefArg = (argc - idx <= argSupportDefault) ? true : false;
+                CheckCallArgType(types.at(idx), in.paramList_.at(idx), isDefArg, out.exception_);
                 if (out.exception_.code_ != NO_ERROR) {
                     out.exception_.message_ = "Check arg" + to_string(idx) + " failed: " + out.exception_.message_;
                     checkArgType = false;
@@ -478,7 +587,12 @@ namespace OHOS::uitest {
         if (index >= in.paramList_.size()) {
             return defValue;
         }
-        return in.paramList_.at(index).get<T>();
+        auto type = in.paramList_.at(index).type();
+        if (type == value_t::null) {
+            return defValue;
+        } else {
+            return in.paramList_.at(index).get<T>();
+        }
     }
 
     template <UiAttr kAttr, typename T> static void GenericOnAttrBuilder(const ApiCallInfo &in, ApiReplyInfo &out)
@@ -636,6 +750,12 @@ namespace OHOS::uitest {
         };
         server.AddHandler("Driver.create", create);
 
+        auto createUiEventObserver = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto observer = make_unique<UiEventObserver>();
+            out.resultValue_ = StoreBackendObject(move(observer), in.callerObjRef_);
+        };
+        server.AddHandler("Driver.createUiEventObserver", createUiEventObserver);
+
         auto delay = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             driver.DelayMs(ReadCallArg<uint32_t>(in, INDEX_ZERO));
@@ -691,6 +811,24 @@ namespace OHOS::uitest {
             driver.TriggerKey(keyAction, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.triggerCombineKeys", triggerCombineKeys);
+    }
+
+    static void RegisterUiEventObserverMethods()
+    {
+        static bool observerDelegateRegistered = false;
+        static auto fowarder = std::make_shared<UiEventFowarder>();
+        auto &server = FrontendApiServer::Get();
+        auto once = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            auto event = ReadCallArg<string>(in, INDEX_ZERO);
+            auto cbRef = ReadCallArg<string>(in, INDEX_ONE);
+            fowarder->AddCallbackInfo(event, in.callerObjRef_, cbRef);
+            if (!observerDelegateRegistered) {
+                driver.RegisterUiEventListener(fowarder);
+                observerDelegateRegistered = true;
+            }
+        };
+        server.AddHandler("UiEventObserver.once", once);
     }
 
     static void CheckSwipeVelocityPps(UiOpArgs& args)
@@ -1198,5 +1336,6 @@ namespace OHOS::uitest {
         RegisterUiDriverMultiPointerOperators();
         RegisterUiDriverDisplayOperators();
         RegisterUiDriverMouseOperators();
+        RegisterUiEventObserverMethods();
     }
 } // namespace OHOS::uitest

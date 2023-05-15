@@ -43,6 +43,8 @@ function logMsg(actualValue, expected) {
         actualMsg = JSON.stringify(Array.from(actualValue));;
     }else if(aClassName == "[object RegExp]") {
         actualMsg = JSON.stringify(actualValue.source.replace("\\",""));;
+    }else if(aClassName == "[object BigInt]") {
+        actualMsg = actualValue;
     }
     else{
         actualMsg = JSON.stringify(actualValue);
@@ -51,10 +53,12 @@ function logMsg(actualValue, expected) {
         expectMsg = "expected Function"
     }else if(bClassName == "[object Promise]") {
         expectMsg = "expected Promise"
-    }else if(aClassName == "[object Set]" || bClassName == "[object Map]") {
+    }else if(bClassName == "[object Set]" || bClassName == "[object Map]") {
         expectMsg = JSON.stringify(Array.from(expected));
-    }else if(aClassName == "[object RegExp]") {
+    }else if(bClassName == "[object RegExp]") {
         expectMsg = JSON.stringify(expected.source.replace("\\",""));;
+    }else if(bClassName == "[object BigInt]") {
+        expectMsg = expected;
     }
     else{
         expectMsg = JSON.stringify(expected);

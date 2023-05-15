@@ -51,7 +51,6 @@ namespace OHOS::uitest {
 
     void WidgetOperator::ScrollToEnd(bool toTop, ApiCallErr &error) const
     {
-        auto displaySize = driver_.GetDisplaySize(error);
         while (true) {
             auto scrollWidget = driver_.RetrieveWidget(widget_, error);
             if (scrollWidget == nullptr || error.code_ != NO_ERROR) {
@@ -72,13 +71,13 @@ namespace OHOS::uitest {
             auto bounds = scrollWidget->GetBounds();
             if (options_.scrollWidgetDeadZone_ > 0) {
                 // scroll widget from its deadZone maybe unresponsive
-                if (displaySize.py_ - bounds.bottom_ <= options_.scrollWidgetDeadZone_ ||
-                    bounds.top_ <= options_.scrollWidgetDeadZone_) {
-                        bounds.top_ += options_.scrollWidgetDeadZone_ * INDEX_FOUR;
-                        bounds.bottom_ -= options_.scrollWidgetDeadZone_ * INDEX_FOUR;
-                    }
-                bounds.top_ += options_.scrollWidgetDeadZone_;
-                bounds.bottom_ -= options_.scrollWidgetDeadZone_;
+                if (bounds.top_ + options_.scrollWidgetDeadZone_ >= bounds.bottom_ - options_.scrollWidgetDeadZone_) {
+                    bounds.top_ += (bounds.bottom_ - bounds.top_) / INDEX_FOUR;
+                    bounds.bottom_ -= (bounds.bottom_ - bounds.top_) / INDEX_FOUR;
+                } else {
+                    bounds.top_ += options_.scrollWidgetDeadZone_;
+                    bounds.bottom_ -= options_.scrollWidgetDeadZone_;
+                }
             }
             Point topPoint(bounds.GetCenterX(), bounds.top_);
             Point bottomPoint(bounds.GetCenterX(), bounds.bottom_);
@@ -216,7 +215,6 @@ namespace OHOS::uitest {
     {
         bool scrollingUp = true;
         vector<unique_ptr<Widget>> receiver;
-        auto displaySize = driver_.GetDisplaySize(error);
         while (true) {
             auto scrollWidget = driver_.RetrieveWidget(widget_, error);
             if (scrollWidget == nullptr || error.code_ != NO_ERROR) {
@@ -253,13 +251,13 @@ namespace OHOS::uitest {
             auto bounds = scrollWidget->GetBounds();
             if (options_.scrollWidgetDeadZone_ > 0) {
                 // scroll widget from its deadZone maybe unresponsive
-                if (displaySize.py_ - bounds.bottom_ <= options_.scrollWidgetDeadZone_ ||
-                    bounds.top_ <= options_.scrollWidgetDeadZone_) {
-                        bounds.top_ += options_.scrollWidgetDeadZone_ * INDEX_FOUR;
-                        bounds.bottom_ -= options_.scrollWidgetDeadZone_ * INDEX_FOUR;
-                    }
-                bounds.top_ += options_.scrollWidgetDeadZone_;
-                bounds.bottom_ -= options_.scrollWidgetDeadZone_;
+                if (bounds.top_ + options_.scrollWidgetDeadZone_ >= bounds.bottom_ - options_.scrollWidgetDeadZone_) {
+                    bounds.top_ += (bounds.bottom_ - bounds.top_) / INDEX_FOUR;
+                    bounds.bottom_ -= (bounds.bottom_ - bounds.top_) / INDEX_FOUR;
+                } else {
+                    bounds.top_ += options_.scrollWidgetDeadZone_;
+                    bounds.bottom_ -= options_.scrollWidgetDeadZone_;
+                }
             }
             Point topPoint(bounds.GetCenterX(), bounds.top_);
             Point bottomPoint(bounds.GetCenterX(), bounds.bottom_);
