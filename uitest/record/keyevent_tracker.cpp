@@ -166,7 +166,7 @@ namespace OHOS::uitest{
         if (eventItems[0] != "-1"){
             return ;
         }
-        actionStartTime = info.GetActionTime();
+        actionStartTime = infos_.size()==0?info.GetActionTime():infos_[0].GetActionTime();
         eventItems[0] = std::to_string(actionStartTime);
         eventItems[1] = std::to_string(actionUpTime - actionStartTime);
         eventItems[2] = "key";
@@ -181,7 +181,7 @@ namespace OHOS::uitest{
         if (eventItems[0] != "-1" || infos_.size() == 0){
             return ;
         }
-        actionStartTime = infos_[infos_.size()-1].GetActionTime();
+        actionStartTime = infos_[0].GetActionTime();
         eventItems[0] = std::to_string(actionStartTime);
         eventItems[1] = std::to_string(actionUpTime - actionStartTime);
         eventItems[2] = "key";
