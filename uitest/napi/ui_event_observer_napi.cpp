@@ -25,7 +25,7 @@ namespace OHOS::uitest {
     using namespace nlohmann;
     using namespace std;
     
-    /** Cached reference of UiEventObserver and JsCallbackFunction, key is the unique id.*/
+    /** Cached reference of UIEventObserver and JsCallbackFunction, key is the unique id.*/
     static map<string, napi_ref> g_jsRefs;
     static size_t g_incJsCbId = 0;
 
@@ -90,12 +90,11 @@ namespace OHOS::uitest {
     static void InitCallbackContext(napi_env env, const ApiCallInfo &in, ApiReplyInfo &out, EventCallbackContext &ctx)
     {
         LOG_I("Handler api callback: %{public}s", in.apiId_.c_str());
-        if (in.apiId_ != "UiEventObserver.once") {
+        if (in.apiId_ != "UIEventObserver.once") {
             out.exception_ = ApiCallErr(ERR_INTERNAL, "Api dose not support callback: " + in.apiId_);
             LOG_E("%{public}s", out.exception_.message_.c_str());
             return;
         }
-        // observer.once(UiElementInfo, cllbackId, releaseObserver, releaseCallback)
         DCHECK(env != nullptr);
         DCHECK(in.paramList_.size() > INDEX_ZERO && in.paramList_.at(INDEX_ZERO).type() == detail::value_t::object);
         DCHECK(in.paramList_.size() > INDEX_ONE && in.paramList_.at(INDEX_ONE).type() == detail::value_t::string);
@@ -109,7 +108,7 @@ namespace OHOS::uitest {
         auto findObserver = g_jsRefs.find(observerId);
         auto findCallback = g_jsRefs.find(callbackId);
         if (findObserver == g_jsRefs.end()) {
-            out.exception_ = ApiCallErr(INTERNAL_ERROR, "UiEventObserver is not referenced: " + observerId);
+            out.exception_ = ApiCallErr(INTERNAL_ERROR, "UIEventObserver is not referenced: " + observerId);
             LOG_E("%{public}s", out.exception_.message_.c_str());
             return;
         }
