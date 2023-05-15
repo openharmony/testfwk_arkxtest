@@ -255,14 +255,14 @@ namespace OHOS::uitest {
         sizeof(WINDOW_FILTER_PROPERTIES) / sizeof(FrontEndJsonPropDef),
     };
 
-    /** UiElementInfo jsonObject definition.*/
+    /** UIElementInfo jsonObject definition.*/
     constexpr FrontEndJsonPropDef UI_ELEMENT_INFO_PROPERTIES[] = {
         {"bundleName", "string", false},
         {"text", "string", false},
         {"type", "string", false},
     };
     constexpr FrontEndJsonDef UI_ELEMENT_INFO_DEF = {
-        "UiElementInfo",
+        "UIElementInfo",
         UI_ELEMENT_INFO_PROPERTIES,
         sizeof(UI_ELEMENT_INFO_PROPERTIES) / sizeof(FrontEndJsonPropDef),
     };
@@ -391,7 +391,7 @@ namespace OHOS::uitest {
         {"Driver.mouseClick", "(Point,int,int?,int?):void", false, false},
         {"Driver.mouseMoveTo", "(Point):void", false, false},
         {"Driver.mouseScroll", "(Point,bool,int,int?,int?):void", false, false},
-        {"Driver.createUiEventObserver", "():UiEventObserver", false, false},
+        {"Driver.createUIEventObserver", "():UIEventObserver", false, false},
     };
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",
@@ -466,13 +466,13 @@ namespace OHOS::uitest {
         sizeof(POINTER_MATRIX_METHODS) / sizeof(FrontendMethodDef),
     };
 
-    /** UiEventObserver class definition.*/
+    /** UIEventObserver class definition.*/
     constexpr FrontendMethodDef UI_EVENT_OBSERVER_METHODS[] = {
-	    // callback<UiElementInfo> saved in js, works as callbackRef in c++.
-        {"UiEventObserver.once", "(string, string):void", false, true},
+	    // callback<UIElementInfo> saved in js, works as callbackRef in c++.
+        {"UIEventObserver.once", "(string, string):void", false, true},
     };
     constexpr FrontEndClassDef UI_EVENT_OBSERVER_DEF = {
-        "UiEventObserver",
+        "UIEventObserver",
         UI_EVENT_OBSERVER_METHODS,
         sizeof(UI_EVENT_OBSERVER_METHODS) / sizeof(FrontendMethodDef),
     };

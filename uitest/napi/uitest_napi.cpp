@@ -356,7 +356,7 @@ namespace OHOS::uitest {
             }
             paramList[INDEX_ZERO] = fd;
             ctx.callInfo_.fdParamIndex_ = INDEX_ZERO;
-        } else if (id  == "UiEventObserver.once") {
+        } else if (id  == "UIEventObserver.once") {
             auto err = ApiCallErr(NO_ERROR);
             UiEventObserverNapi::Get().PreprocessCallOnce(env, ctx.callInfo_, ctx.jsThis_, ctx.jsArgs_, err);
             if (err.code_ != NO_ERROR) {
