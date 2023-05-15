@@ -27,6 +27,8 @@ using namespace OHOS::uitest;
 using namespace std;
 using namespace nlohmann;
 
+vector<shared_ptr<UiEventListener>> DummyEventMonitor::listeners_;
+
 // test fixture
 class FrontendApiHandlerTest : public testing::Test {
 public:
@@ -372,7 +374,49 @@ TEST_F(FrontendApiHandlerTest, apiMapTest) {
     }
 }
 
-TEST_F(FrontendApiHandlerTest, parameterPreChecks)
+TEST_F(FrontendApiHandlerTest, parameterPreChecks1)
+{
+    const auto& server =  FrontendApiServer::Get();
+    // set the optional parameter as undefined.
+    auto call0 = ApiCallInfo {.apiId_ = "On.text", .callerObjRef_ = string(REF_SEED_BY)};
+    call0.paramList_.emplace_back("wyz");
+    call0.paramList_.emplace_back(nullptr);
+    auto reply0 = ApiReplyInfo();
+    server.Call(call0, reply0);
+    ASSERT_EQ(NO_ERROR, reply0.exception_.code_);
+    // set the mandatory parameter as undefined.
+    auto call1 = ApiCallInfo {.apiId_ = "On.type", .callerObjRef_ = string(REF_SEED_BY)};
+    call1.paramList_.emplace_back(nullptr);
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply1.exception_.code_);
+    ASSERT_TRUE(reply1.exception_.message_.find("failed: Expect string") != string::npos);
+    // set the mandatory parameter of FRONTEND_JSON_DEFS as undefined.
+    auto call3 = ApiCallInfo {.apiId_ = "Driver.create"};
+    auto reply3 = ApiReplyInfo();
+    server.Call(call3, reply3);
+    auto call4 = ApiCallInfo {.apiId_ = "Driver.click", .callerObjRef_ = reply3.resultValue_.get<string>()};
+    auto arg1 = json();
+    arg1["x"] = 1;
+    arg1["y"] = "null";
+    call4.paramList_.emplace_back(arg1);
+    auto reply4 = ApiReplyInfo();
+    server.Call(call4, reply4);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply4.exception_.code_);
+    ASSERT_TRUE(reply1.exception_.message_.find("failed: Expect string") != string::npos);
+    // set the optional parameter of FRONTEND_JSON_DEFS as undefined.
+    auto call5 = ApiCallInfo {.apiId_ = "Driver.findWindow", .callerObjRef_ = reply3.resultValue_.get<string>()};
+    auto arg2 = json();
+    arg2["bundleName"] = "xyz";
+    arg2["title"] = "null";
+    call5.paramList_.emplace_back(arg2);
+    auto reply5 = ApiReplyInfo();
+    server.Call(call5, reply5);
+    // cheak parameter pass, but updateUi failed.
+    ASSERT_EQ("Get window nodes failed", reply5.exception_.message_);
+}
+
+TEST_F(FrontendApiHandlerTest, parameterPreChecks2)
 {
     const auto& server =  FrontendApiServer::Get();
     // call with argument missing
@@ -571,4 +615,61 @@ TEST_F(FrontendApiHandlerTest, injectMultiPointerActionparameterPreChecks)
     auto reply7 = ApiReplyInfo();
     server.Call(call7, reply7);
     ASSERT_EQ(USAGE_ERROR, reply7.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, callback)
+{
+    auto& server = FrontendApiServer::Get();
+    server.SetCallbackHandler(nullptr);
+    ApiCallInfo call { .apiId_ = "wyz" };
+    ApiReplyInfo reply {};
+    server.Callback(call, reply);
+    ASSERT_EQ(ERR_INTERNAL, reply.exception_.code_); // no callback handler
+
+    auto handler = [](const ApiCallInfo& in, ApiReplyInfo& out) {
+        out.resultValue_ = in.apiId_ + "Amm";
+    };
+    server.SetCallbackHandler(handler);
+    reply.exception_ = ApiCallErr(NO_ERROR);
+    server.Callback(call, reply);
+    ASSERT_EQ(NO_ERROR, reply.exception_.code_);
+    ASSERT_EQ("wyzAmm", reply.resultValue_.get<string>());
+}
+
+TEST_F(FrontendApiHandlerTest, onEventCallback)
+{
+    auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "Driver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+
+    auto call2 = ApiCallInfo {.apiId_ = "Driver.createUiEventObserver",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    ASSERT_EQ(NO_ERROR, reply2.exception_.code_);
+    ASSERT_EQ(nlohmann::detail::value_t::string, reply2.resultValue_.type());
+    const auto ref2 = reply2.resultValue_.get<string>();
+    ASSERT_TRUE(ref2.find("UiEventObserver#") != string::npos);
+
+    string result = "abc";
+    auto jsCallback = [&result](const ApiCallInfo& in, ApiReplyInfo& out) {
+        result = in.apiId_ + result;
+    };
+    server.SetCallbackHandler(jsCallback);
+    auto jsCbId = to_string(reinterpret_cast<uintptr_t>(&jsCallback));
+    auto call3 = ApiCallInfo {.apiId_ = "UiEventObserver.once",
+                              .callerObjRef_ = reply2.resultValue_.get<string>()};
+    call3.paramList_.push_back("toastShow");
+    call3.paramList_.push_back(jsCbId);
+    auto reply3 = ApiReplyInfo();
+    server.Call(call3, reply3);
+    ASSERT_EQ(NO_ERROR, reply3.exception_.code_);
+    auto monitor = DummyEventMonitor::GetInstance();
+    ASSERT_EQ(1, monitor.GetListenerCount());
+    monitor.OnEvent("toastShow");
+    ASSERT_EQ("UiEventObserver.onceabc", result);
+    // Works once
+    monitor.OnEvent("toastShow");
+    ASSERT_EQ("UiEventObserver.onceabc", result);
 }

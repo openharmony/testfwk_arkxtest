@@ -68,7 +68,7 @@ namespace OHOS::uitest {
     "   uiRecord -record,    wirte location coordinates of events into files\n"
     "   uiRecord -read,                    print file content to the console\n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "4.0.1.1";
+    const std::string VERSION = "4.0.1.4";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'},
@@ -220,7 +220,11 @@ namespace OHOS::uitest {
         LOG_I("Server starting up");
         UiDriver::RegisterController(make_unique<SysUiController>());
         ApiTransactor apiTransactServer(true);
-        if (!apiTransactServer.InitAndConnectPeer(transalatedToken, ApiTransact)) {
+        auto &apiServer = FrontendApiServer::Get();
+        auto apiHandler = std::bind(&FrontendApiServer::Call, &apiServer, placeholders::_1, placeholders::_2);
+        auto cbHandler = std::bind(&ApiTransactor::Transact, &apiTransactServer, placeholders::_1, placeholders::_2);
+        apiServer.SetCallbackHandler(cbHandler); // used for callback from server to client
+        if (!apiTransactServer.InitAndConnectPeer(transalatedToken, apiHandler)) {
             LOG_E("Failed to initialize server");
             return EXIT_FAILURE;
         }

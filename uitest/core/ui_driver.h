@@ -47,8 +47,8 @@ namespace OHOS::uitest {
 
         string GetHostApp(const Widget &widget);
 
-        /**Get the id of actived window.*/
-        int32_t GetActiveWindowId(ApiCallErr &err);
+        /**Get the id of window into which the mouse action inject.*/
+        int32_t GetTouchedWindowId(const Point point, ApiCallErr &err);
 
         /**Trigger the given key action. */
         void TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error);
@@ -94,6 +94,9 @@ namespace OHOS::uitest {
         bool CheckStatus(bool isConnected, ApiCallErr &error);
 
         void recent(ApiCallErr &err);
+
+        void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener);
+
     private:
         /**Update UI controller and UI objects.*/
         void UpdateUi(bool updateUiTree, ApiCallErr &error, string targetWin = "");

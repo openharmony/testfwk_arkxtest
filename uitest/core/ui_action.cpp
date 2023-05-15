@@ -126,16 +126,16 @@ namespace OHOS::uitest {
         PointerMatrix pointer1;
         PointerMatrix pointer2;
         if (scale_ > 1) {
-            auto fromPoint0 = Point(rect_.GetCenterX() - options.scrollWidgetDeadZone_, rect_.GetCenterY());
+            auto fromPoint0 = Point(rect_.GetCenterX() - options.pinchWidgetDeadZone_, rect_.GetCenterY());
             auto toPoint0 = Point((rect_.GetCenterX() - distanceX0), rect_.GetCenterY());
-            auto fromPoint1 = Point(rect_.GetCenterX() + options.scrollWidgetDeadZone_, rect_.GetCenterY());
+            auto fromPoint1 = Point(rect_.GetCenterX() + options.pinchWidgetDeadZone_, rect_.GetCenterY());
             auto toPoint1 = Point((rect_.GetCenterX() + distanceX0), rect_.GetCenterY());
             DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, false, options);
             DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, false, options);
         } else if (scale_ < 1) {
-            auto fromPoint0 = Point(rect_.left_ + options.scrollWidgetDeadZone_, rect_.GetCenterY());
+            auto fromPoint0 = Point(rect_.left_ + options.pinchWidgetDeadZone_, rect_.GetCenterY());
             auto toPoint0 = Point((rect_.left_ + distanceX0), rect_.GetCenterY());
-            auto fromPoint1 = Point(rect_.right_ - options.scrollWidgetDeadZone_, rect_.GetCenterY());
+            auto fromPoint1 = Point(rect_.right_ - options.pinchWidgetDeadZone_, rect_.GetCenterY());
             auto toPoint1 = Point((rect_.right_ - distanceX0), rect_.GetCenterY());
             DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, false, options);
             DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, false, options);

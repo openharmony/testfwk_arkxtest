@@ -255,6 +255,18 @@ namespace OHOS::uitest {
         sizeof(WINDOW_FILTER_PROPERTIES) / sizeof(FrontEndJsonPropDef),
     };
 
+    /** UiElementInfo jsonObject definition.*/
+    constexpr FrontEndJsonPropDef UI_ELEMENT_INFO_PROPERTIES[] = {
+        {"bundleName", "string", false},
+        {"text", "string", false},
+        {"type", "string", false},
+    };
+    constexpr FrontEndJsonDef UI_ELEMENT_INFO_DEF = {
+        "UiElementInfo",
+        UI_ELEMENT_INFO_PROPERTIES,
+        sizeof(UI_ELEMENT_INFO_PROPERTIES) / sizeof(FrontEndJsonPropDef),
+    };
+
     /** By class definition. deprecated since api 9*/
     constexpr FrontendMethodDef BY_METHODS[] = {
         {"By.id", "(int):By", false, true},
@@ -379,6 +391,7 @@ namespace OHOS::uitest {
         {"Driver.mouseClick", "(Point,int,int?,int?):void", false, false},
         {"Driver.mouseMoveTo", "(Point):void", false, false},
         {"Driver.mouseScroll", "(Point,bool,int,int?,int?):void", false, false},
+        {"Driver.createUiEventObserver", "():UiEventObserver", false, false},
     };
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",
@@ -453,12 +466,24 @@ namespace OHOS::uitest {
         sizeof(POINTER_MATRIX_METHODS) / sizeof(FrontendMethodDef),
     };
 
+    /** UiEventObserver class definition.*/
+    constexpr FrontendMethodDef UI_EVENT_OBSERVER_METHODS[] = {
+	    // callback<UiElementInfo> saved in js, works as callbackRef in c++.
+        {"UiEventObserver.once", "(string, string):void", false, true},
+    };
+    constexpr FrontEndClassDef UI_EVENT_OBSERVER_DEF = {
+        "UiEventObserver",
+        UI_EVENT_OBSERVER_METHODS,
+        sizeof(UI_EVENT_OBSERVER_METHODS) / sizeof(FrontendMethodDef),
+    };
+
     /** List all the frontend data-type definitions.*/
     const auto FRONTEND_CLASS_DEFS = {&BY_DEF, &UI_DRIVER_DEF, &UI_COMPONENT_DEF, &ON_DEF,
-                                      &DRIVER_DEF, &COMPONENT_DEF, &UI_WINDOW_DEF, &POINTER_MATRIX_DEF};
+                                      &DRIVER_DEF, &COMPONENT_DEF, &UI_WINDOW_DEF, &POINTER_MATRIX_DEF,
+                                      &UI_EVENT_OBSERVER_DEF};
     const auto FRONTEND_ENUMERATOR_DEFS = {&MATCH_PATTERN_DEF, &WINDOW_MODE_DEF, &RESIZE_DIRECTION_DEF,
                                            &DISPLAY_ROTATION_DEF, &MOUSE_BUTTON_DEF, &UI_DIRECTION_DEF};
-    const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF};
+    const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF, &UI_ELEMENT_INFO_DEF};
     /** The allowed in/out data type scope of frontend apis.*/
     const std::initializer_list<std::string_view> DATA_TYPE_SCOPE = {
         "int",
@@ -476,6 +501,7 @@ namespace OHOS::uitest {
         COMPONENT_DEF.name_,
         UI_WINDOW_DEF.name_,
         POINTER_MATRIX_DEF.name_,
+        UI_EVENT_OBSERVER_DEF.name_,
     };
 } // namespace OHOS::uitest
 
