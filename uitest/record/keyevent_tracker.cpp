@@ -24,8 +24,8 @@ namespace OHOS::uitest{
         MMI::KeyEvent::KEYCODE_ALT_RIGHT,
         MMI::KeyEvent::KEYCODE_SHIFT_LEFT,
         MMI::KeyEvent::KEYCODE_SHIFT_RIGHT,
-        MMI::KeyEvent::KEYCODE_META_LEFT,
-        MMI::KeyEvent::KEYCODE_META_RIGHT,
+        // MMI::KeyEvent::KEYCODE_META_LEFT,
+        // MMI::KeyEvent::KEYCODE_META_RIGHT,
         // MMI::KeyEvent::KEYCODE_FN,
         MMI::KeyEvent::KEYCODE_POWER
     };
@@ -38,7 +38,6 @@ namespace OHOS::uitest{
         }
         // 该按键是否已down
         if (std::find(infos_.begin(), infos_.end(), info) != infos_.end()){
-            // std::cout << "the key is already down" << std::endl;
             return false;
         }
         infos_.push_back(info);
@@ -62,20 +61,20 @@ namespace OHOS::uitest{
     }
 
     void KeyeventTracker::KeyCodeDone(int32_t keyCode){
-        auto infoit = std::find_if(infos_.begin(), infos_.end(), [keyCode](const KeyEventInfo& info) {
+        auto infoIt = std::find_if(infos_.begin(), infos_.end(), [keyCode](const KeyEventInfo& info) {
             return info.GetKeyCode() == keyCode;
         });
-        if(infoit != infos_.end()){
-            infos_.erase(infoit);
+        if(infoIt != infos_.end()){
+            infos_.erase(infoIt);
             return;
         }
-        std::cout << "keyCode:" << keyCode << " donot have down action" << std::endl;
+        LOG_E("keyCode:%{keyCode} did not received down event before the up event.",keyCode);
     }
 
     // cout
     bool KeyeventTracker::WriteCombinationData(shared_ptr<mutex> &cout_lock){
         if (infos_.size()==0){
-            // LOG_E("cout异常");
+            LOG_E("Failed to obtain the combination_key when cout keyEvent.");
             return false;
         }
         buildEventItems();
@@ -99,7 +98,7 @@ namespace OHOS::uitest{
     // record.csv
     bool KeyeventTracker::WriteCombinationData(ofstream& outFile , shared_ptr<mutex> &csv_lock) {
         if (infos_.size()==0){
-            // LOG_E("record.csv存储异常");
+            LOG_E("Failed to obtain the combination_key when save keyEvent into record.csv.");
             return false;
         }
         buildEventItems();
@@ -126,15 +125,14 @@ namespace OHOS::uitest{
     // daemon socket
     bool KeyeventTracker::WriteCombinationData(shared_ptr<queue<string>> &eventQueue,shared_ptr<mutex> &socket_lock){
         if (infos_.size()==0){
-            // LOG_E("daemon socket异常");
-            std::cout << "daemon socket ERROR" << std::endl;
+            LOG_E("Failed to obtain the combination_key when send socket.");
             return false;
         }
         buildEventItems();
         auto data = nlohmann::json();
         data["ActionStartTime"] = eventItems[0];
         data["ActionDurationTime"] = eventItems[1];
-        data["OP_TYPE"] =  eventItems[2];
+        data["EVENT_TYPE"] =  eventItems[2];
         data["keyItemsCount"] = eventItems[3];
         data["KeyCode1"] = eventItems[4];
         data["KeyCode2"] = eventItems[5];
@@ -150,7 +148,7 @@ namespace OHOS::uitest{
         auto data = nlohmann::json();
         data["ActionStartTime"] = eventItems[0];
         data["ActionDurationTime"] = eventItems[1];
-        data["OP_TYPE"] =  eventItems[2];
+        data["EVENT_TYPE"] =  eventItems[2];
         data["keyItemsCount"] = eventItems[3];
         data["KeyCode1"] = eventItems[4];
         data["KeyCode2"] = eventItems[5];

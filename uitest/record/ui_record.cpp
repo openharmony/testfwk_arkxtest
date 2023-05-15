@@ -345,9 +345,6 @@ namespace OHOS::uitest {
             if (!KeyeventTracker::isCombinationKey(info.GetKeyCode())){
                 return;
             }
-            if(info.GetKeyCode() == MMI::KeyEvent::KEYCODE_POWER){
-                g_keyeventTracker.AddDownKeyEvent(info);
-            }
             if(g_keyeventTracker.GetisNeedRecord()){
                 g_keyeventTracker.SetisNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = g_keyeventTracker.GetSnapshootKey(info);
