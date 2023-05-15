@@ -18,6 +18,36 @@
 #include "ui_controller.h"
 
 namespace OHOS::uitest {
+class DummyEventMonitor {
+public:
+    static DummyEventMonitor &GetInstance()
+    {
+        static DummyEventMonitor instance;
+        return instance;
+    }
+
+    void OnEvent(string eventInfo)
+    {
+        UiEventSourceInfo uiEventSourceInfo { "", "", eventInfo };
+        for (auto &listener : listeners_) {
+            listener->OnEvent(eventInfo, uiEventSourceInfo);
+        }
+    }
+
+    void RegisterUiEventListener(shared_ptr<UiEventListener> listerner)
+    {
+        listeners_.push_back(listerner);
+    }
+
+    static uint32_t GetListenerCount()
+    {
+        return listeners_.size();
+    }
+private:
+    DummyEventMonitor() = default;
+    static vector<shared_ptr<UiEventListener>> listeners_;
+};
+
 class DummyController : public UiController {
 public:
     DummyController() : UiController() {}
@@ -32,6 +62,11 @@ public:
     void SetWorkable(bool wb)
     {
         this->workable_ = wb;
+    }
+
+    void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const override
+    {
+        DummyEventMonitor::GetInstance().RegisterUiEventListener(listener);
     }
 
 private:

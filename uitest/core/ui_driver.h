@@ -93,6 +93,8 @@ namespace OHOS::uitest {
 
         bool CheckStatus(bool isConnected, ApiCallErr &error);
 
+        void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener);
+
     private:
         /**Update UI controller and UI objects.*/
         void UpdateUi(bool updateUiTree, ApiCallErr &error, string targetWin = "");
