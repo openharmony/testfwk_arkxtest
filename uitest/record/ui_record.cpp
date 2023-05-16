@@ -319,6 +319,7 @@ namespace OHOS::uitest {
                 return;
             }
         }
+        g_touchTime = GetCurrentMillisecond();
         auto item = keyEvent->GetKeyItem(keyEvent->GetKeyCode());
         if (!item) {
             std::cout << "GetPointerItem Fail" << std::endl;
