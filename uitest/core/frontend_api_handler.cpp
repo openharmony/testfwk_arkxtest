@@ -26,9 +26,9 @@ namespace OHOS::uitest {
     using namespace nlohmann;
     using namespace nlohmann::detail;
 
-    class UiEventObserver : public BackendClass {
+    class UIEventObserver : public BackendClass {
     public:
-        UiEventObserver() {};
+        UIEventObserver() {};
         const FrontEndClassDef &GetFrontendClassDef() const override
         {
             return UI_EVENT_OBSERVER_DEF;
@@ -81,7 +81,7 @@ namespace OHOS::uitest {
                 auto &callbackRef = find->second.second;
                 ApiCallInfo in;
                 ApiReplyInfo out;
-                in.apiId_ = "UiEventObserver.once";
+                in.apiId_ = "UIEventObserver.once";
                 in.callerObjRef_ = observerRef;
                 in.paramList_.push_back(uiElementInfo);
                 in.paramList_.push_back(callbackRef);
@@ -750,11 +750,11 @@ namespace OHOS::uitest {
         };
         server.AddHandler("Driver.create", create);
 
-        auto createUiEventObserver = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            auto observer = make_unique<UiEventObserver>();
+        auto createUIEventObserver = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto observer = make_unique<UIEventObserver>();
             out.resultValue_ = StoreBackendObject(move(observer), in.callerObjRef_);
         };
-        server.AddHandler("Driver.createUiEventObserver", createUiEventObserver);
+        server.AddHandler("Driver.createUIEventObserver", createUIEventObserver);
 
         auto delay = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
@@ -828,7 +828,7 @@ namespace OHOS::uitest {
                 observerDelegateRegistered = true;
             }
         };
-        server.AddHandler("UiEventObserver.once", once);
+        server.AddHandler("UIEventObserver.once", once);
     }
 
     static void CheckSwipeVelocityPps(UiOpArgs& args)
