@@ -241,81 +241,42 @@ namespace OHOS::uitest {
         VelocityTracker velo = velocityTracker;
         TouchEventInfo downEvent = velo.GetFirstTrackPoint();
         TouchEventInfo upEvent = velo.GetLastTrackPoint();
-        if (g_useSocket) {
-            auto data = nlohmann::json();
-            data["OP_TYPE"] = actionType;
-            data["X_POSI"] = std::to_string(downEvent.x);
-            data["Y_POSI"] = std::to_string(downEvent.y);
-            data["X2_POSI"] = std::to_string(upEvent.x);
-            data["Y2_POSI"] = std::to_string(upEvent.y);
-            data["W1_ID"] = downEvent.attributes.find("id")->second;
-            data["W1_Type"] = downEvent.attributes.find("type")->second;
-            data["W1_Text"] = downEvent.attributes.find("text")->second;
-            data["W1_BOUNDS"] = downEvent.attributes.find("bounds")->second;
-            data["W1_HIER"] = downEvent.attributes.find("hierarchy")->second;
-            data["INTERVAL"] = std::to_string(velo.GetEventInterVal());
-            data["LENGTH"] = std::to_string(velo.GetStepLength());
-            data["VELO"] = std::to_string(velo.GetMainVelocity());
-            data["MAX_VEL"] = std::to_string(MaxVelocity);
+
+        std::string eventItems[9]={actionType, std::to_string(downEvent.x), std::to_string(downEvent.y), std::to_string(upEvent.x), \
+        std::to_string(upEvent.y), std::to_string(velo.GetEventInterVal()), std::to_string(velo.GetStepLength()), std::to_string(velo.GetMainVelocity()), \
+        std::to_string(MaxVelocity)};
+        std::string eventData;
+        for (int i = 0; i < 9; i++) {
+            eventData += eventItems[i] + ",";
+        }
+        if (g_recordMode == "point") {
+            eventData += ",,,,,,,,";
+            CommonPrintLine(velo);
+        } else {
+            eventData += downEvent.attributes.find("id")->second + ",";
+            eventData += downEvent.attributes.find("type")->second + ',';
+            eventData += downEvent.attributes.find("text")->second + ',';
             if (actionType == "drag") {
-                data["W2_ID"] = upEvent.attributes.find("id")->second;
-                data["W2_Type"] = upEvent.attributes.find("type")->second;
-                data["W2_Text"] = upEvent.attributes.find("text")->second;
-                data["W2_BOUNDS"] = upEvent.attributes.find("bounds")->second;
-                data["W2_HIER"] = upEvent.attributes.find("hierarchy")->second;
+                eventData += upEvent.attributes.find("id")->second + ',';
+                eventData += upEvent.attributes.find("type")->second + ',';
+                eventData += upEvent.attributes.find("text")->second + ',';
             } else {
-                data["W2_ID"] = "";
-                data["W2_Type"] = "";
-                data["W2_Text"] = "";
-                data["W2_BOUNDS"] = "";
-                data["W2_HIER"] = "";
+                eventData += ",,,";
             }
             if (actionType == "click") {
                 std::vector<std::string> names = GetForeAbility();
-                data["BUNDLE"] = names[0];
-                data["ABILITY"] = names[1];
+                eventData += names[ZERO] + ',';
+                eventData += names[ONE] + ',';
             } else {
-                data["BUNDLE"] = "";
-                data["ABILITY"] = "";
+                eventData += ",,";
             }
-            std::lock_guard<mutex> guard(*g_socket_lock);
-            g_eventQueue->push("AA" + data.dump() + "BB");
-        } else {
-            std::string eventItems[9]={actionType, std::to_string(downEvent.x), std::to_string(downEvent.y), std::to_string(upEvent.x), \
-            std::to_string(upEvent.y), std::to_string(velo.GetEventInterVal()), std::to_string(velo.GetStepLength()), std::to_string(velo.GetMainVelocity()), \
-            std::to_string(MaxVelocity)};
-            std::string eventData;
-            for (int i = 0; i < 9; i++) {
-                eventData += eventItems[i] + ",";
-            }
-            if (g_recordMode == "point") {
-                eventData += ",,,,,,,,";
-                CommonPrintLine(velo);
-            } else {
-                eventData += downEvent.attributes.find("id")->second + ",";
-                eventData += downEvent.attributes.find("type")->second + ',';
-                eventData += downEvent.attributes.find("text")->second + ',';
-                if (actionType == "drag") {
-                    eventData += upEvent.attributes.find("id")->second + ',';
-                    eventData += upEvent.attributes.find("type")->second + ',';
-                    eventData += upEvent.attributes.find("text")->second + ',';
-                } else {
-                    eventData += ",,,";
-                }
-                if (actionType == "click") {
-                    std::vector<std::string> names = GetForeAbility();
-                    eventData += names[ZERO] + ',';
-                    eventData += names[ONE] + ',';
-                } else {
-                    eventData += ",,";
-                }
-                PrintLine(velo, actionType);
-            }
-            g_outFile << eventData << std::endl;
-            if (g_outFile.fail()) {
-                std::cout<< " outFile failed. " <<std::endl;
-            }
+            PrintLine(velo, actionType);
         }
+        g_outFile << eventData << std::endl;
+        if (g_outFile.fail()) {
+            std::cout<< " outFile failed. " <<std::endl;
+        }
+        
     }
     void EventData::ReadEventLine()
     {
@@ -374,7 +335,7 @@ namespace OHOS::uitest {
             } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP){
                 g_isSpecialclick = false;
                 g_eventData.WriteEventData(g_velocityTracker, g_operationType[g_touchop]);
-                canFindWidgets = true;
+                findWidgetsAllow = true;
                 widgetsCon.notify_all();
                 return;
             }
@@ -389,35 +350,27 @@ namespace OHOS::uitest {
         info.SetKeyCode(keyEvent->GetKeyCode());
         if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
             if(KeyeventTracker::isCombinationKey(info.GetKeyCode())){
-                g_keyeventTracker.SetisCombination(true);
-                g_keyeventTracker.SetisNeedRecord(true);
+                g_keyeventTracker.SetNeedRecord(true);
                 g_keyeventTracker.AddDownKeyEvent(info);
             } else {
-                g_keyeventTracker.SetisNeedRecord(false);
+                g_keyeventTracker.SetNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = g_keyeventTracker.GetSnapshootKey(info);
-                if(!g_useSocket){ // cout打印 + record.csv保存
-                    snapshootKeyTracker.WriteSingleData(info,g_cout_lock);
-                    snapshootKeyTracker.WriteSingleData(info,g_outFile,g_csv_lock);
-                } else {// daemon socket输出,编json
-                    snapshootKeyTracker.WriteSingleData(info,g_eventQueue,g_socket_lock);
-                }
+                 // cout打印 + record.csv保存
+                snapshootKeyTracker.WriteSingleData(info,g_cout_lock);
+                snapshootKeyTracker.WriteSingleData(info,g_outFile,g_csv_lock);
             }
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
             if (!KeyeventTracker::isCombinationKey(info.GetKeyCode())){
                 return;
             }
-            if(g_keyeventTracker.GetisNeedRecord()){
-                g_keyeventTracker.SetisNeedRecord(false);
+            if(g_keyeventTracker.IsNeedRecord()){
+                g_keyeventTracker.SetNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = g_keyeventTracker.GetSnapshootKey(info);
-                if(!g_useSocket){ // cout打印 + record.csv保存
-                    snapshootKeyTracker.WriteCombinationData(g_cout_lock);
-                    snapshootKeyTracker.WriteCombinationData(g_outFile,g_csv_lock);
-                } else {// daemon socket输出,编json
-                    snapshootKeyTracker.WriteCombinationData(g_eventQueue,g_socket_lock);
-                }
+                // cout打印 + record.csv保存
+                snapshootKeyTracker.WriteCombinationData(g_cout_lock);
+                snapshootKeyTracker.WriteCombinationData(g_outFile,g_csv_lock);
             }
             g_keyeventTracker.AddUpKeyEvent(info);
- 
         }
     }
 
@@ -503,7 +456,7 @@ namespace OHOS::uitest {
         if(g_touchop != OP_CLICK && !g_isSpecialclick){
             g_isLastClick = false;
             g_eventData.WriteEventData(snapshootVelocityTracker, g_operationType[g_touchop]);
-            canFindWidgets = true;
+            findWidgetsAllow = true;
             widgetsCon.notify_all();
         }
     }
@@ -524,7 +477,7 @@ namespace OHOS::uitest {
                 g_isLastClick = false;
                 g_eventData.WriteEventData(g_velocityTracker, g_operationType[g_touchop]);
 
-                canFindWidgets = true;
+                findWidgetsAllow = true;
                 widgetsCon.notify_all();
             }
         }
@@ -544,12 +497,12 @@ namespace OHOS::uitest {
     void InputEventCallback::FindWidgetsFunction(){
         while (true){
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
-            while(!canFindWidgets){
+            while(!findWidgetsAllow){
                 widgetsCon.wait(widgetsLck);
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // 确保界面已更新
             driver.FindWidgets(selector, rev, err, true);
-            canFindWidgets = false;
+            findWidgetsAllow = false;
             widgetsCon.notify_all();
         }
     }
@@ -573,7 +526,7 @@ namespace OHOS::uitest {
         touchEvent.wy = item.GetWindowY();
         if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
-            while(canFindWidgets){
+            while(findWidgetsAllow){
                 widgetsCon.wait(widgetsLck);
             }
             HandleDownEvent(touchEvent);
@@ -598,11 +551,7 @@ namespace OHOS::uitest {
         }
         return true;
     }
-    void SetSocketUtils(const bool useSocket, const shared_ptr<mutex> lock, const shared_ptr<queue<string>> eventQueue) {
-        g_useSocket = useSocket;
-        g_socket_lock = lock;
-        g_eventQueue = eventQueue;
-    }
+
     bool InitEventRecordFile()
     {
         if (!InitReportFolder()) {
