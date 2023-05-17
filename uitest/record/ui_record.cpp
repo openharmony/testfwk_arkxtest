@@ -109,6 +109,36 @@ namespace OHOS::uitest {
 
         // 音量DOWN键按下订阅
         SubscribeDemo(MMI::KeyEvent::KEYCODE_VOLUME_DOWN, true, volumeDownDownId_);
+
+        // esc键按下订阅
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_ESCAPE, true, escDownId_);
+
+        // esc键抬起订阅
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_ESCAPE, false, escUpId_);
+
+        // f1键按下订阅
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_F1, true, f1DownId_);
+
+        // f1键抬起订阅
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_F1, false, f1UpId_);
+        
+        // alt-left键按下订阅
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_ALT_LEFT, true, altLeftDownId_);
+
+        // alt-left键抬起订阅
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_ALT_LEFT, false, altLeftUpId_);
+                
+        // alt-right键按下订阅
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_ALT_RIGHT, true, altRightDownId_);
+
+        // alt-right键抬起订阅
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_ALT_RIGHT, false, altRightUpId_);
+
+        // fn键按下订阅
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_FN, true, fnDownId_);
+
+        // fn键抬起订阅
+        SubscribeDemo(MMI::KeyEvent::KEYCODE_FN, false, fnUpId_);
     }
     // key取消订阅
     void InputEventCallback::SubscribeMonitorCancel()
@@ -128,6 +158,36 @@ namespace OHOS::uitest {
         }
         if (volumeDownDownId_ >= 0) {
             inputManager->UnsubscribeKeyEvent(volumeDownDownId_);
+        }
+        if (escDownId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(escDownId_);
+        }
+        if (escUpId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(escUpId_);
+        }
+        if (f1DownId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(f1DownId_);
+        }
+        if (f1UpId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(f1UpId_);
+        }
+        if (altLeftDownId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(altLeftDownId_);
+        }
+        if (altLeftUpId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(altLeftUpId_);
+        }
+        if (altRightDownId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(altRightDownId_);
+        }
+        if (altRightUpId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(altRightUpId_);
+        }
+        if (fnDownId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(fnDownId_);
+        }
+        if (fnUpId_ >= 0) {
+            inputManager->UnsubscribeKeyEvent(fnUpId_);
         }
     }
 
