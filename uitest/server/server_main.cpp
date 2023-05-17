@@ -38,16 +38,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cerrno>
-#include <sys/socket.h>
 #include <sys/types.h>
-#include <netinet/in.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <sys/time.h>
-#include <netinet/tcp.h>
 #include <fcntl.h>
 #include "ipc_transactor.h"
 #include "system_ui_controller.h"
@@ -246,31 +242,7 @@ namespace OHOS::uitest {
         _Exit(0);
         return 0;
     }
-    int socket_set_keepalive(int fd)
-    {
-        int alive, idle, cnt, intv;
-        alive = 1;
-        if (setsockopt(fd, SOL_TCP, SO_KEEPALIVE, &alive, sizeof(alive)) != 0) {
-            LOG_W("Set keepalive error: %s. \n", strerror(errno));
-            return -1;
-        }
-        idle = 10;
-        if (setsockopt(fd, SOL_TCP, TCP_KEEPIDLE, &idle, sizeof(idle)) != 0) {
-            LOG_W("Set keepalive idle error: %s. \n", strerror(errno));
-            return -1;
-        }
-        intv = 5;
-        if (setsockopt(fd, SOL_TCP, TCP_KEEPINTVL, &intv, sizeof(intv)) != 0) {
-            LOG_W("Set keepalive intv error: %s. \n", strerror(errno));
-            return -1;
-        }
-        cnt = 3;
-        if (setsockopt(fd, SOL_TCP, TCP_KEEPCNT, &cnt, sizeof(cnt)) != 0) {
-            LOG_W("Set keepalive cnt error: %s. \n", strerror(errno));
-            return -1;
-        }
-        return 0;
-    }
+
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record|daemon>";
@@ -283,7 +255,7 @@ namespace OHOS::uitest {
         if (argc == INDEX_FOUR) {
             modeOpt = argv[THREE];
         }
-        if (opt == "record" || opt == "daemon") {
+        if (opt == "record") {
             auto controller = make_unique<SysUiController>();
             if (!controller->ConnectToSysAbility()) {
                 PrintToConsole("Failed, cannot connect to AMMS ");
@@ -306,127 +278,24 @@ namespace OHOS::uitest {
                 std::cout << "Startup Failed!" << std::endl;
                 return OHOS::ERR_INVALID_VALUE;
             }
-            if (opt == "daemon") {
-                // 补充click打印线程
-                std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, callBackPtr);
-                // widget 线程
-                std::thread widgetThread(&InputEventCallback::FindWidgetsFunction, callBackPtr);
-                bool useSocket = true;
-                auto lock = make_shared<std::mutex>();
-                auto eventQueue = make_shared<std::queue<string>>();
-                SetSocketUtils(useSocket, lock, eventQueue);
-                // socket
-                int listenfd = socket(AF_INET, SOCK_STREAM, 0);
-                if (listenfd == -1) {
-                    std::cout << "Error: socket" << std::endl;
-                    return 0;
-                }
-                // bind
-                struct sockaddr_in addr;
-                addr.sin_family = AF_INET;
-                addr.sin_port = htons(8888);
-                addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-                if (::bind(listenfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-                    std::cout << "Error: bind" << std::endl;
-                    return 0;
-                }
-                // listen
-                if(listen(listenfd, 5) == -1) {
-                    std::cout << "Error: listen" << std::endl;
-                    return 0;
-                }
-                // accept
-                int conn;
-                char clientIP[INET_ADDRSTRLEN] = "";
-                struct sockaddr_in clientAddr;
-                socklen_t clientAddrLen = sizeof(clientAddr);
-                socket_set_keepalive(listenfd);
-                std::cout<< "Ready To Record..." << std::endl;
-                while (true) {
-                    std::cout << "...listening" << std::endl;
-                    conn = accept(listenfd, (struct sockaddr*)&clientAddr, &clientAddrLen);
-                    if (conn < 0) {
-                        std::cout << "Error: accept" << std::endl;
-                        continue;
-                    }
-                    inet_ntop(AF_INET, &clientAddr.sin_addr, clientIP, INET_ADDRSTRLEN);
-                    std::cout << "...connect " << clientIP << ":" << ntohs(clientAddr.sin_port) << std::endl;
-                    // char buf[4096];
-                    struct tcp_info info;
-                    int len = sizeof(info);
-                    // int bytes_read = 4096;
-                    while (!eventQueue->empty()){
-                        eventQueue->pop();
-                    }
-                    struct timeval timeout = {0,10}; // 10ms
-                    while (true) {
-                        getsockopt(conn, IPPROTO_TCP, TCP_INFO, (void*)&info,(socklen_t*)&len);
-                        if (info.tcpi_state != TCP_ESTABLISHED) {
-                            std::cout << "disconnected" << std::endl;
-                            break;
-                        }
-                        bool bReuseaddr = true;
-                        setsockopt(conn, SOL_SOCKET, SO_REUSEADDR, (const char*)&bReuseaddr, sizeof(bool));
-                        setsockopt(conn, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(struct timeval));
-                        // int recvl = recv(conn, buf, bytes_read, 0);
-                        // if (recvl > 0) {
-                        //     std::string savePath = "/data/local/tmp/layout.json";
-                        //     ofstream fout;
-                        //     fout.open(savePath, ios::out | ios::binary);
-                        //     if (!fout) {
-                        //         PrintToConsole("Error path:" + savePath);
-                        //         return EXIT_FAILURE;
-                        //     }
-                        //     lock_guard<mutex> lck (*lock);
-                        //     auto data = nlohmann::json();
-                        //     auto driver = UiDriver();
-                        //     auto error = ApiCallErr(NO_ERROR);
-                        //     driver.DumpUiHierarchy(data, error);
-                        //     if (error.code_ != NO_ERROR) {
-                        //         PrintToConsole("Dump layout failed: " + error.message_);
-                        //         fout.close();
-                        //         return EXIT_FAILURE;
-                        //     }
-                        //     fout << data.dump();
-                        //     fout.close();
-                        // }
-                        if(eventQueue->empty()){
-                            continue;
-                        }
-                        lock_guard<mutex> lck (*lock);
-                        auto msg = eventQueue->front();
-                        eventQueue->pop();
-                        write(conn, msg.c_str(), msg.length());
-                    } 
-                    close(conn);
-                    // break;
-                }
-                close(listenfd);
-                // 取消按键订阅
-                callBackPtr->SubscribeMonitorCancel();
-                MMI::InputManager::GetInstance()->RemoveMonitor(id1);
-                clickThread.join();
-                widgetThread.join();
-                return 0;
-            } else {
-                // 补充click打印线程
-                std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, callBackPtr);
-                // touch计时线程
-                std::thread toughTimerThread(&InputEventCallback::TimerTouchCheckFunction, callBackPtr);
-                // widget 线程
-                std::thread widgetThread(&InputEventCallback::FindWidgetsFunction, callBackPtr);
-                std::cout << "Started Recording Successfully..." << std::endl;
-                int flag = getc(stdin);
-                std::cout << flag << std::endl;
-                constexpr int timeToSleep = 3600;
-                sleep(timeToSleep);
-                // 取消按键订阅
-                callBackPtr->SubscribeMonitorCancel();
-                clickThread.join();
-                toughTimerThread.join();
-                widgetThread.join();
-                return OHOS::ERR_OK;
-            }
+            // 补充click打印线程
+            std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, callBackPtr);
+            // touch计时线程
+            std::thread toughTimerThread(&InputEventCallback::TimerTouchCheckFunction, callBackPtr);
+            // widget 线程
+            std::thread widgetThread(&InputEventCallback::FindWidgetsFunction, callBackPtr);
+            std::cout << "Started Recording Successfully..." << std::endl;
+            int flag = getc(stdin);
+            std::cout << flag << std::endl;
+            constexpr int timeToSleep = 3600;
+            sleep(timeToSleep);
+            // 取消按键订阅
+            callBackPtr->SubscribeMonitorCancel();
+            clickThread.join();
+            toughTimerThread.join();
+            widgetThread.join();
+            return OHOS::ERR_OK;
+            
         } else if (opt == "read") {
             EventData::ReadEventLine();
             return OHOS::ERR_OK;
