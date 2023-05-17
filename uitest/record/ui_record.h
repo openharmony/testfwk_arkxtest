@@ -67,11 +67,8 @@ namespace OHOS::uitest {
     static int TIMEINTERVAL = 5000;
     static std::string g_recordMode = "";
     static std::string g_recordOpt = "";
-    static shared_ptr<queue<std::string>> g_eventQueue;
-    static shared_ptr<mutex> g_socket_lock;
     static shared_ptr<mutex> g_cout_lock = make_shared<std::mutex>();
     static shared_ptr<mutex> g_csv_lock = make_shared<std::mutex>();
-    static bool g_useSocket;
     
     class InputEventCallback : public MMI::IInputEventConsumer {
         public:
@@ -112,7 +109,7 @@ namespace OHOS::uitest {
             mutable volatile bool g_isSpecialclick = false;
             mutable std::mutex g_clickMut;
             mutable std::condition_variable clickCon;
-            mutable volatile bool canFindWidgets = false;
+            mutable volatile bool findWidgetsAllow = false;
             mutable std::mutex widgetsMut;
             mutable std::condition_variable widgetsCon;
     };
@@ -130,8 +127,6 @@ namespace OHOS::uitest {
             return res;
         };
     };
-    
-    void SetSocketUtils(const bool useSocket, const shared_ptr<mutex> lock, const shared_ptr<queue<string>> eventQueue);
 
     bool InitEventRecordFile();
 
