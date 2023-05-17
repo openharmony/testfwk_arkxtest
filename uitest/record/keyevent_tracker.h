@@ -61,20 +61,16 @@ namespace OHOS::uitest {
             KeyeventTracker() = default;
             ~KeyeventTracker() = default;
 
-            bool GetisNeedRecord() const{
+            bool IsNeedRecord() const{
                 return isNeedRecord;
             }
 
-            void SetisNeedRecord(bool needRecord){
+            void SetNeedRecord(bool needRecord){
                 isNeedRecord = needRecord;
             }
 
-            bool GetisCombination() const{
+            bool IsCombination() const{
                 return isCombination;
-            }
-
-            void SetisCombination(bool combination){
-                isCombination = combination;
             }
 
             // 判断是否为组合按键中的特殊按键
@@ -96,9 +92,7 @@ namespace OHOS::uitest {
             // record.csv
             bool WriteCombinationData(ofstream &outFile , shared_ptr<mutex> &csv_lock);
             bool WriteSingleData(KeyEventInfo &info,ofstream &outFile , shared_ptr<mutex> &csv_lock);
-            // daemon socket
-            bool WriteCombinationData(shared_ptr<queue<string>> &eventQueue,shared_ptr<mutex> &socket_lock);
-            bool WriteSingleData(KeyEventInfo &info,shared_ptr<queue<string>> &eventQueue,shared_ptr<mutex> &socket_lock);
+            
             void printEventItems();
 
         private:

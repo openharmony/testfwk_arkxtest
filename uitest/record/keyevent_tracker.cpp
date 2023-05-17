@@ -24,9 +24,6 @@ namespace OHOS::uitest{
         MMI::KeyEvent::KEYCODE_ALT_RIGHT,
         MMI::KeyEvent::KEYCODE_SHIFT_LEFT,
         MMI::KeyEvent::KEYCODE_SHIFT_RIGHT,
-        // MMI::KeyEvent::KEYCODE_META_LEFT,
-        // MMI::KeyEvent::KEYCODE_META_RIGHT,
-        // MMI::KeyEvent::KEYCODE_FN,
         MMI::KeyEvent::KEYCODE_POWER
     };
 
@@ -120,43 +117,6 @@ namespace OHOS::uitest{
             }
             outFile << eventItems[6] << std::endl;
         }
-        return true;
-    }
-    // daemon socket
-    bool KeyeventTracker::WriteCombinationData(shared_ptr<queue<string>> &eventQueue,shared_ptr<mutex> &socket_lock){
-        if (infos_.size()==0){
-            LOG_E("Failed to obtain the combination_key when send socket.");
-            return false;
-        }
-        buildEventItems();
-        auto data = nlohmann::json();
-        data["ActionStartTime"] = eventItems[0];
-        data["ActionDurationTime"] = eventItems[1];
-        data["EVENT_TYPE"] =  eventItems[2];
-        data["keyItemsCount"] = eventItems[3];
-        data["KeyCode1"] = eventItems[4];
-        data["KeyCode2"] = eventItems[5];
-        data["KeyCode3"] = eventItems[6];
-        std::lock_guard<mutex> guard(*socket_lock);
-        std::string send = data.dump();
-        std::cout << send << std::endl;
-        eventQueue->push("AA" + send + "BB");
-        return true;
-    }
-    bool KeyeventTracker::WriteSingleData(KeyEventInfo &info,shared_ptr<queue<string>> &eventQueue,shared_ptr<mutex> &socket_lock){
-        buildEventItems(info);
-        auto data = nlohmann::json();
-        data["ActionStartTime"] = eventItems[0];
-        data["ActionDurationTime"] = eventItems[1];
-        data["EVENT_TYPE"] =  eventItems[2];
-        data["keyItemsCount"] = eventItems[3];
-        data["KeyCode1"] = eventItems[4];
-        data["KeyCode2"] = eventItems[5];
-        data["KeyCode3"] = eventItems[6];
-        std::lock_guard<mutex> guard(*socket_lock);
-        std::string send = data.dump();
-        std::cout << send << std::endl;
-        eventQueue->push("AA" + send + "BB");
         return true;
     }
 
