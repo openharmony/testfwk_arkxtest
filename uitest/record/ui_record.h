@@ -96,6 +96,16 @@ namespace OHOS::uitest {
             int32_t powerUpSubId_;
             int32_t volumeUpDownId_;
             int32_t volumeDownDownId_;
+            int32_t escDownId_;
+            int32_t escUpId_;
+            int32_t f1DownId_;
+            int32_t f1UpId_;
+            int32_t altLeftDownId_;
+            int32_t altLeftUpId_;
+            int32_t altRightDownId_;
+            int32_t altRightUpId_;
+            int32_t fnDownId_;
+            int32_t fnUpId_;
         public:
             mutable volatile int g_touchTime = 0;
             mutable volatile bool g_isLastClick = false;
