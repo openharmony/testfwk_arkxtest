@@ -286,7 +286,6 @@ namespace OHOS::uitest {
         }
         std::thread t(SaveEventData);
         t.join();
-		sleep(1);
         driver.FindWidgets(selector, rev, err, true);
         g_velocityTracker.Resets();
         g_isOpDect = false;
