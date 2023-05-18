@@ -21,6 +21,9 @@
 #include <thread>
 #include <utility>
 #include <condition_variable>
+#include "accessibility_event_info.h"
+#include "accessibility_ui_test_ability.h"
+#include "ability_manager_client.h"
 #include "display_manager.h"
 #include "screen_manager.h"
 #include "input_manager.h"
