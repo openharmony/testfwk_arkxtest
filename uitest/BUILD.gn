@@ -11,15 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//arkcompiler/ets_frontend/ts2panda/ts2abc_config.gni")
-import("//build/ohos.gni")
+base_root = "../../../.."
+import("$base_root/arkcompiler/ets_frontend/ts2panda/ts2abc_config.gni")
+import("$base_root/build/ohos.gni")
 
-source_root = "//test/testfwk/arkxtest/uitest"
+source_root = "$base_root/test/testfwk/arkxtest/uitest"
 
 config("uitest_common_configs") {
   include_dirs = [
     "//third_party/json/single_include/nlohmann",
-    "//foundation/mutimodalinput/input/interfaces",
+    "$base_root/foundation/mutimodalinput/input/interfaces",
   ]
   cflags = [
     "-Wfloat-equal",
@@ -47,6 +48,9 @@ ohos_static_library("uitest_core") {
     "__OHOS__=1",
     "LOG_TAG=\"UiTestKit_Base\"",
   ]
+
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
 }
 
 ohos_static_library("uitest_record") {
@@ -71,6 +75,9 @@ ohos_static_library("uitest_record") {
     "hiviewdfx_hilog_native:libhilog",
     "input:libmmi-client",
   ]
+
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
 }
 common_external_deps = [
   "c_utils:utils",
@@ -87,6 +94,9 @@ ohos_static_library("uitest_ipc") {
     "ipc:ipc_core",
   ]
   external_deps += common_external_deps
+
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
 
   defines = [
     "__OHOS__=1",
@@ -115,7 +125,7 @@ ohos_executable("uitest_server") {
 
   #dependencies for screencap
   deps += [
-    "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client",
+    "$base_root/foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client",
     "//third_party/libpng:libpng",
   ]
   external_deps = [
@@ -206,7 +216,7 @@ ohos_unittest("uitest_core_unittest") {
     "//third_party/googletest:gtest_main",
   ]
   include_dirs = [
-    "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
+    "$base_root/base/hiviewdfx/hilog/interfaces/native/innerkits/include",
     "//third_party/json/single_include/nlohmann",
     "${source_root}/core",
   ]

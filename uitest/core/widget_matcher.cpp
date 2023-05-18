@@ -43,7 +43,8 @@ namespace OHOS::uitest {
             case STARTS_WITH:
                 return testedValue.find(testValue_) == 0;
             case ENDS_WITH:
-                return (testedValue.find(testValue_) == (testedValue.length() - testValue_.length()));
+                return (testedValue.find(testValue_) != string::npos &&
+                        testedValue.find(testValue_) == (testedValue.length() - testValue_.length()));
         }
     }
 
