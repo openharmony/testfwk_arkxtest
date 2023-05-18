@@ -41,12 +41,16 @@ namespace OHOS::uitest {
         SCROLLABLE,
         CHECKABLE,
         CHECKED,
+        ORIGBOUNDS,
         // inner used attributes
         HIERARCHY,
         HASHCODE,
         BOUNDSCENTER,
         HOST_WINDOW_ID,
         VISIBLE,
+        ABILITYNAME,
+        BUNDLENAME,
+        PAGEPATH,
     };
 
     /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
@@ -65,11 +69,15 @@ namespace OHOS::uitest {
         "scrollable",    // SCROLLABLE
         "checkable",     // CHECKABLE
         "checked",       // CHECKED
+        "origBounds",    // ORIGBOUNDS
         "hierarchy",     // HIERARCHY
         "hashcode",      // HASHCODE
         "boundsCenter",  // BOUNDSCENTER
         "hostWindowId",  // HOST_WINDOW_ID
         "visible",       // VISIBLE
+        "abilityName",   // ABILITYNAME
+        "bundleName",    // BUNDLENAME
+        "pagePath",      // PAGEPATH
     };
 
     struct Point {

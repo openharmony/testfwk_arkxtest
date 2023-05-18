@@ -42,22 +42,33 @@ namespace OHOS::uitest {
     auto driver = UiDriver();
     Rect windowBounds = Rect(0, 0, 0, 0);
     DataWrapper g_dataWrapper;
-    
+    auto selector = WidgetSelector();
+    vector<std::unique_ptr<Widget>> rev;
+    ApiCallErr err(NO_ERROR);
     std::vector<std::string> GetForeAbility()
     {
         std::vector<std::string> elements;
+        std::string bundleName, abilityName;
         auto amcPtr = AAFwk::AbilityManagerClient::GetInstance();
         if (amcPtr == nullptr) {
             std::cout<<"AbilityManagerClient is nullptr"<<std::endl;
-            return elements;
+            abilityName = "";
+            bundleName = "";
+        } else {
+            auto elementName = amcPtr->GetTopAbility();
+            if (elementName.GetBundleName().empty()) {
+                std::cout<<"GetTopAbility GetBundleName is nullptr"<<std::endl;
+                bundleName = "";
+            } else {
+                bundleName = elementName.GetBundleName();
+            }
+            if (elementName.GetAbilityName().empty()) {
+                std::cout<<"GetTopAbility GetAbilityName is nullptr"<<std::endl;
+                abilityName = "";
+            } else {
+                abilityName = elementName.GetAbilityName();
+            }
         }
-        auto elementName = amcPtr->GetTopAbility();
-        if (elementName.GetBundleName().empty()) {
-            std::cout<<"GetTopAbility GetBundleName is nullptr"<<std::endl;
-            return elements;
-        }
-        std::string bundleName = elementName.GetBundleName();
-        std::string abilityName = elementName.GetAbilityName();
         elements.push_back(bundleName);
         elements.push_back(abilityName);
         return elements;
@@ -275,6 +286,7 @@ namespace OHOS::uitest {
         }
         std::thread t(SaveEventData);
         t.join();
+        driver.FindWidgets(selector, rev, err, true);
         g_velocityTracker.Resets();
         g_isOpDect = false;
     }
@@ -335,12 +347,9 @@ namespace OHOS::uitest {
     {
         g_recordMode = modeOpt;
         g_velocityTracker.TrackResets();
-        ApiCallErr err(NO_ERROR);
-        auto selector = WidgetSelector();
-        vector<std::unique_ptr<Widget>> rev;
         driver.FindWidgets(selector, rev, err, true);
         auto screenSize = driver.GetDisplaySize(err);
-        windowBounds = Rect(0, 0, screenSize.px_, screenSize.py_);
+        windowBounds = Rect(0, screenSize.px_, 0,  screenSize.py_);
         std::cout<< "windowBounds : (" << windowBounds.left_ << ","
                 << windowBounds.top_ << "," << windowBounds.right_ << ","
                 << windowBounds.bottom_ << ")" << std::endl;

@@ -44,8 +44,8 @@ namespace OHOS::uitest {
 
     class WidgetCollector : public WidgetVisitor {
     public:
-        WidgetCollector(const WidgetMatcherByCoord &matcher, std::map<float, Widget> &recv)
-            : matcher_(matcher), receiver_(recv) {}
+        WidgetCollector(const WidgetMatcherByCoord &matcher, std::map<float, Widget> &recv, Point down)
+            : matcher_(matcher), receiver_(recv), downPoint_(down) {}
 
         ~WidgetCollector() {}
 
@@ -62,6 +62,7 @@ namespace OHOS::uitest {
         const WidgetMatcherByCoord &matcher_;
         std::map<float, Widget> &receiver_;
         int32_t maxDep = 0;
+        Point downPoint_;
     };
 } // namespace OHOS::uitest
 

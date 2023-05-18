@@ -18,12 +18,9 @@ namespace OHOS::uitest {
     const Widget FindWidget(UiDriver &driver, float x, float y)
     {
         ApiCallErr err(NO_ERROR);
-        auto selector = WidgetSelector();
-        vector<std::unique_ptr<Widget>> rev;
-        driver.FindWidgets(selector, rev, err, true);
         std::map<float, Widget> recv;
         auto matcher = WidgetMatcherByCoord(x, y);
-        auto visitor = WidgetCollector(matcher, recv);
+        auto visitor = WidgetCollector(matcher, recv, Point(x, y));
         driver.DfsTraverseTree(visitor);
         return visitor.GetMaxDepWidget();
     }
@@ -33,12 +30,13 @@ namespace OHOS::uitest {
     }
     bool WidgetMatcherByCoord::Matches(const Widget &widget) const
     {
-        Rect rect = widget.GetBounds();
-        if (x_ <= rect.right_ && x_ >= rect.left_ && y_ <= rect.bottom_ && y_ >= rect.top_) {
-            return true;
-        } else {
-            return false;
+        if (widget.IsVisible()) {
+            Rect rect = widget.GetBounds();
+            if (x_ <= rect.right_ && x_ >= rect.left_ && y_ <= rect.bottom_ && y_ >= rect.top_) {
+                return true;
+            }
         }
+        return false;
     }
 
     int32_t WidgetCollector::GetDept(const Widget &widget) const

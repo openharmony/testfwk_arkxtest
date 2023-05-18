@@ -278,6 +278,15 @@ namespace OHOS::uitest {
         auto attributesData = root["attributes"];
         auto childrenData = root["children"];
         map<string, string> attributeDict;
+        if (root.find("abilityName") != root.end()) {
+            attributeDict["abilityName"] = root["abilityName"];
+        }
+        if (root.find("bundleName") != root.end()) {
+            attributeDict["bundleName"] = root["bundleName"];
+        }
+        if (root.find("pagePath") != root.end()) {
+            attributeDict["pagePath"] = root["pagePath"];
+        }
         for (auto &item : attributesData.items()) {
             attributeDict[item.key()] = item.value();
         }
@@ -342,6 +351,15 @@ namespace OHOS::uitest {
         for (auto index = 0; index < UiAttr::HIERARCHY; index++) {
             const auto attr = ATTR_NAMES[index].data();
             attributesData[attr] = root.GetAttr(attr, "");
+        }
+        if (root.HasAttr("abilityName")) {
+            attributesData["abilityName"] = root.GetAttr("abilityName", "");
+        }
+        if (root.HasAttr("bundleName")) {
+            attributesData["bundleName"] = root.GetAttr("bundleName", "");
+        }
+        if (root.HasAttr("pagePath")) {
+            attributesData["pagePath"] = root.GetAttr("pagePath", "");
         }
         stringstream stream;
         auto rect = root.GetBounds();
