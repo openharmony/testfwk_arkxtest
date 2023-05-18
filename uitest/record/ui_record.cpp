@@ -56,7 +56,6 @@ namespace OHOS::uitest {
     std::vector<std::string> GetForeAbility()
     {
         std::vector<std::string> elements;
-        std::string bundleName, abilityName;
         auto amcPtr = AAFwk::AbilityManagerClient::GetInstance();
         if (amcPtr == nullptr) {
             std::cout<<"AbilityManagerClient is nullptr"<<std::endl;
@@ -120,13 +119,13 @@ namespace OHOS::uitest {
 
         // f1键抬起订阅
         SubscribeTemplate(MMI::KeyEvent::KEYCODE_F1, false, f1UpId_);
-        
+
         // alt-left键按下订阅
         SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_LEFT, true, altLeftDownId_);
 
         // alt-left键抬起订阅
         SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_LEFT, false, altLeftUpId_);
-                
+
         // alt-right键按下订阅
         SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_RIGHT, true, altRightDownId_);
 
@@ -190,7 +189,7 @@ namespace OHOS::uitest {
         }
     }
 
-    
+
     void PrintLine(VelocityTracker &velo, const std::string &actionType)
     {
         TouchEventInfo downEvent = velo.GetFirstTrackPoint();
@@ -211,6 +210,7 @@ namespace OHOS::uitest {
                             << "Step length:" << velo.GetStepLength() << std::endl;
             }
         } else if (actionType == "click" || actionType == "longClick" || actionType == "doubleClick") {
+            std::cout << actionType << ": " ;
             if (downEvent.attributes.find("id")->second != "" || downEvent.attributes.find("text")->second != "") {
                 std::cout << " at Widget( id: " << downEvent.attributes.find("id")->second << ", "
                         << "text: " << downEvent.attributes.find("text")->second << ", "
@@ -275,7 +275,6 @@ namespace OHOS::uitest {
         if (g_outFile.fail()) {
             std::cout<< " outFile failed. " <<std::endl;
         }
-        
     }
     void EventData::ReadEventLine()
     {
@@ -374,7 +373,7 @@ namespace OHOS::uitest {
     }
 
     // AXIS_ACTION
-    void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const { 
+    void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const {
     }
 
     // POINTER_ACTION
@@ -440,7 +439,7 @@ namespace OHOS::uitest {
         }
         if (g_touchop == OP_DRAG && g_recordMode != "point") {
             g_velocityTracker.GetLastTrackPoint().attributes = FindWidget(driver, event.x, event.y).GetAttrMap();
-        } 
+        }
         g_isOpDect = false;
         snapshootVelocityTracker = VelocityTracker(g_velocityTracker);
         g_velocityTracker.Resets();
@@ -470,7 +469,7 @@ namespace OHOS::uitest {
             std::this_thread::sleep_for(std::chrono::milliseconds((int)(INTERVAL_THRESHOLD*1000)));
             // std::chrono::duration<double> downDuration = snapshootVelocityTracker.GetDownTrackPoint().time.time_since_epoch();
             // std::this_thread::sleep_until(
-            //     std::chrono::system_clock::from_time_t(std::time_t(downDuration.count())) + 
+            //     std::chrono::system_clock::from_time_t(std::time_t(downDuration.count())) +
             //     std::chrono::milliseconds((int)(INTERVAL_THRESHOLD*1000)));
             if (g_isLastClick){
                 g_isLastClick = false;
@@ -550,7 +549,6 @@ namespace OHOS::uitest {
         }
         return true;
     }
-
     bool InitEventRecordFile()
     {
         if (!InitReportFolder()) {

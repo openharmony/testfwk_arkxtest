@@ -668,8 +668,8 @@ TEST_F(FrontendApiHandlerTest, onEventCallback)
     auto monitor = DummyEventMonitor::GetInstance();
     ASSERT_EQ(1, monitor.GetListenerCount());
     monitor.OnEvent("toastShow");
-    ASSERT_EQ("UiEventObserver.onceabc", result);
+    ASSERT_EQ("UIEventObserver.onceabc", result);
     // Works once
     monitor.OnEvent("toastShow");
-    ASSERT_EQ("UiEventObserver.onceabc", result);
+    ASSERT_EQ("UIEventObserver.onceabc", result);
 }

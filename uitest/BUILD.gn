@@ -120,6 +120,7 @@ ohos_executable("uitest_server") {
     "//third_party/libpng:libpng",
   ]
   external_deps = [
+    "ability_runtime:ability_manager",
     "accessibility:accessibleability",
     "ability_runtime:ability_manager",
     "input:libmmi-client",
