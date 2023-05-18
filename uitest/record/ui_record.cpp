@@ -83,7 +83,7 @@ namespace OHOS::uitest {
         return elements;
     }
 
-    void InputEventCallback::SubscribeDemo(int32_t keyCode,bool isDown, int32_t subId_){
+    void InputEventCallback::SubscribeTemplate(int32_t keyCode,bool isDown, int32_t subId_){
         std::set<int32_t> preKeys;
         std::shared_ptr<MMI::KeyOption> keyOption = std::make_shared<MMI::KeyOption>();
         keyOption->SetPreKeys(preKeys);
@@ -99,46 +99,46 @@ namespace OHOS::uitest {
     void InputEventCallback::SubscribeMonitorInit()
     {
         // 电源键按下订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_POWER, true, powerDownSubId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_POWER, true, powerDownSubId_);
 
         // 电源键抬起订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_POWER, false, powerUpSubId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_POWER, false, powerUpSubId_);
 
         // 音量UP键按下订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_VOLUME_UP, true, volumeUpDownId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_VOLUME_UP, true, volumeUpDownId_);
 
         // 音量DOWN键按下订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_VOLUME_DOWN, true, volumeDownDownId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_VOLUME_DOWN, true, volumeDownDownId_);
 
         // esc键按下订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_ESCAPE, true, escDownId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_ESCAPE, true, escDownId_);
 
         // esc键抬起订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_ESCAPE, false, escUpId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_ESCAPE, false, escUpId_);
 
         // f1键按下订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_F1, true, f1DownId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_F1, true, f1DownId_);
 
         // f1键抬起订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_F1, false, f1UpId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_F1, false, f1UpId_);
         
         // alt-left键按下订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_ALT_LEFT, true, altLeftDownId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_LEFT, true, altLeftDownId_);
 
         // alt-left键抬起订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_ALT_LEFT, false, altLeftUpId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_LEFT, false, altLeftUpId_);
                 
         // alt-right键按下订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_ALT_RIGHT, true, altRightDownId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_RIGHT, true, altRightDownId_);
 
         // alt-right键抬起订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_ALT_RIGHT, false, altRightUpId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_RIGHT, false, altRightUpId_);
 
         // fn键按下订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_FN, true, fnDownId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_FN, true, fnDownId_);
 
         // fn键抬起订阅
-        SubscribeDemo(MMI::KeyEvent::KEYCODE_FN, false, fnUpId_);
+        SubscribeTemplate(MMI::KeyEvent::KEYCODE_FN, false, fnUpId_);
     }
     // key取消订阅
     void InputEventCallback::SubscribeMonitorCancel()
