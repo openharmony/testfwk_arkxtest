@@ -120,6 +120,7 @@ ohos_executable("uitest_server") {
   ]
   external_deps = [
     "accessibility:accessibleability",
+    "ability_runtime:ability_manager",
     "input:libmmi-client",
     "multimedia_image_framework:image_native",
     "window_manager:libdm",
