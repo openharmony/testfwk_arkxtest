@@ -45,6 +45,8 @@ public:
         xAxis_.Resets();
         yAxis_.Resets();
         totalDelta_.Resets();
+        stepLength = 0;
+        mainVelocity_ = 0.0;
     }
     void TrackResets()
     {
