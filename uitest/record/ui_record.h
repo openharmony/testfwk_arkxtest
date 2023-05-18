@@ -128,7 +128,7 @@ namespace OHOS::uitest {
 
     bool InitEventRecordFile();
 
-    void RecordInitEnv(const std::string &modeOpt, const std::string opt);
+    void RecordInitEnv(const std::string &modeOpt);
 
     class EventData {
     public:
