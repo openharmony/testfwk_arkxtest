@@ -33,17 +33,6 @@
 #include <string>
 #include <vector>
 #include <cmath>
-#include <queue>
-#include <errno.h>
-#include <cstdio>
-#include <cstdlib>
-#include <cerrno>
-#include <sys/types.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/time.h>
 #include <fcntl.h>
 #include "ipc_transactor.h"
 #include "system_ui_controller.h"
@@ -232,7 +221,7 @@ namespace OHOS::uitest {
 
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
-        static constexpr string_view usage = "USAGE: uitest uiRecord <read|record|daemon>";
+        static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
         if (!(argc == INDEX_THREE || argc == INDEX_FOUR)) {
             PrintToConsole(usage);
             return EXIT_FAILURE;

@@ -28,8 +28,6 @@
 #include <map>
 #include <thread>
 #include <mutex>
-#include <memory>
-#include <queue>
 #include <condition_variable>
 #include "least_square_impl.h"
 #include "touch_event.h"
@@ -79,7 +77,7 @@ namespace OHOS::uitest {
             void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
             void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override;
             void SubscribeMonitorInit();
-            void SubscribeDemo(int32_t keyCode,bool isDown, int32_t subId_);
+            void SubscribeTemplate(int32_t keyCode,bool isDown, int32_t subId_);
             void SubscribeMonitorCancel();
             void TimerReprintClickFunction ();
             void TimerTouchCheckFunction();
