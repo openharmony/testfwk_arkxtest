@@ -53,7 +53,6 @@ namespace OHOS::uitest {
         return false;
     }
 
-
     std::vector<std::string> GetForeAbility()
     {
         std::vector<std::string> elements;
@@ -566,30 +565,27 @@ namespace OHOS::uitest {
         std::cout << "The result will be written in csv file at location: " << g_filePath << std::endl;
         return true;
     }
-    void RecordInitEnv(const std::string &modeOpt, const std::string opt)
+    void RecordInitEnv(const std::string &modeOpt)
     {
         g_recordMode = modeOpt;
-        g_recordOpt = opt;
         g_velocityTracker.TrackResets();
         driver.FindWidgets(selector, rev, err, true);
         auto screenSize = driver.GetDisplaySize(err);
         windowBounds = Rect(0, screenSize.px_, 0,  screenSize.py_);
-        if (opt == "record") {
-            std::cout<< "windowBounds : (" << windowBounds.left_ << ","
-                    << windowBounds.top_ << "," << windowBounds.right_ << ","
-                    << windowBounds.bottom_ << ")" << std::endl;
-            std::vector<std::string> names = GetForeAbility();
-            std::cout << "Current ForAbility :" << names[ZERO] << ", " << names[ONE] << std::endl;
-            if (g_outFile.is_open()) {
-                g_outFile << "windowBounds" << ',';
-                g_outFile << windowBounds.left_ << ',';
-                g_outFile << windowBounds.top_ << ',';
-                g_outFile << windowBounds.right_ << ',';
-                g_outFile << windowBounds.bottom_ << ',';
-                g_outFile << "0,0,0,0,,,,,,,";
-                g_outFile << names[ZERO] << ',';
-                g_outFile << names[ONE] << ',' << std::endl;
-            }
+        std::cout<< "windowBounds : (" << windowBounds.left_ << ","
+                << windowBounds.top_ << "," << windowBounds.right_ << ","
+                << windowBounds.bottom_ << ")" << std::endl;
+        std::vector<std::string> names = GetForeAbility();
+        std::cout << "Current ForAbility :" << names[ZERO] << ", " << names[ONE] << std::endl;
+        if (g_outFile.is_open()) {
+            g_outFile << "windowBounds" << ',';
+            g_outFile << windowBounds.left_ << ',';
+            g_outFile << windowBounds.top_ << ',';
+            g_outFile << windowBounds.right_ << ',';
+            g_outFile << windowBounds.bottom_ << ',';
+            g_outFile << "0,0,0,0,,,,,,,";
+            g_outFile << names[ZERO] << ',';
+            g_outFile << names[ONE] << ',' << std::endl;
         }
     }
 } // namespace OHOS::uitest
