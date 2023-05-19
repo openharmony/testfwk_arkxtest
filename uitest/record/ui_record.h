@@ -46,7 +46,7 @@
 #include "ui_model.h"
 #include "find_widget.h"
 
-namespace OHOS::uitest { 
+namespace OHOS::uitest {
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
         void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
