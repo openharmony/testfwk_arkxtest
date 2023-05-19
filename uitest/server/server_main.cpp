@@ -263,11 +263,11 @@ namespace OHOS::uitest {
             std::cout << "Started Recording Successfully..." << std::endl;
             int flag = getc(stdin);
             std::cout << flag << std::endl;
-            // 取消按键订阅
-            callBackPtr->SubscribeMonitorCancel();
             clickThread.join();
             toughTimerThread.join();
             widgetThread.join();
+            // 取消按键订阅
+            callBackPtr->SubscribeMonitorCancel();
             return OHOS::ERR_OK;
         } else if (opt == "read") {
             EventData::ReadEventLine();
