@@ -30,12 +30,6 @@ namespace OHOS::uitest {
 
     bool KeyeventTracker::AddDownKeyEvent(KeyEventInfo &info)
     {
-        // 三键以上的同时按键无效
-        if (infos_.size() >= MAX_COMBINATION_SIZE) {
-            LOG_I("More than three keys are invalid at the same time");
-            std::cout << "More than three keys are invalid at the same time" << std::endl;
-            return false;
-        }
         // 该按键是否已down
         if (std::find(infos_.begin(), infos_.end(), info) != infos_.end()) {
             return false;

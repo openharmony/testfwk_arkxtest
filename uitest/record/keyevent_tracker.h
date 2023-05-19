@@ -95,6 +95,11 @@ namespace OHOS::uitest {
             return false;
         };
 
+        std::vector<KeyEventInfo> GetInfos() const
+        {
+            return infos_;
+        }
+
         bool AddDownKeyEvent(KeyEventInfo &info);
         bool AddCancelKeyEvent(KeyEventInfo &info);
         void AddUpKeyEvent(KeyEventInfo &info);
