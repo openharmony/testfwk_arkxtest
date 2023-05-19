@@ -57,7 +57,7 @@ namespace OHOS::uitest {
         void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
         void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override;
         void SubscribeMonitorInit();
-        void SubscribeTemplate(int32_t keyCode, bool isDown, int32_t subId_);
+        void KeyEventSubscribeTemplate(SubscribeKeyevent& subscribeKeyevent);
         void SubscribeMonitorCancel();
         void TimerReprintClickFunction ();
         void TimerTouchCheckFunction();
@@ -76,20 +76,6 @@ namespace OHOS::uitest {
         int gTimeIndex = 1000;
         shared_ptr<queue<std::string>> eventQueue_;
         shared_ptr<mutex> lock_;
-        int32_t powerDownSubId_;
-        int32_t powerUpSubId_;
-        int32_t volumeUpDownId_;
-        int32_t volumeDownDownId_;
-        int32_t escDownId_;
-        int32_t escUpId_;
-        int32_t f1DownId_;
-        int32_t f1UpId_;
-        int32_t altLeftDownId_;
-        int32_t altLeftUpId_;
-        int32_t altRightDownId_;
-        int32_t altRightUpId_;
-        int32_t fnDownId_;
-        int32_t fnUpId_;
     };
 
     class TestUtils {

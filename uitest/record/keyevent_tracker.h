@@ -120,7 +120,13 @@ namespace OHOS::uitest {
         int64_t actionStartTime = 0;
         int64_t actionUpTime = 0;
         // starttime/duration/eventtype/keycount/k1/k2/k3
-        std::string eventItems[7] = {"-1"};
+        std::string eventItems[INFO_SIZE] = {"-1"};
+    };
+
+    struct SubscribeKeyevent final{
+        int32_t keyCode;
+        bool isDown;
+        int32_t subId;
     };
 } // namespace OHOS::uitest
 #endif // KEYEVENT_TRACKER_H

@@ -32,6 +32,7 @@ namespace OHOS::uitest {
     {
         // 三键以上的同时按键无效
         if (infos_.size() >= MAX_COMBINATION_SIZE) {
+            LOG_I("More than three keys are invalid at the same time");
             std::cout << "More than three keys are invalid at the same time" << std::endl;
             return false;
         }

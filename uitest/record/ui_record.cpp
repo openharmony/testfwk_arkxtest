@@ -39,7 +39,25 @@ namespace OHOS::uitest {
         {MMI::KeyEvent::KEYCODE_HOME, TouchOpt::OP_HOME},
     };
 
+    static std::vector<SubscribeKeyevent> NEED_SUBSCRIBE_KEY = {
+        {MMI::KeyEvent::KEYCODE_POWER, true, 0}, // 电源键按下订阅
+        {MMI::KeyEvent::KEYCODE_POWER, false, 0}, // 电源键抬起订阅
+        {MMI::KeyEvent::KEYCODE_VOLUME_UP, true, 0}, // 音量UP键按下订阅
+        {MMI::KeyEvent::KEYCODE_VOLUME_DOWN, true, 0}, // 音量DOWN键按下订阅
+        {MMI::KeyEvent::KEYCODE_ESCAPE, true, 0}, // esc键按下订阅
+        {MMI::KeyEvent::KEYCODE_ESCAPE, false, 0}, // esc键抬起订阅
+        {MMI::KeyEvent::KEYCODE_F1, true, 0}, // f1键按下订阅
+        {MMI::KeyEvent::KEYCODE_F1, false, 0}, // f1键抬起订阅
+        {MMI::KeyEvent::KEYCODE_ALT_LEFT, true, 0}, // alt-left键按下订阅
+        {MMI::KeyEvent::KEYCODE_ALT_LEFT, false, 0}, // alt-left键抬起订阅
+        {MMI::KeyEvent::KEYCODE_ALT_RIGHT, true, 0}, // alt-right键按下订阅
+        {MMI::KeyEvent::KEYCODE_ALT_RIGHT, false, 0}, // alt-right键抬起订阅
+        {MMI::KeyEvent::KEYCODE_FN, true, 0}, // fn键按下订阅
+        {MMI::KeyEvent::KEYCODE_FN, false, 0}, // fn键抬起订阅
+    };
+
     int TIMEINTERVAL = 5000;
+    int KEY_DOWN_DURATION = 0;
     std::string g_recordMode = "";;
     shared_ptr<mutex> g_cout_lock = make_shared<std::mutex>();
     shared_ptr<mutex> g_csv_lock = make_shared<std::mutex>();
@@ -101,63 +119,26 @@ namespace OHOS::uitest {
         return elements;
     }
 
-    void InputEventCallback::SubscribeTemplate(int32_t keyCode, bool isDown, int32_t subId_)
+    void InputEventCallback::KeyEventSubscribeTemplate(SubscribeKeyevent& subscribeKeyevent)
     {
         std::set<int32_t> preKeys;
         std::shared_ptr<MMI::KeyOption> keyOption = std::make_shared<MMI::KeyOption>();
         keyOption->SetPreKeys(preKeys);
-        keyOption->SetFinalKey(keyCode);
-        keyOption->SetFinalKeyDown(isDown);
-        keyOption->SetFinalKeyDownDuration(0);
-        subId_ = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption,
+        keyOption->SetFinalKey(subscribeKeyevent.keyCode);
+        keyOption->SetFinalKeyDown(subscribeKeyevent.isDown);
+        keyOption->SetFinalKeyDownDuration(KEY_DOWN_DURATION);
+        subscribeKeyevent.subId = MMI::InputManager::GetInstance()->SubscribeKeyEvent(keyOption,
             [this](std::shared_ptr<MMI::KeyEvent> keyEvent) {
             OnInputEvent(keyEvent);
         });
     }
 
+    // key订阅
     void InputEventCallback::SubscribeMonitorInit()
     {
-        // 电源键按下订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_POWER, true, powerDownSubId_);
-
-        // 电源键抬起订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_POWER, false, powerUpSubId_);
-
-        // 音量UP键按下订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_VOLUME_UP, true, volumeUpDownId_);
-
-        // 音量DOWN键按下订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_VOLUME_DOWN, true, volumeDownDownId_);
-
-        // esc键按下订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_ESCAPE, true, escDownId_);
-
-        // esc键抬起订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_ESCAPE, false, escUpId_);
-
-        // f1键按下订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_F1, true, f1DownId_);
-
-        // f1键抬起订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_F1, false, f1UpId_);
-        
-        // alt-left键按下订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_LEFT, true, altLeftDownId_);
-
-        // alt-left键抬起订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_LEFT, false, altLeftUpId_);
-                
-        // alt-right键按下订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_RIGHT, true, altRightDownId_);
-
-        // alt-right键抬起订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_RIGHT, false, altRightUpId_);
-
-        // fn键按下订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_FN, true, fnDownId_);
-
-        // fn键抬起订阅
-        SubscribeTemplate(MMI::KeyEvent::KEYCODE_FN, false, fnUpId_);
+        for (size_t i = 0; i < NEED_SUBSCRIBE_KEY.size(); i++){
+            KeyEventSubscribeTemplate(NEED_SUBSCRIBE_KEY[i]);
+        }
     }
     // key取消订阅
     void InputEventCallback::SubscribeMonitorCancel()
@@ -166,47 +147,10 @@ namespace OHOS::uitest {
         if (inputManager == nullptr) {
             return;
         }
-        if (powerDownSubId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(powerDownSubId_);
-        }
-        if (powerUpSubId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(powerUpSubId_);
-        }
-        if (volumeUpDownId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(volumeUpDownId_);
-        }
-        if (volumeDownDownId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(volumeDownDownId_);
-        }
-        if (escDownId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(escDownId_);
-        }
-        if (escUpId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(escUpId_);
-        }
-        if (f1DownId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(f1DownId_);
-        }
-        if (f1UpId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(f1UpId_);
-        }
-        if (altLeftDownId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(altLeftDownId_);
-        }
-        if (altLeftUpId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(altLeftUpId_);
-        }
-        if (altRightDownId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(altRightDownId_);
-        }
-        if (altRightUpId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(altRightUpId_);
-        }
-        if (fnDownId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(fnDownId_);
-        }
-        if (fnUpId_ >= 0) {
-            inputManager->UnsubscribeKeyEvent(fnUpId_);
+        for (size_t i = 0; i < NEED_SUBSCRIBE_KEY.size(); i++){
+            if (NEED_SUBSCRIBE_KEY[i].subId >= 0) {
+                inputManager->UnsubscribeKeyEvent(NEED_SUBSCRIBE_KEY[i].subId);
+            }
         }
     }
 
