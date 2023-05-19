@@ -16,7 +16,6 @@
 #include "keyevent_tracker.h"
 
 namespace OHOS::uitest {
-
     const std::vector<int32_t> KeyeventTracker::COMBINATION_KET = {
         MMI::KeyEvent::KEYCODE_CTRL_LEFT,
         MMI::KeyEvent::KEYCODE_CTRL_RIGHT,

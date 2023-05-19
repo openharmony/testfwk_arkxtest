@@ -42,7 +42,7 @@ namespace OHOS::uitest {
         {
             return time_;
         }
-        void SetKeyCode(int32_t keyCode) 
+        void SetKeyCode(int32_t keyCode)
         {
             keyCode_ = keyCode;
         }
@@ -70,12 +70,12 @@ namespace OHOS::uitest {
         KeyeventTracker() = default;
         ~KeyeventTracker() = default;
 
-        bool IsNeedRecord() const 
+        bool IsNeedRecord() const
         {
             return isNeedRecord;
         }
 
-        void SetNeedRecord(bool needRecord) 
+        void SetNeedRecord(bool needRecord)
         {
             isNeedRecord = needRecord;
         }
@@ -86,7 +86,7 @@ namespace OHOS::uitest {
         }
 
         // 判断是否为组合按键中的特殊按键
-        static bool isCombinationKey(int32_t keyCode) 
+        static bool isCombinationKey(int32_t keyCode)
         {
             auto it = std::find(COMBINATION_KET.begin(), COMBINATION_KET.end(), keyCode);
             if (it != COMBINATION_KET.end()) {
@@ -120,7 +120,7 @@ namespace OHOS::uitest {
         int64_t actionStartTime = 0;
         int64_t actionUpTime = 0;
         // starttime/duration/eventtype/keycount/k1/k2/k3
-        std::string eventItems[7] = {"-1"}; 
+        std::string eventItems[7] = {"-1"};
     };
 } // namespace OHOS::uitest
 #endif // KEYEVENT_TRACKER_H

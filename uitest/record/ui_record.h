@@ -46,8 +46,7 @@
 #include "ui_model.h"
 #include "find_widget.h"
 
-namespace OHOS::uitest {
-    
+namespace OHOS::uitest { 
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
         void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
@@ -64,7 +63,15 @@ namespace OHOS::uitest {
         void TimerTouchCheckFunction();
         void FindWidgetsFunction();
         static std::shared_ptr<InputEventCallback> GetPtr();
-
+    public:
+        mutable volatile int g_touchTime = 0;
+        mutable volatile bool g_isLastClick = false;
+        mutable volatile bool g_isSpecialclick = false;
+        mutable std::mutex g_clickMut;
+        mutable std::condition_variable clickCon;
+        mutable volatile bool findWidgetsAllow = false;
+        mutable std::mutex widgetsMut;
+        mutable std::condition_variable widgetsCon;
     private:
         int gTimeIndex = 1000;
         shared_ptr<queue<std::string>> eventQueue_;
@@ -83,15 +90,6 @@ namespace OHOS::uitest {
         int32_t altRightUpId_;
         int32_t fnDownId_;
         int32_t fnUpId_;
-    public:
-        mutable volatile int g_touchTime = 0;
-        mutable volatile bool g_isLastClick = false;
-        mutable volatile bool g_isSpecialclick = false;
-        mutable std::mutex g_clickMut;
-        mutable std::condition_variable clickCon;
-        mutable volatile bool findWidgetsAllow = false;
-        mutable std::mutex widgetsMut;
-        mutable std::condition_variable widgetsCon;
     };
 
     class TestUtils {
