@@ -54,11 +54,11 @@ ohos_static_library("uitest_record") {
   configs = [ ":uitest_common_configs" ]
   sources = [
     "${source_root}/record/find_widget.cpp",
+    "${source_root}/record/keyevent_tracker.cpp",
     "${source_root}/record/least_square_impl.cpp",
     "${source_root}/record/matrix3.cpp",
     "${source_root}/record/ui_record.cpp",
     "${source_root}/record/velocity_tracker.cpp",
-    "${source_root}/record/keyevent_tracker.cpp",
   ]
   deps = [ ":uitest_core" ]
   defines = [
@@ -121,8 +121,8 @@ ohos_executable("uitest_server") {
   ]
   external_deps = [
     "ability_runtime:ability_manager",
-    "accessibility:accessibleability",
     "ability_runtime:ability_manager",
+    "accessibility:accessibleability",
     "input:libmmi-client",
     "multimedia_image_framework:image_native",
     "window_manager:libdm",
