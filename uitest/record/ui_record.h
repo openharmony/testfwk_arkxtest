@@ -45,28 +45,8 @@
 #include "widget_selector.h"
 #include "ui_model.h"
 #include "find_widget.h"
-#include "key_event.h"
-#include "key_option.h"
 
 namespace OHOS::uitest {
-    enum TouchOpt : uint8_t {
-        OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
-        OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
-    };
-
-
-    static std::string g_operationType[9] = { "click", "longClick", "doubleClick", "swipe", "drag", \
-                                       "fling", "home", "recent", "back" };
-
-    static const std::map <int32_t, TouchOpt> SPECIAL_KET_MAP= {
-        {MMI::KeyEvent::KEYCODE_BACK,TouchOpt::OP_RETURN},
-        {MMI::KeyEvent::KEYCODE_HOME,TouchOpt::OP_HOME},
-    };
-    static int TIMEINTERVAL = 5000;
-    static std::string g_recordMode = "";
-    static std::string g_recordOpt = "";
-    static shared_ptr<mutex> g_cout_lock = make_shared<std::mutex>();
-    static shared_ptr<mutex> g_csv_lock = make_shared<std::mutex>();
     
     class InputEventCallback : public MMI::IInputEventConsumer {
         public:
@@ -85,6 +65,7 @@ namespace OHOS::uitest {
             static std::shared_ptr<InputEventCallback> GetPtr();
 
         private:
+            int gTimeIndex = 1000;
             shared_ptr<queue<std::string>> eventQueue_;
             shared_ptr<mutex> lock_;
             int32_t powerDownSubId_;
