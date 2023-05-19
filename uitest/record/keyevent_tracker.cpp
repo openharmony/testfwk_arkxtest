@@ -32,8 +32,7 @@ namespace OHOS::uitest {
     bool KeyeventTracker::AddDownKeyEvent(KeyEventInfo &info)
     {
         // 三键以上的同时按键无效
-        if(infos_.size() >=MAX_COMBINATION_SIZE)
-        {
+        if (infos_.size() >= MAX_COMBINATION_SIZE) {
             std::cout << "More than three keys are invalid at the same time" << std::endl;
             return false;
         }
@@ -68,11 +67,11 @@ namespace OHOS::uitest {
         auto infoIt = std::find_if(infos_.begin(), infos_.end(), [keyCode](const KeyEventInfo& info) {
             return info.GetKeyCode() == keyCode;
         });
-        if(infoIt != infos_.end()) {
+        if (infoIt != infos_.end()) {
             infos_.erase(infoIt);
             return;
         }
-        LOG_E("keyCode:%{keyCode} did not received down event before the up event.",keyCode);
+        LOG_E("keyCode:%{keyCode} did not received down event before the up event.", keyCode);
     }
 
     // cout
@@ -84,25 +83,25 @@ namespace OHOS::uitest {
         }
         buildEventItems();
         std::lock_guard<mutex> guard(*cout_lock);
-        for (size_t i = 0; i < INFO_SIZE; i++) {
+        for (size_t i = 0; i < INFO_SIZE-1; i++) {
             std::cout << eventItems[i] << ", ";
         }
-        std::cout << eventItems[INFO_SIZE] << std::endl;
+        std::cout << eventItems[INFO_SIZE-1] << std::endl;
         return true;
     }
-    bool KeyeventTracker::WriteSingleData(KeyEventInfo &info,shared_ptr<mutex> &cout_lock)
+    bool KeyeventTracker::WriteSingleData(KeyEventInfo &info, shared_ptr<mutex> &cout_lock)
     {
         buildEventItems(info);
         std::lock_guard<mutex> guard(*cout_lock);
-        for (size_t i = 0; i < INFO_SIZE; i++) {
+        for (size_t i = 0; i < INFO_SIZE-1; i++) {
             std::cout << eventItems[i] << ", ";
         }
-        std::cout << eventItems[INFO_SIZE] << std::endl;
+        std::cout << eventItems[INFO_SIZE-1] << std::endl;
         return true;
     }
 
     // record.csv
-    bool KeyeventTracker::WriteCombinationData(ofstream& outFile , shared_ptr<mutex> &csv_lock)
+    bool KeyeventTracker::WriteCombinationData(ofstream& outFile, shared_ptr<mutex> &csv_lock)
     {
         if (infos_.size()==0) {
             LOG_E("Failed to obtain the combination_key when save keyEvent into record.csv.");
@@ -111,23 +110,23 @@ namespace OHOS::uitest {
         buildEventItems();
         std::lock_guard<mutex> guard(*csv_lock);
         if (outFile.is_open()) {
-            for (size_t i = 0; i < INFO_SIZE; i++) {
+            for (size_t i = 0; i < INFO_SIZE-1; i++) {
                 outFile << eventItems[i] << ", ";
             }
-            outFile << eventItems[INFO_SIZE] << std::endl;
+            outFile << eventItems[INFO_SIZE-1] << std::endl;
         }
         return true;
     }
 
-    bool KeyeventTracker::WriteSingleData(KeyEventInfo &info,ofstream &outFile , shared_ptr<mutex> &csv_lock)
+    bool KeyeventTracker::WriteSingleData(KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock)
     {
         buildEventItems(info);
         std::lock_guard<mutex> guard(*csv_lock);
         if (outFile.is_open()) {
-            for (size_t i = 0; i < INFO_SIZE; i++) {
+            for (size_t i = 0; i < INFO_SIZE-1; i++) {
                 outFile << eventItems[i] << ", ";
             }
-            outFile << eventItems[INFO_SIZE] << std::endl;
+            outFile << eventItems[INFO_SIZE-1] << std::endl;
         }
         return true;
     }
@@ -142,8 +141,7 @@ namespace OHOS::uitest {
         eventItems[1] = std::to_string(actionUpTime - actionStartTime);
         eventItems[EVENT_TYPE_INDEX] = EVENT_TYPE;
         eventItems[KEY_COUNT_INDEX] = std::to_string(infos_.size()+1);
-        for (size_t i = 0; i < infos_.size() && i < MAX_COMBINATION_SIZE; i++)
-        {
+        for (size_t i = 0; i < infos_.size() && i < MAX_COMBINATION_SIZE; i++) {
             eventItems[KEY_COUNT_INDEX+1+i] = std::to_string(infos_[i].GetKeyCode());
         }
         eventItems[KEY_COUNT_INDEX+1+infos_.size()] = std::to_string(info.GetKeyCode());
@@ -167,10 +165,9 @@ namespace OHOS::uitest {
     void KeyeventTracker::printEventItems()
     {
         std::cout << "infos:" ;
-        for (size_t i = 0; i < infos_.size() ; i++)
-        {
-           std::cout << std::to_string(infos_[i].GetKeyCode()) << ",";
+        for (size_t i = 0; i < infos_.size() ; i++) {
+            std::cout << std::to_string(infos_[i].GetKeyCode()) << ",";
         }
         std::cout << std::endl;
     }
-}// namespace OHOS::uitest
+} // namespace OHOS::uitest

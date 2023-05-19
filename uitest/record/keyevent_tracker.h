@@ -30,90 +30,97 @@ namespace OHOS::uitest {
     using namespace std;
 
     class KeyEventInfo {
-        public:
-            KeyEventInfo() = default;
-            ~KeyEventInfo() = default;
+    public:
+        KeyEventInfo() = default;
+        ~KeyEventInfo() = default;
 
-            void SetActionTime(int64_t time) {
-                time_ = time;
-            }
-            int64_t GetActionTime()const{
-                return time_;
-            }
-            void SetKeyCode(int32_t keyCode) {
-                keyCode_ = keyCode;
-            }
-            int32_t GetKeyCode() const{
-                return keyCode_;
-            }
-            bool operator ==(const KeyEventInfo &info) const{
-                return keyCode_ == info.GetKeyCode();
-            }
-        private:
-            int64_t time_;
-            int32_t keyCode_;
+        void SetActionTime(int64_t time)
+        {
+            time_ = time;
+        }
+        int64_t GetActionTime() const
+        {
+            return time_;
+        }
+        void SetKeyCode(int32_t keyCode) 
+        {
+            keyCode_ = keyCode;
+        }
+        int32_t GetKeyCode() const
+        {
+            return keyCode_;
+        }
+        bool operator ==(const KeyEventInfo &info) const
+        {
+            return keyCode_ == info.GetKeyCode();
+        }
+    private:
+        int64_t time_;
+        int32_t keyCode_;
     };
-    class KeyeventTracker{
-        public:
-            static const std::vector<int32_t> COMBINATION_KET;
-            static const std::string EVENT_TYPE;
-            static const int MAX_COMBINATION_SIZE = 3;
-            static const int INFO_SIZE = 6;
-            static const int EVENT_TYPE_INDEX = 2;
-            static const int KEY_COUNT_INDEX = 3;
-        public:
-            KeyeventTracker() = default;
-            ~KeyeventTracker() = default;
+    class KeyeventTracker {
+    public:
+        static const std::vector<int32_t> COMBINATION_KET;
+        static const std::string EVENT_TYPE;
+        static const int MAX_COMBINATION_SIZE = 3;
+        static const int INFO_SIZE = 7;
+        static const int EVENT_TYPE_INDEX = 2;
+        static const int KEY_COUNT_INDEX = 3;
+    public:
+        KeyeventTracker() = default;
+        ~KeyeventTracker() = default;
 
-            bool IsNeedRecord() const {
-                return isNeedRecord;
+        bool IsNeedRecord() const 
+        {
+            return isNeedRecord;
+        }
+
+        void SetNeedRecord(bool needRecord) 
+        {
+            isNeedRecord = needRecord;
+        }
+
+        bool IsCombination() const
+        {
+            return isCombination;
+        }
+
+        // 判断是否为组合按键中的特殊按键
+        static bool isCombinationKey(int32_t keyCode) 
+        {
+            auto it = std::find(COMBINATION_KET.begin(), COMBINATION_KET.end(), keyCode);
+            if (it != COMBINATION_KET.end()) {
+                return true;
             }
+            return false;
+        };
 
-            void SetNeedRecord(bool needRecord) {
-                isNeedRecord = needRecord;
-            }
+        bool AddDownKeyEvent(KeyEventInfo &info);
+        bool AddCancelKeyEvent(KeyEventInfo &info);
+        void AddUpKeyEvent(KeyEventInfo &info);
+        KeyeventTracker GetSnapshootKey(KeyEventInfo &info);
+        // cout
+        bool WriteCombinationData(shared_ptr<mutex> &cout_lock);
+        bool WriteSingleData(KeyEventInfo &info, shared_ptr<mutex> &cout_lock);
+        // record.csv
+        bool WriteCombinationData(ofstream &outFile, shared_ptr<mutex> &csv_lock);
+        bool WriteSingleData(KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock);
+        
+        void printEventItems();
 
-            bool IsCombination() const{
-                return isCombination;
-            }
-
-            // 判断是否为组合按键中的特殊按键
-            static bool isCombinationKey(int32_t keyCode) {
-                auto it = std::find(COMBINATION_KET.begin(), COMBINATION_KET.end(), keyCode);
-                if (it != COMBINATION_KET.end()) {
-                    return true;
-                } 
-                return false;
-            };
-
-            bool AddDownKeyEvent(KeyEventInfo &info);
-            bool AddCancelKeyEvent(KeyEventInfo &info);
-            void AddUpKeyEvent(KeyEventInfo &info);
-            KeyeventTracker GetSnapshootKey(KeyEventInfo &info);
-            // cout
-            bool WriteCombinationData(shared_ptr<mutex> &cout_lock);
-            bool WriteSingleData(KeyEventInfo &info,shared_ptr<mutex> &cout_lock);
-            // record.csv
-            bool WriteCombinationData(ofstream &outFile , shared_ptr<mutex> &csv_lock);
-            bool WriteSingleData(KeyEventInfo &info,ofstream &outFile , shared_ptr<mutex> &csv_lock);
-            
-            void printEventItems();
-
-        private:
-            void KeyCodeDone(int32_t keyCode);
-            void KeyCodeCancel(int32_t keyCode);
-            void buildEventItems();
-            void buildEventItems(KeyEventInfo &info);
-        private:
-            std::vector<KeyEventInfo> infos_;
-            bool isNeedRecord = false;
-            bool isCombination = false;
-            int64_t actionStartTime = 0;
-            int64_t actionUpTime = 0;
-            // starttime/duration/eventtype/keycount/k1/k2/k3
-            std::string eventItems[7] = {"-1"};
-            
+    private:
+        void KeyCodeDone(int32_t keyCode);
+        void KeyCodeCancel(int32_t keyCode);
+        void buildEventItems();
+        void buildEventItems(KeyEventInfo &info);
+    private:
+        std::vector<KeyEventInfo> infos_;
+        bool isNeedRecord = false;
+        bool isCombination = false;
+        int64_t actionStartTime = 0;
+        int64_t actionUpTime = 0;
+        // starttime/duration/eventtype/keycount/k1/k2/k3
+        std::string eventItems[7] = {"-1"}; 
     };
-
 } // namespace OHOS::uitest
 #endif // KEYEVENT_TRACKER_H
