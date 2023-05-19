@@ -261,7 +261,7 @@ namespace OHOS::uitest {
         TouchEventInfo downEvent = velo.GetFirstTrackPoint();
         TouchEventInfo upEvent = velo.GetLastTrackPoint();
         constexpr int ACTION_INFO_NUM = 9;
-        std::string eventItems[ACTION_INFO_NUM] = { 
+        std::string eventItems[ACTION_INFO_NUM] = {
             actionType, std::to_string(downEvent.x), std::to_string(downEvent.y), std::to_string(upEvent.x),
             std::to_string(upEvent.y), std::to_string(velo.GetEventInterVal()), std::to_string(velo.GetStepLength()),
             std::to_string(velo.GetMainVelocity()), std::to_string(MaxVelocity)};
