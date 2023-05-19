@@ -123,7 +123,7 @@ namespace OHOS::uitest {
         std::string eventItems[INFO_SIZE] = {"-1"};
     };
 
-    struct SubscribeKeyevent final{
+    struct SubscribeKeyevent {
         int32_t keyCode;
         bool isDown;
         int32_t subId;

@@ -136,7 +136,7 @@ namespace OHOS::uitest {
     // key订阅
     void InputEventCallback::SubscribeMonitorInit()
     {
-        for (size_t i = 0; i < NEED_SUBSCRIBE_KEY.size(); i++){
+        for (size_t i = 0; i < NEED_SUBSCRIBE_KEY.size(); i++) {
             KeyEventSubscribeTemplate(NEED_SUBSCRIBE_KEY[i]);
         }
     }
@@ -147,7 +147,7 @@ namespace OHOS::uitest {
         if (inputManager == nullptr) {
             return;
         }
-        for (size_t i = 0; i < NEED_SUBSCRIBE_KEY.size(); i++){
+        for (size_t i = 0; i < NEED_SUBSCRIBE_KEY.size(); i++) {
             if (NEED_SUBSCRIBE_KEY[i].subId >= 0) {
                 inputManager->UnsubscribeKeyEvent(NEED_SUBSCRIBE_KEY[i].subId);
             }
