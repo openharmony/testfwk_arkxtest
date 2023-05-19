@@ -312,6 +312,12 @@ namespace OHOS::uitest {
         info.SetActionTime(keyEvent->GetActionTime());
         info.SetKeyCode(keyEvent->GetKeyCode());
         if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
+            // 三键以上的同时按键无效
+            if (g_keyeventTracker.GetInfos().size() >= KeyeventTracker::MAX_COMBINATION_SIZE) {
+                LOG_I("More than three keys are invalid at the same time");
+                std::cout << "More than three keys are invalid at the same time" << std::endl;
+                return;
+            }
             if (KeyeventTracker::isCombinationKey(info.GetKeyCode())) {
                 g_keyeventTracker.SetNeedRecord(true);
                 g_keyeventTracker.AddDownKeyEvent(info);
