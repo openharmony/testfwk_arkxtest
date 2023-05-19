@@ -26,6 +26,24 @@ namespace OHOS::uitest {
     const string UITEST_RECORD = "record";
     const string UITEST_DAEMON = "daemon";
 
+    enum TouchOpt : uint8_t {
+        OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
+        OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
+    };
+
+
+    std::string g_operationType[9] = { "click", "longClick", "doubleClick", "swipe", "drag", \
+                                       "fling", "home", "recent", "back" };
+
+    const std::map <int32_t, TouchOpt> SPECIAL_KET_MAP= {
+        {MMI::KeyEvent::KEYCODE_BACK,TouchOpt::OP_RETURN},
+        {MMI::KeyEvent::KEYCODE_HOME,TouchOpt::OP_HOME},
+    };
+    int TIMEINTERVAL = 5000;
+    std::string g_recordMode = "";;
+    shared_ptr<mutex> g_cout_lock = make_shared<std::mutex>();
+    shared_ptr<mutex> g_csv_lock = make_shared<std::mutex>();
+
     VelocityTracker snapshootVelocityTracker;
     TouchOpt g_touchop = OP_CLICK;
     VelocityTracker g_velocityTracker;
@@ -44,9 +62,10 @@ namespace OHOS::uitest {
     vector<std::unique_ptr<Widget>> rev;
     ApiCallErr err(NO_ERROR);
 
-    bool SpecialKeyMapExistKey(int32_t keyCode,TouchOpt &touchop){
+    bool SpecialKeyMapExistKey(int32_t keyCode,TouchOpt &touchop)
+    {
         auto iter = SPECIAL_KET_MAP.find(keyCode);
-        if (iter!=SPECIAL_KET_MAP.end()){
+        if (iter!=SPECIAL_KET_MAP.end()) {
             touchop = iter->second;
             return true;
         }
@@ -56,6 +75,7 @@ namespace OHOS::uitest {
     std::vector<std::string> GetForeAbility()
     {
         std::vector<std::string> elements;
+        std::string bundleName, abilityName;
         auto amcPtr = AAFwk::AbilityManagerClient::GetInstance();
         if (amcPtr == nullptr) {
             std::cout<<"AbilityManagerClient is nullptr"<<std::endl;
@@ -81,7 +101,8 @@ namespace OHOS::uitest {
         return elements;
     }
 
-    void InputEventCallback::SubscribeTemplate(int32_t keyCode,bool isDown, int32_t subId_){
+    void InputEventCallback::SubscribeTemplate(int32_t keyCode,bool isDown, int32_t subId_)
+    {
         std::set<int32_t> preKeys;
         std::shared_ptr<MMI::KeyOption> keyOption = std::make_shared<MMI::KeyOption>();
         keyOption->SetPreKeys(preKeys);
@@ -119,13 +140,13 @@ namespace OHOS::uitest {
 
         // f1键抬起订阅
         SubscribeTemplate(MMI::KeyEvent::KEYCODE_F1, false, f1UpId_);
-
+        
         // alt-left键按下订阅
         SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_LEFT, true, altLeftDownId_);
 
         // alt-left键抬起订阅
         SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_LEFT, false, altLeftUpId_);
-
+                
         // alt-right键按下订阅
         SubscribeTemplate(MMI::KeyEvent::KEYCODE_ALT_RIGHT, true, altRightDownId_);
 
@@ -189,7 +210,6 @@ namespace OHOS::uitest {
         }
     }
 
-
     void PrintLine(VelocityTracker &velo, const std::string &actionType)
     {
         TouchEventInfo downEvent = velo.GetFirstTrackPoint();
@@ -240,12 +260,13 @@ namespace OHOS::uitest {
         VelocityTracker velo = velocityTracker;
         TouchEventInfo downEvent = velo.GetFirstTrackPoint();
         TouchEventInfo upEvent = velo.GetLastTrackPoint();
-
-        std::string eventItems[9]={actionType, std::to_string(downEvent.x), std::to_string(downEvent.y), std::to_string(upEvent.x), \
-        std::to_string(upEvent.y), std::to_string(velo.GetEventInterVal()), std::to_string(velo.GetStepLength()), std::to_string(velo.GetMainVelocity()), \
+        constexpr int ACTION_INFO_NUM = 9;
+        std::string eventItems[ACTION_INFO_NUM]={actionType, std::to_string(downEvent.x), std::to_string(downEvent.y), std::to_string(upEvent.x), \
+                                                 std::to_string(upEvent.y), std::to_string(velo.GetEventInterVal()), std::to_string(velo.GetStepLength()), \
+                                                 std::to_string(velo.GetMainVelocity()), \
         std::to_string(MaxVelocity)};
         std::string eventData;
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < ACTION_INFO_NUM; i++) {
             eventData += eventItems[i] + ",";
         }
         if (g_recordMode == "point") {
@@ -326,11 +347,11 @@ namespace OHOS::uitest {
     // KEY_ACTION
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const
     {
-        if (SpecialKeyMapExistKey(keyEvent->GetKeyCode(),g_touchop)){
+        if (SpecialKeyMapExistKey(keyEvent->GetKeyCode(),g_touchop)) {
             if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
                 g_isSpecialclick = true;
                 return;
-            } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP){
+            } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
                 g_isSpecialclick = false;
                 g_eventData.WriteEventData(g_velocityTracker, g_operationType[g_touchop]);
                 findWidgetsAllow = true;
@@ -347,7 +368,7 @@ namespace OHOS::uitest {
         info.SetActionTime(keyEvent->GetActionTime());
         info.SetKeyCode(keyEvent->GetKeyCode());
         if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
-            if(KeyeventTracker::isCombinationKey(info.GetKeyCode())){
+            if(KeyeventTracker::isCombinationKey(info.GetKeyCode())) {
                 g_keyeventTracker.SetNeedRecord(true);
                 g_keyeventTracker.AddDownKeyEvent(info);
             } else {
@@ -358,10 +379,10 @@ namespace OHOS::uitest {
                 snapshootKeyTracker.WriteSingleData(info,g_outFile,g_csv_lock);
             }
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
-            if (!KeyeventTracker::isCombinationKey(info.GetKeyCode())){
+            if (!KeyeventTracker::isCombinationKey(info.GetKeyCode())) {
                 return;
             }
-            if(g_keyeventTracker.IsNeedRecord()){
+            if(g_keyeventTracker.IsNeedRecord()) {
                 g_keyeventTracker.SetNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = g_keyeventTracker.GetSnapshootKey(info);
                 // cout打印 + record.csv保存
@@ -373,7 +394,7 @@ namespace OHOS::uitest {
     }
 
     // AXIS_ACTION
-    void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const {
+    void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const { 
     }
 
     // POINTER_ACTION
@@ -443,7 +464,7 @@ namespace OHOS::uitest {
         g_isOpDect = false;
         snapshootVelocityTracker = VelocityTracker(g_velocityTracker);
         g_velocityTracker.Resets();
-        if (!g_isSpecialclick && g_touchop == OP_CLICK){
+        if (!g_isSpecialclick && g_touchop == OP_CLICK) {
             g_isLastClick = true;
             g_velocityTracker.SetClickInterVal(snapshootVelocityTracker.GetInterVal());
             clickCon.notify_all();
@@ -451,7 +472,7 @@ namespace OHOS::uitest {
         }
 
         // 非click,非back or home正常输出
-        if(g_touchop != OP_CLICK && !g_isSpecialclick){
+        if(g_touchop != OP_CLICK && !g_isSpecialclick) {
             g_isLastClick = false;
             g_eventData.WriteEventData(snapshootVelocityTracker, g_operationType[g_touchop]);
             findWidgetsAllow = true;
@@ -459,19 +480,16 @@ namespace OHOS::uitest {
         }
     }
 
-    void InputEventCallback::TimerReprintClickFunction (){
-        while (true){
+    void InputEventCallback::TimerReprintClickFunction ()
+    {
+        while (true) {
             std::unique_lock <std::mutex> clickLck(g_clickMut);
             while(!g_isLastClick)
             {
                 clickCon.wait(clickLck);
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds((int)(INTERVAL_THRESHOLD*1000)));
-            // std::chrono::duration<double> downDuration = snapshootVelocityTracker.GetDownTrackPoint().time.time_since_epoch();
-            // std::this_thread::sleep_until(
-            //     std::chrono::system_clock::from_time_t(std::time_t(downDuration.count())) +
-            //     std::chrono::milliseconds((int)(INTERVAL_THRESHOLD*1000)));
-            if (g_isLastClick){
+            std::this_thread::sleep_for(std::chrono::milliseconds((int)(INTERVAL_THRESHOLD * gTimeIndex)));
+            if (g_isLastClick) {
                 g_isLastClick = false;
                 g_eventData.WriteEventData(g_velocityTracker, g_operationType[g_touchop]);
 
@@ -481,8 +499,9 @@ namespace OHOS::uitest {
         }
     }
 
-    void InputEventCallback::TimerTouchCheckFunction(){
-        while (true){
+    void InputEventCallback::TimerTouchCheckFunction()
+    {
+        while (true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(TIMEINTERVAL));
             int currentTime = GetCurrentMillisecond();
             int diff = currentTime - g_touchTime;
@@ -492,13 +511,14 @@ namespace OHOS::uitest {
         }
     }
 
-    void InputEventCallback::FindWidgetsFunction(){
-        while (true){
+    void InputEventCallback::FindWidgetsFunction()
+    {
+        while (true) {
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
-            while(!findWidgetsAllow){
+            while(!findWidgetsAllow) {
                 widgetsCon.wait(widgetsLck);
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // 确保界面已更新
+            std::this_thread::sleep_for(std::chrono::milliseconds(gTimeIndex)); // 确保界面已更新
             driver.FindWidgets(selector, rev, err, true);
             findWidgetsAllow = false;
             widgetsCon.notify_all();
@@ -524,7 +544,7 @@ namespace OHOS::uitest {
         touchEvent.wy = item.GetWindowY();
         if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
-            while(findWidgetsAllow){
+            while(findWidgetsAllow) {
                 widgetsCon.wait(widgetsLck);
             }
             HandleDownEvent(touchEvent);
@@ -549,6 +569,7 @@ namespace OHOS::uitest {
         }
         return true;
     }
+
     bool InitEventRecordFile()
     {
         if (!InitReportFolder()) {

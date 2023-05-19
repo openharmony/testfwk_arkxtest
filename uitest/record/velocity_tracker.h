@@ -205,18 +205,18 @@ public:
         return lastTrackPoint_;
     }
 
-    void SetClickInterVal(double interVal){
+    void SetClickInterVal(double interVal) {
         clickInterVal = interVal;
     }
 
-    double GetEventInterVal(){
+    double GetEventInterVal() {
         auto result = GetInterVal();
-        if (result < INTERVAL_THRESHOLD){
+        if (result < INTERVAL_THRESHOLD) {
             return clickInterVal;
         }
         return result;
     }
-    TouchEventInfo GetDownTrackPoint(){
+    TouchEventInfo GetDownTrackPoint() {
         return downTrackPoint_;
     }
 

@@ -34,13 +34,13 @@ namespace OHOS::uitest {
             KeyEventInfo() = default;
             ~KeyEventInfo() = default;
 
-            void SetActionTime(int64_t time){
+            void SetActionTime(int64_t time) {
                 time_ = time;
             }
             int64_t GetActionTime()const{
                 return time_;
             }
-            void SetKeyCode(int32_t keyCode){
+            void SetKeyCode(int32_t keyCode) {
                 keyCode_ = keyCode;
             }
             int32_t GetKeyCode() const{
@@ -56,16 +56,20 @@ namespace OHOS::uitest {
     class KeyeventTracker{
         public:
             static const std::vector<int32_t> COMBINATION_KET;
+            static const std::string EVENT_TYPE;
             static const int MAX_COMBINATION_SIZE = 3;
+            static const int INFO_SIZE = 6;
+            static const int EVENT_TYPE_INDEX = 2;
+            static const int KEY_COUNT_INDEX = 3;
         public:
             KeyeventTracker() = default;
             ~KeyeventTracker() = default;
 
-            bool IsNeedRecord() const{
+            bool IsNeedRecord() const {
                 return isNeedRecord;
             }
 
-            void SetNeedRecord(bool needRecord){
+            void SetNeedRecord(bool needRecord) {
                 isNeedRecord = needRecord;
             }
 
@@ -111,5 +115,5 @@ namespace OHOS::uitest {
             
     };
 
-}// namespace OHOS::uitest
+} // namespace OHOS::uitest
 #endif // KEYEVENT_TRACKER_H
