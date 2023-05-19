@@ -24,7 +24,6 @@
 #include "velocity.h"
 
 namespace OHOS::uitest {
-
 const int32_t NAVI_VERTI_THRE_V = 200;
 const int32_t NAVI_THRE_D = 10;
 const float MAX_THRESHOLD = 15.0;
@@ -205,12 +204,12 @@ public:
         return lastTrackPoint_;
     }
 
-    void SetClickInterVal(double interVal) 
+    void SetClickInterVal(double interVal)
     {
         clickInterVal = interVal;
     }
 
-    double GetEventInterVal() 
+    double GetEventInterVal()
     {
         auto result = GetInterVal();
         if (result < INTERVAL_THRESHOLD) {
@@ -218,7 +217,7 @@ public:
         }
         return result;
     }
-    TouchEventInfo GetDownTrackPoint() 
+    TouchEventInfo GetDownTrackPoint()
     {
         return downTrackPoint_;
     }
