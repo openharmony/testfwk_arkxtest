@@ -263,15 +263,12 @@ namespace OHOS::uitest {
             std::cout << "Started Recording Successfully..." << std::endl;
             int flag = getc(stdin);
             std::cout << flag << std::endl;
-            constexpr int timeToSleep = 3600;
-            sleep(timeToSleep);
             // 取消按键订阅
             callBackPtr->SubscribeMonitorCancel();
             clickThread.join();
             toughTimerThread.join();
             widgetThread.join();
             return OHOS::ERR_OK;
-            
         } else if (opt == "read") {
             EventData::ReadEventLine();
             return OHOS::ERR_OK;
