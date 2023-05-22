@@ -22,14 +22,10 @@ namespace OHOS::uitest {
     using namespace std::chrono;
     using nlohmann::json;
 
-    const string UITEST_RECORD = "record";
-    const string UITEST_DAEMON = "daemon";
-
     enum TouchOpt : uint8_t {
         OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
         OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
     };
-
 
     std::string g_operationType[9] = { "click", "longClick", "doubleClick", "swipe", "drag", \
                                        "fling", "home", "recent", "back" };
