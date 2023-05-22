@@ -26,7 +26,7 @@ public:
         return instance;
     }
 
-    void OnEvent(string eventInfo)
+    static void OnEvent(string eventInfo)
     {
         UiEventSourceInfo uiEventSourceInfo { "", "", eventInfo };
         for (auto &listener : listeners_) {
@@ -34,7 +34,7 @@ public:
         }
     }
 
-    void RegisterUiEventListener(shared_ptr<UiEventListener> listerner)
+    static void RegisterUiEventListener(shared_ptr<UiEventListener> listerner)
     {
         listeners_.push_back(listerner);
     }
