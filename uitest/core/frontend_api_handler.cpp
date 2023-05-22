@@ -63,7 +63,7 @@ namespace OHOS::uitest {
             return 0;
         }
 
-        void OnEvent(std::string event, UiEventSourceInfo source) override
+        void OnEvent(std::string_view event, UiEventSourceInfo source) override
         {
             const auto &server = FrontendApiServer::Get();
             json uiElementInfo;
@@ -93,7 +93,7 @@ namespace OHOS::uitest {
             }
         }
 
-        void AddCallbackInfo(string event, string observerRef, string cbRef)
+        void AddCallbackInfo(string_view event, string_view observerRef, string_view cbRef)
         {
             auto count = callBackInfos_.count(event);
             auto find = callBackInfos_.find(event);
@@ -111,7 +111,7 @@ namespace OHOS::uitest {
         }
 
     private:
-        multimap<string, pair<string, string>> callBackInfos_;
+        multimap<string_view, pair<string_view, string_view>> callBackInfos_;
         map<string_view, int> refCountMap_;
     };
 
