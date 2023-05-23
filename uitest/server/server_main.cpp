@@ -33,17 +33,6 @@
 #include <string>
 #include <vector>
 #include <cmath>
-#include <queue>
-#include <errno.h>
-#include <cstdio>
-#include <cstdlib>
-#include <cerrno>
-#include <sys/types.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/time.h>
 #include <fcntl.h>
 #include "ipc_transactor.h"
 #include "system_ui_controller.h"
@@ -256,16 +245,16 @@ namespace OHOS::uitest {
             modeOpt = argv[THREE];
         }
         if (opt == "record") {
+            if (!InitEventRecordFile()) {
+                return OHOS::ERR_INVALID_VALUE;
+            }
             auto controller = make_unique<SysUiController>();
             if (!controller->ConnectToSysAbility()) {
                 PrintToConsole("Failed, cannot connect to AMMS ");
                 return EXIT_FAILURE;
             }
-            if (opt == "record" && !InitEventRecordFile()) {
-                return OHOS::ERR_INVALID_VALUE;
-            }
             UiDriver::RegisterController(move(controller));
-            RecordInitEnv(modeOpt, opt);
+            RecordInitEnv(modeOpt);
             auto callBackPtr = InputEventCallback::GetPtr();
             if (callBackPtr == nullptr) {
                 std::cout << "nullptr" << std::endl;
@@ -287,15 +276,12 @@ namespace OHOS::uitest {
             std::cout << "Started Recording Successfully..." << std::endl;
             int flag = getc(stdin);
             std::cout << flag << std::endl;
-            constexpr int timeToSleep = 3600;
-            sleep(timeToSleep);
-            // 取消按键订阅
-            callBackPtr->SubscribeMonitorCancel();
             clickThread.join();
             toughTimerThread.join();
             widgetThread.join();
+            // 取消按键订阅
+            callBackPtr->SubscribeMonitorCancel();
             return OHOS::ERR_OK;
-            
         } else if (opt == "read") {
             EventData::ReadEventLine();
             return OHOS::ERR_OK;
