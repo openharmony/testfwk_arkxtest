@@ -69,13 +69,15 @@ namespace OHOS::uitest {
         "scrollable",    // SCROLLABLE
         "checkable",     // CHECKABLE
         "checked",       // CHECKED
+        "origBounds",    // ORIGBOUNDS
         "hierarchy",     // HIERARCHY
         "hashcode",      // HASHCODE
         "boundsCenter",  // BOUNDSCENTER
         "hostWindowId",  // HOST_WINDOW_ID
         "visible",       // VISIBLE
-        "abilityName",
-        "bundleName",
+        "abilityName",   // ABILITYNAME
+        "bundleName",    // BUNDLENAME
+        "pagePath",      // PAGEPATH
     };
 
     struct Point {

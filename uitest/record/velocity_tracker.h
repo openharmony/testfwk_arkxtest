@@ -17,7 +17,6 @@
 #define VELOCITY_TRACKER_H
 #include <regex>
 #include <cmath>
-#include <iostream>
 #include <atomic>
 #include "least_square_impl.h"
 #include "touch_event.h"
@@ -25,14 +24,13 @@
 #include "velocity.h"
 
 namespace OHOS::uitest {
-
-constexpr int32_t NAVI_VERTI_THRE_V = 200;
-constexpr int32_t NAVI_THRE_D = 10;
-constexpr float MAX_THRESHOLD = 15.0;
-constexpr float FLING_THRESHOLD = 45.0;
-constexpr float DURATIOIN_THRESHOLD = 0.6;
-constexpr float INTERVAL_THRESHOLD = 0.2;
-constexpr int32_t MaxVelocity = 40000;
+const int32_t NAVI_VERTI_THRE_V = 200;
+const int32_t NAVI_THRE_D = 10;
+const float MAX_THRESHOLD = 15.0;
+const float FLING_THRESHOLD = 45.0;
+const float DURATIOIN_THRESHOLD = 0.6;
+const float INTERVAL_THRESHOLD = 0.2;
+const int32_t MaxVelocity = 40000;
 
 enum class Axis {
     VERTICAL = 0,
@@ -206,18 +204,21 @@ public:
         return lastTrackPoint_;
     }
 
-    void SetClickInterVal(double interVal){
+    void SetClickInterVal(double interVal)
+    {
         clickInterVal = interVal;
     }
 
-    double GetEventInterVal(){
+    double GetEventInterVal()
+    {
         auto result = GetInterVal();
-        if (result < INTERVAL_THRESHOLD){
+        if (result < INTERVAL_THRESHOLD) {
             return clickInterVal;
         }
         return result;
     }
-    TouchEventInfo GetDownTrackPoint(){
+    TouchEventInfo GetDownTrackPoint()
+    {
         return downTrackPoint_;
     }
 

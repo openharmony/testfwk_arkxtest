@@ -28,8 +28,6 @@
 #include <map>
 #include <thread>
 #include <mutex>
-#include <memory>
-#include <queue>
 #include <condition_variable>
 #include "least_square_impl.h"
 #include "touch_event.h"
@@ -47,71 +45,37 @@
 #include "widget_selector.h"
 #include "ui_model.h"
 #include "find_widget.h"
-#include "key_event.h"
-#include "key_option.h"
 
 namespace OHOS::uitest {
-    enum TouchOpt : uint8_t {
-        OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
-        OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
-    };
-
-
-    static std::string g_operationType[9] = { "click", "longClick", "doubleClick", "swipe", "drag", \
-                                       "fling", "home", "recent", "back" };
-
-    static const std::map <int32_t, TouchOpt> SPECIAL_KET_MAP= {
-        {MMI::KeyEvent::KEYCODE_BACK,TouchOpt::OP_RETURN},
-        {MMI::KeyEvent::KEYCODE_HOME,TouchOpt::OP_HOME},
-    };
-    static int TIMEINTERVAL = 5000;
-    static std::string g_recordMode = "";
-    static std::string g_recordOpt = "";
-    static shared_ptr<mutex> g_cout_lock = make_shared<std::mutex>();
-    static shared_ptr<mutex> g_csv_lock = make_shared<std::mutex>();
-    
     class InputEventCallback : public MMI::IInputEventConsumer {
-        public:
-            void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
-            void HandleDownEvent(TouchEventInfo& event) const;
-            void HandleMoveEvent(const TouchEventInfo& event) const;
-            void HandleUpEvent(const TouchEventInfo& event) const;
-            void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
-            void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override;
-            void SubscribeMonitorInit();
-            void SubscribeDemo(int32_t keyCode,bool isDown, int32_t subId_);
-            void SubscribeMonitorCancel();
-            void TimerReprintClickFunction ();
-            void TimerTouchCheckFunction();
-            void FindWidgetsFunction();
-            static std::shared_ptr<InputEventCallback> GetPtr();
-
-        private:
-            shared_ptr<queue<std::string>> eventQueue_;
-            shared_ptr<mutex> lock_;
-            int32_t powerDownSubId_;
-            int32_t powerUpSubId_;
-            int32_t volumeUpDownId_;
-            int32_t volumeDownDownId_;
-            int32_t escDownId_;
-            int32_t escUpId_;
-            int32_t f1DownId_;
-            int32_t f1UpId_;
-            int32_t altLeftDownId_;
-            int32_t altLeftUpId_;
-            int32_t altRightDownId_;
-            int32_t altRightUpId_;
-            int32_t fnDownId_;
-            int32_t fnUpId_;
-        public:
-            mutable volatile int g_touchTime = 0;
-            mutable volatile bool g_isLastClick = false;
-            mutable volatile bool g_isSpecialclick = false;
-            mutable std::mutex g_clickMut;
-            mutable std::condition_variable clickCon;
-            mutable volatile bool findWidgetsAllow = false;
-            mutable std::mutex widgetsMut;
-            mutable std::condition_variable widgetsCon;
+    public:
+        void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
+        void HandleDownEvent(TouchEventInfo& event) const;
+        void HandleMoveEvent(const TouchEventInfo& event) const;
+        void HandleUpEvent(const TouchEventInfo& event) const;
+        void WriteDataAndFindWidgets(const TouchEventInfo& event) const;
+        void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
+        void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override;
+        void SubscribeMonitorInit();
+        void KeyEventSubscribeTemplate(SubscribeKeyevent& subscribeKeyevent);
+        void SubscribeMonitorCancel();
+        void TimerReprintClickFunction ();
+        void TimerTouchCheckFunction();
+        void FindWidgetsFunction();
+        static std::shared_ptr<InputEventCallback> GetPtr();
+    public:
+        mutable volatile int g_touchTime = 0;
+        mutable volatile bool g_isLastClick = false;
+        mutable volatile bool g_isSpecialclick = false;
+        mutable std::mutex g_clickMut;
+        mutable std::condition_variable clickCon;
+        mutable volatile bool findWidgetsAllow = false;
+        mutable std::mutex widgetsMut;
+        mutable std::condition_variable widgetsCon;
+    private:
+        int gTimeIndex = 1000;
+        shared_ptr<queue<std::string>> eventQueue_;
+        shared_ptr<mutex> lock_;
     };
 
     class TestUtils {
@@ -130,7 +94,7 @@ namespace OHOS::uitest {
 
     bool InitEventRecordFile();
 
-    void RecordInitEnv(const std::string &modeOpt, const std::string opt);
+    void RecordInitEnv(const std::string &modeOpt);
 
     class EventData {
     public:
