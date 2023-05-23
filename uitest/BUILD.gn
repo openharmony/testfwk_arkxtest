@@ -58,6 +58,7 @@ ohos_static_library("uitest_record") {
   configs = [ ":uitest_common_configs" ]
   sources = [
     "${source_root}/record/find_widget.cpp",
+    "${source_root}/record/keyevent_tracker.cpp",
     "${source_root}/record/least_square_impl.cpp",
     "${source_root}/record/matrix3.cpp",
     "${source_root}/record/ui_record.cpp",
