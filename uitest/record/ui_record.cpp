@@ -61,15 +61,10 @@ namespace OHOS::uitest {
     VelocityTracker snapshootVelocityTracker;
     TouchOpt g_touchop = OP_CLICK;
     VelocityTracker g_velocityTracker;
+    KeyeventTracker g_keyeventTracker;
+    EventData g_eventData;
     bool g_isClick = false;
     int g_clickEventCount = 0;
-    constexpr int32_t NAVI_VERTI_THRE_V = 200;
-    constexpr int32_t NAVI_THRE_D = 10;
-    constexpr float MAX_THRESHOLD = 15.0;
-    constexpr float FLING_THRESHOLD = 45.0;
-    constexpr float DURATIOIN_THRESHOLD = 0.6;
-    constexpr float INTERVAL_THRESHOLD = 0.2;
-    constexpr int32_t MaxVelocity = 40000;
     bool g_isOpDect = false;
     std::string g_filePath;
     std::string g_defaultDir = "/data/local/tmp/layout";

@@ -59,7 +59,6 @@ ohos_static_library("uitest_record") {
     "${source_root}/record/matrix3.cpp",
     "${source_root}/record/ui_record.cpp",
     "${source_root}/record/velocity_tracker.cpp",
-    "${source_root}/record/keyevent_tracker.cpp",
   ]
   deps = [ ":uitest_core" ]
   defines = [
@@ -123,7 +122,6 @@ ohos_executable("uitest_server") {
   external_deps = [
     "ability_runtime:ability_manager",
     "accessibility:accessibleability",
-    "ability_runtime:ability_manager",
     "input:libmmi-client",
     "multimedia_image_framework:image_native",
     "window_manager:libdm",
