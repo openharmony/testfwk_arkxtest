@@ -247,18 +247,27 @@ namespace OHOS::uitest {
                 std::cout << "nullptr" << std::endl;
                 return OHOS::ERR_INVALID_VALUE;
             }
+            // 按键订阅
+            callBackPtr->SubscribeMonitorInit();
             int32_t id1 = MMI::InputManager::GetInstance()->AddMonitor(callBackPtr);
             if (id1 == -1) {
                 std::cout << "Startup Failed!" << std::endl;
                 return OHOS::ERR_INVALID_VALUE;
             }
-            Timer timer;
-            timer.Start(TIMEINTERVAL, Timer::TimerFunc);
+            // 补充click打印线程
+            std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, callBackPtr);
+            // touch计时线程
+            std::thread toughTimerThread(&InputEventCallback::TimerTouchCheckFunction, callBackPtr);
+            // widget 线程
+            std::thread widgetThread(&InputEventCallback::FindWidgetsFunction, callBackPtr);
             std::cout << "Started Recording Successfully..." << std::endl;
             int flag = getc(stdin);
             std::cout << flag << std::endl;
-            constexpr int timeToSleep = 3600;
-            sleep(timeToSleep);
+            clickThread.join();
+            toughTimerThread.join();
+            widgetThread.join();
+            // 取消按键订阅
+            callBackPtr->SubscribeMonitorCancel();
             return OHOS::ERR_OK;
         } else if (opt == "read") {
             EventData::ReadEventLine();
