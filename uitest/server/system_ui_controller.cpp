@@ -351,11 +351,11 @@ namespace OHOS::uitest {
         });
         auto screenSize = GetDisplaySize();
         AccessibilityElementInfo elementInfo;
+        auto amcPtr = AAFwk::AbilityManagerClient::GetInstance();
+        const auto foreAbility = amcPtr->GetTopAbility();
         for (auto &window : windows) {
             if (ability->GetRootByWindow(window, elementInfo) == RET_OK) {
                 const auto app = elementInfo.GetBundleName();
-                auto amcPtr = AAFwk::AbilityManagerClient::GetInstance();
-                const auto foreAbility = amcPtr->GetTopAbility();
                 LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
                 if (targetApp != "" && app != targetApp) {
                     continue;
