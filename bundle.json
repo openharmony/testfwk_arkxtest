@@ -38,7 +38,8 @@
           "ability_runtime",
           "hiviewdfx_hilog_native",
           "input",
-          "graphic_standard"
+          "graphic_standard",
+          "pasteboard"
         ],
         "third_party": [
           "libpng"
