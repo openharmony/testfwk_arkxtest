@@ -22,6 +22,7 @@
 #include <functional>
 #include <algorithm>
 #include <fstream>
+#include <nlohmann/json.hpp>
 #include "find_widget.h"
 #include "ui_driver.h"
 #include "velocity_tracker.h"
@@ -38,7 +39,7 @@ namespace OHOS::uitest {
         void BuileFingerInfo();
         double GetMoveDistance() const
         {
-            return (velocityTracker.GetPosition() - velocityTracker.GetFirstPosition()).GetDistance();
+            return Offset(velocityTracker.GetFirstPosition(), velocityTracker.GetPosition()).GetDistance();
         }
         FingerInfo& GetFingerInfo(){
             return fingerInfo;
@@ -75,9 +76,9 @@ namespace OHOS::uitest {
         bool HomeJudge(TouchEventInfo& touchEvent);
 
         // cout
-        bool WriteData(PointerInfo pointerInfo, shared_ptr<mutex> &cout_lock);
+        std::string WriteData(PointerInfo pointerInfo, shared_ptr<mutex> &cout_lock);
         // record.csv
-        bool WriteData(PointerInfo pointerInfo, ofstream &outFile, shared_ptr<mutex> &csv_lock);
+        nlohmann::json WriteData(nlohmann::json& abcOut, PointerInfo pointerInfo, ofstream &outFile, shared_ptr<mutex> &csv_lock);
         //clear
         void ClearFingerTrackersValues();
         void SetWindow(Rect window)

@@ -19,6 +19,7 @@
 #include <list>
 #include <map>
 #include "offset.h"
+#include "ui_model.h"
 
 namespace OHOS::uitest {
 using TimeStamp = std::chrono::high_resolution_clock::time_point;
@@ -48,9 +49,9 @@ struct TouchEventInfo final {
     std::map<std::string, std::string> attributes;
     std::string bundleName;
     std::string abilityName;
-    Offset GetOffset() const
+    Point GetPoint() const
     {
-        return Offset(x, y);
+        return Point(x, y);
     }
     TimeStamp GetActionTimeStamp() const
     {

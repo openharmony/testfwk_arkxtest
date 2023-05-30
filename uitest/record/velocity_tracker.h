@@ -40,18 +40,6 @@ public:
     explicit VelocityTracker(Axis mainAxis) : mainAxis_(mainAxis) {}
     ~VelocityTracker() = default;
 
-    void Resets()
-    {
-        lastPosition_.Resets();
-        velocity_.Resets();
-        delta_.Resets();
-        isFirstPoint_ = true;
-        xAxis_.Resets();
-        yAxis_.Resets();
-        totalDelta_.Resets();
-        stepLength = 0;
-        mainVelocity_ = 0.0;
-    }
     void TrackResets()
     {
         lastTrackPoint_.Resets();
@@ -93,12 +81,12 @@ public:
         return stepLength;
     }
 
-    const Offset& GetPosition() const
+    const Point& GetPosition() const
     {
         return lastPosition_;
     }
 
-    const Offset& GetFirstPosition() const
+    const Point& GetFirstPosition() const
     {
         return firstPosition_;
     }
@@ -112,20 +100,6 @@ public:
     {
         UpdateVelocity();
         return velocity_;
-    }
-
-    double GetMainAxisPos() const
-    {
-        switch (mainAxis_) {
-            case Axis::FREE:
-                return lastPosition_.GetDistance();
-            case Axis::HORIZONTAL:
-                return lastPosition_.GetX();
-            case Axis::VERTICAL:
-                return lastPosition_.GetY();
-            default:
-                return 0.0;
-        }
     }
 
     double GetMainVelocity() const
@@ -192,8 +166,8 @@ private:
     Axis mainAxis_ { Axis::FREE };
     Axis maxAxis_  {Axis::VERTICAL };
     TouchEventInfo lastTrackPoint_;
-    Offset firstPosition_;
-    Offset lastPosition_;
+    Point firstPosition_;
+    Point lastPosition_;
     Offset totalDelta_;
     Velocity velocity_;
     double mainVelocity_ = 0.0;

@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 #include <nlohmann/json.hpp>
+#include "ui_model.h"
 #include "touch_event.h"
 #include "velocity.h"
 #include "offset.h"
@@ -34,7 +35,7 @@ namespace OHOS::uitest {
         {TouchOpt::OP_CLICK,"click"},
         {TouchOpt::OP_LONG_CLICK,"longClick"},
         {TouchOpt::OP_DOUBLE_CLICK,"doubleClick"},
-        {TouchOpt::OP_SWIPE,"swip"},
+        {TouchOpt::OP_SWIPE,"swipe"},
         {TouchOpt::OP_DRAG,"drag"},
         {TouchOpt::OP_FLING,"fling"},
         {TouchOpt::OP_PINCH,"pinch"},
@@ -195,12 +196,12 @@ namespace OHOS::uitest {
             return avg_velocity;
         }
 
-        void SetCenterSet(Offset& center_)
+        void SetCenterSet(Point& center_)
         {
             center_set = center_;
         }
 
-        Offset& GetCenterSet()
+        Point& GetCenterSet()
         {
             return center_set;
         }
@@ -225,7 +226,7 @@ namespace OHOS::uitest {
         Offset avg_direction;
         int avg_stepLength = 0; 
         double avg_velocity;
-        Offset center_set;
+        Point center_set;
         TouchEventInfo firstTrackPoint_;
     };
 }

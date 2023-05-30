@@ -87,8 +87,8 @@ namespace OHOS::uitest {
         data["direction.Y"] = std::to_string(avg_direction.GetY());
         data["LENGTH"] = std::to_string(avg_stepLength);
         data["VELO"] = std::to_string(avg_velocity);
-        data["CENTER_X"] = center_set.GetX()==0.0 && center_set.GetY() == 0.0 ? "" :std::to_string(center_set.GetX());
-        data["CENTER_Y"] = center_set.GetX()==0.0 && center_set.GetY() == 0.0 ? "" :std::to_string(center_set.GetY());
+        data["CENTER_X"] = center_set.px_==0.0 && center_set.px_ == 0.0 ? "" :std::to_string(center_set.px_);
+        data["CENTER_Y"] = center_set.px_==0.0 && center_set.px_ == 0.0 ? "" :std::to_string(center_set.px_);
 
         auto fingerjson = nlohmann::json();
         for (auto& finger :fingers){

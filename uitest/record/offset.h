@@ -20,6 +20,7 @@
 
 #include "size.h"
 #include "utils.h"
+#include "ui_model.h"
 
 namespace OHOS::uitest {
 class Offset {
@@ -27,6 +28,7 @@ public:
     Offset() = default;
     ~Offset() = default;
     Offset(double deltaX, double deltaY) : deltaX_(deltaX), deltaY_(deltaY) {}
+    Offset(Point p1, Point p2) : deltaX_(p2.px_-p1.px_),deltaY_(p2.py_-p1.py_) {}
 
     void Resets()
     {

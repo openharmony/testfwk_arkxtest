@@ -21,6 +21,7 @@
 #include <iostream>
 #include <queue>
 #include <fstream>
+#include <sstream>
 #include <nlohmann/json.hpp>
 #include "utils.h"
 #include "key_event.h"
@@ -60,12 +61,12 @@ namespace OHOS::uitest {
     };
     class KeyeventTracker {
     public:
+        enum CaseTypes : uint8_t {
+            ActionStartTime = 0, ActionDurationTime, E_TYPE, keyItemsCount, KeyCode1, KeyCode2, KeyCode3};
         static const std::vector<int32_t> COMBINATION_KET;
         static const std::string EVENT_TYPE;
         static const int MAX_COMBINATION_SIZE = 3;
         static const int INFO_SIZE = 7;
-        static const int EVENT_TYPE_INDEX = 2;
-        static const int KEY_COUNT_INDEX = 3;
     public:
         KeyeventTracker() = default;
         ~KeyeventTracker() = default;
@@ -105,11 +106,11 @@ namespace OHOS::uitest {
         void AddUpKeyEvent(KeyEventInfo &info);
         KeyeventTracker GetSnapshootKey(KeyEventInfo &info);
         // cout
-        bool WriteCombinationData(shared_ptr<mutex> &cout_lock);
-        bool WriteSingleData(KeyEventInfo &info, shared_ptr<mutex> &cout_lock);
+        std::string WriteCombinationData(shared_ptr<mutex> &cout_lock);
+        std::string WriteSingleData(KeyEventInfo &info, shared_ptr<mutex> &cout_lock);
         // record.csv
-        bool WriteCombinationData(ofstream &outFile, shared_ptr<mutex> &csv_lock);
-        bool WriteSingleData(KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock);
+        nlohmann::json WriteCombinationData(nlohmann::json& abcOut, ofstream &outFile, shared_ptr<mutex> &csv_lock);
+        nlohmann::json WriteSingleData(nlohmann::json& abcOut, KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock);
 
         void printEventItems();
 
