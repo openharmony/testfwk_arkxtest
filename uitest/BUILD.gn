@@ -59,6 +59,9 @@ ohos_static_library("uitest_record") {
     "${source_root}/record/matrix3.cpp",
     "${source_root}/record/ui_record.cpp",
     "${source_root}/record/velocity_tracker.cpp",
+    "${source_root}/record/pointer_info.cpp",
+    "${source_root}/record/pointer_tracker.cpp",
+    "${source_root}/record/external_calls.cpp"
   ]
   deps = [ ":uitest_core" ]
   defines = [
