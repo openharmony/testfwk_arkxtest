@@ -48,6 +48,7 @@ namespace OHOS::uitest {
     // POINTER_TRACKER
     void PointerTracker::HandleDownEvent(TouchEventInfo& event)
     {
+        // @@@@@ 注意判断是否为错误的Down, 根据已注册手指最后的位置
         if (fingerTrackers.size() == 0) {
             firstTrackPoint_ = event;
             InitJudgeChain();
@@ -188,7 +189,7 @@ namespace OHOS::uitest {
         }
         auto ftracker = fingerTrackers.find(touchEvent.downTime)->second;
         double mainVelocity = ftracker->GetVelocityTracker().GetMainAxisVelocity();
-        std::cout << " @@@@@ mainVelocity= " << mainVelocity << std::endl;
+        // std::cout << " @@@@@ mainVelocity= " << mainVelocity << std::endl;
         // 离手v < FLING_THRESHOLD
         if (mainVelocity >= FLING_THRESHOLD) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_SWIPE, OP_RECENT);
@@ -272,23 +273,24 @@ namespace OHOS::uitest {
     }
 
     // cout
-    bool PointerTracker::WriteData(PointerInfo pointerInfo, shared_ptr<mutex> &cout_lock)
+    std::string PointerTracker::WriteData(PointerInfo pointerInfo, shared_ptr<mutex> &cout_lock)
     {
         auto out = pointerInfo.WriteWindowData();
         std::lock_guard<mutex> guard(*cout_lock);
         std::cout << out << std::endl;
-        return true;
+        return out;
     }
 
     // record.csv
-    bool PointerTracker::WriteData(PointerInfo pointerInfo, ofstream& outFile, shared_ptr<mutex> &csv_lock)
+    nlohmann::json PointerTracker::WriteData(nlohmann::json& abcOut, PointerInfo pointerInfo, ofstream& outFile, shared_ptr<mutex> &csv_lock)
     {
         auto out = pointerInfo.WriteData();
         std::lock_guard<mutex> guard(*csv_lock);
         if (outFile.is_open()) {
             outFile << out.dump() << std::endl;
         }
-        return true;
+        abcOut.push_back(out);
+        return out;
     }
 
 }

@@ -47,6 +47,7 @@
 #include "find_widget.h"
 #include "pointer_tracker.h"
 #include "pointer_info.h"
+#include "input_manager.h"
 
 namespace OHOS::uitest {
     class InputEventCallback : public MMI::IInputEventConsumer {
@@ -68,6 +69,10 @@ namespace OHOS::uitest {
         void TimerTouchCheckFunction();
         void FindWidgetsFunction();
         static std::shared_ptr<InputEventCallback> GetPtr();
+        void SetAbcOutJson(nlohmann::json &out)
+        {
+            abcOut = out;
+        }
     public:
         static constexpr int TIMEINTERVAL = 5000;
         static constexpr int KEY_DOWN_DURATION = 0;
@@ -92,10 +97,11 @@ namespace OHOS::uitest {
         WidgetSelector selector = WidgetSelector();
         vector<std::unique_ptr<Widget>> rev;
         mutable std::ofstream outFile;
-
+        mutable nlohmann::json abcOut;
         mutable UiDriver driver = UiDriver();
         mutable PointerTracker pointerTracker_;
         mutable KeyeventTracker keyeventTracker_;
+
     };
 
     class TestUtils {
@@ -111,10 +117,6 @@ namespace OHOS::uitest {
             return res;
         };
     };
-
-    
-
-
 
     class EventData {
     public:
@@ -137,5 +139,7 @@ namespace OHOS::uitest {
         UiDriver d;
         std::mutex mut;
     };
+
+    int32_t UiDriverRecordStart(nlohmann::json &out, std::string modeOpt);
 } // namespace OHOS::uitest
 #endif // UI_RECORD_H

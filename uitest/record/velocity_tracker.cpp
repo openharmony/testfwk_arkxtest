@@ -25,14 +25,14 @@ void VelocityTracker::UpdateTouchEvent(const TouchEventInfo& event, bool end)
 {
     isVelocityDone_ = false;
     if (isFirstPoint_) {
-        firstPosition_ = event.GetOffset();
+        firstPosition_ = event.GetPoint();
         isFirstPoint_ = false;
     } else {
-        delta_ = event.GetOffset() - lastPosition_;
+        delta_ = Offset(lastPosition_, event.GetPoint());
     }
     std::chrono::duration<double> diffTime = event.GetActionTimeStamp() - lastTimePoint_;
     lastTimePoint_ = event.GetActionTimeStamp();
-    lastPosition_ = event.GetOffset();
+    lastPosition_ = event.GetPoint();
     lastTrackPoint_ = event;
     static const double range = 0.05;
     if (delta_.IsZero() && end && (diffTime.count() < range)) {

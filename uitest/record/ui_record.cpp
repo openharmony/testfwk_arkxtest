@@ -160,7 +160,7 @@ namespace OHOS::uitest {
                 PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
                 info.SetTouchOpt(touchOpt);
                 pointerTracker_.WriteData(info, g_cout_lock);
-                pointerTracker_.WriteData(info, outFile, g_csv_lock);
+                pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
                 findWidgetsAllow = true;
                 widgetsCon.notify_all();
                 g_isSpecialclick = false;
@@ -191,7 +191,7 @@ namespace OHOS::uitest {
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
                  // cout打印 + record.csv保存
                 snapshootKeyTracker.WriteSingleData(info, g_cout_lock);
-                snapshootKeyTracker.WriteSingleData(info, outFile, g_csv_lock);
+                snapshootKeyTracker.WriteSingleData(abcOut, info, outFile, g_csv_lock);
             }
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
             if (!KeyeventTracker::isCombinationKey(info.GetKeyCode())) {
@@ -200,9 +200,9 @@ namespace OHOS::uitest {
             if (keyeventTracker_.IsNeedRecord()) {
                 keyeventTracker_.SetNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
-                // cout打印 + record.csv保存
+                // cout打印 + record.csv保存json
                 snapshootKeyTracker.WriteCombinationData(g_cout_lock);
-                snapshootKeyTracker.WriteCombinationData(outFile, g_csv_lock);
+                snapshootKeyTracker.WriteCombinationData(abcOut, outFile, g_csv_lock);
             }
             keyeventTracker_.AddUpKeyEvent(info);
         }
@@ -225,7 +225,7 @@ namespace OHOS::uitest {
                 pointerTracker_.SetLastClickInTracker(false);
                 PointerInfo info = pointerTracker_.GetLastClickInfo();
                 pointerTracker_.WriteData(info, g_cout_lock);
-                pointerTracker_.WriteData(info, outFile, g_csv_lock);
+                pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
                 findWidgetsAllow = true;
                 widgetsCon.notify_all();
             }
@@ -300,7 +300,7 @@ namespace OHOS::uitest {
                 if (!g_isSpecialclick && info.GetTouchOpt() != OP_CLICK){
                     isLastClick = false;
                     pointerTracker_.WriteData(info, g_cout_lock);
-                    pointerTracker_.WriteData(info, outFile, g_csv_lock);
+                    pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
                     pointerTracker_.SetNeedWrite(false);
                     findWidgetsAllow = true;
                     widgetsCon.notify_all();
@@ -366,5 +366,41 @@ namespace OHOS::uitest {
             outFile << names[ZERO] << ',';
             outFile << names[ONE] << ',' << std::endl;
         }
+    }
+
+    int32_t UiDriverRecordStart(nlohmann::json &out, std::string modeOpt)
+    {
+        auto callBackPtr = InputEventCallback::GetPtr();
+        if (!callBackPtr->InitEventRecordFile()) {
+            return OHOS::ERR_INVALID_VALUE;
+        }
+        callBackPtr->RecordInitEnv(modeOpt);
+        if (callBackPtr == nullptr) {
+            std::cout << "nullptr" << std::endl;
+            return OHOS::ERR_INVALID_VALUE;
+        }
+        callBackPtr->SetAbcOutJson(out);
+        // 按键订阅
+        callBackPtr->SubscribeMonitorInit();
+        int32_t id1 = MMI::InputManager::GetInstance()->AddMonitor(callBackPtr);
+        if (id1 == -1) {
+            std::cout << "Startup Failed!" << std::endl;
+            return OHOS::ERR_INVALID_VALUE;
+        }
+        // 补充click打印线程
+        std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, callBackPtr);
+        // touch计时线程
+        std::thread toughTimerThread(&InputEventCallback::TimerTouchCheckFunction, callBackPtr);
+        // widget 线程
+        std::thread widgetThread(&InputEventCallback::FindWidgetsFunction, callBackPtr);
+        std::cout << "Started Recording Successfully..." << std::endl;
+        int flag = getc(stdin);
+        std::cout << flag << std::endl;
+        clickThread.join();
+        toughTimerThread.join();
+        widgetThread.join();
+        // 取消按键订阅
+        callBackPtr->SubscribeMonitorCancel();
+        return OHOS::ERR_OK;  
     }
 } // namespace OHOS::uitest
