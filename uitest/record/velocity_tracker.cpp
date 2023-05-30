@@ -14,6 +14,7 @@
  */
 
 #include <chrono>
+#include <iostream>
 #include "velocity_tracker.h"
 
 using namespace std;
@@ -24,27 +25,22 @@ void VelocityTracker::UpdateTouchEvent(const TouchEventInfo& event, bool end)
 {
     isVelocityDone_ = false;
     if (isFirstPoint_) {
-        downTrackPoint_ = firstTrackPoint_;
         firstPosition_ = event.GetOffset();
-        firstTimePoint_ = event.time;
-        firstTrackPoint_ = event;
         isFirstPoint_ = false;
     } else {
         delta_ = event.GetOffset() - lastPosition_;
     }
-    std::chrono::duration<double> diffTime = event.time - lastTimePoint_;
-    lastTimePoint_ = event.time;
-    lastPosition_ = event.GetOffset() ;
+    std::chrono::duration<double> diffTime = event.GetActionTimeStamp() - lastTimePoint_;
+    lastTimePoint_ = event.GetActionTimeStamp();
+    lastPosition_ = event.GetOffset();
     lastTrackPoint_ = event;
     static const double range = 0.05;
     if (delta_.IsZero() && end && (diffTime.count() < range)) {
         return;
     }
     // nanoseconds duration to seconds.
-    std::chrono::duration<double> duration = event.time - firstTrackPoint_.time;
-    seconds = duration.count();
-    xAxis_.UpdatePoint(seconds, event.wx);
-    yAxis_.UpdatePoint(seconds, event.wy);
+    xAxis_.UpdatePoint(event.durationSeconds, event.wx);
+    yAxis_.UpdatePoint(event.durationSeconds, event.wy);
 }
 
 void VelocityTracker::UpdateVelocity()

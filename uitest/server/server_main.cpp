@@ -245,17 +245,17 @@ namespace OHOS::uitest {
             modeOpt = argv[THREE];
         }
         if (opt == "record") {
-            if (!InitEventRecordFile()) {
-                return OHOS::ERR_INVALID_VALUE;
-            }
             auto controller = make_unique<SysUiController>();
             if (!controller->ConnectToSysAbility()) {
                 PrintToConsole("Failed, cannot connect to AMMS ");
                 return EXIT_FAILURE;
             }
             UiDriver::RegisterController(move(controller));
-            RecordInitEnv(modeOpt);
             auto callBackPtr = InputEventCallback::GetPtr();
+            if (!callBackPtr->InitEventRecordFile()) {
+                return OHOS::ERR_INVALID_VALUE;
+            }
+            callBackPtr->RecordInitEnv(modeOpt);
             if (callBackPtr == nullptr) {
                 std::cout << "nullptr" << std::endl;
                 return OHOS::ERR_INVALID_VALUE;
