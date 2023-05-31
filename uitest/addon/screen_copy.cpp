@@ -196,26 +196,26 @@ void ScreenCopy::HandleConsumerBuffer()
 
 static void ConvertRGBA2RGB(const uint8_t* input, uint8_t* output, int32_t pixelNum)
 {
-    constexpr uint8_t BLUE_INDEX = 0;
-    constexpr uint8_t GREEN_INDEX = 1;
-    constexpr uint8_t RED_INDEX = 2;
-    constexpr uint32_t RGB_PIXEL_BYTES = 3;
-    constexpr uint8_t SHIFT_8_BIT = 8;
-    constexpr uint8_t SHIFT_16_BIT = 16;
-    constexpr uint32_t RGBA_MASK_BLUE = 0x000000FF;
-    constexpr uint32_t RGBA_MASK_GREEN = 0x0000FF00;
-    constexpr uint32_t RGBA_MASK_RED = 0x00FF0000;
+    constexpr uint8_t blueIndex = 0;
+    constexpr uint8_t greenIndex = 1;
+    constexpr uint8_t redIndex = 2;
+    constexpr uint32_t rgbPixelBytes = 3;
+    constexpr uint8_t shift8Bit = 8;
+    constexpr uint8_t shift16Bit = 16;
+    constexpr uint32_t rgbaMaskBlue = 0x000000FF;
+    constexpr uint32_t rgbaMaskGreen = 0x0000FF00;
+    constexpr uint32_t rgbaMaskRed = 0x00FF0000;
     DCHECK(input != nullptr && output != nullptr && pixelNum > 0);
     auto pRgba = reinterpret_cast<const uint32_t*>(input);
     for (int32_t index = 0; index < pixelNum; index++) {
-        output[index * RGB_PIXEL_BYTES + RED_INDEX] = (pRgba[index] & RGBA_MASK_RED) >> SHIFT_16_BIT;
-        output[index * RGB_PIXEL_BYTES + GREEN_INDEX] = (pRgba[index] & RGBA_MASK_GREEN) >> SHIFT_8_BIT;
-        output[index * RGB_PIXEL_BYTES + BLUE_INDEX] = (pRgba[index] & RGBA_MASK_BLUE);
+        output[index * rgbPixelBytes + redIndex] = (pRgba[index] & rgbaMaskRed) >> shift16Bit;
+        output[index * rgbPixelBytes + greenIndex] = (pRgba[index] & rgbaMaskGreen) >> shift8Bit;
+        output[index * rgbPixelBytes + blueIndex] = (pRgba[index] & rgbaMaskBlue);
     }
 }
 
 struct MissionErrorMgr : public jpeg_error_mgr {
-    jmp_buf setjmp_buffer;
+    jmp_buf setjmpBuffer;
 };
 
 void ScreenCopy::ConsumeFrameBuffer(const sptr<SurfaceBuffer> &buf)
@@ -238,11 +238,11 @@ void ScreenCopy::ConsumeFrameBuffer(const sptr<SurfaceBuffer> &buf)
     auto height = static_cast<uint32_t>(bufHdl->height);
     auto stride = static_cast<uint32_t>(bufHdl->stride);
     auto data = (uint8_t *)buf->GetVirAddr();
-    constexpr int32_t RGBA_PIXEL_BYTES = 4;
-    constexpr int32_t RGB_PIXEL_BYTES = 5;
-    int32_t rgbSize = stride * height * RGB_PIXEL_BYTES / RGBA_PIXEL_BYTES;
+    constexpr int32_t rgbaPixelBytes = 4;
+    constexpr int32_t rgbPixelBytes = 5;
+    int32_t rgbSize = stride * height * rgbPixelBytes / rgbaPixelBytes;
     auto rgb = new uint8_t[rgbSize];
-    ConvertRGBA2RGB(data, rgb, rgbSize / RGB_PIXEL_BYTES);
+    ConvertRGBA2RGB(data, rgb, rgbSize / rgbPixelBytes);
 
     jpeg_compress_struct jpeg;
     MissionErrorMgr jerr;
@@ -250,16 +250,16 @@ void ScreenCopy::ConsumeFrameBuffer(const sptr<SurfaceBuffer> &buf)
     jpeg_create_compress(&jpeg);
     jpeg.image_width = width;
     jpeg.image_height = height;
-    jpeg.input_components = RGB_PIXEL_BYTES;
+    jpeg.input_components = rgbPixelBytes;
     jpeg.in_color_space = JCS_RGB;
     jpeg_set_defaults(&jpeg);
-    constexpr int32_t COMPRESS_QUALIZY = 75;
-    jpeg_set_quality(&jpeg, COMPRESS_QUALIZY, 1);
+    constexpr int32_t compressQuality = 75;
+    jpeg_set_quality(&jpeg, compressQuality, 1);
     jpeg_mem_dest(&jpeg, &imgBuf_, &imgDataLen_);
     jpeg_start_compress(&jpeg, 1);
     JSAMPROW rowPointer[1];
     for (uint32_t rowIndex = 0; rowIndex < jpeg.image_height; rowIndex++) {
-        rowPointer[0] = const_cast<uint8_t *>(rgb + rowIndex * jpeg.image_width * RGB_PIXEL_BYTES);
+        rowPointer[0] = const_cast<uint8_t *>(rgb + rowIndex * jpeg.image_width * rgbPixelBytes);
         (void)jpeg_write_scanlines(&jpeg, rowPointer, 1);
     }
     jpeg_finish_compress(&jpeg);
