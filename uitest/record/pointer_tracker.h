@@ -74,6 +74,7 @@ namespace OHOS::uitest {
         bool FlingJudge(TouchEventInfo& touchEvent); // fling(home)
         bool RecentJudge(TouchEventInfo& touchEvent);
         bool HomeJudge(TouchEventInfo& touchEvent);
+        bool BackJudge(TouchEventInfo& touchEvent);
 
         // cout
         std::string WriteData(PointerInfo pointerInfo, shared_ptr<mutex> &cout_lock);

@@ -158,6 +158,10 @@ namespace OHOS::uitest {
                 return;
             } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
                 PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
+                if (touchOpt == info.GetTouchOpt()){
+                    g_isSpecialclick = false;
+                    return;
+                }
                 info.SetTouchOpt(touchOpt);
                 pointerTracker_.WriteData(info, g_cout_lock);
                 pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
