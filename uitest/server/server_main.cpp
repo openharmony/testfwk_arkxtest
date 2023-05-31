@@ -41,6 +41,7 @@
 #include "pointer_event.h"
 #include "ui_driver.h"
 #include "ui_record.h"
+#include "js_client_loader.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -53,7 +54,7 @@ namespace OHOS::uitest {
     "   uiRecord -record,    wirte location coordinates of events into files\n"
     "   uiRecord -read,                    print file content to the console\n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "4.0.2.0";
+    const std::string VERSION = "4.0.3.0";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
@@ -196,12 +197,21 @@ namespace OHOS::uitest {
         auto apiHandler = std::bind(&FrontendApiServer::Call, &apiServer, placeholders::_1, placeholders::_2);
         auto cbHandler = std::bind(&ApiTransactor::Transact, &apiTransactServer, placeholders::_1, placeholders::_2);
         apiServer.SetCallbackHandler(cbHandler); // used for callback from server to client
+
+        const auto singlenessMode = token == "singleness";
+        future<void> g_agentFuture;
+        if (singlenessMode) {
+            g_agentFuture = async(launch::async, []() {
+                pthread_setname_np(pthread_self(), "event_runner");
+                RunJsClient(VERSION);
+            });
+        }
         if (!apiTransactServer.InitAndConnectPeer(transalatedToken, apiHandler)) {
             LOG_E("Failed to initialize server");
             return EXIT_FAILURE;
         }
         // accept remopte dump request during deamon running (initController=false)
-        ApiTransactor::SetBroadcaseCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
+        ApiTransactor::SetBroadcastCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
             DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, err);
         });
         mutex mtx;
@@ -214,7 +224,7 @@ namespace OHOS::uitest {
         condVar.wait(lock);
         LOG_I("Server exit");
         apiTransactServer.Finalize();
-        ApiTransactor::UnsetBroadcaseCommandHandler();
+        ApiTransactor::UnsetBroadcastCommandHandler();
         _Exit(0);
         return 0;
     }
