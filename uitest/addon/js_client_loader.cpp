@@ -140,7 +140,7 @@ namespace OHOS::uitest {
 
     static void ParseCaptureOptions(napi_env env, string_view type, napi_value opt, CaptureContext& out)
     {
-        constexpr size_t optionMaxLen = 256;
+        constexpr size_t OPTION_MAX_LEN = 256;
         napi_value global = nullptr;
         napi_value jsonProp = nullptr;
         napi_value jsonFunc = nullptr;
@@ -151,8 +151,8 @@ namespace OHOS::uitest {
         napi_value argv[1] = {opt};
         NAPI_CALL_RETURN_VOID(env, napi_call_function(env, jsonProp, jsonFunc, 1, argv, &jsStr));
         size_t len = 0;
-        char buf[optionMaxLen] = {0};
-        NAPI_CALL_RETURN_VOID(env, napi_get_value_string_utf8(env, jsStr, buf, optionMaxLen, &len));
+        char buf[OPTION_MAX_LEN] = {0};
+        NAPI_CALL_RETURN_VOID(env, napi_get_value_string_utf8(env, jsStr, buf, OPTION_MAX_LEN, &len));
         auto cppStr = string(buf, len);
         auto optJson = nlohmann::json::parse(cppStr, nullptr, false);
         NAPI_ASSERT_RETURN_VOID(env, !optJson.is_discarded(), "Bad option json string");
@@ -168,34 +168,34 @@ namespace OHOS::uitest {
     static napi_value SetCaptureEventJsCallback(napi_env env, napi_callback_info info)
     {
         static const set<string> TYPES {string(CAPTURE_SCREEN), string(CAPTURE_LAYOUT), string(CAPTURE_UIACTION)};
-        constexpr size_t minArgc = 1;
-        constexpr size_t maxArgc = 3;
-        constexpr size_t bufSize = 32;
-        static napi_value argv[maxArgc] = {nullptr};
-        static char buf[bufSize] = { 0 };
-        size_t argc = maxArgc;
+        constexpr size_t MIN_ARGC = 1;
+        constexpr size_t MAX_ARGC = 3;
+        constexpr size_t BUF_SIZE = 32;
+        static napi_value argv[MAX_ARGC] = {nullptr};
+        static char buf[BUF_SIZE] = { 0 };
+        size_t argc = MAX_ARGC;
         NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr));
-        NAPI_ASSERT(env, argc >= minArgc, "Illegal argument count");
+        NAPI_ASSERT(env, argc >= MIN_ARGC, "Illegal argument count");
         napi_valuetype type = napi_undefined;
         NAPI_CALL(env, napi_typeof(env, argv[0], &type));
         NAPI_ASSERT(env, type == napi_string, "Illegal arg[0], string required");
         size_t typeLen = 0;
-        NAPI_CALL(env, napi_get_value_string_utf8(env, argv[0], buf, bufSize - 1, &typeLen));
+        NAPI_CALL(env, napi_get_value_string_utf8(env, argv[0], buf, BUF_SIZE - 1, &typeLen));
         auto capType = string(buf, typeLen);
         auto support = TYPES.find(capType) != TYPES.end();
         NAPI_ASSERT(env, support == true, "Invalid event name");
         CaptureContext context;
         if constexpr(kOn) {
-            NAPI_ASSERT(env, argc > minArgc, "Need callback function argument");
+            NAPI_ASSERT(env, argc > MIN_ARGC, "Need callback function argument");
             NAPI_CALL(env, napi_typeof(env, argv[1], &type));
             NAPI_ASSERT(env, type == napi_function, "Illegal arg[1], function required");
             napi_ref callbackRef = nullptr;
             NAPI_CALL(env, napi_create_reference(env, argv[1], 1, &callbackRef));
             context.cbRef = callbackRef;
-            if (argc > minArgc + 1) {
-                NAPI_CALL(env, napi_typeof(env, argv[minArgc + 1], &type));
+            if (argc > MIN_ARGC + 1) {
+                NAPI_CALL(env, napi_typeof(env, argv[MIN_ARGC + 1], &type));
                 NAPI_ASSERT(env, type == napi_object, "Illegal options argument");
-                ParseCaptureOptions(env, capType, argv[minArgc + 1], context);
+                ParseCaptureOptions(env, capType, argv[MIN_ARGC + 1], context);
             }
         }
         LOG_I("Update context for capture: %{public}s, active=%{public}d", capType.c_str(), kOn);
