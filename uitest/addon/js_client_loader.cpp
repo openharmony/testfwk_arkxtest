@@ -259,7 +259,7 @@ namespace OHOS::uitest {
             return false;
         }
         map<string, vector<string>> napiLibPath;
-        napiLibPath.insert({ "default", {"data/local/tmp"} });
+        napiLibPath.insert({"default", {"data/local/tmp"}});
         runtime->SetAppLibPath(napiLibPath);
         // execute single .abc file
         auto execAbcRet = runtime->RunScript(JS_CODE_PATH.data(), "", false);
