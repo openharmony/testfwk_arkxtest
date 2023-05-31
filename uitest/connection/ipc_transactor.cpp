@@ -228,7 +228,7 @@ namespace OHOS::uitest {
             LOG_D("Received commonEvent");
             const auto &want = data.GetWant();
             remoteObject = want.GetRemoteObject(string(token));
-            if (remoteObject == nullptr || !remoteObject->IsProxyObject()) {
+            if (remoteObject == nullptr/** || !remoteObject->IsProxyObject*/) {
                 LOG_W("Not a proxy object!");
                 remoteObject = nullptr;
             } else {
@@ -255,6 +255,10 @@ namespace OHOS::uitest {
 
     void ApiTransactor::SetDeathCallback(function<void()> callback)
     {
+        if (singlenessMode_) {
+            LOG_E("Cannot SetDeathCallback in singleness mode");
+            return;
+        }
         onDeathCallback_ = callback;
     }
 
@@ -287,15 +291,16 @@ namespace OHOS::uitest {
         connectState_ = DISCONNECTED;
         caller_ = new ApiCaller();
         caller_->SetCallHandler(handler);
+        sptr<IRemoteObject> remoteObject = nullptr;
         if (asServer_) {
             // public caller object, and wait for backcaller registration from client
-            auto remoteObject = PublishCallerAndWaitForBackcaller(caller_, token);
+            remoteObject = PublishCallerAndWaitForBackcaller(caller_, token);
             if (remoteObject != nullptr) {
                 remoteCaller_ = new ApiCallerProxy(remoteObject);
             }
         } else {
             // wait for published caller object, then register backcaller to server
-            auto remoteObject = WaitForPublishedCaller(token);
+            remoteObject = WaitForPublishedCaller(token);
             if (remoteObject != nullptr) {
                 remoteCaller_ = new ApiCallerProxy(remoteObject);
                 if (!remoteCaller_->SetBackCaller(caller_)) {
@@ -304,15 +309,19 @@ namespace OHOS::uitest {
                 }
             }
         }
-        if (remoteCaller_ == nullptr) {
+        if (remoteObject == nullptr || remoteCaller_ == nullptr) {
             LOG_E("Failed to get apiCaller object from peer");
             return false;
         }
+        // in singleness mode, C/S runs in the same shell process and the remoteObject is a stub instead of proxy
+        singlenessMode_ = !remoteObject->IsProxyObject();
         // link connectionState to it to remoteCaller
-        peerDeathCallback_ = new DeathRecipientForwarder([this]() { this->OnPeerDeath(); });
-        if (!remoteCaller_->SetRemoteDeathCallback(peerDeathCallback_)) {
-            LOG_E("Failed to register remote caller DeathRecipient");
-            return false;
+        if (!singlenessMode_) {
+            peerDeathCallback_ = new DeathRecipientForwarder([this]() { this->OnPeerDeath(); });
+            if (!remoteCaller_->SetRemoteDeathCallback(peerDeathCallback_)) {
+                LOG_E("Failed to register remote caller DeathRecipient");
+                return false;
+            }
         }
         // connect done
         connectState_ = CONNECTED;
@@ -388,7 +397,7 @@ namespace OHOS::uitest {
         LOG_I("Receive uitest.broadcast.command.reply end");
     }
 
-    void ApiTransactor::SetBroadcaseCommandHandler(BroadcastCommandHandler handler)
+    void ApiTransactor::SetBroadcastCommandHandler(BroadcastCommandHandler handler)
     {
         if (handler == nullptr) {
             LOG_W("BroadcastCommandHandler is null");
@@ -430,7 +439,7 @@ namespace OHOS::uitest {
         }
     }
 
-    void ApiTransactor::UnsetBroadcaseCommandHandler()
+    void ApiTransactor::UnsetBroadcastCommandHandler()
     {
         if (g_broadcastCommandSubscriber != nullptr) {
             CommonEventManager::UnSubscribeCommonEvent(g_broadcastCommandSubscriber);
