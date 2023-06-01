@@ -108,10 +108,10 @@ ohos_static_library("uitest_ipc") {
 ohos_static_library("uitest_addon") {
   configs = [ ":uitest_common_configs" ]
   sources = [
-    "${source_root}/addon/screen_copy.cpp",
     "${source_root}/addon/js_client_loader.cpp",
+    "${source_root}/addon/screen_copy.cpp",
   ]
-  include_dirs = [ "${source_root}/core"]
+  include_dirs = [ "${source_root}/core" ]
   deps = [
     ":uitest_core",
     "//third_party/libjpeg-turbo:turbojpeg_static",
@@ -119,8 +119,8 @@ ohos_static_library("uitest_addon") {
   external_deps = [
     "ability_runtime:runtime",
     "eventhandler:libeventhandler",
-    "napi:ace_napi",
     "multimedia_image_framework:image_native",
+    "napi:ace_napi",
     "window_manager:libdm",
     "window_manager:libwm",
   ]
@@ -150,10 +150,10 @@ ohos_executable("uitest_server") {
 
   # static link the uitest_core as server end
   deps = [
+    ":uitest_addon",
     ":uitest_core",
     ":uitest_ipc",
     ":uitest_record",
-    ":uitest_addon",
   ]
 
   #dependencies for screencap
