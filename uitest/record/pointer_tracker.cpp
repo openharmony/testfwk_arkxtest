@@ -46,10 +46,26 @@ namespace OHOS::uitest {
     }
 
     // POINTER_TRACKER
-    void PointerTracker::HandleDownEvent(TouchEventInfo& event)
+    void PointerTracker::HandleDownEvent(TouchEventInfo& event, nlohmann::json& abcOut)
     {
-        // @@@@@ 注意判断是否为错误的Down, 根据已注册手指最后的位置
-        if (fingerTrackers.size() == 0) {
+        // 接受down事件时,若存在上次操作时间与本次down时间相差较大情况,说明上次操作接收情况异常,本次录制异常
+        if (fingerTrackers.size() != 0){
+            TimeStamp thisTime = event.GetDownTimeStamp();
+            for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
+                TimeStamp lastTime = it->second->GetVelocityTracker().GetLastTimePoint();
+                double  duration = (thisTime - lastTime).count();
+                if (duration > ERROR_POINTER){
+                    delete it->second;
+                    it = fingerTrackers.erase(it);
+                    LOG_E("获取回调信息存在异常,请重新录制");
+                    std::cout << "获取回调信息存在异常,请重新录制" << std::endl;
+                    auto data = nlohmann::json();
+                    data["ERROR_INFO"] = "获取回调信息存在异常,请重新录制";
+                    abcOut.push_back(data);
+                }
+            }
+        }
+        if (fingerTrackers.size() == 0){
             firstTrackPoint_ = event;
             InitJudgeChain();
         }
@@ -84,14 +100,14 @@ namespace OHOS::uitest {
             // 抬起判断
             bool flag = false;
             fingerTrackers.find(event.downTime)->second->HandleUpEvent(event);
-            while (pointerTypeJudgChain_.size() > 1 && !flag) {
+            while (pointerTypeJudgChain_.size() > 1 && !flag){
                 auto judgeFunction = pointerTypeJudgMap_.find(pointerTypeJudgChain_[0])->second;
                 flag = judgeFunction(event);
             }
             fingerTrackers.find(event.downTime)->second->BuileFingerInfo();
             currentFingerNum --;
             // 最后一个抬起的手指,快照+复位
-            if (currentFingerNum == 0) {
+            if (currentFingerNum == 0){
                 snapshootPointerInfo = BuilePointerInfo();
                 isNeedWrite = true;
                 if (snapshootPointerInfo.GetTouchOpt() == OP_CLICK) {
@@ -191,7 +207,9 @@ namespace OHOS::uitest {
         auto ftracker = fingerTrackers.find(touchEvent.downTime)->second;
         TouchEventInfo startEvent = ftracker->GetFingerInfo().GetFirstTouchEventInfo();
         VelocityTracker vTracker = ftracker->GetVelocityTracker();
-        if (startEvent.x - windowBounds.left_ <= NAVI_THRE_D && vTracker.GetMaxAxis() == Axis::HORIZONTAL && ftracker->GetMoveDistance() >= NAVI_VERTI_THRE_V) {
+        if (startEvent.x - windowBounds.left_ <= NAVI_THRE_D &&
+            // vTracker.GetMaxAxis() == Axis::HORIZONTAL && 
+            ftracker->GetMoveDistance() >= NAVI_VERTI_THRE_V) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_SWIPE, OP_RECENT, OP_FLING, OP_HOME);
             return true;
         }
@@ -221,7 +239,8 @@ namespace OHOS::uitest {
         auto ftracker = fingerTrackers.find(touchEvent.downTime)->second;
         TouchEventInfo startEvent = ftracker->GetFingerInfo().GetFirstTouchEventInfo();
         VelocityTracker vTracker = ftracker->GetVelocityTracker();
-        if (windowBounds.bottom_ - startEvent.y <= NAVI_THRE_D && vTracker.GetMaxAxis() == Axis::VERTICAL && 
+        if (windowBounds.bottom_ - startEvent.y <= NAVI_THRE_D &&
+            // vTracker.GetMaxAxis() == Axis::VERTICAL && 
             ftracker->GetMoveDistance() >= NAVI_VERTI_THRE_V) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_SWIPE);
             return true;
@@ -245,7 +264,8 @@ namespace OHOS::uitest {
         auto ftracker = fingerTrackers.find(touchEvent.downTime)->second;
         TouchEventInfo startEvent = ftracker->GetFingerInfo().GetFirstTouchEventInfo();
         VelocityTracker vTracker = ftracker->GetVelocityTracker();
-        if (windowBounds.bottom_ - startEvent.y <= NAVI_THRE_D && vTracker.GetMaxAxis() == Axis::VERTICAL && 
+        if (windowBounds.bottom_ - startEvent.y <= NAVI_THRE_D &&
+            // vTracker.GetMaxAxis() == Axis::VERTICAL && 
             ftracker->GetMoveDistance() >= NAVI_VERTI_THRE_V) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_FLING);
             return true;

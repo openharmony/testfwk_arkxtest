@@ -161,6 +161,11 @@ public:
         clickInterVal = interVal;
     }
 
+    TimeStamp GetLastTimePoint()
+    {
+        return lastTimePoint_;
+    }
+
 private:
     void UpdateVelocity();
     Axis mainAxis_ { Axis::FREE };
