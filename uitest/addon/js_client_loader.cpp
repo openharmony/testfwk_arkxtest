@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,7 +38,7 @@ namespace OHOS::uitest {
     public:
         CaptureContext() = default;
         // capture options passed from js
-        float scale = 1; // for screen cap
+        float scale = 1.0; // for screen cap
         // capture enviroment and data buffer
         string type;
         napi_env napiEnv = nullptr;

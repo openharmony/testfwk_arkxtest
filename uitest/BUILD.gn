@@ -126,6 +126,9 @@ ohos_static_library("uitest_addon") {
   ]
   external_deps += common_external_deps
 
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
+
   defines = [
     "__OHOS__=1",
     "LOG_TAG=\"UitestKid_Addon\"",

@@ -228,7 +228,7 @@ namespace OHOS::uitest {
             LOG_D("Received commonEvent");
             const auto &want = data.GetWant();
             remoteObject = want.GetRemoteObject(string(token));
-            if (remoteObject == nullptr/** || !remoteObject->IsProxyObject*/) {
+            if (remoteObject == nullptr) {
                 LOG_W("Not a proxy object!");
                 remoteObject = nullptr;
             } else {
