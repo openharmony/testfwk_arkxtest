@@ -152,22 +152,16 @@ namespace OHOS::uitest {
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const
     {
         TouchOpt touchOpt;
+        // std::cout << " @@@@@ keyevent: " << keyEvent->GetKeyCode() << " , " << keyEvent->GetKeyAction() << std::endl;
         if (SpecialKeyMapExistKey(keyEvent->GetKeyCode(), touchOpt)) {
             if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
-                g_isSpecialclick = true;
                 return;
             } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
-                PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
-                if (touchOpt == info.GetTouchOpt()){
-                    g_isSpecialclick = false;
-                    return;
-                }
+                PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
                 info.SetTouchOpt(touchOpt);
-                pointerTracker_.WriteData(info, g_cout_lock);
-                pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
                 findWidgetsAllow = true;
                 widgetsCon.notify_all();
-                g_isSpecialclick = false;
+                // g_isSpecialclick = false;
                 pointerTracker_.SetLastClickInTracker(false);
                 return;
             }
@@ -227,9 +221,9 @@ namespace OHOS::uitest {
             if (isLastClick) {
                 isLastClick = false;
                 pointerTracker_.SetLastClickInTracker(false);
-                PointerInfo info = pointerTracker_.GetLastClickInfo();
-                pointerTracker_.WriteData(info, g_cout_lock);
-                pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
+                // PointerInfo info = pointerTracker_.GetLastClickInfo();
+                // pointerTracker_.WriteData(info, g_cout_lock);
+                // pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
                 findWidgetsAllow = true;
                 widgetsCon.notify_all();
             }
@@ -258,6 +252,9 @@ namespace OHOS::uitest {
             std::this_thread::sleep_for(std::chrono::milliseconds(gTimeIndex)); // 确保界面已更新
             ApiCallErr err(NO_ERROR);
             driver.FindWidgets(selector, rev, err, true);
+            PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
+            pointerTracker_.WriteData(info, g_cout_lock);
+            pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
             findWidgetsAllow = false;
             widgetsCon.notify_all();
         }
@@ -299,17 +296,17 @@ namespace OHOS::uitest {
                 touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y).GetAttrMap();
             }
             pointerTracker_.HandleUpEvent(touchEvent);
-            if (pointerTracker_.IsNeedWrite() || !g_isSpecialclick) {
+            if (pointerTracker_.IsNeedWrite()) {
                 PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
-                if (!g_isSpecialclick && info.GetTouchOpt() != OP_CLICK){
+                if (info.GetTouchOpt() != OP_CLICK){
                     isLastClick = false;
-                    pointerTracker_.WriteData(info, g_cout_lock);
-                    pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
+                    // pointerTracker_.WriteData(info, g_cout_lock);
+                    // pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
                     pointerTracker_.SetNeedWrite(false);
                     findWidgetsAllow = true;
                     widgetsCon.notify_all();
                 }
-                if (info.GetTouchOpt() == OP_CLICK && !g_isSpecialclick){
+                if (info.GetTouchOpt() == OP_CLICK){
                     isLastClick = true;
                     clickCon.notify_all();
                 }
