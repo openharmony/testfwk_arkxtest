@@ -24,6 +24,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include "find_widget.h"
+#include "utils.h"
 #include "ui_driver.h"
 #include "velocity_tracker.h"
 #include "pointer_info.h"
@@ -61,7 +62,7 @@ namespace OHOS::uitest {
         PointerTracker() = default;
         ~PointerTracker() = default;
         
-        void HandleDownEvent(TouchEventInfo& touchEvent);
+        void HandleDownEvent(TouchEventInfo& touchEvent, nlohmann::json& abcOut);
         void HandleMoveEvent(TouchEventInfo& touchEvent);
         void HandleUpEvent(TouchEventInfo& touchEvent);
         
@@ -121,6 +122,7 @@ namespace OHOS::uitest {
 
         PointerInfo BuilePointerInfo(); // 输出封装
     public:
+        static constexpr float ERROR_POINTER = 1; // move后长时间没有Up说明异常
         static constexpr float INTERVAL_THRESHOLD = 0.2; // 双击间隔时间上限
         static constexpr float MAX_THRESHOLD = 15.0; // 长按位移上限
         static constexpr float DURATIOIN_THRESHOLD = 0.6; // 长按时间下限
