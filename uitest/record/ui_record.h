@@ -80,7 +80,6 @@ namespace OHOS::uitest {
     public:
         mutable volatile int touchTime = 0;
         mutable volatile bool isLastClick = false;
-        mutable volatile bool g_isSpecialclick = false;
         mutable shared_ptr<mutex> g_cout_lock = make_shared<std::mutex>();
         mutable shared_ptr<mutex> g_csv_lock = make_shared<std::mutex>();
         mutable std::mutex g_clickMut;

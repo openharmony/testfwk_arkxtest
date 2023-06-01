@@ -102,7 +102,7 @@ namespace OHOS::uitest {
             return lastClickInfo;
         }
 
-        PointerInfo GetSnapshootPointerInfo()
+        PointerInfo& GetSnapshootPointerInfo()
         {
             return snapshootPointerInfo;
         }
