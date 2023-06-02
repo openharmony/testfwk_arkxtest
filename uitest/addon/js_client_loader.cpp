@@ -158,7 +158,7 @@ namespace OHOS::uitest {
         NAPI_ASSERT_RETURN_VOID(env, !optJson.is_discarded(), "Bad option json string");
         LOG_I("CaptureOption=%{public}s", cppStr.c_str());
         if (optJson.contains("scale") && optJson["scale"].type() == nlohmann::detail::value_t::number_float) {
-            out.scale = optJson["scale"].get<bool>();
+            out.scale = optJson["scale"].get<float>();
         }
     }
 
