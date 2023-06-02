@@ -62,7 +62,7 @@ namespace OHOS::uitest {
         PointerTracker() = default;
         ~PointerTracker() = default;
         
-        void HandleDownEvent(TouchEventInfo& touchEvent);
+        void HandleDownEvent(TouchEventInfo& touchEvent, nlohmann::json& abcOut);
         void HandleMoveEvent(TouchEventInfo& touchEvent);
         void HandleUpEvent(TouchEventInfo& touchEvent);
         

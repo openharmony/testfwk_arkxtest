@@ -97,14 +97,14 @@ namespace OHOS::uitest {
             // 抬起判断
             bool flag = false;
             fingerTrackers.find(event.downTime)->second->HandleUpEvent(event);
-            while (pointerTypeJudgChain_.size() > 1 && !flag){
+            while (pointerTypeJudgChain_.size() > 1 && !flag) {
                 auto judgeFunction = pointerTypeJudgMap_.find(pointerTypeJudgChain_[0])->second;
                 flag = judgeFunction(event);
             }
             fingerTrackers.find(event.downTime)->second->BuileFingerInfo();
             currentFingerNum --;
             // 最后一个抬起的手指,快照+复位
-            if (currentFingerNum == 0){
+            if (currentFingerNum == 0) {
                 snapshootPointerInfo = BuilePointerInfo();
                 isNeedWrite = true;
                 if (snapshootPointerInfo.GetTouchOpt() == OP_CLICK) {
@@ -205,7 +205,7 @@ namespace OHOS::uitest {
         TouchEventInfo startEvent = ftracker->GetFingerInfo().GetFirstTouchEventInfo();
         VelocityTracker vTracker = ftracker->GetVelocityTracker();
         if (startEvent.x - windowBounds.left_ <= NAVI_THRE_D &&
-            // vTracker.GetMaxAxis() == Axis::HORIZONTAL && 
+            // vTracker.GetMaxAxis() == Axis::HORIZONTAL &&
             ftracker->GetMoveDistance() >= NAVI_VERTI_THRE_V) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_SWIPE, OP_RECENT, OP_FLING, OP_HOME);
             return true;
@@ -237,7 +237,7 @@ namespace OHOS::uitest {
         TouchEventInfo startEvent = ftracker->GetFingerInfo().GetFirstTouchEventInfo();
         VelocityTracker vTracker = ftracker->GetVelocityTracker();
         if (windowBounds.bottom_ - startEvent.y <= NAVI_THRE_D &&
-            // vTracker.GetMaxAxis() == Axis::VERTICAL && 
+            // vTracker.GetMaxAxis() == Axis::VERTICAL &&
             ftracker->GetMoveDistance() >= NAVI_VERTI_THRE_V) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_SWIPE);
             return true;
@@ -262,7 +262,7 @@ namespace OHOS::uitest {
         TouchEventInfo startEvent = ftracker->GetFingerInfo().GetFirstTouchEventInfo();
         VelocityTracker vTracker = ftracker->GetVelocityTracker();
         if (windowBounds.bottom_ - startEvent.y <= NAVI_THRE_D &&
-            // vTracker.GetMaxAxis() == Axis::VERTICAL && 
+            // vTracker.GetMaxAxis() == Axis::VERTICAL &&
             ftracker->GetMoveDistance() >= NAVI_VERTI_THRE_V) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_FLING);
             return true;
