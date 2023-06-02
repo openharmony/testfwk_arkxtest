@@ -191,7 +191,10 @@ namespace OHOS::uitest {
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
                  // cout打印 + record.csv保存
                 snapshootKeyTracker.WriteSingleData(info, g_cout_lock);
-                snapshootKeyTracker.WriteSingleData(abcOut, info, outFile, g_csv_lock);
+                auto json = snapshootKeyTracker.WriteSingleData(info, outFile, g_csv_lock);
+                if (abcCallBack != nullptr){
+                    abcCallBack(json);
+                }
             }
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
             if (!KeyeventTracker::isCombinationKey(info.GetKeyCode())) {
@@ -202,7 +205,10 @@ namespace OHOS::uitest {
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
                 // cout打印 + record.csv保存json
                 snapshootKeyTracker.WriteCombinationData(g_cout_lock);
-                snapshootKeyTracker.WriteCombinationData(abcOut, outFile, g_csv_lock);
+                auto json = snapshootKeyTracker.WriteCombinationData(outFile, g_csv_lock);
+                if (abcCallBack != nullptr){
+                    abcCallBack(json);
+                }
             }
             keyeventTracker_.AddUpKeyEvent(info);
         }
@@ -214,7 +220,7 @@ namespace OHOS::uitest {
 
     void InputEventCallback::TimerReprintClickFunction ()
     {
-        while (true) {
+        while (g_uiRecordRun) {
             std::unique_lock <std::mutex> clickLck(g_clickMut);
             while (!isLastClick) {
                 clickCon.wait(clickLck);
@@ -223,9 +229,6 @@ namespace OHOS::uitest {
             if (isLastClick) {
                 isLastClick = false;
                 pointerTracker_.SetLastClickInTracker(false);
-                // PointerInfo info = pointerTracker_.GetLastClickInfo();
-                // pointerTracker_.WriteData(info, g_cout_lock);
-                // pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
                 findWidgetsAllow = true;
                 widgetsCon.notify_all();
             }
@@ -234,7 +237,7 @@ namespace OHOS::uitest {
 
     void InputEventCallback::TimerTouchCheckFunction()
     {
-        while (true) {
+        while (g_uiRecordRun) {
             std::this_thread::sleep_for(std::chrono::milliseconds(TIMEINTERVAL));
             int currentTime = GetCurrentMillisecond();
             int diff = currentTime - touchTime;
@@ -244,9 +247,9 @@ namespace OHOS::uitest {
         }
     }
 
-    void InputEventCallback::FindWidgetsFunction()
+    void InputEventCallback::FindWidgetsandWriteData()
     {
-        while (true) {
+        while (g_uiRecordRun) {
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
             while (!findWidgetsAllow) {
                 widgetsCon.wait(widgetsLck);
@@ -256,7 +259,10 @@ namespace OHOS::uitest {
             driver.FindWidgets(selector, rev, err, true);
             PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
             pointerTracker_.WriteData(info, g_cout_lock);
-            pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
+            auto json = pointerTracker_.WriteData(info, outFile, g_csv_lock);
+            if (abcCallBack != nullptr){
+                abcCallBack(json);
+            }
             findWidgetsAllow = false;
             widgetsCon.notify_all();
         }
