@@ -39,7 +39,8 @@
           "hiviewdfx_hilog_native",
           "input",
           "graphic_standard",
-          "pasteboard"
+          "pasteboard",
+          "eventhandler"
         ],
         "third_party": [
           "libpng"
