@@ -88,7 +88,7 @@ namespace OHOS::uitest {
 
     void PointerTracker::HandleUpEvent(TouchEventInfo& event)
     {
-        if (fingerTrackers.count(event.downTime)){
+        if (fingerTrackers.count(event.downTime)) {
             // 第一个抬起的手指,记录手指总数
             if (maxFingerNum == 0 && fingerTrackers.size() != 0){
                 maxFingerNum = fingerTrackers.size();
