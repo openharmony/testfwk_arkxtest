@@ -239,7 +239,7 @@ void ScreenCopy::ConsumeFrameBuffer(const sptr<SurfaceBuffer> &buf)
     auto stride = static_cast<uint32_t>(bufHdl->stride);
     auto data = (uint8_t *)buf->GetVirAddr();
     constexpr int32_t RGBA_PIXEL_BYTES = 4;
-    constexpr int32_t RGB_PIXEL_BYTES = 5;
+    constexpr int32_t RGB_PIXEL_BYTES = 3;
     int32_t rgbSize = stride * height * RGB_PIXEL_BYTES / RGBA_PIXEL_BYTES;
     auto rgb = new uint8_t[rgbSize];
     ConvertRGBA2RGB(data, rgb, rgbSize / RGB_PIXEL_BYTES);
