@@ -234,7 +234,7 @@ namespace OHOS::uitest {
 
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
-        static constexpr string_view usage = "USAGE: uitest uiRecord <read|record|daemon>";
+        static constexpr string_view usage = "USAGE: uitest uiRecord <read|record|stop>";
         if (!(argc == INDEX_THREE || argc == INDEX_FOUR)) {
             PrintToConsole(usage);
             return EXIT_FAILURE;
@@ -251,10 +251,12 @@ namespace OHOS::uitest {
                 return EXIT_FAILURE;
             }
             UiDriver::RegisterController(move(controller));
-            auto data = nlohmann::json();
-            return UiDriverRecordStart(data, modeOpt);
+            return UiDriverRecordStart(modeOpt);
         } else if (opt == "read") {
             EventData::ReadEventLine();
+            return OHOS::ERR_OK;
+        } else if (opt == "stop") {
+            UiDriverRecordStop();
             return OHOS::ERR_OK;
         } else {
             PrintToConsole(usage);

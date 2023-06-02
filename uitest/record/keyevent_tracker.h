@@ -109,8 +109,8 @@ namespace OHOS::uitest {
         std::string WriteCombinationData(shared_ptr<mutex> &cout_lock);
         std::string WriteSingleData(KeyEventInfo &info, shared_ptr<mutex> &cout_lock);
         // record.csv
-        nlohmann::json WriteCombinationData(nlohmann::json& abcOut, ofstream &outFile, shared_ptr<mutex> &csv_lock);
-        nlohmann::json WriteSingleData(nlohmann::json& abcOut, KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock);
+        nlohmann::json WriteCombinationData(ofstream &outFile, shared_ptr<mutex> &csv_lock);
+        nlohmann::json WriteSingleData(KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock);
 
         void printEventItems();
 

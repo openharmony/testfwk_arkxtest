@@ -67,11 +67,11 @@ namespace OHOS::uitest {
         void SubscribeMonitorCancel();
         void TimerReprintClickFunction ();
         void TimerTouchCheckFunction();
-        void FindWidgetsFunction();
+        void FindWidgetsandWriteData();
         static std::shared_ptr<InputEventCallback> GetPtr();
-        void SetAbcOutJson(nlohmann::json &out)
+        void SetAbcCallBack(std::function<void(nlohmann::json )> healder)
         {
-            abcOut = out;
+            abcCallBack = healder;
         }
     public:
         static constexpr int TIMEINTERVAL = 5000;
@@ -95,8 +95,8 @@ namespace OHOS::uitest {
         std::string filePath;
         WidgetSelector selector = WidgetSelector();
         vector<std::unique_ptr<Widget>> rev;
+        std::function<void(nlohmann::json)> abcCallBack = nullptr;
         mutable std::ofstream outFile;
-        mutable nlohmann::json abcOut;
         mutable UiDriver driver = UiDriver();
         mutable PointerTracker pointerTracker_;
         mutable KeyeventTracker keyeventTracker_;
@@ -139,6 +139,10 @@ namespace OHOS::uitest {
         std::mutex mut;
     };
 
-    int32_t UiDriverRecordStart(nlohmann::json &out, std::string modeOpt);
+    int32_t UiDriverRecordStart(std::string modeOpt);
+    int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> header , std::string modeOpt);
+    int32_t UiDriverRecordStart(std::shared_ptr<InputEventCallback> callBackPtr);
+    void UiDriverRecordStop();
+
 } // namespace OHOS::uitest
 #endif // UI_RECORD_H
