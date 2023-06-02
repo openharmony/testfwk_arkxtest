@@ -22,6 +22,8 @@ namespace OHOS::uitest {
     using namespace std::chrono;
     using nlohmann::json;
 
+    static bool g_uiRecordRun = false;
+
     // enum TouchOpt : uint8_t {
     //     OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
     //     OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
@@ -189,7 +191,10 @@ namespace OHOS::uitest {
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
                  // cout打印 + record.csv保存
                 snapshootKeyTracker.WriteSingleData(info, g_cout_lock);
-                snapshootKeyTracker.WriteSingleData(abcOut, info, outFile, g_csv_lock);
+                auto json = snapshootKeyTracker.WriteSingleData(info, outFile, g_csv_lock);
+                if (abcCallBack != nullptr){
+                    abcCallBack(json);
+                }
             }
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
             if (!KeyeventTracker::isCombinationKey(info.GetKeyCode())) {
@@ -200,7 +205,10 @@ namespace OHOS::uitest {
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
                 // cout打印 + record.csv保存json
                 snapshootKeyTracker.WriteCombinationData(g_cout_lock);
-                snapshootKeyTracker.WriteCombinationData(abcOut, outFile, g_csv_lock);
+                auto json = snapshootKeyTracker.WriteCombinationData(outFile, g_csv_lock);
+                if (abcCallBack != nullptr){
+                    abcCallBack(json);
+                }
             }
             keyeventTracker_.AddUpKeyEvent(info);
         }
@@ -212,7 +220,7 @@ namespace OHOS::uitest {
 
     void InputEventCallback::TimerReprintClickFunction ()
     {
-        while (true) {
+        while (g_uiRecordRun) {
             std::unique_lock <std::mutex> clickLck(g_clickMut);
             while (!isLastClick) {
                 clickCon.wait(clickLck);
@@ -221,9 +229,6 @@ namespace OHOS::uitest {
             if (isLastClick) {
                 isLastClick = false;
                 pointerTracker_.SetLastClickInTracker(false);
-                // PointerInfo info = pointerTracker_.GetLastClickInfo();
-                // pointerTracker_.WriteData(info, g_cout_lock);
-                // pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
                 findWidgetsAllow = true;
                 widgetsCon.notify_all();
             }
@@ -232,7 +237,7 @@ namespace OHOS::uitest {
 
     void InputEventCallback::TimerTouchCheckFunction()
     {
-        while (true) {
+        while (g_uiRecordRun) {
             std::this_thread::sleep_for(std::chrono::milliseconds(TIMEINTERVAL));
             int currentTime = GetCurrentMillisecond();
             int diff = currentTime - touchTime;
@@ -242,9 +247,9 @@ namespace OHOS::uitest {
         }
     }
 
-    void InputEventCallback::FindWidgetsFunction()
+    void InputEventCallback::FindWidgetsandWriteData()
     {
-        while (true) {
+        while (g_uiRecordRun) {
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
             while (!findWidgetsAllow) {
                 widgetsCon.wait(widgetsLck);
@@ -254,7 +259,10 @@ namespace OHOS::uitest {
             driver.FindWidgets(selector, rev, err, true);
             PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
             pointerTracker_.WriteData(info, g_cout_lock);
-            pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
+            auto json = pointerTracker_.WriteData(info, outFile, g_csv_lock);
+            if (abcCallBack != nullptr){
+                abcCallBack(json);
+            }
             findWidgetsAllow = false;
             widgetsCon.notify_all();
         }
@@ -300,9 +308,6 @@ namespace OHOS::uitest {
                 PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
                 if (info.GetTouchOpt() != OP_CLICK){
                     isLastClick = false;
-                    // pointerTracker_.WriteData(info, g_cout_lock);
-                    // pointerTracker_.WriteData(abcOut, info, outFile, g_csv_lock);
-                    pointerTracker_.SetNeedWrite(false);
                     findWidgetsAllow = true;
                     widgetsCon.notify_all();
                 }
@@ -310,6 +315,7 @@ namespace OHOS::uitest {
                     isLastClick = true;
                     clickCon.notify_all();
                 }
+                pointerTracker_.SetNeedWrite(false);
             }
         }
     }
@@ -369,18 +375,30 @@ namespace OHOS::uitest {
         }
     }
 
-    int32_t UiDriverRecordStart(nlohmann::json &out, std::string modeOpt)
+    int32_t UiDriverRecordStart(std::string modeOpt)
     {
         auto callBackPtr = InputEventCallback::GetPtr();
+        callBackPtr->RecordInitEnv(modeOpt);
+        return UiDriverRecordStart(callBackPtr);
+    }
+
+    int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> healder ,  std::string modeOpt)
+    {
+        auto callBackPtr = InputEventCallback::GetPtr();
+        callBackPtr->RecordInitEnv(modeOpt);
+        callBackPtr->SetAbcCallBack(healder);
+        return UiDriverRecordStart(callBackPtr);
+    }
+
+    int32_t UiDriverRecordStart(std::shared_ptr<InputEventCallback> callBackPtr)
+    {
         if (!callBackPtr->InitEventRecordFile()) {
             return OHOS::ERR_INVALID_VALUE;
         }
-        callBackPtr->RecordInitEnv(modeOpt);
         if (callBackPtr == nullptr) {
             std::cout << "nullptr" << std::endl;
             return OHOS::ERR_INVALID_VALUE;
         }
-        callBackPtr->SetAbcOutJson(out);
         // 按键订阅
         callBackPtr->SubscribeMonitorInit();
         int32_t id1 = MMI::InputManager::GetInstance()->AddMonitor(callBackPtr);
@@ -388,20 +406,26 @@ namespace OHOS::uitest {
             std::cout << "Startup Failed!" << std::endl;
             return OHOS::ERR_INVALID_VALUE;
         }
+        g_uiRecordRun = true;
         // 补充click打印线程
         std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, callBackPtr);
         // touch计时线程
         std::thread toughTimerThread(&InputEventCallback::TimerTouchCheckFunction, callBackPtr);
-        // widget 线程
-        std::thread widgetThread(&InputEventCallback::FindWidgetsFunction, callBackPtr);
+        // widget&data 线程
+        std::thread dataThread(&InputEventCallback::FindWidgetsandWriteData, callBackPtr);
         std::cout << "Started Recording Successfully..." << std::endl;
         int flag = getc(stdin);
         std::cout << flag << std::endl;
         clickThread.join();
         toughTimerThread.join();
-        widgetThread.join();
+        dataThread.join();
         // 取消按键订阅
         callBackPtr->SubscribeMonitorCancel();
-        return OHOS::ERR_OK;  
+        return OHOS::ERR_OK; 
+    }
+
+    void UiDriverRecordStop()
+    {
+        g_uiRecordRun = false;
     }
 } // namespace OHOS::uitest

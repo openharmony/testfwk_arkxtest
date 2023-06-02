@@ -99,7 +99,7 @@ namespace OHOS::uitest {
     }
 
     // record.csv
-    nlohmann::json KeyeventTracker::WriteCombinationData(nlohmann::json& abcOut, ofstream& outFile, shared_ptr<mutex> &csv_lock)
+    nlohmann::json KeyeventTracker::WriteCombinationData(ofstream& outFile, shared_ptr<mutex> &csv_lock)
     {        
         auto data = nlohmann::json();
         if (infos_.size()==0) {
@@ -119,11 +119,10 @@ namespace OHOS::uitest {
         if (outFile.is_open()) {
             outFile << data.dump() << std::endl;
         }
-        abcOut.push_back(data);
         return data;
     }
 
-    nlohmann::json KeyeventTracker::WriteSingleData(nlohmann::json& abcOut, KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock)
+    nlohmann::json KeyeventTracker::WriteSingleData(KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock)
     {
         buildEventItems(info);
         auto data = nlohmann::json();
@@ -138,7 +137,6 @@ namespace OHOS::uitest {
         if (outFile.is_open()) {
             outFile << data.dump() << std::endl;
         }
-        abcOut.push_back(data);
         return data;
     }
 
