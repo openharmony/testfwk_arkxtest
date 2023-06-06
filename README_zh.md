@@ -1063,7 +1063,7 @@ Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹�
 |-----|------------------------------------|----------------------------|
 | 1   | id(i:string):On                    | 指定控件id。                    |
 | 2   | text(t:string, p?:MatchPattern):On | 指定控件文本，可指定匹配模式。            |
-| 3   | type(t:string)):On                 | 指定控件类型。                    |
+| 3   | type(t:string):On                 | 指定控件类型。                    |
 | 4   | enabled(e:bool):On                 | 指定控件使能状态。                  |
 | 5   | clickable(c:bool):On               | 指定控件可单击状态。                 |
 | 6   | longClickable(l:bool):On           | 指定控件可长按状态。                 |
@@ -1245,3 +1245,4 @@ hdc shell chmod +x /system/bin/uitest
 | 4.0.1.3 | 1、示例代码更新<br />2、滑动控件进行滑动查找、滑动到尾部/顶部功能优化 |
 | 4.0.1.4 | 1、可选参数传入undefined时，当作默认值处理                   |
 | 4.0.2.0 | 1、支持监听toast和dialog控件出现，使用callback的形式返回结果。 |
+| 4.0.3.0 | 1、增加加载运行.abc文件机制。 |
