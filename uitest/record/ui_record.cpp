@@ -23,7 +23,7 @@ namespace OHOS::uitest {
     using nlohmann::json;
 
     static bool g_uiRecordRun = false;
-
+    std::shared_ptr<InputEventCallback> InputEventCallback::instance = nullptr;
     // enum TouchOpt : uint8_t {
     //     OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
     //     OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
@@ -161,7 +161,7 @@ namespace OHOS::uitest {
             } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
                 PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
                 info.SetTouchOpt(touchOpt);
-                findWidgetsAllow = true;
+                findWidgetsAllow_ = true;
                 widgetsCon.notify_all();
                 // g_isSpecialclick = false;
                 pointerTracker_.SetLastClickInTracker(false);
@@ -222,14 +222,14 @@ namespace OHOS::uitest {
     {
         while (g_uiRecordRun) {
             std::unique_lock <std::mutex> clickLck(g_clickMut);
-            while (!isLastClick) {
+            while (!isLastClick_) {
                 clickCon.wait(clickLck);
             }
             std::this_thread::sleep_for(std::chrono::milliseconds((int)( PointerTracker::INTERVAL_THRESHOLD * gTimeIndex)));
-            if (isLastClick) {
-                isLastClick = false;
+            if (isLastClick_) {
+                isLastClick_ = false;
                 pointerTracker_.SetLastClickInTracker(false);
-                findWidgetsAllow = true;
+                findWidgetsAllow_ = true;
                 widgetsCon.notify_all();
             }
         }
@@ -251,7 +251,7 @@ namespace OHOS::uitest {
     {
         while (g_uiRecordRun) {
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
-            while (!findWidgetsAllow) {
+            while (!findWidgetsAllow_) {
                 widgetsCon.wait(widgetsLck);
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(gTimeIndex)); // 确保界面已更新
@@ -263,7 +263,7 @@ namespace OHOS::uitest {
             if (abcCallBack != nullptr){
                 abcCallBack(json);
             }
-            findWidgetsAllow = false;
+            findWidgetsAllow_ = false;
             widgetsCon.notify_all();
         }
     }
@@ -290,7 +290,7 @@ namespace OHOS::uitest {
         //           << touchEvent.actionTime << " , " << touchEvent.downTime << std::endl;
         if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
-            while (findWidgetsAllow) {
+            while (findWidgetsAllow_) {
                 widgetsCon.wait(widgetsLck);
             }
             if (recordMode != "point") {
@@ -307,23 +307,38 @@ namespace OHOS::uitest {
             if (pointerTracker_.IsNeedWrite()) {
                 PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
                 if (info.GetTouchOpt() != OP_CLICK){
-                    isLastClick = false;
-                    findWidgetsAllow = true;
+                    isLastClick_ = false;
+                    findWidgetsAllow_ = true;
                     widgetsCon.notify_all();
                 }
                 if (info.GetTouchOpt() == OP_CLICK){
-                    isLastClick = true;
+                    isLastClick_ = true;
                     clickCon.notify_all();
                 }
                 pointerTracker_.SetNeedWrite(false);
             }
         }
     }
+
     std::shared_ptr<InputEventCallback> InputEventCallback::GetPtr()
     {
-        return std::make_shared<InputEventCallback>();
+        if(instance == nullptr){
+            instance = std::make_shared<InputEventCallback>();
+        }
+        return instance;
     }
-
+    void InputEventCallback::RecordStop()
+    {
+        g_uiRecordRun = false;
+        if(instance != nullptr){
+            instance->GetWidgetsCon().notify_all();
+            instance->GetClickCon().notify_all();
+            instance->SetLastClick(true);
+            instance->SetFindWidgetsAllow(true);
+            instance = nullptr;
+        }
+    }
+    
     bool InputEventCallback::InitReportFolder()
     {
         if (opendir(DEFAULT_DIR.c_str()) == nullptr) {
@@ -426,6 +441,6 @@ namespace OHOS::uitest {
 
     void UiDriverRecordStop()
     {
-        g_uiRecordRun = false;
+        InputEventCallback::RecordStop();        
     }
 } // namespace OHOS::uitest

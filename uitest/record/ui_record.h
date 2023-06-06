@@ -69,9 +69,26 @@ namespace OHOS::uitest {
         void TimerTouchCheckFunction();
         void FindWidgetsandWriteData();
         static std::shared_ptr<InputEventCallback> GetPtr();
+        static void RecordStop();
         void SetAbcCallBack(std::function<void(nlohmann::json )> healder)
         {
             abcCallBack = healder;
+        }
+        std::condition_variable& GetWidgetsCon()
+        {
+            return widgetsCon;
+        }
+        std::condition_variable& GetClickCon()
+        {
+            return clickCon;
+        }
+        void SetLastClick(bool isLastClick)
+        {
+            isLastClick_ = isLastClick;
+        }
+        void SetFindWidgetsAllow(bool findWidgetsAllow)
+        {
+            findWidgetsAllow_ = findWidgetsAllow;
         }
     public:
         static constexpr int TIMEINTERVAL = 5000;
@@ -79,15 +96,16 @@ namespace OHOS::uitest {
         static const std::string DEFAULT_DIR ;
     public:
         mutable volatile int touchTime = 0;
-        mutable volatile bool isLastClick = false;
+        mutable volatile bool isLastClick_ = false;
         mutable shared_ptr<mutex> g_cout_lock = make_shared<std::mutex>();
         mutable shared_ptr<mutex> g_csv_lock = make_shared<std::mutex>();
         mutable std::mutex g_clickMut;
         mutable std::condition_variable clickCon;
-        mutable volatile bool findWidgetsAllow = false;
+        mutable volatile bool findWidgetsAllow_ = false;
         mutable std::mutex widgetsMut;
         mutable std::condition_variable widgetsCon;
     private:
+        static std::shared_ptr<InputEventCallback> instance;
         int gTimeIndex = 1000;
         shared_ptr<queue<std::string>> eventQueue_;
         shared_ptr<mutex> lock_;
