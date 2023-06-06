@@ -121,12 +121,12 @@ export default async function abilityTest() {
       let b = 0.1
       expect(a).assertClose(1, b)
     })
-    it('assertClose_fail', 0, function () {
+    it('assertClose_null_fail_001', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(null, b)
     })
-    it('assertClose_fail', 0, function () {
+    it('assertClose_null_fail_002', 0, function () {
       expect(null).assertClose(null, 0)
     })
     it('assertEqual', 0, function () {
