@@ -25,6 +25,7 @@ arkXtest
 | 2    | 断言库   | 判断用例实际期望值与预期值是否相符。                         |
 | 3    | Mock能力 | 支持函数级mock能力，对定义的函数进行mock后修改函数的行为，使其返回指定的值或者执行某种动作。 |
 | 4    | 数据驱动 | 提供数据驱动能力，支持复用同一个测试脚本，使用不同输入数据驱动执行。 |
+| 5    | 专项能力 | 支持测试套与用例筛选、随机执行、压力测试、超时设置以及生成覆盖率等。 |
 
 ### 使用说明
 
@@ -92,17 +93,17 @@ export default async function abilityTest() {
 | 10   | assertNull         | 检验actualvalue是否是null。                                  |
 | 11   | assertThrowError   | 检验actualvalue抛出Error内容是否是expectValue。              |
 | 12   | assertUndefined    | 检验actualvalue是否是undefined。                             |
-| 13   | assertNaN          | 检验actualvalue是否是一个NAN                                 |
-| 14   | assertNegUnlimited | 检验actualvalue是否等于Number.NEGATIVE_INFINITY             |
-| 15   | assertPosUnlimited | 检验actualvalue是否等于Number.POSITIVE_INFINITY             |
-| 16   | assertDeepEquals   | 检验actualvalue和expectvalue是否完全相等               |
-| 17   | assertPromiseIsPending | 判断promise是否处于Pending状态。                         |
-| 18   | assertPromiseIsRejected | 判断promise是否处于Rejected状态。                       |
-| 19   | assertPromiseIsRejectedWith | 判断promise是否处于Rejected状态，并且比较执行的结果值。|
-| 20   | assertPromiseIsRejectedWithError | 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。                   |
-| 21   | assertPromiseIsResolved | 判断promise是否处于Resolved状态。                       |
-| 22   | assertPromiseIsResolvedWith | 判断promise是否处于Resolved状态，并且比较执行的结果值。|
-| 23   | not                | 断言取反,支持上面所有的断言功能                                 |
+| 13   | assertNaN          | @since1.0.4 检验actualvalue是否是一个NAN                     |
+| 14   | assertNegUnlimited | @since1.0.4 检验actualvalue是否等于Number.NEGATIVE_INFINITY |
+| 15   | assertPosUnlimited | @since1.0.4 检验actualvalue是否等于Number.POSITIVE_INFINITY |
+| 16   | assertDeepEquals   | @since1.0.4 检验actualvalue和expectvalue是否完全相等   |
+| 17   | assertPromiseIsPending | @since1.0.4 判断promise是否处于Pending状态。             |
+| 18   | assertPromiseIsRejected | @since1.0.4 判断promise是否处于Rejected状态。           |
+| 19   | assertPromiseIsRejectedWith | @since1.0.4 判断promise是否处于Rejected状态，并且比较执行的结果值。 |
+| 20   | assertPromiseIsRejectedWithError | @since1.0.4 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。       |
+| 21   | assertPromiseIsResolved | @since1.0.4 判断promise是否处于Resolved状态。           |
+| 22   | assertPromiseIsResolvedWith | @since1.0.4 判断promise是否处于Resolved状态，并且比较执行的结果值。 |
+| 23   | not                | @since1.0.4 断言取反,支持上面所有的断言功能                     |
 
 示例代码：
 
@@ -962,6 +963,193 @@ export default function abilityTest() {
     });
 }
 ```
+#### 专项能力
+
+该项能力需通过在cmd窗口中输入aa test命令执行触发，并通过设置执行参数触发不同功能
+
+**aa test命令执行配置参数**
+
+| 执行参数 | 含义说明                               | 参数示例                           |
+| -------- | -------------------------------------- | ---------------------------------- |
+| -b       | bundleName, 应用Bundle名称             | - b com.test.example               |
+| -p       | 应用模块名，适用于FA模型应用           | - p com.test.example.entry         |
+| -m       | 应用模块名，适用于Stage模型应用        | -m entry                           |
+| -s       | 特定参数，以<key, value>键值对方式传入 | - s unittest OpenHarmonyTestRunner |
+
+由于Stage 编译方式分为jsbundle与esmodule, 可查看工程module.json5中compileMode字段以区分。对于esmodule方式需要在OpenHarmonyTestRunner加上"/ets/testrunner/" 前缀。
+
+- 执行所有测试用例, 示例命令如下：
+
+  FA模型
+
+  ```
+  hdc shell aa test -b xxx -p xxx -s unittest OpenHarmonyTestRunner
+  ```
+
+  Stage模型，编译方式为jsbundle
+
+  ```
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner
+  ```
+
+  Stage模型，编译方式为esmodule
+
+  ```
+  hdc shell aa test -b xxx -m xxx -s unittest /ets/testrunner/OpenHarmonyTestRunner
+  ```
+
+- **筛选能力**
+
+  1、按测试用例属性筛选
+
+  可以利用hypium提供的Level、Size、TestType 对象，对测试用例进行标记，以区分测试用例的级别、粒度、测试类型，各字段含义及代码如下：
+
+  | Key      | 含义说明     | Value取值范围                                                |
+  | -------- | ------------ | ------------------------------------------------------------ |
+  | level    | 用例级别     | "0","1","2","3","4", 例如：-s level 1                        |
+  | size     | 用例粒度     | "small","medium","large", 例如：-s size small                |
+  | testType | 用例测试类型 | "function","performance","power","reliability","security","global","compatibility","user","standard","safety","resilience", 例如：-s testType function |
+
+  示例代码：
+
+  ```javascript
+  import { describe, it, expect, TestType, Size, Level } from '@ohos/hypium';
+  
+  export default function attributeTest() {
+      describe('attributeTest', function () {
+          it("testAttributeIt", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
+              console.info('Hello Test');
+          })
+      })
+  }
+  ```
+
+  示例命令: 
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s testType function -s size small -s level 0
+  ```
+
+  该命令作用是筛选测试应用中同时满足，用例测试类型是“function”、用例粒度是“small”、用例级别是“0”的三个条件用例执行。
+
+  2、按测试套/测试用例名称筛选
+
+  hypium可以通过指定测试套与测试用例名称，来指定特定用例的执行，测试套与用例名称用“#”号连接，多个用“,”英文逗号分隔
+
+  | Key      | 含义说明                | Value取值范围                                                |
+  | -------- | ----------------------- | ------------------------------------------------------------ |
+  | class    | 指定要执行的测试套&用例 | ${describeName}#${itName}，${describeName} , 例如：-s class attributeTest#testAttributeIt |
+  | notClass | 指定不执行的测试套&用例 | ${describeName}#${itName}，${describeName} , 例如：-s notClass attributeTest#testAttribut |
+
+  示例代码：
+
+  ```javascript
+  import { describe, it, expect, TestType, Size, Level } from '@ohos/hypium';
+  
+  export default function attributeTest() {
+      describe('describeTest_000', function () {
+          it("testIt_00", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
+              console.info('Hello Test');
+          })
+          
+          it("testIt_01", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
+              console.info('Hello Test');
+          })
+      })
+      
+      describe('describeTest_001', function () {
+          it("testIt_02", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
+              console.info('Hello Test');
+          })
+      })
+  }
+  ```
+
+  示例命令1: 
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s class describeTest_000#testIt_00,describeTest_001
+  ```
+
+  该命令作用是执行“describeTest_001”测试套中所用用例，以及“describeTest_000”测试套中的“testIt_00”用例。
+
+  示例命令2：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s notClass describeTest_000#testIt_01
+  ```
+
+  该命令作用是不执行“describeTest_000”测试套中的“testIt_01”用例。
+
+- **随机执行**
+
+  使测试套与测试用例随机执行，用于稳定性测试。
+
+  | Key    | 含义说明                             | Value取值范围                                  |
+  | ------ | ------------------------------------ | ---------------------------------------------- |
+  | random | @since1.0.3 测试套、测试用例随机执行 | true, 不传参默认为false， 例如：-s random true |
+
+  示例命令：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s dryRun true
+  ```
+
+- **压力测试**
+
+  使测试套与测试用例随机执行，用于压力测试。
+
+  | Key    | 含义说明                             | Value取值范围                  |
+  | ------ | ------------------------------------ | ------------------------------ |
+  | stress | @since1.0.5 指定要执行用例的执行次数 | 正整数， 例如： -s stress 1000 |
+
+  示例命令：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s stress 1000
+  ```
+
+- **用例超时时间设置**
+
+  指定测试用例执行的超时时间，用例实际耗时如果大于超时时间，用例会抛出"timeout"异常，用例结果会显示“excute timeout XXX”
+
+  | Key     | 含义说明                   | Value取值范围                                        |
+  | ------- | -------------------------- | ---------------------------------------------------- |
+  | timeout | 指定测试用例执行的超时时间 | 正整数(单位ms)，默认为 5000，例如： -s timeout 15000 |
+
+  示例命令：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s timeout 15000
+  ```
+
+- 用例覆盖率
+
+  该功能需借助IDE工具，通过IDE执行测试用例，鼠标右键选择“Run XXX with Coverage ”生成测试用例覆盖率报告
+
+  | Key      | 含义说明                | Value取值范围                                    |
+  | -------- | ----------------------- | ------------------------------------------------ |
+  | coverage | ”生成测试用例覆盖率报告 | true, 不传参默认为false， 例如：-s coverage true |
+
+  示例命令：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s coverage true
+  ```
+
+- 测试套中用例信息输出
+
+  输出测试应用中待执行的测试用例信息
+
+  | Key    | 含义说明                     | Value取值范围                                  |
+  | ------ | ---------------------------- | ---------------------------------------------- |
+  | dryRun | 显示待执行的测试用例信息全集 | true, 不传参默认为false， 例如：-s dryRun true |
+
+  示例命令：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s dryRun true
+  ```
 
 ### 使用方式
 
