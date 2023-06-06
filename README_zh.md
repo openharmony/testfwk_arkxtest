@@ -25,7 +25,7 @@ arkXtest
 | 2    | 断言库   | 判断用例实际期望值与预期值是否相符。                         |
 | 3    | Mock能力 | 支持函数级mock能力，对定义的函数进行mock后修改函数的行为，使其返回指定的值或者执行某种动作。 |
 | 4    | 数据驱动 | 提供数据驱动能力，支持复用同一个测试脚本，使用不同输入数据驱动执行。 |
-| 5    | 专项能力 | 支持测试套与用例筛选、随机执行、压力测试、超时设置以及生成覆盖率等。 |
+| 5    | 专项能力 | 支持测试套与用例筛选、随机执行、压力测试、超时设置、遇错即停模式等。 |
 
 ### 使用说明
 
@@ -1028,38 +1028,7 @@ export default function abilityTest() {
 ```
 #### 专项能力
 
-该项能力需通过在cmd窗口中输入aa test命令执行触发，并通过设置执行参数触发不同功能
-
-**aa test命令执行配置参数**
-
-| 执行参数 | 含义说明                                    | 参数示例                           |
-| -------- | ------------------------------------------- | ---------------------------------- |
-| -b       | bundleName, 应用Bundle名称                  | - b com.test.example               |
-| -p       | pakageName, 应用模块名，适用于FA模型应用    | - p com.test.example.entry         |
-| -m       | moudleName, 应用模块名，适用于Stage模型应用 | -m entry                           |
-| -s       | 特定参数，以<key, value>键值对方式传入      | - s unittest OpenHarmonyTestRunner |
-
-由于Stage 编译方式分为jsbundle与esmodule, 可查看工程module.json5中compileMode字段以区分。所以，esmodule方式需要在OpenHarmonyTestRunner加上"/ets/testrunner/" 前缀。
-
-- 执行所有测试用例, 示例命令如下：
-
-  FA模型
-
-  ```
-  hdc shell aa test -b xxx -p xxx -s unittest OpenHarmonyTestRunner
-  ```
-
-  Stage模型，编译方式为jsbundle
-
-  ```
-  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner
-  ```
-
-  Stage模型，编译方式为esmodule
-
-  ```
-  hdc shell aa test -b xxx -m xxx -s unittest /ets/testrunner/OpenHarmonyTestRunner
-  ```
+该项能力需通过在cmd窗口中输入aa test命令执行触发，并通过设置执行参数触发不同功能。另外，测试应用模型与编译方式不同，对应的aa test命令也不同，具体可参考[自动化测试框架使用指导](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/application-test/arkxtest-guidelines.md#cmd%E6%89%A7%E8%A1%8C)
 
 - **筛选能力**
 
@@ -1160,7 +1129,7 @@ export default function abilityTest() {
 
 - **压力测试**
 
-  使测试套与测试用例随机执行，用于压力测试。
+  指定要执行用例的执行次数，用于压力测试。
 
   | Key    | 含义说明                             | Value取值范围                  |
   | ------ | ------------------------------------ | ------------------------------ |
@@ -1184,20 +1153,6 @@ export default function abilityTest() {
 
   ```shell
   hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s timeout 15000
-  ```
-
-- **用例覆盖率**
-
-  该功能需借助IDE工具，通过IDE执行测试用例，鼠标右键选择“Run XXX with Coverage ”生成测试用例覆盖率报告。可在项目工程.test/xxx/.../instrument目录下的js文件中，通过coverageData变量查看具体的覆盖率信息。
-
-  | Key      | 含义说明                           | Value取值范围                                    |
-  | -------- | ---------------------------------- | ------------------------------------------------ |
-  | coverage | @since1.0.6 生成测试用例覆盖率报告 | true, 不传参默认为false， 例如：-s coverage true |
-
-  示例命令：
-
-  ```shell
-  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s coverage true
   ```
 
 - **遇错即停模式**
