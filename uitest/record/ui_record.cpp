@@ -331,10 +331,12 @@ namespace OHOS::uitest {
     {
         g_uiRecordRun = false;
         if(instance != nullptr){
-            instance->GetWidgetsCon().notify_all();
-            instance->GetClickCon().notify_all();
-            instance->SetLastClick(true);
-            instance->SetFindWidgetsAllow(true);
+            instance->widgetsCon.notify_all();
+            instance->clickCon.notify_all();
+            instance->timerCon.notify_all();
+            instance->isLastClick_ = true;
+            instance->findWidgetsAllow_ = true;
+            instance->stopFlag = true;
             instance = nullptr;
         }
     }
