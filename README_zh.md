@@ -21,7 +21,7 @@ arkXtest
 
 | No.  | 特性     | 功能说明                                                     |
 | ---- | -------- | ------------------------------------------------------------ |
-| 1    | 基础流程 | 支持编写及执行基础用例。                                     |
+| 1    | 基础流程 | 支持编写及异步执行基础用例。                                 |
 | 2    | 断言库   | 判断用例实际期望值与预期值是否相符。                         |
 | 3    | Mock能力 | 支持函数级mock能力，对定义的函数进行mock后修改函数的行为，使其返回指定的值或者执行某种动作。 |
 | 4    | 数据驱动 | 提供数据驱动能力，支持复用同一个测试脚本，使用不同输入数据驱动执行。 |
@@ -128,6 +128,54 @@ export default async function abilityTest() {
     })
     it('assertBeClose_fail', 0, function () {
       expect(null).assertClose(null, 0)
+    })
+    it('assertEqual', 0, function () {
+      let a = 1;
+      let b = 1;
+      expect(a).assertEqual(b)
+    })
+    it('assertFail', 0, function () {
+      expect().assertFail();
+    })
+    it('assertFalse', 0, function () {
+      let a = false;
+      expect(a).assertFalse();
+    })
+    it('assertTrue', 0, function () {
+      let a = true;
+      expect(a).assertTrue();
+    })
+    it('assertInstanceOf_success', 0, function () {
+      let a = 'strTest'
+      expect(a).assertInstanceOf('String')
+    })
+    it('assertLarger', 0, function () {
+      let a = 1;
+      let b = 2;
+      expect(b).assertLarger(a);
+    })
+    it('assertLess', 0, function () {
+      let a = 1;
+      let b = 2;
+      expect(a).assertLess(b);
+    })
+    it('assertNull', 0, function () {
+      let a = null;
+      expect(a).assertNull()
+    })
+    it('assertThrowError', 0, function () {
+      function testError() {
+        throw new Error('error message')
+      }
+      expect(testError).assertThrowError('error message')
+    })
+    it('assertUndefined', 0, function () {
+      let a = undefined;
+      expect(a).assertUndefined();
+    })
+    it('assertNaN', 0, function () {
+      let a = 'str'
+      expect(a).assertNaN()
     })
     it('assertInstanceOf_success', 0, function () {
       let a = 'strTest'
@@ -438,7 +486,7 @@ export default function ActsAbilityTest() {
 }
 ```
 
-**示例4： 设定参数类型为anyString,anyBoolean等的使用**
+**示例4： 设定参数类型ArgumentMatchers的使用**
 
 ```javascript
 import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
@@ -470,12 +518,27 @@ export default function ActsAbilityTest() {
             //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
             let mockfunc = mocker.mockFunc(claser, claser.method_1);
             //根据自己需求进行选择
-            when(mockfunc)(ArgumentMatchers.anyString).afterReturn('1');
+            when(mockfunc)(ArgumentMatchers.anyString).afterReturn('0');
 
             //4.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
             //执行成功的案例，传参为字符串类型
-            expect(claser.method_1('test')).assertEqual('1'); //用例执行通过。
-            expect(claser.method_1('abc')).assertEqual('1'); //用例执行通过。
+            expect(claser.method_1('test')).assertEqual('0'); //用例执行通过。
+            expect(claser.method_1('abc')).assertEqual('0'); //用例执行通过。
+            
+            when(mockfunc)(ArgumentMatchers.anyNumber).afterReturn('1');
+            expect(claser.method_1(1)).assertEqual('1')
+
+            when(mockfunc)(ArgumentMatchers.anyBoolean).afterReturn('2');
+            expect(claser.method_1(true)).assertEqual('2')
+
+            when(mockfunc)(ArgumentMatchers.anyFunction).afterReturn('3');
+            function testFn() {
+              return 2;
+            }
+            expect(claser.method_1(testFn)).assertEqual('3')
+
+            when(mockfunc)(ArgumentMatchers.anyObj).afterReturn('4');
+            expect(claser.method_1(new String('test'))).assertEqual('4')
 
             //执行失败的案例，传参为数字类型
             //expect(claser.method_1(123)).assertEqual('1');//用例执行失败。
@@ -969,12 +1032,12 @@ export default function abilityTest() {
 
 **aa test命令执行配置参数**
 
-| 执行参数 | 含义说明                               | 参数示例                           |
-| -------- | -------------------------------------- | ---------------------------------- |
-| -b       | bundleName, 应用Bundle名称             | - b com.test.example               |
-| -p       | 应用模块名，适用于FA模型应用           | - p com.test.example.entry         |
-| -m       | 应用模块名，适用于Stage模型应用        | -m entry                           |
-| -s       | 特定参数，以<key, value>键值对方式传入 | - s unittest OpenHarmonyTestRunner |
+| 执行参数 | 含义说明                                    | 参数示例                           |
+| -------- | ------------------------------------------- | ---------------------------------- |
+| -b       | bundleName, 应用Bundle名称                  | - b com.test.example               |
+| -p       | pakageName, 应用模块名，适用于FA模型应用    | - p com.test.example.entry         |
+| -m       | moudleName, 应用模块名，适用于Stage模型应用 | -m entry                           |
+| -s       | 特定参数，以<key, value>键值对方式传入      | - s unittest OpenHarmonyTestRunner |
 
 由于Stage 编译方式分为jsbundle与esmodule, 可查看工程module.json5中compileMode字段以区分。对于esmodule方式需要在OpenHarmonyTestRunner加上"/ets/testrunner/" 前缀。
 
@@ -1123,9 +1186,9 @@ export default function abilityTest() {
   hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s timeout 15000
   ```
 
-- 用例覆盖率
+- **用例覆盖率**
 
-  该功能需借助IDE工具，通过IDE执行测试用例，鼠标右键选择“Run XXX with Coverage ”生成测试用例覆盖率报告
+  该功能需借助IDE工具，通过IDE执行测试用例，鼠标右键选择“Run XXX with Coverage ”生成测试用例覆盖率报告。可在项目工程.test/xxx/.../instrument目录下的js文件中，通过coverageData变量查看具体的覆盖率信息。
 
   | Key      | 含义说明                           | Value取值范围                                    |
   | -------- | ---------------------------------- | ------------------------------------------------ |
@@ -1137,7 +1200,19 @@ export default function abilityTest() {
   hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s coverage true
   ```
 
-- 测试套中用例信息输出
+- **遇错即停模式**
+
+  | Key          | 含义说明                                                     | Value取值范围                                        |
+  | ------------ | ------------------------------------------------------------ | ---------------------------------------------------- |
+  | breakOnError | @since1.0.6 遇错即停模式，当执行用例断言失败或者发生错误时，退出测试执行流程 | true, 不传参默认为false， 例如：-s breakOnError true |
+  
+  示例命令：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s breakOnError true
+  ```
+  
+- **测试套中用例信息输出**
 
   输出测试应用中待执行的测试用例信息
 
