@@ -110,23 +110,23 @@ export default async function abilityTest() {
 ```javascript
 import { describe, it, expect } from '@ohos/hypium'
 export default async function abilityTest() {
-  describe('assertClose', function () {
-    it('assertBeClose_success', 0, function () {
+  describe('assertTest', function () {
+    it('assertClose_success', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(99, b)
     })
-    it('assertBeClose_fail', 0, function () {
+    it('assertClose_fail', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(1, b)
     })
-    it('assertBeClose_fail', 0, function () {
+    it('assertClose_fail', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(null, b)
     })
-    it('assertBeClose_fail', 0, function () {
+    it('assertClose_fail', 0, function () {
       expect(null).assertClose(null, 0)
     })
     it('assertEqual', 0, function () {
@@ -1039,7 +1039,7 @@ export default function abilityTest() {
 | -m       | moudleName, 应用模块名，适用于Stage模型应用 | -m entry                           |
 | -s       | 特定参数，以<key, value>键值对方式传入      | - s unittest OpenHarmonyTestRunner |
 
-由于Stage 编译方式分为jsbundle与esmodule, 可查看工程module.json5中compileMode字段以区分。对于esmodule方式需要在OpenHarmonyTestRunner加上"/ets/testrunner/" 前缀。
+由于Stage 编译方式分为jsbundle与esmodule, 可查看工程module.json5中compileMode字段以区分。所以，esmodule方式需要在OpenHarmonyTestRunner加上"/ets/testrunner/" 前缀。
 
 - 执行所有测试用例, 示例命令如下：
 
