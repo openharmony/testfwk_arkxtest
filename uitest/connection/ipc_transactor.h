@@ -84,12 +84,13 @@ namespace OHOS::uitest {
         ConnectionStat GetConnectionStat() const;
         // functions for sending/handling broadcast commands
         static void SendBroadcastCommand(const OHOS::AAFwk::Want &cmd, ApiCallErr &err);
-        static void SetBroadcaseCommandHandler(BroadcastCommandHandler handler);
-        static void UnsetBroadcaseCommandHandler();
+        static void SetBroadcastCommandHandler(BroadcastCommandHandler handler);
+        static void UnsetBroadcastCommandHandler();
 
     private:
         const bool asServer_ = false;
         ConnectionStat connectState_ = UNINIT;
+        bool singlenessMode_ = false;
         // for concurrent invocation detect
         std::string processingApi_ = "";
         sptr<ApiCaller> caller_ = nullptr;

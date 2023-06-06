@@ -85,12 +85,12 @@ namespace OHOS::uitest {
         {"AlertDialog", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "dialogShow"}
     };
 
-    static std::string GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
+    static std::string_view GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
     {
         for (unsigned long index = 0; index < sizeof(WATCHED_EVENTS) / sizeof(EventSpec); index++) {
             if (WATCHED_EVENTS[index].componentTyep == eventInfo.GetComponentType() &&
                 WATCHED_EVENTS[index].eventType == eventInfo.GetWindowContentChangeTypes()) {
-                return string(WATCHED_EVENTS[index].event);
+                return WATCHED_EVENTS[index].event;
             }
         }
         return "undefine";
@@ -351,11 +351,11 @@ namespace OHOS::uitest {
         });
         auto screenSize = GetDisplaySize();
         AccessibilityElementInfo elementInfo;
+        auto amcPtr = AAFwk::AbilityManagerClient::GetInstance();
+        const auto foreAbility = amcPtr->GetTopAbility();
         for (auto &window : windows) {
             if (ability->GetRootByWindow(window, elementInfo) == RET_OK) {
                 const auto app = elementInfo.GetBundleName();
-                auto amcPtr = AAFwk::AbilityManagerClient::GetInstance();
-                const auto foreAbility = amcPtr->GetTopAbility();
                 LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
                 if (targetApp != "" && app != targetApp) {
                     continue;
