@@ -408,19 +408,4 @@ namespace OHOS::uitest {
                 return;
         }
     }
-
-    void UiDriver::recent(ApiCallErr &err)
-    {
-        auto screenSize = this->GetDisplaySize(err);
-        auto pointerMatrix = PointerMatrix(1,6);
-        pointerMatrix.At(0, 0).point_ = {screenSize.px_ / 2, screenSize.py_ - 0};
-        pointerMatrix.At(0, 1).point_ = {screenSize.px_ / 2, screenSize.py_ - 100};
-        pointerMatrix.At(0, 2).point_ = {screenSize.px_ / 2, screenSize.py_ - 200};
-        pointerMatrix.At(0, 3).point_ = {screenSize.px_ / 2, screenSize.py_ - 300};
-        pointerMatrix.At(0, 4).point_ = {65536 * 1000 + screenSize.px_ / 2, screenSize.py_ - 400};
-        pointerMatrix.At(0, 5).point_ = {screenSize.px_ / 2, screenSize.py_ - 500};
-        auto touch = MultiPointerAction(pointerMatrix);
-        UiOpArgs uiOpArgs;
-        this->PerformTouch(touch, uiOpArgs, err);
-    }
 } // namespace OHOS::uitest

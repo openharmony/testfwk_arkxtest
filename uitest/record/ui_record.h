@@ -74,27 +74,10 @@ namespace OHOS::uitest {
         {
             abcCallBack = healder;
         }
-        std::condition_variable& GetWidgetsCon()
-        {
-            return widgetsCon;
-        }
-        std::condition_variable& GetClickCon()
-        {
-            return clickCon;
-        }
-        void SetLastClick(bool isLastClick)
-        {
-            isLastClick_ = isLastClick;
-        }
-        void SetFindWidgetsAllow(bool findWidgetsAllow)
-        {
-            findWidgetsAllow_ = findWidgetsAllow;
-        }
-    public:
+
         static constexpr int TIMEINTERVAL = 5000;
         static constexpr int KEY_DOWN_DURATION = 0;
         static const std::string DEFAULT_DIR ;
-    public:
         mutable volatile int touchTime = 0;
         mutable volatile bool isLastClick_ = false;
         mutable shared_ptr<mutex> g_cout_lock = make_shared<std::mutex>();
@@ -104,11 +87,13 @@ namespace OHOS::uitest {
         mutable volatile bool findWidgetsAllow_ = false;
         mutable std::mutex widgetsMut;
         mutable std::condition_variable widgetsCon;
+        bool stopFlag = false;
+        std::mutex timerMut;
+        std::condition_variable timerCon;
     private:
         static std::shared_ptr<InputEventCallback> instance;
         int gTimeIndex = 1000;
         shared_ptr<queue<std::string>> eventQueue_;
-        shared_ptr<mutex> lock_;
         std::string recordMode = "";
         std::string filePath;
         WidgetSelector selector = WidgetSelector();
