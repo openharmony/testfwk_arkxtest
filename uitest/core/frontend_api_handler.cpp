@@ -39,7 +39,7 @@ namespace OHOS::uitest {
     public:
         UiEventFowarder() {};
 
-        void IncRef(string ref)
+        void IncRef(string_view ref)
         {
             auto find = refCountMap_.find(ref);
             if (find != refCountMap_.end()) {
@@ -49,7 +49,7 @@ namespace OHOS::uitest {
             }
         }
 
-        uint32_t DecAndGetRef(string ref)
+        uint32_t DecAndGetRef(string_view ref)
         {
             auto find = refCountMap_.find(ref);
             if (find != refCountMap_.end()) {
@@ -63,9 +63,9 @@ namespace OHOS::uitest {
             return 0;
         }
 
-        void OnEvent(std::string event, UiEventSourceInfo source) override
+        void OnEvent(std::string_view event, UiEventSourceInfo source) override
         {
-            auto &server = FrontendApiServer::Get();
+            const auto &server = FrontendApiServer::Get();
             json uiElementInfo;
             uiElementInfo["bundleName"] = source.bundleName;
             uiElementInfo["type"] = source.type;
@@ -77,8 +77,8 @@ namespace OHOS::uitest {
                 if (find == callBackInfos_.end()) {
                     return;
                 }
-                auto &observerRef = find->second.first;
-                auto &callbackRef = find->second.second;
+                const auto &observerRef = find->second.first;
+                const auto &callbackRef = find->second.second;
                 ApiCallInfo in;
                 ApiReplyInfo out;
                 in.apiId_ = "UIEventObserver.once";
@@ -93,7 +93,7 @@ namespace OHOS::uitest {
             }
         }
 
-        void AddCallbackInfo(string event, string observerRef, string cbRef)
+        void AddCallbackInfo(string_view event, string_view observerRef, string_view cbRef)
         {
             auto count = callBackInfos_.count(event);
             auto find = callBackInfos_.find(event);
@@ -111,8 +111,8 @@ namespace OHOS::uitest {
         }
 
     private:
-        multimap<string, pair<string, string>> callBackInfos_;
-        map<string, int> refCountMap_;
+        multimap<string_view, pair<string_view, string_view>> callBackInfos_;
+        map<string_view, int> refCountMap_;
     };
 
     /** API argument type list map.*/

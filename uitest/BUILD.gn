@@ -11,15 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//arkcompiler/ets_frontend/ts2panda/ts2abc_config.gni")
-import("//build/ohos.gni")
+base_root = "../../../.."
+import("$base_root/arkcompiler/ets_frontend/ts2panda/ts2abc_config.gni")
+import("$base_root/build/ohos.gni")
 
-source_root = "//test/testfwk/arkxtest/uitest"
+source_root = "$base_root/test/testfwk/arkxtest/uitest"
 
 config("uitest_common_configs") {
   include_dirs = [
     "//third_party/json/single_include/nlohmann",
-    "//foundation/mutimodalinput/input/interfaces",
+    "$base_root/foundation/mutimodalinput/input/interfaces",
   ]
   cflags = [
     "-Wfloat-equal",
@@ -47,6 +48,9 @@ ohos_static_library("uitest_core") {
     "__OHOS__=1",
     "LOG_TAG=\"UiTestKit_Base\"",
   ]
+
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
 }
 
 ohos_static_library("uitest_record") {
@@ -75,6 +79,9 @@ ohos_static_library("uitest_record") {
     "hiviewdfx_hilog_native:libhilog",
     "input:libmmi-client",
   ]
+
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
 }
 common_external_deps = [
   "c_utils:utils",
@@ -92,9 +99,42 @@ ohos_static_library("uitest_ipc") {
   ]
   external_deps += common_external_deps
 
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
+
   defines = [
     "__OHOS__=1",
     "LOG_TAG=\"UiTestKit_Conn\"",
+  ]
+}
+
+ohos_static_library("uitest_addon") {
+  configs = [ ":uitest_common_configs" ]
+  sources = [
+    "${source_root}/addon/js_client_loader.cpp",
+    "${source_root}/addon/screen_copy.cpp",
+  ]
+  include_dirs = [ "${source_root}/core" ]
+  deps = [
+    ":uitest_core",
+    "//third_party/libjpeg-turbo:turbojpeg_static",
+  ]
+  external_deps = [
+    "ability_runtime:runtime",
+    "eventhandler:libeventhandler",
+    "multimedia_image_framework:image_native",
+    "napi:ace_napi",
+    "window_manager:libdm",
+    "window_manager:libwm",
+  ]
+  external_deps += common_external_deps
+
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
+
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"UitestKid_Addon\"",
   ]
 }
 
@@ -108,10 +148,12 @@ ohos_executable("uitest_server") {
     "${source_root}/core",
     "${source_root}/connection",
     "${source_root}/record",
+    "${source_root}/addon",
   ]
 
   # static link the uitest_core as server end
   deps = [
+    ":uitest_addon",
     ":uitest_core",
     ":uitest_ipc",
     ":uitest_record",
@@ -119,7 +161,7 @@ ohos_executable("uitest_server") {
 
   #dependencies for screencap
   deps += [
-    "//foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client",
+    "$base_root/foundation/graphic/graphic_2d/rosen/modules/render_service_client:librender_service_client",
     "//third_party/libpng:libpng",
   ]
   external_deps = [
@@ -131,8 +173,8 @@ ohos_executable("uitest_server") {
     "window_manager:libwm",
   ]
 
-  subsystem_name = "test"
-  part_name = "arkXtest"
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
   output_name = "uitest"
   install_enable = true
   external_deps += common_external_deps
@@ -178,8 +220,8 @@ ohos_shared_library("uitest_client") {
     ":uitest_exporter_js",
     ":uitest_ipc",
   ]
-  subsystem_name = "test"
-  part_name = "arkXtest"
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
   output_name = "uitest"
   external_deps = common_external_deps
   external_deps += [
@@ -211,7 +253,7 @@ ohos_unittest("uitest_core_unittest") {
     "//third_party/googletest:gtest_main",
   ]
   include_dirs = [
-    "//base/hiviewdfx/hilog/interfaces/native/innerkits/include",
+    "$base_root/base/hiviewdfx/hilog/interfaces/native/innerkits/include",
     "//third_party/json/single_include/nlohmann",
     "${source_root}/core",
   ]
@@ -220,8 +262,8 @@ ohos_unittest("uitest_core_unittest") {
   use_exceptions = true
   module_out_path = "uitestkit/unittest"
   testonly = true
-  subsystem_name = "test"
-  part_name = "arkXtest"
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
 }
 
 ohos_unittest("uitest_ipc_unittest") {
@@ -240,8 +282,8 @@ ohos_unittest("uitest_ipc_unittest") {
   cflags_cc = [ "-g" ]
   module_out_path = "uitestkit/unittest"
   testonly = true
-  subsystem_name = "test"
-  part_name = "arkXtest"
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
 }
 
 group("uitestkit") {

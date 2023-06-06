@@ -93,9 +93,7 @@ namespace OHOS::uitest {
 
         bool CheckStatus(bool isConnected, ApiCallErr &error);
 
-        void recent(ApiCallErr &err);
-
-        void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener);
+        static void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener);
 
     private:
         /**Update UI controller and UI objects.*/

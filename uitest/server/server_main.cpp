@@ -41,6 +41,7 @@
 #include "pointer_event.h"
 #include "ui_driver.h"
 #include "ui_record.h"
+#include "js_client_loader.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -53,11 +54,10 @@ namespace OHOS::uitest {
     "   uiRecord -record,    wirte location coordinates of events into files\n"
     "   uiRecord -read,                    print file content to the console\n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "4.0.2.0";
+    const std::string VERSION = "4.0.3.0";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
-        {"dump all UI trees in json array format", no_argument, nullptr, 'I'},
-        {"dump all UI trees in json array format", no_argument, nullptr, 'r'},
+        {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
     };
     /* *Print to the console of this shell process. */
     static inline void PrintToConsole(string_view message)
@@ -77,9 +77,6 @@ namespace OHOS::uitest {
                 case 'i':
                     params.insert(pair<char, string>(opt, "true"));
                     break;
-                case 'r':
-                    params.insert(pair<char, string>(opt, "true"));
-                    break;
                 default:
                     params.insert(pair<char, string>(opt, optarg));
                     break;
@@ -88,33 +85,27 @@ namespace OHOS::uitest {
         return EXIT_SUCCESS;
     }
 
-    static void DumpLayoutImpl(string_view path, bool listWindows, bool initController, bool recent, ApiCallErr &err)
+    static void DumpLayoutImpl(string_view path, bool listWindows, bool initController, ApiCallErr &err)
     {
+        ofstream fout;
+        fout.open(path, ios::out | ios::binary);
+        if (!fout) {
+            err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(path) + strerror(errno));
+            return;
+        }
         if (initController) {
             UiDriver::RegisterController(make_unique<SysUiController>());
         }
-        if (recent) {
-            LOG_I("ZZZZZZZZZZZZZZ");
-            auto driver = UiDriver();
-            driver.recent(err);
-        } else {
-            ofstream fout;
-            fout.open(path, ios::out | ios::binary);
-            if (!fout) {
-                err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(path) + strerror(errno));
-                return;
-            }
-            auto driver = UiDriver();
-            auto data = nlohmann::json();
-            driver.DumpUiHierarchy(data, listWindows, err);
-            if (err.code_ != NO_ERROR) {
-                fout.close();
-                return;
-            }
-            fout << data.dump();
+        auto driver = UiDriver();
+        auto data = nlohmann::json();
+        driver.DumpUiHierarchy(data, listWindows, err);
+        if (err.code_ != NO_ERROR) {
             fout.close();
             return;
         }
+        fout << data.dump();
+        fout.close();
+        return;
     }
 
     static int32_t DumpLayout(int32_t argc, char *argv[])
@@ -123,19 +114,16 @@ namespace OHOS::uitest {
         auto savePath = "/data/local/tmp/layout_" + ts + ".json";
         map<char, string> params;
         static constexpr string_view usage = "USAGE: uitestkit dumpLayout -p <path>";
-        if (GetParam(argc, argv, "p:r", usage, params) == EXIT_FAILURE) {
-            if (GetParam(argc, argv, "p:i", usage, params) == EXIT_FAILURE) {
-                return EXIT_FAILURE;
-            }
+        if (GetParam(argc, argv, "p:i", usage, params) == EXIT_FAILURE) {
+            return EXIT_FAILURE;
         }
         auto iter = params.find('p');
         if (iter != params.end()) {
             savePath = iter->second;
         }
         const bool listWindows = params.find('i') != params.end();
-        const bool recent = params.find('r') != params.end();
         auto err = ApiCallErr(NO_ERROR);
-        DumpLayoutImpl(savePath, listWindows, true, recent, err);
+        DumpLayoutImpl(savePath, listWindows, true, err);
         if (err.code_ == NO_ERROR) {
             PrintToConsole("DumpLayout saved to:" + savePath);
             return EXIT_SUCCESS;
@@ -209,13 +197,22 @@ namespace OHOS::uitest {
         auto apiHandler = std::bind(&FrontendApiServer::Call, &apiServer, placeholders::_1, placeholders::_2);
         auto cbHandler = std::bind(&ApiTransactor::Transact, &apiTransactServer, placeholders::_1, placeholders::_2);
         apiServer.SetCallbackHandler(cbHandler); // used for callback from server to client
+
+        const auto singlenessMode = token == "singleness";
+        future<void> g_agentFuture;
+        if (singlenessMode) {
+            g_agentFuture = async(launch::async, []() {
+                pthread_setname_np(pthread_self(), "event_runner");
+                RunJsClient(VERSION);
+            });
+        }
         if (!apiTransactServer.InitAndConnectPeer(transalatedToken, apiHandler)) {
             LOG_E("Failed to initialize server");
             return EXIT_FAILURE;
         }
         // accept remopte dump request during deamon running (initController=false)
-        ApiTransactor::SetBroadcaseCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
-            DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, false, err);
+        ApiTransactor::SetBroadcastCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
+            DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, err);
         });
         mutex mtx;
         unique_lock<mutex> lock(mtx);
@@ -227,7 +224,7 @@ namespace OHOS::uitest {
         condVar.wait(lock);
         LOG_I("Server exit");
         apiTransactServer.Finalize();
-        ApiTransactor::UnsetBroadcaseCommandHandler();
+        ApiTransactor::UnsetBroadcastCommandHandler();
         _Exit(0);
         return 0;
     }
