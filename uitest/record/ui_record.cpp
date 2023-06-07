@@ -23,7 +23,8 @@ namespace OHOS::uitest {
     using nlohmann::json;
 
     static bool g_uiRecordRun = false;
-    std::shared_ptr<InputEventCallback> InputEventCallback::instance = nullptr;
+    int g_callBackId = -1;
+    static std::shared_ptr<InputEventCallback> g_uiCallBackInstance = nullptr;
     // enum TouchOpt : uint8_t {
     //     OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
     //     OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
@@ -238,7 +239,8 @@ namespace OHOS::uitest {
     void InputEventCallback::TimerTouchCheckFunction()
     {
         while (g_uiRecordRun) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(TIMEINTERVAL));
+            unique_lock<mutex> lock(timerMut);
+            timerCon.wait_for(lock,std::chrono::milliseconds(TIMEINTERVAL), [this]{ return stopFlag; });
             int currentTime = GetCurrentMillisecond();
             int diff = currentTime - touchTime;
             if (diff >= TIMEINTERVAL) {
@@ -249,10 +251,13 @@ namespace OHOS::uitest {
 
     void InputEventCallback::FindWidgetsandWriteData()
     {
-        while (g_uiRecordRun) {
+        while (g_uiRecordRun){
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
             while (!findWidgetsAllow_) {
                 widgetsCon.wait(widgetsLck);
+            }
+            if(!g_uiRecordRun){
+                return;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(gTimeIndex)); // 确保界面已更新
             ApiCallErr err(NO_ERROR);
@@ -319,27 +324,6 @@ namespace OHOS::uitest {
             }
         }
     }
-
-    std::shared_ptr<InputEventCallback> InputEventCallback::GetPtr()
-    {
-        if(instance == nullptr){
-            instance = std::make_shared<InputEventCallback>();
-        }
-        return instance;
-    }
-    void InputEventCallback::RecordStop()
-    {
-        g_uiRecordRun = false;
-        if(instance != nullptr){
-            instance->widgetsCon.notify_all();
-            instance->clickCon.notify_all();
-            instance->timerCon.notify_all();
-            instance->isLastClick_ = true;
-            instance->findWidgetsAllow_ = true;
-            instance->stopFlag = true;
-            instance = nullptr;
-        }
-    }
     
     bool InputEventCallback::InitReportFolder()
     {
@@ -394,55 +378,65 @@ namespace OHOS::uitest {
 
     int32_t UiDriverRecordStart(std::string modeOpt)
     {
-        auto callBackPtr = InputEventCallback::GetPtr();
-        callBackPtr->RecordInitEnv(modeOpt);
-        return UiDriverRecordStart(callBackPtr);
+        g_uiCallBackInstance = std::make_shared<InputEventCallback>();
+        g_uiCallBackInstance->RecordInitEnv(modeOpt);
+        return UiDriverRecordStart();
     }
 
-    int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> healder ,  std::string modeOpt)
+    int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> healder,  std::string modeOpt)
     {
-        auto callBackPtr = InputEventCallback::GetPtr();
-        callBackPtr->RecordInitEnv(modeOpt);
-        callBackPtr->SetAbcCallBack(healder);
-        return UiDriverRecordStart(callBackPtr);
+        g_uiCallBackInstance = std::make_shared<InputEventCallback>();
+        g_uiCallBackInstance->RecordInitEnv(modeOpt);
+        g_uiCallBackInstance->SetAbcCallBack(healder);
+        return UiDriverRecordStart();
     }
 
-    int32_t UiDriverRecordStart(std::shared_ptr<InputEventCallback> callBackPtr)
+    int32_t UiDriverRecordStart()
     {
-        if (!callBackPtr->InitEventRecordFile()) {
+        if (!g_uiCallBackInstance->InitEventRecordFile()) {
             return OHOS::ERR_INVALID_VALUE;
         }
-        if (callBackPtr == nullptr) {
+        if (g_uiCallBackInstance == nullptr) {
             std::cout << "nullptr" << std::endl;
             return OHOS::ERR_INVALID_VALUE;
         }
         // 按键订阅
-        callBackPtr->SubscribeMonitorInit();
-        int32_t id1 = MMI::InputManager::GetInstance()->AddMonitor(callBackPtr);
-        if (id1 == -1) {
+        g_uiCallBackInstance->SubscribeMonitorInit();
+        g_callBackId = MMI::InputManager::GetInstance()->AddMonitor(g_uiCallBackInstance);
+        if (g_callBackId == -1) {
             std::cout << "Startup Failed!" << std::endl;
             return OHOS::ERR_INVALID_VALUE;
         }
         g_uiRecordRun = true;
         // 补充click打印线程
-        std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, callBackPtr);
+        std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, g_uiCallBackInstance);
         // touch计时线程
-        std::thread toughTimerThread(&InputEventCallback::TimerTouchCheckFunction, callBackPtr);
+        std::thread toughTimerThread(&InputEventCallback::TimerTouchCheckFunction, g_uiCallBackInstance);
         // widget&data 线程
-        std::thread dataThread(&InputEventCallback::FindWidgetsandWriteData, callBackPtr);
+        std::thread dataThread(&InputEventCallback::FindWidgetsandWriteData, g_uiCallBackInstance);
         std::cout << "Started Recording Successfully..." << std::endl;
         int flag = getc(stdin);
         std::cout << flag << std::endl;
         clickThread.join();
         toughTimerThread.join();
         dataThread.join();
-        // 取消按键订阅
-        callBackPtr->SubscribeMonitorCancel();
         return OHOS::ERR_OK;
     }
 
     void UiDriverRecordStop()
     {
-        InputEventCallback::RecordStop();        
+        g_uiRecordRun = false;
+        if(g_uiCallBackInstance != nullptr){
+            g_uiCallBackInstance->isLastClick_ = true;
+            g_uiCallBackInstance->findWidgetsAllow_ = true;
+            g_uiCallBackInstance->stopFlag = true;
+            g_uiCallBackInstance->widgetsCon.notify_all();
+            g_uiCallBackInstance->clickCon.notify_all();
+            g_uiCallBackInstance->timerCon.notify_all();
+            g_uiCallBackInstance->SubscribeMonitorCancel();
+            MMI::InputManager::GetInstance()->RemoveMonitor(g_callBackId);
+            g_callBackId = -1;
+            g_uiCallBackInstance = nullptr;
+        }        
     }
 } // namespace OHOS::uitest
