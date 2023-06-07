@@ -68,8 +68,6 @@ namespace OHOS::uitest {
         void TimerReprintClickFunction ();
         void TimerTouchCheckFunction();
         void FindWidgetsandWriteData();
-        static std::shared_ptr<InputEventCallback> GetPtr();
-        static void RecordStop();
         void SetAbcCallBack(std::function<void(nlohmann::json )> healder)
         {
             abcCallBack = healder;
@@ -91,7 +89,6 @@ namespace OHOS::uitest {
         std::mutex timerMut;
         std::condition_variable timerCon;
     private:
-        static std::shared_ptr<InputEventCallback> instance;
         int gTimeIndex = 1000;
         shared_ptr<queue<std::string>> eventQueue_;
         std::string recordMode = "";
@@ -144,7 +141,7 @@ namespace OHOS::uitest {
 
     int32_t UiDriverRecordStart(std::string modeOpt);
     int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> header , std::string modeOpt);
-    int32_t UiDriverRecordStart(std::shared_ptr<InputEventCallback> callBackPtr);
+    int32_t UiDriverRecordStart();
     void UiDriverRecordStop();
 
 } // namespace OHOS::uitest
