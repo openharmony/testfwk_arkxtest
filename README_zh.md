@@ -21,10 +21,11 @@ arkXtest
 
 | No.  | 特性     | 功能说明                                                     |
 | ---- | -------- | ------------------------------------------------------------ |
-| 1    | 基础流程 | 支持编写及执行基础用例。                                     |
+| 1    | 基础流程 | 支持编写及异步执行基础用例。                                 |
 | 2    | 断言库   | 判断用例实际期望值与预期值是否相符。                         |
 | 3    | Mock能力 | 支持函数级mock能力，对定义的函数进行mock后修改函数的行为，使其返回指定的值或者执行某种动作。 |
 | 4    | 数据驱动 | 提供数据驱动能力，支持复用同一个测试脚本，使用不同输入数据驱动执行。 |
+| 5    | 专项能力 | 支持测试套与用例筛选、随机执行、压力测试、超时设置、遇错即停模式等。 |
 
 ### 使用说明
 
@@ -92,41 +93,89 @@ export default async function abilityTest() {
 | 10   | assertNull         | 检验actualvalue是否是null。                                  |
 | 11   | assertThrowError   | 检验actualvalue抛出Error内容是否是expectValue。              |
 | 12   | assertUndefined    | 检验actualvalue是否是undefined。                             |
-| 13   | assertNaN          | 检验actualvalue是否是一个NAN                                 |
-| 14   | assertNegUnlimited | 检验actualvalue是否等于Number.NEGATIVE_INFINITY             |
-| 15   | assertPosUnlimited | 检验actualvalue是否等于Number.POSITIVE_INFINITY             |
-| 16   | assertDeepEquals   | 检验actualvalue和expectvalue是否完全相等               |
-| 17   | assertPromiseIsPending | 判断promise是否处于Pending状态。                         |
-| 18   | assertPromiseIsRejected | 判断promise是否处于Rejected状态。                       |
-| 19   | assertPromiseIsRejectedWith | 判断promise是否处于Rejected状态，并且比较执行的结果值。|
-| 20   | assertPromiseIsRejectedWithError | 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。                   |
-| 21   | assertPromiseIsResolved | 判断promise是否处于Resolved状态。                       |
-| 22   | assertPromiseIsResolvedWith | 判断promise是否处于Resolved状态，并且比较执行的结果值。|
-| 23   | not                | 断言取反,支持上面所有的断言功能                                 |
+| 13   | assertNaN          | @since1.0.4 检验actualvalue是否是一个NAN                     |
+| 14   | assertNegUnlimited | @since1.0.4 检验actualvalue是否等于Number.NEGATIVE_INFINITY |
+| 15   | assertPosUnlimited | @since1.0.4 检验actualvalue是否等于Number.POSITIVE_INFINITY |
+| 16   | assertDeepEquals   | @since1.0.4 检验actualvalue和expectvalue是否完全相等   |
+| 17   | assertPromiseIsPending | @since1.0.4 判断promise是否处于Pending状态。             |
+| 18   | assertPromiseIsRejected | @since1.0.4 判断promise是否处于Rejected状态。           |
+| 19   | assertPromiseIsRejectedWith | @since1.0.4 判断promise是否处于Rejected状态，并且比较执行的结果值。 |
+| 20   | assertPromiseIsRejectedWithError | @since1.0.4 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。       |
+| 21   | assertPromiseIsResolved | @since1.0.4 判断promise是否处于Resolved状态。           |
+| 22   | assertPromiseIsResolvedWith | @since1.0.4 判断promise是否处于Resolved状态，并且比较执行的结果值。 |
+| 23   | not                | @since1.0.4 断言取反,支持上面所有的断言功能                     |
 
 示例代码：
 
 ```javascript
 import { describe, it, expect } from '@ohos/hypium'
 export default async function abilityTest() {
-  describe('assertClose', function () {
-    it('assertBeClose_success', 0, function () {
+  describe('assertTest', function () {
+    it('assertClose_success', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(99, b)
     })
-    it('assertBeClose_fail', 0, function () {
+    it('assertClose_fail', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(1, b)
     })
-    it('assertBeClose_fail', 0, function () {
+    it('assertClose_null_fail_001', 0, function () {
       let a = 100
       let b = 0.1
       expect(a).assertClose(null, b)
     })
-    it('assertBeClose_fail', 0, function () {
+    it('assertClose_null_fail_002', 0, function () {
       expect(null).assertClose(null, 0)
+    })
+    it('assertEqual', 0, function () {
+      let a = 1;
+      let b = 1;
+      expect(a).assertEqual(b)
+    })
+    it('assertFail', 0, function () {
+      expect().assertFail();
+    })
+    it('assertFalse', 0, function () {
+      let a = false;
+      expect(a).assertFalse();
+    })
+    it('assertTrue', 0, function () {
+      let a = true;
+      expect(a).assertTrue();
+    })
+    it('assertInstanceOf_success', 0, function () {
+      let a = 'strTest'
+      expect(a).assertInstanceOf('String')
+    })
+    it('assertLarger', 0, function () {
+      let a = 1;
+      let b = 2;
+      expect(b).assertLarger(a);
+    })
+    it('assertLess', 0, function () {
+      let a = 1;
+      let b = 2;
+      expect(a).assertLess(b);
+    })
+    it('assertNull', 0, function () {
+      let a = null;
+      expect(a).assertNull()
+    })
+    it('assertThrowError', 0, function () {
+      function testError() {
+        throw new Error('error message')
+      }
+      expect(testError).assertThrowError('error message')
+    })
+    it('assertUndefined', 0, function () {
+      let a = undefined;
+      expect(a).assertUndefined();
+    })
+    it('assertNaN', 0, function () {
+      let a = 'str'
+      expect(a).assertNaN()
     })
     it('assertInstanceOf_success', 0, function () {
       let a = 'strTest'
@@ -437,7 +486,7 @@ export default function ActsAbilityTest() {
 }
 ```
 
-**示例4： 设定参数类型为anyString,anyBoolean等的使用**
+**示例4： 设定参数类型ArgumentMatchers的使用**
 
 ```javascript
 import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
@@ -469,12 +518,27 @@ export default function ActsAbilityTest() {
             //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
             let mockfunc = mocker.mockFunc(claser, claser.method_1);
             //根据自己需求进行选择
-            when(mockfunc)(ArgumentMatchers.anyString).afterReturn('1');
+            when(mockfunc)(ArgumentMatchers.anyString).afterReturn('0');
 
             //4.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
             //执行成功的案例，传参为字符串类型
-            expect(claser.method_1('test')).assertEqual('1'); //用例执行通过。
-            expect(claser.method_1('abc')).assertEqual('1'); //用例执行通过。
+            expect(claser.method_1('test')).assertEqual('0'); //用例执行通过。
+            expect(claser.method_1('abc')).assertEqual('0'); //用例执行通过。
+            
+            when(mockfunc)(ArgumentMatchers.anyNumber).afterReturn('1');
+            expect(claser.method_1(1)).assertEqual('1')
+
+            when(mockfunc)(ArgumentMatchers.anyBoolean).afterReturn('2');
+            expect(claser.method_1(true)).assertEqual('2')
+
+            when(mockfunc)(ArgumentMatchers.anyFunction).afterReturn('3');
+            function testFn() {
+              return 2;
+            }
+            expect(claser.method_1(testFn)).assertEqual('3')
+
+            when(mockfunc)(ArgumentMatchers.anyObj).afterReturn('4');
+            expect(claser.method_1(new String('test'))).assertEqual('4')
 
             //执行失败的案例，传参为数字类型
             //expect(claser.method_1(123)).assertEqual('1');//用例执行失败。
@@ -962,6 +1026,160 @@ export default function abilityTest() {
     });
 }
 ```
+#### 专项能力
+
+该项能力需通过在cmd窗口中输入aa test命令执行触发，并通过设置执行参数触发不同功能。另外，测试应用模型与编译方式不同，对应的aa test命令也不同，具体可参考[自动化测试框架使用指导](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/application-test/arkxtest-guidelines.md#cmd%E6%89%A7%E8%A1%8C)
+
+- **筛选能力**
+
+  1、按测试用例属性筛选
+
+  可以利用hypium提供的Level、Size、TestType 对象，对测试用例进行标记，以区分测试用例的级别、粒度、测试类型，各字段含义及代码如下：
+
+  | Key      | 含义说明     | Value取值范围                                                |
+  | -------- | ------------ | ------------------------------------------------------------ |
+  | level    | 用例级别     | "0","1","2","3","4", 例如：-s level 1                        |
+  | size     | 用例粒度     | "small","medium","large", 例如：-s size small                |
+  | testType | 用例测试类型 | "function","performance","power","reliability","security","global","compatibility","user","standard","safety","resilience", 例如：-s testType function |
+
+  示例代码：
+
+  ```javascript
+  import { describe, it, expect, TestType, Size, Level } from '@ohos/hypium';
+  
+  export default function attributeTest() {
+      describe('attributeTest', function () {
+          it("testAttributeIt", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
+              console.info('Hello Test');
+          })
+      })
+  }
+  ```
+
+  示例命令: 
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s testType function -s size small -s level 0
+  ```
+
+  该命令作用是筛选测试应用中同时满足，用例测试类型是“function”、用例粒度是“small”、用例级别是“0”的三个条件用例执行。
+
+  2、按测试套/测试用例名称筛选
+
+  hypium可以通过指定测试套与测试用例名称，来指定特定用例的执行，测试套与用例名称用“#”号连接，多个用“,”英文逗号分隔
+
+  | Key      | 含义说明                | Value取值范围                                                |
+  | -------- | ----------------------- | ------------------------------------------------------------ |
+  | class    | 指定要执行的测试套&用例 | ${describeName}#${itName}，${describeName} , 例如：-s class attributeTest#testAttributeIt |
+  | notClass | 指定不执行的测试套&用例 | ${describeName}#${itName}，${describeName} , 例如：-s notClass attributeTest#testAttribut |
+
+  示例代码：
+
+  ```javascript
+  import { describe, it, expect, TestType, Size, Level } from '@ohos/hypium';
+  
+  export default function attributeTest() {
+      describe('describeTest_000', function () {
+          it("testIt_00", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
+              console.info('Hello Test');
+          })
+          
+          it("testIt_01", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
+              console.info('Hello Test');
+          })
+      })
+      
+      describe('describeTest_001', function () {
+          it("testIt_02", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
+              console.info('Hello Test');
+          })
+      })
+  }
+  ```
+
+  示例命令1: 
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s class describeTest_000#testIt_00,describeTest_001
+  ```
+
+  该命令作用是执行“describeTest_001”测试套中所用用例，以及“describeTest_000”测试套中的“testIt_00”用例。
+
+  示例命令2：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s notClass describeTest_000#testIt_01
+  ```
+
+  该命令作用是不执行“describeTest_000”测试套中的“testIt_01”用例。
+
+- **随机执行**
+
+  使测试套与测试用例随机执行，用于稳定性测试。
+
+  | Key    | 含义说明                             | Value取值范围                                  |
+  | ------ | ------------------------------------ | ---------------------------------------------- |
+  | random | @since1.0.3 测试套、测试用例随机执行 | true, 不传参默认为false， 例如：-s random true |
+
+  示例命令：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s dryRun true
+  ```
+
+- **压力测试**
+
+  指定要执行用例的执行次数，用于压力测试。
+
+  | Key    | 含义说明                             | Value取值范围                  |
+  | ------ | ------------------------------------ | ------------------------------ |
+  | stress | @since1.0.5 指定要执行用例的执行次数 | 正整数， 例如： -s stress 1000 |
+
+  示例命令：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s stress 1000
+  ```
+
+- **用例超时时间设置**
+
+  指定测试用例执行的超时时间，用例实际耗时如果大于超时时间，用例会抛出"timeout"异常，用例结果会显示“excute timeout XXX”
+
+  | Key     | 含义说明                   | Value取值范围                                        |
+  | ------- | -------------------------- | ---------------------------------------------------- |
+  | timeout | 指定测试用例执行的超时时间 | 正整数(单位ms)，默认为 5000，例如： -s timeout 15000 |
+
+  示例命令：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s timeout 15000
+  ```
+
+- **遇错即停模式**
+
+  | Key          | 含义说明                                                     | Value取值范围                                        |
+  | ------------ | ------------------------------------------------------------ | ---------------------------------------------------- |
+  | breakOnError | @since1.0.6 遇错即停模式，当执行用例断言失败或者发生错误时，退出测试执行流程 | true, 不传参默认为false， 例如：-s breakOnError true |
+  
+  示例命令：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s breakOnError true
+  ```
+  
+- **测试套中用例信息输出**
+
+  输出测试应用中待执行的测试用例信息
+
+  | Key    | 含义说明                     | Value取值范围                                  |
+  | ------ | ---------------------------- | ---------------------------------------------- |
+  | dryRun | 显示待执行的测试用例信息全集 | true, 不传参默认为false， 例如：-s dryRun true |
+
+  示例命令：
+
+  ```shell
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s dryRun true
+  ```
 
 ### 使用方式
 
