@@ -90,6 +90,7 @@ namespace OHOS::uitest {
         for (unsigned long index = 0; index < sizeof(WATCHED_EVENTS) / sizeof(EventSpec); index++) {
             if (WATCHED_EVENTS[index].componentTyep == eventInfo.GetComponentType() &&
                 WATCHED_EVENTS[index].eventType == eventInfo.GetWindowContentChangeTypes()) {
+                LOG_W("Capture event: %{public}s", WATCHED_EVENTS[index].event.data());
                 return WATCHED_EVENTS[index].event;
             }
         }
