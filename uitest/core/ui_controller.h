@@ -36,7 +36,7 @@ namespace OHOS::uitest {
     public:
         UiEventListener() = default;
         virtual ~UiEventListener() = default;
-        virtual void OnEvent(std::string_view event, UiEventSourceInfo source) {};
+        virtual void OnEvent(const std::string &event, const UiEventSourceInfo &source) {};
     };
 
     class UiController {

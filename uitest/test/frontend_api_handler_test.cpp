@@ -652,9 +652,10 @@ TEST_F(FrontendApiHandlerTest, onEventCallback)
     const auto ref2 = reply2.resultValue_.get<string>();
     ASSERT_TRUE(ref2.find("UIEventObserver#") != string::npos);
 
-    string result = "abc";
+    string result = "capture event: ";
     auto jsCallback = [&result](const ApiCallInfo& in, ApiReplyInfo& out) {
-        result = in.apiId_ + result;
+        auto &elementInfo = in.paramList_.at(INDEX_ZERO);
+        result = result + string(elementInfo["type"]) + ",";
     };
     server.SetCallbackHandler(jsCallback);
     auto jsCbId = to_string(reinterpret_cast<uintptr_t>(&jsCallback));
@@ -668,8 +669,18 @@ TEST_F(FrontendApiHandlerTest, onEventCallback)
     auto monitor = DummyEventMonitor::GetInstance();
     ASSERT_EQ(1, monitor.GetListenerCount());
     monitor.OnEvent("toastShow");
-    ASSERT_EQ("UIEventObserver.onceabc", result);
+    ASSERT_EQ("capture event: toastShow,", result);
+    
+    auto call4 = ApiCallInfo {.apiId_ = "UIEventObserver.once",
+                              .callerObjRef_ = reply2.resultValue_.get<string>()};
+    call4.paramList_.push_back("dialogShow");
+    call4.paramList_.push_back(jsCbId);
+    auto reply4 = ApiReplyInfo();
+    server.Call(call4, reply4);
+    ASSERT_EQ(NO_ERROR, reply4.exception_.code_);
+    monitor.OnEvent("dialogShow");
+    ASSERT_EQ("capture event: toastShow,dialogShow,", result);
     // Works once
     monitor.OnEvent("toastShow");
-    ASSERT_EQ("UIEventObserver.onceabc", result);
+    ASSERT_EQ("capture event: toastShow,dialogShow,", result);
 }
