@@ -72,6 +72,10 @@ namespace OHOS::uitest {
         {
             abcCallBack = healder;
         }
+        auto GetAbcCallBack()
+        {
+            return abcCallBack;
+        }
 
         static constexpr int TIMEINTERVAL = 5000;
         static constexpr int KEY_DOWN_DURATION = 0;
@@ -141,7 +145,7 @@ namespace OHOS::uitest {
 
     int32_t UiDriverRecordStart(std::string modeOpt);
     int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> header , std::string modeOpt);
-    int32_t UiDriverRecordStart();
+    int32_t UiDriverRecordStartTemplate(std::string modeOpt);
     void UiDriverRecordStop();
 
 } // namespace OHOS::uitest
