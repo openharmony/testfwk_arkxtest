@@ -259,6 +259,11 @@ namespace OHOS::uitest {
             if(!g_uiRecordRun){
                 return;
             }
+            auto data = nlohmann::json();
+            data["message"] = "start record action";
+            if (abcCallBack != nullptr){
+                abcCallBack(data);
+            }
             std::this_thread::sleep_for(std::chrono::milliseconds(gTimeIndex)); // 确保界面已更新
             ApiCallErr err(NO_ERROR);
             driver.FindWidgets(selector, rev, err, true);
@@ -291,7 +296,7 @@ namespace OHOS::uitest {
         touchEvent.wy = item.GetWindowY();
         std::chrono::duration<double>  duration = touchEvent.GetActionTimeStamp() - touchEvent.GetDownTimeStamp();
         touchEvent.durationSeconds = duration.count();
-        // std::cout << " @@@@@ touchEvent: " << pointerEvent->GetPointerAction() << " , " 
+        // std::cout << " @@@@@ touchEvent: " << pointerEvent->GetPointerAction() << " , "
         //           << touchEvent.actionTime << " , " << touchEvent.downTime << std::endl;
         if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
@@ -379,20 +384,25 @@ namespace OHOS::uitest {
     int32_t UiDriverRecordStart(std::string modeOpt)
     {
         g_uiCallBackInstance = std::make_shared<InputEventCallback>();
-        g_uiCallBackInstance->RecordInitEnv(modeOpt);
-        return UiDriverRecordStart();
+        return UiDriverRecordStartTemplate(modeOpt);
     }
 
     int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> healder,  std::string modeOpt)
     {
         g_uiCallBackInstance = std::make_shared<InputEventCallback>();
-        g_uiCallBackInstance->RecordInitEnv(modeOpt);
         g_uiCallBackInstance->SetAbcCallBack(healder);
-        return UiDriverRecordStart();
+        return UiDriverRecordStartTemplate(modeOpt);
     }
 
-    int32_t UiDriverRecordStart()
+    int32_t UiDriverRecordStartTemplate(std::string modeOpt)
     {
+        auto abcCallBack = g_uiCallBackInstance->GetAbcCallBack();
+        if (abcCallBack != nullptr){
+            auto data = nlohmann::json();
+            data["message"] = "start record init";
+            abcCallBack(data);
+        }
+        g_uiCallBackInstance->RecordInitEnv(modeOpt);
         if (!g_uiCallBackInstance->InitEventRecordFile()) {
             return OHOS::ERR_INVALID_VALUE;
         }
@@ -417,6 +427,11 @@ namespace OHOS::uitest {
         std::cout << "Started Recording Successfully..." << std::endl;
         int flag = getc(stdin);
         std::cout << flag << std::endl;
+        if (abcCallBack != nullptr){
+            auto data = nlohmann::json();
+            data["message"] = "end record init";
+            abcCallBack(data);
+        }
         clickThread.join();
         toughTimerThread.join();
         dataThread.join();
@@ -437,6 +452,6 @@ namespace OHOS::uitest {
             MMI::InputManager::GetInstance()->RemoveMonitor(g_callBackId);
             g_callBackId = -1;
             g_uiCallBackInstance = nullptr;
-        }        
+        }
     }
 } // namespace OHOS::uitest
