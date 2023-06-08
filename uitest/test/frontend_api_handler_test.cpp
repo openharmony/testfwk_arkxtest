@@ -671,8 +671,8 @@ TEST_F(FrontendApiHandlerTest, onEventCallback)
     monitor.OnEvent("toastShow");
     ASSERT_EQ("capture event: toastShow,", result);
     
-    auto call4 = ApiCallInfo{.apiId_ = "UIEventObserver.once",
-                             .callerObjRef_ = reply2.resultValue_.get<string>()};
+    auto call4 = ApiCallInfo {.apiId_ = "UIEventObserver.once",
+                              .callerObjRef_ = reply2.resultValue_.get<string>()};
     call4.paramList_.push_back("dialogShow");
     call4.paramList_.push_back(jsCbId);
     auto reply4 = ApiReplyInfo();
