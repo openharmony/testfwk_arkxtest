@@ -39,7 +39,7 @@ namespace OHOS::uitest {
     public:
         UiEventFowarder() {};
 
-        void IncRef(string_view ref)
+        void IncRef(const string &ref)
         {
             auto find = refCountMap_.find(ref);
             if (find != refCountMap_.end()) {
@@ -49,7 +49,7 @@ namespace OHOS::uitest {
             }
         }
 
-        uint32_t DecAndGetRef(string_view ref)
+        uint32_t DecAndGetRef(const string &ref)
         {
             auto find = refCountMap_.find(ref);
             if (find != refCountMap_.end()) {
@@ -63,7 +63,7 @@ namespace OHOS::uitest {
             return 0;
         }
 
-        void OnEvent(std::string_view event, UiEventSourceInfo source) override
+        void OnEvent(const std::string &event, const UiEventSourceInfo &source) override
         {
             const auto &server = FrontendApiServer::Get();
             json uiElementInfo;
@@ -93,7 +93,7 @@ namespace OHOS::uitest {
             }
         }
 
-        void AddCallbackInfo(string_view event, string_view observerRef, string_view cbRef)
+        void AddCallbackInfo(const string &&event, const string &observerRef, const string &&cbRef)
         {
             auto count = callBackInfos_.count(event);
             auto find = callBackInfos_.find(event);
@@ -111,8 +111,8 @@ namespace OHOS::uitest {
         }
 
     private:
-        multimap<string_view, pair<string_view, string_view>> callBackInfos_;
-        map<string_view, int> refCountMap_;
+        multimap<string, pair<string, string>> callBackInfos_;
+        map<string, int> refCountMap_;
     };
 
     /** API argument type list map.*/
@@ -822,7 +822,7 @@ namespace OHOS::uitest {
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
             auto event = ReadCallArg<string>(in, INDEX_ZERO);
             auto cbRef = ReadCallArg<string>(in, INDEX_ONE);
-            fowarder->AddCallbackInfo(event, in.callerObjRef_, cbRef);
+            fowarder->AddCallbackInfo(move(event), in.callerObjRef_, move(cbRef));
             if (!observerDelegateRegistered) {
                 driver.RegisterUiEventListener(fowarder);
                 observerDelegateRegistered = true;
