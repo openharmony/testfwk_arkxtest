@@ -1224,7 +1224,7 @@ export default async function abilityTest() {
       await button.click()
       // get and assert component text
       let content = await button.getText()
-      expect(content).assertEquals('clicked!')
+      expect(content).assertEqual('clicked!')
     })
   })
 }
@@ -1302,13 +1302,13 @@ Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹�
 **示例代码1**：查找id是`Id_button`的控件。
 
 ```javascript
-let button = await driver.findComponent(ON.id(Id_button))
+let button = await driver.findComponent(ON.id('Id_button'))
 ```
 
  **示例代码2**：查找id是`Id_button`并且状态是`enabled`的控件，适用于无法通过单一属性定位的场景。
 
 ```javascript
-let button = await driver.findComponent(ON.id(Id_button).enabled(true))
+let button = await driver.findComponent(ON.id('Id_button').enabled(true))
 ```
 
 通过`On.id(x).enabled(y)`来指定目标控件的多个属性。
@@ -1316,7 +1316,7 @@ let button = await driver.findComponent(ON.id(Id_button).enabled(true))
 **示例代码3**：查找文本中包含`hello`的控件，适用于不能完全确定控件属性取值的场景。
 
 ```javascript
-let txt = await driver.findComponent(ON.text("hello", MatchPattern.CONTAINS))
+let txt = await driver.findComponent(ON.text('hello', MatchPattern.CONTAINS))
 ```
 
 通过向`On.text()`方法传入第二个参数`MatchPattern.CONTAINS`来指定文本匹配规则；默认规则是`MatchPattern.EQUALS`，即目标控件text属性必须严格等于给定值。
@@ -1326,7 +1326,7 @@ let txt = await driver.findComponent(ON.text("hello", MatchPattern.CONTAINS))
 **示例代码1**：查找位于文本控件`Item3_3`后面的，id是`Id_switch`的Switch控件。
 
 ```javascript
-let switch = await driver.findComponent(ON.id(Id_switch).isAfter(ON.text("Item3_3")))
+let switch = await driver.findComponent(ON.id('Id_switch').isAfter(ON.text('Item3_3')))
 ```
 
 通过`On.isAfter`方法，指定位于目标控件前面的特征控件属性，通过该特征控件进行相对定位。一般地，特征控件是某个具有全局唯一特征的控件(例如具有唯一的id或者唯一的text)。
@@ -1356,22 +1356,22 @@ let switch = await driver.findComponent(ON.id(Id_switch).isAfter(ON.text("Item3_
 **示例代码1**：单击控件。
 
 ```javascript
-let button = await driver.findComponent(ON.id(Id_button))
+let button = await driver.findComponent(ON.id('Id_button'))
 await button.click()
 ```
 
 **示例代码2**：通过get接口获取控件属性后，可以使用单元测试框架提供的assert*接口做断言检查。
 
 ```javascript
-let component = await driver.findComponent(ON.id(Id_title))
+let component = await driver.findComponent(ON.id('Id_title'))
 expect(component !== null).assertTrue()
 ```
 
 **示例代码3**：在List控件中滑动查找text是`Item3_3`的子控件。
 
 ```javascript
-let list = await driver.findComponent(ON.id(Id_list))
-let found = await list.scrollSearch(ON.text("Item3_3"))
+let list = await driver.findComponent(ON.id('Id_list'))
+let found = await list.scrollSearch(ON.text('Item3_3'))
 expect(found).assertTrue()
 ```
 
@@ -1379,7 +1379,7 @@ expect(found).assertTrue()
 
 ```javascript
 let editText = await driver.findComponent(ON.type('InputText'))
-await editText.inputText("user_name")
+await editText.inputText('user_name')
 ```
 ### UiWindow使用说明
 
@@ -1447,6 +1447,43 @@ hdc shell mount -o rw,remount /
 hdc file send uitest /system/bin/uitest
 hdc file send libuitest.z.so /system/lib/module/libuitest.z.so
 hdc shell chmod +x /system/bin/uitest
+```
+
+### 命令行使用说明
+
+  开发者可以输入如下命令来实现对应功能。
+
+1、打印使用帮助
+
+```shell
+hdc shell uitest help
+```
+
+2、截屏
+
+```
+hdc shell uitest screenCap
+// 默认存储路径：/data/local/tmp，文件名：时间戳 + .png。
+hdc shell uitest screenCap -p /data/local/1.png
+// 指定存储路径和文件名。
+```
+
+3、获取设备当前Ui控件树信息
+
+```shell
+hdc shell uitest dumpLayout
+// 默认存储路径：/data/local/tmp，文件名：时间戳 + .json。
+hdc shell uitest screenCap -p /data/local/1.json
+// 指定存储路径和文件名。
+```
+
+4、录制Ui操作
+
+```shell
+hdc shell uitest uiRecord record
+// 将当前执行的Ui操作记录到/data/local/tmp/layout/record.csv
+hdc shell uitest uiRecord read
+// 将记录的Ui操作打印出来
 ```
 
 ### 版本信息
