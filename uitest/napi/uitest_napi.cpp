@@ -291,6 +291,11 @@ namespace OHOS::uitest {
             },
             [](napi_env env, napi_status status, void *data) {
                 auto aCtx = reinterpret_cast<AsyncTransactionCtx *>(data);
+                napi_handle_scope scope = nullptr;
+                napi_open_handle_scope(env, &scope);
+                if (scope == nullptr) {
+                    return;
+                }
                 napi_get_reference_value(env, aCtx->jsThisRef_, &(aCtx->ctx_.jsThis_));
                 auto resultValue = UnmarshalReply(env, aCtx->ctx_, aCtx->reply_);
                 napi_delete_reference(env, aCtx->jsThisRef_);
@@ -301,6 +306,8 @@ namespace OHOS::uitest {
                 } else {
                     napi_resolve_deferred(env, aCtx->deferred_, resultValue);
                 }
+                napi_delete_async_work(env, aCtx->asyncWork_);
+                napi_close_handle_scope(env, scope);
                 delete aCtx;
             },
             (void *)aCtx, &(aCtx->asyncWork_));
