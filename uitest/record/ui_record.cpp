@@ -194,7 +194,10 @@ namespace OHOS::uitest {
                 snapshootKeyTracker.WriteSingleData(info, g_cout_lock);
                 auto json = snapshootKeyTracker.WriteSingleData(info, outFile, g_csv_lock);
                 if (abcCallBack != nullptr){
-                    abcCallBack(json);
+                    auto data = nlohmann::json();
+                    data["code"] = "3";
+                    data["data"] = json;
+                    abcCallBack(data);
                 }
             }
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
@@ -208,7 +211,10 @@ namespace OHOS::uitest {
                 snapshootKeyTracker.WriteCombinationData(g_cout_lock);
                 auto json = snapshootKeyTracker.WriteCombinationData(outFile, g_csv_lock);
                 if (abcCallBack != nullptr){
-                    abcCallBack(json);
+                    auto data = nlohmann::json();
+                    data["code"] = "3";
+                    data["data"] = json;
+                    abcCallBack(data);
                 }
             }
             keyeventTracker_.AddUpKeyEvent(info);
@@ -259,9 +265,9 @@ namespace OHOS::uitest {
             if(!g_uiRecordRun){
                 return;
             }
-            auto data = nlohmann::json();
-            data["message"] = "start record action";
             if (abcCallBack != nullptr){
+                auto data = nlohmann::json();
+                data["code"] = "2";
                 abcCallBack(data);
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(gTimeIndex)); // 确保界面已更新
@@ -271,7 +277,10 @@ namespace OHOS::uitest {
             pointerTracker_.WriteData(info, g_cout_lock);
             auto json = pointerTracker_.WriteData(info, outFile, g_csv_lock);
             if (abcCallBack != nullptr){
-                abcCallBack(json);
+                auto data = nlohmann::json();
+                data["code"] = "3";
+                data["data"] = json;
+                abcCallBack(data);
             }
             findWidgetsAllow_ = false;
             widgetsCon.notify_all();
@@ -399,7 +408,7 @@ namespace OHOS::uitest {
         auto abcCallBack = g_uiCallBackInstance->GetAbcCallBack();
         if (abcCallBack != nullptr){
             auto data = nlohmann::json();
-            data["message"] = "start record init";
+            data["code"] = "0";
             abcCallBack(data);
         }
         g_uiCallBackInstance->RecordInitEnv(modeOpt);
@@ -429,7 +438,7 @@ namespace OHOS::uitest {
         std::cout << flag << std::endl;
         if (abcCallBack != nullptr){
             auto data = nlohmann::json();
-            data["message"] = "end record init";
+            data["code"] = "1";
             abcCallBack(data);
         }
         clickThread.join();
