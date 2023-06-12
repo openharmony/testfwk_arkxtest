@@ -24,16 +24,12 @@
 #include "velocity.h"
 
 namespace OHOS::uitest {
-
-const int32_t MaxVelocity = 40000;
-
 enum class Axis {
     VERTICAL = 0,
     HORIZONTAL,
     FREE,
     NONE,
 };
-
 class VelocityTracker final {
 public:
     VelocityTracker() = default;

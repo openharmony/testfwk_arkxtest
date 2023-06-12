@@ -85,12 +85,13 @@ namespace OHOS::uitest {
         {"AlertDialog", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "dialogShow"}
     };
 
-    static std::string_view GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
+    static std::string GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
     {
         for (unsigned long index = 0; index < sizeof(WATCHED_EVENTS) / sizeof(EventSpec); index++) {
             if (WATCHED_EVENTS[index].componentTyep == eventInfo.GetComponentType() &&
                 WATCHED_EVENTS[index].eventType == eventInfo.GetWindowContentChangeTypes()) {
-                return WATCHED_EVENTS[index].event;
+                LOG_W("Capture event: %{public}s", WATCHED_EVENTS[index].event.data());
+                return string(WATCHED_EVENTS[index].event);
             }
         }
         return "undefine";

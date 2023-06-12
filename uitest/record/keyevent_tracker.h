@@ -62,7 +62,8 @@ namespace OHOS::uitest {
     class KeyeventTracker {
     public:
         enum CaseTypes : uint8_t {
-            ActionStartTime = 0, ActionDurationTime, E_TYPE, keyItemsCount, KeyCode1, KeyCode2, KeyCode3};
+            ActionStartTime = 0, ActionDurationTime, E_TYPE, keyItemsCount, KeyCode1, KeyCode2, KeyCode3
+        };
         static const std::vector<int32_t> COMBINATION_KET;
         static const std::string EVENT_TYPE;
         static const int MAX_COMBINATION_SIZE = 3;
