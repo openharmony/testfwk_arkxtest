@@ -25,14 +25,6 @@ namespace OHOS::uitest {
     static bool g_uiRecordRun = false;
     int g_callBackId = -1;
     static std::shared_ptr<InputEventCallback> g_uiCallBackInstance = nullptr;
-    // enum TouchOpt : uint8_t {
-    //     OP_CLICK, OP_LONG_CLICK, OP_DOUBLE_CLICK, OP_SWIPE, OP_DRAG, \
-    //     OP_FLING, OP_HOME, OP_RECENT, OP_RETURN
-    // };
-
-    std::string g_operationType[9] = { "click", "longClick", "doubleClick", "swipe", "drag", \
-                                       "fling", "home", "recent", "back" };
-
     const std::map <int32_t, TouchOpt> SPECIAL_KET_MAP = {
         {MMI::KeyEvent::KEYCODE_BACK, TouchOpt::OP_RETURN},
         {MMI::KeyEvent::KEYCODE_HOME, TouchOpt::OP_HOME},
@@ -108,66 +100,19 @@ namespace OHOS::uitest {
     {
         std::ifstream inFile(defaultDir + "/" + "record.csv");
         std::string line;
-        if (inFile.is_open())
-        {
-            while (std::getline(inFile, line)){
+        if (inFile.is_open()) {
+            while (std::getline(inFile, line)) {
                 std::cout << line << std::endl;
             }
             inFile.close();
         }
-              // enum CaseTypes : uint8_t {
-        //     OP_TYPE_ = 0, X_POSI, Y_POSI, X2_POSI, Y2_POSI, INTERVAL, LENGTH, VELO, \
-        //     MAX_VEL, W_ID, W_TYPE, W_TEXT, W2_ID, W2_TYPE, W2_TEXT, BUNDLE, ABILITY
-        // };
-        // char buffer[100];
-        // while (!inFile.eof()) {
-        //     inFile >> buffer;
-        //     std::string delim = ",";
-        //     auto caseInfo = TestUtils::split(buffer, delim);
-        //     if (inFile.fail()) {
-        //         break;
-        //     } else {
-        //         std::cout << caseInfo[OP_TYPE_] << ";"
-        //                 << std::stoi(caseInfo[X_POSI]) << ";"
-        //                 << std::stoi(caseInfo[Y_POSI]) << ";"
-        //                 << std::stoi(caseInfo[X2_POSI]) << ";"
-        //                 << std::stoi(caseInfo[Y2_POSI]) << ";"
-        //                 << std::stoi(caseInfo[INTERVAL]) << ";"
-        //                 << std::stoi(caseInfo[LENGTH]) << ";"
-		// 				<< std::stoi(caseInfo[VELO]) << ";"
-		// 				<< std::stoi(caseInfo[MAX_VEL]) << ";"
-        //                 << caseInfo[W_ID] << ";"
-        //                 << caseInfo[W_TYPE] << ";"
-        //                 << caseInfo[W_TEXT] << ";"
-        //                 << caseInfo[W2_ID] << ";"
-        //                 << caseInfo[W2_TYPE] << ";"
-        //                 << caseInfo[W2_TEXT] << ";"
-        //                 << caseInfo[BUNDLE] << ";"
-        //                 << caseInfo[ABILITY] << ";"
-		// 				<< std::endl;
-        //     }
-        //     int gTimeIndex = 1000;
-        //     usleep(std::stoi(caseInfo[INTERVAL]) * gTimeIndex);
-        // }
     }
 
     // KEY_ACTION
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const
     {
-        TouchOpt touchOpt;
-        // std::cout << " @@@@@ keyevent: " << keyEvent->GetKeyCode() << " , " << keyEvent->GetKeyAction() << std::endl;
-        if (SpecialKeyMapExistKey(keyEvent->GetKeyCode(), touchOpt)) {
-            if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
-                return;
-            } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
-                PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
-                info.SetTouchOpt(touchOpt);
-                findWidgetsAllow_ = true;
-                widgetsCon.notify_all();
-                // g_isSpecialclick = false;
-                pointerTracker_.SetLastClickInTracker(false);
-                return;
-            }
+        if (dealSpecialKey(keyEvent)) {
+            return;
         }
         touchTime = GetCurrentMillisecond();
         auto item = keyEvent->GetKeyItem(keyEvent->GetKeyCode());
@@ -191,9 +136,9 @@ namespace OHOS::uitest {
                 keyeventTracker_.SetNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
                  // cout打印 + record.csv保存
-                snapshootKeyTracker.WriteSingleData(info, g_cout_lock);
-                auto json = snapshootKeyTracker.WriteSingleData(info, outFile, g_csv_lock);
-                if (abcCallBack != nullptr){
+                snapshootKeyTracker.WriteSingleData(info, cout_lock);
+                auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock);
+                if (abcCallBack != nullptr) {
                     auto data = nlohmann::json();
                     data["code"] = "3";
                     data["data"] = json;
@@ -208,9 +153,9 @@ namespace OHOS::uitest {
                 keyeventTracker_.SetNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
                 // cout打印 + record.csv保存json
-                snapshootKeyTracker.WriteCombinationData(g_cout_lock);
-                auto json = snapshootKeyTracker.WriteCombinationData(outFile, g_csv_lock);
-                if (abcCallBack != nullptr){
+                snapshootKeyTracker.WriteCombinationData(cout_lock);
+                auto json = snapshootKeyTracker.WriteCombinationData(outFile, csv_lock);
+                if (abcCallBack != nullptr) {
                     auto data = nlohmann::json();
                     data["code"] = "3";
                     data["data"] = json;
@@ -219,6 +164,24 @@ namespace OHOS::uitest {
             }
             keyeventTracker_.AddUpKeyEvent(info);
         }
+    }
+
+    bool InputEventCallback::dealSpecialKey(std::shared_ptr<MMI::KeyEvent> keyEvent) const
+    {
+        TouchOpt touchOpt;
+        if (SpecialKeyMapExistKey(keyEvent->GetKeyCode(), touchOpt)) {
+            if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
+                return true;
+            } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
+                PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
+                info.SetTouchOpt(touchOpt);
+                findWidgetsAllow_ = true;
+                widgetsCon.notify_all();
+                pointerTracker_.SetLastClickInTracker(false);
+                return true;
+            }
+        }
+        return false;
     }
 
     // AXIS_ACTION
@@ -232,7 +195,8 @@ namespace OHOS::uitest {
             while (!isLastClick_) {
                 clickCon.wait(clickLck);
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds((int)( PointerTracker::INTERVAL_THRESHOLD * gTimeIndex)));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds((int)(PointerTracker::INTERVAL_THRESHOLD * gTimeIndex)));
             if (isLastClick_) {
                 isLastClick_ = false;
                 pointerTracker_.SetLastClickInTracker(false);
@@ -246,7 +210,7 @@ namespace OHOS::uitest {
     {
         while (g_uiRecordRun) {
             unique_lock<mutex> lock(timerMut);
-            timerCon.wait_for(lock,std::chrono::milliseconds(TIMEINTERVAL), [this]{ return stopFlag; });
+            timerCon.wait_for(lock, std::chrono::milliseconds(TIMEINTERVAL), [this] {return stopFlag;});
             int currentTime = GetCurrentMillisecond();
             int diff = currentTime - touchTime;
             if (diff >= TIMEINTERVAL) {
@@ -257,15 +221,15 @@ namespace OHOS::uitest {
 
     void InputEventCallback::FindWidgetsandWriteData()
     {
-        while (g_uiRecordRun){
+        while (g_uiRecordRun) {
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
             while (!findWidgetsAllow_) {
                 widgetsCon.wait(widgetsLck);
             }
-            if(!g_uiRecordRun){
+            if (!g_uiRecordRun) {
                 return;
             }
-            if (abcCallBack != nullptr){
+            if (abcCallBack != nullptr) {
                 auto data = nlohmann::json();
                 data["code"] = "2";
                 abcCallBack(data);
@@ -274,9 +238,9 @@ namespace OHOS::uitest {
             ApiCallErr err(NO_ERROR);
             driver.FindWidgets(selector, rev, err, true);
             PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
-            pointerTracker_.WriteData(info, g_cout_lock);
-            auto json = pointerTracker_.WriteData(info, outFile, g_csv_lock);
-            if (abcCallBack != nullptr){
+            pointerTracker_.WriteData(info, cout_lock);
+            auto json = pointerTracker_.WriteData(info, outFile, csv_lock);
+            if (abcCallBack != nullptr) {
                 auto data = nlohmann::json();
                 data["code"] = "3";
                 data["data"] = json;
@@ -305,8 +269,6 @@ namespace OHOS::uitest {
         touchEvent.wy = item.GetWindowY();
         std::chrono::duration<double>  duration = touchEvent.GetActionTimeStamp() - touchEvent.GetDownTimeStamp();
         touchEvent.durationSeconds = duration.count();
-        // std::cout << " @@@@@ touchEvent: " << pointerEvent->GetPointerAction() << " , "
-        //           << touchEvent.actionTime << " , " << touchEvent.downTime << std::endl;
         if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
             std::unique_lock<std::mutex> widgetsLck(widgetsMut);
             while (findWidgetsAllow_) {
@@ -325,12 +287,12 @@ namespace OHOS::uitest {
             pointerTracker_.HandleUpEvent(touchEvent);
             if (pointerTracker_.IsNeedWrite()) {
                 PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
-                if (info.GetTouchOpt() != OP_CLICK){
+                if (info.GetTouchOpt() != OP_CLICK) {
                     isLastClick_ = false;
                     findWidgetsAllow_ = true;
                     widgetsCon.notify_all();
                 }
-                if (info.GetTouchOpt() == OP_CLICK){
+                if (info.GetTouchOpt() == OP_CLICK) {
                     isLastClick_ = true;
                     clickCon.notify_all();
                 }
@@ -406,7 +368,7 @@ namespace OHOS::uitest {
     int32_t UiDriverRecordStartTemplate(std::string modeOpt)
     {
         auto abcCallBack = g_uiCallBackInstance->GetAbcCallBack();
-        if (abcCallBack != nullptr){
+        if (abcCallBack != nullptr) {
             auto data = nlohmann::json();
             data["code"] = "0";
             abcCallBack(data);
@@ -434,9 +396,7 @@ namespace OHOS::uitest {
         // widget&data 线程
         std::thread dataThread(&InputEventCallback::FindWidgetsandWriteData, g_uiCallBackInstance);
         std::cout << "Started Recording Successfully..." << std::endl;
-        int flag = getc(stdin);
-        std::cout << flag << std::endl;
-        if (abcCallBack != nullptr){
+        if (abcCallBack != nullptr) {
             auto data = nlohmann::json();
             data["code"] = "1";
             abcCallBack(data);
@@ -450,7 +410,7 @@ namespace OHOS::uitest {
     void UiDriverRecordStop()
     {
         g_uiRecordRun = false;
-        if(g_uiCallBackInstance != nullptr){
+        if (g_uiCallBackInstance != nullptr) {
             g_uiCallBackInstance->isLastClick_ = true;
             g_uiCallBackInstance->findWidgetsAllow_ = true;
             g_uiCallBackInstance->stopFlag = true;

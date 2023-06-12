@@ -12,12 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "external_calls.h"
 #include "pointer_tracker.h"
-
 namespace OHOS::uitest {
-
     void FingerTracker::HandleDownEvent(TouchEventInfo& event)
     {
         velocityTracker.UpdateTouchEvent(event, false);
@@ -42,19 +39,19 @@ namespace OHOS::uitest {
         TouchEventInfo firstTouch = fingerInfo.GetFirstTouchEventInfo();
         fingerInfo.SetStepLength(velocityTracker.GetStepLength());
         fingerInfo.SetVelocity(velocityTracker.GetMainAxisVelocity());
-        fingerInfo.SetDirection(Offset(lastTouch.x-firstTouch.x,lastTouch.y-firstTouch.y));
+        fingerInfo.SetDirection(Offset(lastTouch.x-firstTouch.x, lastTouch.y-firstTouch.y));
     }
 
     // POINTER_TRACKER
     void PointerTracker::HandleDownEvent(TouchEventInfo& event)
     {
         // 接受down事件时,若存在上次操作时间与本次down时间相差较大情况,说明上次操作接收情况异常,本次录制异常
-        if (fingerTrackers.size() != 0){
+        if (fingerTrackers.size() != 0) {
             TimeStamp thisTime = event.GetDownTimeStamp();
             for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
                 TimeStamp lastTime = it->second->GetVelocityTracker().GetLastTimePoint();
                 double  duration = (thisTime - lastTime).count();
-                if (duration > ERROR_POINTER){
+                if (duration > ERROR_POINTER) {
                     delete it->second;
                     it = fingerTrackers.erase(it);
                     LOG_E("获取回调信息存在异常,请重新录制");
@@ -62,26 +59,25 @@ namespace OHOS::uitest {
                 }
             }
         }
-        if (fingerTrackers.size() == 0){
+        if (fingerTrackers.size() == 0) {
             firstTrackPoint_ = event;
             InitJudgeChain();
         }
         FingerTracker* fTracker = new FingerTracker();
         fTracker->HandleDownEvent(event);
-        fingerTrackers.insert({event.downTime,fTracker});
+        fingerTrackers.insert({event.downTime, fTracker});
         
         currentFingerNum ++;
     }
 
     void PointerTracker::HandleMoveEvent(TouchEventInfo& event)
     {
-        if (fingerTrackers.count(event.downTime)){
+        if (fingerTrackers.count(event.downTime)) {
             if (pointerTypeJudgChain_.size() > 1) {
                 auto judgeFunction = pointerTypeJudgMap_.find(pointerTypeJudgChain_[0])->second;
                 judgeFunction(event);
             }
             FingerTracker* ftracker = fingerTrackers.find(event.downTime)->second;
-            // auto& ftracker = fingerTrackers[event.downTime];
             ftracker->HandleMoveEvent(event);
         }
     }
@@ -90,7 +86,7 @@ namespace OHOS::uitest {
     {
         if (fingerTrackers.count(event.downTime)) {
             // 第一个抬起的手指,记录手指总数
-            if (maxFingerNum == 0 && fingerTrackers.size() != 0){
+            if (maxFingerNum == 0 && fingerTrackers.size() != 0) {
                 maxFingerNum = fingerTrackers.size();
                 isUpStage = true;
             }
@@ -107,14 +103,13 @@ namespace OHOS::uitest {
             if (currentFingerNum == 0) {
                 snapshootPointerInfo = BuilePointerInfo();
                 isNeedWrite = true;
-                if (snapshootPointerInfo.GetTouchOpt() == OP_CLICK) {
-                    if (isLastClickInTracker && GetInterVal() < INTERVAL_THRESHOLD){
-                        snapshootPointerInfo.SetTouchOpt(OP_DOUBLE_CLICK);
-                        isLastClickInTracker = false;
-                    } else {
-                        lastClickInfo = snapshootPointerInfo;
-                        isLastClickInTracker = true;
-                    }
+                if (snapshootPointerInfo.GetTouchOpt() == OP_CLICK &&
+                    isLastClickInTracker && GetInterVal() < INTERVAL_THRESHOLD) { // doubleClick
+                    snapshootPointerInfo.SetTouchOpt(OP_DOUBLE_CLICK);
+                    isLastClickInTracker = false;
+                } else if (snapshootPointerInfo.GetTouchOpt() == OP_CLICK) { // click
+                    lastClickInfo = snapshootPointerInfo;
+                    isLastClickInTracker = true;
                 }
                 maxFingerNum = 0;
                 isUpStage = false;
@@ -123,7 +118,8 @@ namespace OHOS::uitest {
         }
     }
 
-    void PointerTracker::ClearFingerTrackersValues(){
+    void PointerTracker::ClearFingerTrackersValues()
+    {
         for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
             delete it->second;
         }
@@ -137,17 +133,24 @@ namespace OHOS::uitest {
             OP_CLICK, OP_LONG_CLICK, OP_DRAG, OP_RETURN, OP_SWIPE, OP_RECENT, OP_FLING, OP_HOME
         };
 
-        if (pointerTypeJudgMap_.size() == 0){
-            pointerTypeJudgMap_.emplace(std::make_pair(OP_CLICK, function<bool(TouchEventInfo&)>(bind(&PointerTracker::ClickJudge, this, placeholders::_1))));
-            pointerTypeJudgMap_.emplace(std::make_pair(OP_LONG_CLICK, function<bool(TouchEventInfo&)>(bind(&PointerTracker::LongClickJudge, this, placeholders::_1))));
-            pointerTypeJudgMap_.emplace(std::make_pair(OP_DRAG, function<bool(TouchEventInfo&)>(bind(&PointerTracker::DragJudge, this, placeholders::_1))));
-            pointerTypeJudgMap_.emplace(std::make_pair(OP_RETURN, function<bool(TouchEventInfo&)>(bind(&PointerTracker::BackJudge, this, placeholders::_1))));
-            pointerTypeJudgMap_.emplace(std::make_pair(OP_SWIPE, function<bool(TouchEventInfo&)>(bind(&PointerTracker::SwipJudge, this, placeholders::_1))));
-            pointerTypeJudgMap_.emplace(std::make_pair(OP_RECENT, function<bool(TouchEventInfo&)>(bind(&PointerTracker::RecentJudge, this, placeholders::_1))));
-            pointerTypeJudgMap_.emplace(std::make_pair(OP_FLING, function<bool(TouchEventInfo&)>(bind(&PointerTracker::FlingJudge, this, placeholders::_1))));
-            pointerTypeJudgMap_.emplace(std::make_pair(OP_HOME, function<bool(TouchEventInfo&)>(bind(&PointerTracker::HomeJudge, this, placeholders::_1))));
+        if (pointerTypeJudgMap_.size() == 0) {
+            pointerTypeJudgMap_.emplace(std::make_pair(OP_CLICK,
+                function<bool(TouchEventInfo&)>(bind(&PointerTracker::ClickJudge, this, placeholders::_1))));
+            pointerTypeJudgMap_.emplace(std::make_pair(OP_LONG_CLICK,
+                function<bool(TouchEventInfo&)>(bind(&PointerTracker::LongClickJudge, this, placeholders::_1))));
+            pointerTypeJudgMap_.emplace(std::make_pair(OP_DRAG,
+                function<bool(TouchEventInfo&)>(bind(&PointerTracker::DragJudge, this, placeholders::_1))));
+            pointerTypeJudgMap_.emplace(std::make_pair(OP_RETURN,
+                function<bool(TouchEventInfo&)>(bind(&PointerTracker::BackJudge, this, placeholders::_1))));
+            pointerTypeJudgMap_.emplace(std::make_pair(OP_SWIPE,
+                function<bool(TouchEventInfo&)>(bind(&PointerTracker::SwipJudge, this, placeholders::_1))));
+            pointerTypeJudgMap_.emplace(std::make_pair(OP_RECENT,
+                function<bool(TouchEventInfo&)>(bind(&PointerTracker::RecentJudge, this, placeholders::_1))));
+            pointerTypeJudgMap_.emplace(std::make_pair(OP_FLING,
+                function<bool(TouchEventInfo&)>(bind(&PointerTracker::FlingJudge, this, placeholders::_1))));
+            pointerTypeJudgMap_.emplace(std::make_pair(OP_HOME,
+                function<bool(TouchEventInfo&)>(bind(&PointerTracker::HomeJudge, this, placeholders::_1))));
         }
-
     }
 
     bool PointerTracker::ClickJudge(TouchEventInfo& touchEvent) // click(back)
@@ -165,7 +168,7 @@ namespace OHOS::uitest {
     bool PointerTracker::LongClickJudge(TouchEventInfo& touchEvent)
     {
         // 先时间 > DURATIOIN_THRESHOLD,不满足则删除LONCLICK && DRAG
-        if (touchEvent.durationSeconds < DURATIOIN_THRESHOLD){
+        if (touchEvent.durationSeconds < DURATIOIN_THRESHOLD) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_LONG_CLICK, OP_DRAG);
             return false;
         }
@@ -173,7 +176,7 @@ namespace OHOS::uitest {
         RemoveTypeJudge(pointerTypeJudgChain_, OP_SWIPE, OP_FLING, OP_HOME, OP_RECENT);
         // 后 move > MAX_THRESHOLD ,若不满足却通过时间判断则为DRAG
         int moveDistance = fingerTrackers.find(touchEvent.downTime)->second->GetMoveDistance();
-        if (moveDistance > MAX_THRESHOLD){
+        if (moveDistance > MAX_THRESHOLD) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_LONG_CLICK);
             return false;
         }
@@ -186,7 +189,7 @@ namespace OHOS::uitest {
         // 时间 > DURATIOIN_THRESHOLD && move > MAX_THRESHOLD
         auto ftracker = fingerTrackers.find(touchEvent.downTime)->second;
         int moveDistance = ftracker->GetMoveDistance();
-        if (touchEvent.durationSeconds < DURATIOIN_THRESHOLD || moveDistance < MAX_THRESHOLD){
+        if (touchEvent.durationSeconds < DURATIOIN_THRESHOLD || moveDistance < MAX_THRESHOLD) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_DRAG);
             return false;
         }
@@ -198,7 +201,7 @@ namespace OHOS::uitest {
     bool PointerTracker::BackJudge(TouchEventInfo& touchEvent)
     {
         // 滑动类只有起手才能判断
-        if (!isUpStage){
+        if (!isUpStage) {
             return true;
         }
         auto ftracker = fingerTrackers.find(touchEvent.downTime)->second;
@@ -217,7 +220,7 @@ namespace OHOS::uitest {
     bool PointerTracker::SwipJudge(TouchEventInfo& touchEvent) // swip(recent)
     {
         // 滑动类只有起手才能判断
-        if (!isUpStage){
+        if (!isUpStage) {
             return true;
         }
         auto ftracker = fingerTrackers.find(touchEvent.downTime)->second;
@@ -249,7 +252,7 @@ namespace OHOS::uitest {
     bool PointerTracker::FlingJudge(TouchEventInfo& touchEvent) // fling(home)
     {
         // 滑动类只有起手才能判断
-        if (!isUpStage){
+        if (!isUpStage) {
             return true;
         }
         // SWIP判断过离手速度
@@ -271,13 +274,14 @@ namespace OHOS::uitest {
         return false;
     }
 
-    PointerInfo PointerTracker::BuilePointerInfo(){
+    PointerInfo PointerTracker::BuilePointerInfo()
+    {
         PointerInfo pointerInfo;
         pointerInfo.SetTouchOpt(pointerTypeJudgChain_[0]);
         pointerInfo.SetFingerNumber(maxFingerNum);
         pointerInfo.SetFirstTrackPoint(firstTrackPoint_);
         for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
-             pointerInfo.AddFingerInfo(it->second->GetFingerInfo());
+            pointerInfo.AddFingerInfo(it->second->GetFingerInfo());
         }
         auto fastTouch = pointerInfo.GetFingerInfoList()[0].GetLastTouchEventInfo();
         auto lastTouch = pointerInfo.GetFingerInfoList()[fingerTrackers.size()-1].GetLastTouchEventInfo();
@@ -287,10 +291,12 @@ namespace OHOS::uitest {
             pointerInfo.SetBundleName(names[0]);
             pointerInfo.SetAbilityName(names[1]);
         }
-        if (pointerInfo.GetTouchOpt() == OP_DRAG || pointerInfo.GetTouchOpt() == OP_SWIPE || pointerInfo.GetTouchOpt() == OP_FLING) {
+        if (pointerInfo.GetTouchOpt() == OP_DRAG ||
+            pointerInfo.GetTouchOpt() == OP_SWIPE ||
+            pointerInfo.GetTouchOpt() == OP_FLING) {
             // 平均方向->向量相加
             Offset avg_direction;
-            int add_stepLength = 0; 
+            int add_stepLength = 0;
             double add_velocity = 0.0;
             for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
                 avg_direction += it->second->GetFingerInfo().GetDirection();
@@ -324,5 +330,4 @@ namespace OHOS::uitest {
         }
         return out;
     }
-
 }

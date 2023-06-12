@@ -100,7 +100,7 @@ namespace OHOS::uitest {
 
     // record.csv
     nlohmann::json KeyeventTracker::WriteCombinationData(ofstream& outFile, shared_ptr<mutex> &csv_lock)
-    {        
+    {
         auto data = nlohmann::json();
         if (infos_.size()==0) {
             LOG_E("Failed to obtain the combination_key when save keyEvent into record.csv.");

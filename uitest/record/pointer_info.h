@@ -31,63 +31,60 @@ namespace OHOS::uitest {
         OP_HOME, OP_RECENT, OP_RETURN
     };
 
-    static std::map <int32_t, std::string> OP_TYPE= {
-        {TouchOpt::OP_CLICK,"click"},
-        {TouchOpt::OP_LONG_CLICK,"longClick"},
-        {TouchOpt::OP_DOUBLE_CLICK,"doubleClick"},
-        {TouchOpt::OP_SWIPE,"swipe"},
-        {TouchOpt::OP_DRAG,"drag"},
-        {TouchOpt::OP_FLING,"fling"},
-        {TouchOpt::OP_PINCH,"pinch"},
-        {TouchOpt::OP_HOME,"home"},
-        {TouchOpt::OP_RECENT,"recent"},
-        {TouchOpt::OP_RETURN,"back"},
-    };
-
-    class FingerInfo{
+    class FingerInfo {
     public:
         static const int MAX_VELOCITY = 40000;
         
         nlohmann::json WriteData();
         std::string WriteWindowData(std::string actionType);
 
-        void SetFirstTouchEventInfo(TouchEventInfo& first){
+        void SetFirstTouchEventInfo(TouchEventInfo& first)
+        {
             firstTouchEventInfo = first;
         }
 
-        TouchEventInfo& GetFirstTouchEventInfo(){
+        TouchEventInfo& GetFirstTouchEventInfo()
+        {
             return firstTouchEventInfo;
         }
 
-        void SetLastTouchEventInfo(TouchEventInfo& last){
+        void SetLastTouchEventInfo(TouchEventInfo& last)
+        {
             lastTouchEventInfo = last;
         }
 
-        TouchEventInfo& GetLastTouchEventInfo(){
+        TouchEventInfo& GetLastTouchEventInfo()
+        {
             return lastTouchEventInfo;
         }
 
-        void SetStepLength (int stepLength_){
+        void SetStepLength (int stepLength_)
+        {
             stepLength = stepLength_;
         }
 
-        int GetStepLength(){
+        int GetStepLength()
+        {
             return stepLength;
         }
 
-        void SetVelocity(double velocity_){
+        void SetVelocity(double velocity_)
+        {
             velocity = velocity_;
         }
 
-        double GetVelocity(){
+        double GetVelocity()
+        {
             return velocity;
         }
 
-        void SetDirection(const Offset& direction_){
+        void SetDirection(const Offset& direction_)
+        {
             direction = direction_;
         }
 
-        Offset& GetDirection(){
+        Offset& GetDirection()
+        {
             return direction;
         }
 
@@ -99,9 +96,10 @@ namespace OHOS::uitest {
         Offset direction; // 方向
     };
 
-    class PointerInfo{
+    class PointerInfo {
     public:
-        static const std::string EVENT_TYPE;  
+        static const std::string EVENT_TYPE;
+        static std::map <int32_t, std::string> OP_TYPE;
         // json
         nlohmann::json WriteData();
         std::string WriteWindowData();
@@ -224,7 +222,7 @@ namespace OHOS::uitest {
         std::string bundleName;
         std::string abilityName;
         Offset avg_direction;
-        int avg_stepLength = 0; 
+        int avg_stepLength = 0;
         double avg_velocity;
         Point center_set;
         TouchEventInfo firstTrackPoint_;

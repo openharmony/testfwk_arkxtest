@@ -69,7 +69,6 @@ struct TouchEventInfo final {
         y = 0;
         actionTime = GetCurrentMillisecond();
         downTime = GetCurrentMillisecond();
-        // downTime = std::chrono::high_resolution_clock::now();
     }
 };
 } // namespace OHOS::uitest

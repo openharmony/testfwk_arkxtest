@@ -55,6 +55,7 @@ namespace OHOS::uitest {
         void RecordInitEnv(const std::string &modeOpt);
         bool InitReportFolder();
         bool InitEventRecordFile();
+        bool dealSpecialKey(std::shared_ptr<MMI::KeyEvent> keyEvent) const;
         void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
         void HandleDownEvent(TouchEventInfo& event) const;
         void HandleMoveEvent(const TouchEventInfo& event) const;
@@ -68,7 +69,7 @@ namespace OHOS::uitest {
         void TimerReprintClickFunction ();
         void TimerTouchCheckFunction();
         void FindWidgetsandWriteData();
-        void SetAbcCallBack(std::function<void(nlohmann::json )> healder)
+        void SetAbcCallBack(std::function<void(nlohmann::json)> healder)
         {
             abcCallBack = healder;
         }
@@ -82,8 +83,8 @@ namespace OHOS::uitest {
         static const std::string DEFAULT_DIR ;
         mutable volatile int touchTime = 0;
         mutable volatile bool isLastClick_ = false;
-        mutable shared_ptr<mutex> g_cout_lock = make_shared<std::mutex>();
-        mutable shared_ptr<mutex> g_csv_lock = make_shared<std::mutex>();
+        mutable shared_ptr<mutex> cout_lock = make_shared<std::mutex>();
+        mutable shared_ptr<mutex> csv_lock = make_shared<std::mutex>();
         mutable std::mutex g_clickMut;
         mutable std::condition_variable clickCon;
         mutable volatile bool findWidgetsAllow_ = false;
@@ -104,7 +105,6 @@ namespace OHOS::uitest {
         mutable UiDriver driver = UiDriver();
         mutable PointerTracker pointerTracker_;
         mutable KeyeventTracker keyeventTracker_;
-
     };
 
     class TestUtils {
@@ -142,11 +142,9 @@ namespace OHOS::uitest {
         UiDriver d;
         std::mutex mut;
     };
-
     int32_t UiDriverRecordStart(std::string modeOpt);
-    int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> header , std::string modeOpt);
+    int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> header, std::string modeOpt);
     int32_t UiDriverRecordStartTemplate(std::string modeOpt);
     void UiDriverRecordStop();
-
 } // namespace OHOS::uitest
 #endif // UI_RECORD_H

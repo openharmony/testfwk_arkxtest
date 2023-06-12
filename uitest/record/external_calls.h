@@ -12,13 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef EXTERNAL_CALLS_H
 #define EXTERNAL_CALLS_H
 
 #include <vector>
-#include <string>
-
 namespace OHOS::uitest {
     std::vector<std::string> GetForeAbility();
 }

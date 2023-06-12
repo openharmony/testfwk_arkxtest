@@ -30,19 +30,20 @@
 #include "pointer_info.h"
 
 namespace OHOS::uitest {
-    class FingerTracker{
+    class FingerTracker {
     public:
         FingerTracker() = default;
         ~FingerTracker() = default;
-        void HandleDownEvent(TouchEventInfo& touchEvent);
-        void HandleMoveEvent(TouchEventInfo& touchEvent);
-        void HandleUpEvent(TouchEventInfo& touchEvent);
+        void HandleDownEvent(TouchEventInfo& event);
+        void HandleMoveEvent(TouchEventInfo& event);
+        void HandleUpEvent(TouchEventInfo& event);
         void BuileFingerInfo();
         double GetMoveDistance() const
         {
             return Offset(velocityTracker.GetFirstPosition(), velocityTracker.GetPosition()).GetDistance();
         }
-        FingerInfo& GetFingerInfo(){
+        FingerInfo& GetFingerInfo()
+        {
             return fingerInfo;
         }
         VelocityTracker& GetVelocityTracker()
@@ -55,22 +56,19 @@ namespace OHOS::uitest {
         VelocityTracker velocityTracker {};
     };
 
-    // using PointerTypeJudgFunction = std::function<bool(TouchEventInfo&)>;
-    // typedef bool (*PointerTypeJudgFunction)(TouchEventInfo&);
-    class PointerTracker{
+    class PointerTracker {
     public:
         PointerTracker() = default;
         ~PointerTracker() = default;
         
-        void HandleDownEvent(TouchEventInfo& touchEvent);
-        void HandleMoveEvent(TouchEventInfo& touchEvent);
-        void HandleUpEvent(TouchEventInfo& touchEvent);
+        void HandleDownEvent(TouchEventInfo& event);
+        void HandleMoveEvent(TouchEventInfo& event);
+        void HandleUpEvent(TouchEventInfo& event);
         
         void InitJudgeChain();
         bool ClickJudge(TouchEventInfo& touchEvent); // click(back)
         bool LongClickJudge(TouchEventInfo& touchEvent);
         bool DragJudge(TouchEventInfo& touchEvent);
-        // bool PinchJudge(TouchEventInfo& touchEvent);
         bool SwipJudge(TouchEventInfo& touchEvent); // swip(recent)
         bool FlingJudge(TouchEventInfo& touchEvent); // fling(home)
         bool RecentJudge(TouchEventInfo& touchEvent);
@@ -81,7 +79,7 @@ namespace OHOS::uitest {
         std::string WriteData(PointerInfo pointerInfo, shared_ptr<mutex> &cout_lock);
         // record.csv
         nlohmann::json WriteData(PointerInfo pointerInfo, ofstream &outFile, shared_ptr<mutex> &csv_lock);
-        //clear
+        // clear
         void ClearFingerTrackersValues();
         void SetWindow(Rect window)
         {
@@ -108,14 +106,16 @@ namespace OHOS::uitest {
             return snapshootPointerInfo;
         }
 
-        void SetLastClickInTracker(bool isLastClick){
+        void SetLastClickInTracker(bool isLastClick)
+        {
             isLastClickInTracker = isLastClick;
         }
         
         double GetInterVal() const
         {
             // 两次down事件的间隔
-            std::chrono::duration<double> inter = lastClickInfo.GetFirstTrackPoint().GetDownTimeStamp()- firstTrackPoint_.GetDownTimeStamp();
+            std::chrono::duration<double> inter =
+                lastClickInfo.GetFirstTrackPoint().GetDownTimeStamp()- firstTrackPoint_.GetDownTimeStamp();
             auto interval = inter.count();
             return interval;
         }
@@ -130,7 +130,7 @@ namespace OHOS::uitest {
         static constexpr int32_t NAVI_VERTI_THRE_V = 200; // home/recent步长下限
         static constexpr int32_t NAVI_THRE_D = 10; // home/recent起始位置
     private:
-        std::map <int64_t, FingerTracker*> fingerTrackers; //finger记录
+        std::map <int64_t, FingerTracker*> fingerTrackers; // finger记录
         int maxFingerNum = 0;
         int currentFingerNum = 0;
         Rect windowBounds = Rect(0, 0, 0, 0);
