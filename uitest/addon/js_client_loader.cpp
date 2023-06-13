@@ -66,9 +66,8 @@ namespace OHOS::uitest {
             // use "napi_create_external_arraybuffer" to shared data with JS without new and copy
             napi_value arrBuf = nullptr;
             napi_create_external_arraybuffer(env, ctx->data, ctx->dataLen, NopNapiFinalizer, nullptr, &arrBuf);
-            napi_valuetype vtpppp = napi_undefined;
-            napi_typeof(env, arrBuf, &vtpppp);
             napi_value undefined = nullptr;
+            napi_get_undefined(env, &undefined);
             LOG_I("Invoke js callback");
             napi_value argv[1] = { arrBuf };
             napi_call_function(env, undefined, callback, 1, argv, &arrBuf);
@@ -88,25 +87,26 @@ namespace OHOS::uitest {
         });
     }
 
-    static bool UpdateCaptureState(const string& type, CaptureContext&& context, bool active)
+    static void UpdateCaptureState(CaptureContext&& context, bool active)
     {
         static auto driver = UiDriver();
         static set<string> runningCaptures;
+        static mutex stateLock;
         static uint8_t dumpLayoutBuf[CaptureContext::DATA_CAPACITY] = {0};
-        context.type = type;
+        auto &type = context.type;
+        stateLock.lock();
         const auto running = runningCaptures.find(type) != runningCaptures.end();
-        if (!running && !active) {
-            return true;
-        }
         if (running && active) {
-            LOG_W("Capture '%{public}s' already running, call stop first!", "type.c_str()");
-            return false;
+            LOG_W("Capture %{public}s already running, call stop first!", context.type.c_str());
+            stateLock.unlock();
+            return;
         }
         if (active) {
             runningCaptures.insert(type);
         } else {
             runningCaptures.erase(type);
         }
+        stateLock.unlock();
         if (type == CAPTURE_SCREEN && !active) {
             StopScreenCopy();
         } else if (type == CAPTURE_SCREEN && active) {
@@ -131,11 +131,12 @@ namespace OHOS::uitest {
             } else {
                 LOG_W("DumpLayout failed: %{public}s", err.message_.c_str());
             }
+            stateLock.lock();
             runningCaptures.erase(type);
+            stateLock.unlock();
         } else {
-            return false; // implement me
+            // implement me
         }
-        return true;
     }
 
     static void ParseCaptureOptions(napi_env env, string_view type, napi_value opt, CaptureContext& out)
@@ -199,8 +200,10 @@ namespace OHOS::uitest {
             }
         }
         LOG_I("Update context for capture: %{public}s, active=%{public}d", capType.c_str(), kOn);
+        context.type = move(capType);
         context.napiEnv = env;
-        NAPI_ASSERT(env, UpdateCaptureState(capType, move(context), kOn), "UpdateCaptureState, failed");
+        auto asyncJob = thread(UpdateCaptureState, move(context), kOn);
+        asyncJob.detach();
         LOG_I("Return");
         return nullptr;
     }
@@ -242,7 +245,7 @@ namespace OHOS::uitest {
         opt.lang = OHOS::AbilityRuntime::Runtime::Language::JS;
         opt.loadAce = false;
         opt.preload = false;
-        opt.isStageModel = true;
+        opt.isStageModel = true;  // stage model with jsbundle packing
         opt.isBundle = true;
         opt.eventRunner = OHOS::AppExecFwk::EventRunner::Create(false);
         if (opt.eventRunner == nullptr) {
