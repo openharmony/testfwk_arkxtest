@@ -67,9 +67,6 @@ namespace OHOS::uitest {
         vector<unique_ptr<WidgetTree>> trees;
         for (auto &hierarchy : hierarchies) {
             auto tree = make_unique<WidgetTree>("");
-            if (hierarchy.second.empty()) {
-                continue;
-            }
             tree->ConstructFromDom(hierarchy.second, true);
             auto &window = hierarchy.first;
             windows_.push_back(move(window));
