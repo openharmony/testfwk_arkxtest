@@ -374,7 +374,6 @@ namespace OHOS::uitest {
                 winInfo.bundleName_ = app;
                 Rect visibleArea = winInfo.bounds_;
                 if (!RectAlgorithm::ComputeMaxVisibleRegion(winInfo.bounds_, overlays, visibleArea)) {
-                    out.push_back(make_pair(move(winInfo), nullptr));
                     continue;
                 }
                 auto root = nlohmann::json();
@@ -384,9 +383,9 @@ namespace OHOS::uitest {
                     root["pagePath"] = elementInfo.GetPagePath();
                 }
                 MarshallAccessibilityNodeInfo(elementInfo, root, 0, false);
+                overlays.push_back(winInfo.bounds_);
                 out.push_back(make_pair(move(winInfo), move(root)));
                 LOG_D("Get node at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
-                overlays.push_back(visibleArea);
             } else {
                 LOG_W("GetRootByWindow failed, windowId: %{public}d", window.GetWindowId());
             }
