@@ -61,6 +61,11 @@ namespace OHOS::uitest {
         (void)uv_queue_work(loop, work, [](uv_work_t *) {}, [](uv_work_t* work, int status) {
             auto ctx = (CaptureContext*)work->data;
             auto env = ctx->napiEnv;
+            napi_handle_scope scope = nullptr;
+            napi_open_handle_scope(env, &scope);
+            if (scope == nullptr) {
+                return;
+            }
             napi_value callback = nullptr;
             napi_get_reference_value(env, ctx->cbRef, &callback);
             // use "napi_create_external_arraybuffer" to shared data with JS without new and copy
@@ -78,11 +83,12 @@ namespace OHOS::uitest {
                 napi_get_and_clear_last_exception(env, &arrBuf);
             }
             if (ctx->type == CAPTURE_SCREEN) {
-                NotifyScreenCopyFrameConsumed();
+                free(ctx->data);
             }
             if (work != nullptr) {
                 delete work;
             }
+            napi_close_handle_scope(env, scope);
             delete ctx;
         });
     }
