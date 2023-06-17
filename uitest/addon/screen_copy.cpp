@@ -48,51 +48,39 @@ private:
 
 class ScreenCopy {
 public:
-    ScreenCopy(float scale, ScreenCopyHandler handler);
+    ScreenCopy() = default;
     virtual ~ScreenCopy();
     bool Setup();
+    bool Run();
+    bool Pause();
     void Destroy();
-    sptr<Surface> GetInputSurface() const;
     void HandleConsumerBuffer();
-    void ReleaseImgBuf();
 private:
     void ConsumeFrameBuffer(const sptr<SurfaceBuffer> &buf);
-    const float scale_ = 0;
-    const ScreenCopyHandler handler_ = nullptr;
     sptr<IBufferConsumerListener> bufferListener_ = nullptr;
     sptr<IConsumerSurface> consumerSurface_ = nullptr;
     sptr<Surface> producerSurface_ = nullptr;
-    ScreenId virtualScreenId_ = 0;
-    uint8_t *imgBuf_ = nullptr;
-    unsigned long imgDataLen_ = 0;
-    static constexpr size_t SHARED_MEM_SIZE = 4 * 1024 * 1024;
+    pair<uint32_t, uint32_t> screenSize_;
+    ScreenId mainScreenId_ = SCREEN_ID_INVALID;
+    ScreenId virtualScreenId_ = SCREEN_ID_INVALID;
+    bool workable_ = false;
 };
-static unique_ptr<ScreenCopy> g_currentScreenCopy = nullptr;
-
-ScreenCopy::ScreenCopy(float scale, ScreenCopyHandler handler): scale_(scale), handler_(handler) {}
-
-void ScreenCopy::ReleaseImgBuf()
-{
-    LOG_D("ReleaseImgBuf");
-    if (imgBuf_ != nullptr) {
-        free(imgBuf_);
-        imgBuf_ = nullptr;
-    }
-    imgDataLen_ = 0;
-}
+static unique_ptr<ScreenCopy> g_screenCopy = nullptr;
+static ScreenCopyHandler g_screenCopyHandler = nullptr;
 
 ScreenCopy::~ScreenCopy()
 {
-    if (virtualScreenId_ > 0) {
-        ScreenManager::GetInstance().DestroyVirtualScreen(virtualScreenId_);
-        virtualScreenId_ = 0;
-    }
+    Destroy();
+}
+
+void ScreenCopy::Destroy()
+{
+    Pause();
     producerSurface_ = nullptr;
     if (consumerSurface_ != nullptr) {
         consumerSurface_->UnregisterConsumerListener();
+        consumerSurface_ = nullptr;
     }
-    consumerSurface_ = nullptr;
-    ReleaseImgBuf();
 }
 
 bool ScreenCopy::Setup()
@@ -118,26 +106,41 @@ bool ScreenCopy::Setup()
         return false;
     }
     // make screen mirror from main screen to accept frames with producer surface buffer
-    auto mainScreenId = static_cast<ScreenId>(DisplayManager::GetInstance().GetDefaultDisplayId());
-    auto mainScreen = ScreenManager::GetInstance().GetScreenById(mainScreenId);
-    if (mainScreenId == SCREEN_ID_INVALID || mainScreen == nullptr) {
+    mainScreenId_ = static_cast<ScreenId>(DisplayManager::GetInstance().GetDefaultDisplayId());
+    auto mainScreen = ScreenManager::GetInstance().GetScreenById(mainScreenId_);
+    if (mainScreenId_ == SCREEN_ID_INVALID || mainScreen == nullptr) {
         LOG_E("Get main screen failed!");
+        return false;
+    }
+    screenSize_.first = mainScreen->GetWidth();
+    screenSize_.second = mainScreen->GetHeight();
+    workable_ = true;
+    return true;
+}
+
+bool ScreenCopy::Run()
+{
+    if (!workable_) {
+        return false;
+    }
+    if (virtualScreenId_ != SCREEN_ID_INVALID) {
+        LOG_W("ScreenCopy already running!");
         return false;
     }
     VirtualScreenOption option = {
         .name_ = "virtualScreen",
-        .width_ = mainScreen->GetWidth(), // * scale_,
-        .height_ = mainScreen->GetHeight(), // * scale_,
+        .width_ = screenSize_.first, // * scale_,
+        .height_ = screenSize_.second, // * scale_,
         .density_ = 2.0,
         .surface_ = producerSurface_,
         .flags_ = 0,
         .isForShot_ = true,
     };
-    ScreenId virtualScreenId = ScreenManager::GetInstance().CreateVirtualScreen(option);
+    virtualScreenId_ = ScreenManager::GetInstance().CreateVirtualScreen(option);
     vector<ScreenId> mirrorIds;
-    mirrorIds.push_back(virtualScreenId);
+    mirrorIds.push_back(virtualScreenId_);
     ScreenId screenGroupId = static_cast<ScreenId>(1);
-    auto ret = ScreenManager::GetInstance().MakeMirror(mainScreenId, mirrorIds, screenGroupId);
+    auto ret = ScreenManager::GetInstance().MakeMirror(mainScreenId_, mirrorIds, screenGroupId);
     if (ret != DMError::DM_OK) {
         LOG_E("Make mirror screen for default screen failed");
         return false;
@@ -145,9 +148,22 @@ bool ScreenCopy::Setup()
     return true;
 }
 
-void ScreenCopy::Destroy()
+bool ScreenCopy::Pause()
 {
-    this->~ScreenCopy();
+    if (!workable_ || virtualScreenId_ == SCREEN_ID_INVALID) {
+        return true;
+    }
+    vector<ScreenId> mirrorIds;
+    mirrorIds.push_back(virtualScreenId_);
+    auto err0 = ScreenManager::GetInstance().StopMirror(mirrorIds);
+    auto err1 = ScreenManager::GetInstance().DestroyVirtualScreen(virtualScreenId_);
+    virtualScreenId_ = SCREEN_ID_INVALID;
+    if (err0 == DMError::DM_OK && err1 == DMError::DM_OK) {
+        return true;
+    } else {
+        LOG_E("Pause screenCopy failed, stopMirrorErr=%{public}d, destroyVirScrErr=%{public}d", err0, err1);
+        return false;
+    }
 }
 
 void ScreenCopy::HandleConsumerBuffer()
@@ -225,12 +241,8 @@ void ScreenCopy::ConsumeFrameBuffer(const sptr<SurfaceBuffer> &buf)
         LOG_E("GetBufferHandle failed");
         return;
     }
-    if (handler_ == nullptr) {
+    if (g_screenCopyHandler == nullptr) {
         LOG_W("Consumer handler is nullptr, ignore this frame");
-        return;
-    }
-    if (imgBuf_ != nullptr) {
-        LOG_W("Last frame not consumed, ignore this frame");
         return;
     }
     LOG_I("ConsumeFrameBuffer_BeginEncodeFrameToJPEG");
@@ -255,7 +267,9 @@ void ScreenCopy::ConsumeFrameBuffer(const sptr<SurfaceBuffer> &buf)
     jpeg_set_defaults(&jpeg);
     constexpr int32_t COMPRESS_QUALITY = 75;
     jpeg_set_quality(&jpeg, COMPRESS_QUALITY, 1);
-    jpeg_mem_dest(&jpeg, &imgBuf_, &imgDataLen_);
+    uint8_t *imgBuf = nullptr;
+    unsigned long imgSize = 0;
+    jpeg_mem_dest(&jpeg, &imgBuf, &imgSize);
     jpeg_start_compress(&jpeg, 1);
     JSAMPROW rowPointer[1];
     for (uint32_t rowIndex = 0; rowIndex < jpeg.image_height; rowIndex++) {
@@ -266,7 +280,11 @@ void ScreenCopy::ConsumeFrameBuffer(const sptr<SurfaceBuffer> &buf)
     jpeg_destroy_compress(&jpeg);
     free(rgb);
     LOG_I("ConsumeFrameBuffer_EndEncodeFrameToJPEG");
-    handler_(imgBuf_, imgDataLen_);
+    if (g_screenCopyHandler != nullptr) {
+        g_screenCopyHandler(imgBuf, imgSize);
+    } else {
+        free(imgBuf);
+    }
 }
 
 bool StartScreenCopy(float scale, ScreenCopyHandler handler)
@@ -275,23 +293,18 @@ bool StartScreenCopy(float scale, ScreenCopyHandler handler)
         LOG_E("Illegal arguments");
         return false;
     }
-    StopScreenCopy();
-    g_currentScreenCopy = make_unique<ScreenCopy>(scale, handler);
-    return g_currentScreenCopy->Setup();
+    g_screenCopyHandler = handler;
+    if (g_screenCopy == nullptr) {
+        g_screenCopy = make_unique<ScreenCopy>();
+        g_screenCopy->Setup();
+    }
+    return g_screenCopy->Run();
 }
 
 void StopScreenCopy()
 {
-    if (g_currentScreenCopy != nullptr) {
-        g_currentScreenCopy->Destroy();
-        g_currentScreenCopy = nullptr;
-    }
-}
-
-void NotifyScreenCopyFrameConsumed()
-{
-    if (g_currentScreenCopy != nullptr) {
-        g_currentScreenCopy->ReleaseImgBuf();
+    if (g_screenCopy != nullptr) {
+        g_screenCopy->Pause();
     }
 }
 }
