@@ -48,15 +48,21 @@ namespace OHOS::uitest {
         // 接受down事件时,若存在上次操作时间与本次down时间相差较大情况,说明上次操作接收情况异常,本次录制异常
         if (fingerTrackers.size() != 0) {
             TimeStamp thisTime = event.GetDownTimeStamp();
+            bool flag = false;
             for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
                 TimeStamp lastTime = it->second->GetVelocityTracker().GetLastTimePoint();
                 double  duration = (thisTime - lastTime).count();
                 if (duration > ERROR_POINTER) {
+                    flag = true;
                     delete it->second;
                     it = fingerTrackers.erase(it);
                     LOG_E("获取回调信息存在异常,请重新录制");
                     std::cout << "获取回调信息存在异常,请重新录制" << std::endl;
+                    break;
                 }
+            }
+            if (flag) {
+                ClearFingerTrackersValues();
             }
         }
         if (fingerTrackers.size() == 0) {

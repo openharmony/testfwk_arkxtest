@@ -74,7 +74,7 @@ namespace OHOS::uitest {
         std::stringstream sout;
         if (infos_.size()==0) {
             LOG_E("Failed to obtain the combination_key when cout keyEvent.");
-            return "Failed to obtain the combination_key when cout keyEvent.";
+            return "Failed";
         }
         buildEventItems();
         std::lock_guard<mutex> guard(*cout_lock);
@@ -110,7 +110,7 @@ namespace OHOS::uitest {
         buildEventItems();
         data["ActionStartTime"] = eventItems[CaseTypes::ActionStartTime];
         data["ActionDurationTime"] = eventItems[CaseTypes::ActionDurationTime];
-        data["EVENT_TYPE"] =  eventItems[CaseTypes::E_TYPE];
+        data["OP_TYPE"] =  eventItems[CaseTypes::E_TYPE];
         data["keyItemsCount"] = eventItems[CaseTypes::keyItemsCount];
         data["KeyCode1"] = eventItems[CaseTypes::KeyCode1];
         data["KeyCode2"] = eventItems[CaseTypes::KeyCode2];
@@ -128,7 +128,7 @@ namespace OHOS::uitest {
         auto data = nlohmann::json();
         data["ActionStartTime"] = eventItems[CaseTypes::ActionStartTime];
         data["ActionDurationTime"] = eventItems[CaseTypes::ActionDurationTime];
-        data["EVENT_TYPE"] =  eventItems[CaseTypes::E_TYPE];
+        data["OP_TYPE"] =  eventItems[CaseTypes::E_TYPE];
         data["keyItemsCount"] = eventItems[CaseTypes::keyItemsCount];
         data["KeyCode1"] = eventItems[CaseTypes::KeyCode1];
         data["KeyCode2"] = eventItems[CaseTypes::KeyCode2];
