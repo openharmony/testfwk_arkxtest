@@ -24,6 +24,7 @@ namespace OHOS::uitest {
 
     static bool g_uiRecordRun = false;
     int g_callBackId = -1;
+    int64_t g_downTime = 0;
     static std::shared_ptr<InputEventCallback> g_uiCallBackInstance = nullptr;
     const std::map <int32_t, TouchOpt> SPECIAL_KET_MAP = {
         {MMI::KeyEvent::KEYCODE_BACK, TouchOpt::OP_RETURN},
@@ -140,7 +141,7 @@ namespace OHOS::uitest {
                 auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock);
                 if (abcCallBack != nullptr) {
                     auto data = nlohmann::json();
-                    data["code"] = "3";
+                    data["code"] = 3;
                     data["data"] = json;
                     abcCallBack(data);
                 }
@@ -157,7 +158,7 @@ namespace OHOS::uitest {
                 auto json = snapshootKeyTracker.WriteCombinationData(outFile, csv_lock);
                 if (abcCallBack != nullptr) {
                     auto data = nlohmann::json();
-                    data["code"] = "3";
+                    data["code"] = 3;
                     data["data"] = json;
                     abcCallBack(data);
                 }
@@ -231,7 +232,7 @@ namespace OHOS::uitest {
             }
             if (abcCallBack != nullptr) {
                 auto data = nlohmann::json();
-                data["code"] = "2";
+                data["code"] = 2;
                 abcCallBack(data);
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(gTimeIndex)); // 确保界面已更新
@@ -242,7 +243,7 @@ namespace OHOS::uitest {
             auto json = pointerTracker_.WriteData(info, outFile, csv_lock);
             if (abcCallBack != nullptr) {
                 auto data = nlohmann::json();
-                data["code"] = "3";
+                data["code"] = 3;
                 data["data"] = json;
                 abcCallBack(data);
             }
@@ -261,8 +262,11 @@ namespace OHOS::uitest {
         }
         touchTime = GetCurrentMillisecond();
         TouchEventInfo touchEvent {};
+        if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_DOWN) {
+            g_downTime = pointerEvent->GetActionTime();
+        }
         touchEvent.actionTime = pointerEvent->GetActionTime();
-        touchEvent.downTime = item.GetDownTime();
+        touchEvent.downTime = item.GetDownTime() == 0 ? g_downTime : item.GetDownTime();
         touchEvent.x = item.GetDisplayX();
         touchEvent.y = item.GetDisplayY();
         touchEvent.wx = item.GetWindowX();
@@ -370,7 +374,7 @@ namespace OHOS::uitest {
         auto abcCallBack = g_uiCallBackInstance->GetAbcCallBack();
         if (abcCallBack != nullptr) {
             auto data = nlohmann::json();
-            data["code"] = "0";
+            data["code"] = 0;
             abcCallBack(data);
         }
         g_uiCallBackInstance->RecordInitEnv(modeOpt);
@@ -398,7 +402,7 @@ namespace OHOS::uitest {
         std::cout << "Started Recording Successfully..." << std::endl;
         if (abcCallBack != nullptr) {
             auto data = nlohmann::json();
-            data["code"] = "1";
+            data["code"] = 1;
             abcCallBack(data);
         }
         clickThread.join();
