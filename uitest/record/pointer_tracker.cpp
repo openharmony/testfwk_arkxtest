@@ -303,18 +303,18 @@ namespace OHOS::uitest {
             pointerInfo.GetTouchOpt() == OP_SWIPE ||
             pointerInfo.GetTouchOpt() == OP_FLING) {
             // 平均方向->向量相加
-            Offset avg_direction;
+            Offset avgDirection;
             int add_stepLength = 0;
             double add_velocity = 0.0;
             for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
-                avg_direction += it->second->GetFingerInfo().GetDirection();
+                avgDirection += it->second->GetFingerInfo().GetDirection();
                 add_stepLength += it->second->GetVelocityTracker().GetStepLength();
                 add_velocity += it->second->GetFingerInfo().GetVelocity();
             }
-            pointerInfo.SetAvgDirection(avg_direction);
+            pointerInfo.SetAvgDirection(avgDirection);
             pointerInfo.SetAvgStepLength(add_stepLength/fingerTrackers.size());
-            double avg_velocity = add_velocity/fingerTrackers.size();
-            pointerInfo.SetAvgVelocity(avg_velocity);
+            double avgVelocity = add_velocity/fingerTrackers.size();
+            pointerInfo.SetAvgVelocity(avgVelocity);
         }
         return pointerInfo;
     }

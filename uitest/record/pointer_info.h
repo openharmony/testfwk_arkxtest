@@ -58,9 +58,9 @@ namespace OHOS::uitest {
             return lastTouchEventInfo;
         }
 
-        void SetStepLength (int stepLength_)
+        void SetStepLength (int step)
         {
-            stepLength = stepLength_;
+            stepLength = step;
         }
 
         int GetStepLength()
@@ -68,9 +68,9 @@ namespace OHOS::uitest {
             return stepLength;
         }
 
-        void SetVelocity(double velocity_)
+        void SetVelocity(double vel)
         {
-            velocity = velocity_;
+            velocity = vel;
         }
 
         double GetVelocity()
@@ -78,9 +78,9 @@ namespace OHOS::uitest {
             return velocity;
         }
 
-        void SetDirection(const Offset& direction_)
+        void SetDirection(const Offset& dir)
         {
-            direction = direction_;
+            direction = dir;
         }
 
         Offset& GetDirection()
@@ -104,9 +104,9 @@ namespace OHOS::uitest {
         nlohmann::json WriteData();
         std::string WriteWindowData();
 
-        void SetTouchOpt(TouchOpt touchOpt_)
+        void SetTouchOpt(TouchOpt opt)
         {
-            touchOpt = touchOpt_;
+            touchOpt = opt;
         }
 
         TouchOpt& GetTouchOpt()
@@ -134,9 +134,9 @@ namespace OHOS::uitest {
             return fingers;
         }
 
-        void SetDuration(double duration_)
+        void SetDuration(double dur)
         {
-            duration = duration_;
+            duration = dur;
         }
 
         double GetDuration()
@@ -166,42 +166,42 @@ namespace OHOS::uitest {
 
         void SetAvgDirection(Offset& direction)
         {
-            avg_direction = direction;
+            avgDirection = direction;
         }
 
         Offset& GetAvgDirection()
         {
-            return avg_direction;
+            return avgDirection;
         }
 
         void SetAvgStepLength(int stepLength)
         {
-            avg_stepLength = stepLength;
+            avgStepLength = stepLength;
         }
 
         int GetAvgStepLength()
         {
-            return avg_stepLength;
+            return avgStepLength;
         }
 
         void SetAvgVelocity(double velocity)
         {
-            avg_velocity = velocity;
+            avgVelocity = velocity;
         }
 
         double GetAvgVelocity()
         {
-            return avg_velocity;
+            return avgVelocity;
         }
 
-        void SetCenterSet(Point& center_)
+        void SetCenterSet(Point& center)
         {
-            center_set = center_;
+            centerSet = center;
         }
 
         Point& GetCenterSet()
         {
-            return center_set;
+            return centerSet;
         }
 
         void SetFirstTrackPoint(TouchEventInfo firstTrackPoint)
@@ -221,10 +221,10 @@ namespace OHOS::uitest {
         double duration;
         std::string bundleName;
         std::string abilityName;
-        Offset avg_direction;
-        int avg_stepLength = 0;
-        double avg_velocity;
-        Point center_set;
+        Offset avgDirection;
+        int avgStepLength = 0;
+        double avgVelocity;
+        Point centerSet;
         TouchEventInfo firstTrackPoint_;
     };
 }

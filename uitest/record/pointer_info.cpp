@@ -107,12 +107,12 @@ namespace OHOS::uitest {
 
         data["BUNDLE"] = bundleName;
         data["ABILITY"] = abilityName;
-        data["direction.X"] = std::to_string(avg_direction.GetX());
-        data["direction.Y"] = std::to_string(avg_direction.GetY());
-        data["LENGTH"] = std::to_string(avg_stepLength);
-        data["VELO"] = std::to_string(avg_velocity);
-        data["CENTER_X"] = center_set.px_==0.0 && center_set.px_ == 0.0 ? "" :std::to_string(center_set.px_);
-        data["CENTER_Y"] = center_set.px_==0.0 && center_set.px_ == 0.0 ? "" :std::to_string(center_set.px_);
+        data["direction.X"] = std::to_string(avgDirection.GetX());
+        data["direction.Y"] = std::to_string(avgDirection.GetY());
+        data["LENGTH"] = std::to_string(avgStepLength);
+        data["VELO"] = std::to_string(avgVelocity);
+        data["CENTER_X"] = centerSet.px_==0.0 && centerSet.px_ == 0.0 ? "" :std::to_string(centerSet.px_);
+        data["CENTER_Y"] = centerSet.px_==0.0 && centerSet.px_ == 0.0 ? "" :std::to_string(centerSet.px_);
 
         auto fingerjson = nlohmann::json();
         for (auto& finger :fingers) {
