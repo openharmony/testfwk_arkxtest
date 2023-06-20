@@ -28,12 +28,16 @@ namespace OHOS::uitest {
         fingerInfo.SetLastTouchEventInfo(event);
     }
 
-    void FingerTracker::HandleUpEvent(TouchEventInfo& event)
+    void FingerTracker::UpdatevelocityTracker(TouchEventInfo& event)
     {
         velocityTracker.UpdateTouchEvent(event, false);
     }
+    void FingerTracker::HandleUpEvent(TouchEventInfo& event)
+    {
+        fingerInfo.SetLastTouchEventInfo(event);
+    }
 
-    void FingerTracker::BuileFingerInfo()
+    void FingerTracker::BuildFingerInfo()
     {
         TouchEventInfo lastTouch = fingerInfo.GetLastTouchEventInfo();
         TouchEventInfo firstTouch = fingerInfo.GetFirstTouchEventInfo();
@@ -98,16 +102,17 @@ namespace OHOS::uitest {
             }
             // 抬起判断
             bool flag = false;
-            fingerTrackers.find(event.downTime)->second->HandleUpEvent(event);
+            fingerTrackers.find(event.downTime)->second->UpdatevelocityTracker(event);
             while (pointerTypeJudgChain_.size() > 1 && !flag) {
                 auto judgeFunction = pointerTypeJudgMap_.find(pointerTypeJudgChain_[0])->second;
                 flag = judgeFunction(event);
             }
-            fingerTrackers.find(event.downTime)->second->BuileFingerInfo();
+            fingerTrackers.find(event.downTime)->second->HandleUpEvent(event);
+            fingerTrackers.find(event.downTime)->second->BuildFingerInfo();
             currentFingerNum --;
             // 最后一个抬起的手指,快照+复位
             if (currentFingerNum == 0) {
-                snapshootPointerInfo = BuilePointerInfo();
+                snapshootPointerInfo = BuildPointerInfo();
                 isNeedWrite = true;
                 if (snapshootPointerInfo.GetTouchOpt() == OP_CLICK &&
                     isLastClickInTracker && GetInterVal() < INTERVAL_THRESHOLD) { // doubleClick
@@ -214,7 +219,6 @@ namespace OHOS::uitest {
         TouchEventInfo startEvent = ftracker->GetFingerInfo().GetFirstTouchEventInfo();
         VelocityTracker vTracker = ftracker->GetVelocityTracker();
         if (startEvent.x - windowBounds.left_ <= NAVI_THRE_D &&
-            // vTracker.GetMaxAxis() == Axis::HORIZONTAL &&
             ftracker->GetMoveDistance() >= NAVI_VERTI_THRE_V) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_SWIPE, OP_RECENT, OP_FLING, OP_HOME);
             return true;
@@ -246,7 +250,6 @@ namespace OHOS::uitest {
         TouchEventInfo startEvent = ftracker->GetFingerInfo().GetFirstTouchEventInfo();
         VelocityTracker vTracker = ftracker->GetVelocityTracker();
         if (windowBounds.bottom_ - startEvent.y <= NAVI_THRE_D &&
-            // vTracker.GetMaxAxis() == Axis::VERTICAL &&
             ftracker->GetMoveDistance() >= NAVI_VERTI_THRE_V) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_SWIPE);
             return true;
@@ -271,7 +274,6 @@ namespace OHOS::uitest {
         TouchEventInfo startEvent = ftracker->GetFingerInfo().GetFirstTouchEventInfo();
         VelocityTracker vTracker = ftracker->GetVelocityTracker();
         if (windowBounds.bottom_ - startEvent.y <= NAVI_THRE_D &&
-            // vTracker.GetMaxAxis() == Axis::VERTICAL &&
             ftracker->GetMoveDistance() >= NAVI_VERTI_THRE_V) {
             RemoveTypeJudge(pointerTypeJudgChain_, OP_FLING);
             return true;
@@ -280,7 +282,7 @@ namespace OHOS::uitest {
         return false;
     }
 
-    PointerInfo PointerTracker::BuilePointerInfo()
+    PointerInfo PointerTracker::BuildPointerInfo()
     {
         PointerInfo pointerInfo;
         pointerInfo.SetTouchOpt(pointerTypeJudgChain_[0]);

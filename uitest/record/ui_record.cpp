@@ -47,6 +47,9 @@ namespace OHOS::uitest {
         {MMI::KeyEvent::KEYCODE_FN, true, 0}, // fn键按下订阅
         {MMI::KeyEvent::KEYCODE_FN, false, 0}, // fn键抬起订阅
     };
+    enum MessageStage : uint8_t {
+        StartUp = 0, StartEnd, StartFindWidgets, FindWidgetsEnd
+    };
 
     inline const std::string InputEventCallback::DEFAULT_DIR = "/data/local/tmp/layout";
     std::string EventData::defaultDir = InputEventCallback::DEFAULT_DIR;
@@ -141,7 +144,7 @@ namespace OHOS::uitest {
                 auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock);
                 if (abcCallBack != nullptr) {
                     auto data = nlohmann::json();
-                    data["code"] = 3;
+                    data["code"] = MessageStage::FindWidgetsEnd;
                     data["data"] = json;
                     abcCallBack(data);
                 }
@@ -158,7 +161,7 @@ namespace OHOS::uitest {
                 auto json = snapshootKeyTracker.WriteCombinationData(outFile, csv_lock);
                 if (abcCallBack != nullptr) {
                     auto data = nlohmann::json();
-                    data["code"] = 3;
+                    data["code"] = MessageStage::FindWidgetsEnd;
                     data["data"] = json;
                     abcCallBack(data);
                 }
@@ -232,7 +235,7 @@ namespace OHOS::uitest {
             }
             if (abcCallBack != nullptr) {
                 auto data = nlohmann::json();
-                data["code"] = 2;
+                data["code"] = MessageStage::StartFindWidgets;
                 abcCallBack(data);
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(gTimeIndex)); // 确保界面已更新
@@ -243,7 +246,7 @@ namespace OHOS::uitest {
             auto json = pointerTracker_.WriteData(info, outFile, csv_lock);
             if (abcCallBack != nullptr) {
                 auto data = nlohmann::json();
-                data["code"] = 3;
+                data["code"] = MessageStage::FindWidgetsEnd;
                 data["data"] = json;
                 abcCallBack(data);
             }
@@ -362,10 +365,10 @@ namespace OHOS::uitest {
         return UiDriverRecordStartTemplate(modeOpt);
     }
 
-    int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> healder,  std::string modeOpt)
+    int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> handler,  std::string modeOpt)
     {
         g_uiCallBackInstance = std::make_shared<InputEventCallback>();
-        g_uiCallBackInstance->SetAbcCallBack(healder);
+        g_uiCallBackInstance->SetAbcCallBack(handler);
         return UiDriverRecordStartTemplate(modeOpt);
     }
 
@@ -374,7 +377,7 @@ namespace OHOS::uitest {
         auto abcCallBack = g_uiCallBackInstance->GetAbcCallBack();
         if (abcCallBack != nullptr) {
             auto data = nlohmann::json();
-            data["code"] = 0;
+            data["code"] = MessageStage::StartUp;
             abcCallBack(data);
         }
         g_uiCallBackInstance->RecordInitEnv(modeOpt);
@@ -402,7 +405,7 @@ namespace OHOS::uitest {
         std::cout << "Started Recording Successfully..." << std::endl;
         if (abcCallBack != nullptr) {
             auto data = nlohmann::json();
-            data["code"] = 1;
+            data["code"] = MessageStage::StartEnd;
             abcCallBack(data);
         }
         clickThread.join();
