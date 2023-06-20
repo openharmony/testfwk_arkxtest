@@ -143,7 +143,7 @@ namespace OHOS::uitest {
         std::mutex mut;
     };
     int32_t UiDriverRecordStart(std::string modeOpt);
-    int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> header, std::string modeOpt);
+    int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> handler, std::string modeOpt);
     int32_t UiDriverRecordStartTemplate(std::string modeOpt);
     void UiDriverRecordStop();
 } // namespace OHOS::uitest
