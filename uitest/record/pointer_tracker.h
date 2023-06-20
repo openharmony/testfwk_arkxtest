@@ -150,10 +150,10 @@ namespace OHOS::uitest {
         template<typename T, typename... Args>
         void RemoveTypeJudge(std::vector<T>& vec, Args&&... args)
         {
-            auto remove_func = [&](const T& value) {
+            auto removeFunc = [&](const T& value) {
                 return ((value == args) || ...);
             };
-            vec.erase(std::remove_if(vec.begin(), vec.end(), remove_func), vec.end());
+            vec.erase(std::remove_if(vec.begin(), vec.end(), removeFunc), vec.end());
         }
     };
 }

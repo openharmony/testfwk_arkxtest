@@ -77,7 +77,7 @@ namespace OHOS::uitest {
         fTracker->HandleDownEvent(event);
         fingerTrackers.insert({event.downTime, fTracker});
         
-        currentFingerNum ++;
+        currentFingerNum++;
     }
 
     void PointerTracker::HandleMoveEvent(TouchEventInfo& event)
@@ -109,7 +109,7 @@ namespace OHOS::uitest {
             }
             fingerTrackers.find(event.downTime)->second->HandleUpEvent(event);
             fingerTrackers.find(event.downTime)->second->BuildFingerInfo();
-            currentFingerNum --;
+            currentFingerNum--;
             // 最后一个抬起的手指,快照+复位
             if (currentFingerNum == 0) {
                 snapshootPointerInfo = BuildPointerInfo();
@@ -304,16 +304,16 @@ namespace OHOS::uitest {
             pointerInfo.GetTouchOpt() == OP_FLING) {
             // 平均方向->向量相加
             Offset avgDirection;
-            int add_stepLength = 0;
-            double add_velocity = 0.0;
+            int addStepLength = 0;
+            double addVelocity = 0.0;
             for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
                 avgDirection += it->second->GetFingerInfo().GetDirection();
-                add_stepLength += it->second->GetVelocityTracker().GetStepLength();
-                add_velocity += it->second->GetFingerInfo().GetVelocity();
+                addStepLength += it->second->GetVelocityTracker().GetStepLength();
+                addVelocity += it->second->GetFingerInfo().GetVelocity();
             }
             pointerInfo.SetAvgDirection(avgDirection);
-            pointerInfo.SetAvgStepLength(add_stepLength/fingerTrackers.size());
-            double avgVelocity = add_velocity/fingerTrackers.size();
+            pointerInfo.SetAvgStepLength(addStepLength/fingerTrackers.size());
+            double avgVelocity = addVelocity/fingerTrackers.size();
             pointerInfo.SetAvgVelocity(avgVelocity);
         }
         return pointerInfo;

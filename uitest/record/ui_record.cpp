@@ -142,12 +142,7 @@ namespace OHOS::uitest {
                  // cout打印 + record.csv保存
                 snapshootKeyTracker.WriteSingleData(info, cout_lock);
                 auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock);
-                if (abcCallBack != nullptr) {
-                    auto data = nlohmann::json();
-                    data["code"] = MessageStage::FindWidgetsEnd;
-                    data["data"] = json;
-                    abcCallBack(data);
-                }
+                DoAbcCallBack(json);
             }
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
             if (!KeyeventTracker::isCombinationKey(info.GetKeyCode())) {
@@ -159,14 +154,19 @@ namespace OHOS::uitest {
                 // cout打印 + record.csv保存json
                 snapshootKeyTracker.WriteCombinationData(cout_lock);
                 auto json = snapshootKeyTracker.WriteCombinationData(outFile, csv_lock);
-                if (abcCallBack != nullptr) {
-                    auto data = nlohmann::json();
-                    data["code"] = MessageStage::FindWidgetsEnd;
-                    data["data"] = json;
-                    abcCallBack(data);
-                }
+                DoAbcCallBack(json);
             }
             keyeventTracker_.AddUpKeyEvent(info);
+        }
+    }
+
+    void InputEventCallback::DoAbcCallBack(nlohmann::json jsonData) const
+    {
+        if (abcCallBack != nullptr) {
+            auto data = nlohmann::json();
+            data["code"] = MessageStage::FindWidgetsEnd;
+            data["data"] = jsonData;
+            abcCallBack(data);
         }
     }
 
