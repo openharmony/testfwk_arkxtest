@@ -58,7 +58,7 @@ namespace OHOS::uitest {
             return lastTouchEventInfo;
         }
 
-        void SetStepLength (int step)
+        void SetStepLength(int step)
         {
             stepLength = step;
         }
