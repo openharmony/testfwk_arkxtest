@@ -134,7 +134,7 @@ ohos_static_library("uitest_addon") {
 
   defines = [
     "__OHOS__=1",
-    "LOG_TAG=\"UitestKid_Addon\"",
+    "LOG_TAG=\"UiTestKit_Addon\"",
   ]
 }
 

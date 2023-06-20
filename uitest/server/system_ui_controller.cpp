@@ -329,45 +329,53 @@ namespace OHOS::uitest {
         return newBounds;
     }
 
-    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out, string targetApp)
+    static bool GetAamsWindowInfos(vector<AccessibilityWindowInfo> &windows)
     {
-        static mutex dumpMutex; // disallow concurrent dumpUi
-        if (!connected_) {
-            LOG_I("Not connect to AccessibilityUITestAbility, try to connect it");
-            if (!this->ConnectToSysAbility()) {
-                LOG_W("Connect to AccessibilityUITestAbility failed");
-                return;
-            }
-        }
-        dumpMutex.lock();
         auto ability = AccessibilityUITestAbility::GetInstance();
-        vector<AccessibilityWindowInfo> windows;
         if (ability->GetWindows(windows) != RET_OK) {
             LOG_W("GetWindows from AccessibilityUITestAbility failed");
-            dumpMutex.unlock();
-            return;
+            return false;
         }
         sort(windows.begin(), windows.end(), [](auto &w1, auto &w2) -> bool {
             return w1.GetWindowLayer() > w2.GetWindowLayer();
         });
+        return true;
+    }
+
+    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out, string targetApp)
+    {
+        static mutex dumpMutex; // disallow concurrent dumpUi
+        if (!connected_ && !ConnectToSysAbility()) {
+            LOG_W("Connect to AccessibilityUITestAbility failed");
+            return;
+        }
+        dumpMutex.lock();
+        vector<AccessibilityWindowInfo> windows;
+        if (!GetAamsWindowInfos(windows)) {
+            dumpMutex.unlock();
+            return;
+        }
         auto screenSize = GetDisplaySize();
         AccessibilityElementInfo elementInfo;
-        auto amcPtr = AAFwk::AbilityManagerClient::GetInstance();
-        const auto foreAbility = amcPtr->GetTopAbility();
+        const auto foreAbility = AAFwk::AbilityManagerClient::GetInstance()->GetTopAbility();
+        vector<Rect> overlays;
         for (auto &window : windows) {
-            if (ability->GetRootByWindow(window, elementInfo) == RET_OK) {
+            if (AccessibilityUITestAbility::GetInstance()->GetRootByWindow(window, elementInfo) == RET_OK) {
                 const auto app = elementInfo.GetBundleName();
                 LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
                 if (targetApp != "" && app != targetApp) {
                     continue;
                 }
                 // apply window bounds as root node bounds
-                Accessibility::Rect windowBounds = window.GetRectInScreen();
-                auto visibleBounds = GetVisibleRect(screenSize, windowBounds);
+                auto visibleBounds = GetVisibleRect(screenSize, window.GetRectInScreen());
                 elementInfo.SetRectInScreen(visibleBounds);
                 auto winInfo = Window(window.GetWindowId());
                 InflateWindowInfo(window, winInfo);
                 winInfo.bundleName_ = app;
+                Rect visibleArea = winInfo.bounds_;
+                if (!RectAlgorithm::ComputeMaxVisibleRegion(winInfo.bounds_, overlays, visibleArea)) {
+                    continue;
+                }
                 auto root = nlohmann::json();
                 root["bundleName"] = app;
                 if (app == foreAbility.GetBundleName()) {
@@ -375,6 +383,7 @@ namespace OHOS::uitest {
                     root["pagePath"] = elementInfo.GetPagePath();
                 }
                 MarshallAccessibilityNodeInfo(elementInfo, root, 0, false);
+                overlays.push_back(winInfo.bounds_);
                 out.push_back(make_pair(move(winInfo), move(root)));
                 LOG_D("Get node at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
             } else {
