@@ -37,7 +37,9 @@ namespace OHOS::uitest {
         void HandleDownEvent(TouchEventInfo& event);
         void HandleMoveEvent(TouchEventInfo& event);
         void HandleUpEvent(TouchEventInfo& event);
-        void BuileFingerInfo();
+        void UpdatevelocityTracker(TouchEventInfo& event);
+
+        void BuildFingerInfo();
         double GetMoveDistance() const
         {
             return Offset(velocityTracker.GetFirstPosition(), velocityTracker.GetPosition()).GetDistance();
@@ -120,7 +122,7 @@ namespace OHOS::uitest {
             return interval;
         }
 
-        PointerInfo BuilePointerInfo(); // 输出封装
+        PointerInfo BuildPointerInfo(); // 输出封装
     public:
         static constexpr float ERROR_POINTER = 1; // move后长时间没有Up说明异常
         static constexpr float INTERVAL_THRESHOLD = 0.2; // 双击间隔时间上限
