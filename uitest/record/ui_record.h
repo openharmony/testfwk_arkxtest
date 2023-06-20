@@ -69,6 +69,7 @@ namespace OHOS::uitest {
         void TimerReprintClickFunction ();
         void TimerTouchCheckFunction();
         void FindWidgetsandWriteData();
+        void DoAbcCallBack(nlohmann::json jsonData) const;
         void SetAbcCallBack(std::function<void(nlohmann::json)> handler)
         {
             abcCallBack = handler;
