@@ -27,6 +27,7 @@ namespace OHOS::uitest {
     };
 
     const std::string KeyeventTracker::EVENT_TYPE = "key" ;
+    const std::string KeyeventTracker::NONE_COMBINATION_ERROR = "Failed to obtain the combination_key when cout keyEvent.";
 
     bool KeyeventTracker::AddDownKeyEvent(KeyEventInfo &info)
     {
@@ -74,7 +75,7 @@ namespace OHOS::uitest {
         std::stringstream sout;
         if (infos_.size()==0) {
             LOG_E("Failed to obtain the combination_key when cout keyEvent.");
-            return "Failed";
+            return NONE_COMBINATION_ERROR;
         }
         buildEventItems();
         std::lock_guard<mutex> guard(*cout_lock);

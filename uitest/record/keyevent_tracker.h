@@ -66,6 +66,7 @@ namespace OHOS::uitest {
         };
         static const std::vector<int32_t> COMBINATION_KET;
         static const std::string EVENT_TYPE;
+        static const std::string NONE_COMBINATION_ERROR;
         static const int MAX_COMBINATION_SIZE = 3;
         static const int INFO_SIZE = 7;
     public:
