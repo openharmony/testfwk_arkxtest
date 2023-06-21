@@ -16,17 +16,17 @@
 #include "ability_manager_client.h"
 
 namespace OHOS::uitest {
-    std::vector<std::string> GetForeAbility()
+    std::vector<std::string> GetFrontAbility()
     {
         std::vector<std::string> elements;
         std::string bundleName, abilityName;
-        auto amcPtr = AAFwk::AbilityManagerClient::GetInstance();
-        if (amcPtr == nullptr) {
+        auto abilityManagerClientPtr = AAFwk::AbilityManagerClient::GetInstance();
+        if (abilityManagerClientPtr == nullptr) {
             std::cout<<"AbilityManagerClient is nullptr"<<std::endl;
             abilityName = "";
             bundleName = "";
         } else {
-            auto elementName = amcPtr->GetTopAbility();
+            auto elementName = abilityManagerClientPtr->GetTopAbility();
             if (elementName.GetBundleName().empty()) {
                 std::cout<<"GetTopAbility GetBundleName is nullptr"<<std::endl;
                 bundleName = "";

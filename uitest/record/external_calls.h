@@ -17,6 +17,6 @@
 
 #include <vector>
 namespace OHOS::uitest {
-    std::vector<std::string> GetForeAbility();
+    std::vector<std::string> GetFrontAbility();
 }
 #endif // EXTERNAL_CALLS_H

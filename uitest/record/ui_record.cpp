@@ -345,7 +345,7 @@ namespace OHOS::uitest {
                 << windowBounds.top_ << "," << windowBounds.right_ << ","
                 << windowBounds.bottom_ << ")" << std::endl;
         pointerTracker_.SetWindow(windowBounds);
-        std::vector<std::string> names = GetForeAbility();
+        std::vector<std::string> names = GetFrontAbility();
         std::cout << "Current ForAbility :" << names[ZERO] << ", " << names[ONE] << std::endl;
         if (outFile.is_open()) {
             outFile << "windowBounds" << ',';

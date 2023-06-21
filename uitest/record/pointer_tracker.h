@@ -68,14 +68,14 @@ namespace OHOS::uitest {
         void HandleUpEvent(TouchEventInfo& event);
         
         void InitJudgeChain();
-        bool ClickJudge(TouchEventInfo& touchEvent); // click(back)
-        bool LongClickJudge(TouchEventInfo& touchEvent);
-        bool DragJudge(TouchEventInfo& touchEvent);
-        bool SwipJudge(TouchEventInfo& touchEvent); // swip(recent)
-        bool FlingJudge(TouchEventInfo& touchEvent); // fling(home)
-        bool RecentJudge(TouchEventInfo& touchEvent);
-        bool HomeJudge(TouchEventInfo& touchEvent);
-        bool BackJudge(TouchEventInfo& touchEvent);
+        bool IsClick(TouchEventInfo& touchEvent); // click(back)
+        bool IsLongClick(TouchEventInfo& touchEvent);
+        bool IsDrag(TouchEventInfo& touchEvent);
+        bool IsSwip(TouchEventInfo& touchEvent); // swip(recent)
+        bool IsFling(TouchEventInfo& touchEvent); // fling(home)
+        bool IsRecent(TouchEventInfo& touchEvent);
+        bool IsHome(TouchEventInfo& touchEvent);
+        bool IsBack(TouchEventInfo& touchEvent);
 
         // cout
         std::string WriteData(PointerInfo pointerInfo, shared_ptr<mutex> &cout_lock);
