@@ -240,6 +240,8 @@ namespace OHOS::uitest {
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(gTimeIndex)); // 确保界面已更新
             ApiCallErr err(NO_ERROR);
+            auto layout = nlohmann::json();
+            driver.GetLayoutJson(layout);
             driver.FindWidgets(selector, rev, err, true);
             PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
             pointerTracker_.WriteData(info, cout_lock);
@@ -248,6 +250,7 @@ namespace OHOS::uitest {
                 auto data = nlohmann::json();
                 data["code"] = MessageStage::FindWidgetsEnd;
                 data["data"] = json;
+                data["layout"] = layout;
                 abcCallBack(data);
             }
             findWidgetsAllow_ = false;

@@ -114,7 +114,10 @@ ohos_static_library("uitest_addon") {
     "${source_root}/addon/js_client_loader.cpp",
     "${source_root}/addon/screen_copy.cpp",
   ]
-  include_dirs = [ "${source_root}/core" ]
+  include_dirs = [
+    "${source_root}/core",
+    "${source_root}/record",
+  ]
   deps = [
     ":uitest_core",
     "//third_party/libjpeg-turbo:turbojpeg_static",
@@ -122,6 +125,7 @@ ohos_static_library("uitest_addon") {
   external_deps = [
     "ability_runtime:runtime",
     "eventhandler:libeventhandler",
+    "input:libmmi-client",
     "multimedia_image_framework:image_native",
     "napi:ace_napi",
     "window_manager:libdm",
