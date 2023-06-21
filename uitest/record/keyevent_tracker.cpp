@@ -27,6 +27,8 @@ namespace OHOS::uitest {
     };
 
     const std::string KeyeventTracker::EVENT_TYPE = "key" ;
+    const std::string KeyeventTracker::NONE_COMBINATION_ERROR =
+        "Failed to obtain the combination_key when cout keyEvent.";
 
     bool KeyeventTracker::AddDownKeyEvent(KeyEventInfo &info)
     {
@@ -69,60 +71,75 @@ namespace OHOS::uitest {
     }
 
     // cout
-    bool KeyeventTracker::WriteCombinationData(shared_ptr<mutex> &cout_lock)
+    std::string KeyeventTracker::WriteCombinationData(shared_ptr<mutex> &cout_lock)
     {
+        std::stringstream sout;
         if (infos_.size()==0) {
             LOG_E("Failed to obtain the combination_key when cout keyEvent.");
-            return false;
+            return NONE_COMBINATION_ERROR;
         }
         buildEventItems();
         std::lock_guard<mutex> guard(*cout_lock);
         for (size_t i = 0; i < INFO_SIZE-1; i++) {
-            std::cout << eventItems[i] << ", ";
+            sout << eventItems[i] << ", ";
         }
-        std::cout << eventItems[INFO_SIZE-1] << std::endl;
-        return true;
+        sout << eventItems[INFO_SIZE-1];
+        std::cout << sout.str() << std::endl;
+        return sout.str();
     }
-    bool KeyeventTracker::WriteSingleData(KeyEventInfo &info, shared_ptr<mutex> &cout_lock)
+    std::string KeyeventTracker::WriteSingleData(KeyEventInfo &info, shared_ptr<mutex> &cout_lock)
     {
+        std::stringstream sout;
         buildEventItems(info);
         std::lock_guard<mutex> guard(*cout_lock);
         for (size_t i = 0; i < INFO_SIZE-1; i++) {
-            std::cout << eventItems[i] << ", ";
+            sout << eventItems[i] << ", ";
         }
-        std::cout << eventItems[INFO_SIZE-1] << std::endl;
-        return true;
+        sout << eventItems[INFO_SIZE-1];
+        std::cout << sout.str() << std::endl;
+        return sout.str();
     }
 
     // record.csv
-    bool KeyeventTracker::WriteCombinationData(ofstream& outFile, shared_ptr<mutex> &csv_lock)
+    nlohmann::json KeyeventTracker::WriteCombinationData(ofstream& outFile, shared_ptr<mutex> &csv_lock)
     {
+        auto data = nlohmann::json();
         if (infos_.size()==0) {
             LOG_E("Failed to obtain the combination_key when save keyEvent into record.csv.");
-            return false;
+            data["ERROR_INFO"] = "Failed to obtain the combination_key when save keyEvent into record.csv.";
+            return data;
         }
         buildEventItems();
+        data["ActionStartTime"] = eventItems[CaseTypes::ACTION_START_TIME];
+        data["ActionDurationTime"] = eventItems[CaseTypes::ACTION_DURATION_TIME];
+        data["OP_TYPE"] =  eventItems[CaseTypes::OP_TYPE];
+        data["keyItemsCount"] = eventItems[CaseTypes::KEY_ITEMS_COUNT];
+        data["KeyCode1"] = eventItems[CaseTypes::KEY_CODE1];
+        data["KeyCode2"] = eventItems[CaseTypes::KEY_CODE2];
+        data["KeyCode3"] = eventItems[CaseTypes::KEY_CODE3];
         std::lock_guard<mutex> guard(*csv_lock);
         if (outFile.is_open()) {
-            for (size_t i = 0; i < INFO_SIZE-1; i++) {
-                outFile << eventItems[i] << ", ";
-            }
-            outFile << eventItems[INFO_SIZE-1] << std::endl;
+            outFile << data.dump() << std::endl;
         }
-        return true;
+        return data;
     }
 
-    bool KeyeventTracker::WriteSingleData(KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock)
+    nlohmann::json KeyeventTracker::WriteSingleData(KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock)
     {
         buildEventItems(info);
+        auto data = nlohmann::json();
+        data["ActionStartTime"] = eventItems[CaseTypes::ACTION_START_TIME];
+        data["ActionDurationTime"] = eventItems[CaseTypes::ACTION_DURATION_TIME];
+        data["OP_TYPE"] =  eventItems[CaseTypes::OP_TYPE];
+        data["keyItemsCount"] = eventItems[CaseTypes::KEY_ITEMS_COUNT];
+        data["KeyCode1"] = eventItems[CaseTypes::KEY_CODE1];
+        data["KeyCode2"] = eventItems[CaseTypes::KEY_CODE2];
+        data["KeyCode3"] = eventItems[CaseTypes::KEY_CODE3];
         std::lock_guard<mutex> guard(*csv_lock);
         if (outFile.is_open()) {
-            for (size_t i = 0; i < INFO_SIZE-1; i++) {
-                outFile << eventItems[i] << ", ";
-            }
-            outFile << eventItems[INFO_SIZE-1] << std::endl;
+            outFile << data.dump() << std::endl;
         }
-        return true;
+        return data;
     }
 
     void KeyeventTracker::buildEventItems(KeyEventInfo &info)
@@ -131,14 +148,14 @@ namespace OHOS::uitest {
             return ;
         }
         actionStartTime = infos_.size()==0?info.GetActionTime():infos_[0].GetActionTime();
-        eventItems[0] = std::to_string(actionStartTime);
-        eventItems[1] = std::to_string(actionUpTime - actionStartTime);
-        eventItems[EVENT_TYPE_INDEX] = EVENT_TYPE;
-        eventItems[KEY_COUNT_INDEX] = std::to_string(infos_.size()+1);
+        eventItems[CaseTypes::ACTION_START_TIME] = std::to_string(actionStartTime);
+        eventItems[CaseTypes::ACTION_DURATION_TIME] = std::to_string(actionUpTime - actionStartTime);
+        eventItems[CaseTypes::OP_TYPE] = EVENT_TYPE;
+        eventItems[CaseTypes::KEY_ITEMS_COUNT] = std::to_string(infos_.size()+1);
         for (size_t i = 0; i < infos_.size() && i < MAX_COMBINATION_SIZE; i++) {
-            eventItems[KEY_COUNT_INDEX+1+i] = std::to_string(infos_[i].GetKeyCode());
+            eventItems[CaseTypes::KEY_CODE1+i] = std::to_string(infos_[i].GetKeyCode());
         }
-        eventItems[KEY_COUNT_INDEX+1+infos_.size()] = std::to_string(info.GetKeyCode());
+        eventItems[CaseTypes::KEY_CODE1+infos_.size()] = std::to_string(info.GetKeyCode());
     }
 
     void KeyeventTracker::buildEventItems()
@@ -147,12 +164,12 @@ namespace OHOS::uitest {
             return ;
         }
         actionStartTime = infos_[0].GetActionTime();
-        eventItems[0] = std::to_string(actionStartTime);
-        eventItems[1] = std::to_string(actionUpTime - actionStartTime);
-        eventItems[EVENT_TYPE_INDEX] = EVENT_TYPE;
-        eventItems[KEY_COUNT_INDEX] = std::to_string(infos_.size());
+        eventItems[CaseTypes::ACTION_START_TIME] = std::to_string(actionStartTime);
+        eventItems[CaseTypes::ACTION_DURATION_TIME] = std::to_string(actionUpTime - actionStartTime);
+        eventItems[CaseTypes::OP_TYPE] = EVENT_TYPE;
+        eventItems[CaseTypes::KEY_ITEMS_COUNT] = std::to_string(infos_.size());
         for (size_t i = 0; i < infos_.size() && i < MAX_COMBINATION_SIZE; i++) {
-            eventItems[KEY_COUNT_INDEX+1+i] = std::to_string(infos_[i].GetKeyCode());
+            eventItems[CaseTypes::KEY_CODE1+i] = std::to_string(infos_[i].GetKeyCode());
         }
     }
 

@@ -24,43 +24,21 @@
 #include "velocity.h"
 
 namespace OHOS::uitest {
-const int32_t NAVI_VERTI_THRE_V = 200;
-const int32_t NAVI_THRE_D = 10;
-const float MAX_THRESHOLD = 15.0;
-const float FLING_THRESHOLD = 45.0;
-const float DURATIOIN_THRESHOLD = 0.6;
-const float INTERVAL_THRESHOLD = 0.2;
-const int32_t MaxVelocity = 40000;
-
 enum class Axis {
     VERTICAL = 0,
     HORIZONTAL,
     FREE,
     NONE,
 };
-
 class VelocityTracker final {
 public:
     VelocityTracker() = default;
     explicit VelocityTracker(Axis mainAxis) : mainAxis_(mainAxis) {}
     ~VelocityTracker() = default;
 
-    void Resets()
-    {
-        lastPosition_.Resets();
-        velocity_.Resets();
-        delta_.Resets();
-        isFirstPoint_ = true;
-        xAxis_.Resets();
-        yAxis_.Resets();
-        totalDelta_.Resets();
-        stepLength = 0;
-        mainVelocity_ = 0.0;
-    }
     void TrackResets()
     {
-        downTrackPoint_.Resets();
-        firstTrackPoint_.Resets();
+        lastTrackPoint_.Resets();
     }
 
     void UpdateTouchEvent(const TouchEventInfo& event, bool end = false);
@@ -93,18 +71,20 @@ public:
         stepLength = (totalDelta_ / (useToCount - 1)).GetDistance();
     }
 
-    int GetStepLength() const
+    int GetStepLength()
     {
+        UpdateStepLength();
         return stepLength;
     }
-    TouchEventInfo& GetFirstTrackPoint()
-    {
-        return firstTrackPoint_;
-    }
 
-    const Offset& GetPosition() const
+    const Point& GetPosition() const
     {
         return lastPosition_;
+    }
+
+    const Point& GetFirstPosition() const
+    {
+        return firstPosition_;
     }
 
     const Offset& GetDelta() const
@@ -116,28 +96,6 @@ public:
     {
         UpdateVelocity();
         return velocity_;
-    }
-
-    double GetMainAxisPos() const
-    {
-        switch (mainAxis_) {
-            case Axis::FREE:
-                return lastPosition_.GetDistance();
-            case Axis::HORIZONTAL:
-                return lastPosition_.GetX();
-            case Axis::VERTICAL:
-                return lastPosition_.GetY();
-            default:
-                return 0.0;
-        }
-    }
-
-    double GetInterVal() const
-    {
-        // 两次down事件的间隔
-        std::chrono::duration<double> inter = firstTrackPoint_.time- downTrackPoint_.time;
-        auto interval = inter.count();
-        return interval;
     }
 
     double GetMainVelocity() const
@@ -154,16 +112,6 @@ public:
             maxAxis_ = Axis::VERTICAL;
         }
         return maxAxis_;
-    }
-
-    double GetMoveDistance() const
-    {
-        return (lastPosition_ - firstPosition_).GetDistance();
-    }
-
-    double GetDurationTime() const
-    {
-        return seconds;
     }
 
     double GetMainAxisDeltaPos() const
@@ -209,33 +157,22 @@ public:
         clickInterVal = interVal;
     }
 
-    double GetEventInterVal()
+    TimeStamp GetLastTimePoint()
     {
-        auto result = GetInterVal();
-        if (result < INTERVAL_THRESHOLD) {
-            return clickInterVal;
-        }
-        return result;
-    }
-    TouchEventInfo GetDownTrackPoint()
-    {
-        return downTrackPoint_;
+        return lastTimePoint_;
     }
 
 private:
     void UpdateVelocity();
     Axis mainAxis_ { Axis::FREE };
     Axis maxAxis_  {Axis::VERTICAL };
-    TouchEventInfo firstTrackPoint_;
     TouchEventInfo lastTrackPoint_;
-    TouchEventInfo downTrackPoint_;
-    Offset firstPosition_;
-    Offset lastPosition_;
+    Point firstPosition_;
+    Point lastPosition_;
     Offset totalDelta_;
     Velocity velocity_;
     double mainVelocity_ = 0.0;
     Offset delta_;
-    double seconds = 0;
     bool isFirstPoint_ = true;
     int useToCount = 4;
     int stepLength = 0;

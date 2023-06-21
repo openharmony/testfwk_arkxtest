@@ -45,10 +45,17 @@
 #include "widget_selector.h"
 #include "ui_model.h"
 #include "find_widget.h"
+#include "pointer_tracker.h"
+#include "pointer_info.h"
+#include "input_manager.h"
 
 namespace OHOS::uitest {
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
+        void RecordInitEnv(const std::string &modeOpt);
+        bool InitReportFolder();
+        bool InitEventRecordFile();
+        bool dealSpecialKey(std::shared_ptr<MMI::KeyEvent> keyEvent) const;
         void OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const override;
         void HandleDownEvent(TouchEventInfo& event) const;
         void HandleMoveEvent(const TouchEventInfo& event) const;
@@ -61,21 +68,44 @@ namespace OHOS::uitest {
         void SubscribeMonitorCancel();
         void TimerReprintClickFunction ();
         void TimerTouchCheckFunction();
-        void FindWidgetsFunction();
-        static std::shared_ptr<InputEventCallback> GetPtr();
-    public:
-        mutable volatile int g_touchTime = 0;
-        mutable volatile bool g_isLastClick = false;
-        mutable volatile bool g_isSpecialclick = false;
+        void FindWidgetsandWriteData();
+        void DoAbcCallBack(nlohmann::json jsonData) const;
+        void SetAbcCallBack(std::function<void(nlohmann::json)> handler)
+        {
+            abcCallBack = handler;
+        }
+        auto GetAbcCallBack()
+        {
+            return abcCallBack;
+        }
+
+        static constexpr int TIMEINTERVAL = 5000;
+        static constexpr int KEY_DOWN_DURATION = 0;
+        static const std::string DEFAULT_DIR ;
+        mutable volatile int touchTime = 0;
+        mutable volatile bool isLastClick_ = false;
+        mutable shared_ptr<mutex> cout_lock = make_shared<std::mutex>();
+        mutable shared_ptr<mutex> csv_lock = make_shared<std::mutex>();
         mutable std::mutex g_clickMut;
         mutable std::condition_variable clickCon;
-        mutable volatile bool findWidgetsAllow = false;
+        mutable volatile bool findWidgetsAllow_ = false;
         mutable std::mutex widgetsMut;
         mutable std::condition_variable widgetsCon;
+        bool stopFlag = false;
+        std::mutex timerMut;
+        std::condition_variable timerCon;
     private:
         int gTimeIndex = 1000;
         shared_ptr<queue<std::string>> eventQueue_;
-        shared_ptr<mutex> lock_;
+        std::string recordMode = "";
+        std::string filePath;
+        WidgetSelector selector = WidgetSelector();
+        vector<std::unique_ptr<Widget>> rev;
+        std::function<void(nlohmann::json)> abcCallBack = nullptr;
+        mutable std::ofstream outFile;
+        mutable UiDriver driver = UiDriver();
+        mutable PointerTracker pointerTracker_;
+        mutable KeyeventTracker keyeventTracker_;
     };
 
     class TestUtils {
@@ -92,14 +122,12 @@ namespace OHOS::uitest {
         };
     };
 
-    bool InitEventRecordFile();
-
-    void RecordInitEnv(const std::string &modeOpt);
-
     class EventData {
     public:
         void WriteEventData(const VelocityTracker &velocityTracker, const std::string &actionType) const;
         static void ReadEventLine();
+    private:
+        static std::string defaultDir;
     };
 
     class DataWrapper {
@@ -115,5 +143,9 @@ namespace OHOS::uitest {
         UiDriver d;
         std::mutex mut;
     };
+    int32_t UiDriverRecordStart(std::string modeOpt);
+    int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> handler, std::string modeOpt);
+    int32_t UiDriverRecordStartTemplate(std::string modeOpt);
+    void UiDriverRecordStop();
 } // namespace OHOS::uitest
 #endif // UI_RECORD_H
