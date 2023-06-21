@@ -231,7 +231,7 @@ namespace OHOS::uitest {
 
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
-        static constexpr string_view usage = "USAGE: uitest uiRecord <read|record|stop>";
+        static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
         if (!(argc == INDEX_THREE || argc == INDEX_FOUR)) {
             PrintToConsole(usage);
             return EXIT_FAILURE;
@@ -251,9 +251,6 @@ namespace OHOS::uitest {
             return UiDriverRecordStart(modeOpt);
         } else if (opt == "read") {
             EventData::ReadEventLine();
-            return OHOS::ERR_OK;
-        } else if (opt == "stop") {
-            UiDriverRecordStop();
             return OHOS::ERR_OK;
         } else {
             PrintToConsole(usage);
