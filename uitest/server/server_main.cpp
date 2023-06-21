@@ -242,43 +242,13 @@ namespace OHOS::uitest {
             modeOpt = argv[THREE];
         }
         if (opt == "record") {
-            if (!InitEventRecordFile()) {
-                return OHOS::ERR_INVALID_VALUE;
-            }
             auto controller = make_unique<SysUiController>();
             if (!controller->ConnectToSysAbility()) {
                 PrintToConsole("Failed, cannot connect to AMMS ");
                 return EXIT_FAILURE;
             }
             UiDriver::RegisterController(move(controller));
-            RecordInitEnv(modeOpt);
-            auto callBackPtr = InputEventCallback::GetPtr();
-            if (callBackPtr == nullptr) {
-                std::cout << "nullptr" << std::endl;
-                return OHOS::ERR_INVALID_VALUE;
-            }
-            // 按键订阅
-            callBackPtr->SubscribeMonitorInit();
-            int32_t id1 = MMI::InputManager::GetInstance()->AddMonitor(callBackPtr);
-            if (id1 == -1) {
-                std::cout << "Startup Failed!" << std::endl;
-                return OHOS::ERR_INVALID_VALUE;
-            }
-            // 补充click打印线程
-            std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, callBackPtr);
-            // touch计时线程
-            std::thread toughTimerThread(&InputEventCallback::TimerTouchCheckFunction, callBackPtr);
-            // widget 线程
-            std::thread widgetThread(&InputEventCallback::FindWidgetsFunction, callBackPtr);
-            std::cout << "Started Recording Successfully..." << std::endl;
-            int flag = getc(stdin);
-            std::cout << flag << std::endl;
-            clickThread.join();
-            toughTimerThread.join();
-            widgetThread.join();
-            // 取消按键订阅
-            callBackPtr->SubscribeMonitorCancel();
-            return OHOS::ERR_OK;
+            return UiDriverRecordStart(modeOpt);
         } else if (opt == "read") {
             EventData::ReadEventLine();
             return OHOS::ERR_OK;
