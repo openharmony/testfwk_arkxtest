@@ -95,6 +95,8 @@ namespace OHOS::uitest {
 
         static void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener);
 
+        void GetLayoutJson(nlohmann::json &dom);
+
     private:
         /**Update UI controller and UI objects.*/
         void UpdateUi(bool updateUiTree, ApiCallErr &error, string targetWin = "");

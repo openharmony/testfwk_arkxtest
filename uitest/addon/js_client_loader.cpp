@@ -25,6 +25,7 @@
 #include "ui_driver.h"
 #include "common_utilities_hpp.h"
 #include "screen_copy.h"
+#include "ui_record.h"
 #include "js_client_loader.h"
 
 namespace OHOS::uitest {
@@ -93,6 +94,34 @@ namespace OHOS::uitest {
         });
     }
 
+    static void RecordStart(CaptureContext& context, string type)
+    {
+        static uint8_t uiActionBuf[CaptureContext::DATA_CAPACITY] = {0};
+        std::string modeOpt;
+        auto handler = [type, context](nlohmann::json data) {
+            const auto jsonStr = data.dump();
+            jsonStr.copy((char *)uiActionBuf, jsonStr.length());
+            uiActionBuf[jsonStr.length()] = 0;
+            auto ctx = context;
+            ctx.data = uiActionBuf;
+            ctx.dataLen = jsonStr.length();
+            CallbackCaptureResultToJs(ctx);
+        };
+        LOG_I("Start record uiaction");
+        UiDriverRecordStart(handler, modeOpt);
+    }
+
+    static void ScreenCopyStart(CaptureContext& context, string type)
+    {
+        auto handler = [type, context](uint8_t * data, size_t len) {
+            auto ctx = context;
+            ctx.data = data;
+            ctx.dataLen = len;
+            CallbackCaptureResultToJs(ctx);
+        };
+        StartScreenCopy(context.scale, handler);
+    }
+
     static void UpdateCaptureState(CaptureContext&& context, bool active)
     {
         static auto driver = UiDriver();
@@ -116,13 +145,7 @@ namespace OHOS::uitest {
         if (type == CAPTURE_SCREEN && !active) {
             StopScreenCopy();
         } else if (type == CAPTURE_SCREEN && active) {
-            auto handler = [type, context](uint8_t * data, size_t len) {
-                auto ctx = context;
-                ctx.data = data;
-                ctx.dataLen = len;
-                CallbackCaptureResultToJs(ctx);
-            };
-            StartScreenCopy(context.scale, handler);
+            ScreenCopyStart(context, type);
         } else if (type == CAPTURE_LAYOUT && active) {
             auto dom = nlohmann::json();
             auto err = ApiCallErr(NO_ERROR);
@@ -140,8 +163,10 @@ namespace OHOS::uitest {
             stateLock.lock();
             runningCaptures.erase(type);
             stateLock.unlock();
-        } else {
-            // implement me
+        } else if (type == CAPTURE_UIACTION && active) {
+            RecordStart(context, type);
+        } else if (type == CAPTURE_UIACTION && !active) {
+            UiDriverRecordStop();
         }
     }
 
