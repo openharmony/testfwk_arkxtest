@@ -408,4 +408,9 @@ namespace OHOS::uitest {
                 return;
         }
     }
+
+    void UiDriver::GetLayoutJson(nlohmann::json &dom)
+    {
+        widgetTree_->MarshalIntoDom(dom);
+    }
 } // namespace OHOS::uitest
