@@ -36,6 +36,7 @@ public:
     explicit VelocityTracker(Axis mainAxis) : mainAxis_(mainAxis) {}
     ~VelocityTracker() = default;
 
+    static constexpr int TIME_INDEX = 1000;
     void TrackResets()
     {
         lastTrackPoint_.Resets();
@@ -160,6 +161,26 @@ public:
     TimeStamp GetLastTimePoint()
     {
         return lastTimePoint_;
+    }
+
+    int GetAxisSize()
+    {
+        return xAxis_.GetTVals().size();
+    }
+
+    double GetPreTime(int num)
+    {
+        return xAxis_.GetTVals().at(xAxis_.GetTVals().size()-num);
+    }
+
+    double GetPreX(int num)
+    {
+        return xAxis_.GetPVals().at(xAxis_.GetPVals().size()-num);
+    }
+
+    double GetPreY(int num)
+    {
+        return yAxis_.GetPVals().at(yAxis_.GetPVals().size()-num);
     }
 
 private:

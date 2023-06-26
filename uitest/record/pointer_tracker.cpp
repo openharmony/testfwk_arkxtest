@@ -46,6 +46,27 @@ namespace OHOS::uitest {
         fingerInfo.SetDirection(Offset(lastTouch.x-firstTouch.x, lastTouch.y-firstTouch.y));
     }
 
+    bool FingerTracker::IsRecentSpeedLimit(TouchEventInfo& touchEvent)
+    {
+        if (velocityTracker.GetAxisSize() <= 2) {
+            return false;
+        }
+        auto preEventTime = velocityTracker.GetPreTime(2);
+        auto preX = velocityTracker.GetPreX(2);
+        auto preY = velocityTracker.GetPreY(2);
+        auto speedX = (touchEvent.x - preX)/(touchEvent.durationSeconds * VelocityTracker::TIME_INDEX - preEventTime * VelocityTracker::TIME_INDEX);
+        auto speedY = (touchEvent.y -  preY)/(touchEvent.durationSeconds * VelocityTracker::TIME_INDEX - preEventTime * VelocityTracker::TIME_INDEX);
+        auto speed = sqrt(speedX * speedX + speedY * speedY);
+        double curSpeed = touchEvent.y > preY ? speed : -speed;
+        if (fabs(curSpeed)<1e-6) {
+            return false;
+        }
+        auto acceleration = (curSpeed - preSpeed) / (touchEvent.durationSeconds * VelocityTracker::TIME_INDEX - preEventTime * VelocityTracker::TIME_INDEX);
+        preSpeed = curSpeed;
+        return (acceleration > PointerTracker::RECENT_ACCELERAT && curSpeed > PointerTracker::RECENT_SPEED2) ||
+               (curSpeed > PointerTracker::RECENT_SPEED1 && (touchEvent.durationSeconds - preEventTime) > PointerTracker::RECENT_TIME);
+    }
+
     // POINTER_TRACKER
     void PointerTracker::HandleDownEvent(TouchEventInfo& event)
     {
@@ -66,7 +87,7 @@ namespace OHOS::uitest {
                 }
             }
             if (flag) {
-                ClearFingerTrackersValues();
+                Resets();
             }
         }
         if (fingerTrackers.size() == 0) {
@@ -141,9 +162,9 @@ namespace OHOS::uitest {
     {
         pointerTypeJudgChain_.clear();
         pointerTypeJudgChain_ = {
-            OP_CLICK, OP_LONG_CLICK, OP_DRAG, OP_RETURN, OP_SWIPE, OP_RECENT, OP_FLING, OP_HOME
+            OP_CLICK, OP_LONG_CLICK, OP_DRAG, OP_RECENT, OP_HOME, OP_RETURN, OP_SWIPE, OP_FLING
         };
-
+        isStartRecent = false;
         if (pointerTypeJudgMap_.size() == 0) {
             pointerTypeJudgMap_.emplace(std::make_pair(OP_CLICK,
                 function<bool(TouchEventInfo&)>(bind(&PointerTracker::IsClick, this, placeholders::_1))));
@@ -209,6 +230,47 @@ namespace OHOS::uitest {
 
     // bool PinchJudge(TouchEventInfo& touchEvent)
     
+    bool PointerTracker::IsRecent(TouchEventInfo& touchEvent)
+    {
+        // 起点位置判断
+        auto ftracker = fingerTrackers.find(touchEvent.downTime)->second;
+        TouchEventInfo startEvent = ftracker->GetFingerInfo().GetFirstTouchEventInfo();
+        if (startEvent.y <= windowBounds.bottom_ * NAVI_THRE_D) {
+            RemoveTypeJudge(pointerTypeJudgChain_, OP_RECENT, OP_HOME);
+            return false;
+        }
+        if (isStartRecent) {
+            return true;
+        } else {
+            // 滑动位移判断
+            bool isDistance = (double)(windowBounds.bottom_ - touchEvent.y) / windowBounds.bottom_ >= RECENT_DISTANCE;
+            // 速度判断
+            bool isRecentSpeed = ftracker -> IsRecentSpeedLimit(touchEvent);
+            if (isDistance && isRecentSpeed) {
+                isStartRecent = true;
+                return true;
+            } else if (isUpStage) {
+                RemoveTypeJudge(pointerTypeJudgChain_, OP_RECENT);
+                return false;
+            }
+            return true;
+        }
+    }
+
+    bool PointerTracker::IsHome(TouchEventInfo& touchEvent)
+    {
+        //起点位置已判断
+        // 滑动位移判断
+        bool isDistance = (double)(windowBounds.bottom_ - touchEvent.y) / windowBounds.bottom_ >= HOME_DISTANCE;
+        if (isDistance) {
+            return true;
+        } else if (isUpStage) {
+            RemoveTypeJudge(pointerTypeJudgChain_, OP_HOME);
+            return false;
+        }
+        return true;
+    }
+
     bool PointerTracker::IsBack(TouchEventInfo& touchEvent)
     {
         // 滑动类只有起手才能判断
@@ -227,7 +289,7 @@ namespace OHOS::uitest {
         return false;
     }
 
-    bool PointerTracker::IsSwip(TouchEventInfo& touchEvent) // swip(recent)
+    bool PointerTracker::IsSwip(TouchEventInfo& touchEvent) // swip
     {
         // 滑动类只有起手才能判断
         if (!isUpStage) {
@@ -237,49 +299,16 @@ namespace OHOS::uitest {
         double mainVelocity = ftracker->GetVelocityTracker().GetMainAxisVelocity();
         // 离手v < FLING_THRESHOLD
         if (mainVelocity >= FLING_THRESHOLD) {
-            RemoveTypeJudge(pointerTypeJudgChain_, OP_SWIPE, OP_RECENT);
+            RemoveTypeJudge(pointerTypeJudgChain_, OP_SWIPE);
             return false;
         }
-        return !IsRecent(touchEvent);
+        return true;
     }
 
-    bool PointerTracker::IsRecent(TouchEventInfo& touchEvent)
+    bool PointerTracker::IsFling(TouchEventInfo& touchEvent) // fling
     {
-        // 其余的之前已经判断过了
-        auto ftracker = fingerTrackers.find(touchEvent.downTime)->second;
-        TouchEventInfo startEvent = ftracker->GetFingerInfo().GetFirstTouchEventInfo();
-        VelocityTracker vTracker = ftracker->GetVelocityTracker();
-        if (windowBounds.bottom_ - startEvent.y <= NAVI_THRE_D &&
-            ftracker->GetMoveDistance() >= NAVI_VERTI_THRE_V) {
-            RemoveTypeJudge(pointerTypeJudgChain_, OP_SWIPE);
-            return true;
-        }
-        RemoveTypeJudge(pointerTypeJudgChain_, OP_RECENT);
-        return false;
-    }
-
-    bool PointerTracker::IsFling(TouchEventInfo& touchEvent) // fling(home)
-    {
-        // 滑动类只有起手才能判断
-        if (!isUpStage) {
-            return true;
-        }
         // SWIP判断过离手速度
-        return !IsHome(touchEvent);
-    }
-
-    bool PointerTracker::IsHome(TouchEventInfo& touchEvent)
-    {
-        auto ftracker = fingerTrackers.find(touchEvent.downTime)->second;
-        TouchEventInfo startEvent = ftracker->GetFingerInfo().GetFirstTouchEventInfo();
-        VelocityTracker vTracker = ftracker->GetVelocityTracker();
-        if (windowBounds.bottom_ - startEvent.y <= NAVI_THRE_D &&
-            ftracker->GetMoveDistance() >= NAVI_VERTI_THRE_V) {
-            RemoveTypeJudge(pointerTypeJudgChain_, OP_FLING);
-            return true;
-        }
-        RemoveTypeJudge(pointerTypeJudgChain_, OP_HOME);
-        return false;
+        return true;
     }
 
     PointerInfo PointerTracker::BuildPointerInfo()
