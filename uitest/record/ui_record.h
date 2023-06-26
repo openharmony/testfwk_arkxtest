@@ -81,7 +81,7 @@ namespace OHOS::uitest {
 
         static constexpr int TIMEINTERVAL = 5000;
         static constexpr int KEY_DOWN_DURATION = 0;
-        static const std::string DEFAULT_DIR ;
+        static const std::string DEFAULT_DIR;
         mutable volatile int touchTime = 0;
         mutable volatile bool isLastClick_ = false;
         mutable shared_ptr<mutex> cout_lock = make_shared<std::mutex>();
@@ -95,7 +95,6 @@ namespace OHOS::uitest {
         std::mutex timerMut;
         std::condition_variable timerCon;
     private:
-        int gTimeIndex = 1000;
         shared_ptr<queue<std::string>> eventQueue_;
         std::string recordMode = "";
         std::string filePath;
