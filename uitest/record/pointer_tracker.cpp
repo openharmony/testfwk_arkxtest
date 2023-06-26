@@ -51,13 +51,13 @@ namespace OHOS::uitest {
         if (velocityTracker.GetAxisSize() <= 2) {
             return false;
         }
-        auto preEventTime = velocityTracker.GetPreTime(2);
-        auto preX = velocityTracker.GetPreX(2);
-        auto preY = velocityTracker.GetPreY(2);
-        auto speedX = (touchEvent.x - preX)/(touchEvent.durationSeconds * VelocityTracker::TIME_INDEX - preEventTime * VelocityTracker::TIME_INDEX);
-        auto speedY = (touchEvent.y -  preY)/(touchEvent.durationSeconds * VelocityTracker::TIME_INDEX - preEventTime * VelocityTracker::TIME_INDEX);
+        auto preEventTime = velocityTracker.GetPreTime(1);
+        auto preX = velocityTracker.GetPreX(1);
+        auto preY = velocityTracker.GetPreY(1);
+        auto speedX = (touchEvent.wx - preX)/(touchEvent.durationSeconds * VelocityTracker::TIME_INDEX - preEventTime * VelocityTracker::TIME_INDEX);
+        auto speedY = (touchEvent.wy -  preY)/(touchEvent.durationSeconds * VelocityTracker::TIME_INDEX - preEventTime * VelocityTracker::TIME_INDEX);
         auto speed = sqrt(speedX * speedX + speedY * speedY);
-        double curSpeed = touchEvent.y > preY ? speed : -speed;
+        double curSpeed = touchEvent.wy > preY ? speed : -speed;
         if (fabs(curSpeed)<1e-6) {
             return false;
         }
