@@ -57,7 +57,7 @@ namespace OHOS::uitest {
         auto speedY = (touchEvent.wy -  preY)/ deltaT;
         auto speed = sqrt(speedX * speedX + speedY * speedY);
         double curSpeed = touchEvent.wy > preY ? speed : -speed;
-        if (fabs(curSpeed)<1e-6) {
+        if (fabs(curSpeed) < 1e-6) {
             return false;
         }
         auto acceleration = (curSpeed - preSpeed) / deltaT;
