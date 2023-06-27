@@ -72,7 +72,9 @@ export default async function abilityTest() {
 }
 ```
 
-同时，@since1.0.6 测试套describe支持嵌套定义 , 但嵌套内的describe暂时与“数据驱动”、“专项能力”特性不兼容。
+同时，@since1.0.6 测试套describe支持嵌套定义 。
+
+约束限制：内层的describe-“innerDescribe”不支持“数据驱动”、“专项能力”特性。
 
 示例代码：
 
