@@ -146,9 +146,9 @@ namespace OHOS::uitest {
         static constexpr float RECENT_ACCELERAT = 0.05; // recent中加速度判断
         static constexpr float RECENT_SPEED2 = -2.0; // recent中速度判断
         static constexpr float RECENT_SPEED1 = -1.0; // recent中速度判断
-        static constexpr float RECENT_TIME = 0.08; // recent中时间判断
-        static constexpr float RECENT_DISTANCE = 0.15; //recent 最小位移
-        static constexpr float HOME_DISTANCE = 0.15; //home 最小位移
+        static constexpr int32_t RECENT_TIME = 80; // recent中时间判断
+        static constexpr float RECENT_DISTANCE = 0.15; // recent 最小位移
+        static constexpr float HOME_DISTANCE = 0.15; // home 最小位移
     private:
         std::map <int64_t, FingerTracker*> fingerTrackers; // finger记录
         int maxFingerNum = 0;

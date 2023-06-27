@@ -48,23 +48,21 @@ namespace OHOS::uitest {
 
     bool FingerTracker::IsRecentSpeedLimit(TouchEventInfo& touchEvent)
     {
-        if (velocityTracker.GetAxisSize() <= 2) {
-            return false;
-        }
         auto preEventTime = velocityTracker.GetPreTime(1);
+        double deltaT = touchEvent.durationSeconds * VelocityTracker::TIME_INDEX - preEventTime * VelocityTracker::TIME_INDEX;
         auto preX = velocityTracker.GetPreX(1);
         auto preY = velocityTracker.GetPreY(1);
-        auto speedX = (touchEvent.wx - preX)/(touchEvent.durationSeconds * VelocityTracker::TIME_INDEX - preEventTime * VelocityTracker::TIME_INDEX);
-        auto speedY = (touchEvent.wy -  preY)/(touchEvent.durationSeconds * VelocityTracker::TIME_INDEX - preEventTime * VelocityTracker::TIME_INDEX);
+        auto speedX = (touchEvent.wx - preX) / deltaT;
+        auto speedY = (touchEvent.wy -  preY)/ deltaT;
         auto speed = sqrt(speedX * speedX + speedY * speedY);
         double curSpeed = touchEvent.wy > preY ? speed : -speed;
         if (fabs(curSpeed)<1e-6) {
             return false;
         }
-        auto acceleration = (curSpeed - preSpeed) / (touchEvent.durationSeconds * VelocityTracker::TIME_INDEX - preEventTime * VelocityTracker::TIME_INDEX);
+        auto acceleration = (curSpeed - preSpeed) / deltaT;
         preSpeed = curSpeed;
         return (acceleration > PointerTracker::RECENT_ACCELERAT && curSpeed > PointerTracker::RECENT_SPEED2) ||
-               (curSpeed > PointerTracker::RECENT_SPEED1 && (touchEvent.durationSeconds - preEventTime) > PointerTracker::RECENT_TIME);
+               (curSpeed > PointerTracker::RECENT_SPEED1 && deltaT > PointerTracker::RECENT_TIME);
     }
 
     // POINTER_TRACKER
@@ -259,7 +257,7 @@ namespace OHOS::uitest {
 
     bool PointerTracker::IsHome(TouchEventInfo& touchEvent)
     {
-        //起点位置已判断
+        // 起点位置已判断
         // 滑动位移判断
         bool isDistance = (double)(windowBounds.bottom_ - touchEvent.y) / windowBounds.bottom_ >= HOME_DISTANCE;
         if (isDistance) {
