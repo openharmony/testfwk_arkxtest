@@ -72,7 +72,28 @@ export default async function abilityTest() {
 }
 ```
 
+同时，@since1.0.6 测试套describe支持嵌套定义 。
 
+约束限制：describe仅支持两层嵌套定义，且内层的describe-“innerDescribe”不支持“数据驱动”、“专项能力”特性。
+
+示例代码：
+
+```javascript
+export default async function nestedDescribeTest() {
+  describe('outerDescribe', function () {
+    describe('innerDescribe', function () {
+      it('innerIt', 0, function () {
+        let a = 'abc'
+        expect(a).assertEqual(a)
+      })
+    })
+    it('outerIt', 0, function () {
+      let a = 'abc'
+      expect(a).assertEqual(a)
+    })
+  })
+}
+```
 
 ####  断言库
 
