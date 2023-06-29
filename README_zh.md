@@ -1522,3 +1522,4 @@ hdc shell uitest uiRecord read
 | 4.0.1.4 | 1、可选参数传入undefined时，当作默认值处理                   |
 | 4.0.2.0 | 1、支持监听toast和dialog控件出现，使用callback的形式返回结果。 |
 | 4.0.3.0 | 1、增加加载运行.abc文件机制。 |
+| 4.0.4.0 | 1、支持abc_loader框架获取UI操作录制数据，屏幕数据，控件树等，并以callback的形式返回结果<br />2、修改录制数据结构 |
