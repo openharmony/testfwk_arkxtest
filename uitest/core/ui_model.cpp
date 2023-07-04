@@ -299,7 +299,7 @@ namespace OHOS::uitest {
         }
     }
 
-    void WidgetTree::EnsureParentVisible(const Widget widget)
+    void WidgetTree::EnsureParentVisible(const Widget &widget)
     {
         auto hierarchy = widget.GetHierarchy();
         auto findParent = widgetMap_.find(WidgetHierarchyBuilder::GetParentWidgetHierarchy(hierarchy));
@@ -311,7 +311,7 @@ namespace OHOS::uitest {
         }
     }
 
-    static Rect GetNewBounds(Widget widget, vector <pair<string, Rect>> &boundsClips)
+    static Rect GetEffectiveBounds(const Widget &widget, vector <pair<string, Rect>> &boundsClips)
     {
         auto result = Rect(0, 0, 0, 0);
         auto boundsClip = Rect(0, 0, 0, 0);
@@ -359,7 +359,7 @@ namespace OHOS::uitest {
             if (!amendBounds || hierarchy == ROOT_HIERARCHY) {
                 newBounds = bounds;
             } else {
-                newBounds = GetNewBounds(widget, boundsClips);
+                newBounds = GetEffectiveBounds(widget, boundsClips);
             }
             if (!RectAlgorithm::CheckEqual(newBounds, bounds)) {
                 widget.SetBounds(newBounds);
