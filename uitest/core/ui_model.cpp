@@ -313,8 +313,6 @@ namespace OHOS::uitest {
 
     static Rect GetNewBounds(Widget widget, vector <pair<string, Rect>> &boundsClips)
     {
-        static const set<string> containerTypes = {"List", "Grid", "WaterFlow", "GridCol", "GridRow", "Scroll",
-            "Flex", "ListItemGroup","Swiper"};
         auto result = Rect(0, 0, 0, 0);
         auto boundsClip = Rect(0, 0, 0, 0);
         if (boundsClips.empty()) {
@@ -330,13 +328,9 @@ namespace OHOS::uitest {
             if (!boundsClips.empty()) {
                 boundsClip = boundsClips.back().second;
             }
-            if (!RectAlgorithm::ComputeIntersection(widget.GetBounds(), boundsClip, result)) {
-                result = Rect(0, 0, 0, 0);
-            }
         }
-        auto type = widget.GetAttr(ATTR_NAMES[UiAttr::TYPE], "");
-        if (containerTypes.find(type) != containerTypes.end()) {
-            boundsClips.push_back(make_pair(widget.GetHierarchy(), widget.GetBounds()));
+        if (!RectAlgorithm::ComputeIntersection(widget.GetBounds(), boundsClip, result)) {
+            result = Rect(0, 0, 0, 0);
         }
         return result;
     }
@@ -344,6 +338,8 @@ namespace OHOS::uitest {
     void WidgetTree::ConstructFromDom(const nlohmann::json &dom, bool amendBounds)
     {
         DCHECK(!widgetsConstructed_);
+        static const set<string> containerTypes = {"List", "Grid", "WaterFlow", "GridCol", "GridRow", "Scroll",
+            "Flex", "ListItemGroup", "Swiper"};
         map<string, map<string, string>> widgetDict;
         vector<string> visitTrace;
         auto nodeVisitor = [&widgetDict, &visitTrace](string_view hierarchy, map<string, string> &&attrs) {
@@ -374,6 +370,10 @@ namespace OHOS::uitest {
             }
             if (widget.IsVisible()) {
                 EnsureParentVisible(widget);
+            }
+            auto type = widget.GetAttr(ATTR_NAMES[UiAttr::TYPE], "");
+            if (containerTypes.find(type) != containerTypes.end()) {
+                boundsClips.push_back(make_pair(widget.GetHierarchy(), widget.GetBounds()));
             }
             widgetMap_.insert(make_pair(hierarchy, move(widget)));
             widgetHierarchyIdDfsOrder_.emplace_back(hierarchy);
