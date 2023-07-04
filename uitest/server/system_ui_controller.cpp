@@ -202,7 +202,20 @@ namespace OHOS::uitest {
         return hashFunc(strId);
     }
 
-    static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to)
+    static Rect GetVisibleRect(Rect windowBounds, Accessibility::Rect nodeBounds)
+    {
+        auto leftX = nodeBounds.GetLeftTopXScreenPostion();
+        auto topY = nodeBounds.GetLeftTopYScreenPostion();
+        auto rightX = nodeBounds.GetRightBottomXScreenPostion();
+        auto bottomY = nodeBounds.GetRightBottomYScreenPostion();
+        Rect newBounds((leftX < windowBounds.left_) ? windowBounds.left_ : leftX,
+                       (rightX > windowBounds.right_) ? windowBounds.right_ : rightX,
+                       (topY < windowBounds.top_) ? windowBounds.top_ : topY,
+                       (bottomY > windowBounds.bottom_) ? windowBounds.bottom_ : bottomY);
+        return newBounds;
+    }
+
+    static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to, Rect windowBounds)
     {
         to[ATTR_NAMES[UiAttr::HASHCODE].data()] = to_string(GenerateNodeHash(node));
         to[ATTR_NAMES[UiAttr::TEXT].data()] = node.GetContent();
@@ -221,8 +234,7 @@ namespace OHOS::uitest {
         to[ATTR_NAMES[UiAttr::HOST_WINDOW_ID].data()] = to_string(node.GetWindowId());
         to[ATTR_NAMES[UiAttr::VISIBLE].data()] = "false";
         const auto bounds = node.GetRectInScreen();
-        const auto rect = Rect(bounds.GetLeftTopXScreenPostion(), bounds.GetRightBottomXScreenPostion(),
-                               bounds.GetLeftTopYScreenPostion(), bounds.GetRightBottomYScreenPostion());
+        const auto rect = GetVisibleRect(windowBounds, bounds);
         stringstream stream;
         // "[%d,%d][%d,%d]", rect.left, rect.top, rect.right, rect.bottom
         stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
@@ -250,10 +262,11 @@ namespace OHOS::uitest {
         }
     }
 
-    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index, bool isDecorBar)
+    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index, bool isDecorBar,
+        Rect windowBounds)
     {
         json attributes;
-        MarshalAccessibilityNodeAttributes(from, attributes);
+        MarshalAccessibilityNodeAttributes(from, attributes, windowBounds);
         if (isDecorBar || from.GetInspectorKey() == "ContainerModalTitleRow") {
             attributes[ATTR_NAMES[UiAttr::TYPE].data()] = "DecorBar";
         }
@@ -275,7 +288,7 @@ namespace OHOS::uitest {
                     isDecorBar = true;
                 }
                 auto parcel = json();
-                MarshallAccessibilityNodeInfo(child, parcel, idx, isDecorBar);
+                MarshallAccessibilityNodeInfo(child, parcel, idx, isDecorBar, windowBounds);
                 childList.push_back(parcel);
             } else {
                 LOG_W("Get Node child at index=%{public}d failed", idx);
@@ -289,9 +302,6 @@ namespace OHOS::uitest {
         info.focused_ = node.IsFocused();
         info.actived_ = node.IsActive();
         info.decoratorEnabled_ = node.IsDecorEnable();
-        auto rect = node.GetRectInScreen();
-        info.bounds_ = Rect(rect.GetLeftTopXScreenPostion(), rect.GetRightBottomXScreenPostion(),
-                            rect.GetLeftTopYScreenPostion(), rect.GetRightBottomYScreenPostion());
         info.mode_ = WindowMode::UNKNOWN;
         const auto origMode = static_cast<OHOS::Rosen::WindowMode>(node.GetWindowMode());
         switch (origMode) {
@@ -314,19 +324,6 @@ namespace OHOS::uitest {
                 info.mode_ = WindowMode::UNKNOWN;
                 break;
         }
-    }
-
-    static Accessibility::Rect GetVisibleRect(Point screenSize, Accessibility::Rect windowBounds)
-    {
-        auto leftX = windowBounds.GetLeftTopXScreenPostion();
-        auto topY = windowBounds.GetLeftTopYScreenPostion();
-        auto rightX = windowBounds.GetRightBottomXScreenPostion();
-        auto bottomY = windowBounds.GetRightBottomYScreenPostion();
-        Accessibility::Rect newBounds((leftX < 0) ? 0 : leftX,
-                                      (topY < 0) ? 0 : topY,
-                                      (rightX > screenSize.px_) ? screenSize.px_ : rightX,
-                                      (bottomY > screenSize.py_) ? screenSize.py_ : bottomY);
-        return newBounds;
     }
 
     static bool GetAamsWindowInfos(vector<AccessibilityWindowInfo> &windows)
@@ -367,10 +364,11 @@ namespace OHOS::uitest {
                     continue;
                 }
                 // apply window bounds as root node bounds
-                auto visibleBounds = GetVisibleRect(screenSize, window.GetRectInScreen());
-                elementInfo.SetRectInScreen(visibleBounds);
+                auto screenRect = Rect(0, screenSize.px_, 0, screenSize.py_);
+                auto boundsInScreen = GetVisibleRect(screenRect, window.GetRectInScreen());
                 auto winInfo = Window(window.GetWindowId());
                 InflateWindowInfo(window, winInfo);
+                winInfo.bounds_ = boundsInScreen;
                 winInfo.bundleName_ = app;
                 Rect visibleArea = winInfo.bounds_;
                 if (!RectAlgorithm::ComputeMaxVisibleRegion(winInfo.bounds_, overlays, visibleArea)) {
@@ -382,7 +380,7 @@ namespace OHOS::uitest {
                     root["abilityName"] = foreAbility.GetAbilityName();
                     root["pagePath"] = elementInfo.GetPagePath();
                 }
-                MarshallAccessibilityNodeInfo(elementInfo, root, 0, false);
+                MarshallAccessibilityNodeInfo(elementInfo, root, 0, false, winInfo.bounds_);
                 overlays.push_back(winInfo.bounds_);
                 out.push_back(make_pair(move(winInfo), move(root)));
                 LOG_D("Get node at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
@@ -392,7 +390,6 @@ namespace OHOS::uitest {
         }
         dumpMutex.unlock();
     }
-
 
     void SysUiController::InjectTouchEventSequence(const PointerMatrix &events) const
     {
