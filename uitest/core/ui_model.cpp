@@ -313,7 +313,7 @@ namespace OHOS::uitest {
 
     static Rect GetNewBounds(Widget widget, vector <pair<string, Rect>> &boundsClips)
     {
-        const set<string> containerTypes = {"List", "Grid", "WaterFlow", "GridCol", "GridRow", "Scroll",
+        static const set<string> containerTypes = {"List", "Grid", "WaterFlow", "GridCol", "GridRow", "Scroll",
             "Flex", "ListItemGroup","Swiper"};
         auto result = Rect(0, 0, 0, 0);
         auto boundsClip = Rect(0, 0, 0, 0);
