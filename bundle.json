@@ -23,7 +23,6 @@
       "ram": "100KB",
       "deps": {
         "components": [
-          "common",
           "common_event_service",
           "ipc",
           "ability_base",
@@ -36,7 +35,6 @@
           "ability_runtime",
           "hiviewdfx_hilog_native",
           "input",
-          "graphic_standard",
           "pasteboard",
           "eventhandler"
         ],
