@@ -43,7 +43,7 @@ ohos_static_library("uitest_core") {
     "${source_root}/core/widget_selector.cpp",
     "${source_root}/core/window_operator.cpp",
   ]
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  external_deps = [ "hilog:libhilog" ]
   defines = [
     "__OHOS__=1",
     "LOG_TAG=\"UiTestKit_Base\"",
@@ -76,7 +76,7 @@ ohos_static_library("uitest_record") {
   external_deps = [
     "ability_base:want",
     "ability_runtime:ability_manager",
-    "hiviewdfx_hilog_native:libhilog",
+    "hilog:libhilog",
     "input:libmmi-client",
   ]
 
@@ -85,7 +85,7 @@ ohos_static_library("uitest_record") {
 }
 common_external_deps = [
   "c_utils:utils",
-  "hiviewdfx_hilog_native:libhilog",
+  "hilog:libhilog",
 ]
 
 ohos_static_library("uitest_ipc") {

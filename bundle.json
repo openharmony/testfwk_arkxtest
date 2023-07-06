@@ -33,7 +33,7 @@
           "accessibility",
           "multimedia_image_framework",
           "ability_runtime",
-          "hiviewdfx_hilog_native",
+          "hilog",
           "input",
           "pasteboard",
           "eventhandler"
