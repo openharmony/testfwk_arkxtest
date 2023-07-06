@@ -312,8 +312,9 @@ TEST(WidgetTreeTest, testBoundsAndVisibilityCorrectionInList)
     constexpr string_view domText = R"(
 {"attributes" : {"resource-id" : "id0","bounds" : "[0,0][100,100]","type" : "List"},
 "children": [
-{"attributes" : { "resource-id" : "id00","bounds" : "[0,20][100,80]" },
-"children": [ {"attributes": {"resource-id": "id000","bounds": "[0,80][100,100]"}, "children": []} ]
+{"attributes" : { "resource-id" : "id00","bounds" : "[0,20][100,120]" },
+"children": [ {"attributes": {"resource-id": "id000","bounds": "[0,0][100,20]"}, "children": []},
+{"attributes": {"resource-id": "id001","bounds": "[0,100][100,120]"}, "children": []}]
 },
 {"attributes": {"resource-id": "id01","bounds": "[110,110][120,120]"},
 "children": [ {"attributes": {"resource-id": "id010","bounds": "[0,0][100,80]"}, "children": []},
@@ -323,8 +324,9 @@ TEST(WidgetTreeTest, testBoundsAndVisibilityCorrectionInList)
 ]
 })";
     // id0 List0.
-    // id00 Widget in List0, is covered by List0, set it visible.
+    // id00 Widget in List0, is covered by List0 partially, set it visible and amend bounds.
     // id000 Widget in id00, is not covered by id00, but is covered by List0, set it visible.
+    // id001 Widget in id00, is covered by id00, but is not covered by List0, set it visible.
     // id01 Widget in List0, is covered by List0, but it has visible child id010, set it visible and Rect(0,0,0,0).
     // id010 Widget in id01, is not covered by id01, but is covered by List0, set it visible.
     // id011 List1 in List0, is covered by List0, set it visible.
@@ -339,7 +341,7 @@ TEST(WidgetTreeTest, testBoundsAndVisibilityCorrectionInList)
     BoundsVisitor boundsVisitor;
     tree.DfsTraverse(boundsVisitor);
     // check revised bounds
-    vector<Rect> expectedBounds = {Rect(0, 100, 0, 100), Rect(0, 100, 20, 80), Rect(0, 100, 80, 100),
+    vector<Rect> expectedBounds = {Rect(0, 100, 0, 100), Rect(0, 100, 20, 100), Rect(0, 100, 0, 20),
                                    Rect(0, 0, 0, 0), Rect(0, 100, 0, 80), Rect(0, 100, 20, 80)};
     ASSERT_EQ(expectedBounds.size(), boundsVisitor.boundsList_.size());
     for (size_t index = 0; index < expectedBounds.size(); index++) {
