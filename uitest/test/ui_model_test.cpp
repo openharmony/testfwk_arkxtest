@@ -268,7 +268,7 @@ TEST(WidgetTreeTest, testBoundsAndVisibilityCorrection)
 "children": [ {"attributes": {"resource-id": "id000","bounds": "[0,10][100,90]"}, "children": []} ]
 },
 {"attributes": {"resource-id": "id01","bounds": "[0,-20][100,100]"},
-"children": [ {"attributes": {"resource-id": "id010","bounds": "[0,-20][100,0]"}, "children": []},
+"children": [ {"attributes": {"resource-id": "id010","bounds": "[0,0][100,0]"}, "children": []},
 {"attributes": {"resource-id": "id011","bounds": "[0,-20][100,20]"}, "children": []}]
 }
 ]
@@ -294,8 +294,53 @@ TEST(WidgetTreeTest, testBoundsAndVisibilityCorrection)
     BoundsVisitor boundsVisitor;
     tree.DfsTraverse(boundsVisitor);
     // check revised bounds
-    vector<Rect> expectedBounds = {Rect(0, 100, 0, 100), Rect(0, 100, 20, 80), Rect(0, 100, 20, 80),
-                                   Rect(0, 100, 0, 100), Rect(0, 100, 0, 20)};
+    vector<Rect> expectedBounds = {Rect(0, 100, 0, 100), Rect(0, 100, 20, 80), Rect(0, 100, 10, 90),
+                                   Rect(0, 100, -20, 100), Rect(0, 100, -20, 20)};
+    ASSERT_EQ(expectedBounds.size(), boundsVisitor.boundsList_.size());
+    for (size_t index = 0; index < expectedBounds.size(); index++) {
+        auto &expectedBound = expectedBounds.at(index);
+        auto &actualBound = boundsVisitor.boundsList_.at(index);
+        ASSERT_EQ(expectedBound.left_, actualBound.left_);
+        ASSERT_EQ(expectedBound.right_, actualBound.right_);
+        ASSERT_EQ(expectedBound.top_, actualBound.top_);
+        ASSERT_EQ(expectedBound.bottom_, actualBound.bottom_);
+    }
+}
+
+TEST(WidgetTreeTest, testBoundsAndVisibilityCorrectionInList)
+{
+    constexpr string_view domText = R"(
+{"attributes" : {"resource-id" : "id0","bounds" : "[0,0][100,100]","type" : "List"},
+"children": [
+{"attributes" : { "resource-id" : "id00","bounds" : "[0,20][100,80]" },
+"children": [ {"attributes": {"resource-id": "id000","bounds": "[0,80][100,100]"}, "children": []} ]
+},
+{"attributes": {"resource-id": "id01","bounds": "[110,110][120,120]"},
+"children": [ {"attributes": {"resource-id": "id010","bounds": "[0,0][100,80]"}, "children": []},
+{"attributes": {"resource-id": "id011","bounds": "[0,20][100,80]","type" : "List"}, 
+"children": [ {"attributes": {"resource-id": "id0110","bounds": "[0,0][100,20]"}, "children": []} ]}]
+}
+]
+})";
+    // id0 List0.
+    // id00 Widget in List0, is covered by List0, set it visible.
+    // id000 Widget in id00, is not covered by id00, but is covered by List0, set it visible.
+    // id01 Widget in List0, is covered by List0, but it has visible child id010, set it visible and Rect(0,0,0,0).
+    // id010 Widget in id01, is not covered by id01, but is covered by List0, set it visible.
+    // id011 List1 in List0, is covered by List0, set it visible.
+    // id0110 Widget in List1, is covered by List0, but is not covered by List1, set it invisible.
+    auto dom = nlohmann::json::parse(domText);
+    WidgetTree tree("tree");
+    tree.ConstructFromDom(dom, true); // enable bounds amending
+    WidgetAttrVisitor attrVisitor("resource-id");
+    tree.DfsTraverse(attrVisitor);
+    // id010 should be discarded dut to totaly invisible
+    ASSERT_EQ("id0,id00,id000,id01,id010,id011", attrVisitor.attrValueSequence_.str());
+    BoundsVisitor boundsVisitor;
+    tree.DfsTraverse(boundsVisitor);
+    // check revised bounds
+    vector<Rect> expectedBounds = {Rect(0, 100, 0, 100), Rect(0, 100, 20, 80), Rect(0, 100, 80, 100),
+                                   Rect(0, 0, 0, 0), Rect(0, 100, 0, 80), Rect(0, 100, 20, 80)};
     ASSERT_EQ(expectedBounds.size(), boundsVisitor.boundsList_.size());
     for (size_t index = 0; index < expectedBounds.size(); index++) {
         auto &expectedBound = expectedBounds.at(index);
