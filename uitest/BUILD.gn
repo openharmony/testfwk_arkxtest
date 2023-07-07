@@ -125,8 +125,8 @@ ohos_static_library("uitest_addon") {
   external_deps = [
     "ability_runtime:runtime",
     "eventhandler:libeventhandler",
+    "image_framework:image_native",
     "input:libmmi-client",
-    "multimedia_image_framework:image_native",
     "napi:ace_napi",
     "window_manager:libdm",
     "window_manager:libwm",
@@ -171,8 +171,8 @@ ohos_executable("uitest_server") {
   external_deps = [
     "ability_runtime:ability_manager",
     "accessibility:accessibleability",
+    "image_framework:image_native",
     "input:libmmi-client",
-    "multimedia_image_framework:image_native",
     "window_manager:libdm",
     "window_manager:libwm",
   ]
@@ -229,7 +229,7 @@ ohos_shared_library("uitest_client") {
   output_name = "uitest"
   external_deps = common_external_deps
   external_deps += [
-    "multimedia_image_framework:image_native",
+    "image_framework:image_native",
     "napi:ace_napi",
     "pasteboard:pasteboard_client",
   ]
