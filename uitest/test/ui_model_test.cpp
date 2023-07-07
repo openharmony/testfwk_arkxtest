@@ -324,13 +324,13 @@ TEST(WidgetTreeTest, testBoundsAndVisibilityCorrectionInList)
 ]
 })";
     // id0 List0.
-    // id00 Widget in List0, is within List0 partially, set it visible and amend bounds.
-    // id000 Widget in id00, is not within id00, but is within List0, set it visible.
-    // id001 Widget in id00, is within id00, but is not within List0, set it visible.
-    // id01 Widget in List0, is within List0, but it has visible child id010, set it visible and Rect(0,0,0,0).
-    // id010 Widget in id01, is not within id01, but is within List0, set it visible.
-    // id011 List1 in List0, is within List0, set it visible.
-    // id0110 Widget in List1, is within List0, but is not within List1, set it invisible.
+    // id00 Child of List0, is within List0 partially, set it visible and amend bounds.
+    // id000 Child of id00, is not within id00, but is within List0, set it visible.
+    // id001 Child of id00, is within id00, but is not within List0, set it invisible.
+    // id01 Child of List0, is not within List0, but it has visible child id010, set it visible and Rect(0,0,0,0).
+    // id010 Child of id01, is not within id01, but is within List0, set it visible.
+    // id011 List, Child of List0, is within List0, set it visible.
+    // id0110 Child of List1, is within List0, but is not within List1, set it invisible.
     auto dom = nlohmann::json::parse(domText);
     WidgetTree tree("tree");
     tree.ConstructFromDom(dom, true); // enable bounds amending
