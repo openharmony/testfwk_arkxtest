@@ -262,36 +262,30 @@ namespace OHOS::uitest {
         }
     }
 
-    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index, bool isDecorBar,
-        Rect windowBounds)
+    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index,
+        Rect windowBounds, bool visitChild)
     {
         json attributes;
         MarshalAccessibilityNodeAttributes(from, attributes, windowBounds);
-        if (isDecorBar || from.GetInspectorKey() == "ContainerModalTitleRow") {
+        if (from.GetComponentType() == "rootdecortag" || from.GetInspectorKey() == "ContainerModalTitleRow") {
             attributes[ATTR_NAMES[UiAttr::TYPE].data()] = "DecorBar";
         }
         attributes["index"] = to_string(index);
         to["attributes"] = attributes;
         auto childList = json::array();
-        const auto childCount = from.GetChildCount();
-        AccessibilityElementInfo child;
-        auto ability = AccessibilityUITestAbility::GetInstance();
-        for (auto idx = 0; idx < childCount; idx++) {
-            auto ret = ability->GetChildElementInfo(idx, from, child);
-            if (ret == RET_OK) {
-                isDecorBar = false;
-                if (child.GetComponentType() == "rootdecortag") {
-                    AccessibilityElementInfo child2;
-                    (ability->GetChildElementInfo(0, child, child2) == RET_OK && child2.IsVisible()) ||
-                    (ability->GetChildElementInfo(1, child, child2) == RET_OK && child2.IsVisible());
-                    child = child2;
-                    isDecorBar = true;
+        if (visitChild) {
+            const auto childCount = from.GetChildCount();
+            AccessibilityElementInfo child;
+            auto ability = AccessibilityUITestAbility::GetInstance();
+            for (auto idx = 0; idx < childCount; idx++) {
+                auto ret = ability->GetChildElementInfo(idx, from, child);
+                if (ret == RET_OK) {
+                    auto parcel = json();
+                    MarshallAccessibilityNodeInfo(child, parcel, idx, windowBounds, visitChild);
+                    childList.push_back(parcel);
+                } else {
+                    LOG_W("Get Node child at index=%{public}d failed", idx);
                 }
-                auto parcel = json();
-                MarshallAccessibilityNodeInfo(child, parcel, idx, isDecorBar, windowBounds);
-                childList.push_back(parcel);
-            } else {
-                LOG_W("Get Node child at index=%{public}d failed", idx);
             }
         }
         to["children"] = childList;
@@ -339,7 +333,8 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out, string targetApp)
+    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out, bool getWindowInternalInfo,
+        string targetApp)
     {
         static mutex dumpMutex; // disallow concurrent dumpUi
         if (!connected_ && !ConnectToSysAbility()) {
@@ -380,7 +375,7 @@ namespace OHOS::uitest {
                     root["abilityName"] = foreAbility.GetAbilityName();
                     root["pagePath"] = elementInfo.GetPagePath();
                 }
-                MarshallAccessibilityNodeInfo(elementInfo, root, 0, false, winInfo.bounds_);
+                MarshallAccessibilityNodeInfo(elementInfo, root, 0, winInfo.bounds_, getWindowInternalInfo);
                 overlays.push_back(winInfo.bounds_);
                 out.push_back(make_pair(move(winInfo), move(root)));
                 LOG_D("Get node at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
