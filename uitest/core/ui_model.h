@@ -359,6 +359,7 @@ namespace OHOS::uitest {
         bool actived_ = false;
         bool decoratorEnabled_ = false;
         Rect bounds_ = {0, 0, 0, 0};
+        Rect visibleBounds_ = {0, 0, 0, 0};
         WindowMode mode_ = UNKNOWN;
     };
 } // namespace OHOS::uitest
