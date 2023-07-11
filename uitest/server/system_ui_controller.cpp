@@ -764,9 +764,18 @@ namespace OHOS::uitest {
     void SysUiController::SetDisplayRotation(DisplayRotation rotation) const
     {
         auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        if (display == nullptr) {
+            LOG_E("DisplayManager init fail");
+            return;
+        }
         auto screenId = display->GetScreenId();
         ScreenManager &screenMgr = ScreenManager::GetInstance();
+        DCHECK(screenMgr);
         auto screen = screenMgr.GetScreenById(screenId);
+        if (screen == nullptr) {
+            LOG_E("ScreenManager init fail");
+            return;
+        }
         switch (rotation) {
             case ROTATION_0 :
                 screen->SetOrientation(Orientation::VERTICAL);
@@ -788,6 +797,10 @@ namespace OHOS::uitest {
     DisplayRotation SysUiController::GetDisplayRotation() const
     {
         auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        if (display == nullptr) {
+            LOG_E("DisplayManager init fail");
+            return DisplayRotation::ROTATION_UNKNOWN;
+        }
         auto rotation = (DisplayRotation)display->GetRotation();
         return rotation;
     }
@@ -795,12 +808,17 @@ namespace OHOS::uitest {
     void SysUiController::SetDisplayRotationEnabled(bool enabled) const
     {
         ScreenManager &screenMgr = ScreenManager::GetInstance();
+        DCHECK(screenMgr);
         screenMgr.SetScreenRotationLocked(enabled);
     }
 
     Point SysUiController::GetDisplaySize() const
     {
         auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        if (display == nullptr) {
+            LOG_E("DisplayManager init fail");
+            return {0, 0};
+        }
         auto width = display->GetWidth();
         auto height = display->GetHeight();
         Point result(width, height);
@@ -810,6 +828,10 @@ namespace OHOS::uitest {
     Point SysUiController::GetDisplayDensity() const
     {
         auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        if (display == nullptr) {
+            LOG_E("DisplayManager init fail");
+            return {0, 0};
+        }
         auto rate = display->GetVirtualPixelRatio();
         Point displaySize = GetDisplaySize();
         Point result(displaySize.px_ * rate, displaySize.py_ * rate);
@@ -819,6 +841,7 @@ namespace OHOS::uitest {
     bool SysUiController::IsScreenOn() const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
+        DCHECK(displayMgr);
         auto displayId = displayMgr.GetDefaultDisplayId();
         auto state = displayMgr.GetDisplayState(displayId);
         return (state != DisplayState::OFF);
