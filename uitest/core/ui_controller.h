@@ -50,7 +50,8 @@ namespace OHOS::uitest {
             return true;
         };
 
-        virtual void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>> &out, string targetApp = "") {};
+        virtual void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>> &out, bool getWidgetNodes,
+            string targetApp = "") {};
 
         virtual bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec) const
         {

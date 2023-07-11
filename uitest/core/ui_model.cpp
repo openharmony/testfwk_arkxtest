@@ -311,7 +311,7 @@ namespace OHOS::uitest {
         }
     }
 
-    static Rect GetEffectiveBounds(const Widget &widget, vector <pair<string, Rect>> &boundsClips)
+    static Rect GetEffectiveBounds(const Widget &widget, vector<pair<string, Rect>> &boundsClips)
     {
         auto result = Rect(0, 0, 0, 0);
         auto boundsClip = Rect(0, 0, 0, 0);

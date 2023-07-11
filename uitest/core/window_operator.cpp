@@ -94,6 +94,7 @@ namespace OHOS::uitest {
 
     void WindowOperator::CallBar(ApiReplyInfo &out)
     {
+        Focus(out);
         if (window_.mode_ == WindowMode::FLOATING) {
             return;
         }
@@ -112,7 +113,7 @@ namespace OHOS::uitest {
         if (window_.focused_) {
             return;
         } else {
-            auto rect = window_.bounds_;
+            auto rect = window_.visibleBounds_;
             static constexpr uint32_t step = 10;
             Point focus(rect.GetCenterX(), rect.top_ + step);
             auto touch = GenericClick(TouchOp::CLICK, focus);
@@ -122,6 +123,7 @@ namespace OHOS::uitest {
 
     void WindowOperator::MoveTo(uint32_t endX, uint32_t endY, ApiReplyInfo &out)
     {
+        Focus(out);
         size_t index = 0;
         if (!CheckOperational(MOVETO, window_.mode_, out, index)) {
             return;
@@ -136,6 +138,7 @@ namespace OHOS::uitest {
 
     void WindowOperator::Resize(int32_t width, int32_t highth, ResizeDirection direction, ApiReplyInfo &out)
     {
+        Focus(out);
         size_t index = 0;
         if (!CheckOperational(RESIZE, window_.mode_, out, index)) {
             return;
@@ -235,14 +238,15 @@ namespace OHOS::uitest {
     {
         CallBar(out);
         auto selector = WidgetSelector(false);
-        auto frontLocator = WidgetSelector();
+        auto parentLocator = WidgetSelector();
         auto attrMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "Button", EQ);
         auto windowMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], to_string(window_.id_), EQ);
-        auto frontMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "DecorBar", EQ);
-        frontLocator.AddMatcher(frontMatcher);
+        auto parentMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "DecorBar", EQ);
+        parentLocator.AddMatcher(parentMatcher);
         selector.AddMatcher(attrMatcher);
         selector.AddMatcher(windowMatcher);
-        selector.AddFrontLocator(frontLocator, out.exception_);
+        selector.AddFrontLocator(parentLocator, out.exception_);
+        selector.AddAppLocator(window_.bundleName_);
         vector<unique_ptr<Widget>> widgets;
         driver_.FindWidgets(selector, widgets, out.exception_);
         if (widgets.empty()) {
@@ -250,7 +254,8 @@ namespace OHOS::uitest {
             auto attrMatcherForJs = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "button", EQ);
             selectorForJs.AddMatcher(attrMatcherForJs);
             selectorForJs.AddMatcher(windowMatcher);
-            selectorForJs.AddFrontLocator(frontLocator, out.exception_);
+            selectorForJs.AddFrontLocator(parentLocator, out.exception_);
+            selectorForJs.AddAppLocator(window_.bundleName_);
             driver_.FindWidgets(selectorForJs, widgets, out.exception_, false);
         }
         if (out.exception_.code_ != NO_ERROR) {
