@@ -34,7 +34,8 @@ public:
         mockDomFrame_ = domFrame;
     }
 
-    void GetUiHierarchy(vector<pair<Window, nlohmann::json>>& out, string targetApp) override
+    void GetUiHierarchy(vector<pair<Window, nlohmann::json>>& out, bool getWidgetNodes, string targetApp)
+        override
     {
         auto winInfo = Window(0);
         auto  dom = nlohmann::json::parse(mockDomFrame_);

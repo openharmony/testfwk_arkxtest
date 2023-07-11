@@ -99,7 +99,7 @@ namespace OHOS::uitest {
 
     private:
         /**Update UI controller and UI objects.*/
-        void UpdateUi(bool updateUiTree, ApiCallErr &error, string targetWin = "");
+        void UpdateUi(bool updateUiTree, ApiCallErr &error, bool getWidgetNodes, string targetWin = "");
         // UI objects that are needed to be updated before each interaction and used in the interaction
         static std::unique_ptr<UiController> uiController_;
         std::unique_ptr<WidgetTree> widgetTree_ = nullptr;
