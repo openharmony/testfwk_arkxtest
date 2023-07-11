@@ -333,7 +333,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out, bool getWindowInternalInfo,
+    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out, bool getWidgetNodes,
         string targetApp)
     {
         static mutex dumpMutex; // disallow concurrent dumpUi
@@ -375,7 +375,7 @@ namespace OHOS::uitest {
                     root["abilityName"] = foreAbility.GetAbilityName();
                     root["pagePath"] = elementInfo.GetPagePath();
                 }
-                MarshallAccessibilityNodeInfo(elementInfo, root, 0, winInfo.bounds_, getWindowInternalInfo);
+                MarshallAccessibilityNodeInfo(elementInfo, root, 0, winInfo.bounds_, getWidgetNodes);
                 overlays.push_back(winInfo.bounds_);
                 out.push_back(make_pair(move(winInfo), move(root)));
                 LOG_D("Get node at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
@@ -799,7 +799,7 @@ namespace OHOS::uitest {
         auto display = DisplayManager::GetInstance().GetDefaultDisplay();
         if (display == nullptr) {
             LOG_E("DisplayManager init fail");
-            return DisplayRotation::ROTATION_UNKNOWN;
+            return DisplayRotation::ROTATION_0;
         }
         auto rotation = (DisplayRotation)display->GetRotation();
         return rotation;

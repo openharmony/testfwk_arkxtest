@@ -28,7 +28,7 @@ namespace OHOS::uitest {
 
         bool Initialize() override;
 
-        void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>>& out, bool getWindowInternalInfo,
+        void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>>& out, bool getWidgetNodes,
             string targetApp = "") override;
 
         bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const override;
