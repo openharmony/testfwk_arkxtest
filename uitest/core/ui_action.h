@@ -69,7 +69,8 @@ namespace OHOS::uitest {
         ROTATION_0,
         ROTATION_90,
         ROTATION_180,
-        ROTATION_270
+        ROTATION_270,
+        ROTATION_UNKNOWN
     };
 
     enum MouseButton : int32_t {
