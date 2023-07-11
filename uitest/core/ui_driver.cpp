@@ -47,7 +47,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void UiDriver::UpdateUi(bool updateUiTree, ApiCallErr &error, bool getWindowInternalInfo, string targetWin)
+    void UiDriver::UpdateUi(bool updateUiTree, ApiCallErr &error, bool getWidgetNodes, string targetWin)
     {
         if (!updateUiTree) {
             return;
@@ -58,7 +58,7 @@ namespace OHOS::uitest {
         windows_.clear();
         widgetTree_ = make_unique<WidgetTree>("");
         vector<pair<Window, nlohmann::json>> hierarchies;
-        uiController_->GetUiHierarchy(hierarchies, getWindowInternalInfo, targetWin);
+        uiController_->GetUiHierarchy(hierarchies, getWidgetNodes, targetWin);
         if (hierarchies.empty()) {
             LOG_E("%{public}s", "Get windows failed");
             error = ApiCallErr(ERR_INTERNAL, "Get window nodes failed");
