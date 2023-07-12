@@ -47,7 +47,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void UiDriver::UpdateUi(bool updateUiTree, ApiCallErr &error, string targetWin)
+    void UiDriver::UpdateUi(bool updateUiTree, ApiCallErr &error, bool getWidgetNodes, string targetWin)
     {
         if (!updateUiTree) {
             return;
@@ -58,7 +58,7 @@ namespace OHOS::uitest {
         windows_.clear();
         widgetTree_ = make_unique<WidgetTree>("");
         vector<pair<Window, nlohmann::json>> hierarchies;
-        uiController_->GetUiHierarchy(hierarchies, targetWin);
+        uiController_->GetUiHierarchy(hierarchies, getWidgetNodes, targetWin);
         if (hierarchies.empty()) {
             LOG_E("%{public}s", "Get windows failed");
             error = ApiCallErr(ERR_INTERNAL, "Get window nodes failed");
@@ -73,6 +73,12 @@ namespace OHOS::uitest {
             trees.push_back(move(tree));
         }
         WidgetTree::MergeTrees(trees, *widgetTree_);
+        auto virtualRoot = widgetTree_->GetRootWidget();
+        for (size_t index = 0; index < hierarchies.size(); index++) {
+            auto root = widgetTree_->GetChildWidget(*virtualRoot, index);
+            DCHECK(root != nullptr);
+            windows_[index].visibleBounds_ = root->GetBounds();
+        }
     }
 
     void UiDriver::DumpUiHierarchy(nlohmann::json &out, bool listWindows, ApiCallErr &error)
@@ -82,13 +88,13 @@ namespace OHOS::uitest {
                 return;
             }
             vector<pair<Window, nlohmann::json>> datas;
-            uiController_->GetUiHierarchy(datas);
+            uiController_->GetUiHierarchy(datas, true);
             out = nlohmann::json::array();
             for (auto& data : datas) {
                 out.push_back(data.second);
             }
         } else {
-            UpdateUi(true, error);
+            UpdateUi(true, error, true);
             if (error.code_ != NO_ERROR || widgetTree_ == nullptr) {
                 return;
             }
@@ -124,7 +130,7 @@ namespace OHOS::uitest {
     {
         if (updateUi) {
             auto hostApp = this->GetHostApp(widget);
-            UpdateUi(true, err, hostApp);
+            UpdateUi(true, err, true, hostApp);
             if (err.code_ != NO_ERROR) {
                 return nullptr;
             }
@@ -179,7 +185,7 @@ namespace OHOS::uitest {
     {
         if (updateUi) {
             auto hostApp = select.GetAppLocator();
-            UpdateUi(true, err, hostApp);
+            UpdateUi(true, err, true, hostApp);
             if (err.code_ != NO_ERROR) {
                 return;
             }
@@ -259,7 +265,7 @@ namespace OHOS::uitest {
 
     unique_ptr<Window> UiDriver::FindWindow(function<bool(const Window &)> matcher, ApiCallErr &err)
     {
-        UpdateUi(true, err);
+        UpdateUi(true, err, false);
         if (err.code_ != NO_ERROR) {
             return nullptr;
         }
@@ -275,7 +281,7 @@ namespace OHOS::uitest {
 
     const Window *UiDriver::RetrieveWindow(const Window &window, ApiCallErr &err)
     {
-        UpdateUi(true, err);
+        UpdateUi(true, err, false);
         if (err.code_ != NO_ERROR) {
             return nullptr;
         }
@@ -294,10 +300,10 @@ namespace OHOS::uitest {
 
     int32_t UiDriver::GetTouchedWindowId(const Point point, ApiCallErr &err)
     {
-        UpdateUi(true, err);
+        UpdateUi(true, err, false);
         for (auto window : windows_) {
-            if ((point.px_ <= window.bounds_.right_ && point.px_ >= window.bounds_.left_) &&
-                (point.py_ <= window.bounds_.bottom_ && point.py_ >= window.bounds_.top_)) {
+            if ((point.px_ <= window.visibleBounds_.right_ && point.px_ >= window.visibleBounds_.left_) &&
+                (point.py_ <= window.visibleBounds_.bottom_ && point.py_ >= window.visibleBounds_.top_)) {
                     LOG_I("Target window id: %{public}d", window.id_);
                     return window.id_;
                 }

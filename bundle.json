@@ -4,7 +4,7 @@
     "description": "test framwork",
     "publishAs": "code-segment",
     "segment": {
-       "destPath": "test/testfwk/arkxtest/uitest"
+       "destPath": "test/testfwk/arkxtest"
     },
     "scripts": {
     },
@@ -23,22 +23,18 @@
       "ram": "100KB",
       "deps": {
         "components": [
-          "common",
           "common_event_service",
           "ipc",
           "ability_base",
           "window_manager",
           "c_utils",
           "napi",
-          "bundle_framework",
-          "samgr_standard",
           "libpng",
           "accessibility",
           "multimedia_image_framework",
           "ability_runtime",
-          "hiviewdfx_hilog_native",
+          "hilog",
           "input",
-          "graphic_standard",
           "pasteboard",
           "eventhandler"
         ],

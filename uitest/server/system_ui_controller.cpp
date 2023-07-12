@@ -202,7 +202,20 @@ namespace OHOS::uitest {
         return hashFunc(strId);
     }
 
-    static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to)
+    static Rect GetVisibleRect(Rect windowBounds, Accessibility::Rect nodeBounds)
+    {
+        auto leftX = nodeBounds.GetLeftTopXScreenPostion();
+        auto topY = nodeBounds.GetLeftTopYScreenPostion();
+        auto rightX = nodeBounds.GetRightBottomXScreenPostion();
+        auto bottomY = nodeBounds.GetRightBottomYScreenPostion();
+        Rect newBounds((leftX < windowBounds.left_) ? windowBounds.left_ : leftX,
+                       (rightX > windowBounds.right_) ? windowBounds.right_ : rightX,
+                       (topY < windowBounds.top_) ? windowBounds.top_ : topY,
+                       (bottomY > windowBounds.bottom_) ? windowBounds.bottom_ : bottomY);
+        return newBounds;
+    }
+
+    static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to, Rect windowBounds)
     {
         to[ATTR_NAMES[UiAttr::HASHCODE].data()] = to_string(GenerateNodeHash(node));
         to[ATTR_NAMES[UiAttr::TEXT].data()] = node.GetContent();
@@ -221,8 +234,7 @@ namespace OHOS::uitest {
         to[ATTR_NAMES[UiAttr::HOST_WINDOW_ID].data()] = to_string(node.GetWindowId());
         to[ATTR_NAMES[UiAttr::VISIBLE].data()] = "false";
         const auto bounds = node.GetRectInScreen();
-        const auto rect = Rect(bounds.GetLeftTopXScreenPostion(), bounds.GetRightBottomXScreenPostion(),
-                               bounds.GetLeftTopYScreenPostion(), bounds.GetRightBottomYScreenPostion());
+        const auto rect = GetVisibleRect(windowBounds, bounds);
         stringstream stream;
         // "[%d,%d][%d,%d]", rect.left, rect.top, rect.right, rect.bottom
         stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
@@ -250,35 +262,30 @@ namespace OHOS::uitest {
         }
     }
 
-    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index, bool isDecorBar)
+    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index,
+        Rect windowBounds, bool visitChild)
     {
         json attributes;
-        MarshalAccessibilityNodeAttributes(from, attributes);
-        if (isDecorBar || from.GetInspectorKey() == "ContainerModalTitleRow") {
+        MarshalAccessibilityNodeAttributes(from, attributes, windowBounds);
+        if (from.GetComponentType() == "rootdecortag" || from.GetInspectorKey() == "ContainerModalTitleRow") {
             attributes[ATTR_NAMES[UiAttr::TYPE].data()] = "DecorBar";
         }
         attributes["index"] = to_string(index);
         to["attributes"] = attributes;
         auto childList = json::array();
-        const auto childCount = from.GetChildCount();
-        AccessibilityElementInfo child;
-        auto ability = AccessibilityUITestAbility::GetInstance();
-        for (auto idx = 0; idx < childCount; idx++) {
-            auto ret = ability->GetChildElementInfo(idx, from, child);
-            if (ret == RET_OK) {
-                isDecorBar = false;
-                if (child.GetComponentType() == "rootdecortag") {
-                    AccessibilityElementInfo child2;
-                    (ability->GetChildElementInfo(0, child, child2) == RET_OK && child2.IsVisible()) ||
-                    (ability->GetChildElementInfo(1, child, child2) == RET_OK && child2.IsVisible());
-                    child = child2;
-                    isDecorBar = true;
+        if (visitChild) {
+            const auto childCount = from.GetChildCount();
+            AccessibilityElementInfo child;
+            auto ability = AccessibilityUITestAbility::GetInstance();
+            for (auto idx = 0; idx < childCount; idx++) {
+                auto ret = ability->GetChildElementInfo(idx, from, child);
+                if (ret == RET_OK) {
+                    auto parcel = json();
+                    MarshallAccessibilityNodeInfo(child, parcel, idx, windowBounds, visitChild);
+                    childList.push_back(parcel);
+                } else {
+                    LOG_W("Get Node child at index=%{public}d failed", idx);
                 }
-                auto parcel = json();
-                MarshallAccessibilityNodeInfo(child, parcel, idx, isDecorBar);
-                childList.push_back(parcel);
-            } else {
-                LOG_W("Get Node child at index=%{public}d failed", idx);
             }
         }
         to["children"] = childList;
@@ -289,9 +296,6 @@ namespace OHOS::uitest {
         info.focused_ = node.IsFocused();
         info.actived_ = node.IsActive();
         info.decoratorEnabled_ = node.IsDecorEnable();
-        auto rect = node.GetRectInScreen();
-        info.bounds_ = Rect(rect.GetLeftTopXScreenPostion(), rect.GetRightBottomXScreenPostion(),
-                            rect.GetLeftTopYScreenPostion(), rect.GetRightBottomYScreenPostion());
         info.mode_ = WindowMode::UNKNOWN;
         const auto origMode = static_cast<OHOS::Rosen::WindowMode>(node.GetWindowMode());
         switch (origMode) {
@@ -316,19 +320,6 @@ namespace OHOS::uitest {
         }
     }
 
-    static Accessibility::Rect GetVisibleRect(Point screenSize, Accessibility::Rect windowBounds)
-    {
-        auto leftX = windowBounds.GetLeftTopXScreenPostion();
-        auto topY = windowBounds.GetLeftTopYScreenPostion();
-        auto rightX = windowBounds.GetRightBottomXScreenPostion();
-        auto bottomY = windowBounds.GetRightBottomYScreenPostion();
-        Accessibility::Rect newBounds((leftX < 0) ? 0 : leftX,
-                                      (topY < 0) ? 0 : topY,
-                                      (rightX > screenSize.px_) ? screenSize.px_ : rightX,
-                                      (bottomY > screenSize.py_) ? screenSize.py_ : bottomY);
-        return newBounds;
-    }
-
     static bool GetAamsWindowInfos(vector<AccessibilityWindowInfo> &windows)
     {
         auto ability = AccessibilityUITestAbility::GetInstance();
@@ -342,7 +333,8 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out, string targetApp)
+    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out, bool getWidgetNodes,
+        string targetApp)
     {
         static mutex dumpMutex; // disallow concurrent dumpUi
         if (!connected_ && !ConnectToSysAbility()) {
@@ -367,10 +359,11 @@ namespace OHOS::uitest {
                     continue;
                 }
                 // apply window bounds as root node bounds
-                auto visibleBounds = GetVisibleRect(screenSize, window.GetRectInScreen());
-                elementInfo.SetRectInScreen(visibleBounds);
+                auto screenRect = Rect(0, screenSize.px_, 0, screenSize.py_);
+                auto boundsInScreen = GetVisibleRect(screenRect, window.GetRectInScreen());
                 auto winInfo = Window(window.GetWindowId());
                 InflateWindowInfo(window, winInfo);
+                winInfo.bounds_ = boundsInScreen;
                 winInfo.bundleName_ = app;
                 Rect visibleArea = winInfo.bounds_;
                 if (!RectAlgorithm::ComputeMaxVisibleRegion(winInfo.bounds_, overlays, visibleArea)) {
@@ -382,7 +375,7 @@ namespace OHOS::uitest {
                     root["abilityName"] = foreAbility.GetAbilityName();
                     root["pagePath"] = elementInfo.GetPagePath();
                 }
-                MarshallAccessibilityNodeInfo(elementInfo, root, 0, false);
+                MarshallAccessibilityNodeInfo(elementInfo, root, 0, winInfo.bounds_, getWidgetNodes);
                 overlays.push_back(winInfo.bounds_);
                 out.push_back(make_pair(move(winInfo), move(root)));
                 LOG_D("Get node at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
@@ -392,7 +385,6 @@ namespace OHOS::uitest {
         }
         dumpMutex.unlock();
     }
-
 
     void SysUiController::InjectTouchEventSequence(const PointerMatrix &events) const
     {
@@ -772,9 +764,18 @@ namespace OHOS::uitest {
     void SysUiController::SetDisplayRotation(DisplayRotation rotation) const
     {
         auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        if (display == nullptr) {
+            LOG_E("DisplayManager init fail");
+            return;
+        }
         auto screenId = display->GetScreenId();
         ScreenManager &screenMgr = ScreenManager::GetInstance();
+        DCHECK(screenMgr);
         auto screen = screenMgr.GetScreenById(screenId);
+        if (screen == nullptr) {
+            LOG_E("ScreenManager init fail");
+            return;
+        }
         switch (rotation) {
             case ROTATION_0 :
                 screen->SetOrientation(Orientation::VERTICAL);
@@ -796,6 +797,10 @@ namespace OHOS::uitest {
     DisplayRotation SysUiController::GetDisplayRotation() const
     {
         auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        if (display == nullptr) {
+            LOG_E("DisplayManager init fail");
+            return DisplayRotation::ROTATION_0;
+        }
         auto rotation = (DisplayRotation)display->GetRotation();
         return rotation;
     }
@@ -803,12 +808,17 @@ namespace OHOS::uitest {
     void SysUiController::SetDisplayRotationEnabled(bool enabled) const
     {
         ScreenManager &screenMgr = ScreenManager::GetInstance();
+        DCHECK(screenMgr);
         screenMgr.SetScreenRotationLocked(enabled);
     }
 
     Point SysUiController::GetDisplaySize() const
     {
         auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        if (display == nullptr) {
+            LOG_E("DisplayManager init fail");
+            return {0, 0};
+        }
         auto width = display->GetWidth();
         auto height = display->GetHeight();
         Point result(width, height);
@@ -818,6 +828,10 @@ namespace OHOS::uitest {
     Point SysUiController::GetDisplayDensity() const
     {
         auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        if (display == nullptr) {
+            LOG_E("DisplayManager init fail");
+            return {0, 0};
+        }
         auto rate = display->GetVirtualPixelRatio();
         Point displaySize = GetDisplaySize();
         Point result(displaySize.px_ * rate, displaySize.py_ * rate);
@@ -827,6 +841,7 @@ namespace OHOS::uitest {
     bool SysUiController::IsScreenOn() const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
+        DCHECK(displayMgr);
         auto displayId = displayMgr.GetDefaultDisplayId();
         auto state = displayMgr.GetDisplayState(displayId);
         return (state != DisplayState::OFF);

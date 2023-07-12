@@ -320,6 +320,8 @@ namespace OHOS::uitest {
 
         /**Generated an unique tree-identifier.*/
         static std::string GenerateTreeId();
+
+        void EnsureParentVisible(const Widget &widget);
     };
     
     class TreeSnapshotTaker : public WidgetVisitor {
@@ -357,6 +359,7 @@ namespace OHOS::uitest {
         bool actived_ = false;
         bool decoratorEnabled_ = false;
         Rect bounds_ = {0, 0, 0, 0};
+        Rect visibleBounds_ = {0, 0, 0, 0};
         WindowMode mode_ = UNKNOWN;
     };
 } // namespace OHOS::uitest
