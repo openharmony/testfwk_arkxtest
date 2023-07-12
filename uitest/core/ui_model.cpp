@@ -299,9 +299,47 @@ namespace OHOS::uitest {
         }
     }
 
+    void WidgetTree::EnsureParentVisible(const Widget &widget)
+    {
+        auto hierarchy = widget.GetHierarchy();
+        auto findParent = widgetMap_.find(WidgetHierarchyBuilder::GetParentWidgetHierarchy(hierarchy));
+        if (findParent == widgetMap_.end()) {
+            return;
+        } else if (!findParent->second.IsVisible()) {
+            findParent->second.SetAttr(ATTR_NAMES[UiAttr::VISIBLE], "true");
+            EnsureParentVisible(findParent->second);
+        }
+    }
+
+    static Rect GetEffectiveBounds(const Widget &widget, vector<pair<string, Rect>> &boundsClips)
+    {
+        auto result = Rect(0, 0, 0, 0);
+        auto boundsClip = Rect(0, 0, 0, 0);
+        if (boundsClips.empty()) {
+            boundsClip = widget.GetBounds();
+        } else {
+            while (widget.GetHierarchy().find(boundsClips.back().first) == std::string::npos) {
+                boundsClips.pop_back();
+                if (boundsClips.empty()) {
+                    boundsClip = widget.GetBounds();
+                    break;
+                }
+            }
+            if (!boundsClips.empty()) {
+                boundsClip = boundsClips.back().second;
+            }
+        }
+        if (!RectAlgorithm::ComputeIntersection(widget.GetBounds(), boundsClip, result)) {
+            result = Rect(0, 0, 0, 0);
+        }
+        return result;
+    }
+
     void WidgetTree::ConstructFromDom(const nlohmann::json &dom, bool amendBounds)
     {
         DCHECK(!widgetsConstructed_);
+        static const set<string> containerTypes = {"List", "Grid", "WaterFlow", "GridCol", "GridRow", "Scroll",
+            "Flex", "ListItemGroup", "Swiper"};
         map<string, map<string, string>> widgetDict;
         vector<string> visitTrace;
         auto nodeVisitor = [&widgetDict, &visitTrace](string_view hierarchy, map<string, string> &&attrs) {
@@ -309,26 +347,19 @@ namespace OHOS::uitest {
             widgetDict.insert(make_pair(hierarchy, attrs));
         };
         DfsVisitNode(dom, nodeVisitor, ROOT_HIERARCHY);
+        vector <pair<string, Rect>> boundsClips;
         for (auto &hierarchy : visitTrace) {
             auto findWidgetAttrs = widgetDict.find(hierarchy);
             DCHECK(findWidgetAttrs != widgetDict.end());
             Widget widget(hierarchy);
             widget.SetHostTreeId(this->identifier_);
             SetWidgetAttributes(widget, findWidgetAttrs->second);
-            auto findParent = widgetMap_.find(WidgetHierarchyBuilder::GetParentWidgetHierarchy(hierarchy));
             const auto bounds = widget.GetBounds();
             auto newBounds = Rect(0, 0, 0, 0);
             if (!amendBounds || hierarchy == ROOT_HIERARCHY) {
                 newBounds = bounds;
-            } else if (findParent == widgetMap_.end()) {
-                newBounds = Rect(0, 0, 0, 0); // parent was discarded
             } else {
-                // amend bounds, intersect with parent, compute visibility
-                auto parentBounds = findParent->second.GetBounds();
-                if (parentBounds.GetWidth() == 0 ||
-                    !RectAlgorithm::ComputeIntersection(bounds, parentBounds, newBounds)) {
-                    newBounds = Rect(0, 0, 0, 0);
-                }
+                newBounds = GetEffectiveBounds(widget, boundsClips);
             }
             if (!RectAlgorithm::CheckEqual(newBounds, bounds)) {
                 widget.SetBounds(newBounds);
@@ -336,6 +367,13 @@ namespace OHOS::uitest {
             }
             if (!amendBounds || (newBounds.GetWidth() > 0 && newBounds.GetHeight() > 0)) {
                 widget.SetAttr(ATTR_NAMES[UiAttr::VISIBLE], "true");
+            }
+            if (widget.IsVisible()) {
+                EnsureParentVisible(widget);
+            }
+            auto type = widget.GetAttr(ATTR_NAMES[UiAttr::TYPE], "");
+            if (containerTypes.find(type) != containerTypes.end()) {
+                boundsClips.push_back(make_pair(widget.GetHierarchy(), widget.GetBounds()));
             }
             widgetMap_.insert(make_pair(hierarchy, move(widget)));
             widgetHierarchyIdDfsOrder_.emplace_back(hierarchy);

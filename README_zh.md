@@ -72,7 +72,28 @@ export default async function abilityTest() {
 }
 ```
 
+同时，@since1.0.6 测试套describe支持嵌套定义 。
 
+约束限制：describe仅支持两层嵌套定义，且内层的describe-“innerDescribe”不支持“数据驱动”、“专项能力”特性。
+
+示例代码：
+
+```javascript
+export default async function nestedDescribeTest() {
+  describe('outerDescribe', function () {
+    describe('innerDescribe', function () {
+      it('innerIt', 0, function () {
+        let a = 'abc'
+        expect(a).assertEqual(a)
+      })
+    })
+    it('outerIt', 0, function () {
+      let a = 'abc'
+      expect(a).assertEqual(a)
+    })
+  })
+}
+```
 
 ####  断言库
 
@@ -1501,3 +1522,4 @@ hdc shell uitest uiRecord read
 | 4.0.1.4 | 1、可选参数传入undefined时，当作默认值处理                   |
 | 4.0.2.0 | 1、支持监听toast和dialog控件出现，使用callback的形式返回结果。 |
 | 4.0.3.0 | 1、增加加载运行.abc文件机制。 |
+| 4.0.4.0 | 1、支持abc_loader框架获取UI操作录制数据，屏幕数据，控件树等，并以callback的形式返回结果<br />2、修改录制数据结构 |

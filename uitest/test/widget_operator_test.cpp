@@ -48,7 +48,8 @@ public:
         return frameIndex_;
     }
 
-    void GetUiHierarchy(vector<pair<Window, nlohmann::json>>& out, string targetApp = "") override
+    void GetUiHierarchy(vector<pair<Window, nlohmann::json>>& out, bool getWidgetNodes, string targetApp)
+        override
     {
         uint32_t newIndex = frameIndex_;
         frameIndex_++;
