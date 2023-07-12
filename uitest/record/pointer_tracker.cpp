@@ -48,11 +48,11 @@ namespace OHOS::uitest {
 
     bool FingerTracker::IsRecentSpeedLimit(TouchEventInfo& touchEvent)
     {
-        auto preEventTime = velocityTracker.GetPreTime(1);
+        auto preEventTime = velocityTracker.GetPreTime(ONE);
         double deltaT = touchEvent.durationSeconds * VelocityTracker::TIME_INDEX -
                         preEventTime * VelocityTracker::TIME_INDEX;
-        auto preX = velocityTracker.GetPreX(1);
-        auto preY = velocityTracker.GetPreY(1);
+        auto preX = velocityTracker.GetPreX(ONE);
+        auto preY = velocityTracker.GetPreY(ONE);
         auto speedX = (touchEvent.wx - preX) / deltaT;
         auto speedY = (touchEvent.wy -  preY)/ deltaT;
         auto speed = sqrt(speedX * speedX + speedY * speedY);
