@@ -38,7 +38,7 @@ namespace OHOS::uitest {
         void HandleMoveEvent(TouchEventInfo& event);
         void HandleUpEvent(TouchEventInfo& event);
         void UpdatevelocityTracker(TouchEventInfo& event);
-
+        bool IsRecentSpeedLimit(TouchEventInfo& touchEvent);
         void BuildFingerInfo();
         double GetMoveDistance() const
         {
@@ -56,6 +56,7 @@ namespace OHOS::uitest {
     private:
         FingerInfo fingerInfo {}; // 输出封装
         VelocityTracker velocityTracker {};
+        double preSpeed = 0;
     };
 
     class PointerTracker {
@@ -71,8 +72,8 @@ namespace OHOS::uitest {
         bool IsClick(TouchEventInfo& touchEvent); // click(back)
         bool IsLongClick(TouchEventInfo& touchEvent);
         bool IsDrag(TouchEventInfo& touchEvent);
-        bool IsSwip(TouchEventInfo& touchEvent); // swip(recent)
-        bool IsFling(TouchEventInfo& touchEvent); // fling(home)
+        bool IsSwip(TouchEventInfo& touchEvent); // swip
+        bool IsFling(TouchEventInfo& touchEvent); // fling
         bool IsRecent(TouchEventInfo& touchEvent);
         bool IsHome(TouchEventInfo& touchEvent);
         bool IsBack(TouchEventInfo& touchEvent);
@@ -122,6 +123,17 @@ namespace OHOS::uitest {
             return interval;
         }
 
+        void Resets()
+        {
+            ClearFingerTrackersValues();
+            maxFingerNum = 0;
+            currentFingerNum = 0;
+            isUpStage = false;
+            isNeedWrite = false;
+            isLastClickInTracker = false;
+            isStartRecent = false;
+        }
+
         PointerInfo BuildPointerInfo(); // 输出封装
     public:
         static constexpr float ERROR_POINTER = 1; // move后长时间没有Up说明异常
@@ -129,8 +141,14 @@ namespace OHOS::uitest {
         static constexpr float MAX_THRESHOLD = 15.0; // 长按位移上限
         static constexpr float DURATIOIN_THRESHOLD = 0.6; // 长按时间下限
         static constexpr float FLING_THRESHOLD = 45.0; // 快慢划离手速度界限
-        static constexpr int32_t NAVI_VERTI_THRE_V = 200; // home/recent步长下限
-        static constexpr int32_t NAVI_THRE_D = 10; // home/recent起始位置
+        static constexpr int32_t NAVI_VERTI_THRE_V = 200; // home/recent/back步长下限
+        static constexpr float NAVI_THRE_D = 0.9; // home/recent起始位置
+        static constexpr float RECENT_ACCELERAT = 0.05; // recent中加速度判断
+        static constexpr float RECENT_SPEED2 = -2.0; // recent中速度判断
+        static constexpr float RECENT_SPEED1 = -1.0; // recent中速度判断
+        static constexpr int32_t RECENT_TIME = 80; // recent中时间判断
+        static constexpr float RECENT_DISTANCE = 0.15; // recent 最小位移
+        static constexpr float HOME_DISTANCE = 0.1; // home 最小位移
     private:
         std::map <int64_t, FingerTracker*> fingerTrackers; // finger记录
         int maxFingerNum = 0;
@@ -145,6 +163,7 @@ namespace OHOS::uitest {
         PointerInfo lastClickInfo; // for doubleclick
         PointerInfo snapshootPointerInfo;
         std::string recordMode = "";
+        bool isStartRecent = false;
         
     private:
         template<typename T, typename... Args>

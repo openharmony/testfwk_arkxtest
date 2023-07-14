@@ -200,7 +200,7 @@ namespace OHOS::uitest {
                 clickCon.wait(clickLck);
             }
             std::this_thread::sleep_for(
-                std::chrono::milliseconds((int)(PointerTracker::INTERVAL_THRESHOLD * gTimeIndex)));
+                std::chrono::milliseconds((int)(PointerTracker::INTERVAL_THRESHOLD * VelocityTracker::TIME_INDEX)));
             if (isLastClick_) {
                 isLastClick_ = false;
                 pointerTracker_.SetLastClickInTracker(false);
@@ -238,7 +238,7 @@ namespace OHOS::uitest {
                 data["code"] = MessageStage::StartFindWidgets;
                 abcCallBack(data);
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(gTimeIndex)); // 确保界面已更新
+            std::this_thread::sleep_for(std::chrono::milliseconds(VelocityTracker::TIME_INDEX)); // 确保界面已更新
             ApiCallErr err(NO_ERROR);
             auto layout = nlohmann::json();
             driver.GetLayoutJson(layout);
