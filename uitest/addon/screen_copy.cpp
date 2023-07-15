@@ -234,6 +234,19 @@ struct MissionErrorMgr : public jpeg_error_mgr {
     jmp_buf setjmp_buffer;
 };
 
+static void ComputeJpegSize(jpeg_compress_struct &jpeg, uint32_t width, uint32_t height)
+{
+    constexpr int32_t VIRTUAL_SCREEN_SCALE = 32;
+    if (width % VIRTUAL_SCREEN_SCALE == 0) {
+        LOG_I("The width does not need to be adapted!");
+        jpeg.image_width = width;
+    } else {
+        LOG_I("The width need to be adapted!");
+        jpeg.image_width = ceil((double)width / (double)VIRTUAL_SCREEN_SCALE) * VIRTUAL_SCREEN_SCALE;
+    }
+    jpeg.image_height = height;
+}
+
 void ScreenCopy::ConsumeFrameBuffer(const sptr<SurfaceBuffer> &buf)
 {
     auto bufHdl = buf->GetBufferHandle();
@@ -260,8 +273,8 @@ void ScreenCopy::ConsumeFrameBuffer(const sptr<SurfaceBuffer> &buf)
     MissionErrorMgr jerr;
     jpeg.err = jpeg_std_error(&jerr);
     jpeg_create_compress(&jpeg);
-    jpeg.image_width = width;
-    jpeg.image_height = height;
+    ComputeJpegSize(jpeg, width, height);
+    LOG_I("The jpeg's width = %{public}d, height = %{public}d.", jpeg.image_width, jpeg.image_height);
     jpeg.input_components = RGB_PIXEL_BYTES;
     jpeg.in_color_space = JCS_RGB;
     jpeg_set_defaults(&jpeg);
