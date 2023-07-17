@@ -1225,6 +1225,11 @@ namespace OHOS::uitest {
                 auto width = ReadCallArg<uint32_t>(in, INDEX_ZERO);
                 auto highth = ReadCallArg<uint32_t>(in, INDEX_ONE);
                 auto direction = ReadCallArg<ResizeDirection>(in, INDEX_TWO);
+                if ((((direction == LEFT) || (direction == RIGHT)) && highth != window.bounds_.GetHeight()) ||
+                    (((direction == D_UP) || (direction == D_DOWN)) && width != window.bounds_.GetWidth())) {
+                    out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "Resize cannot be done in this direction");
+                    return;
+                }
                 wOp.Resize(width, highth, direction, out);
             } else if (action == "UiWindow.focus") {
                 wOp.Focus(out);
