@@ -371,10 +371,8 @@ namespace OHOS::uitest {
                 }
                 auto root = nlohmann::json();
                 root["bundleName"] = app;
-                if (app == foreAbility.GetBundleName()) {
-                    root["abilityName"] = foreAbility.GetAbilityName();
-                    root["pagePath"] = elementInfo.GetPagePath();
-                }
+                root["abilityName"] = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
+                root["pagePath"] = (app == foreAbility.GetBundleName()) ? elementInfo.GetPagePath() : "";
                 MarshallAccessibilityNodeInfo(elementInfo, root, 0, winInfo.bounds_, getWidgetNodes);
                 overlays.push_back(winInfo.bounds_);
                 out.push_back(make_pair(move(winInfo), move(root)));
