@@ -339,7 +339,7 @@ namespace OHOS::uitest {
     {
         DCHECK(!widgetsConstructed_);
         static const set<string> containerTypes = {"List", "Grid", "WaterFlow", "GridCol", "GridRow", "Scroll",
-            "Flex", "ListItemGroup", "Swiper", "DecorBar", "_Common_"};
+            "Flex", "ListItemGroup", "Swiper", "DecorBar", "_Common_", "TabContent"};
         map<string, map<string, string>> widgetDict;
         vector<string> visitTrace;
         auto nodeVisitor = [&widgetDict, &visitTrace](string_view hierarchy, map<string, string> &&attrs) {
