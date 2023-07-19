@@ -387,10 +387,6 @@ namespace OHOS::uitest {
         if (!g_uiCallBackInstance->InitEventRecordFile()) {
             return OHOS::ERR_INVALID_VALUE;
         }
-        if (g_uiCallBackInstance == nullptr) {
-            std::cout << "nullptr" << std::endl;
-            return OHOS::ERR_INVALID_VALUE;
-        }
         // 按键订阅
         g_uiCallBackInstance->SubscribeMonitorInit();
         g_callBackId = MMI::InputManager::GetInstance()->AddMonitor(g_uiCallBackInstance);
