@@ -31,7 +31,7 @@
           "napi",
           "libpng",
           "accessibility",
-          "multimedia_image_framework",
+          "image_framework",
           "ability_runtime",
           "hilog",
           "input",
