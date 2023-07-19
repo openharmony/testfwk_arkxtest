@@ -377,6 +377,10 @@ namespace OHOS::uitest {
 
     int32_t UiDriverRecordStartTemplate(std::string modeOpt)
     {
+        if (g_uiCallBackInstance == nullptr) {
+            std::cout << "nullptr" << std::endl;
+            return OHOS::ERR_INVALID_VALUE;
+        }
         auto abcCallBack = g_uiCallBackInstance->GetAbcCallBack();
         if (abcCallBack != nullptr) {
             auto data = nlohmann::json();
