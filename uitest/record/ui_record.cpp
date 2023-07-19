@@ -377,6 +377,10 @@ namespace OHOS::uitest {
 
     int32_t UiDriverRecordStartTemplate(std::string modeOpt)
     {
+        if (g_uiCallBackInstance == nullptr) {
+            std::cout << "nullptr" << std::endl;
+            return OHOS::ERR_INVALID_VALUE;
+        }
         auto abcCallBack = g_uiCallBackInstance->GetAbcCallBack();
         if (abcCallBack != nullptr) {
             auto data = nlohmann::json();
@@ -385,10 +389,6 @@ namespace OHOS::uitest {
         }
         g_uiCallBackInstance->RecordInitEnv(modeOpt);
         if (!g_uiCallBackInstance->InitEventRecordFile()) {
-            return OHOS::ERR_INVALID_VALUE;
-        }
-        if (g_uiCallBackInstance == nullptr) {
-            std::cout << "nullptr" << std::endl;
             return OHOS::ERR_INVALID_VALUE;
         }
         // 按键订阅
