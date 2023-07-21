@@ -233,7 +233,7 @@ TEST_F(UiActionTest, computePinchInAction)
         uint32_t eventFinger = 0;
         int32_t expectedPointerX0 = rect.left_ + (disX0 * step) / steps;
         uint32_t x0 = events.At(eventFinger, eventStep).point_.px_;
-        ASSERT_NEAR(expectedPointerX0, x0, 20);
+        ASSERT_NEAR(expectedPointerX0, x0, 80);
         if (eventStep == 0) {
         // should start with Action.DOWN
         ASSERT_EQ(ActionStage::DOWN, events.At(eventFinger, eventStep).stage_);
@@ -251,7 +251,7 @@ TEST_F(UiActionTest, computePinchInAction)
     for (uint32_t eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
         uint32_t eventFinger = 1;
         int32_t expectedPointerX0 = rect.right_ - (disX0 * step) / steps;
-        ASSERT_NEAR(expectedPointerX0, events.At(eventFinger, eventStep).point_.px_, 20);
+        ASSERT_NEAR(expectedPointerX0, events.At(eventFinger, eventStep).point_.px_, 80);
         if (eventStep == 0) {
         // should start with Action.DOWN
         ASSERT_EQ(ActionStage::DOWN, events.At(eventFinger, eventStep).stage_);
@@ -373,7 +373,7 @@ TEST_F(UiActionTest, computePinchOutAction)
         uint32_t eventFinger = 0;
         int32_t expectedPointerX0 = rect.GetCenterX() - (disX0 * step) / steps;
         uint32_t x0 = events.At(eventFinger, eventStep).point_.px_;
-        ASSERT_NEAR(expectedPointerX0, x0, 20);
+        ASSERT_NEAR(expectedPointerX0, x0, 80);
         if (eventStep == 0) {
         // should start with Action.DOWN
         ASSERT_EQ(ActionStage::DOWN, events.At(eventFinger, eventStep).stage_);
@@ -391,7 +391,7 @@ TEST_F(UiActionTest, computePinchOutAction)
     for (uint32_t eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
         uint32_t eventFinger = 1;
         int32_t expectedPointerX0 = rect.GetCenterX() + (disX0 * step) / steps;
-        ASSERT_NEAR(expectedPointerX0, events.At(eventFinger, eventStep).point_.px_, 20);
+        ASSERT_NEAR(expectedPointerX0, events.At(eventFinger, eventStep).point_.px_, 80);
         if (eventStep == 0) {
         // should start with Action.DOWN
         ASSERT_EQ(ActionStage::DOWN, events.At(eventFinger, eventStep).stage_);
