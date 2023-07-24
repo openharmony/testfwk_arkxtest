@@ -35,47 +35,48 @@ namespace OHOS::uitest {
         WindowAction action;
         WindowMode windowMode;
         bool support;
-        size_t index;
+        std::string_view buttonId;
         std::string_view message;
+        
     };
 
     static constexpr Operational OPERATIONS[] = {
-        {MOVETO, FULLSCREEN, false, INDEX_ZERO, "Fullscreen window can not move"},
-        {MOVETO, SPLIT_PRIMARY, false, INDEX_ZERO, "SPLIT_PRIMARY window can not move"},
-        {MOVETO, SPLIT_SECONDARY, false, INDEX_ZERO, "SPLIT_SECONDARY window can not move"},
-        {MOVETO, FLOATING, true, INDEX_ZERO, ""},
-        {RESIZE, FULLSCREEN, false, INDEX_ZERO, "Fullscreen window can not resize"},
-        {RESIZE, SPLIT_PRIMARY, true, INDEX_ZERO, ""},
-        {RESIZE, SPLIT_SECONDARY, true, INDEX_ZERO, ""},
-        {RESIZE, FLOATING, true, INDEX_ZERO, ""},
-        {SPLIT, FULLSCREEN, true, INDEX_ONE, ""},
-        {SPLIT, SPLIT_PRIMARY, false, INDEX_ONE, "SPLIT_PRIMARY can not split again"},
-        {SPLIT, SPLIT_SECONDARY, true, INDEX_ONE, ""},
-        {SPLIT, FLOATING, true, INDEX_ONE, ""},
-        {MAXIMIZE, FULLSCREEN, false, INDEX_TWO, "Fullscreen window is already maximized"},
-        {MAXIMIZE, SPLIT_PRIMARY, true, INDEX_TWO, ""},
-        {MAXIMIZE, SPLIT_SECONDARY, true, INDEX_TWO, ""},
-        {MAXIMIZE, FLOATING, true, INDEX_TWO, ""},
-        {RESUME, FULLSCREEN, true, INDEX_TWO, ""},
-        {RESUME, SPLIT_PRIMARY, true, INDEX_TWO, ""},
-        {RESUME, SPLIT_SECONDARY, true, INDEX_TWO, ""},
-        {RESUME, FLOATING, true, INDEX_TWO, ""},
-        {MINIMIZE, FULLSCREEN, true, INDEX_THREE, ""},
-        {MINIMIZE, SPLIT_PRIMARY, true, INDEX_THREE, ""},
-        {MINIMIZE, SPLIT_SECONDARY, true, INDEX_THREE, ""},
-        {MINIMIZE, FLOATING, true, INDEX_THREE, ""},
-        {CLOSE, FULLSCREEN, true, INDEX_FOUR, ""},
-        {CLOSE, SPLIT_PRIMARY, true, INDEX_FOUR, ""},
-        {CLOSE, SPLIT_SECONDARY, true, INDEX_FOUR, ""},
-        {CLOSE, FLOATING, true, INDEX_FOUR, ""}
+        {MOVETO, FULLSCREEN, false, "", "Fullscreen window can not move"},
+        {MOVETO, SPLIT_PRIMARY, false, "", "SPLIT_PRIMARY window can not move"},
+        {MOVETO, SPLIT_SECONDARY, false, "", "SPLIT_SECONDARY window can not move"},
+        {MOVETO, FLOATING, true, "", ""},
+        {RESIZE, FULLSCREEN, false, "", "Fullscreen window can not resize"},
+        {RESIZE, SPLIT_PRIMARY, true, "", ""},
+        {RESIZE, SPLIT_SECONDARY, true, "", ""},
+        {RESIZE, FLOATING, true, "", ""},
+        {SPLIT, FULLSCREEN, true, "container_modal_split_left_button", ""},
+        {SPLIT, SPLIT_PRIMARY, false, "container_modal_split_left_button", "SPLIT_PRIMARY can not split again"},
+        {SPLIT, SPLIT_SECONDARY, true, "container_modal_split_left_button", ""},
+        {SPLIT, FLOATING, true, "container_modal_split_left_button", ""},
+        {MAXIMIZE, FULLSCREEN, false, "container_modal_maximize_button", "Fullscreen window is already maximized"},
+        {MAXIMIZE, SPLIT_PRIMARY, true, "container_modal_maximize_button", ""},
+        {MAXIMIZE, SPLIT_SECONDARY, true, "container_modal_maximize_button", ""},
+        {MAXIMIZE, FLOATING, true, "container_modal_maximize_button", ""},
+        {RESUME, FULLSCREEN, true, "container_modal_maximize_button", ""},
+        {RESUME, SPLIT_PRIMARY, true, "container_modal_maximize_button", ""},
+        {RESUME, SPLIT_SECONDARY, true, "container_modal_maximize_button", ""},
+        {RESUME, FLOATING, true, "container_modal_maximize_button", ""},
+        {MINIMIZE, FULLSCREEN, true, "container_modal_minimize_button", ""},
+        {MINIMIZE, SPLIT_PRIMARY, true, "container_modal_minimize_button", ""},
+        {MINIMIZE, SPLIT_SECONDARY, true, "container_modal_minimize_button", ""},
+        {MINIMIZE, FLOATING, true, "container_modal_minimize_button", ""},
+        {CLOSE, FULLSCREEN, true, "container_modal_close_button", ""},
+        {CLOSE, SPLIT_PRIMARY, true, "container_modal_close_button", ""},
+        {CLOSE, SPLIT_SECONDARY, true, "container_modal_close_button", ""},
+        {CLOSE, FLOATING, true, "container_modal_close_button", ""}
     };
 
-    static bool CheckOperational(WindowAction action, WindowMode mode, ApiReplyInfo &out, size_t &targetIndex)
+    static bool CheckOperational(WindowAction action, WindowMode mode, ApiReplyInfo &out, string &buttonId)
     {
         for (unsigned long index = 0; index < sizeof(OPERATIONS) / sizeof(Operational); index++) {
             if (OPERATIONS[index].action == action && OPERATIONS[index].windowMode == mode) {
                 if (OPERATIONS[index].support) {
-                    targetIndex = OPERATIONS[index].index;
+                    buttonId = OPERATIONS[index].buttonId;
                     return true;
                 } else {
                     out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, OPERATIONS[index].message);
@@ -124,8 +125,8 @@ namespace OHOS::uitest {
     void WindowOperator::MoveTo(uint32_t endX, uint32_t endY, ApiReplyInfo &out)
     {
         Focus(out);
-        size_t index = 0;
-        if (!CheckOperational(MOVETO, window_.mode_, out, index)) {
+        string targetBtnId;
+        if (!CheckOperational(MOVETO, window_.mode_, out, targetBtnId)) {
             return;
         }
         auto rect = window_.bounds_;
@@ -139,8 +140,8 @@ namespace OHOS::uitest {
     void WindowOperator::Resize(int32_t width, int32_t highth, ResizeDirection direction, ApiReplyInfo &out)
     {
         Focus(out);
-        size_t index = 0;
-        if (!CheckOperational(RESIZE, window_.mode_, out, index)) {
+        string targetBtnId;
+        if (!CheckOperational(RESIZE, window_.mode_, out, targetBtnId)) {
             return;
         }
         Point from;
@@ -186,85 +187,68 @@ namespace OHOS::uitest {
 
     void WindowOperator::Split(ApiReplyInfo &out)
     {
-        size_t index = 0;
-        if (!CheckOperational(SPLIT, window_.mode_, out, index)) {
+        string targetBtnId;
+        if (!CheckOperational(SPLIT, window_.mode_, out, targetBtnId)) {
             return;
         }
-        BarAction(index, out);
+        BarAction(targetBtnId, out);
     }
 
     void  WindowOperator::Maximize(ApiReplyInfo &out)
     {
-        size_t index = 0;
-        if (!CheckOperational(MAXIMIZE, window_.mode_, out, index)) {
+        string targetBtnId;
+        if (!CheckOperational(MAXIMIZE, window_.mode_, out, targetBtnId)) {
             return;
         }
-        BarAction(index, out);
+        BarAction(targetBtnId, out);
     }
 
     void WindowOperator::Resume(ApiReplyInfo &out)
     {
-        size_t index = 0;
-        if (!CheckOperational(RESUME, window_.mode_, out, index)) {
+        string targetBtnId;
+        if (!CheckOperational(RESUME, window_.mode_, out, targetBtnId)) {
             return;
         }
-        BarAction(index, out);
+        BarAction(targetBtnId, out);
     }
 
     void WindowOperator::Minimize(ApiReplyInfo &out)
     {
-        size_t index = 0;
-        if (!CheckOperational(MINIMIZE, window_.mode_, out, index)) {
+        string targetBtnId;
+        if (!CheckOperational(MINIMIZE, window_.mode_, out, targetBtnId)) {
             return;
         }
-        BarAction(index, out);
+        BarAction(targetBtnId, out);
     }
 
     void WindowOperator::Close(ApiReplyInfo &out)
     {
-        size_t index = 0;
-        if (!CheckOperational(CLOSE, window_.mode_, out, index)) {
+        string targetBtnId;
+        if (!CheckOperational(CLOSE, window_.mode_, out, targetBtnId)) {
             return;
         }
-        BarAction(index, out);
+        BarAction(targetBtnId, out);
     }
 
-    void WindowOperator::BarAction(size_t index, ApiReplyInfo &out)
+    void WindowOperator::BarAction(string buttonId, ApiReplyInfo &out)
     {
         CallBar(out);
         auto selector = WidgetSelector(false);
-        auto parentLocator = WidgetSelector();
-        auto attrMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "Button", EQ);
+        auto attrMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::KEY], buttonId, EQ);
         auto windowMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], to_string(window_.id_), EQ);
-        auto parentMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "DecorBar", EQ);
-        parentLocator.AddMatcher(parentMatcher);
         selector.AddMatcher(attrMatcher);
         selector.AddMatcher(windowMatcher);
-        selector.AddFrontLocator(parentLocator, out.exception_);
         selector.AddAppLocator(window_.bundleName_);
         vector<unique_ptr<Widget>> widgets;
         driver_.FindWidgets(selector, widgets, out.exception_);
-        if (widgets.empty()) {
-            auto selectorForJs = WidgetSelector(false);
-            auto attrMatcherForJs = WidgetAttrMatcher(ATTR_NAMES[UiAttr::TYPE], "button", EQ);
-            selectorForJs.AddMatcher(attrMatcherForJs);
-            selectorForJs.AddMatcher(windowMatcher);
-            selectorForJs.AddFrontLocator(parentLocator, out.exception_);
-            selectorForJs.AddAppLocator(window_.bundleName_);
-            driver_.FindWidgets(selectorForJs, widgets, out.exception_, false);
-        }
         if (out.exception_.code_ != NO_ERROR) {
             return;
         }
-        if (widgets.size() < index) {
+        if (widgets.empty()) {
             out.exception_ = ApiCallErr(USAGE_ERROR, "Not find target winAction button");
             return;
         }
-        if (!widgets[index - 1]->IsVisible()) {
-            out.exception_ = ApiCallErr(USAGE_ERROR, "Target winAction button does not exist on the current screen");
-            return;
-        }
-        auto rect = widgets[index - 1]->GetBounds();
+        auto rect = widgets[0]->GetBounds();
         Point widgetCenter(rect.GetCenterX(), rect.GetCenterY());
         auto touch = GenericClick(TouchOp::CLICK, widgetCenter);
         driver_.PerformTouch(touch, options_, out.exception_);

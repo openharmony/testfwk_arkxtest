@@ -56,7 +56,7 @@ namespace OHOS::uitest {
         void CallBar(ApiReplyInfo &out);
 
         /**Click on the decoration bar of this window.*/
-        void BarAction(size_t index, ApiReplyInfo &out);
+        void BarAction(string buttonId, ApiReplyInfo &out);
     };
 } // namespace OHOS::uitest
 
