@@ -37,7 +37,6 @@ namespace OHOS::uitest {
         bool support;
         std::string_view buttonId;
         std::string_view message;
-        
     };
 
     static constexpr Operational OPERATIONS[] = {
@@ -230,10 +229,10 @@ namespace OHOS::uitest {
         BarAction(targetBtnId, out);
     }
 
-    void WindowOperator::BarAction(string buttonId, ApiReplyInfo &out)
+    void WindowOperator::BarAction(string_view buttonId, ApiReplyInfo &out)
     {
         CallBar(out);
-        auto selector = WidgetSelector(false);
+        auto selector = WidgetSelector();
         auto attrMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::KEY], buttonId, EQ);
         auto windowMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], to_string(window_.id_), EQ);
         selector.AddMatcher(attrMatcher);
