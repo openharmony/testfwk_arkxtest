@@ -61,6 +61,7 @@ namespace OHOS::uitest {
         void HandleMoveEvent(const TouchEventInfo& event) const;
         void HandleUpEvent(const TouchEventInfo& event) const;
         void WriteDataAndFindWidgets(const TouchEventInfo& event) const;
+        void WritePointerInfo() const;
         void OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const override;
         void OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const override;
         void SubscribeMonitorInit();

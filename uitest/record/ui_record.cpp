@@ -258,6 +258,22 @@ namespace OHOS::uitest {
         }
     }
 
+    void InputEventCallback::WritePointerInfo() const
+    {
+        if (pointerTracker_.IsNeedWrite()) {
+            PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
+            if (info.GetTouchOpt() != OP_CLICK) {
+                isLastClick_ = false;
+                findWidgetsAllow_ = true;
+                widgetsCon.notify_all();
+            }
+            if (info.GetTouchOpt() == OP_CLICK) {
+                isLastClick_ = true;
+                clickCon.notify_all();
+            }
+            pointerTracker_.SetNeedWrite(false);
+        }
+    }
 
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::PointerEvent> pointerEvent) const
     {
@@ -290,24 +306,20 @@ namespace OHOS::uitest {
             pointerTracker_.HandleDownEvent(touchEvent);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
             pointerTracker_.HandleMoveEvent(touchEvent);
+        } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_PULL_MOVE) {
+            pointerTracker_.HandleMoveEvent(touchEvent, OP_DRAG);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP) {
             if (recordMode != "point") {
                 touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y).GetAttrMap();
             }
             pointerTracker_.HandleUpEvent(touchEvent);
-            if (pointerTracker_.IsNeedWrite()) {
-                PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
-                if (info.GetTouchOpt() != OP_CLICK) {
-                    isLastClick_ = false;
-                    findWidgetsAllow_ = true;
-                    widgetsCon.notify_all();
-                }
-                if (info.GetTouchOpt() == OP_CLICK) {
-                    isLastClick_ = true;
-                    clickCon.notify_all();
-                }
-                pointerTracker_.SetNeedWrite(false);
+            WritePointerInfo();
+        } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_PULL_UP) {
+            if (recordMode != "point") {
+                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y).GetAttrMap();
             }
+            pointerTracker_.HandleUpEvent(touchEvent, OP_DRAG);
+            WritePointerInfo();
         }
     }
     

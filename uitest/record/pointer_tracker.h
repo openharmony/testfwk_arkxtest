@@ -67,6 +67,8 @@ namespace OHOS::uitest {
         void HandleDownEvent(TouchEventInfo& event);
         void HandleMoveEvent(TouchEventInfo& event);
         void HandleUpEvent(TouchEventInfo& event);
+        void HandleMoveEvent(TouchEventInfo& event, TouchOpt touchOpt);
+        void HandleUpEvent(TouchEventInfo& event, TouchOpt touchOpt);
         
         void InitJudgeChain();
         bool IsClick(TouchEventInfo& touchEvent); // click(back)
