@@ -76,8 +76,15 @@ namespace OHOS::uitest {
                      << "type: " << firstTouchEventInfo.attributes.find("type")->second << ", "
                      << "text: " << firstTouchEventInfo.attributes.find("text")->second << ") " << "; ";
             } else {
-                sout << "from Point(x:" << firstTouchEventInfo.x << ", y:" << firstTouchEventInfo.y
-                     << ") to Point(x:" << lastTouchEventInfo.x << ", y:" << lastTouchEventInfo.y << ") " << "; ";
+                sout << "from Point(x:" << firstTouchEventInfo.x << ", y:" << firstTouchEventInfo.y << ") ";
+            }
+            if (lastTouchEventInfo.attributes.find("id")->second != "" ||
+                lastTouchEventInfo.attributes.find("text")->second != "") {
+                sout << "to Widget(id: " << lastTouchEventInfo.attributes.find("id")->second << ", "
+                     << "type: " << lastTouchEventInfo.attributes.find("type")->second << ", "
+                     << "text: " << lastTouchEventInfo.attributes.find("text")->second << ") " << "; ";
+            } else {
+                sout << " to Point(x:" << lastTouchEventInfo.x << ", y:" << lastTouchEventInfo.y << ") " << "; ";
             }
             if (actionType == "fling" || actionType == "swipe") {
                 sout << "Off-hand speed:" << velocity << ", "

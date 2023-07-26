@@ -290,6 +290,8 @@ namespace OHOS::uitest {
             pointerTracker_.HandleDownEvent(touchEvent);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
             pointerTracker_.HandleMoveEvent(touchEvent);
+        } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_PULL_MOVE){
+            pointerTracker_.HandleMoveEvent(touchEvent, OP_DRAG);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP) {
             if (recordMode != "point") {
                 touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y).GetAttrMap();
@@ -306,6 +308,18 @@ namespace OHOS::uitest {
                     isLastClick_ = true;
                     clickCon.notify_all();
                 }
+                pointerTracker_.SetNeedWrite(false);
+            }
+        } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_PULL_UP) {
+            if (recordMode != "point") {
+                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y).GetAttrMap();
+            }
+            pointerTracker_.HandleUpEvent(touchEvent, OP_DRAG);
+            if (pointerTracker_.IsNeedWrite()) {
+                PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
+                isLastClick_ = false;
+                findWidgetsAllow_ = true;
+                widgetsCon.notify_all();
                 pointerTracker_.SetNeedWrite(false);
             }
         }
