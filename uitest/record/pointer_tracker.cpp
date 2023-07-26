@@ -149,6 +149,20 @@ namespace OHOS::uitest {
         }
     }
 
+    void PointerTracker::HandleMoveEvent(TouchEventInfo& event, TouchOpt touchOpt)
+    {
+        pointerTypeJudgChain_.clear();
+        pointerTypeJudgChain_ = {touchOpt};
+        HandleMoveEvent(event);
+    }
+
+    void PointerTracker::HandleUpEvent(TouchEventInfo& event, TouchOpt touchOpt)
+    {
+        pointerTypeJudgChain_.clear();
+        pointerTypeJudgChain_ = {touchOpt};
+        HandleUpEvent(event);
+    }
+
     void PointerTracker::ClearFingerTrackersValues()
     {
         for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
