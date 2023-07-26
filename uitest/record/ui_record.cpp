@@ -258,7 +258,7 @@ namespace OHOS::uitest {
         }
     }
 
-    void InputEventCallback::WritePointerInfo()
+    void InputEventCallback::WritePointerInfo() const
     {
         if (pointerTracker_.IsNeedWrite()) {
             PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
