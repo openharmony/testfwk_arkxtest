@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import SysTestKit from "./module/kit/SysTestKit";
+import {SysTestKit, TAG} from "./module/kit/SysTestKit";
 
 class AssertException extends Error {
     constructor(message) {
@@ -144,7 +144,7 @@ class SuiteService {
     describe(desc, func) {
         const configService = this.coreContext.getDefaultService('config');
         if (configService.filterSuite(desc)) {
-            console.info('filter suite :' + desc);
+            console.info(`${TAG}filter suite : ${desc}`);
             return;
         }
         const suite = new SuiteService.Suite({description: desc});
@@ -292,7 +292,7 @@ class SuiteService {
         for (let count = 0; count <= maxCount; count++) {
             await SysTestKit.print(strJson.substring(count * maxLen, (count + 1) * maxLen));
         }
-        console.info('dryRun print success');
+        console.info(`${TAG}dryRun print success`);
         abilityDelegator.finishTest('dry run finished!!!', 0, () => { });
     }
 
@@ -441,7 +441,7 @@ SuiteService.Suite = class {
                 // 遇错即停模式,发现用例有问题，直接返回，不在执行后面的it
                 let isBreakOnError = this.isRun(coreContext);
                 if (isBreakOnError) {
-                    console.log("break description :" + this.description);
+                    console.log(`${TAG}break description :${this.description}`);
                     break;
                 }
                 await this.runAsyncHookFunc('beforeEach');
@@ -455,7 +455,7 @@ SuiteService.Suite = class {
                 // 遇错即停模式, 发现用例有问题，直接返回，不在执行后面的description
                 let isBreakOnError = this.isRun(coreContext);
                 if (isBreakOnError) {
-                    console.log("break description :" + this.description);
+                    console.log(`${TAG}break description :${this.description}`);
                     break;
                 }
                 await this.childSuites[i].asyncRun(coreContext);
@@ -485,7 +485,7 @@ SuiteService.Suite = class {
                 try {
                     func();
                 } catch (e) {
-                    console.error(e);
+                    console.error(`${TAG}${e.stack}`);
                 }
             });
         }
@@ -498,7 +498,7 @@ SuiteService.Suite = class {
                     try {
                         await this[hookName][i]();
                     } catch (e) {
-                        console.error(e);
+                        console.error(`${TAG}${e.stack}`);
                     }
                 }
                 resolve();
@@ -542,7 +542,7 @@ class SpecService {
         const configService = this.coreContext.getDefaultService('config');
         const currentSuiteName = this.coreContext.getDefaultService('suite').getCurrentRunningSuite().description;
         if (configService.filterDesc(currentSuiteName, desc, filter, this.coreContext)) {
-            console.info('filter it :' + desc);
+            console.info(`${TAG}filter it :${desc}`);
         } else {
             let processedFunc = processFunc(this.coreContext, func);
             const spec = new SpecService.Spec({description: desc, fi: filter, fn: processedFunc});
@@ -558,7 +558,7 @@ class SpecService {
             // dryRun 状态下不统计压力测试重复数据
             if (configService['dryRun'] !== 'true') {
                 let stress = configService.getStress(); // 命令配置压力测试
-                console.info('stress length :' + stress);
+                console.info(`${TAG}stress length : ${stress}`);
                 for (let i = 1; i < stress; i++) {
                     this.totalTest++;
                     suiteService.getCurrentRunningSuite().pushSpec(spec);
@@ -603,7 +603,7 @@ SpecService.Spec = class {
         } else {
             this.result.pass = true;
         }
-        console.info('testcase ' + this.description + ' result:' + this.result.pass);
+        console.info(`${TAG}testcase ${this.description} result: ${this.result.pass}`);
     }
 
     run(coreContext) {
@@ -618,8 +618,8 @@ SpecService.Spec = class {
             } else {
                 let suiteParams = dataDriver.dataDriver.getSuiteParams();
                 let specParams = dataDriver.dataDriver.getSpecParams();
-                console.info('[suite params] ' + JSON.stringify(suiteParams));
-                console.info('[spec params] ' + JSON.stringify(specParams));
+                console.info(`${TAG}[suite params] ${JSON.stringify(suiteParams)}`);
+                console.info(`${TAG}[spec params] ${JSON.stringify(specParams)}`);
                 if (this.fn.length === 0) {
                     this.fn();
                 } else if (specParams.length === 0) {
@@ -649,8 +649,8 @@ SpecService.Spec = class {
             } else {
                 let suiteParams = dataDriver.dataDriver.getSuiteParams();
                 let specParams = dataDriver.dataDriver.getSpecParams();
-                console.info('[suite params] ' + JSON.stringify(suiteParams));
-                console.info('[spec params] ' + JSON.stringify(specParams));
+                console.info(`${TAG}[suite params] ${JSON.stringify(suiteParams)}`);
+                console.info(`${TAG}[spec params] ${JSON.stringify(specParams)}`);
                 if (this.fn.length === 0) {
                     await this.fn();
                     this.setResult(coreContext);
@@ -829,15 +829,15 @@ class ReportService {
     }
 
     taskStart() {
-        console.info('[start] start run suites');
+        console.info(`${TAG}[start] start run suites`);
     }
 
     async suiteStart() {
-        console.info('[suite start]' + this.suiteService.getCurrentRunningSuite().description);
+        console.info(`${TAG}[suite start]${this.suiteService.getCurrentRunningSuite().description}`);
     }
 
     async specStart() {
-        console.info('start running case \'' + this.specService.currentRunningSpec.description + '\'');
+        console.info(`${TAG}start running case '${this.specService.currentRunningSpec.description}'`);
         this.index = this.index + 1;
         let spec = this.specService.currentRunningSpec;
         spec.startTime = await SysTestKit.getRealTime();
@@ -869,7 +869,7 @@ class ReportService {
 
     suiteDone() {
         let suite = this.suiteService.currentRunningSuite;
-        console.info(`[suite end] ${suite.description} consuming ${suite.duration} ms`);
+        console.info(`${TAG}[suite end] ${suite.description} consuming ${suite.duration} ms`);
     }
 
     taskDone() {
@@ -877,14 +877,14 @@ class ReportService {
         let summary = this.suiteService.getSummary();
         msg = 'total cases:' + summary.total + ';failure ' + summary.failure + ',' + 'error ' + summary.error;
         msg += ',pass ' + summary.pass + '; consuming ' + summary.duration + 'ms';
-        console.info(msg);
-        console.info('[end] run suites end');
+        console.info(`${TAG}${msg}`);
+        console.info(`${TAG}[end] run suites end`);
     }
 
     incorrectFormat() {
         if (this.coreContext.getDefaultService('config').filterValid.length !== 0) {
             this.coreContext.getDefaultService('config').filterValid.forEach(function (item) {
-                console.info('this param ' + item + ' is invalid');
+                console.info(`${TAG}this param ${item} is invalid`);
             });
         }
     }
@@ -892,19 +892,19 @@ class ReportService {
     formatPrint(type, msg) {
         switch (type) {
             case 'pass':
-                console.info('[pass]' + msg);
+                console.info(`${TAG}[pass]${msg}`);
                 break;
             case 'fail':
-                console.info('[fail]' + msg);
+                console.info(`${TAG}[fail]${msg}`);
                 break;
             case 'failDetail':
-                console.info('[failDetail]' + msg);
+                console.info(`${TAG}[failDetail]${msg}`);
                 break;
             case 'error':
-                console.info('[error]' + msg);
+                console.info(`${TAG}[error]${msg}`);
                 break;
             case 'errorDetail':
-                console.info('[errorDetail]' + msg);
+                console.info(`${TAG}[errorDetail]${msg}`);
                 break;
         }
     }

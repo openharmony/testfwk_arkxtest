@@ -14,6 +14,7 @@
  */
 
 import {ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter} from './Filter';
+import {TAG} from '../kit/SysTestKit';
 const STRESS_RULE = /^[1-9]\d*$/;
 
 class ConfigService {
@@ -159,7 +160,7 @@ class ConfigService {
             };
             this.parseParams();
         } catch (err) {
-            console.info('setConfig error: ' + err.message);
+            console.info(`${TAG}setConfig error: ${err.message}`);
         }
     }
 
@@ -186,7 +187,7 @@ class ConfigService {
                 .reduce((pre, cur) => pre | cur, 0);
         }
         this.filter = testTypeFilter | sizeFilter | levelFilter;
-        console.info('filter params:' + this.filter);
+        console.info(`${TAG}filter params:${this.filter}`);
     }
 
     isCurrentSuite(description) {
@@ -270,7 +271,7 @@ class ConfigService {
             '-s class', '-s notClass', '-s suite', '-s itName',
             '-s level', '-s testType', '-s size', '-s timeout',
             '-s dryRun', '-s random', '-s breakOnError', '-s stress',
-            '-s coverage','class', 'notClass', 'suite', 'itName',
+            '-s coverage', 'class', 'notClass', 'suite', 'itName',
             'level', 'testType', 'size', 'timeout', 'dryRun', 'random',
             'breakOnError', 'stress', 'coverage'
         ]);

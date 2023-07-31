@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+const TAG = '[Hypium]';
+
 class SysTestKit {
 
     static delegator = null;
@@ -24,23 +26,23 @@ class SysTestKit {
     }
 
     static actionStart(tag) {
-        console.info(JSON.stringify(tag));
+        console.info(`${TAG}${JSON.stringify(tag)}`);
         var message = '\n' + 'OHOS_REPORT_ACTIONSTART: ' + JSON.stringify(tag) + '\n';
         SysTestKit.print(message);
-        console.info(tag + ' actionStart print success');
+        console.info(`${TAG}${JSON.stringify(tag)} actionStart print success`);
     }
 
     static actionEnd(tag) {
-        console.info(JSON.stringify(tag));
+        console.info(`${TAG}${JSON.stringify(tag)}`);
         var message = '\n' + 'OHOS_REPORT_ACTIONEND: ' + JSON.stringify(tag) + '\n';
         SysTestKit.print(message);
-        console.info(tag + ' actionEnd print success');
+        console.info(`${TAG}${JSON.stringify(tag)}  actionEnd print success`);
     }
 
     static async existKeyword(keyword, timeout) {
-        let reg = new RegExp(/^[a-zA-Z0-9]{1,}$/)
+        let reg = new RegExp(/^[a-zA-Z0-9]{1,}$/);
         if (!reg.test(keyword)) {
-            throw new Error('keyword must contain more than one string, and only letters and numbers are supported.')
+            throw new Error('keyword must contain more than one string, and only letters and numbers are supported.');
         }
         timeout = timeout || 4;
 
@@ -53,7 +55,7 @@ class SysTestKit {
     }
     static async print(message) {
         if ('printSync' in SysTestKit.delegator) {
-            console.debug(`printSync called ...`);
+            console.debug(`${TAG}printSync called ...`);
             SysTestKit.delegator.printSync(message);
         } else {
             await SysTestKit.delegator.print(message);
@@ -64,10 +66,10 @@ class SysTestKit {
         let currentTime = new Date().getTime();
         if (SysTestKit.systemTime !== null && SysTestKit.systemTime !== undefined) {
             await SysTestKit.systemTime.getRealTime().then((time) => {
-                console.info(`systemTime.getRealTime success data: ${JSON.stringify(time)}`);
+                console.info(`${TAG}systemTime.getRealTime success data: ${JSON.stringify(time)}`);
                 currentTime = time;
             }).catch((error) => {
-                console.error(`failed to systemTime.getRealTime because ${JSON.stringify(error)}`);
+                console.error(`${TAG}failed to systemTime.getRealTime because ${JSON.stringify(error)}`);
             });
         }
         return currentTime;
@@ -78,11 +80,11 @@ function executePromise(cmd, timeout) {
     return new Promise((resolve, reject) => {
         SysTestKit.delegator.executeShellCommand(cmd, timeout,
             (error, data) => {
-                console.info('existKeyword CallBack: err : ' + JSON.stringify(error));
-                console.info('existKeyword CallBack: data : ' + JSON.stringify(data));
+                console.info(`${TAG}existKeyword CallBack: err : ${JSON.stringify(error)}`);
+                console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(data)}`);
                 resolve(parseInt(data.stdResult) > 3 ? true : false);
             });
     });
 }
 
-export default SysTestKit;
+export {SysTestKi, TAG};
