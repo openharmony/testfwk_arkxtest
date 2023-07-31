@@ -87,4 +87,4 @@ function executePromise(cmd, timeout) {
     });
 }
 
-export {SysTestKi, TAG};
+export {SysTestKit, TAG};
