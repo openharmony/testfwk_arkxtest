@@ -23,7 +23,7 @@ class MockKit {
         this.mFunctions = [];
         this.stubs = new Map();
         this.recordCalls = new Map();
-        this.currentSetKey = null;
+        this.currentSetKey = new Map();
         this.mockObj = null;
         this.recordMockedMethod = new Map();
     }
@@ -36,7 +36,7 @@ class MockKit {
         this.mFunctions = [];
         this.stubs = {};
         this.recordCalls = {};
-        this.currentSetKey = null;
+        this.currentSetKey = new Map();
         this.mockObj = null;
         this.recordMockedMethod = new Map();
     }
@@ -101,7 +101,7 @@ class MockKit {
         if (matcher.matcheStubKey(key)) {
             key = matcher.matcheStubKey(key);
             if (key) {
-                this.currentSetKey = key;
+                this.currentSetKey.set(f, key);
             }
         }
         values.set(key, returnInfo);
@@ -117,9 +117,9 @@ class MockKit {
         if (typeof retrunKet == "undefined") {
             retrunKet = "anonymous-mock-" + f.propName;
         }
-        let stubSetKey = this.currentSetKey;
+        let stubSetKey = this.currentSetKey.get(f);
 
-        if (this.currentSetKey && (typeof (retrunKet) != "undefined")) {
+        if (stubSetKey && (typeof (retrunKet) != "undefined")) {
             retrunKet = stubSetKey;
         }
         let matcher = new ArgumentMatchers();
