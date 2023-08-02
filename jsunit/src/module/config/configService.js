@@ -14,7 +14,7 @@
  */
 
 import {ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter} from './Filter';
-import {TAG} from '../kit/SysTestKit';
+import {TAG} from '../../Constant';
 const STRESS_RULE = /^[1-9]\d*$/;
 
 class ConfigService {

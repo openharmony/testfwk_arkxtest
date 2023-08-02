@@ -14,11 +14,11 @@
  */
 
 import Core from './src/core';
-import {DEFAULT, TestType, Size, Level} from './src/Constant';
+import {DEFAULT, TestType, Size, Level, TAG} from './src/Constant';
 import DataDriver from './src/module/config/DataDriver';
 import ExpectExtend from './src/module/assert/ExpectExtend';
 import OhReport from './src/module/report/OhReport';
-import {SysTestKit, TAG} from './src/module/kit/SysTestKit';
+import SysTestKit from './src/module/kit/SysTestKit';
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from './src/interface';
 import {MockKit, when} from './src/module/mock/MockKit';
 import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
