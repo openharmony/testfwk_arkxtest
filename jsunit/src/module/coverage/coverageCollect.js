@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import {SysTestKit} from "../kit/SysTestKit";
+import SysTestKit from "../kit/SysTestKit";
 
 export async function collectCoverageData() {
     if (globalThis.__coverage__ === undefined) {

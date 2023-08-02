@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-import {SysTestKit, TAG} from "./module/kit/SysTestKit";
+import SysTestKit from "./module/kit/SysTestKit";
+import {TAG} from './Constant';
 
 class AssertException extends Error {
     constructor(message) {

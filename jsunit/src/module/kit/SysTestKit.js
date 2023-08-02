@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-const TAG = '[Hypium]';
+import {TAG} from '../../Constant';
 
-class SysTestKit {
+export default class SysTestKit {
 
     static delegator = null;
     static systemTime = null;
@@ -86,5 +86,3 @@ function executePromise(cmd, timeout) {
             });
     });
 }
-
-export {SysTestKit, TAG};
