@@ -42,7 +42,7 @@ namespace OHOS::uitest {
     using namespace OHOS::Rosen;
     using namespace OHOS::Media;
 
-    constexpr auto g_sceneboardId = 1; 
+    constexpr auto g_sceneboardId = 1;
 
     class UiEventMonitor final : public AccessibleAbilityListener {
     public:
@@ -361,8 +361,8 @@ namespace OHOS::uitest {
         for (auto &window : windows) {
             if (AccessibilityUITestAbility::GetInstance()->GetRootByWindow(window, elementInfo) == RET_OK) {
                 const auto app = elementInfo.GetBundleName();
-                LOG_D("Get window at layer %{public}d, appId: %{public}s, windowId: %{public}d", window.GetWindowLayer(),
-                    app.c_str(), window.GetWindowId());
+                LOG_D("Get window at layer %{public}d, appId: %{public}s, windowId: %{public}d",
+                    window.GetWindowLayer(), app.c_str(), window.GetWindowId());
                 if (targetApp != "" && app != targetApp) {
                     continue;
                 }
