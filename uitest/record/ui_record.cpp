@@ -200,7 +200,8 @@ namespace OHOS::uitest {
                 clickCon.wait(clickLck);
             }
             std::this_thread::sleep_for(
-                std::chrono::milliseconds(static_cast<int>(PointerTracker::INTERVAL_THRESHOLD * VelocityTracker::TIME_INDEX)));
+                std::chrono::milliseconds(
+                    static_cast<int>(PointerTracker::INTERVAL_THRESHOLD * VelocityTracker::TIME_INDEX)));
             if (isLastClick_) {
                 isLastClick_ = false;
                 pointerTracker_.SetLastClickInTracker(false);
