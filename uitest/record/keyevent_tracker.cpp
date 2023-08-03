@@ -78,9 +78,9 @@ namespace OHOS::uitest {
             LOG_E("Failed to obtain the combination_key when cout keyEvent.");
             return NONE_COMBINATION_ERROR;
         }
-        buildEventItems();
+        BuildEventItems();
         std::lock_guard<mutex> guard(*cout_lock);
-        for (size_t i = 0; i < INFO_SIZE-1; i++) {
+        for (size_t i = 0; i < INFO_SIZE - 1; i++) {
             sout << eventItems[i] << ", ";
         }
         sout << eventItems[INFO_SIZE-1];
@@ -90,9 +90,9 @@ namespace OHOS::uitest {
     std::string KeyeventTracker::WriteSingleData(KeyEventInfo &info, shared_ptr<mutex> &cout_lock)
     {
         std::stringstream sout;
-        buildEventItems(info);
+        BuildEventItems(info);
         std::lock_guard<mutex> guard(*cout_lock);
-        for (size_t i = 0; i < INFO_SIZE-1; i++) {
+        for (size_t i = 0; i < INFO_SIZE - 1; i++) {
             sout << eventItems[i] << ", ";
         }
         sout << eventItems[INFO_SIZE-1];
@@ -109,7 +109,7 @@ namespace OHOS::uitest {
             data["ERROR_INFO"] = "Failed to obtain the combination_key when save keyEvent into record.csv.";
             return data;
         }
-        buildEventItems();
+        BuildEventItems();
         data["ActionStartTime"] = eventItems[CaseTypes::ACTION_START_TIME];
         data["ActionDurationTime"] = eventItems[CaseTypes::ACTION_DURATION_TIME];
         data["OP_TYPE"] =  eventItems[CaseTypes::OP_TYPE];
@@ -126,7 +126,7 @@ namespace OHOS::uitest {
 
     nlohmann::json KeyeventTracker::WriteSingleData(KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock)
     {
-        buildEventItems(info);
+        BuildEventItems(info);
         auto data = nlohmann::json();
         data["ActionStartTime"] = eventItems[CaseTypes::ACTION_START_TIME];
         data["ActionDurationTime"] = eventItems[CaseTypes::ACTION_DURATION_TIME];
@@ -142,7 +142,7 @@ namespace OHOS::uitest {
         return data;
     }
 
-    void KeyeventTracker::buildEventItems(KeyEventInfo &info)
+    void KeyeventTracker::BuildEventItems(KeyEventInfo &info)
     {
         if (eventItems[0] != "-1") {
             return ;
@@ -158,7 +158,7 @@ namespace OHOS::uitest {
         eventItems[CaseTypes::KEY_CODE1+infos_.size()] = std::to_string(info.GetKeyCode());
     }
 
-    void KeyeventTracker::buildEventItems()
+    void KeyeventTracker::BuildEventItems()
     {
         if (eventItems[0] != "-1" || infos_.size() == 0) {
             return ;
@@ -173,7 +173,7 @@ namespace OHOS::uitest {
         }
     }
 
-    void KeyeventTracker::printEventItems()
+    void KeyeventTracker::PrintEventItems()
     {
         std::cout << "infos:" ;
         for (size_t i = 0; i < infos_.size() ; i++) {
