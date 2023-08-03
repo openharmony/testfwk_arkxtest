@@ -42,6 +42,8 @@ namespace OHOS::uitest {
     using namespace OHOS::Rosen;
     using namespace OHOS::Media;
 
+    constexpr auto g_sceneboardId = 1;
+
     class UiEventMonitor final : public AccessibleAbilityListener {
     public:
         virtual ~UiEventMonitor() override = default;
@@ -328,6 +330,11 @@ namespace OHOS::uitest {
             return false;
         }
         sort(windows.begin(), windows.end(), [](auto &w1, auto &w2) -> bool {
+            if (w1.GetWindowId() == g_sceneboardId) {
+                return false;
+            } else if (w2.GetWindowId() == g_sceneboardId) {
+                return true;
+            }
             return w1.GetWindowLayer() > w2.GetWindowLayer();
         });
         return true;
@@ -354,7 +361,8 @@ namespace OHOS::uitest {
         for (auto &window : windows) {
             if (AccessibilityUITestAbility::GetInstance()->GetRootByWindow(window, elementInfo) == RET_OK) {
                 const auto app = elementInfo.GetBundleName();
-                LOG_D("Get window at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
+                LOG_D("Get window at layer %{public}d, appId: %{public}s, windowId: %{public}d",
+                    window.GetWindowLayer(), app.c_str(), window.GetWindowId());
                 if (targetApp != "" && app != targetApp) {
                     continue;
                 }
@@ -363,7 +371,7 @@ namespace OHOS::uitest {
                 auto boundsInScreen = GetVisibleRect(screenRect, window.GetRectInScreen());
                 auto winInfo = Window(window.GetWindowId());
                 InflateWindowInfo(window, winInfo);
-                winInfo.bounds_ = boundsInScreen;
+                winInfo.bounds_ = (window.GetWindowId() == g_sceneboardId) ? screenRect : boundsInScreen;
                 winInfo.bundleName_ = app;
                 Rect visibleArea = winInfo.bounds_;
                 if (!RectAlgorithm::ComputeMaxVisibleRegion(winInfo.bounds_, overlays, visibleArea)) {
