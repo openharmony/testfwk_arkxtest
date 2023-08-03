@@ -133,7 +133,7 @@ namespace OHOS::uitest {
                 std::cout << "More than three keys are invalid at the same time" << std::endl;
                 return;
             }
-            if (KeyeventTracker::isCombinationKey(info.GetKeyCode())) {
+            if (KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
                 keyeventTracker_.SetNeedRecord(true);
                 keyeventTracker_.AddDownKeyEvent(info);
             } else {
@@ -145,7 +145,7 @@ namespace OHOS::uitest {
                 DoAbcCallBack(json);
             }
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
-            if (!KeyeventTracker::isCombinationKey(info.GetKeyCode())) {
+            if (!KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
                 return;
             }
             if (keyeventTracker_.IsNeedRecord()) {
@@ -192,7 +192,7 @@ namespace OHOS::uitest {
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::AxisEvent> axisEvent) const {
     }
 
-    void InputEventCallback::TimerReprintClickFunction ()
+    void InputEventCallback::TimerReprintClickFunction()
     {
         while (g_uiRecordRun) {
             std::unique_lock <std::mutex> clickLck(g_clickMut);
@@ -200,7 +200,7 @@ namespace OHOS::uitest {
                 clickCon.wait(clickLck);
             }
             std::this_thread::sleep_for(
-                std::chrono::milliseconds((int)(PointerTracker::INTERVAL_THRESHOLD * VelocityTracker::TIME_INDEX)));
+                std::chrono::milliseconds(static_cast<int>(PointerTracker::INTERVAL_THRESHOLD * VelocityTracker::TIME_INDEX)));
             if (isLastClick_) {
                 isLastClick_ = false;
                 pointerTracker_.SetLastClickInTracker(false);
