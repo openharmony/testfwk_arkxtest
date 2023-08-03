@@ -67,7 +67,7 @@ namespace OHOS::uitest {
         void SubscribeMonitorInit();
         void KeyEventSubscribeTemplate(SubscribeKeyevent& subscribeKeyevent);
         void SubscribeMonitorCancel();
-        void TimerReprintClickFunction ();
+        void TimerReprintClickFunction();
         void TimerTouchCheckFunction();
         void FindWidgetsandWriteData();
         void DoAbcCallBack(nlohmann::json jsonData) const;
