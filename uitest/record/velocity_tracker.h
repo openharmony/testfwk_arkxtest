@@ -170,17 +170,17 @@ public:
 
     double GetPreTime(int num)
     {
-        return xAxis_.GetTVals().at(xAxis_.GetTVals().size()-num);
+        return xAxis_.GetTVals().at(xAxis_.GetTVals().size() - num);
     }
 
     double GetPreX(int num)
     {
-        return xAxis_.GetPVals().at(xAxis_.GetPVals().size()-num);
+        return xAxis_.GetPVals().at(xAxis_.GetPVals().size() - num);
     }
 
     double GetPreY(int num)
     {
-        return yAxis_.GetPVals().at(yAxis_.GetPVals().size()-num);
+        return yAxis_.GetPVals().at(yAxis_.GetPVals().size() - num);
     }
 
 private:

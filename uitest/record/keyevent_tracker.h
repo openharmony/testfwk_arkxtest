@@ -89,7 +89,7 @@ namespace OHOS::uitest {
         }
 
         // 判断是否为组合按键中的特殊按键
-        static bool isCombinationKey(int32_t keyCode)
+        static bool IsCombinationKey(int32_t keyCode)
         {
             auto it = std::find(COMBINATION_KET.begin(), COMBINATION_KET.end(), keyCode);
             if (it != COMBINATION_KET.end()) {
@@ -114,13 +114,13 @@ namespace OHOS::uitest {
         nlohmann::json WriteCombinationData(ofstream &outFile, shared_ptr<mutex> &csv_lock);
         nlohmann::json WriteSingleData(KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock);
 
-        void printEventItems();
+        void PrintEventItems();
 
     private:
         void KeyCodeDone(int32_t keyCode);
         void KeyCodeCancel(int32_t keyCode);
-        void buildEventItems();
-        void buildEventItems(KeyEventInfo &info);
+        void BuildEventItems();
+        void BuildEventItems(KeyEventInfo &info);
     private:
         std::vector<KeyEventInfo> infos_;
         bool isNeedRecord = false;
