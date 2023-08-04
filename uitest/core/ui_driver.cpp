@@ -68,16 +68,18 @@ namespace OHOS::uitest {
         for (auto &hierarchy : hierarchies) {
             auto tree = make_unique<WidgetTree>("");
             tree->ConstructFromDom(hierarchy.second, true);
-            auto &window = hierarchy.first;
-            windows_.push_back(move(window));
             trees.push_back(move(tree));
         }
-        WidgetTree::MergeTrees(trees, *widgetTree_);
+        vector<int32_t> mergedOrdres;
+        WidgetTree::MergeTrees(trees, *widgetTree_, mergedOrdres);
         auto virtualRoot = widgetTree_->GetRootWidget();
-        for (size_t index = 0; index < hierarchies.size(); index++) {
+        for (size_t index = 0; index < mergedOrdres.size(); index++) {
             auto root = widgetTree_->GetChildWidget(*virtualRoot, index);
             DCHECK(root != nullptr);
-            windows_[index].visibleBounds_ = root->GetBounds();
+            DCHECK(hierarchies.size() > mergedOrdres[index]);
+            auto &window = hierarchies[mergedOrdres[index]].first;
+            window.visibleBounds_ = root->GetBounds();
+            windows_.push_back(move(window));
         }
     }
 

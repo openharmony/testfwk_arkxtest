@@ -593,11 +593,14 @@ namespace OHOS::uitest {
         collector_(widget, visibleRegion);
     }
 
-    void WidgetTree::MergeTrees(const vector<unique_ptr<WidgetTree>> &from, WidgetTree &to)
+    void WidgetTree::MergeTrees(const vector<unique_ptr<WidgetTree>> &from, WidgetTree &to,
+        vector<int32_t> &mergedOrders)
     {
         if (from.empty()) {
             return;
         }
+        size_t index = 0;
+        size_t hierarchyIndex = 0;
         to.widgetsConstructed_ = true;
         auto virtualRoot = Widget(ROOT_HIERARCHY);
         virtualRoot.SetAttr(ATTR_NAMES[UiAttr::VISIBLE], "true");
@@ -610,19 +613,23 @@ namespace OHOS::uitest {
         string hierarchyPrefix = "";
         constexpr auto offset = string_view(ROOT_HIERARCHY).length();
         // collect widget with revised hierarchy and bounds, merge it to dest tree
-        auto merger = [&hierarchyPrefix, &tree = to](const Widget &widget, const Rect &bounds) {
+        auto merger = [&hierarchyPrefix, &tree = to, &index, &hierarchyIndex, &mergedOrders](const Widget &widget,
+            const Rect &bounds) {
             auto newHierarchy = string(hierarchyPrefix) + widget.GetHierarchy().substr(offset);
             auto newWidget = widget.Clone(tree.identifier_, newHierarchy);
             newWidget->SetBounds(bounds);
+            if (widget.GetHierarchy() == ROOT_HIERARCHY) {
+                mergedOrders.push_back(index);
+                hierarchyIndex++;
+            }
             tree.widgetMap_.insert(make_pair(newHierarchy, move(*newWidget)));
             tree.widgetHierarchyIdDfsOrder_.emplace_back(newHierarchy);
         };
         auto visitor = MergerVisitor(merger);
-        size_t index = 0;
         for (auto &tree : from) {
             DCHECK(tree != nullptr);
             // update hierarchy prefix
-            hierarchyPrefix = string(ROOT_HIERARCHY) + "," + to_string(index);
+            hierarchyPrefix = string(ROOT_HIERARCHY) + "," + to_string(hierarchyIndex);
             // visit tree and forward visible widgets to collector
             visitor.PrepareToVisitSubTree(*tree);
             tree->DfsTraverse(visitor);
