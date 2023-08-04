@@ -599,7 +599,7 @@ namespace OHOS::uitest {
         if (from.empty()) {
             return;
         }
-        size_t index = 0;
+        size_t subtreeIndex = 0;
         size_t hierarchyIndex = 0;
         to.widgetsConstructed_ = true;
         auto virtualRoot = Widget(ROOT_HIERARCHY);
@@ -613,13 +613,13 @@ namespace OHOS::uitest {
         string hierarchyPrefix = "";
         constexpr auto offset = string_view(ROOT_HIERARCHY).length();
         // collect widget with revised hierarchy and bounds, merge it to dest tree
-        auto merger = [&hierarchyPrefix, &tree = to, &index, &hierarchyIndex, &mergedOrders](const Widget &widget,
+        auto merger = [&hierarchyPrefix, &tree = to, &subtreeIndex, &hierarchyIndex, &mergedOrders](const Widget &widget,
             const Rect &bounds) {
             auto newHierarchy = string(hierarchyPrefix) + widget.GetHierarchy().substr(offset);
             auto newWidget = widget.Clone(tree.identifier_, newHierarchy);
             newWidget->SetBounds(bounds);
             if (widget.GetHierarchy() == ROOT_HIERARCHY) {
-                mergedOrders.push_back(index);
+                mergedOrders.push_back(subtreeIndex);
                 hierarchyIndex++;
             }
             tree.widgetMap_.insert(make_pair(newHierarchy, move(*newWidget)));
@@ -634,7 +634,7 @@ namespace OHOS::uitest {
             visitor.PrepareToVisitSubTree(*tree);
             tree->DfsTraverse(visitor);
             visitor.EndVisitingSubTree();
-            index++;
+            subtreeIndex++;
         }
         // amend bounds of the virtual root
         vitualRootWidget.SetBounds(visitor.GetMergedBounds());
