@@ -374,7 +374,8 @@ static void CheckMergedTree(const array<string_view, 3> &doms, map<string, strin
         tempTree->ConstructFromDom(nlohmann::json::parse(dom), true);
         subTrees.push_back(move(tempTree));
     }
-    WidgetTree::MergeTrees(subTrees, tree);
+    vector<int32_t> mergedOrders;
+    WidgetTree::MergeTrees(subTrees, tree, mergedOrders);
     for (auto &[name, value] : attrCollector) {
         if (name == "bounds") {
             BoundsVisitor visitor;
