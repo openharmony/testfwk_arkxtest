@@ -298,8 +298,10 @@ namespace OHOS::uitest {
          *
          * @param from: the subtrees to merge, should be sorted by z-order and the top one be at first.
          * @param to: the root tree to merge into.
+         * @param mergedOrders: receive the indexes of subtree merged into the root.
          * */
-        static void MergeTrees(const std::vector<std::unique_ptr<WidgetTree>> &from, WidgetTree &to);
+        static void MergeTrees(const std::vector<std::unique_ptr<WidgetTree>> &from, WidgetTree &to,
+            vector<int32_t> &mergedOrders);
 
     private:
         const std::string name_;
