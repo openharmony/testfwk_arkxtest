@@ -614,7 +614,7 @@ namespace OHOS::uitest {
         constexpr auto offset = string_view(ROOT_HIERARCHY).length();
         // collect widget with revised hierarchy and bounds, merge it to dest tree
         auto merger = [&hierarchyPrefix, &tree = to, &subtreeIndex, &hierarchyIndex, &mergedOrders]
-            (const Widget &widget,const Rect &bounds) {
+            (const Widget &widget, const Rect &bounds) {
             auto newHierarchy = string(hierarchyPrefix) + widget.GetHierarchy().substr(offset);
             auto newWidget = widget.Clone(tree.identifier_, newHierarchy);
             newWidget->SetBounds(bounds);
