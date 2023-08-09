@@ -103,13 +103,13 @@ namespace OHOS::uitest {
          * */
         virtual bool IsWorkable() const = 0;
 
-        virtual void InjectMouseClick(MouseOpArgs mouseOpArgs, int32_t windowId) const {};
+        virtual void InjectMouseClick(MouseOpArgs mouseOpArgs) const {};
 
-        virtual void InjectMouseMove(MouseOpArgs mouseOpArgs, int32_t windowId) const {};
+        virtual void InjectMouseMove(MouseOpArgs mouseOpArgs) const {};
 
-        virtual void InjectMouseScroll(MouseOpArgs mouseOpArgs, int32_t windowId) const {};
+        virtual void InjectMouseScroll(MouseOpArgs mouseOpArgs) const {};
 
-        virtual void InjectMouseEventSequence(const PointerMatrix &events, int32_t windowId) const {};
+        virtual void InjectMouseEventSequence(const PointerMatrix &events) const {};
 
         virtual void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const {};
     };
