@@ -272,23 +272,24 @@ namespace OHOS::uitest {
         attributes["index"] = to_string(index);
         to["attributes"] = attributes;
         auto childList = json::array();
-        if (visitChild) {
-            const auto childCount = from.GetChildCount();
-            AccessibilityElementInfo child;
-            auto ability = AccessibilityUITestAbility::GetInstance();
-            for (auto idx = 0; idx < childCount; idx++) {
-                auto ret = ability->GetChildElementInfo(idx, from, child);
-                if (ret == RET_OK) {
-                    auto parcel = json();
-                    if (!child.IsVisible()) {
-                        LOG_I("This node is not visible, node Id: %{public}d", child.GetAccessibilityId());
-                        continue;
-                    }
-                    MarshallAccessibilityNodeInfo(child, parcel, idx, windowBounds, visitChild);
-                    childList.push_back(parcel);
-                } else {
-                    LOG_W("Get Node child at index=%{public}d failed", idx);
+        if (!visitChild) {
+            return;
+        }
+        const auto childCount = from.GetChildCount();
+        AccessibilityElementInfo child;
+        auto ability = AccessibilityUITestAbility::GetInstance();
+        for (auto idx = 0; idx < childCount; idx++) {
+            auto ret = ability->GetChildElementInfo(idx, from, child);
+            if (ret == RET_OK) {
+                auto parcel = json();
+                if (!child.IsVisible()) {
+                    LOG_I("This node is not visible, node Id: %{public}d", child.GetAccessibilityId());
+                    continue;
                 }
+                MarshallAccessibilityNodeInfo(child, parcel, idx, windowBounds, visitChild);
+                childList.push_back(parcel);
+            } else {
+                LOG_W("Get Node child at index=%{public}d failed", idx);
             }
         }
         to["children"] = childList;
