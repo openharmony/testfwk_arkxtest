@@ -281,11 +281,11 @@ namespace OHOS::uitest {
         for (auto idx = 0; idx < childCount; idx++) {
             auto ret = ability->GetChildElementInfo(idx, from, child);
             if (ret == RET_OK) {
-                auto parcel = json();
                 if (!child.IsVisible()) {
                     LOG_I("This node is not visible, node Id: %{public}d", child.GetAccessibilityId());
                     continue;
                 }
+                auto parcel = json();
                 MarshallAccessibilityNodeInfo(child, parcel, idx, windowBounds, visitChild);
                 childList.push_back(parcel);
             } else {
