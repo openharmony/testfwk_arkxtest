@@ -242,9 +242,6 @@ namespace OHOS::uitest {
         stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
         to[ATTR_NAMES[UiAttr::BOUNDS].data()] = stream.str();
         to[ATTR_NAMES[UiAttr::ORIGBOUNDS].data()] = stream.str();
-        if (!node.IsVisible()) {
-            to[ATTR_NAMES[UiAttr::BOUNDS].data()] = "[0,0,0,0]";
-        }
         auto actionList = node.GetActionList();
         for (auto &action : actionList) {
             switch (action.GetActionType()) {
@@ -283,6 +280,10 @@ namespace OHOS::uitest {
                 auto ret = ability->GetChildElementInfo(idx, from, child);
                 if (ret == RET_OK) {
                     auto parcel = json();
+                    if (!child.IsVisible()) {
+                        LOG_I("This node is not visible, node Id: %{public}d", child.GetAccessibilityId());
+                        continue;
+                    }
                     MarshallAccessibilityNodeInfo(child, parcel, idx, windowBounds, visitChild);
                     childList.push_back(parcel);
                 } else {
