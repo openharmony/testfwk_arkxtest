@@ -242,9 +242,6 @@ namespace OHOS::uitest {
         stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
         to[ATTR_NAMES[UiAttr::BOUNDS].data()] = stream.str();
         to[ATTR_NAMES[UiAttr::ORIGBOUNDS].data()] = stream.str();
-        if (!node.IsVisible()) {
-            to[ATTR_NAMES[UiAttr::BOUNDS].data()] = "[0,0,0,0]";
-        }
         auto actionList = node.GetActionList();
         for (auto &action : actionList) {
             switch (action.GetActionType()) {
@@ -275,19 +272,24 @@ namespace OHOS::uitest {
         attributes["index"] = to_string(index);
         to["attributes"] = attributes;
         auto childList = json::array();
-        if (visitChild) {
-            const auto childCount = from.GetChildCount();
-            AccessibilityElementInfo child;
-            auto ability = AccessibilityUITestAbility::GetInstance();
-            for (auto idx = 0; idx < childCount; idx++) {
-                auto ret = ability->GetChildElementInfo(idx, from, child);
-                if (ret == RET_OK) {
-                    auto parcel = json();
-                    MarshallAccessibilityNodeInfo(child, parcel, idx, windowBounds, visitChild);
-                    childList.push_back(parcel);
-                } else {
-                    LOG_W("Get Node child at index=%{public}d failed", idx);
+        if (!visitChild) {
+            return;
+        }
+        const auto childCount = from.GetChildCount();
+        AccessibilityElementInfo child;
+        auto ability = AccessibilityUITestAbility::GetInstance();
+        for (auto idx = 0; idx < childCount; idx++) {
+            auto ret = ability->GetChildElementInfo(idx, from, child);
+            if (ret == RET_OK) {
+                if (!child.IsVisible()) {
+                    LOG_I("This node is not visible, node Id: %{public}d", child.GetAccessibilityId());
+                    continue;
                 }
+                auto parcel = json();
+                MarshallAccessibilityNodeInfo(child, parcel, idx, windowBounds, visitChild);
+                childList.push_back(parcel);
+            } else {
+                LOG_W("Get Node child at index=%{public}d failed", idx);
             }
         }
         to["children"] = childList;
