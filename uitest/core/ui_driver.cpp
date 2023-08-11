@@ -300,20 +300,6 @@ namespace OHOS::uitest {
         return nullptr;
     }
 
-    int32_t UiDriver::GetTouchedWindowId(const Point point, ApiCallErr &err)
-    {
-        UpdateUi(true, err, false);
-        for (auto window : windows_) {
-            if ((point.px_ <= window.visibleBounds_.right_ && point.px_ >= window.visibleBounds_.left_) &&
-                (point.py_ <= window.visibleBounds_.bottom_ && point.py_ >= window.visibleBounds_.top_)) {
-                    LOG_I("Target window id: %{public}d", window.id_);
-                    return window.id_;
-                }
-        }
-        err = ApiCallErr(ERR_INTERNAL, "NO target window currently");
-        return 0;
-    }
-
     void UiDriver::SetDisplayRotation(DisplayRotation rotation, ApiCallErr &error)
     {
         if (!CheckStatus(false, error)) {
@@ -398,19 +384,18 @@ namespace OHOS::uitest {
 
     void UiDriver::InjectMouseAction(MouseOpArgs mouseOpArgs, ApiCallErr &error)
     {
-        auto id = GetTouchedWindowId(mouseOpArgs.point_, error);
         if (error.code_ != NO_ERROR) {
             return;
         }
         switch (mouseOpArgs.action_) {
             case MouseOp::M_MOVETO:
-                uiController_->InjectMouseMove(mouseOpArgs, id);
+                uiController_->InjectMouseMove(mouseOpArgs);
                 break;
             case MouseOp::M_CLICK:
-                uiController_->InjectMouseClick(mouseOpArgs, id);
+                uiController_->InjectMouseClick(mouseOpArgs);
                 break;
             case MouseOp::M_SCROLL:
-                uiController_->InjectMouseScroll(mouseOpArgs, id);
+                uiController_->InjectMouseScroll(mouseOpArgs);
                 break;
             default:
                 return;
