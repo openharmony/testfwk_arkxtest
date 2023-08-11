@@ -429,7 +429,7 @@ namespace OHOS::uitest {
     }
 
     static std::shared_ptr<OHOS::MMI::PointerEvent> CreateMouseActionEvent(MouseOpArgs mouseOpArgs,
-        MouseEventType action, int32_t windowId)
+        MouseEventType action)
     {
         auto pointerEvent = PointerEvent::Create();
         pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
@@ -466,7 +466,6 @@ namespace OHOS::uitest {
         item.SetDisplayX(mouseOpArgs.point_.px_);
         item.SetDisplayY(mouseOpArgs.point_.py_);
         item.SetPressed(action == MouseEventType::BUTTON_DOWN);
-        pointerEvent->SetTargetWindowId(windowId);
         pointerEvent->AddPointerItem(item);
         return pointerEvent;
     }
@@ -492,10 +491,10 @@ namespace OHOS::uitest {
         return keyEvent;
     }
 
-    void SysUiController::InjectMouseClick(MouseOpArgs mouseOpArgs, int32_t windowId) const
+    void SysUiController::InjectMouseClick(MouseOpArgs mouseOpArgs) const
     {
         constexpr uint32_t focusTimeMs = 40;
-        auto mouseMove = CreateMouseActionEvent(mouseOpArgs, MouseEventType::M_MOVE, windowId);
+        auto mouseMove = CreateMouseActionEvent(mouseOpArgs, MouseEventType::M_MOVE);
         InputManager::GetInstance()->SimulateInputEvent(mouseMove);
         this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
         if (mouseOpArgs.key1_ != KEYCODE_NONE) {
@@ -508,9 +507,9 @@ namespace OHOS::uitest {
                 this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
             }
         }
-        auto mouseDown = CreateMouseActionEvent(mouseOpArgs, MouseEventType::BUTTON_DOWN, windowId);
+        auto mouseDown = CreateMouseActionEvent(mouseOpArgs, MouseEventType::BUTTON_DOWN);
         InputManager::GetInstance()->SimulateInputEvent(mouseDown);
-        auto mouseUp = CreateMouseActionEvent(mouseOpArgs, MouseEventType::BUTTON_UP, windowId);
+        auto mouseUp = CreateMouseActionEvent(mouseOpArgs, MouseEventType::BUTTON_UP);
         InputManager::GetInstance()->SimulateInputEvent(mouseUp);
         if (mouseOpArgs.key2_ != KEYCODE_NONE) {
             auto upEvent = CreateSingleKeyEvent(mouseOpArgs.key2_, ActionStage::UP);
@@ -524,7 +523,7 @@ namespace OHOS::uitest {
         }
     }
 
-    void SysUiController::InjectMouseScroll(MouseOpArgs mouseOpArgs, int32_t windowId) const
+    void SysUiController::InjectMouseScroll(MouseOpArgs mouseOpArgs) const
     {
         if (mouseOpArgs.key1_ != KEYCODE_NONE) {
             auto dwonEvent1 = CreateSingleKeyEvent(mouseOpArgs.key1_, ActionStage::DOWN);
@@ -534,13 +533,13 @@ namespace OHOS::uitest {
                 InputManager::GetInstance()->SimulateInputEvent(dwonEvent2);
             }
         }
-        auto mouseMove = CreateMouseActionEvent(mouseOpArgs, MouseEventType::M_MOVE, windowId);
+        auto mouseMove = CreateMouseActionEvent(mouseOpArgs, MouseEventType::M_MOVE);
         InputManager::GetInstance()->SimulateInputEvent(mouseMove);
         constexpr uint32_t focusTimeMs = 40;
         for (auto index = 0; index < mouseOpArgs.scrollValue_; index++) {
-            auto mouseScroll1 = CreateMouseActionEvent(mouseOpArgs, MouseEventType::AXIS_BEGIN, windowId);
+            auto mouseScroll1 = CreateMouseActionEvent(mouseOpArgs, MouseEventType::AXIS_BEGIN);
             InputManager::GetInstance()->SimulateInputEvent(mouseScroll1);
-            auto mouseScroll2 = CreateMouseActionEvent(mouseOpArgs, MouseEventType::AXIS_END, windowId);
+            auto mouseScroll2 = CreateMouseActionEvent(mouseOpArgs, MouseEventType::AXIS_END);
             InputManager::GetInstance()->SimulateInputEvent(mouseScroll2);
             this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
         }
@@ -554,9 +553,9 @@ namespace OHOS::uitest {
         }
     }
 
-    void SysUiController::InjectMouseMove(MouseOpArgs mouseOpArgs, int32_t windowId) const
+    void SysUiController::InjectMouseMove(MouseOpArgs mouseOpArgs) const
     {
-        auto event = CreateMouseActionEvent(mouseOpArgs, MouseEventType::M_MOVE, windowId);
+        auto event = CreateMouseActionEvent(mouseOpArgs, MouseEventType::M_MOVE);
         InputManager::GetInstance()->SimulateInputEvent(event);
     }
 
