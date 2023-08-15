@@ -273,6 +273,7 @@ namespace OHOS::uitest {
         to["attributes"] = attributes;
         auto childList = json::array();
         if (!visitChild) {
+            to["children"] = childList;
             return;
         }
         const auto childCount = from.GetChildCount();
