@@ -15,6 +15,7 @@
 
 import SysTestKit from "../kit/SysTestKit";
 import {collectCoverageData} from '../coverage/coverageCollect';
+import {TAG} from '../../Constant';
 
 class OhReport {
     constructor(attr) {
@@ -54,10 +55,10 @@ class OhReport {
                 message += '\n' + 'OHOS_REPORT_RESULT: breakOnError model, Stopping whole test suite if one specific test case failed or error' + '\n';
             }
             message += 'OHOS_REPORT_STATUS: taskconsuming=' + summary.duration + '\n';
-            console.info(message);
+            console.info(`${message}`);
             await SysTestKit.print(message);
         }
-        console.info('report print success');
+        console.info(`${TAG}report print success`);
         this.delegator.finishTest('your test finished!!!', 0, () => { });
     }
 
@@ -74,9 +75,9 @@ class OhReport {
         if (this.abilityDelegatorArguments !== null) {
             let message = '\n' + 'OHOS_REPORT_SUM: ' + this.suiteService.getCurrentRunningSuite().getSpecsNum();
             message += '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description + '\n';
-            console.info(message);
+            console.info(`${message}`);
             await SysTestKit.print(message);
-            console.info(this.suiteService.getCurrentRunningSuite().description + ' suiteStart print success');
+            console.info(`${TAG}${this.suiteService.getCurrentRunningSuite().description} suiteStart print success`);
         }
     }
 
@@ -84,9 +85,9 @@ class OhReport {
         if (this.abilityDelegatorArguments !== null) {
             let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
             message += '\n' + 'OHOS_REPORT_STATUS: suiteconsuming=' + this.suiteService.getCurrentRunningSuite().duration + '\n';
-            console.info(message);
+            console.info(`${message}`);
             await SysTestKit.print(message);
-            console.info(this.suiteService.getCurrentRunningSuite().description + ' suiteDone print success');
+            console.info(`${TAG}${this.suiteService.getCurrentRunningSuite().description} suiteDone print success`);
         }
     }
 
@@ -99,9 +100,9 @@ class OhReport {
             message += '\n' + 'OHOS_REPORT_STATUS: stream=';
             message += '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
             message += '\n' + 'OHOS_REPORT_STATUS_CODE: 1' + '\n';
-            console.info(message);
+            console.info(`${message}`);
             await SysTestKit.print(message);
-            console.info(this.specService.currentRunningSpec.description + ' specStart start print success');
+            console.info(`${TAG}${this.specService.currentRunningSpec.description} specStart start print success`);
         }
     }
 
@@ -138,9 +139,9 @@ class OhReport {
                 message += '\n';
             }
             message += 'OHOS_REPORT_STATUS: consuming=' + this.specService.currentRunningSpec.duration + '\n';
-            console.info(message);
+            console.info(`${message}`);
             await SysTestKit.print(message);
-            console.info(this.specService.currentRunningSpec.description + ' specDone end print success');
+            console.info(`${TAG}${this.specService.currentRunningSpec.description} specDone end print success`);
         }
     }
 }
