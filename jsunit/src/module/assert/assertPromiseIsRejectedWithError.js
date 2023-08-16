@@ -43,60 +43,35 @@ function matchError(actualValue, expectedValue) {
         if (expectedValue[0].name === actualValue.__proto__.name) {
             return {pass: true, message: 'actual error type is ' + actualValue.name + '.'};
         }
-        return {
-            pass: false,
-            message: 'except error type is ' + expectedValue[0].name + ',but actual is ' + actualValue.name + '.'
-        };
+        return {pass: false, message: `except error type is ${expectedValue[0].name},but actual is ${actualValue.name}.`};
     }
 
     if (expectedValue.length == 1 && typeof expectedValue[0] === 'string') {
         if (expectedValue[0] === actualValue.message) {
-            return {pass: true, message: 'actual error message is ' + actualValue.message + '.'};
+            return {pass: true, message: `actual error message is ${actualValue.message}.`};
         }
-        return {
-            pass: false,
-            message: 'except error message ' + expectedValue[0] + ',but actual is ' + actualValue.message + '.'
-        };
+        return {pass: false, message: `except error message ${expectedValue[0]},but actual is ${actualValue.message}.`};
     }
 
     if (expectedValue.length == 1) {
-        return {
-            pass: false,
-            message: 'When only one parameter, it ' +
-                'should be error type or error message.'
-        };
+        return {pass: false, message: 'When only one parameter, it should be error type or error message.'};
     }
 
     if (expectedValue.length == 2 && typeof expectedValue[0] === 'function' && expectedValue[0].name === actualValue.name) {
         if (typeof expectedValue[1] === 'string' && actualValue.message === expectedValue[1]) {
             return {pass: true, message: 'actual error message is ' + actualValue.message + '.'};
-        } else {
-            return {
-                pass: false,
-                message: 'except error message is ' + expectedValue[1] + ',but actual is ' + actualValue.message + '.'
-            };
         }
+        return {pass: false, message: `except error message is ${expectedValue[1]},but actual is ${actualValue.message}.`};
     }
 
     if (expectedValue.length == 2 && typeof expectedValue[0] === 'function' && expectedValue[0].name !== actualValue.name) {
         if (typeof expectedValue[1] === 'string' && actualValue.message === expectedValue[1]) {
-            return {
-                pass: false,
-                message: 'except error type is ' + expectedValue[0].name + ',but actual is ' + actualValue.name + '.'
-            };
-        } else {
-            return {
-                pass: false,
-                message: 'except error type and message are incorrect.'
-            };
+            return {pass: false, message: `except error type is ${expectedValue[0].name},but actual is ${actualValue.name}.`};
         }
+        return {pass: false, message: 'except error type and message are incorrect.'};
     }
-
     if (expectedValue.length > 2) {
-        return {
-            pass: false,
-            message: 'Up to two parameters are supported.'
-        };
+        return {pass: false, message: 'Up to two parameters are supported.'};
     }
 }
 

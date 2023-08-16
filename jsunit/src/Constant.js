@@ -16,6 +16,8 @@
 /**
  * define the testcase type : TestType, Size , Level
  */
+export const TAG = '[Hypium]';
+
 export const DEFAULT = 0B0000;
 
 export class TestType {

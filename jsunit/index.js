@@ -14,7 +14,7 @@
  */
 
 import Core from './src/core';
-import {DEFAULT, TestType, Size, Level} from './src/Constant';
+import {DEFAULT, TestType, Size, Level, TAG} from './src/Constant';
 import DataDriver from './src/module/config/DataDriver';
 import ExpectExtend from './src/module/assert/ExpectExtend';
 import OhReport from './src/module/report/OhReport';
@@ -56,20 +56,20 @@ class Hypium {
         if (abilityDelegatorArguments !== null) {
             testParameters = configService.translateParams(abilityDelegatorArguments.parameters);
         }
-        console.info('parameters:' + JSON.stringify(testParameters));
+        console.info(`${TAG}parameters:${JSON.stringify(testParameters)}`);
         configService.setConfig(testParameters);
 
         testsuite();
         if (Object.prototype.hasOwnProperty.call(globalThis, 'setupUiTestEnvironment')) {
             globalThis.setupUiTestEnvironment().then(() => {
-                console.info('UiTestKit::after run uitest setup, start run testcases');
+                console.info(`${TAG}UiTestKit::after run uitest setup, start run testcases`);
                 core.execute(abilityDelegator);
             }).catch((error) => {
-                console.error('UiTestKit:: call setupUiTestEnvironment failure:' + error);
+                console.error(`${TAG}UiTestKit:: call setupUiTestEnvironment failure: ${error}`);
                 core.execute(abilityDelegator);
             });
         } else {
-            console.info('UiTestKit:: no need to setup uitest, start run testcases');
+            console.info(`${TAG}UiTestKit:: no need to setup uitest, start run testcases`);
             core.execute(abilityDelegator);
         }
     }
