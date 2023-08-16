@@ -255,4 +255,97 @@ namespace OHOS::uitest {
     {
         return this->fingerNum_;
     }
+
+    void PointerMatrix::ConvertToMouseEvents(vector<MouseEvent> &recv) const
+    {
+        recv.push_back(MouseEvent {ActionStage::MOVE, At(0,0).point_, MouseButton::BUTTON_LEFT, {}, 0});
+        for (auto finger = 0; finger < fingerNum_; finger++) {
+            for (auto step = 0; step < stepNum_; step++) {
+                auto touchEvent = At(finger, step);
+                recv.push_back(MouseEvent {touchEvent.stage_, touchEvent.point_, MouseButton::BUTTON_LEFT, {},
+                                           touchEvent.holdMs_});
+            }
+        }
+    }
+
+    void MouseMoveTo::Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const
+    {
+        recv.push_back(MouseEvent {ActionStage::MOVE, point_, MouseButton::BUTTON_NONE, {}, 0});
+    }
+
+    void MouseSwipe::Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const
+    {
+        DCHECK(type_ >= TouchOp::SWIPE && type_ <= TouchOp::DRAG);
+        PointerMatrix touchEvents;
+        DecomposeComputeSwipe(touchEvents, from_, to_, type_ == TouchOp::DRAG, opt);
+        touchEvents.ConvertToMouseEvents(recv);
+        if (type_ == TouchOp::SWIPE) {
+            recv.front().stage_ = ActionStage::MOVE;
+            recv.back().stage_ = ActionStage::MOVE;
+        }
+    }
+
+    void MouseClick::Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const
+    {
+        DCHECK(type_ >= TouchOp::CLICK && type_ <= TouchOp::DOUBLE_CLICK_P);
+        PointerMatrix touchEvents;
+        switch (type_) {
+            case CLICK:
+                DecomposeClick(touchEvents, point_, opt);
+                break;
+            case LONG_CLICK:
+                DecomposeLongClick(touchEvents, point_, opt);
+                break;
+            case DOUBLE_CLICK_P:
+                DecomposeDoubleClick(touchEvents, point_, opt);
+                break;
+            default:
+                break;
+        }
+        touchEvents.ConvertToMouseEvents(recv);
+        for (auto index = 0; index < recv.size(); index++) {
+            recv[index].button_ = button_;
+        }
+        vector<KeyEvent> keyAction1;
+        keyAction1.push_back(KeyEvent {ActionStage::DOWN, key1_, opt.keyHoldMs_});
+        keyAction1.push_back(KeyEvent {ActionStage::DOWN, key2_, opt.keyHoldMs_});
+        auto keyDown = MouseEvent {ActionStage::MOVE, point_, MouseButton::BUTTON_NONE, keyAction1, opt.clickHoldMs_};
+        recv.insert(recv.begin(), keyDown);
+
+        vector<KeyEvent> keyAction2;
+        keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
+        keyAction2.push_back(KeyEvent {ActionStage::UP, key1_, opt.keyHoldMs_});
+        auto keyUp = MouseEvent {ActionStage::UP, point_, MouseButton::BUTTON_NONE, keyAction2, 0};
+        recv.push_back(keyUp);
+    }
+
+    void MouseScroll::Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const
+    {
+        recv.push_back(MouseEvent {ActionStage::MOVE, point_, MouseButton::BUTTON_NONE, {}, 0});
+        constexpr int32_t speedRatio = 6000;
+        auto focusTimeMs = speedRatio / opt.swipeVelocityPps_;
+        auto stage  = (scrollValue_ > 0) ? AXIS_DOWN : AXIS_UP;
+        vector<KeyEvent> keyAction1;
+        keyAction1.push_back(KeyEvent {ActionStage::DOWN, key1_, opt.keyHoldMs_});
+        keyAction1.push_back(KeyEvent {ActionStage::DOWN, key2_, opt.keyHoldMs_});
+        recv.push_back(MouseEvent {stage, point_, MouseButton::BUTTON_NONE, keyAction1, focusTimeMs});
+        recv.push_back(MouseEvent {ActionStage::AXIS_STOP, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
+
+        auto steps = abs(scrollValue_);
+        for (auto index = 1; index < steps - 1; index ++) {
+            recv.push_back(MouseEvent {stage, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
+            recv.push_back(MouseEvent {ActionStage::AXIS_STOP, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
+        }
+
+        vector<KeyEvent> keyAction2;
+        keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
+        keyAction2.push_back(KeyEvent {ActionStage::UP, key1_, opt.keyHoldMs_});
+        if (steps > 1) {
+            recv.push_back(MouseEvent {stage, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
+            recv.push_back(MouseEvent {ActionStage::AXIS_STOP, point_, MouseButton::BUTTON_NONE, keyAction2,
+                                       focusTimeMs});
+        } else {
+            recv.push_back(MouseEvent {ActionStage::MOVE, point_, MouseButton::BUTTON_NONE, keyAction2, focusTimeMs});
+        }
+    }
 }

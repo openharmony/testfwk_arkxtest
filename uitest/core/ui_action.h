@@ -36,22 +36,7 @@ namespace OHOS::uitest {
     enum UiKey : uint8_t { BACK, GENERIC };
 
     enum ActionStage : uint8_t {
-        DOWN = 0, MOVE = 1, UP = 2
-    };
-
-    enum MouseOp : int32_t {
-        UNDEFINE = -1,
-        M_MOVETO = 0,
-        M_CLICK = 1,
-        M_SCROLL = 2,
-    };
-
-    enum MouseEventType : int32_t {
-        M_MOVE = 3,
-        AXIS_BEGIN = 5,
-        AXIS_END = 7,
-        BUTTON_DOWN = 8,
-        BUTTON_UP = 9
+        DOWN = 0, MOVE = 1, UP = 2, AXIS_UP = 3, AXIS_DOWN = 4, AXIS_STOP = 5
     };
 
     enum ResizeDirection : uint8_t {
@@ -100,18 +85,12 @@ namespace OHOS::uitest {
         uint32_t holdMs_;
     };
 
-    /**
-     * Options of the mouse operations, initialized with system default values.
-     **/
-    class MouseOpArgs {
-    public:
-        Point point_ = Point(0, 0);
-        MouseButton button_ = MouseButton::BUTTON_NONE;
-        bool adown_ = true;
-        int32_t scrollValue_ = 0;
-        int32_t key1_ = KEYCODE_NONE;
-        int32_t key2_ = KEYCODE_NONE;
-        MouseOp action_ = MouseOp::UNDEFINE;
+    struct MouseEvent {
+        ActionStage stage_;
+        Point point_;
+        MouseButton button_;
+        vector<KeyEvent> keyEvents_;
+        uint32_t holdMs_;
     };
 
     class PointerMatrix : public BackendClass {
@@ -144,6 +123,8 @@ namespace OHOS::uitest {
         uint32_t GetSteps() const;
 
         uint32_t GetFingers() const;
+
+        void ConvertToMouseEvents(vector<MouseEvent> &recv) const;
     private:
         std::unique_ptr<TouchEvent[]> data_ = nullptr;
         uint32_t capacity_ = 0;
@@ -259,6 +240,19 @@ namespace OHOS::uitest {
         virtual ~KeyAction() = default;
     };
 
+    class KeysForwarder : public KeyAction {
+    public:
+        explicit KeysForwarder(const vector<KeyEvent> &evetns) : events_(evetns) {};
+
+        void ComputeEvents(vector<KeyEvent> &recv, const UiOpArgs &opt) const override
+        {
+            recv = events_;
+        }
+
+    private:
+        const vector<KeyEvent> &events_;
+    };
+
     /**Base type of named single-key actions with at most 1 ctrl key.*/
     template<uint32_t kCode, uint32_t kCtrlCode = KEYCODE_NONE>
     class NamedPlainKey : public KeyAction {
@@ -325,6 +319,75 @@ namespace OHOS::uitest {
     using Power = NamedPlainKey<KEYCODE_POWER>;
     using Home = NamedPlainKey<KEYCODE_HOME>;
     using Paste = NamedPlainKey<KEYCODE_V, KEYCODE_CTRL>;
+
+    class MouseAction {
+    public:
+        /**Compute the mouse event sequence that are needed to implement this action.
+         * @param recv: the event seqence receiver.
+         * @param options the ui operation agruments.
+         * */
+        virtual void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const = 0;
+    };
+
+    class MouseMoveTo : public MouseAction {
+    public:
+        explicit MouseMoveTo(const Point &point) : point_(point) {};
+
+        void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const override;
+
+        ~MouseMoveTo() = default;
+
+    private:
+        const Point point_;
+    };
+
+    class MouseSwipe : public MouseAction {
+    public:
+        explicit MouseSwipe(TouchOp type, const Point &from, const Point &to) : type_(type), from_(from), to_(to) {};
+
+        void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const override;
+
+        ~MouseSwipe() = default;
+
+    private:
+        const TouchOp type_;
+        const Point from_;
+        const Point to_;
+    };
+
+    class MouseClick : public MouseAction {
+    public:
+        explicit MouseClick(TouchOp type, const Point &point, const MouseButton &button, int32_t &key1, int32_t &key2) :
+            type_(type), point_(point), button_(button), key1_(key1), key2_(key2) {};
+
+        void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const override;
+
+        ~MouseClick() = default;
+
+    private:
+        const TouchOp type_;
+        const Point point_;
+        const MouseButton button_;
+        const int32_t key1_;
+        const int32_t key2_;
+    };
+
+    class MouseScroll : public MouseAction {
+    public:
+        explicit MouseScroll(const Point &point, const int32_t &scrollValue, const uint32_t &key1, const uint32_t &key2) :
+            point_(point), scrollValue_(scrollValue), key1_(key1), key2_(key2) {};
+
+        void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const override;
+
+        ~MouseScroll() = default;
+
+    private:
+        const Point point_;
+        const int32_t scrollValue_;
+        const int32_t key1_;
+        const int32_t key2_;
+    };
+
 }
 
 #endif

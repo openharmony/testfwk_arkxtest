@@ -62,6 +62,8 @@ namespace OHOS::uitest {
 
         virtual void InjectKeyEventSequence(const std::vector<KeyEvent>& events) const {};
 
+        virtual void InjectMouseEventSequence(const vector<MouseEvent>& events) const {};
+
         virtual void PutTextToClipboard(std::string_view text) const {};
 
         virtual bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, Rect rect) const
@@ -102,14 +104,6 @@ namespace OHOS::uitest {
          * Tells if this controller is effective for current UI.
          * */
         virtual bool IsWorkable() const = 0;
-
-        virtual void InjectMouseClick(MouseOpArgs mouseOpArgs) const {};
-
-        virtual void InjectMouseMove(MouseOpArgs mouseOpArgs) const {};
-
-        virtual void InjectMouseScroll(MouseOpArgs mouseOpArgs) const {};
-
-        virtual void InjectMouseEventSequence(const PointerMatrix &events) const {};
 
         virtual void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const {};
     };

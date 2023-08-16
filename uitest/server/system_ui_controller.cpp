@@ -415,6 +415,8 @@ namespace OHOS::uitest {
                     case ActionStage::UP:
                         pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_UP);
                         break;
+                    default:
+                        break;
                 }
                 pinterItem.SetPressed(events.At(finger, step).stage_ != ActionStage::UP);
                 pointerEvent->AddPointerItem(pinterItem);
@@ -429,141 +431,79 @@ namespace OHOS::uitest {
         }
     }
 
-    static std::shared_ptr<OHOS::MMI::PointerEvent> CreateMouseActionEvent(MouseOpArgs mouseOpArgs,
-        MouseEventType action)
+    void SysUiController::InjectMouseEvent(const MouseEvent &event) const
     {
         auto pointerEvent = PointerEvent::Create();
+        PointerEvent::PointerItem item;
         pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
         pointerEvent->SetPointerId(0);
-        switch (action) {
-            case MouseEventType::M_MOVE:
+        pointerEvent->SetButtonId(event.button_);
+        item.SetDisplayX(event.point_.px_);
+        item.SetDisplayY(event.point_.py_);
+        item.SetPressed(false);
+        item.SetDownTime(0);
+        constexpr double axialValue = 15;
+        static bool flag = true;
+        switch (event.stage_) {
+            case ActionStage::DOWN:
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_DOWN);
+                pointerEvent->SetButtonId(event.button_);
+                pointerEvent->SetButtonPressed(event.button_);
+                item.SetPressed(true);
+                break;
+            case ActionStage::MOVE:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_MOVE);
                 break;
-            case MouseEventType::AXIS_BEGIN:
-                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
-                break;
-            case MouseEventType::AXIS_END:
-                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_END);
-                break;
-            case MouseEventType::BUTTON_DOWN:
-                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_DOWN);
-                break;
-            case MouseEventType::BUTTON_UP:
-                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_UP);
-                break;
-            default:
-                break;
-        }
-        PointerEvent::PointerItem item;
-        if (action == MouseEventType::AXIS_BEGIN || action == MouseEventType::AXIS_END) {
-            constexpr double axialValue = 15;
-            auto injectAxialValue = mouseOpArgs.adown_ ? axialValue : -axialValue;
-            pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, injectAxialValue);
-            item.SetDownTime(0);
-        } else if (action == MouseEventType::BUTTON_DOWN || action == MouseEventType::BUTTON_UP) {
-            pointerEvent->SetButtonId(mouseOpArgs.button_);
-            pointerEvent->SetButtonPressed(mouseOpArgs.button_);
-        }
-        item.SetDisplayX(mouseOpArgs.point_.px_);
-        item.SetDisplayY(mouseOpArgs.point_.py_);
-        item.SetPressed(action == MouseEventType::BUTTON_DOWN);
-        pointerEvent->AddPointerItem(item);
-        return pointerEvent;
-    }
-
-    static std::shared_ptr<OHOS::MMI::KeyEvent> CreateSingleKeyEvent(int32_t key, ActionStage action)
-    {
-        auto keyEvent = OHOS::MMI::KeyEvent::Create();
-        keyEvent->SetKeyCode(key);
-        switch (action) {
-            case ActionStage::DOWN:
-                keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_DOWN);
-                break;
             case ActionStage::UP:
-                keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_UP);
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_UP);
+                pointerEvent->SetButtonId(event.button_);
+                pointerEvent->SetButtonPressed(event.button_);
+                item.SetPressed(false);
                 break;
-            default:
+            case ActionStage::AXIS_UP:
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
+                pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, -axialValue);
+                flag = false;
+                break;
+            case ActionStage::AXIS_DOWN:
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
+                pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, axialValue);
+                flag = true;
+                break;
+            case ActionStage::AXIS_STOP:
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_END);
+                auto injectAxialValue = flag ? axialValue : -axialValue;
+                pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, injectAxialValue);
                 break;
         }
-        OHOS::MMI::KeyEvent::KeyItem keyItem;
-        keyItem.SetKeyCode(key);
-        keyItem.SetPressed(action == ActionStage::DOWN);
-        keyEvent->AddKeyItem(keyItem);
-        return keyEvent;
+        pointerEvent->AddPointerItem(item);
+        InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
+        if (event.holdMs_ > 0) {
+            this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
+        }
     }
 
-    void SysUiController::InjectMouseClick(MouseOpArgs mouseOpArgs) const
+    void SysUiController::InjectMouseEventSequence(const vector<MouseEvent> &events) const
     {
-        constexpr uint32_t focusTimeMs = 40;
-        auto mouseMove = CreateMouseActionEvent(mouseOpArgs, MouseEventType::M_MOVE);
-        InputManager::GetInstance()->SimulateInputEvent(mouseMove);
-        this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
-        if (mouseOpArgs.key1_ != KEYCODE_NONE) {
-            auto dwonEvent1 = CreateSingleKeyEvent(mouseOpArgs.key1_, ActionStage::DOWN);
-            InputManager::GetInstance()->SimulateInputEvent(dwonEvent1);
-            this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
-            if (mouseOpArgs.key2_ != KEYCODE_NONE) {
-                auto dwonEvent2 = CreateSingleKeyEvent(mouseOpArgs.key2_, ActionStage::DOWN);
-                InputManager::GetInstance()->SimulateInputEvent(dwonEvent2);
-                this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
+        for (auto &event : events) {
+            auto keyEvents = event.keyEvents_;
+            if (!keyEvents.empty() && keyEvents.front().stage_ == ActionStage::DOWN) {
+                InjectKeyEventSequence(keyEvents);
+                InjectMouseEvent(event);
+            } else {
+                InjectMouseEvent(event);
+                InjectKeyEventSequence(keyEvents);
             }
         }
-        auto mouseDown = CreateMouseActionEvent(mouseOpArgs, MouseEventType::BUTTON_DOWN);
-        InputManager::GetInstance()->SimulateInputEvent(mouseDown);
-        auto mouseUp = CreateMouseActionEvent(mouseOpArgs, MouseEventType::BUTTON_UP);
-        InputManager::GetInstance()->SimulateInputEvent(mouseUp);
-        if (mouseOpArgs.key2_ != KEYCODE_NONE) {
-            auto upEvent = CreateSingleKeyEvent(mouseOpArgs.key2_, ActionStage::UP);
-            InputManager::GetInstance()->SimulateInputEvent(upEvent);
-            this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
-        }
-        if (mouseOpArgs.key1_ != KEYCODE_NONE) {
-            auto upEvent = CreateSingleKeyEvent(mouseOpArgs.key1_, ActionStage::UP);
-            InputManager::GetInstance()->SimulateInputEvent(upEvent);
-            this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
-        }
-    }
-
-    void SysUiController::InjectMouseScroll(MouseOpArgs mouseOpArgs) const
-    {
-        if (mouseOpArgs.key1_ != KEYCODE_NONE) {
-            auto dwonEvent1 = CreateSingleKeyEvent(mouseOpArgs.key1_, ActionStage::DOWN);
-            InputManager::GetInstance()->SimulateInputEvent(dwonEvent1);
-            if (mouseOpArgs.key2_ != KEYCODE_NONE) {
-                auto dwonEvent2 = CreateSingleKeyEvent(mouseOpArgs.key2_, ActionStage::DOWN);
-                InputManager::GetInstance()->SimulateInputEvent(dwonEvent2);
-            }
-        }
-        auto mouseMove = CreateMouseActionEvent(mouseOpArgs, MouseEventType::M_MOVE);
-        InputManager::GetInstance()->SimulateInputEvent(mouseMove);
-        constexpr uint32_t focusTimeMs = 40;
-        for (auto index = 0; index < mouseOpArgs.scrollValue_; index++) {
-            auto mouseScroll1 = CreateMouseActionEvent(mouseOpArgs, MouseEventType::AXIS_BEGIN);
-            InputManager::GetInstance()->SimulateInputEvent(mouseScroll1);
-            auto mouseScroll2 = CreateMouseActionEvent(mouseOpArgs, MouseEventType::AXIS_END);
-            InputManager::GetInstance()->SimulateInputEvent(mouseScroll2);
-            this_thread::sleep_for(chrono::milliseconds(focusTimeMs));
-        }
-        if (mouseOpArgs.key2_ != KEYCODE_NONE) {
-            auto upEvent = CreateSingleKeyEvent(mouseOpArgs.key2_, ActionStage::UP);
-            InputManager::GetInstance()->SimulateInputEvent(upEvent);
-        }
-        if (mouseOpArgs.key1_ != KEYCODE_NONE) {
-            auto upEvent = CreateSingleKeyEvent(mouseOpArgs.key1_, ActionStage::UP);
-            InputManager::GetInstance()->SimulateInputEvent(upEvent);
-        }
-    }
-
-    void SysUiController::InjectMouseMove(MouseOpArgs mouseOpArgs) const
-    {
-        auto event = CreateMouseActionEvent(mouseOpArgs, MouseEventType::M_MOVE);
-        InputManager::GetInstance()->SimulateInputEvent(event);
     }
 
     void SysUiController::InjectKeyEventSequence(const vector<KeyEvent> &events) const
     {
-        vector<int32_t> downKeys;
+        static vector<int32_t> downKeys;
         for (auto &event : events) {
+            if (event.code_ == KEYCODE_NONE) {
+                continue;
+            }
             if (event.stage_ == ActionStage::UP) {
                 auto iter = std::find(downKeys.begin(), downKeys.end(), event.code_);
                 if (iter == downKeys.end()) {

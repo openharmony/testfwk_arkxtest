@@ -17,7 +17,7 @@
 #define UI_DRIVER_H
 
 #include "ui_controller.h"
-#include "ui_model.h"
+#include "ui_action.h"
 #include "widget_selector.h"
 
 namespace OHOS::uitest {
@@ -53,6 +53,8 @@ namespace OHOS::uitest {
         /**Perform the given touch action.*/
         void PerformTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
 
+        void PerformMouseAction(const MouseAction &touch, const UiOpArgs &opt, ApiCallErr &err);
+
         /**Delay current thread for given duration.*/
         static void DelayMs(uint32_t ms);
 
@@ -80,11 +82,7 @@ namespace OHOS::uitest {
 
         Point GetDisplayDensity(ApiCallErr &error);
 
-        bool GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode, ApiCallErr &error);
-
         void DfsTraverseTree(WidgetVisitor &visitor, const Widget *widget = nullptr);
-
-        void InjectMouseAction(MouseOpArgs mouseOpArgs, ApiCallErr &error);
 
         static void RegisterController(std::unique_ptr<UiController> controller);
 
@@ -94,7 +92,10 @@ namespace OHOS::uitest {
 
         void GetLayoutJson(nlohmann::json &dom);
 
+        void InputText(string_view text, ApiCallErr &error);
+
     private:
+        bool TextToKeyEvent(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
         /**Update UI controller and UI objects.*/
         void UpdateUi(bool updateUiTree, ApiCallErr &error, bool getWidgetNodes, string targetWin = "");
         // UI objects that are needed to be updated before each interaction and used in the interaction
