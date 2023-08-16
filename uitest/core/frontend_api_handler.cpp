@@ -825,7 +825,6 @@ namespace OHOS::uitest {
             driver.InputText(text, out.exception_);
         };
         server.AddHandler("Driver.inputText", inputText);
-
     }
 
     static void RegisterUiEventObserverMethods()
@@ -994,7 +993,7 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.injectMultiPointerAction", multiPointerAction);
     }
 
-    static void RegisterUiDriverMouseOperators()
+    static void RegisterUiDriverMouseOperators1()
     {
         auto &server = FrontendApiServer::Get();
         auto mouseClick = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1017,7 +1016,11 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.mouseClick", mouseClick);
         server.AddHandler("Driver.mouseDoubleClick", mouseClick);
         server.AddHandler("Driver.mouseLongClick", mouseClick);
+    }
 
+    static void RegisterUiDriverMouseOperators2()
+    {
+        auto &server = FrontendApiServer::Get();
         auto mouseMoveTo = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
@@ -1384,7 +1387,8 @@ namespace OHOS::uitest {
         RegisterUiDriverFlingOperators();
         RegisterUiDriverMultiPointerOperators();
         RegisterUiDriverDisplayOperators();
-        RegisterUiDriverMouseOperators();
+        RegisterUiDriverMouseOperators1();
+        RegisterUiDriverMouseOperators2();
         RegisterUiEventObserverMethods();
     }
 } // namespace OHOS::uitest

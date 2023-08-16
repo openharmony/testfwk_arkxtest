@@ -357,8 +357,8 @@ namespace OHOS::uitest {
 
     class MouseClick : public MouseAction {
     public:
-        explicit MouseClick(TouchOp type, const Point &point, const MouseButton &button, int32_t &key1, int32_t &key2) :
-            type_(type), point_(point), button_(button), key1_(key1), key2_(key2) {};
+        explicit MouseClick(TouchOp type, const Point &point, const MouseButton &button, int32_t &key1, int32_t &key2)
+            : type_(type), point_(point), button_(button), key1_(key1), key2_(key2) {};
 
         void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const override;
 
@@ -374,8 +374,8 @@ namespace OHOS::uitest {
 
     class MouseScroll : public MouseAction {
     public:
-        explicit MouseScroll(const Point &point, const int32_t &scrollValue, const uint32_t &key1, const uint32_t &key2) :
-            point_(point), scrollValue_(scrollValue), key1_(key1), key2_(key2) {};
+        explicit MouseScroll(const Point &point, int32_t &scrollValue, int32_t &key1, int32_t &key2)
+            : point_(point),  scrollValue_(scrollValue), key1_(key1), key2_(key2) {};
 
         void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const override;
 
@@ -387,7 +387,6 @@ namespace OHOS::uitest {
         const int32_t key1_;
         const int32_t key2_;
     };
-
 }
 
 #endif
