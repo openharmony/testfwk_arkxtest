@@ -348,6 +348,9 @@ namespace OHOS::uitest {
         if (id  == "Component.inputText" && paramList.size() > 0) {
             auto text = paramList.at(INDEX_ZERO).get<string>();
             SetPasteBoardData(text);
+        } else if (id  == "Driver.inputText" && paramList.size() > 0) {
+            auto text = paramList.at(INDEX_ONE).get<string>();
+            SetPasteBoardData(text);
         } else if (id  == "Driver.screenCap" || id  == "UiDriver.screenCap" || id  == "Driver.screenCapture") {
             if (paramList.size() < 1 || paramList.at(0).type() != nlohmann::detail::value_t::string) {
                 LOG_E("Missing file path argument");

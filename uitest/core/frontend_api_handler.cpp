@@ -811,6 +811,21 @@ namespace OHOS::uitest {
             driver.TriggerKey(keyAction, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.triggerCombineKeys", triggerCombineKeys);
+
+        auto inputText = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
+            auto point = Point(pointJson["x"], pointJson["y"]);
+            auto text = ReadCallArg<string>(in, INDEX_ONE);
+            auto touch = GenericClick(TouchOp::CLICK, point);
+            driver.PerformTouch(touch, uiOpArgs, out.exception_);
+            static constexpr uint32_t focusTimeMs = 500;
+            driver.DelayMs(focusTimeMs);
+            driver.InputText(text, out.exception_);
+        };
+        server.AddHandler("Driver.inputText", inputText);
+
     }
 
     static void RegisterUiEventObserverMethods()
@@ -984,38 +999,67 @@ namespace OHOS::uitest {
         auto &server = FrontendApiServer::Get();
         auto mouseClick = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
-            MouseOpArgs mouseOpArgs;
+            UiOpArgs uiOpArgs;
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            mouseOpArgs.point_ = Point(pointJson["x"], pointJson["y"]);
-            mouseOpArgs.button_ = ReadCallArg<MouseButton>(in, INDEX_ONE);
-            mouseOpArgs.key1_ = ReadCallArg<int32_t>(in, INDEX_TWO, KEYCODE_NONE);
-            mouseOpArgs.key2_ = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
-            mouseOpArgs.action_ = MouseOp::M_CLICK;
-            driver.InjectMouseAction(mouseOpArgs, out.exception_);
+            auto point = Point(pointJson["x"], pointJson["y"]);
+            auto button = ReadCallArg<MouseButton>(in, INDEX_ONE);
+            auto key1 = ReadCallArg<int32_t>(in, INDEX_TWO, KEYCODE_NONE);
+            auto key2 = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
+            auto op = TouchOp::CLICK;
+            if (in.apiId_ == "Driver.mouseDoubleClick") {
+                op = TouchOp::DOUBLE_CLICK_P;
+            } else if (in.apiId_ == "Driver.mouseLongClick") {
+                op = TouchOp::LONG_CLICK;
+            }
+            auto touch = MouseClick(op, point, button, key1, key2);
+            driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.mouseClick", mouseClick);
+        server.AddHandler("Driver.mouseDoubleClick", mouseClick);
+        server.AddHandler("Driver.mouseLongClick", mouseClick);
 
-        auto mouseMove = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+        auto mouseMoveTo = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
-            MouseOpArgs mouseOpArgs;
+            UiOpArgs uiOpArgs;
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            mouseOpArgs.point_ = Point(pointJson["x"], pointJson["y"]);
-            mouseOpArgs.action_ = MouseOp::M_MOVETO;
-            driver.InjectMouseAction(mouseOpArgs, out.exception_);
+            auto point = Point(pointJson["x"], pointJson["y"]);
+            auto touch = MouseMoveTo(point);
+            driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
         };
-        server.AddHandler("Driver.mouseMoveTo", mouseMove);
+        server.AddHandler("Driver.mouseMoveTo", mouseMoveTo);
+
+        auto mouseSwipe = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            auto pointJson1 = ReadCallArg<json>(in, INDEX_ZERO);
+            auto pointJson2 = ReadCallArg<json>(in, INDEX_ONE);
+            auto from = Point(pointJson1["x"], pointJson1["y"]);
+            auto to = Point(pointJson2["x"], pointJson2["y"]);
+            UiOpArgs uiOpArgs;
+            uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
+            CheckSwipeVelocityPps(uiOpArgs);
+            auto op = TouchOp::SWIPE;
+            if (in.apiId_ == "Driver.mouseDrag") {
+                op = TouchOp::DRAG;
+            }
+            auto touch = MouseSwipe(op, from, to);
+            driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
+        };
+        server.AddHandler("Driver.mouseMoveWithTrack", mouseSwipe);
+        server.AddHandler("Driver.mouseDrag", mouseSwipe);
 
         auto mouseScroll = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
-            MouseOpArgs mouseOpArgs;
+            UiOpArgs uiOpArgs;
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            mouseOpArgs.point_ = Point(pointJson["x"], pointJson["y"]);
-            mouseOpArgs.adown_ = ReadCallArg<bool>(in, INDEX_ONE);
-            mouseOpArgs.scrollValue_ = ReadCallArg<int32_t>(in, INDEX_TWO);
-            mouseOpArgs.key1_ = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
-            mouseOpArgs.key2_ = ReadCallArg<int32_t>(in, INDEX_FOUR, KEYCODE_NONE);
-            mouseOpArgs.action_ = MouseOp::M_SCROLL;
-            driver.InjectMouseAction(mouseOpArgs, out.exception_);
+            auto point = Point(pointJson["x"], pointJson["y"]);
+            auto scrollValue = ReadCallArg<int32_t>(in, INDEX_TWO);
+            auto adown = ReadCallArg<bool>(in, INDEX_ONE);
+            scrollValue = adown ? scrollValue : -scrollValue;
+            auto key1 = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
+            auto key2 = ReadCallArg<int32_t>(in, INDEX_FOUR, KEYCODE_NONE);
+            uiOpArgs.swipeVelocityPps_ = ReadCallArg<int32_t>(in, INDEX_FIVE, uiOpArgs.defaultSwipeVelocityPps_);
+            auto touch = MouseScroll(point, scrollValue, key1, key2);
+            driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.mouseScroll", mouseScroll);
     }
