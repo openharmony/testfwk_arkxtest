@@ -35,11 +35,7 @@ namespace OHOS::uitest {
 
         void InjectTouchEventSequence(const PointerMatrix &events) const override;
 
-        void InjectMouseClick(MouseOpArgs mouseOpArgs) const override;
-
-        void InjectMouseScroll(MouseOpArgs mouseOpArgs) const override;
-
-        void InjectMouseMove(MouseOpArgs mouseOpArgs) const override;
+        void InjectMouseEventSequence(const vector<MouseEvent> &events) const override;
 
         void InjectKeyEventSequence(const std::vector<KeyEvent> &events) const override;
 
@@ -72,6 +68,7 @@ namespace OHOS::uitest {
         void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const override;
 
     private:
+        void  InjectMouseEvent(const MouseEvent &event) const;
         bool connected_ = false;
     };
 }
