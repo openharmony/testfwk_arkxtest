@@ -258,7 +258,6 @@ namespace OHOS::uitest {
 
     void PointerMatrix::ConvertToMouseEvents(vector<MouseEvent> &recv) const
     {
-        recv.push_back(MouseEvent {ActionStage::MOVE, At(0,0).point_, MouseButton::BUTTON_LEFT, {}, 0});
         for (auto finger = 0; finger < fingerNum_; finger++) {
             for (auto step = 0; step < stepNum_; step++) {
                 auto touchEvent = At(finger, step);
@@ -332,7 +331,7 @@ namespace OHOS::uitest {
         recv.push_back(MouseEvent {ActionStage::AXIS_STOP, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
 
         auto steps = abs(scrollValue_);
-        for (auto index = 1; index < steps - 1; index ++) {
+        for (auto index = 1; index < steps - 1; index++) {
             recv.push_back(MouseEvent {stage, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
             recv.push_back(MouseEvent {ActionStage::AXIS_STOP, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
         }
