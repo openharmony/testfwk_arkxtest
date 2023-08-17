@@ -481,9 +481,7 @@ namespace OHOS::uitest {
         }
         pointerEvent->AddPointerItem(item);
         InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
-        if (event.holdMs_ > 0) {
-            this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
-        }
+        this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
     }
 
     void SysUiController::InjectMouseEventSequence(const vector<MouseEvent> &events) const
