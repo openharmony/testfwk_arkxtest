@@ -36,7 +36,7 @@ namespace OHOS::uitest {
     enum UiKey : uint8_t { BACK, GENERIC };
 
     enum ActionStage : uint8_t {
-        DOWN = 0, MOVE = 1, UP = 2, AXIS_UP = 3, AXIS_DOWN = 4, AXIS_STOP = 5
+        NONE = 0, DOWN = 1, MOVE = 2, UP = 3, AXIS_UP = 4, AXIS_DOWN = 5, AXIS_STOP = 6
     };
 
     enum ResizeDirection : uint8_t {
