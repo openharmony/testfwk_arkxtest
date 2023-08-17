@@ -376,7 +376,7 @@ namespace OHOS::uitest {
         return uiController_->GetDisplayDensity();
     }
 
-    bool UiDriver::TextToKeyEvent(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error)
+    bool UiDriver::TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error)
     {
         if (!CheckStatus(false, error)) {
             return false;
@@ -429,7 +429,7 @@ namespace OHOS::uitest {
         vector<KeyEvent> events;
         UiOpArgs uiOpArgs;
         if (!text.empty()) {
-            if (TextToKeyEvent(text, events, error)) {
+            if (TextToKeyEvents(text, events, error)) {
                 LOG_I("inputText by Keycode");
                 auto keyActionForInput = KeysForwarder(events);
                 TriggerKey(keyActionForInput, uiOpArgs, error);
