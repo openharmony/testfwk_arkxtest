@@ -444,6 +444,7 @@ namespace OHOS::uitest {
         item.SetDownTime(0);
         constexpr double axialValue = 15;
         static bool flag = true;
+        auto injectAxialValue = axialValue;
         switch (event.stage_) {
             case ActionStage::DOWN:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_DOWN);
@@ -472,8 +473,10 @@ namespace OHOS::uitest {
                 break;
             case ActionStage::AXIS_STOP:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_END);
-                auto injectAxialValue = flag ? axialValue : -axialValue;
+                injectAxialValue = flag ? axialValue : -axialValue;
                 pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, injectAxialValue);
+                break;
+            default:
                 break;
         }
         pointerEvent->AddPointerItem(item);

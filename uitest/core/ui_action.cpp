@@ -344,7 +344,7 @@ namespace OHOS::uitest {
             recv.push_back(MouseEvent {ActionStage::AXIS_STOP, point_, MouseButton::BUTTON_NONE, keyAction2,
                                        focusTimeMs});
         } else {
-            recv.push_back(MouseEvent {ActionStage::MOVE, point_, MouseButton::BUTTON_NONE, keyAction2, focusTimeMs});
+            recv.push_back(MouseEvent {ActionStage::NONE, point_, MouseButton::BUTTON_NONE, keyAction2, focusTimeMs});
         }
     }
 }
