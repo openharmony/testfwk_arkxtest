@@ -55,6 +55,7 @@ public:
     bool Pause();
     void Destroy();
     void HandleConsumerBuffer();
+    const char* screenCopyErrorBuf_ = nullptr;
 private:
     void ConsumeFrameBuffer(const sptr<SurfaceBuffer> &buf);
     sptr<IBufferConsumerListener> bufferListener_ = nullptr;
@@ -88,13 +89,13 @@ bool ScreenCopy::Setup()
     // create pruducer surface and consumer surface
     consumerSurface_ = IConsumerSurface::Create();
     if (consumerSurface_ == nullptr) {
-        LOG_E("Failed to create IConsumerSurface");
+        screenCopyErrorBuf_ = "Error: Failed to create IConsumerSurface";
         return false;
     }
     auto producer = consumerSurface_->GetProducer();
     producerSurface_ = Surface::CreateSurfaceAsProducer(producer);
     if (producerSurface_ == nullptr) {
-        LOG_E("Failed to CreateSurfaceAsProducer");
+        screenCopyErrorBuf_ = "Error: Failed to CreateSurfaceAsProducer";
         return false;
     }
     auto handler = [this]() {
@@ -103,6 +104,7 @@ bool ScreenCopy::Setup()
     bufferListener_ = new BufferConsumerListener(handler);
     if (consumerSurface_->RegisterConsumerListener(bufferListener_) != 0) {
         LOG_E("Failed to RegisterConsumerListener");
+        screenCopyErrorBuf_ = "Error: Failed to RegisterConsumerListener";
         return false;
     }
     // make screen mirror from main screen to accept frames with producer surface buffer
@@ -110,6 +112,7 @@ bool ScreenCopy::Setup()
     auto mainScreen = ScreenManager::GetInstance().GetScreenById(mainScreenId_);
     if (mainScreenId_ == SCREEN_ID_INVALID || mainScreen == nullptr) {
         LOG_E("Get main screen failed!");
+        screenCopyErrorBuf_ = "Error: Get main screen failed!";
         return false;
     }
     screenSize_.first = mainScreen->GetWidth();
@@ -121,10 +124,11 @@ bool ScreenCopy::Setup()
 bool ScreenCopy::Run()
 {
     if (!workable_) {
+        screenCopyErrorBuf_ = "Error: Workable_ is false";
         return false;
     }
     if (virtualScreenId_ != SCREEN_ID_INVALID) {
-        LOG_W("ScreenCopy already running!");
+        screenCopyErrorBuf_ = "Error: ScreenCopy already running!";
         return false;
     }
     VirtualScreenOption option = {
@@ -142,7 +146,7 @@ bool ScreenCopy::Run()
     ScreenId screenGroupId = static_cast<ScreenId>(1);
     auto ret = ScreenManager::GetInstance().MakeMirror(mainScreenId_, mirrorIds, screenGroupId);
     if (ret != DMError::DM_OK) {
-        LOG_E("Make mirror screen for default screen failed");
+        screenCopyErrorBuf_ = "Error: Make mirror screen for default screen failed";
         return false;
     }
     return true;
@@ -204,7 +208,7 @@ void ScreenCopy::HandleConsumerBuffer()
     LOG_D("start ConsumerFrameBuffer");
     ConsumeFrameBuffer(consumerSuffer);
     LOG_D("end ConsumeFrameBuffer");
-    if (consumerSurface_->ReleaseBuffer(consumerSuffer, -1) != 0) {
+    if (consumerSurface_->ReleaseBuffer(consumerSuffer, fenceFd) != 0) {
         LOG_E("ReleaseBuffer failed");
         return;
     }
@@ -309,7 +313,17 @@ bool StartScreenCopy(float scale, ScreenCopyHandler handler)
         g_screenCopy = make_unique<ScreenCopy>();
         g_screenCopy->Setup();
     }
-    return g_screenCopy->Run();
+    g_screenCopy->Run();
+    if (g_screenCopyHandler != nullptr && g_screenCopy->screenCopyErrorBuf_ != nullptr) {
+        auto buf = (uint8_t *)malloc(128);
+        memcpy(buf, g_screenCopy->screenCopyErrorBuf_, strlen(g_screenCopy->screenCopyErrorBuf_));
+        LOG_E("The error message is %{public}s", buf);
+        g_screenCopyHandler(buf, strlen(g_screenCopy->screenCopyErrorBuf_));
+        g_screenCopy->screenCopyErrorBuf_ = nullptr;
+        return false;
+    }
+    return true;
+
 }
 
 void StopScreenCopy()

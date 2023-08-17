@@ -107,6 +107,7 @@ namespace OHOS::uitest {
             ctx.dataLen = jsonStr.length();
             CallbackCaptureResultToJs(ctx);
         };
+        UiDriverRecordStop();
         LOG_I("Start record uiaction");
         UiDriverRecordStart(handler, modeOpt);
     }
