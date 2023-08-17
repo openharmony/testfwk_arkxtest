@@ -459,7 +459,6 @@ namespace OHOS::uitest {
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_UP);
                 pointerEvent->SetButtonId(event.button_);
                 pointerEvent->SetButtonPressed(event.button_);
-                item.SetPressed(false);
                 break;
             case ActionStage::AXIS_UP:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
