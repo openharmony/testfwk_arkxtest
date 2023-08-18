@@ -83,8 +83,13 @@ class OhReport {
 
     async suiteDone() {
         if (this.abilityDelegatorArguments !== null) {
+            const currentRunningSuite = this.suiteService.getCurrentRunningSuite();
             let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
-            message += '\n' + 'OHOS_REPORT_STATUS: suiteconsuming=' + this.suiteService.getCurrentRunningSuite().duration + '\n';
+            message += '\n' + 'OHOS_REPORT_STATUS: suiteconsuming=' + this.suiteService.getCurrentRunningSuite().duration;
+            if (currentRunningSuite.hookError) {
+                message += '\n' + `OHOS_REPORT_STATUS: ${currentRunningSuite.hookError.message}`;
+            }
+            message += '\n';
             console.info(`${message}`);
             await SysTestKit.print(message);
             console.info(`${TAG}${this.suiteService.getCurrentRunningSuite().description} suiteDone print success`);
@@ -120,11 +125,9 @@ class OhReport {
                 message += '\n' + this.specService.currentRunningSpec.error.message;
                 message += '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
                 message += '\n' + 'OHOS_REPORT_STATUS_CODE: -1' + '\n';
-            } else if (this.specService.currentRunningSpec.result) {
-                if (this.specService.currentRunningSpec.result.failExpects.length > 0) {
-                    this.specService.currentRunningSpec.result.failExpects.forEach(failExpect => {
-                        errorMsg = failExpect.message || ('expect ' + failExpect.actualValue + ' ' + failExpect.checkFunc + ' ' + (failExpect.expectValue));
-                    });
+            } else if (this.specService.currentRunningSpec) {
+                if (this.specService.currentRunningSpec.fail) {
+                    errorMsg = this.specService.currentRunningSpec.fail?.message;
                     message += '\n' + 'OHOS_REPORT_STATUS: stack=' + errorMsg;
                     message += '\n' + 'OHOS_REPORT_STATUS: stream=';
                     message += '\n' + 'Error in ' + this.specService.currentRunningSpec.description;

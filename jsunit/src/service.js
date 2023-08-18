@@ -208,9 +208,9 @@ class SuiteService {
                 }
                 if (itItem.error) {
                     obj.error++;
-                } else if (itItem.result.failExpects.length > 0) {
+                } else if (itItem.fail) {
                     obj.failure++;
-                } else if (itItem.result.pass === true) {
+                } else if (itItem.pass === true) {
                     obj.pass++;
                 }
             }
@@ -221,6 +221,30 @@ class SuiteService {
         if (suite.childSuites.length > 0) {
             for (const suiteItem of suite.childSuites) {
                 this.traversalResults(suiteItem, obj, breakOnError);
+            }
+        }
+    }
+
+    async setSuiteResults(suite, error, coreContext) {
+        if (suite.childSuites.length === 0 && suite.specs.length === 0) {
+            return obj;
+        }
+        if (suite.specs.length > 0) {
+            const specService = coreContext.getDefaultService('spec');
+            for (const specItem of suite.specs) {
+                specService.setCurrentRunningSpec(specItem);
+                if (error instanceof AssertException) {
+                    specItem.fail = error;
+                } else {
+                    specItem.error = error;
+                }
+                await coreContext.fireEvents('spec', 'specStart', specItem);
+                await coreContext.fireEvents('spec', 'specDone', specItem);
+            }
+        }
+        if (suite.childSuites.length > 0) {
+            for (const suiteItem of suite.childSuites) {
+                await this.setSuiteResults(suiteItem, error, coreContext);
             }
         }
     }
@@ -423,47 +447,89 @@ SuiteService.Suite = class {
         }
     }
 
+    async asyncRunSpecs(coreContext) {
+        const configService = coreContext.getDefaultService('config');
+        if (configService.isRandom()) {
+            this.specs.sort(function () {
+                return Math.random().toFixed(1) > 0.5 ? -1 : 1;
+            });
+        }
+        const specService = coreContext.getDefaultService('spec');
+        for (let specItem of this.specs) {
+            specService.setCurrentRunningSpec(specItem);
+            // 遇错即停模式,发现用例有问题，直接返回，不在执行后面的it
+            let isBreakOnError = this.isRun(coreContext);
+            if (isBreakOnError) {
+                console.log("break description :" + this.description);
+                break;
+            }
+            await coreContext.fireEvents('spec', 'specStart', specItem);
+            try {
+                await this.runAsyncHookFunc('beforeEach');
+                await specItem.asyncRun(coreContext);
+                await this.runAsyncHookFunc('afterEach');
+            } catch (e) {
+                console.error(`${TAG}${e?.stack}`);
+                if (e instanceof AssertException) {
+                    specItem.fail = e;
+                } else {
+                    specItem.error = e;
+                }
+                specService.setStatus(true);
+            }
+            specItem.setResult();
+            await coreContext.fireEvents('spec', 'specDone', specItem);
+        }
+    }
+
+    async asyncRunChildSuites(coreContext) {
+        for (let i = 0; i < this.childSuites.length; i++) {
+            // 遇错即停模式, 发现用例有问题，直接返回，不在执行后面的description
+            let isBreakOnError = this.isRun(coreContext);
+            if (isBreakOnError) {
+                console.log(`${TAG}break description : ${this.description}`);
+                break;
+            }
+            await this.childSuites[i].asyncRun(coreContext);
+        }
+    }
+
     async asyncRun(coreContext) {
         const suiteService = coreContext.getDefaultService('suite');
+        const specService = coreContext.getDefaultService('spec');
+
         suiteService.setCurrentRunningSuite(this);
         suiteService.suitesStack.push(this);
         if (this.description !== '') {
             await coreContext.fireEvents('suite', 'suiteStart', this);
         }
-        await this.runAsyncHookFunc('beforeAll');
-        if (this.specs.length > 0) {
-            const configService = coreContext.getDefaultService('config');
-            if (configService.isRandom()) {
-                this.specs.sort(function () {
-                    return Math.random().toFixed(1) > 0.5 ? -1 : 1;
-                });
-            }
-            for (let i = 0; i < this.specs.length; i++) {
-                // 遇错即停模式,发现用例有问题，直接返回，不在执行后面的it
-                let isBreakOnError = this.isRun(coreContext);
-                if (isBreakOnError) {
-                    console.log(`${TAG}break description :${this.description}`);
-                    break;
-                }
-                await this.runAsyncHookFunc('beforeEach');
-                await this.specs[i].asyncRun(coreContext);
-                await this.runAsyncHookFunc('afterEach');
-            }
+
+        this.hookError = null;
+        try {
+            await this.runAsyncHookFunc('beforeAll');
+        } catch (error) {
+            console.error(`${TAG}${error?.stack}`);
+            this.hookError = error;
+            specService.setStatus(true);
+            await suiteService.setSuiteResults(this, error, coreContext);
         }
 
-        if (this.childSuites.length > 0) {
-            for (let i = 0; i < this.childSuites.length; i++) {
-                // 遇错即停模式, 发现用例有问题，直接返回，不在执行后面的description
-                let isBreakOnError = this.isRun(coreContext);
-                if (isBreakOnError) {
-                    console.log(`${TAG}break description :${this.description}`);
-                    break;
-                }
-                await this.childSuites[i].asyncRun(coreContext);
-            }
+        if (this.specs.length > 0 && this.hookError === null) {
+            await this.asyncRunSpecs(coreContext);
         }
 
-        await this.runAsyncHookFunc('afterAll');
+        if (this.childSuites.length > 0 && this.hookError === null) {
+            await this.asyncRunChildSuites(coreContext);
+        }
+
+        try {
+            await this.runAsyncHookFunc('afterAll');
+        } catch (error) {
+            console.error(`${TAG}${error?.stack}`);
+            this.hookError = error;
+            specService.setStatus(true);
+        }
+
         if (this.description !== '') {
             await coreContext.fireEvents('suite', 'suiteDone');
             let childSuite = suiteService.suitesStack.pop();
@@ -492,18 +558,15 @@ SuiteService.Suite = class {
         }
     }
 
-    runAsyncHookFunc(hookName) {
-        if (this[hookName] && this[hookName].length > 0) {
-            return new Promise(async resolve => {
-                for (let i = 0; i < this[hookName].length; i++) {
-                    try {
-                        await this[hookName][i]();
-                    } catch (e) {
-                        console.error(`${TAG}${e.stack}`);
-                    }
-                }
-                resolve();
-            });
+    async runAsyncHookFunc(hookName) {
+        for (const hookItem of this[hookName]) {
+            try {
+                await hookItem();
+            } catch (error) {
+                error['message'] += `, error in ${hookName} function`;
+                throw error;
+            }
+
         }
     }
 };
@@ -586,25 +649,19 @@ SpecService.Spec = class {
         this.fi = attrs.fi;
         this.fn = attrs.fn || function () {
         };
-        this.result = {
-            failExpects: [],
-            passExpects: []
-        };
+        this.fail = undefined;
         this.error = undefined;
         this.duration = 0;
         this.startTime = 0;
         this.isExecuted = false; // 当前用例是否执行
     }
 
-    setResult(coreContext) {
-        const specService = coreContext.getDefaultService('spec');
-        if (this.result.failExpects.length > 0) {
-            this.result.pass = false;
-            specService.setStatus(true);
+    setResult() {
+        if (this.fail) {
+            this.pass = false;
         } else {
-            this.result.pass = true;
+            this.pass = true;
         }
-        console.info(`${TAG}testcase ${this.description} result: ${this.result.pass}`);
     }
 
     run(coreContext) {
@@ -629,7 +686,7 @@ SpecService.Spec = class {
                     specParams.forEach(paramItem => this.fn(Object.assign({}, paramItem, suiteParams)));
                 }
             }
-            this.setResult(coreContext);
+            this.setResult();
         } catch (e) {
             this.error = e;
             specService.setStatus(true);
@@ -638,57 +695,32 @@ SpecService.Spec = class {
     }
 
     async asyncRun(coreContext) {
-        const specService = coreContext.getDefaultService('spec');
-        specService.setCurrentRunningSpec(this);
-
-        await coreContext.fireEvents('spec', 'specStart', this);
-        try {
-            let dataDriver = coreContext.getServices('dataDriver');
-            if (typeof dataDriver === 'undefined') {
+        const dataDriver = coreContext.getServices('dataDriver');
+        if (typeof dataDriver === 'undefined') {
+            await this.fn();
+        } else {
+            const suiteParams = dataDriver.dataDriver.getSuiteParams();
+            const specParams = dataDriver.dataDriver.getSpecParams();
+            console.info(`[suite params] ${JSON.stringify(suiteParams)}`);
+            console.info(`[spec params] ${JSON.stringify(specParams)}`);
+            if (this.fn.length === 0) {
                 await this.fn();
-                this.setResult(coreContext);
+            } else if (specParams.length === 0) {
+                await this.fn(suiteParams);
             } else {
-                let suiteParams = dataDriver.dataDriver.getSuiteParams();
-                let specParams = dataDriver.dataDriver.getSpecParams();
-                console.info(`${TAG}[suite params] ${JSON.stringify(suiteParams)}`);
-                console.info(`${TAG}[spec params] ${JSON.stringify(specParams)}`);
-                if (this.fn.length === 0) {
-                    await this.fn();
-                    this.setResult(coreContext);
-                } else if (specParams.length === 0) {
-                    await this.fn(suiteParams);
-                    this.setResult(coreContext);
-                } else {
-                    for (const paramItem of specParams) {
-                        await this.fn(Object.assign({}, paramItem, suiteParams));
-                        this.setResult(coreContext);
-                    }
+                for (const paramItem of specParams) {
+                    await this.fn(Object.assign({}, paramItem, suiteParams));
                 }
             }
-        } catch (e) {
-            if (e instanceof AssertException) {
-                this.fail = e;
-                specService.setStatus(true);
-            } else {
-                this.error = e;
-                specService.setStatus(true);
-            }
         }
+
         this.isExecuted = true;
-        await coreContext.fireEvents('spec', 'specDone', this);
     }
 
     filterCheck(coreContext) {
         const specService = coreContext.getDefaultService('spec');
         specService.setCurrentRunningSpec(this);
         return true;
-    }
-
-    addExpectationResult(expectResult) {
-        if (this.result.failExpects.length === 0) {
-            this.result.failExpects.push(expectResult);
-        }
-        throw new AssertException(expectResult.message);
     }
 };
 
@@ -786,7 +818,7 @@ class ExpectService {
                         result.actualValue = actualValue;
                         result.checkFunc = matcherName;
                         if (!result.pass) {
-                            currentRunningSpec.addExpectationResult(result);
+                            throw new AssertException(result.message);
                         }
                     });
                 };
@@ -799,7 +831,7 @@ class ExpectService {
                     result.actualValue = actualValue;
                     result.checkFunc = matcherName;
                     if (!result.pass) {
-                        currentRunningSpec.addExpectationResult(result);
+                        throw new AssertException(result.message);
                     }
                 };
             }
@@ -853,24 +885,19 @@ class ReportService {
         if (spec.error) {
             this.formatPrint('error', spec.description + ' ; consuming ' + spec.duration + 'ms');
             this.formatPrint('errorDetail', spec.error);
-        } else if (spec.result) {
-            if (spec.result.failExpects.length > 0) {
-                this.formatPrint('fail', spec.description + ' ; consuming ' + spec.duration + 'ms');
-                spec.result.failExpects.forEach(failExpect => {
-                    msg = failExpect.message || ('expect ' + failExpect.actualValue + ' '
-                        + failExpect.checkFunc + ' ' + (failExpect.expectValue));
-                    this.formatPrint('failDetail', msg);
-                });
-            } else {
-                this.formatPrint('pass', spec.description + ' ; consuming ' + spec.duration + 'ms');
-            }
+        } else if (spec.fail) {
+            this.formatPrint('fail', spec.description + ' ; consuming ' + spec.duration + 'ms');
+            this.formatPrint('failDetail', spec.fail?.message);
+        } else {
+            this.formatPrint('pass', spec.description + ' ; consuming ' + spec.duration + 'ms');
         }
         this.formatPrint(this.specService.currentRunningSpec.error, msg);
     }
 
     suiteDone() {
         let suite = this.suiteService.currentRunningSuite;
-        console.info(`${TAG}[suite end] ${suite.description} consuming ${suite.duration} ms`);
+        let message = suite.hookError ? `, ${suite.hookError?.message}` : '';
+        console.info(`[suite end] ${suite.description} consuming ${suite.duration} ms${message}`);
     }
 
     taskDone() {
