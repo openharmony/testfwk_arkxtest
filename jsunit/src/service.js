@@ -695,12 +695,12 @@ SpecService.Spec = class {
     }
 
     async asyncRun(coreContext) {
-        let dataDriver = coreContext.getServices('dataDriver');
+        const dataDriver = coreContext.getServices('dataDriver');
         if (typeof dataDriver === 'undefined') {
             await this.fn();
         } else {
-            let suiteParams = dataDriver.dataDriver.getSuiteParams();
-            let specParams = dataDriver.dataDriver.getSpecParams();
+            const suiteParams = dataDriver.dataDriver.getSuiteParams();
+            const specParams = dataDriver.dataDriver.getSpecParams();
             console.info(`[suite params] ${JSON.stringify(suiteParams)}`);
             console.info(`[spec params] ${JSON.stringify(specParams)}`);
             if (this.fn.length === 0) {
