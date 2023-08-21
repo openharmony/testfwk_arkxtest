@@ -316,7 +316,7 @@ bool StartScreenCopy(float scale, ScreenCopyHandler handler)
     g_screenCopy->Run();
     if (g_screenCopyHandler != nullptr && g_screenCopy->screenCopyErrorBuf_ != nullptr) {
         auto buf = (uint8_t *)malloc(128);
-        memcpy_s(buf, sizeof(buf), g_screenCopy->screenCopyErrorBuf_, strlen(g_screenCopy->screenCopyErrorBuf_));
+        memcpy_s(buf, 128, g_screenCopy->screenCopyErrorBuf_, strlen(g_screenCopy->screenCopyErrorBuf_));
         LOG_E("The error message is %{public}s", buf);
         g_screenCopyHandler(buf, strlen(g_screenCopy->screenCopyErrorBuf_));
         g_screenCopy->screenCopyErrorBuf_ = nullptr;
