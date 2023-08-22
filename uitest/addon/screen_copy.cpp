@@ -55,7 +55,7 @@ public:
     bool Pause();
     void Destroy();
     void HandleConsumerBuffer();
-    const char* screenCopyErrorBuf_ = nullptr;
+    const char* pendingError_ = nullptr;
 private:
     void ConsumeFrameBuffer(const sptr<SurfaceBuffer> &buf);
     sptr<IBufferConsumerListener> bufferListener_ = nullptr;
@@ -89,13 +89,13 @@ bool ScreenCopy::Setup()
     // create pruducer surface and consumer surface
     consumerSurface_ = IConsumerSurface::Create();
     if (consumerSurface_ == nullptr) {
-        screenCopyErrorBuf_ = "Error: Failed to create IConsumerSurface";
+        pendingError_ = "Error: Failed to create IConsumerSurface";
         return false;
     }
     auto producer = consumerSurface_->GetProducer();
     producerSurface_ = Surface::CreateSurfaceAsProducer(producer);
     if (producerSurface_ == nullptr) {
-        screenCopyErrorBuf_ = "Error: Failed to CreateSurfaceAsProducer";
+        pendingError_ = "Error: Failed to CreateSurfaceAsProducer";
         return false;
     }
     auto handler = [this]() {
@@ -103,16 +103,14 @@ bool ScreenCopy::Setup()
     };
     bufferListener_ = new BufferConsumerListener(handler);
     if (consumerSurface_->RegisterConsumerListener(bufferListener_) != 0) {
-        LOG_E("Failed to RegisterConsumerListener");
-        screenCopyErrorBuf_ = "Error: Failed to RegisterConsumerListener";
+        pendingError_ = "Error: Failed to RegisterConsumerListener";
         return false;
     }
     // make screen mirror from main screen to accept frames with producer surface buffer
     mainScreenId_ = static_cast<ScreenId>(DisplayManager::GetInstance().GetDefaultDisplayId());
     auto mainScreen = ScreenManager::GetInstance().GetScreenById(mainScreenId_);
     if (mainScreenId_ == SCREEN_ID_INVALID || mainScreen == nullptr) {
-        LOG_E("Get main screen failed!");
-        screenCopyErrorBuf_ = "Error: Get main screen failed!";
+        pendingError_ = "Error: Get main screen failed!";
         return false;
     }
     screenSize_.first = mainScreen->GetWidth();
@@ -124,11 +122,11 @@ bool ScreenCopy::Setup()
 bool ScreenCopy::Run()
 {
     if (!workable_) {
-        screenCopyErrorBuf_ = "Error: Workable_ is false";
+        pendingError_ = "Error: Workable_ is false";
         return false;
     }
     if (virtualScreenId_ != SCREEN_ID_INVALID) {
-        screenCopyErrorBuf_ = "Error: ScreenCopy already running!";
+        pendingError_ = "Error: ScreenCopy already running!";
         return false;
     }
     VirtualScreenOption option = {
@@ -146,7 +144,7 @@ bool ScreenCopy::Run()
     ScreenId screenGroupId = static_cast<ScreenId>(1);
     auto ret = ScreenManager::GetInstance().MakeMirror(mainScreenId_, mirrorIds, screenGroupId);
     if (ret != DMError::DM_OK) {
-        screenCopyErrorBuf_ = "Error: Make mirror screen for default screen failed";
+        pendingError_ = "Error: Make mirror screen for default screen failed";
         return false;
     }
     return true;
@@ -309,20 +307,23 @@ bool StartScreenCopy(float scale, ScreenCopyHandler handler)
         return false;
     }
     g_screenCopyHandler = handler;
+    bool success = true;
     if (g_screenCopy == nullptr) {
         g_screenCopy = make_unique<ScreenCopy>();
-        g_screenCopy->Setup();
+        success = g_screenCopy->Setup();
     }
-    g_screenCopy->Run();
-    if (g_screenCopyHandler != nullptr && g_screenCopy->screenCopyErrorBuf_ != nullptr) {
-        auto buf = new uint8_t[128];
-        memcpy_s(buf, sizeof(buf), g_screenCopy->screenCopyErrorBuf_, strlen(g_screenCopy->screenCopyErrorBuf_));
+    if (success) {
+        g_screenCopy->Run();
+    }
+    if (!success && g_screenCopyHandler != nullptr && g_screenCopy->pendingError_ != nullptr) {
+        constexpr size_t BUF_SIZE = 128;
+        auto buf = (uint8_t *)malloc(BUF_SIZE);
+        memcpy_s(buf, BUF_SIZE, g_screenCopy->pendingError_, strlen(g_screenCopy->pendingError_));
         LOG_E("The error message is %{public}s", buf);
-        g_screenCopyHandler(buf, strlen(g_screenCopy->screenCopyErrorBuf_));
-        g_screenCopy->screenCopyErrorBuf_ = nullptr;
-        return false;
+        g_screenCopyHandler(buf, strlen(g_screenCopy->pendingError_));
+        g_screenCopy->pendingError_ = nullptr;
     }
-    return true;
+    return success;
 }
 
 void StopScreenCopy()
