@@ -318,6 +318,7 @@ bool StartScreenCopy(float scale, ScreenCopyHandler handler)
     if (!success && g_screenCopyHandler != nullptr && g_screenCopy->pendingError_ != nullptr) {
         constexpr size_t BUF_SIZE = 128;
         auto buf = (uint8_t *)malloc(BUF_SIZE);
+        memset(buf, 0, BUF_SIZE);
         memcpy_s(buf, BUF_SIZE, g_screenCopy->pendingError_, strlen(g_screenCopy->pendingError_));
         LOG_E("The error message is %{public}s", buf);
         g_screenCopyHandler(buf, strlen(g_screenCopy->pendingError_));
