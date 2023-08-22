@@ -389,9 +389,14 @@ namespace OHOS::uitest {
         {"Driver.fling", "(int,int):void", false, false},
         {"Driver.injectMultiPointerAction", "(PointerMatrix, int?):bool", false, false},
         {"Driver.mouseClick", "(Point,int,int?,int?):void", false, false},
+        {"Driver.mouseDoubleClick", "(Point,int,int?,int?):void", false, false},
+        {"Driver.mouseLongClick", "(Point,int,int?,int?):void", false, false},
         {"Driver.mouseMoveTo", "(Point):void", false, false},
-        {"Driver.mouseScroll", "(Point,bool,int,int?,int?):void", false, false},
+        {"Driver.mouseMoveWithTrack", "(Point,Point,int?):void", false, false},
+        {"Driver.mouseDrag", "(Point,Point,int?):void", false, false},
+        {"Driver.mouseScroll", "(Point,bool,int,int?,int?,int?):void", false, false},
         {"Driver.createUIEventObserver", "():UIEventObserver", false, false},
+        {"Driver.inputText", "(Point,string):void", false, false},
     };
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",

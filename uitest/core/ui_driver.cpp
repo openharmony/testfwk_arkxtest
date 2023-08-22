@@ -245,6 +245,20 @@ namespace OHOS::uitest {
         uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
     }
 
+    void UiDriver::PerformMouseAction(const MouseAction &touch, const UiOpArgs &opt, ApiCallErr &err)
+    {
+        if (!CheckStatus(false, err)) {
+            return;
+        }
+        vector<MouseEvent> events;
+        touch.Decompose(events, opt);
+        if (events.empty()) {
+            return;
+        }
+        uiController_->InjectMouseEventSequence(events);
+        uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
+    }
+
     void UiDriver::TakeScreenCap(int32_t fd, ApiCallErr &err, Rect rect)
     {
         if (!CheckStatus(false, err)) {
@@ -362,12 +376,35 @@ namespace OHOS::uitest {
         return uiController_->GetDisplayDensity();
     }
 
-    bool UiDriver::GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode, ApiCallErr &error)
+    bool UiDriver::TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error)
     {
         if (!CheckStatus(false, error)) {
             return false;
         }
-        return uiController_->GetCharKeyCode(ch, code, ctrlCode);
+        static constexpr uint32_t typeCharTimeMs = 50;
+        if (!text.empty()) {
+            vector<char> chars(text.begin(), text.end()); // decompose to sing-char input sequence
+            vector<pair<int32_t, int32_t>> keyCodes;
+            for (auto ch : chars) {
+                int32_t code = KEYCODE_NONE;
+                int32_t ctrlCode = KEYCODE_NONE;
+                if (!uiController_->GetCharKeyCode(ch, code, ctrlCode)) {
+                    return false;
+                }
+                keyCodes.emplace_back(make_pair(code, ctrlCode));
+            }
+            for (auto &pair : keyCodes) {
+                if (pair.second != KEYCODE_NONE) {
+                    events.emplace_back(KeyEvent {ActionStage::DOWN, pair.second, 0});
+                }
+                events.emplace_back(KeyEvent {ActionStage::DOWN, pair.first, typeCharTimeMs});
+                events.emplace_back(KeyEvent {ActionStage::UP, pair.first, 0});
+                if (pair.second != KEYCODE_NONE) {
+                    events.emplace_back(KeyEvent {ActionStage::UP, pair.second, 0});
+                }
+            }
+        }
+        return true;
     }
 
     void UiDriver::DfsTraverseTree(WidgetVisitor &visitor, const Widget *widget)
@@ -382,28 +419,25 @@ namespace OHOS::uitest {
         }
     }
 
-    void UiDriver::InjectMouseAction(MouseOpArgs mouseOpArgs, ApiCallErr &error)
-    {
-        if (error.code_ != NO_ERROR) {
-            return;
-        }
-        switch (mouseOpArgs.action_) {
-            case MouseOp::M_MOVETO:
-                uiController_->InjectMouseMove(mouseOpArgs);
-                break;
-            case MouseOp::M_CLICK:
-                uiController_->InjectMouseClick(mouseOpArgs);
-                break;
-            case MouseOp::M_SCROLL:
-                uiController_->InjectMouseScroll(mouseOpArgs);
-                break;
-            default:
-                return;
-        }
-    }
-
     void UiDriver::GetLayoutJson(nlohmann::json &dom)
     {
         widgetTree_->MarshalIntoDom(dom);
+    }
+
+    void UiDriver::InputText(string_view text, ApiCallErr &error)
+    {
+        vector<KeyEvent> events;
+        UiOpArgs uiOpArgs;
+        if (!text.empty()) {
+            if (TextToKeyEvents(text, events, error)) {
+                LOG_I("inputText by Keycode");
+                auto keyActionForInput = KeysForwarder(events);
+                TriggerKey(keyActionForInput, uiOpArgs, error);
+            } else {
+                LOG_I("inputText by pasteBoard");
+                auto actionForPatse = CombinedKeys(KEYCODE_CTRL, KEYCODE_V, KEYCODE_NONE);
+                TriggerKey(actionForPatse, uiOpArgs, error);
+            }
+        }
     }
 } // namespace OHOS::uitest
