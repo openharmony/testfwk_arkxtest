@@ -313,7 +313,7 @@ bool StartScreenCopy(float scale, ScreenCopyHandler handler)
         success = g_screenCopy->Setup();
     }
     if (success) {
-        g_screenCopy->Run();
+        success = g_screenCopy->Run();
     }
     if (!success && g_screenCopyHandler != nullptr && g_screenCopy->pendingError_ != nullptr) {
         constexpr size_t BUF_SIZE = 128;
