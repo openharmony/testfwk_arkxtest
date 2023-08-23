@@ -382,6 +382,7 @@ SuiteService.Suite = class {
         this.beforeEach = [];
         this.afterEach = [];
         this.duration = 0;
+        this.hookError = null;
     }
 
     pushSpec(spec) {
@@ -504,7 +505,6 @@ SuiteService.Suite = class {
             await coreContext.fireEvents('suite', 'suiteStart', this);
         }
 
-        this.hookError = null;
         try {
             await this.runAsyncHookFunc('beforeAll');
         } catch (error) {
@@ -512,6 +512,11 @@ SuiteService.Suite = class {
             this.hookError = error;
             specService.setStatus(true);
             await suiteService.setSuiteResults(this, error, coreContext);
+        }
+
+        if (this.hookError !== null) {
+            specService.setStatus(true);
+            await suiteService.setSuiteResults(this, this.hookError, coreContext);
         }
 
         if (this.specs.length > 0 && this.hookError === null) {
@@ -804,6 +809,7 @@ class ExpectService {
         };
         const specService = _this.coreContext.getDefaultService('spec');
         const currentRunningSpec = specService.getCurrentRunningSpec();
+        const currentRunningSuite = _this.coreContext.getDefaultService('suite').getCurrentRunningSuite();
         for (const matcherName in this.matchers) {
             let result = Object.prototype.hasOwnProperty.call(this.matchers, matcherName);
             if (!result) {
@@ -818,7 +824,9 @@ class ExpectService {
                         result.actualValue = actualValue;
                         result.checkFunc = matcherName;
                         if (!result.pass) {
-                            throw new AssertException(result.message);
+                            const assertError = new AssertException(result.message);
+                            currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
+                            throw assertError;
                         }
                     });
                 };
@@ -831,7 +839,9 @@ class ExpectService {
                     result.actualValue = actualValue;
                     result.checkFunc = matcherName;
                     if (!result.pass) {
-                        throw new AssertException(result.message);
+                        const assertError = new AssertException(result.message);
+                        currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
+                        throw assertError;
                     }
                 };
             }
