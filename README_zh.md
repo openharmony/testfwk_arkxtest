@@ -597,54 +597,54 @@ expect(claser.method_1('abc')).assertEqual('1'); //用例执行通过。
 
 **示例7：  ignoreMock(obj, method) 忽略函数的使用**
 ```javascript
-import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
+ import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
 
-export default function ActsAbilityTest() {
-  describe('ActsAbilityTest', function () {
-    it('testMockfunc', 0, function () {
+ export default function ActsAbilityTest() {
+  describe('ActsAbilityTest', () => {
+    it('testMockfunc', 0, () => {
       console.info("it1 begin");
 
       //1.创建一个mock能力的对象MockKit
-      let mocker = new MockKit();
+      let mocker:MockKit = new MockKit();
 
       //2.定类ClassName，里面两个函数，然后创建一个对象claser
       class ClassName {
         constructor() {
         }
 
-        method_1(...arg) {
+        method_1(...arg: number[]) {
           return '888888';
         }
 
-        method_2(...arg) {
+        method_2(...arg: number[]) {
           return '999999';
         }
-      }
+ }
 
-      let claser = new ClassName();
+ let claser = new ClassName();
 
-      //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
-      let func_1 = mocker.mockFunc(claser, claser.method_1);
-      let func_2 = mocker.mockFunc(claser, claser.method_2);
+ //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
+ let func_1: Function = mocker.mockFunc(claser, claser.method_1);
+ let func_2: Function = mocker.mockFunc(claser, claser.method_2);
 
-      //4.对mock后的函数的行为进行修改
-      when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
-      when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
+ //4.对mock后的函数的行为进行修改
+ when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
+ when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
 
-      //5.方法调用如下
-      console.log(claser.method_1(123)); //执行结果是4，符合步骤4中的预期
-      console.log(claser.method_2(456)); //执行结果是5，符合步骤4中的预期
+ //5.方法调用如下
+ console.log(claser.method_1(123)); //执行结果是4，符合步骤4中的预期
+ console.log(claser.method_2(456)); //执行结果是5，符合步骤4中的预期
 
-      //6.现在对mock后的两个函数的其中一个函数method_1进行忽略处理（原理是就是还原）
-      mocker.ignoreMock(claser, claser.method_1);
-      //然后再去调用 claser.method_1函数，看执行结果
-      console.log(claser.method_1(123)); //执行结果是888888，发现这时结果跟步骤4中的预期不一样了，执行了claser.method_1没被mock之前的结果
-      //用断言测试
-      expect(claser.method_1(123)).assertEqual('4'); //结果为failed 符合ignoreMock预期
-      claser.method_2(456); //执行结果是5，因为method_2没有执行ignore忽略，所有也符合步骤4中的预期
-    });
-  });
-}
+ //6.现在对mock后的两个函数的其中一个函数method_1进行忽略处理（原理是就是还原）
+ mocker.ignoreMock(claser, claser.method_1);
+ //然后再去调用 claser.method_1函数，看执行结果
+ console.log(claser.method_1(123)); //执行结果是888888，发现这时结果跟步骤4中的预期不一样了，执行了claser.method_1没被mock之前的结果
+ //用断言测试
+ expect(claser.method_1(123)).assertEqual('4'); //结果为failed 符合ignoreMock预期
+ claser.method_2(456); //执行结果是5，因为method_2没有执行ignore忽略，所有也符合步骤4中的预期
+ });
+ });
+ }
 ```
 
 **示例8：  clear（）函数的使用**
