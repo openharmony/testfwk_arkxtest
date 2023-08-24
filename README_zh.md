@@ -544,55 +544,55 @@ expect(claser.method_1('abc')).assertEqual('1'); //用例执行通过。
 
 **示例6： 验证功能 Verify函数的使用**
 ```javascript
-import {describe, expect, it, MockKit, when} from '@ohos/hypium';
+ import {describe, expect, it, MockKit, when} from '@ohos/hypium';
 
-export default function ActsAbilityTest() {
-  describe('ActsAbilityTest', function () {
-    it('testMockfunc', 0, function () {
+ export default function ActsAbilityTest() {
+  describe('ActsAbilityTest',  () => {
+    it('testMockfunc', 0, () => {
       console.info("it1 begin");
 
       //1.创建一个mock能力的对象MockKit
-      let mocker = new MockKit();
+      let mocker: MockKit = new MockKit();
 
       //2.定类ClassName，里面两个函数，然后创建一个对象claser
       class ClassName {
         constructor() {
         }
 
-        method_1(...arg) {
+        method_1(...arg: string[]) {
           return '888888';
         }
 
-        method_2(...arg) {
+        method_2(...arg: string[]) {
           return '999999';
         }
-      }
+ }
 
-      let claser = new ClassName();
+ let claser = new ClassName();
 
-      //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
-      mocker.mockFunc(claser, claser.method_1);
-      mocker.mockFunc(claser, claser.method_2);
+ //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
+ mocker.mockFunc(claser, claser.method_1);
+ mocker.mockFunc(claser, claser.method_2);
 
-      //4.方法调用如下
-      claser.method_1('abc', 'ppp');
-      claser.method_1('abc');
-      claser.method_1('xyz');
-      claser.method_1();
-      claser.method_1('abc', 'xxx', 'yyy');
-      claser.method_1();
-      claser.method_2('111');
-      claser.method_2('111', '222');
+ //4.方法调用如下
+ claser.method_1('abc', 'ppp');
+ claser.method_1('abc');
+ claser.method_1('xyz');
+ claser.method_1();
+ claser.method_1('abc', 'xxx', 'yyy');
+ claser.method_1();
+ claser.method_2('111');
+ claser.method_2('111', '222');
 
-      //5.现在对mock后的两个函数进行验证，验证调用情况
-      mocker.verify('method_1', []).atLeast(3); //结果为failed
-      //解释：验证函数'method_1'，参数列表为空：[] 的函数，至少执行过3次，
-      //执行结果为failed，因为'method_1'且无参数 在4中只执行过2次
-      //mocker.verify('method_2',['111']).once();//执行success，原因同上
-      //mocker.verify('method_2',['111',,'222']).once();//执行success，原因同上
-    });
-  });
-}
+ //5.现在对mock后的两个函数进行验证，验证调用情况
+ mocker.verify('method_1', []).atLeast(3); //结果为failed
+ //解释：验证函数'method_1'，参数列表为空：[] 的函数，至少执行过3次，
+ //执行结果为failed，因为'method_1'且无参数 在4中只执行过2次
+ //mocker.verify('method_2',['111']).once();//执行success，原因同上
+ //mocker.verify('method_2',['111',,'222']).once();//执行success，原因同上
+ });
+ });
+ } 
 ```
 
 **示例7：  ignoreMock(obj, method) 忽略函数的使用**
