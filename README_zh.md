@@ -46,30 +46,35 @@ arkXtest
 示例代码：
 
 ```javascript
-import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium'
-import demo from '@ohos.bundle'
-
-export default async function abilityTest() {
-  describe('ActsAbilityTest', function () {
-    it('String_assertContain_success', 0, function () {
+ import { describe, it, expect } from '@ohos/hypium';
+ import demo from '@ohos.bundle'
+ import { BusinessError } from '@ohos.base';
+ export default function abilityTest() {
+  describe('ActsAbilityTest', () => {
+    it('String_assertContain_success', 0, () => {
       let a = 'abc'
       let b = 'b'
       expect(a).assertContain(b)
       expect(a).assertEqual(a)
     })
-    it('getBundleInfo_0100', 0, async function () {
-      const NAME1 = "com.example.MyApplicationStage"
+    it('getBundleInfo_0100', 0, async () => {
+      const NAME1 = "com.example.myapplication0009921"
       await demo.getBundleInfo(NAME1,
         demo.BundleFlag.GET_BUNDLE_WITH_ABILITIES | demo.BundleFlag.GET_BUNDLE_WITH_REQUESTED_PERMISSION)
-        .then((value) => {
+        .then((value: BundleInfo) => {
           console.info(value.appId)
         })
-        .catch((err) => {
-          console.info(err.code)
+        .catch((err:BusinessError) => {
+          console.info(err.code.toString())
         })
     })
   })
 }
+
+ interface BundleInfo {
+   name: string;
+   appId: string
+ }
 ```
 
 同时，@since1.0.6 测试套describe支持嵌套定义 。
@@ -79,15 +84,17 @@ export default async function abilityTest() {
 示例代码：
 
 ```javascript
+import { describe, it, expect } from '@ohos/hypium';
+
 export default async function nestedDescribeTest() {
-  describe('outerDescribe', function () {
-    describe('innerDescribe', function () {
-      it('innerIt', 0, function () {
+  describe('outerDescribe', () => {
+    describe('innerDescribe', () => {
+      it('innerIt', 0, () =>{
         let a = 'abc'
         expect(a).assertEqual(a)
       })
     })
-    it('outerIt', 0, function () {
+    it('outerIt', 0, () => {
       let a = 'abc'
       expect(a).assertEqual(a)
     })
@@ -129,189 +136,124 @@ export default async function nestedDescribeTest() {
 示例代码：
 
 ```javascript
-import { describe, it, expect } from '@ohos/hypium'
-export default async function abilityTest() {
-  describe('assertTest', function () {
-    it('assertClose_success', 0, function () {
+import { describe, it, expect } from '@ohos/hypium';
+export default function abilityTest() {
+  describe('ActsAbilityTest', () => {
+    it('assertBeClose_success', 0, () => {
       let a = 100
       let b = 0.1
       expect(a).assertClose(99, b)
     })
-    it('assertClose_fail', 0, function () {
-      let a = 100
-      let b = 0.1
-      expect(a).assertClose(1, b)
-    })
-    it('assertClose_null_fail_001', 0, function () {
-      let a = 100
-      let b = 0.1
-      expect(a).assertClose(null, b)
-    })
-    it('assertClose_null_fail_002', 0, function () {
-      expect(null).assertClose(null, 0)
-    })
-    it('assertEqual', 0, function () {
-      let a = 1;
-      let b = 1;
-      expect(a).assertEqual(b)
-    })
-    it('assertFail', 0, function () {
-      expect().assertFail();
-    })
-    it('assertFalse', 0, function () {
-      let a = false;
-      expect(a).assertFalse();
-    })
-    it('assertTrue', 0, function () {
-      let a = true;
-      expect(a).assertTrue();
-    })
-    it('assertInstanceOf_success', 0, function () {
+    it('assertInstanceOf_success', 0, () => {
       let a = 'strTest'
       expect(a).assertInstanceOf('String')
     })
-    it('assertLarger', 0, function () {
-      let a = 1;
-      let b = 2;
-      expect(b).assertLarger(a);
-    })
-    it('assertLess', 0, function () {
-      let a = 1;
-      let b = 2;
-      expect(a).assertLess(b);
-    })
-    it('assertNull', 0, function () {
-      let a = null;
-      expect(a).assertNull()
-    })
-    it('assertThrowError', 0, function () {
-      function testError() {
-        throw new Error('error message')
-      }
-      expect(testError).assertThrowError('error message')
-    })
-    it('assertUndefined', 0, function () {
-      let a = undefined;
-      expect(a).assertUndefined();
-    })
-    it('assertNaN', 0, function () {
-      let a = 'str'
-      expect(a).assertNaN()
-    })
-    it('assertInstanceOf_success', 0, function () {
-      let a = 'strTest'
-      expect(a).assertInstanceOf('String')
-    })
-    it('assertNaN_success',0, function () {
+    it('assertNaN_success',0, () => {
       expect(Number.NaN).assertNaN(); // true
     })
-    it('assertNegUnlimited_success',0, function () {
+    it('assertNegUnlimited_success',0, () => {
       expect(Number.NEGATIVE_INFINITY).assertNegUnlimited(); // true
     })
-    it('assertPosUnlimited_success',0, function () {
+    it('assertPosUnlimited_success',0, () => {
       expect(Number.POSITIVE_INFINITY).assertPosUnlimited(); // true
     })
-    it('not_number_true',0, function () {
+    it('not_number_true',0, () => {
       expect(1).not().assertLargerOrEqual(2)
     })
-    it('not_number_true_1',0, function () {
+    it('not_number_true_1',0,() => {
       expect(3).not().assertLessOrEqual(2);
     })
-    it('not_NaN_true',0, function () {
+    it('not_NaN_true',0, () => {
       expect(3).not().assertNaN();
     })
-    it('not_contain_true',0, function () {
+    it('not_contain_true',0,() => {
       let a = "abc";
       let b= "cdf"
       expect(a).not().assertContain(b);
     })
-    it('not_large_true',0, function () {
+    it('not_large_true',0, () => {
       expect(3).not().assertLarger(4);
     })
-    it('not_less_true',0, function () {
+    it('not_less_true',0, () => {
       expect(3).not().assertLess(2);
     })
-    it('not_undefined_true',0, function () {
+    it('not_undefined_true',0, () => {
       expect(3).not().assertUndefined();
     })
-    it('deepEquals_null_true',0, function () {
+    it('deepEquals_null_true',0, () => {
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
       expect(null).assertDeepEquals(null)
     })
-    it('deepEquals_array_not_have_true',0, function () {
+    it('deepEquals_array_not_have_true',0, () => {
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
-      const  a= []
-      const  b= []
+      const a: Array<number>= []
+      const b: Array<number> = []
       expect(a).assertDeepEquals(b)
     })
-    it('deepEquals_map_equal_length_success',0, function () {
+    it('deepEquals_map_equal_length_success',0, () => {
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
-      const a =  new Map();
-      const b =  new Map();
+      const a: Map<number, number> =  new Map();
+      const b: Map<number, number> =  new Map();
       a.set(1,100);
       a.set(2,200);
       b.set(1, 100);
       b.set(2, 200);
       expect(a).assertDeepEquals(b)
     })
-    it("deepEquals_obj_success_1", 0, function () {
-      const a = {x:1};
-      const b = {x:1};
-      expect(a).assertDeepEquals(b);
-    })
-    it("deepEquals_regExp_success_0", 0, function () {
-      const a = new RegExp("/test/");
-      const b = new RegExp("/test/");
+    it("deepEquals_obj_success_1", 0, () => {
+      const a: SampleTest = {x:1};
+    const b: SampleTest = {x:1};
+  expect(a).assertDeepEquals(b);
+})
+it("deepEquals_regExp_success_0", 0, () => {
+      const a: RegExp = new RegExp("/test/");
+      const b: RegExp = new RegExp("/test/");
       expect(a).assertDeepEquals(b)
     })
-    it('test_isPending_pass_1', 0, function () {
-      let p = new Promise(function () {
+it('test_isPending_pass_1', 0, () => {
+      let p = new Promise<void>(() =>{
       });
       expect(p).assertPromiseIsPending();
     });
-    it('test_isRejected_pass_1', 0, function () {
-      let p = Promise.reject({
-        bad: 'no'
-      });
-      expect(p).assertPromiseIsRejected();
-    });
-    it('test_isRejectedWith_pass_1', 0, function () {
-      let p = Promise.reject({
-        res: 'reject value'
-      });
-      expect(p).assertPromiseIsRejectedWith({
-        res: 'reject value'
-      });
-    });
-    it('test_isRejectedWithError_pass_1', 0, function () {
-      let p1 = Promise.reject(new TypeError('number'));
-      expect(p1).assertPromiseIsRejectedWithError(TypeError);
-    });
-    it('test_isResolved_pass_1', 0, function () {
-      let p = Promise.resolve({
-        res: 'result value'
-      });
-      expect(p).assertPromiseIsResolved();
-    });
-    it('test_isResolvedTo_pass_1', 0, function () {
-      let p = Promise.resolve({
-        res: 'result value'
-      });
-      expect(p).assertPromiseIsResolvedWith({
-        res: 'result value'
-      });
-    });
-    it('test_isPending_failed_1', 0, function () {
-      let p = Promise.reject({
-        bad: 'no1'
-      });
-      expect(p).assertPromiseIsPending();
-    });
-    it('test_isRejectedWithError_failed_1', 0, function () {
-      let p = Promise.reject(new TypeError('number'));
-      expect(p).assertPromiseIsRejectedWithError(TypeError, 'number one');
-    });
-  })
+it('test_isRejected_pass_1', 0, () => {
+  let info: PromiseInfo = {
+  res:"no"
+}
+let p = Promise.reject(info);
+expect(p).assertPromiseIsRejected();
+});
+it('test_isRejectedWith_pass_1', 0, () => {
+  let info: PromiseInfo = {
+  res:"reject value"
+}
+let p = Promise.reject(info);
+expect(p).assertPromiseIsRejectedWith(info);
+});
+it('test_isRejectedWithError_pass_1', 0, () => {
+  let p1 = Promise.reject(new TypeError('number'));
+  expect(p1).assertPromiseIsRejectedWithError(TypeError);
+});
+it('test_isResolved_pass_1', 0, () => {
+  let info: PromiseInfo = {
+  res:"result value"
+}
+let p = Promise.resolve(info);
+expect(p).assertPromiseIsResolved();
+});
+it('test_isResolvedTo_pass_1', 0, () => {
+  let info: PromiseInfo = {
+  res:"result value"
+}
+let p = Promise.resolve(info);
+expect(p).assertPromiseIsResolvedWith(info);
+});
+})
+}
+interface SampleTest {
+  x: number;
+}
+interface PromiseInfo {
+  res: string
 }
 ```
 
@@ -364,41 +306,41 @@ export default async function abilityTest() {
 import {describe, expect, it, MockKit, when} from '@ohos/hypium';
 
 export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('testMockfunc', 0, function () {
-            console.info("it1 begin");
+  describe('ActsAbilityTest', () => {
+    it('testMockfunc', 0, () => {
+      console.info("it1 begin");
 
-            //1.创建一个mock能力的对象MockKit
-            let mocker = new MockKit();
+      //1.创建一个mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
 
-            //2.定类ClassName，里面两个函数，然后创建一个对象claser
-            class ClassName {
-                constructor() {
-                }
+      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      class ClassName {
+        constructor() {
+        }
 
-                method_1(arg) {
-                    return '888888';
-                }
+        method_1(arg: string) {
+          return '888888';
+        }
 
-                method_2(arg) {
-                    return '999999';
-                }
-            }
+        method_2(arg: string) {
+          return '999999';
+        }
+}
 
-            let claser = new ClassName();
+let claser = new ClassName();
 
-            //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
-            let mockfunc = mocker.mockFunc(claser, claser.method_1);
-            when(mockfunc)('test').afterReturn('1');
+//3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
+let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
+when(mockfunc)('test').afterReturn('1');
 
-            //4.对mock后的函数进行断言，看是否符合预期
-            //执行成功案例，参数为'test'
-            expect(claser.method_1('test')).assertEqual('1'); //执行通过
+//4.对mock后的函数进行断言，看是否符合预期
+//执行成功案例，参数为'test'
+expect(claser.method_1('test')).assertEqual('1'); //执行通过
 
-            //执行失败案例，参数为 'abc'
-            //expect(claser.method_1('abc')).assertEqual('1');//执行失败
-        });
-    });
+//执行失败案例，参数为 'abc'
+//expect(claser.method_1('abc')).assertEqual('1');//执行失败
+});
+});
 }
 ```
 - **须知：**
@@ -413,44 +355,44 @@ export default function ActsAbilityTest() {
 import {describe, expect, it, MockKit, when} from '@ohos/hypium';
 
 export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('testMockfunc', 0, function () {
-            console.info("it1 begin");
+  describe('ActsAbilityTest', () => {
+    it('testMockfunc', 0, () => {
+      console.info("it1 begin");
 
-            //1.创建一个mock能力的对象MockKit
-            let mocker = new MockKit();
+      //1.创建一个mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
 
-            //2.定类ClassName，里面两个函数，然后创建一个对象claser
-            class ClassName {
-                constructor() {
-                }
+      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      class ClassName {
+        constructor() {
+        }
 
-                method_1(arg) {
-                    return '888888';
-                }
+        method_1(arg: string) {
+          return '888888';
+        }
 
-                method_2(arg) {
-                    return '999999';
-                }
-            }
+        method_2(arg: string) {
+          return '999999';
+        }
+}
 
-            let claser = new ClassName();
+let claser = new ClassName();
 
-            //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
-            let mockfunc = mocker.mockFunc(claser, claser.method_1);
+//3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
+let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
 
-            //4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterReturnNothing();即不返回任何值
-            when(mockfunc)('test').afterReturnNothing();
+//4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterReturnNothing();即不返回任何值
+when(mockfunc)('test').afterReturnNothing();
 
-            //5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
-            //执行成功案例，参数为'test'，这时候执行原对象claser.method_1的方法，会发生变化
-            // 这时候执行的claser.method_1不会再返回'888888'，而是设定的afterReturnNothing()生效//不返回任何值;
-            expect(claser.method_1('test')).assertUndefined(); //执行通过
+//5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+//执行成功案例，参数为'test'，这时候执行原对象claser.method_1的方法，会发生变化
+// 这时候执行的claser.method_1不会再返回'888888'，而是设定的afterReturnNothing()生效//不返回任何值;
+expect(claser.method_1('test')).assertUndefined(); //执行通过
 
-            // 执行失败案例，参数传为 123
-            // expect(method_1(123)).assertUndefined();//执行失败
-        });
-    });
+// 执行失败案例，参数传为 123
+// expect(method_1(123)).assertUndefined();//执行失败
+});
+});
 }
 ```
 
@@ -464,46 +406,46 @@ export default function ActsAbilityTest() {
 import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
 
 export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('testMockfunc', 0, function () {
-            console.info("it1 begin");
+  describe('ActsAbilityTest', () => {
+    it('testMockfunc', 0, () => {
+      console.info("it1 begin");
 
-            //1.创建一个mock能力的对象MockKit
-            let mocker = new MockKit();
+      //1.创建一个mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
 
-            //2.定类ClassName，里面两个函数，然后创建一个对象claser
-            class ClassName {
-                constructor() {
-                }
+      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      class ClassName {
+        constructor() {
+        }
 
-                method_1(arg) {
-                    return '888888';
-                }
+        method_1(arg: string) {
+          return '888888';
+        }
 
-                method_2(arg) {
-                    return '999999';
-                }
-            }
+        method_2(arg: string) {
+          return '999999';
+        }
+}
 
-            let claser = new ClassName();
+let claser = new ClassName();
 
-            //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
-            let mockfunc = mocker.mockFunc(claser, claser.method_1);
-            //根据自己需求进行选择参数匹配器和预期方法,
-            when(mockfunc)(ArgumentMatchers.any).afterReturn('1');
+//3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
+let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
+//根据自己需求进行选择参数匹配器和预期方法,
+when(mockfunc)(ArgumentMatchers.any).afterReturn('1');
 
-            //4.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
-            //执行成功的案例1，传参为字符串类型
-            expect(claser.method_1('test')).assertEqual('1'); //用例执行通过。
-            //执行成功的案例2，传参为数字类型123
-            expect(claser.method_1(123)).assertEqual('1');//用例执行通过。
-            //执行成功的案例3，传参为boolean类型true
-            expect(claser.method_1(true)).assertEqual('1');//用例执行通过。
+//4.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+//执行成功的案例1，传参为字符串类型
+expect(claser.method_1('test')).assertEqual('1'); //用例执行通过。
+//执行成功的案例2，传参为数字类型123
+expect(claser.method_1("123")).assertEqual('1');//用例执行通过。
+//执行成功的案例3，传参为boolean类型true
+expect(claser.method_1("true")).assertEqual('1');//用例执行通过。
 
-            //执行失败的案例，传参为数字类型空
-            //expect(claser.method_1()).assertEqual('1');//用例执行失败。
-        });
-    });
+//执行失败的案例，传参为数字类型空
+//expect(claser.method_1()).assertEqual('1');//用例执行失败。
+});
+});
 }
 ```
 
@@ -513,59 +455,44 @@ export default function ActsAbilityTest() {
 import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
 
 export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('testMockfunc', 0, function () {
-            console.info("it1 begin");
+  describe('ActsAbilityTest', () => {
+    it('testMockfunc', 0, () => {
+      console.info("it1 begin");
 
-            //1.创建一个mock能力的对象MockKit
-            let mocker = new MockKit();
+      //1.创建一个mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
 
-            //2.定类ClassName，里面两个函数，然后创建一个对象claser
-            class ClassName {
-                constructor() {
-                }
+      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      class ClassName {
+        constructor() {
+        }
 
-                method_1(arg) {
-                    return '888888';
-                }
+        method_1(arg: string) {
+          return '888888';
+        }
 
-                method_2(arg) {
-                    return '999999';
-                }
-            }
+        method_2(arg: string) {
+          return '999999';
+        }
+}
 
-            let claser = new ClassName();
+let claser = new ClassName();
 
-            //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
-            let mockfunc = mocker.mockFunc(claser, claser.method_1);
-            //根据自己需求进行选择
-            when(mockfunc)(ArgumentMatchers.anyString).afterReturn('0');
+//3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
+let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
+//根据自己需求进行选择
+when(mockfunc)(ArgumentMatchers.anyString).afterReturn('1');
 
-            //4.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
-            //执行成功的案例，传参为字符串类型
-            expect(claser.method_1('test')).assertEqual('0'); //用例执行通过。
-            expect(claser.method_1('abc')).assertEqual('0'); //用例执行通过。
-            
-            when(mockfunc)(ArgumentMatchers.anyNumber).afterReturn('1');
-            expect(claser.method_1(1)).assertEqual('1')
+//4.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+//执行成功的案例，传参为字符串类型
+expect(claser.method_1('test')).assertEqual('1'); //用例执行通过。
+expect(claser.method_1('abc')).assertEqual('1'); //用例执行通过。
 
-            when(mockfunc)(ArgumentMatchers.anyBoolean).afterReturn('2');
-            expect(claser.method_1(true)).assertEqual('2')
-
-            when(mockfunc)(ArgumentMatchers.anyFunction).afterReturn('3');
-            function testFn() {
-              return 2;
-            }
-            expect(claser.method_1(testFn)).assertEqual('3')
-
-            when(mockfunc)(ArgumentMatchers.anyObj).afterReturn('4');
-            expect(claser.method_1(new String('test'))).assertEqual('4')
-
-            //执行失败的案例，传参为数字类型
-            //expect(claser.method_1(123)).assertEqual('1');//用例执行失败。
-            //expect(claser.method_1(true)).assertEqual('1');//用例执行失败。
-        });
-    });
+//执行失败的案例，传参为数字类型
+//expect(claser.method_1(123)).assertEqual('1');//用例执行失败。
+//expect(claser.method_1(true)).assertEqual('1');//用例执行失败。
+});
+});
 }
 ```
 
@@ -574,199 +501,203 @@ export default function ActsAbilityTest() {
 import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
 
 export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('testMockfunc', 0, function () {
-            console.info("it1 begin");
+  describe('ActsAbilityTest',  () => {
+    it('testMockfunc', 0, () => {
+      console.info("it1 begin");
 
-            //1.创建一个mock能力的对象MockKit
-            let mocker = new MockKit();
+      //1.创建一个mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
 
-            //2.定类ClassName，里面两个函数，然后创建一个对象claser
-            class ClassName {
-                constructor() {
-                }
+      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      class ClassName {
+        constructor() {
+        }
 
-                method_1(arg) {
-                    return '888888';
-                }
+        method_1(arg: string) {
+          return '888888';
+        }
 
-                method_2(arg) {
-                    return '999999';
-                }
-            }
+        method_2(arg: string) {
+          return '999999';
+        }
+}
 
-            let claser = new ClassName();
+let claser = new ClassName();
 
-            //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
-            let mockfunc = mocker.mockFunc(claser, claser.method_1);
-            //根据自己需求进行选择，这里假设匹配正则，且正则为/123456/
-            when(mockfunc)(ArgumentMatchers.matchRegexs(/123456/)).afterReturn('1');
+//3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
+let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
+//根据自己需求进行选择
+when(mockfunc)(ArgumentMatchers.anyString).afterReturn('1');
 
-            //4.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
-            //执行成功的案例，传参为字符串 比如 '1234567898'
-            expect(claser.method_1('1234567898')).assertEqual('1'); //用例执行通过。
-            //因为字符串 '1234567898'可以和正则/123456/匹配上
+//4.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+//执行成功的案例，传参为字符串类型
+expect(claser.method_1('test')).assertEqual('1'); //用例执行通过。
+expect(claser.method_1('abc')).assertEqual('1'); //用例执行通过。
 
-            //执行失败的案例，传参为字符串'1234'
-            //expect(claser.method_1('1234')).assertEqual('1');//用例执行失败。反之
-        });
-    });
+//执行失败的案例，传参为数字类型
+//expect(claser.method_1(123)).assertEqual('1');//用例执行失败。
+//expect(claser.method_1(true)).assertEqual('1');//用例执行失败。
+});
+});
 }
 ```
 
 **示例6： 验证功能 Verify函数的使用**
 ```javascript
-import {describe, expect, it, MockKit, when} from '@ohos/hypium';
+ import {describe, expect, it, MockKit, when} from '@ohos/hypium';
 
-export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('testMockfunc', 0, function () {
-            console.info("it1 begin");
+ export default function ActsAbilityTest() {
+  describe('ActsAbilityTest',  () => {
+    it('testMockfunc', 0, () => {
+      console.info("it1 begin");
 
-            //1.创建一个mock能力的对象MockKit
-            let mocker = new MockKit();
+      //1.创建一个mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
 
-            //2.定类ClassName，里面两个函数，然后创建一个对象claser
-            class ClassName {
-                constructor() {
-                }
+      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      class ClassName {
+        constructor() {
+        }
 
-                method_1(...arg) {
-                    return '888888';
-                }
+        method_1(...arg: string[]) {
+          return '888888';
+        }
 
-                method_2(...arg) {
-                    return '999999';
-                }
-            }
+        method_2(...arg: string[]) {
+          return '999999';
+        }
+ }
 
-            let claser = new ClassName();
+ let claser = new ClassName();
 
-            //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
-            mocker.mockFunc(claser, claser.method_1);
-            mocker.mockFunc(claser, claser.method_2);
+ //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
+ mocker.mockFunc(claser, claser.method_1);
+ mocker.mockFunc(claser, claser.method_2);
 
-            //4.方法调用如下
-            claser.method_1('abc', 'ppp');
-            claser.method_1('abc');
-            claser.method_1('xyz');
-            claser.method_1();
-            claser.method_1('abc', 'xxx', 'yyy');
-            claser.method_1();
-            claser.method_2('111');
-            claser.method_2('111', '222');
+ //4.方法调用如下
+ claser.method_1('abc', 'ppp');
+ claser.method_1('abc');
+ claser.method_1('xyz');
+ claser.method_1();
+ claser.method_1('abc', 'xxx', 'yyy');
+ claser.method_1();
+ claser.method_2('111');
+ claser.method_2('111', '222');
 
-            //5.现在对mock后的两个函数进行验证，验证调用情况
-            mocker.verify('method_1', []).atLeast(3); //结果为failed
-            //解释：验证函数'method_1'，参数列表为空：[] 的函数，至少执行过3次，
-            //执行结果为failed，因为'method_1'且无参数 在4中只执行过2次
-            //mocker.verify('method_2',['111']).once();//执行success，原因同上
-            //mocker.verify('method_2',['111',,'222']).once();//执行success，原因同上
-        });
-    });
-}
+ //5.现在对mock后的两个函数进行验证，验证调用情况
+ mocker.verify('method_1', []).atLeast(3); //结果为failed
+ //解释：验证函数'method_1'，参数列表为空：[] 的函数，至少执行过3次，
+ //执行结果为failed，因为'method_1'且无参数 在4中只执行过2次
+ //mocker.verify('method_2',['111']).once();//执行success，原因同上
+ //mocker.verify('method_2',['111',,'222']).once();//执行success，原因同上
+ });
+ });
+ } 
 ```
 
 **示例7：  ignoreMock(obj, method) 忽略函数的使用**
 ```javascript
-import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
+ import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
 
-export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('testMockfunc', 0, function () {
-            console.info("it1 begin");
+ export default function ActsAbilityTest() {
+  describe('ActsAbilityTest', () => {
+    it('testMockfunc', 0, () => {
+      console.info("it1 begin");
 
-            //1.创建一个mock能力的对象MockKit
-            let mocker = new MockKit();
+      //1.创建一个mock能力的对象MockKit
+      let mocker:MockKit = new MockKit();
 
-            //2.定类ClassName，里面两个函数，然后创建一个对象claser
-            class ClassName {
-                constructor() {
-                }
+      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      class ClassName {
+        constructor() {
+        }
 
-                method_1(...arg) {
-                    return '888888';
-                }
+        method_1(...arg: number[]) {
+          return '888888';
+        }
 
-                method_2(...arg) {
-                    return '999999';
-                }
-            }
+        method_2(...arg: number[]) {
+          return '999999';
+        }
+ }
 
-            let claser = new ClassName();
+ let claser = new ClassName();
 
-            //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
-            let func_1 = mocker.mockFunc(claser, claser.method_1);
-            let func_2 = mocker.mockFunc(claser, claser.method_2);
+ //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
+ let func_1: Function = mocker.mockFunc(claser, claser.method_1);
+ let func_2: Function = mocker.mockFunc(claser, claser.method_2);
 
-            //4.对mock后的函数的行为进行修改
-            when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
-            when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
+ //4.对mock后的函数的行为进行修改
+ when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
+ when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
 
-            //5.方法调用如下
-            console.log(claser.method_1(123)); //执行结果是4，符合步骤4中的预期
-            console.log(claser.method_2(456)); //执行结果是5，符合步骤4中的预期
+ //5.方法调用如下
+ console.log(claser.method_1(123)); //执行结果是4，符合步骤4中的预期
+ console.log(claser.method_2(456)); //执行结果是5，符合步骤4中的预期
 
-            //6.现在对mock后的两个函数的其中一个函数method_1进行忽略处理（原理是就是还原）
-            mocker.ignoreMock(claser, claser.method_1);
-            //然后再去调用 claser.method_1函数，看执行结果
-            console.log(claser.method_1(123)); //执行结果是888888，发现这时结果跟步骤4中的预期不一样了，执行了claser.method_1没被mock之前的结果
-            //用断言测试
-            expect(claser.method_1(123)).assertEqual('4'); //结果为failed 符合ignoreMock预期
-            claser.method_2(456); //执行结果是5，因为method_2没有执行ignore忽略，所有也符合步骤4中的预期
-        });
-    });
-}
+ //6.现在对mock后的两个函数的其中一个函数method_1进行忽略处理（原理是就是还原）
+ mocker.ignoreMock(claser, claser.method_1);
+ //然后再去调用 claser.method_1函数，看执行结果
+ console.log(claser.method_1(123)); //执行结果是888888，发现这时结果跟步骤4中的预期不一样了，执行了claser.method_1没被mock之前的结果
+ //用断言测试
+ expect(claser.method_1(123)).assertEqual('4'); //结果为failed 符合ignoreMock预期
+ claser.method_2(456); //执行结果是5，因为method_2没有执行ignore忽略，所有也符合步骤4中的预期
+ });
+ });
+ }
 ```
 
 **示例8：  clear（）函数的使用**
 
 ```javascript
-import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
+ import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
 
-export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('testMockfunc', 0, function () {
-            console.info("it1 begin");
+ export default function ActsAbilityTest() {
+  describe('ActsAbilityTest', () => {
+    it('testMockfunc', 0, () => {
+      console.info("it1 begin");
 
-            //1.创建一个mock能力的对象MockKit
-            let mocker = new MockKit();
+      //1.创建一个mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
 
-            //2.定类ClassName，里面两个函数，然后创建一个对象claser
-            class ClassName {
-                constructor() {
-                }
+      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      class ClassName {
+        constructor() {
+        }
 
-                method_1(...arg) {
-                    return '888888';
-                }
+        method_1(...arg: number[]) {
+          return '888888';
+        }
 
-                method_2(...arg) {
-                    return '999999';
-                }
-            }
-            let claser = new ClassName();
+        method_2(...arg: number[]) {
+          return '999999';
+        }
+ }
 
-            //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
-            let func_1 = mocker.mockFunc(claser, claser.method_1);
-            let func_2 = mocker.mockFunc(claser, claser.method_2);
+ let claser = new ClassName();
 
-            //4.对mock后的函数的行为进行修改
-            when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
-            when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
+ //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
+ let func_1: Function = mocker.mockFunc(claser, claser.method_1);
+ let func_2: Function = mocker.mockFunc(claser, claser.method_2);
 
-            //5.方法调用如下
-            //expect(claser.method_1(123)).assertEqual('4');//ok 符合预期
-            //expect(claser.method_2(456)).assertEqual('5');//ok 符合预期
+ //4.对mock后的函数的行为进行修改
+ when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
+ when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
 
-            //6.清除mock操作（原理是就是还原）
-            mocker.clear(claser);
-            //然后再去调用 claser.method_1函数，看执行结果
-            expect(claser.method_1(123)).assertEqual('4');//failed 符合预期
-            expect(claser.method_2(456)).assertEqual('5');//failed 符合预期
-        });
-    });
-}
+ //5.方法调用如下
+ console.log(claser.method_1(123)); //执行结果是4，符合步骤4中的预期
+ console.log(claser.method_2(456)); //执行结果是5，符合步骤4中的预期
+
+ //6.现在对mock后的两个函数的其中一个函数method_1进行忽略处理（原理是就是还原）
+ mocker.ignoreMock(claser, claser.method_1);
+ //然后再去调用 claser.method_1函数，看执行结果
+ console.log(claser.method_1(123)); //执行结果是888888，发现这时结果跟步骤4中的预期不一样了，执行了claser.method_1没被mock之前的结果
+ //用断言测试
+ expect(claser.method_1(123)).assertEqual('4'); //结果为failed 符合ignoreMock预期
+ claser.method_2(456); //执行结果是5，因为method_2没有执行ignore忽略，所有也符合步骤4中的预期
+ });
+ });
+ }
 ```
 
 
@@ -776,39 +707,39 @@ export default function ActsAbilityTest() {
 import {describe, expect, it, MockKit, when} from '@ohos/hypium';
 
 export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('testMockfunc', 0, function () {
-            console.info("it1 begin");
+  describe('ActsAbilityTest',  () => {
+    it('testMockfunc', 0, () => {
+      console.info("it1 begin");
 
-            //1.创建一个mock能力的对象MockKit
-            let mocker = new MockKit();
+      //1.创建一个mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
 
-            //2.定类ClassName，里面两个函数，然后创建一个对象claser
-            class ClassName {
-                constructor() {
-                }
+      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      class ClassName {
+        constructor() {
+        }
 
-                method_1(arg) {
-                    return '888888';
-                }
-            }
+        method_1(arg: string) {
+          return '888888';
+        }
+}
 
-            let claser = new ClassName();
+let claser = new ClassName();
 
-            //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
-            let mockfunc = mocker.mockFunc(claser, claser.method_1);
+//3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
+let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
 
-            //4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterReturnNothing();即不返回任何值
-            when(mockfunc)('test').afterThrow('error xxx');
+//4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterReturnNothing();即不返回任何值
+when(mockfunc)('test').afterThrow('error xxx');
 
-            //5.执行mock后的函数，捕捉异常并使用assertEqual对比msg否符合预期
-            try {
-                claser.method_1('test');
-            } catch (e) {
-                expect(e).assertEqual('error xxx');//执行通过
-            }
-        });
-    });
+//5.执行mock后的函数，捕捉异常并使用assertEqual对比msg否符合预期
+try {
+  claser.method_1('test');
+} catch (e) {
+  expect(e).assertEqual('error xxx');//执行通过
+}
+});
+});
 }
 ```
 
@@ -818,65 +749,68 @@ export default function ActsAbilityTest() {
 import {describe, expect, it, MockKit, when} from '@ohos/hypium';
 
 export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('testMockfunc', 0, function () {
-            console.info("it1 begin");
+  describe('ActsAbilityTest',  () => {
+    it('testMockfunc', 0, () => {
+      console.info("it1 begin");
 
-            //1.创建一个mock能力的对象MockKit
-            let mocker = new MockKit();
+      //1.创建一个mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
 
-            //2.定类ClassName，里面两个函数，然后创建一个对象claser
-            class ClassName {
-                constructor() {
-                }
+      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      class ClassName {
+        constructor() {
+        }
 
-                async method_1(arg) {
-                    return new Promise((res, rej) => {
-                        //做一些异步操作
-                        setTimeout(function () {
-                            console.log('执行');
-                            res('数据传递');
-                        }, 2000);
-                    });
-                }
-            }
+        async method_1(arg: string) {
+          return new Promise<string>((res: Function, rej: Function) => {
+            //做一些异步操作
+            setTimeout(() => {
+              console.log('执行');
+              res('数据传递');
+            }, 2000);
+          });
+        }
+}
 
-            let claser = new ClassName();
+let claser = new ClassName();
 
-            //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
-            let mockfunc = mocker.mockFunc(claser, claser.method_1);
+//3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
+let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
 
-            //4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterRetrun; 可以自定义返回一个promise
-            when(mockfunc)('test').afterReturn(new Promise((res, rej) => {
-                console.log("do something");
-                res('success something');
-            }));
+//4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterRetrun; 可以自定义返回一个promise
+when(mockfunc)('test').afterReturn(new Promise<string>((res: Function, rej: Function) => {
+  console.log("do something");
+  res('success something');
+}));
 
-            //5.执行mock后的函数，即对定义的promise进行后续执行
-            claser.method_1('test').then(function (data) {
-                //数据处理代码...
-                console.log('result : ' + data);
-            });
-        });
-    });
+//5.执行mock后的函数，即对定义的promise进行后续执行
+claser.method_1('test').then((data: string) => {
+  //数据处理代码...
+  console.log('result : ' + data);
+});
+});
+});
 }
 ```
 
 **示例11：mock 系统函数的使用**
 
 ```javascript
+import {describe, expect, it, MockKit, when} from '@ohos/hypium';
+import app from '@system.app';
 export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('test_systemApi', 0, function () {
-            //1.创建MockKit对象
-            let mocker = new MockKit();
-            //2.mock app.getInfo函数
-            let mockf = mocker.mockFunc(app, app.getInfo);
-            when(mockf)('test').afterReturn('1');
-            //执行成功案例
-            expect(app.getInfo('test')).assertEqual('1');
-        });
+  describe('ActsAbilityTest',  () => {
+    it('testMockfunc', 0, () => {
+      console.info("it1 begin");
+
+      //1.创建一个mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
+      let mockf: Function = mocker.mockFunc(app, app.getInfo);
+      when(mockf)().afterReturn('1');
+      //执行成功案例
+      expect(app.getInfo()).assertEqual('1');
     });
+  });
 }
 ```
 
@@ -884,42 +818,42 @@ export default function ActsAbilityTest() {
 **示例12：verify times函数的使用（验证函数调用次数）**
 
 ```javascript
-import { describe, expect, it, MockKit, when } from '@ohos/hypium'
+ import { describe, expect, it, MockKit, when } from '@ohos/hypium'
 
-export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('test_verify_times', 0, function () {
-            //1.创建MockKit对象
-            let mocker = new MockKit();
-            //2.定义需要被mock的类
-            class ClassName {
-                constructor() {
-                }
+ export default function ActsAbilityTest() {
+  describe('ActsAbilityTest', () => {
+    it('test_verify_times', 0, () => {
+      //1.创建MockKit对象
+      let mocker: MockKit = new MockKit();
+      //2.定义需要被mock的类
+      class ClassName {
+        constructor() {
+        }
 
-                method_1(...arg) {
-                    return '888888';
-                }
-            }
-            //3.创建类对象
-            let claser = new ClassName();
-            //4.mock 类ClassName对象的某个方法，比如method_1
-            let func_1 = mocker.mockFunc(claser, claser.method_1);
-            //5.期望被mock后的函数能够返回自己假设的结果
-            when(func_1)('123').afterReturn('4');
-
-            //6.随机执行几次函数，参数如下
-            claser.method_1('123', 'ppp');
-            claser.method_1('abc');
-            claser.method_1('xyz');
-            claser.method_1();
-            claser.method_1('abc', 'xxx', 'yyy');
-            claser.method_1('abc');
-            claser.method_1();
-            //7.验证函数method_1且参数为'abc'时，执行过的次数是否为2
-            mocker.verify('method_1', ['abc']).times(2);
-        });
-    });
+        method_1(...arg: string[]) {
+          return '888888';
+        }
 }
+ //3.创建类对象
+ let claser = new ClassName();
+ //4.mock 类ClassName对象的某个方法，比如method_1
+ let func_1: Function = mocker.mockFunc(claser, claser.method_1);
+ //5.期望被mock后的函数能够返回自己假设的结果
+ when(func_1)('123').afterReturn('4');
+
+ //6.随机执行几次函数，参数如下
+ claser.method_1('123', 'ppp');
+ claser.method_1('abc');
+ claser.method_1('xyz');
+ claser.method_1();
+ claser.method_1('abc', 'xxx', 'yyy');
+ claser.method_1('abc');
+ claser.method_1();
+ //7.验证函数method_1且参数为'abc'时，执行过的次数是否为2
+ mocker.verify('method_1', ['abc']).times(2);
+ });
+ });
+ }
 ```
 
 
@@ -929,37 +863,37 @@ export default function ActsAbilityTest() {
 import { describe, expect, it, MockKit, when } from '@ohos/hypium'
 
 export default function ActsAbilityTest() {
-    describe('ActsAbilityTest', function () {
-        it('test_verify_atLeast', 0, function () {
-            //1.创建MockKit对象
-            let mocker = new MockKit();
-            //2.定义需要被mock的类
-            class ClassName {
-                constructor() {
-                }
+  describe('ActsAbilityTest', () => {
+    it('test_verify_atLeast', 0, () => {
+      //1.创建MockKit对象
+      let mocker: MockKit = new MockKit();
+      //2.定义需要被mock的类
+      class ClassName {
+        constructor() {
+        }
 
-                method_1(...arg) {
-                    return '888888';
-                }
-            }
+        method_1(...arg: string[]) {
+          return '888888';
+        }
+}
 
-            //3.创建类对象
-            let claser = new ClassName();
-            //4.mock  类ClassName对象的某个方法，比如method_1
-            let func_1 = mocker.mockFunc(claser, claser.method_1);
-            //5.期望被mock后的函数能够返回自己假设的结果
-            when(func_1)('123').afterReturn('4');
-            //6.随机执行几次函数，参数如下
-            claser.method_1('123', 'ppp');
-            claser.method_1('abc');
-            claser.method_1('xyz');
-            claser.method_1();
-            claser.method_1('abc', 'xxx', 'yyy');
-            claser.method_1();
-            //7.验证函数method_1且参数为空时，是否至少执行过2次
-            mocker.verify('method_1', []).atLeast(2);
-        });
-    });
+//3.创建类对象
+let claser = new ClassName();
+//4.mock  类ClassName对象的某个方法，比如method_1
+let func_1: Function = mocker.mockFunc(claser, claser.method_1);
+//5.期望被mock后的函数能够返回自己假设的结果
+when(func_1)('123').afterReturn('4');
+//6.随机执行几次函数，参数如下
+claser.method_1('123', 'ppp');
+claser.method_1('abc');
+claser.method_1('xyz');
+claser.method_1();
+claser.method_1('abc', 'xxx', 'yyy');
+claser.method_1();
+//7.验证函数method_1且参数为空时，是否至少执行过2次
+mocker.verify('method_1', []).atLeast(2);
+});
+});
 }
 ```
 
@@ -1031,21 +965,25 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
 ```
 
 ```javascript
-import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '@ohos/hypium';
+ import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '@ohos/hypium';
 
-export default function abilityTest() {
-    describe('actsAbilityTest', function () {
-        it('testDataDriverAsync', 0, async function (done, data) {
-            console.info('name: ' + data.name);
-            console.info('value: ' + data.value);
-            done();
-        });
-
-        it('testDataDriver', 0, function () {
-            console.info('stress test');
-        });
+ export default function abilityTest() {
+  describe('actsAbilityTest', () => {
+    it('testDataDriverAsync', 0, async (done: Function, data: ParmObj) => {
+      console.info('name: ' + data.name);
+      console.info('value: ' + data.value);
+      done();
     });
+
+    it('testDataDriver', 0, () => {
+      console.info('stress test');
+    });
+  });
 }
+ interface ParmObj {
+   name: string,
+   value: string
+ }
 ```
 #### 专项能力
 
@@ -1065,16 +1003,16 @@ export default function abilityTest() {
 
   示例代码：
 
-  ```javascript
-  import { describe, it, expect, TestType, Size, Level } from '@ohos/hypium';
-  
-  export default function attributeTest() {
-      describe('attributeTest', function () {
-          it("testAttributeIt", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
-              console.info('Hello Test');
-          })
-      })
-  }
+ ```javascript
+ import { describe, it, expect, TestType, Size, Level } from '@ohos/hypium';
+
+ export default function attributeTest() {
+  describe('attributeTest', () => {
+    it("testAttributeIt", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, () => {
+      console.info('Hello Test');
+    })
+  })
+}
   ```
 
   示例命令: 
@@ -1098,24 +1036,24 @@ export default function abilityTest() {
 
   ```javascript
   import { describe, it, expect, TestType, Size, Level } from '@ohos/hypium';
-  
+
   export default function attributeTest() {
-      describe('describeTest_000', function () {
-          it("testIt_00", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
-              console.info('Hello Test');
-          })
-          
-          it("testIt_01", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
-              console.info('Hello Test');
-          })
-      })
-      
-      describe('describeTest_001', function () {
-          it("testIt_02", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
-              console.info('Hello Test');
-          })
-      })
-  }
+  describe('describeTest_000',  () => {
+    it("testIt_00", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0,  () => {
+      console.info('Hello Test');
+    })
+
+    it("testIt_01", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, () => {
+      console.info('Hello Test');
+    })
+  })
+
+  describe('describeTest_001',  () => {
+    it("testIt_02", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, () => {
+      console.info('Hello Test');
+    })
+  })
+}
   ```
 
   示例命令1: 
@@ -1231,12 +1169,12 @@ import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.UiTest'
 在测试用例文件中import `On/Driver/Component`类，然后调用API接口编写测试用例。
 
 ```javascript
-import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '@ohos/hypium'
-import {ON, Driver, Component, MatchPattern} from '@ohos.UiTest'
+ import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '@ohos/hypium'
+ import {ON, Driver, Component, MatchPattern} from '@ohos.UiTest'
 
-export default async function abilityTest() {
-  describe('uiTestDemo', function() {
-    it('uitest_demo0', 0, async function() {
+ export default async function abilityTest() {
+  describe('uiTestDemo', () => {
+    it('uitest_demo0', 0, async () => {
       // create Driver
       let driver = Driver.create()
       // find component by text
@@ -1270,11 +1208,11 @@ export default async function abilityTest() {
 其中assertComponentExist接口是断言API，用于断言当前界面存在目标控件；如果控件不存在，该API将抛出JS异常，使当前测试用例失败。
 
 ```javascript
-import {ON,Driver,Component} from '@ohos.UiTest'
+ import {ON,Driver,Component} from '@ohos.UiTest'
 
-export default async function abilityTest() {
-  describe('UiTestDemo', function() {
-    it('Uitest_demo0', 0, async function(done) {
+ export default async function abilityTest() {
+  describe('UiTestDemo', () => {
+    it('Uitest_demo0', 0, async (done: Function) => {
       try{
         // create Driver
         let driver = Driver.create()
