@@ -510,8 +510,6 @@ SuiteService.Suite = class {
         } catch (error) {
             console.error(`${TAG}${error?.stack}`);
             this.hookError = error;
-            specService.setStatus(true);
-            await suiteService.setSuiteResults(this, error, coreContext);
         }
 
         if (this.hookError !== null) {
