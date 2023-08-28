@@ -480,6 +480,7 @@ SuiteService.Suite = class {
             }
             specItem.setResult();
             await coreContext.fireEvents('spec', 'specDone', specItem);
+            specService.setCurrentRunningSpec(null);
         }
     }
 
