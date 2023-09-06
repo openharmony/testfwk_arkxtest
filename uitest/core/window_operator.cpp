@@ -215,7 +215,7 @@ namespace OHOS::uitest {
             driver_.PerformMouseAction(touch1, options_, out.exception_);
             constexpr auto focusTime = 1000;
             driver_.DelayMs(focusTime);
-            //find split btn and click.
+            // find split btn and click.
             auto selector2 = WidgetSelector();
             auto attrMatcher2 = WidgetAttrMatcher(ATTR_NAMES[UiAttr::KEY], "EnhanceMenuScreenLeftRow", EQ);
             selector2.AddMatcher(attrMatcher2);
