@@ -719,6 +719,9 @@ namespace OHOS::uitest {
         auto screenId = display->GetScreenId();
         ScreenManager &screenMgr = ScreenManager::GetInstance();
         DCHECK(screenMgr);
+        bool isLocked = false;
+        screenMgr.IsScreenRotationLocked(isLocked);
+        screenMgr.SetScreenRotationLocked(false);
         auto screen = screenMgr.GetScreenById(screenId);
         if (screen == nullptr) {
             LOG_E("ScreenManager init fail");
@@ -740,6 +743,7 @@ namespace OHOS::uitest {
             default :
                 break;
         }
+        screenMgr.SetScreenRotationLocked(isLocked);
     }
 
     DisplayRotation SysUiController::GetDisplayRotation() const
@@ -757,7 +761,7 @@ namespace OHOS::uitest {
     {
         ScreenManager &screenMgr = ScreenManager::GetInstance();
         DCHECK(screenMgr);
-        screenMgr.SetScreenRotationLocked(enabled);
+        screenMgr.SetScreenRotationLocked(!enabled);
     }
 
     Point SysUiController::GetDisplaySize() const
