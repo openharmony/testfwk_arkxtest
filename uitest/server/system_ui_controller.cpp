@@ -718,10 +718,10 @@ namespace OHOS::uitest {
         }
         auto screenId = display->GetScreenId();
         ScreenManager &screenMgr = ScreenManager::GetInstance();
+        DCHECK(screenMgr);
         bool isLocked = false;
         screenMgr.IsScreenRotationLocked(isLocked);
         screenMgr.SetScreenRotationLocked(false);
-        DCHECK(screenMgr);
         auto screen = screenMgr.GetScreenById(screenId);
         if (screen == nullptr) {
             LOG_E("ScreenManager init fail");
