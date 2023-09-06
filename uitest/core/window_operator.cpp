@@ -191,6 +191,45 @@ namespace OHOS::uitest {
             return;
         }
         BarAction(targetBtnId, out);
+        if (out.exception_.code_ == ERR_OPERATION_UNSUPPORTED) {
+            out.exception_ = ApiCallErr(NO_ERROR, "");
+            // call split bar.
+            auto selector = WidgetSelector();
+            auto attrMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::KEY], "EnhanceMaximizeBtn", EQ);
+            auto windowMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], to_string(window_.id_), EQ);
+            selector.AddMatcher(attrMatcher);
+            selector.AddMatcher(windowMatcher);
+            selector.AddAppLocator(window_.bundleName_);
+            vector<unique_ptr<Widget>> widgets;
+            driver_.FindWidgets(selector, widgets, out.exception_);
+            if (out.exception_.code_ != NO_ERROR) {
+                return;
+            }
+            if (widgets.empty()) {
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+                return;
+            }
+            auto rect = widgets[0]->GetBounds();
+            Point widgetCenter(rect.GetCenterX(), rect.GetCenterY());
+            auto touch1 = MouseMoveTo(widgetCenter);
+            driver_.PerformMouseAction(touch1, options_, out.exception_);
+            constexpr auto focusTime = 1000;
+            driver_.DelayMs(focusTime);
+            //find split btn and click.
+            auto selector2 = WidgetSelector();
+            auto attrMatcher2 = WidgetAttrMatcher(ATTR_NAMES[UiAttr::KEY], "EnhanceMenuScreenLeftRow", EQ);
+            selector2.AddMatcher(attrMatcher2);
+            vector<unique_ptr<Widget>> widgets2;
+            driver_.FindWidgets(selector2, widgets2, out.exception_);
+            if (widgets2.empty()) {
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+                return;
+            }
+            auto rect2 = widgets2[0]->GetBounds();
+            Point widgetCenter2(rect2.GetCenterX(), rect2.GetCenterY());
+            auto touch2 = GenericClick(TouchOp::CLICK, widgetCenter2);
+            driver_.PerformTouch(touch2, options_, out.exception_);
+        }
     }
 
     void  WindowOperator::Maximize(ApiReplyInfo &out)
@@ -200,6 +239,10 @@ namespace OHOS::uitest {
             return;
         }
         BarAction(targetBtnId, out);
+        if (out.exception_.code_ == ERR_OPERATION_UNSUPPORTED) {
+            out.exception_ = ApiCallErr(NO_ERROR, "");
+            BarAction("EnhanceMaximizeBtn", out);
+        }
     }
 
     void WindowOperator::Resume(ApiReplyInfo &out)
@@ -209,6 +252,10 @@ namespace OHOS::uitest {
             return;
         }
         BarAction(targetBtnId, out);
+        if (out.exception_.code_ == ERR_OPERATION_UNSUPPORTED) {
+            out.exception_ = ApiCallErr(NO_ERROR, "");
+            BarAction("EnhanceMaximizeBtn", out);
+        }
     }
 
     void WindowOperator::Minimize(ApiReplyInfo &out)
@@ -218,6 +265,10 @@ namespace OHOS::uitest {
             return;
         }
         BarAction(targetBtnId, out);
+        if (out.exception_.code_ == ERR_OPERATION_UNSUPPORTED) {
+            out.exception_ = ApiCallErr(NO_ERROR, "");
+            BarAction("EnhanceMinimizeBtn", out);
+        }
     }
 
     void WindowOperator::Close(ApiReplyInfo &out)
@@ -227,6 +278,10 @@ namespace OHOS::uitest {
             return;
         }
         BarAction(targetBtnId, out);
+        if (out.exception_.code_ == ERR_OPERATION_UNSUPPORTED) {
+            out.exception_ = ApiCallErr(NO_ERROR, "");
+            BarAction("EnhanceCloseBtn", out);
+        }
     }
 
     void WindowOperator::BarAction(string_view buttonId, ApiReplyInfo &out)
@@ -244,7 +299,7 @@ namespace OHOS::uitest {
             return;
         }
         if (widgets.empty()) {
-            out.exception_ = ApiCallErr(USAGE_ERROR, "Not find target winAction button");
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
             return;
         }
         auto rect = widgets[0]->GetBounds();
