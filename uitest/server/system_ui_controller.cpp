@@ -718,6 +718,9 @@ namespace OHOS::uitest {
         }
         auto screenId = display->GetScreenId();
         ScreenManager &screenMgr = ScreenManager::GetInstance();
+        bool isLocked = false;
+        screenMgr.IsScreenRotationLocked(isLocked);
+        screenMgr.SetScreenRotationLocked(true);
         DCHECK(screenMgr);
         auto screen = screenMgr.GetScreenById(screenId);
         if (screen == nullptr) {
@@ -740,6 +743,7 @@ namespace OHOS::uitest {
             default :
                 break;
         }
+        screenMgr.SetScreenRotationLocked(isLocked);
     }
 
     DisplayRotation SysUiController::GetDisplayRotation() const
