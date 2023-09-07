@@ -791,6 +791,8 @@ namespace OHOS::uitest {
         auto pressHome = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
+            auto keyAction = CombinedKeys(KEYCODE_WIN, KEYCODE_D, KEYCODE_NONE);
+            driver.TriggerKey(keyAction, uiOpArgs, out.exception_);
             driver.TriggerKey(Home(), uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.pressHome", pressHome);
