@@ -1062,8 +1062,13 @@ namespace OHOS::uitest {
             scrollValue = adown ? scrollValue : -scrollValue;
             auto key1 = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
             auto key2 = ReadCallArg<int32_t>(in, INDEX_FOUR, KEYCODE_NONE);
-            uiOpArgs.swipeVelocityPps_ = ReadCallArg<int32_t>(in, INDEX_FIVE, uiOpArgs.defaultSwipeVelocityPps_);
-            auto touch = MouseScroll(point, scrollValue, key1, key2);
+            const uint32_t maxScrollSpeed = 500;
+            const uint32_t defaultScrollSpeed = 20;
+            auto speed = ReadCallArg<int32_t>(in, INDEX_FIVE, defaultScrollSpeed);
+            if (speed < 0 || speed > maxScrollSpeed) {
+                speed = defaultScrollSpeed;
+            }
+            auto touch = MouseScroll(point, scrollValue, key1, key2, speed);
             driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.mouseScroll", mouseScroll);
