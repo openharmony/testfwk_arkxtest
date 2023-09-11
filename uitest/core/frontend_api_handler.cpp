@@ -1065,7 +1065,7 @@ namespace OHOS::uitest {
             const uint32_t maxScrollSpeed = 500;
             const uint32_t defaultScrollSpeed = 20;
             auto speed = ReadCallArg<int32_t>(in, INDEX_FIVE, defaultScrollSpeed);
-            if (speed < 0 || speed > maxScrollSpeed) {
+            if (speed < 1 || speed > maxScrollSpeed) {
                 speed = defaultScrollSpeed;
             }
             auto touch = MouseScroll(point, scrollValue, key1, key2, speed);
