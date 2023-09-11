@@ -376,8 +376,8 @@ namespace OHOS::uitest {
 
     class MouseScroll : public MouseAction {
     public:
-        explicit MouseScroll(const Point &point, int32_t &scrollValue, int32_t &key1, int32_t &key2)
-            : point_(point),  scrollValue_(scrollValue), key1_(key1), key2_(key2) {};
+        explicit MouseScroll(const Point &point, int32_t scrollValue, int32_t key1, int32_t key2, uint32_t speed)
+            : point_(point),  scrollValue_(scrollValue), key1_(key1), key2_(key2),  speed_(speed) {};
 
         void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const override;
 
@@ -388,6 +388,7 @@ namespace OHOS::uitest {
         const int32_t scrollValue_;
         const int32_t key1_;
         const int32_t key2_;
+        const uint32_t speed_;
     };
 }
 

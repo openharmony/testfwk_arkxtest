@@ -321,8 +321,8 @@ namespace OHOS::uitest {
     void MouseScroll::Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const
     {
         recv.push_back(MouseEvent {ActionStage::MOVE, point_, MouseButton::BUTTON_NONE, {}, 0});
-        constexpr int32_t speedRatio = 6000;
-        auto focusTimeMs = speedRatio / opt.swipeVelocityPps_;
+        constexpr int32_t thousandMilliseconds = 1000;
+        auto focusTimeMs = thousandMilliseconds / speed_ / 2;
         auto stage  = (scrollValue_ > 0) ? AXIS_DOWN : AXIS_UP;
         vector<KeyEvent> keyAction1;
         keyAction1.push_back(KeyEvent {ActionStage::DOWN, key1_, opt.keyHoldMs_});
