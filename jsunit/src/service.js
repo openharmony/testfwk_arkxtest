@@ -180,12 +180,12 @@ class SuiteService {
         this.currentRunningSuite.beforeEach.push(processFunc(this.coreContext, func));
     }
 
-    beforeEachSpecified(itDescs, func) {
-        this.currentRunningSuite.beforeEachSpecified.set(itDescs, processFunc(this.coreContext, func));
+    beforeItSpecified(itDescs, func) {
+        this.currentRunningSuite.beforeItSpecified.set(itDescs, processFunc(this.coreContext, func));
     }
 
-    afterEachSpecified(itDescs, func) {
-        this.currentRunningSuite.afterEachSpecified.set(itDescs, processFunc(this.coreContext, func));
+    afterItSpecified(itDescs, func) {
+        this.currentRunningSuite.afterItSpecified.set(itDescs, processFunc(this.coreContext, func));
     }
 
     afterAll(func) {
@@ -364,11 +364,11 @@ class SuiteService {
             describe: function (desc, func) {
                 return _this.describe(desc, func);
             },
-            beforeEachSpecified: function (itDescs, func) {
-                return _this.beforeEachSpecified(itDescs, func);
+            beforeItSpecified: function (itDescs, func) {
+                return _this.beforeItSpecified(itDescs, func);
             },
-            afterEachSpecified: function (itDescs, func) {
-                return _this.afterEachSpecified(itDescs, func);
+            afterItSpecified: function (itDescs, func) {
+                return _this.afterItSpecified(itDescs, func);
             },
             beforeAll: function (func) {
                 return _this.beforeAll(func);
@@ -393,8 +393,8 @@ SuiteService.Suite = class {
         this.specs = [];
         this.beforeAll = [];
         this.afterAll = [];
-        this.beforeEachSpecified = new Map();
-        this.afterEachSpecified = new Map();
+        this.beforeItSpecified = new Map();
+        this.afterItSpecified = new Map();
         this.beforeEach = [];
         this.afterEach = [];
         this.duration = 0;
@@ -482,12 +482,12 @@ SuiteService.Suite = class {
             }
             await coreContext.fireEvents('spec', 'specStart', specItem);
             try {
-                for (const [itNames, hookFunc] of this.beforeEachSpecified) {
+                for (const [itNames, hookFunc] of this.beforeItSpecified) {
                     itNames?.includes(specItem.description) ? await Reflect.apply(hookFunc, null, []) : null;
                 }
                 await this.runAsyncHookFunc('beforeEach');
                 await specItem.asyncRun(coreContext);
-                for (const [itNames, hookFunc] of this.afterEachSpecified) {
+                for (const [itNames, hookFunc] of this.afterItSpecified) {
                     itNames?.includes(specItem.description) ? await Reflect.apply(hookFunc, null, []) : null;
                 }
                 await this.runAsyncHookFunc('afterEach');
