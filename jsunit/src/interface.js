@@ -23,6 +23,13 @@ const describe = function (desc, func) {
 const it = function (desc, filter, func) {
     return Reflect.has(core, 'it') ? core.it(desc, filter, func) : (desc, filter, func) => { };
 };
+const beforeItSpecified = function (itDescs, func) {
+    return Reflect.has(core, 'beforeItSpecified') ? core.beforeItSpecified(itDescs, func) : (itDescs, func) => { };
+};
+
+const afterItSpecified = function (itDescs, func) {
+    return Reflect.has(core, 'afterItSpecified') ? core.afterItSpecified(itDescs, func) : (itDescs, func) => { };
+};
 const beforeEach = function (func) {
     return Reflect.has(core, 'beforeEach') ? core.beforeEach(func) : (func) => { };
 };
@@ -40,5 +47,5 @@ const expect = function (actualValue) {
 };
 
 export {
-    describe, it, beforeAll, beforeEach, afterEach, afterAll, expect
+    describe, it, beforeAll, beforeEach, afterEach, afterAll, expect, beforeItSpecified, afterItSpecified
 };

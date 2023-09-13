@@ -180,6 +180,14 @@ class SuiteService {
         this.currentRunningSuite.beforeEach.push(processFunc(this.coreContext, func));
     }
 
+    beforeItSpecified(itDescs, func) {
+        this.currentRunningSuite.beforeItSpecified.set(itDescs, processFunc(this.coreContext, func));
+    }
+
+    afterItSpecified(itDescs, func) {
+        this.currentRunningSuite.afterItSpecified.set(itDescs, processFunc(this.coreContext, func));
+    }
+
     afterAll(func) {
         this.currentRunningSuite.afterAll.push(processFunc(this.coreContext, func));
     }
@@ -356,6 +364,12 @@ class SuiteService {
             describe: function (desc, func) {
                 return _this.describe(desc, func);
             },
+            beforeItSpecified: function (itDescs, func) {
+                return _this.beforeItSpecified(itDescs, func);
+            },
+            afterItSpecified: function (itDescs, func) {
+                return _this.afterItSpecified(itDescs, func);
+            },
             beforeAll: function (func) {
                 return _this.beforeAll(func);
             },
@@ -379,6 +393,8 @@ SuiteService.Suite = class {
         this.specs = [];
         this.beforeAll = [];
         this.afterAll = [];
+        this.beforeItSpecified = new Map();
+        this.afterItSpecified = new Map();
         this.beforeEach = [];
         this.afterEach = [];
         this.duration = 0;
@@ -466,8 +482,22 @@ SuiteService.Suite = class {
             }
             await coreContext.fireEvents('spec', 'specStart', specItem);
             try {
+                for (const [itNames, hookFunc] of this.beforeItSpecified) {
+                    if ((Object.prototype.toString.call(itNames) === '[object Array]' && itNames.includes(specItem.description)) ||
+                        (Object.prototype.toString.call(itNames) === '[object String]' && itNames === specItem.description)) {
+                        await Reflect.apply(hookFunc, null, []);
+                    }
+                    break;
+                }
                 await this.runAsyncHookFunc('beforeEach');
                 await specItem.asyncRun(coreContext);
+                for (const [itNames, hookFunc] of this.afterItSpecified) {
+                    if ((Object.prototype.toString.call(itNames) === '[object Array]' && itNames.includes(specItem.description)) ||
+                        (Object.prototype.toString.call(itNames) === '[object String]' && itNames === specItem.description)) {
+                        await Reflect.apply(hookFunc, null, []);
+                    }
+                    break;
+                }
                 await this.runAsyncHookFunc('afterEach');
             } catch (e) {
                 console.error(`${TAG}${e?.stack}`);

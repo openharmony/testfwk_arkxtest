@@ -47,6 +47,10 @@ export enum Level {
 
 export function describe(testSuiteName: string, callback: Function): void
 
+export function beforeItSpecified(testCaseNames: Array<string> | string, callback: Function): void
+
+export function afterItSpecified(testCaseNames: Array<string> | string, callback: Function): void
+
 export function beforeEach(callback: Function): void
 
 export function afterEach(callback: Function): void
