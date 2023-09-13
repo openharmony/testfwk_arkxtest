@@ -483,12 +483,20 @@ SuiteService.Suite = class {
             await coreContext.fireEvents('spec', 'specStart', specItem);
             try {
                 for (const [itNames, hookFunc] of this.beforeItSpecified) {
-                    itNames?.includes(specItem.description) ? await Reflect.apply(hookFunc, null, []) : null;
+                    if ((Object.prototype.toString.call(itNames) === '[object Array]' && itNames.includes(specItem.description)) ||
+                        (Object.prototype.toString.call(itNames) === '[object String]' && itNames === specItem.description)) {
+                        await Reflect.apply(hookFunc, null, []);
+                    }
+                    break;
                 }
                 await this.runAsyncHookFunc('beforeEach');
                 await specItem.asyncRun(coreContext);
                 for (const [itNames, hookFunc] of this.afterItSpecified) {
-                    itNames?.includes(specItem.description) ? await Reflect.apply(hookFunc, null, []) : null;
+                    if ((Object.prototype.toString.call(itNames) === '[object Array]' && itNames.includes(specItem.description)) ||
+                        (Object.prototype.toString.call(itNames) === '[object String]' && itNames === specItem.description)) {
+                        await Reflect.apply(hookFunc, null, []);
+                    }
+                    break;
                 }
                 await this.runAsyncHookFunc('afterEach');
             } catch (e) {
