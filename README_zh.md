@@ -33,15 +33,17 @@ arkXtest
 
 测试用例采用业内通用语法，describe代表一个测试套， it代表一条用例。
 
-| No.  | API        | 功能说明                                                     |
-| ---- | ---------- | ------------------------------------------------------------ |
-| 1    | describe   | 定义一个测试套，支持两个参数：测试套名称和测试套函数。       |
-| 2    | beforeAll  | 在测试套内定义一个预置条件，在所有测试用例开始前执行且仅执行一次，支持一个参数：预置动作函数。 |
-| 3    | beforeEach | 在测试套内定义一个单元预置条件，在每条测试用例开始前执行，执行次数与it定义的测试用例数一致，支持一个参数：预置动作函数。 |
-| 4    | afterEach  | 在测试套内定义一个单元清理条件，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致，支持一个参数：清理动作函数。 |
-| 5    | afterAll   | 在测试套内定义一个清理条件，在所有测试用例结束后执行且仅执行一次，支持一个参数：清理动作函数。 |
-| 6    | it         | 定义一条测试用例，支持三个参数：用例名称，过滤参数和用例函数。 |
-| 7    | expect     | 支持bool类型判断等多种断言方法。                             |
+| No.  | API               | 功能说明                                                     |
+| ---- | ----------------- | ------------------------------------------------------------ |
+| 1    | describe          | 定义一个测试套，支持两个参数：测试套名称和测试套函数。       |
+| 2    | beforeAll         | 在测试套内定义一个预置条件，在所有测试用例开始前执行且仅执行一次，支持一个参数：预置动作函数。 |
+| 3    | beforeEach        | 在测试套内定义一个单元预置条件，在每条测试用例开始前执行，执行次数与it定义的测试用例数一致，支持一个参数：预置动作函数。 |
+| 4    | afterEach         | 在测试套内定义一个单元清理条件，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致，支持一个参数：清理动作函数。 |
+| 5    | afterAll          | 在测试套内定义一个清理条件，在所有测试用例结束后执行且仅执行一次，支持一个参数：清理动作函数。 |
+| 6    | beforeItSpecified | 在测试套内定义一个单元预置条件，仅在指定测试用例开始前执行，支持两个参数：单个用例名称或用例名称数组、预置动作函数。 |
+| 7    | afterItSpecified  | 在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行，支持两个参数：单个用例名称或用例名称数组、清理动作函数 |
+| 8    | it                | 定义一条测试用例，支持三个参数：用例名称，过滤参数和用例函数。 |
+| 9    | expect            | 支持bool类型判断等多种断言方法。                             |
 
 示例代码：
 
@@ -51,6 +53,21 @@ arkXtest
  import { BusinessError } from '@ohos.base';
  export default function abilityTest() {
   describe('ActsAbilityTest', () => {
+    beforeItSpecified(['String_assertContain_success'], () => {
+      const num = 1
+      expect(num).assertEqual(1)
+    })
+    afterItSpecified(['String_assertContain_success'], async (done) => {
+      const str = 'abc'
+      setTimeout(()=>{
+        try {
+          expect(str).assertContain('d')
+        } catch (error) {
+          console.error(`error message ${JSON.stringify(error)}`)
+        }
+        done()
+      }, 1000)
+    })
     it('String_assertContain_success', 0, () => {
       let a = 'abc'
       let b = 'b'
@@ -1013,7 +1030,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
     })
   })
 }
-  ```
+ ```
 
   示例命令: 
 
