@@ -100,7 +100,7 @@ namespace OHOS::uitest {
     }
 
     // UiEventMonitor instance.
-    static shared_ptr<UiEventMonitor> g_monitorInstance_;
+    static shared_ptr<UiEventMonitor> g_monitorInstance_ = make_shared<UiEventMonitor>();
 
     void UiEventMonitor::SetOnAbilityConnectCallback(function<void()> onConnectCb)
     {

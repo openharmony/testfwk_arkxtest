@@ -27,6 +27,8 @@
 #include "screen_copy.h"
 #include "ui_record.h"
 #include "js_client_loader.h"
+#include <map>
+#include <algorithm>
 
 namespace OHOS::uitest {
     using namespace std;
@@ -34,6 +36,10 @@ namespace OHOS::uitest {
     constexpr string_view CAPTURE_SCREEN = "copyScreen";
     constexpr string_view CAPTURE_LAYOUT = "dumpLayout";
     constexpr string_view CAPTURE_UIACTION = "recordUiAction";
+    static std::map<string, ActionStage> ATOMIC_ACTION_STAGES = {
+        {"touchdown", ActionStage::DOWN},
+        {"touchdown", ActionStage::MOVE},
+        {"touchdown", ActionStage::UP}};
 
     class CaptureContext {
     public:
@@ -47,6 +53,16 @@ namespace OHOS::uitest {
         uint8_t *data = nullptr;
         size_t dataLen = 0;
         static constexpr size_t DATA_CAPACITY = 2 * 1024 * 1024;
+    };
+
+    class AtomicActionContext
+    {
+    public:
+        AtomicActionContext() = default;
+        // action stage
+        ActionStage stage;
+        // point
+        Point point;
     };
 
     static void NopNapiFinalizer(napi_env /**env*/, void* /**finalize_data*/, void* /**finalize_hint*/) {}
@@ -239,6 +255,8 @@ namespace OHOS::uitest {
         LOG_I("Return");
         return nullptr;
     }
+
+    //TODO ´ýÌí¼ÓÐÞ¸Ä´úÂë
 
     static bool BindAddonProperties(napi_env env, string_view version)
     {
