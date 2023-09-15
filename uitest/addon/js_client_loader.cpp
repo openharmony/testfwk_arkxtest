@@ -38,8 +38,8 @@ namespace OHOS::uitest {
     constexpr string_view CAPTURE_UIACTION = "recordUiAction";
     static std::map<string, ActionStage> ATOMIC_ACTION_STAGES = {
         {"touchdown", ActionStage::DOWN},
-        {"touchdown", ActionStage::MOVE},
-        {"touchdown", ActionStage::UP}};
+        {"touchmove", ActionStage::MOVE},
+        {"touchup", ActionStage::UP}};
 
     class CaptureContext {
     public:
@@ -61,7 +61,7 @@ namespace OHOS::uitest {
         AtomicActionContext() = default;
         // action stage
         ActionStage stage;
-        // point
+        // point passed from js
         Point point;
     };
 
