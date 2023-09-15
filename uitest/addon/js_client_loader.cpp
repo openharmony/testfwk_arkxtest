@@ -22,13 +22,13 @@
 #include <future>
 #include <set>
 #include <unistd.h>
+#include <map>
+#include <algorithm>
 #include "ui_driver.h"
 #include "common_utilities_hpp.h"
 #include "screen_copy.h"
 #include "ui_record.h"
 #include "js_client_loader.h"
-#include <map>
-#include <algorithm>
 
 namespace OHOS::uitest {
     using namespace std;
@@ -55,8 +55,7 @@ namespace OHOS::uitest {
         static constexpr size_t DATA_CAPACITY = 2 * 1024 * 1024;
     };
 
-    class AtomicActionContext
-    {
+    class AtomicActionContext {
     public:
         AtomicActionContext() = default;
         // action stage
@@ -256,13 +255,12 @@ namespace OHOS::uitest {
         return nullptr;
     }
 
-        static void PerformAtomicAction(AtomicActionContext &&context)
+    static void PerformAtomicAction(AtomicActionContext &&context)
     {
         static auto driver = UiDriver();
         auto touch = GenericAtomicAction(context.stage, context.point);
         auto err = ApiCallErr(NO_ERROR);
-        if (err.code_ != NO_ERROR)
-        {
+        if (err.code_ != NO_ERROR) {
             LOG_W("PerformAtomicAction failed: %{public}s", err.message_.c_str());
         }
         UiOpArgs uiOpArgs;
@@ -307,8 +305,10 @@ namespace OHOS::uitest {
         AtomicActionContext context;
         context.stage = ATOMIC_ACTION_STAGES.at(stageStr);
         // point
-        auto isPointXCorrect = optJson.contains("x") && optJson["x"].type() == nlohmann::detail::value_t::number_unsigned;
-        auto isPointYCorrect = optJson.contains("y") && optJson["y"].type() == nlohmann::detail::value_t::number_unsigned;
+        auto isPointXCorrect = optJson.contains("x") 
+        && optJson["x"].type() == nlohmann::detail::value_t::number_unsigned;
+        auto isPointYCorrect = optJson.contains("y") 
+        && optJson["y"].type() == nlohmann::detail::value_t::number_unsigned;
         NAPI_ASSERT(env, (isPointXCorrect && isPointYCorrect), "Illegal point, integer required!");
         context.point = Point(optJson["x"].get<int32_t>(), optJson["y"].get<int32_t>());
         // 起一个线程跑任务
