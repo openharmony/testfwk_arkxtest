@@ -392,8 +392,8 @@ namespace OHOS::uitest {
     };
 
     /**
-     * Base type of all atomic actions
-     */
+     * Base type of all atomic actions.
+     * */
     class GenericAtomicAction : public TouchAction
     {
     public:
