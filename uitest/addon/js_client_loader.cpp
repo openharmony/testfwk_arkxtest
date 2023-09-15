@@ -256,7 +256,67 @@ namespace OHOS::uitest {
         return nullptr;
     }
 
-    //TODO �������޸Ĵ���
+        static void PerformAtomicAction(AtomicActionContext &&context)
+    {
+        static auto driver = UiDriver();
+        auto touch = GenericAtomicAction(context.stage, context.point);
+        auto err = ApiCallErr(NO_ERROR);
+        if (err.code_ != NO_ERROR)
+        {
+            LOG_W("PerformAtomicAction failed: %{public}s", err.message_.c_str());
+        }
+        UiOpArgs uiOpArgs;
+        driver.PerformTouch(touch, uiOpArgs, err);
+    }
+
+    static napi_value PerformAtomicActionJsCallback(napi_env env, napi_callback_info info)
+    {
+        constexpr size_t MIN_ARGC = 1;
+        constexpr size_t MAX_ARGC = 3;
+        static napi_value argv[MAX_ARGC] = {nullptr};
+        size_t argc = MAX_ARGC;
+        NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr));
+        NAPI_ASSERT(env, argc >= MIN_ARGC, "Illegal argument count");
+        // 获取js方法
+        napi_value global = nullptr;
+        napi_value jsonProp = nullptr;
+        napi_value jsonFunc = nullptr;
+        NAPI_CALL(env, napi_get_global(env, &global));
+        NAPI_CALL(env, napi_get_named_property(env, global, "JSON", &jsonProp));
+        NAPI_CALL(env, napi_get_named_property(env, jsonProp, "stringify", &jsonFunc));
+        napi_value jsStr = nullptr;
+        NAPI_CALL(env, napi_call_function(env, jsonProp, jsonFunc, 1, argv, &jsStr));
+        // 获取参数中的json字符串
+        constexpr size_t OPTION_MAX_LEN = 256;
+        char buf[OPTION_MAX_LEN] = {0};
+        size_t len = 0;
+        NAPI_CALL(env, napi_get_value_string_utf8(env, jsStr, buf, OPTION_MAX_LEN, &len));
+        auto cppStr = string(buf, len);
+        auto optJson = nlohmann::json::parse(cppStr, nullptr, false);
+        // 对json字符合法性校验，并取其中参数
+        NAPI_ASSERT(env, !optJson.is_discarded(), "Bad json string, json string is discarded");
+        // stage
+        auto isStageCorrect = optJson.contains("stage") && optJson["stage"].type() == nlohmann::detail::value_t::string;
+        NAPI_ASSERT(env, isStageCorrect, "Illegal argument, stage not exist or stage is not string!");
+        string stageStr = optJson["stage"].get<string>();
+        // 将stage字符串转成小写
+        transform(stageStr.begin(), stageStr.end(), stageStr.begin(), ::tolower);
+        isStageCorrect = ATOMIC_ACTION_STAGES.find(stageStr) != ATOMIC_ACTION_STAGES.end();
+        NAPI_ASSERT(env, isStageCorrect, "Illegal stage, down, move or up required!");
+        // 将info中参数解析到context中
+        AtomicActionContext context;
+        context.stage = ATOMIC_ACTION_STAGES.at(stageStr);
+        // point
+        auto isPointXCorrect = optJson.contains("x") && optJson["x"].type() == nlohmann::detail::value_t::number_unsigned;
+        auto isPointYCorrect = optJson.contains("y") && optJson["y"].type() == nlohmann::detail::value_t::number_unsigned;
+        NAPI_ASSERT(env, (isPointXCorrect && isPointYCorrect), "Illegal point, integer required!");
+        context.point = Point(optJson["x"].get<int32_t>(), optJson["y"].get<int32_t>());
+        // 起一个线程跑任务
+        auto asyncJob = thread(PerformAtomicAction, move(context));
+        asyncJob.detach();
+        LOG_I("Return");
+        return nullptr;
+    }
 
     static bool BindAddonProperties(napi_env env, string_view version)
     {
@@ -274,6 +334,7 @@ namespace OHOS::uitest {
             DECLARE_NAPI_STATIC_PROPERTY("serverVersion", serverVersion),
             DECLARE_NAPI_STATIC_FUNCTION("startCapture", SetCaptureEventJsCallback<true>),
             DECLARE_NAPI_STATIC_FUNCTION("stopCapture", SetCaptureEventJsCallback<false>),
+            DECLARE_NAPI_STATIC_FUNCTION("performAtomicAction", PerformAtomicActionJsCallback),
         };
         NAPI_CALL_BASE(env, napi_define_properties(env, kit, sizeof(kitProps)/sizeof(kitProps[0]), kitProps), false);
 
