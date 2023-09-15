@@ -354,7 +354,7 @@ namespace OHOS::uitest {
         constexpr uint32_t fingers = 1;
         constexpr uint32_t steps = 1;
         PointerMatrix pointer(fingers, steps);
-        pointer.PushAction(TouchEvent{stage_, point_, 0, 0, 0});
+        pointer.PushAction(TouchEvent {stage_, point_, 0, 0, 0});
         recv = move(pointer);
     }
 }
