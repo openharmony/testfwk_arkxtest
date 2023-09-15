@@ -394,10 +394,9 @@ namespace OHOS::uitest {
     /**
      * Base type of all atomic actions.
      * */
-    class GenericAtomicAction : public TouchAction
-    {
+    class GenericAtomicAction : public TouchAction {
     public:
-        explicit GenericAtomicAction(const ActionStage stage, const Point point) : stage_(stage), point_(point){};
+        explicit GenericAtomicAction(const ActionStage stage, const Point point) : stage_(stage), point_(point) {};
 
         void Decompose(PointerMatrix &recv, const UiOpArgs &options) const override;
 
