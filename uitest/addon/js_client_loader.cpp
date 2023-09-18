@@ -295,7 +295,7 @@ namespace OHOS::uitest {
         string stageStr = optJson["stage"].get<string>();
         transform(stageStr.begin(), stageStr.end(), stageStr.begin(), ::tolower);
         isStageCorrect = ATOMIC_ACTION_STAGES.find(stageStr) != ATOMIC_ACTION_STAGES.end();
-        NAPI_ASSERT(env, isStageCorrect, "Illegal stage, down, move or up required!");
+        NAPI_ASSERT(env, isStageCorrect, "Illegal stage, touchdown, touchmove or touchup required!");
         AtomicActionContext context;
         context.stage = ATOMIC_ACTION_STAGES.at(stageStr);
         // point
