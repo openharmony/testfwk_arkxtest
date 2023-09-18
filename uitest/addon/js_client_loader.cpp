@@ -275,7 +275,6 @@ namespace OHOS::uitest {
         size_t argc = MAX_ARGC;
         NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr));
         NAPI_ASSERT(env, argc >= MIN_ARGC, "Illegal argument count");
-        // 获取js方法
         napi_value global = nullptr;
         napi_value jsonProp = nullptr;
         napi_value jsonFunc = nullptr;
@@ -284,24 +283,19 @@ namespace OHOS::uitest {
         NAPI_CALL(env, napi_get_named_property(env, jsonProp, "stringify", &jsonFunc));
         napi_value jsStr = nullptr;
         NAPI_CALL(env, napi_call_function(env, jsonProp, jsonFunc, 1, argv, &jsStr));
-        // 获取参数中的json字符串
         constexpr size_t OPTION_MAX_LEN = 256;
         char buf[OPTION_MAX_LEN] = {0};
         size_t len = 0;
         NAPI_CALL(env, napi_get_value_string_utf8(env, jsStr, buf, OPTION_MAX_LEN, &len));
         auto cppStr = string(buf, len);
         auto optJson = nlohmann::json::parse(cppStr, nullptr, false);
-        // 对json字符合法性校验，并取其中参数
         NAPI_ASSERT(env, !optJson.is_discarded(), "Bad json string, json string is discarded");
-        // stage
         auto isStageCorrect = optJson.contains("stage") && optJson["stage"].type() == nlohmann::detail::value_t::string;
         NAPI_ASSERT(env, isStageCorrect, "Illegal argument, stage not exist or stage is not string!");
         string stageStr = optJson["stage"].get<string>();
-        // 将stage字符串转成小写
         transform(stageStr.begin(), stageStr.end(), stageStr.begin(), ::tolower);
         isStageCorrect = ATOMIC_ACTION_STAGES.find(stageStr) != ATOMIC_ACTION_STAGES.end();
         NAPI_ASSERT(env, isStageCorrect, "Illegal stage, down, move or up required!");
-        // 将info中参数解析到context中
         AtomicActionContext context;
         context.stage = ATOMIC_ACTION_STAGES.at(stageStr);
         // point
@@ -311,7 +305,6 @@ namespace OHOS::uitest {
             && optJson["y"].type() == nlohmann::detail::value_t::number_unsigned;
         NAPI_ASSERT(env, (isPointXCorrect && isPointYCorrect), "Illegal point, integer required!");
         context.point = Point(optJson["x"].get<int32_t>(), optJson["y"].get<int32_t>());
-        // 起一个线程跑任务
         auto asyncJob = thread(PerformAtomicAction, move(context));
         asyncJob.detach();
         LOG_I("Return");
