@@ -305,10 +305,10 @@ namespace OHOS::uitest {
         AtomicActionContext context;
         context.stage = ATOMIC_ACTION_STAGES.at(stageStr);
         // point
-        auto isPointXCorrect = optJson.contains("x") 
-        && optJson["x"].type() == nlohmann::detail::value_t::number_unsigned;
-        auto isPointYCorrect = optJson.contains("y") 
-        && optJson["y"].type() == nlohmann::detail::value_t::number_unsigned;
+        auto isPointXCorrect = optJson.contains("x")
+            && optJson["x"].type() == nlohmann::detail::value_t::number_unsigned;
+        auto isPointYCorrect = optJson.contains("y")
+            && optJson["y"].type() == nlohmann::detail::value_t::number_unsigned;
         NAPI_ASSERT(env, (isPointXCorrect && isPointYCorrect), "Illegal point, integer required!");
         context.point = Point(optJson["x"].get<int32_t>(), optJson["y"].get<int32_t>());
         // 起一个线程跑任务
