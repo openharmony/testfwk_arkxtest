@@ -390,6 +390,22 @@ namespace OHOS::uitest {
         const int32_t key2_;
         const uint32_t speed_;
     };
+
+    /**
+     * Base type of all atomic actions.
+     * */
+    class GenericAtomicAction : public TouchAction {
+    public:
+        explicit GenericAtomicAction(const ActionStage stage, const Point point) : stage_(stage), point_(point) {};
+
+        void Decompose(PointerMatrix &recv, const UiOpArgs &options) const override;
+
+        ~GenericAtomicAction() = default;
+
+    private:
+        const ActionStage stage_;
+        const Point point_;
+    };
 }
 
 #endif

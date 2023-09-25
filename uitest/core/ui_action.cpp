@@ -347,4 +347,14 @@ namespace OHOS::uitest {
             recv.push_back(MouseEvent {ActionStage::NONE, point_, MouseButton::BUTTON_NONE, keyAction2, focusTimeMs});
         }
     }
+
+    void GenericAtomicAction::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
+    {
+        DCHECK(stage_ >= ActionStage::DOWN && stage_ <= ActionStage::UP);
+        constexpr uint32_t fingers = 1;
+        constexpr uint32_t steps = 1;
+        PointerMatrix pointer(fingers, steps);
+        pointer.PushAction(TouchEvent {stage_, point_, 0, 0, 0});
+        recv = move(pointer);
+    }
 }
