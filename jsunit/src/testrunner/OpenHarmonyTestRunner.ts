@@ -10,9 +10,10 @@ import util from '@ohos.util';
 let abilityDelegator: AbilityDelegatorRegistry.AbilityDelegator;
 let abilityDelegatorArguments: AbilityDelegatorRegistry.AbilityDelegatorArgs;
 let jsonPath: string = 'mock/mock-config.json';
-let tag: string = 'testTag';
+let tag: string = 'testTag'; //日志标识字符串,作为tag标识当前runner类下的测试行为
 
 async function onAbilityCreateCallback(data: UIAbility) {
+  //在hilog日志中，0x0000作为测试框架的业务标识
   hilog.info(0x0000, 'testTag', 'onAbilityCreateCallback, data: ${}', JSON.stringify(data));
 }
 
