@@ -280,7 +280,7 @@ namespace OHOS::uitest {
         for (auto index = 0; index < childCount; index++) {
             auto childId = node.GetChildId(index);
             if (childNodeIndex > 0) {
-                childNodeIndex++
+                childNodeIndex++;
             } else {
                 childNodeIndex = nodeIndex;
                 while (nodes.at(childNodeIndex).GetAccessibilityId() != childId && childNodeIndex < nodes.size()) {
