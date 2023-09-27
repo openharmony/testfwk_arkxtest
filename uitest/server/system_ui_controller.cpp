@@ -259,8 +259,8 @@ namespace OHOS::uitest {
         }
     }
 
-    static void GetChildNodeIndex(vector<AccessibilityElementInfo> nodes, const int32_t startTravelIndex, 
-        const int32_t childId, int32_t &result)
+    static void GetChildNodeIndex(vector<AccessibilityElementInfo> &nodes, int32_t startTravelIndex,
+        int32_t childId, int32_t &result)
     {
         if (result == 0) {
             for (auto itemIndex = startTravelIndex; itemIndex < nodes.size(); itemIndex++) {
@@ -279,7 +279,7 @@ namespace OHOS::uitest {
     {
         DCHECK(nodes.size() > nodeIndex);
         json attributes;
-        auto node = nodes[nodeIndex];
+        auto &node = nodes[nodeIndex];
         MarshalAccessibilityNodeAttributes(node, attributes, windowBounds);
         if (node.GetComponentType() == "rootdecortag" || node.GetInspectorKey() == "ContainerModalTitleRow") {
             attributes[ATTR_NAMES[UiAttr::TYPE].data()] = "DecorBar";
@@ -291,14 +291,13 @@ namespace OHOS::uitest {
             return;
         }
         const auto childCount = from.GetChildCount();
-        auto childNodeIndex = 0; 
-        for (auto index = 0; index < childCount; inde++) {
+        auto childNodeIndex = 0;
+        for (auto index = 0; index < childCount; index++) {
             auto childId = node.GetChildId(index);
             GetChildNodeIndex(nodes, nodeIndex, childId, childNodeIndex);
-            auto child = nodes[childNodeIndex];
+            auto &child = nodes[childNodeIndex];
             if (child.GetAccessibilityId() != childId) {
-                LOG_E("The node information obtained from the AAMS is incorrect,
-                    expect nodeId: %{public}d, actual: %{public}d", childId, child.GetAccessibilityId());
+                LOG_E("Node info error, expect: %{public}d, actual: %{public}d", childId, child.GetAccessibilityId());
                     continue;
             }
             if (!child.IsVisible()) {
@@ -397,10 +396,10 @@ namespace OHOS::uitest {
                 root["bundleName"] = app;
                 root["abilityName"] = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
                 root["pagePath"] = (app == foreAbility.GetBundleName()) ? elementInfo.GetPagePath() : "";
-                BfsVec2JsonTree(elementInfos, root, 0, winInfo.bounds_, getWidgetNodes);   
+                BfsVec2JsonTree(elementInfos, root, 0, winInfo.bounds_, getWidgetNodes);
                 overlays.push_back(winInfo.bounds_);
                 out.push_back(make_pair(move(winInfo), move(root)));
-                LOG_I("Get node at layer %{public}d, window Id: %{public}d, appId: %{public}s", 
+                LOG_I("Get node at layer %{public}d, window Id: %{public}d, appId: %{public}s",
                     window.GetWindowLayer(), windowId, app.c_str());
             }
         }
