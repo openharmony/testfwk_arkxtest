@@ -42,8 +42,6 @@ namespace OHOS::uitest {
     using namespace OHOS::Rosen;
     using namespace OHOS::Media;
 
-    constexpr auto g_sceneboardId = 1;
-
     class UiEventMonitor final : public AccessibleAbilityListener {
     public:
         virtual ~UiEventMonitor() override = default;
@@ -261,15 +259,31 @@ namespace OHOS::uitest {
         }
     }
 
-    static void MarshallAccessibilityNodeInfo(AccessibilityElementInfo &from, json &to, int32_t index,
+    static void GetChildNodeIndex(vector<AccessibilityElementInfo> nodes, const int32_t startTravelIndex, 
+        const int32_t childId, int32_t &result)
+    {
+        if (result == 0) {
+            for (auto itemIndex = startTravelIndex; itemIndex < nodes.size(); itemIndex++) {
+                if (nodes[itemIndex].GetAccessibilityId() == childId) {
+                    result = itemIndex;
+                    break;
+                }
+            }
+        } else {
+            result++;
+        }
+    }
+
+    static void BfsVec2JsonTree(vector<AccessibilityElementInfo> nodes, json &to, int32_t nodeIndex,
         Rect windowBounds, bool visitChild)
     {
+        DCHECK(nodes.size() > nodeIndex);
         json attributes;
-        MarshalAccessibilityNodeAttributes(from, attributes, windowBounds);
-        if (from.GetComponentType() == "rootdecortag" || from.GetInspectorKey() == "ContainerModalTitleRow") {
+        auto node = nodes[nodeIndex];
+        MarshalAccessibilityNodeAttributes(node, attributes, windowBounds);
+        if (node.GetComponentType() == "rootdecortag" || node.GetInspectorKey() == "ContainerModalTitleRow") {
             attributes[ATTR_NAMES[UiAttr::TYPE].data()] = "DecorBar";
         }
-        attributes["index"] = to_string(index);
         to["attributes"] = attributes;
         auto childList = json::array();
         if (!visitChild) {
@@ -277,21 +291,23 @@ namespace OHOS::uitest {
             return;
         }
         const auto childCount = from.GetChildCount();
-        AccessibilityElementInfo child;
-        auto ability = AccessibilityUITestAbility::GetInstance();
-        for (auto idx = 0; idx < childCount; idx++) {
-            auto ret = ability->GetChildElementInfo(idx, from, child);
-            if (ret == RET_OK) {
-                if (!child.IsVisible()) {
-                    LOG_I("This node is not visible, node Id: %{public}d", child.GetAccessibilityId());
+        auto childNodeIndex = 0; 
+        for (auto index = 0; index < childCount; inde++) {
+            auto childId = node.GetChildId(index);
+            GetChildNodeIndex(nodes, nodeIndex, childId, childNodeIndex);
+            auto child = nodes[childNodeIndex];
+            if (child.GetAccessibilityId() != childId) {
+                LOG_E("The node information obtained from the AAMS is incorrect,
+                    expect nodeId: %{public}d, actual: %{public}d", childId, child.GetAccessibilityId());
                     continue;
-                }
-                auto parcel = json();
-                MarshallAccessibilityNodeInfo(child, parcel, idx, windowBounds, visitChild);
-                childList.push_back(parcel);
-            } else {
-                LOG_W("Get Node child at index=%{public}d failed", idx);
             }
+            if (!child.IsVisible()) {
+                LOG_I("This node is not visible, node Id: %{public}d", child.GetAccessibilityId());
+                continue;
+            }
+            auto parcel = json();
+            BfsVec2JsonTree(nodes, parcel, childNodeIndex, windowBounds, visitChild);
+            childList.push_back(parcel);
         }
         to["children"] = childList;
     }
@@ -333,11 +349,6 @@ namespace OHOS::uitest {
             return false;
         }
         sort(windows.begin(), windows.end(), [](auto &w1, auto &w2) -> bool {
-            if (w1.GetWindowId() == g_sceneboardId) {
-                return false;
-            } else if (w2.GetWindowId() == g_sceneboardId) {
-                return true;
-            }
             return w1.GetWindowLayer() > w2.GetWindowLayer();
         });
         return true;
@@ -358,18 +369,44 @@ namespace OHOS::uitest {
             return;
         }
         auto screenSize = GetDisplaySize();
-        AccessibilityElementInfo elementInfo;
+        auto screenRect = Rect(0, screenSize.px_, 0, screenSize.py_);
+        vector<AccessibilityElementInfo> elementInfos;
         const auto foreAbility = AAFwk::AbilityManagerClient::GetInstance()->GetTopAbility();
         vector<Rect> overlays;
         for (auto &window : windows) {
-            if (AccessibilityUITestAbility::GetInstance()->GetRootByWindow(window, elementInfo) == RET_OK) {
-                const auto app = elementInfo.GetBundleName();
-                LOG_D("Get window at layer %{public}d, appId: %{public}s, windowId: %{public}d",
-                    window.GetWindowLayer(), app.c_str(), window.GetWindowId());
+            const auto windowId = window.GetWindowId();
+            LOG_I("Get window at layer %{public}d, windowId: %{public}d", window.GetWindowLayer(), windowId);
+            auto boundsInScreen = GetVisibleRect(screenRect, window.GetRectInScreen());
+            auto winInfo = Window(window.GetWindowId());
+            InflateWindowInfo(window, winInfo);
+            winInfo.bounds_ = boundsInScreen;
+            Rect visibleArea = winInfo.bounds_;
+            auto root = nlohmann::json();
+            if (!RectAlgorithm::ComputeMaxVisibleRegion(winInfo.bounds_, overlays, visibleArea)) {
+                LOG_I("This window is covered, windowId: %{public}d", windowId);
+                continue;
+            }
+            if (AccessibilityUITestAbility::GetInstance()->GetRootByWindowBatch(window, elementInfos) != RET_OK) {
+                LOG_W("GetRootByWindow failed, windowId: %{public}d", windowId);
+            } else {
+                const auto app = elementInfo[0].GetBundleName();
                 if (targetApp != "" && app != targetApp) {
                     continue;
                 }
-                // apply window bounds as root node bounds
+                winInfo.bundleName_ = app;
+                root["bundleName"] = app;
+                root["abilityName"] = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
+                root["pagePath"] = (app == foreAbility.GetBundleName()) ? elementInfo.GetPagePath() : "";
+                BfsVec2JsonTree(elementInfos, root, 0, winInfo.bounds_, getWidgetNodes);   
+                overlays.push_back(winInfo.bounds_);
+                out.push_back(make_pair(move(winInfo), move(root)));
+                LOG_I("Get node at layer %{public}d, window Id: %{public}d, appId: %{public}s", 
+                    window.GetWindowLayer(), windowId, app.c_str());
+            }
+        }
+        UpdateWinInfoRecorders(out);
+        dumpMutex.unlock();
+    }
                 auto screenRect = Rect(0, screenSize.px_, 0, screenSize.py_);
                 auto boundsInScreen = GetVisibleRect(screenRect, window.GetRectInScreen());
                 auto winInfo = Window(window.GetWindowId());
