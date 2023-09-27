@@ -275,7 +275,7 @@ namespace OHOS::uitest {
             to["children"] = childList;
             return;
         }
-        const auto childCount = from.GetChildCount();
+        const auto childCount = node.GetChildCount();
         auto childNodeIndex = 0;
         for (auto index = 0; index < childCount; index++) {
             auto childId = node.GetChildId(index);
@@ -380,14 +380,14 @@ namespace OHOS::uitest {
             if (AccessibilityUITestAbility::GetInstance()->GetRootByWindowBatch(window, elementInfos) != RET_OK) {
                 LOG_W("GetRootByWindow failed, windowId: %{public}d", windowId);
             } else {
-                const auto app = elementInfo[0].GetBundleName();
+                const auto app = elementInfos[0].GetBundleName();
                 if (targetApp != "" && app != targetApp) {
                     continue;
                 }
                 winInfo.bundleName_ = app;
                 root["bundleName"] = app;
                 root["abilityName"] = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
-                root["pagePath"] = (app == foreAbility.GetBundleName()) ? elementInfo.GetPagePath() : "";
+                root["pagePath"] = (app == foreAbility.GetBundleName()) ? elementInfos[0].GetPagePath() : "";
                 BfsVec2JsonTree(elementInfos, root, 0, winInfo.bounds_, getWidgetNodes);
                 overlays.push_back(winInfo.bounds_);
                 out.push_back(make_pair(move(winInfo), move(root)));
