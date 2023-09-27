@@ -259,21 +259,6 @@ namespace OHOS::uitest {
         }
     }
 
-    static void GetChildNodeIndex(vector<AccessibilityElementInfo> &nodes, int32_t startTravelIndex,
-        int32_t childId, int32_t &result)
-    {
-        if (result == 0) {
-            for (auto itemIndex = startTravelIndex; itemIndex < nodes.size(); itemIndex++) {
-                if (nodes[itemIndex].GetAccessibilityId() == childId) {
-                    result = itemIndex;
-                    break;
-                }
-            }
-        } else {
-            result++;
-        }
-    }
-
     static void BfsVec2JsonTree(vector<AccessibilityElementInfo> nodes, json &to, int32_t nodeIndex,
         Rect windowBounds, bool visitChild)
     {
@@ -294,7 +279,14 @@ namespace OHOS::uitest {
         auto childNodeIndex = 0;
         for (auto index = 0; index < childCount; index++) {
             auto childId = node.GetChildId(index);
-            GetChildNodeIndex(nodes, nodeIndex, childId, childNodeIndex);
+            if (childNodeIndex > 0) {
+                childNodeIndex++
+            } else {
+                childNodeIndex = nodeIndex;
+                while (nodes.at(childNodeIndex).GetAccessibilityId() != childId && childNodeIndex < nodes.size()) {
+                    childNodeIndex++;
+                }
+            }
             auto &child = nodes[childNodeIndex];
             if (child.GetAccessibilityId() != childId) {
                 LOG_E("Node info error, expect: %{public}d, actual: %{public}d", childId, child.GetAccessibilityId());
