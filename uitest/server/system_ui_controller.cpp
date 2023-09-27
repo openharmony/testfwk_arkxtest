@@ -404,31 +404,6 @@ namespace OHOS::uitest {
                     window.GetWindowLayer(), windowId, app.c_str());
             }
         }
-        UpdateWinInfoRecorders(out);
-        dumpMutex.unlock();
-    }
-                auto screenRect = Rect(0, screenSize.px_, 0, screenSize.py_);
-                auto boundsInScreen = GetVisibleRect(screenRect, window.GetRectInScreen());
-                auto winInfo = Window(window.GetWindowId());
-                InflateWindowInfo(window, winInfo);
-                winInfo.bounds_ = (window.GetWindowId() == g_sceneboardId) ? screenRect : boundsInScreen;
-                winInfo.bundleName_ = app;
-                Rect visibleArea = winInfo.bounds_;
-                if (!RectAlgorithm::ComputeMaxVisibleRegion(winInfo.bounds_, overlays, visibleArea)) {
-                    continue;
-                }
-                auto root = nlohmann::json();
-                root["bundleName"] = app;
-                root["abilityName"] = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
-                root["pagePath"] = (app == foreAbility.GetBundleName()) ? elementInfo.GetPagePath() : "";
-                MarshallAccessibilityNodeInfo(elementInfo, root, 0, winInfo.bounds_, getWidgetNodes);
-                overlays.push_back(winInfo.bounds_);
-                out.push_back(make_pair(move(winInfo), move(root)));
-                LOG_D("Get node at layer %{public}d, appId: %{public}s", window.GetWindowLayer(), app.c_str());
-            } else {
-                LOG_W("GetRootByWindow failed, windowId: %{public}d", window.GetWindowId());
-            }
-        }
         dumpMutex.unlock();
     }
 
