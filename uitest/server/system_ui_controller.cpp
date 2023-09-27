@@ -283,7 +283,7 @@ namespace OHOS::uitest {
                 childNodeIndex++;
             } else {
                 childNodeIndex = nodeIndex;
-                while (nodes.at(childNodeIndex).GetAccessibilityId() != childId && childNodeIndex < nodes.size()) {
+                while (childNodeIndex < nodes.size() && nodes.at(childNodeIndex).GetAccessibilityId() != childId) {
                     childNodeIndex++;
                 }
             }
