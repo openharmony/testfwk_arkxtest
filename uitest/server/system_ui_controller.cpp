@@ -192,7 +192,7 @@ namespace OHOS::uitest {
         return this->ConnectToSysAbility();
     }
 
-    static size_t GenerateNodeHash(AccessibilityElementInfo &node)
+    static size_t GenerateNodeHash(const AccessibilityElementInfo &node)
     {
         static constexpr auto SHIFT_BITS = 32U;
         static constexpr auto hashFunc = hash<string>();
@@ -215,7 +215,8 @@ namespace OHOS::uitest {
         return newBounds;
     }
 
-    static void MarshalAccessibilityNodeAttributes(AccessibilityElementInfo &node, json &to, Rect windowBounds)
+    static void MarshalAccessibilityNodeAttributes(const AccessibilityElementInfo &node, json &to,
+        const Rect windowBounds)
     {
         to[ATTR_NAMES[UiAttr::HASHCODE].data()] = to_string(GenerateNodeHash(node));
         to[ATTR_NAMES[UiAttr::TEXT].data()] = node.GetContent();
@@ -259,8 +260,8 @@ namespace OHOS::uitest {
         }
     }
 
-    static void BfsVec2JsonTree(vector<AccessibilityElementInfo> &nodes, json &to, int32_t nodeIndex,
-        Rect &windowBounds, bool visitChild)
+    static void BfsVec2JsonTree(const vector<AccessibilityElementInfo> &nodes, json &to, const int32_t nodeIndex,
+        const Rect &windowBounds, bool visitChild)
     {
         DCHECK(nodes.size() > nodeIndex);
         json attributes;
