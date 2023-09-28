@@ -259,8 +259,8 @@ namespace OHOS::uitest {
         }
     }
 
-    static void BfsVec2JsonTree(vector<AccessibilityElementInfo> nodes, json &to, int32_t nodeIndex,
-        Rect windowBounds, bool visitChild)
+    static void BfsVec2JsonTree(vector<AccessibilityElementInfo> &nodes, json &to, int32_t nodeIndex,
+        Rect &windowBounds, bool visitChild)
     {
         DCHECK(nodes.size() > nodeIndex);
         json attributes;
