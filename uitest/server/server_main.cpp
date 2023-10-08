@@ -41,6 +41,8 @@
 #include "pointer_event.h"
 #include "ui_driver.h"
 #include "ui_record.h"
+#include "ui_input.h"
+#include "ui_model.h"
 #include "js_client_loader.h"
 
 using namespace std;
@@ -53,8 +55,9 @@ namespace OHOS::uitest {
     "   dumpLayout,                                                         \n"
     "   uiRecord record,     wirte location coordinates of events into files\n"
     "   uiRecord read,                     print file content to the console\n"
+    "   uiAction input,                                                     \n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "4.1.1.1";
+    const std::string VERSION = "4.1.2.0";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
@@ -258,6 +261,25 @@ namespace OHOS::uitest {
         }
     }
 
+    static int32_t UiInput(int32_t argc, char *argv[])
+    {
+        if ((size_t)argc < INDEX_FOUR) {
+            PrintInputMessage();
+            return EXIT_FAILURE;
+        }
+        if ((string)argv[THREE] == "help") {
+            PrintInputMessage();
+            return OHOS::ERR_OK;
+        }
+        auto controller = make_unique<SysUiController>();
+        if (!controller->ConnectToSysAbility()) {
+            PrintToConsole("Failed, cannot connect to AMMS ");
+            return EXIT_FAILURE;
+        }
+        UiDriver::RegisterController(move(controller));
+        return UiActionInput(argc, argv);
+    }
+
     extern "C" int32_t main(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest <help|screenCap|dumpLayout|uiRecord|--version>";
@@ -276,6 +298,8 @@ namespace OHOS::uitest {
             exit(ScreenCap(argc, argv));
         } else if (command == "uiRecord") {
             exit(UiRecord(argc, argv));
+        } else if (command == "uiInput") {
+            exit(UiInput(argc, argv))
         } else if (command == "--version") {
             PrintToConsole(VERSION);
             exit(EXIT_SUCCESS);
