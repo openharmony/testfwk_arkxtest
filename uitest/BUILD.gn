@@ -53,6 +53,21 @@ ohos_static_library("uitest_core") {
   part_name = "arkxtest"
 }
 
+ohos_static_library("uitest_input") {
+  use_exceptions = true
+  configs = [ ":uitest_common_configs" ]
+  sources = [ "${source_root}/input/ui_input.cpp" ]
+  deps = [ ":uitest_core" ]
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"UiTestKit_Input\"",
+  ]
+  include_dirs = [ "${source_root}/core" ]
+  external_deps = [ "hilog:libhilog" ]
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
+}
+
 ohos_static_library("uitest_record") {
   use_exceptions = true
   configs = [ ":uitest_common_configs" ]
@@ -117,6 +132,7 @@ ohos_static_library("uitest_addon") {
   include_dirs = [
     "${source_root}/core",
     "${source_root}/record",
+    "${source_root}/input",
   ]
   deps = [
     ":uitest_core",
@@ -153,12 +169,14 @@ ohos_executable("uitest_server") {
     "${source_root}/connection",
     "${source_root}/record",
     "${source_root}/addon",
+    "${source_root}/input",
   ]
 
   # static link the uitest_core as server end
   deps = [
     ":uitest_addon",
     ":uitest_core",
+    ":uitest_input",
     ":uitest_ipc",
     ":uitest_record",
   ]
