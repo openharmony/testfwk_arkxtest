@@ -168,11 +168,11 @@
     {
         std::string key = argv[THREE];
         if (key == "Home" && (size_t)argc == INDEX_FOUR) {
-            dirver.TriggerKey(Home(), uiOpArgs, exception_);
+            driver.TriggerKey(Home(), uiOpArgs, exception_);
         } else if (key == "Back" && (size_t)argc == INDEX_FOUR) {
-            dirver.TriggerKey(Back(), uiOpArgs, exception_);
+            driver.TriggerKey(Back(), uiOpArgs, exception_);
         } else if (key == "Power" && (size_t)argc == INDEX_FOUR) {
-            dirver.TriggerKey(Power(), uiOpArgs, exception_);
+            driver.TriggerKey(Power(), uiOpArgs, exception_);
         } else if (atoi(argv[THREE]) != 0) {
             int32_t codeZero_ = atoi(argv[THREE]);
             int32_t codeOne_, codeTwo_;
