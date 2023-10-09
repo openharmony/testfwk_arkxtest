@@ -58,7 +58,7 @@ class Hypium {
         }
         console.info(`${TAG}parameters:${JSON.stringify(testParameters)}`);
         configService.setConfig(testParameters);
-		
+        
         testsuite();
         core.execute(abilityDelegator);
     }
