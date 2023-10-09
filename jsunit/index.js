@@ -60,18 +60,7 @@ class Hypium {
         configService.setConfig(testParameters);
 
         testsuite();
-        if (Object.prototype.hasOwnProperty.call(globalThis, 'setupUiTestEnvironment')) {
-            globalThis.setupUiTestEnvironment().then(() => {
-                console.info(`${TAG}UiTestKit::after run uitest setup, start run testcases`);
-                core.execute(abilityDelegator);
-            }).catch((error) => {
-                console.error(`${TAG}UiTestKit:: call setupUiTestEnvironment failure: ${error}`);
-                core.execute(abilityDelegator);
-            });
-        } else {
-            console.info(`${TAG}UiTestKit:: no need to setup uitest, start run testcases`);
-            core.execute(abilityDelegator);
-        }
+        core.execute(abilityDelegator);
     }
 }
 
