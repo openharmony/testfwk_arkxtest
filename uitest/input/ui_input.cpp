@@ -106,7 +106,7 @@ namespace OHOS::uitest {
         point = Point(from_x, from_y);
         return true;
     }
-    bool CheckStepLength(UiOpArgs &uiOpArgs, to, from, stepLength)
+    bool CheckStepLength(UiOpArgs &uiOpArgs, Point to, Point from, uint32_t stepLength)
     {
         const int32_t distanceX = to.px_ - from.px_;
         const int32_t distanceY = to.py_ - from.py_;
@@ -176,8 +176,7 @@ namespace OHOS::uitest {
             if ((size_t)argc == INDEX_EIGHT) {
                 uiOpArgs.swipeVelocityPps_ = (uint32_t)atoi(argv[SEVEN]);
             } else if ((size_t)argc > INDEX_EIGHT) {
-                std::cout << "Too many parameters. \n" << std::endl;
-                return EXIT_FAILURE;
+                return ParameterRedundancy();
             }
         } else {
             return EXIT_FAILURE;
@@ -213,9 +212,7 @@ namespace OHOS::uitest {
                 auto keyAction_ = CombinedKeys(codeZero_, codeOne_, codeTwo_);
                 driver.TriggerKey(keyAction_, uiOpArgs, exception_);
             } else {
-                std::cout << "Too many parameters. \n"  << std::endl;
-                PrintInputMessage();
-                return EXIT_FAILURE;
+                return ParameterRedundancy();
             }
         } else {
             std::cout << "Invalid parameters. \n" << std::endl;
