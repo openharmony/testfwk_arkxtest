@@ -27,7 +27,6 @@ namespace OHOS::uitest {
             args.swipeVelocityPps_ = args.defaultSwipeVelocityPps_;
         }
     }
-
     bool CheckParams(int32_t argc, size_t want)
     {
         if ((size_t)argc < want) {
@@ -37,7 +36,6 @@ namespace OHOS::uitest {
         }
         return true;
     }
-
     void PrintInputMessage()
     {
         const std::string usage =
@@ -50,7 +48,12 @@ namespace OHOS::uitest {
         "   keyEvent <keyID_0> <keyID_1> [keyID_2: default None] \n";
         std::cout << usage << std::endl;
     }
-
+    bool ParameterRedundancy()
+    {
+        std::cout << " Too many parameters. \n" << std::endl;
+        PrintInputMessage();
+        return EXIT_FAILURE;
+    }
     static bool CreateFlingPoint(Point &to, Point &from, Point screenSize, Direction direction)
     {
         to = Point(screenSize.px_ / INDEX_TWO, screenSize.py_ / INDEX_TWO);
@@ -76,7 +79,6 @@ namespace OHOS::uitest {
                 return false;
         }
     }
-
     bool GetPoints(Point &to, Point &from, int32_t argc, char *argv[])
     {
         auto from_x = atoi(argv[THREE]);
@@ -92,8 +94,6 @@ namespace OHOS::uitest {
         to = Point(to_x, to_y);
         return true;
     }
-
-    
     bool GetPoint(Point &point, int32_t argc, char *argv[])
     {
         auto from_x = atoi(argv[THREE]);
@@ -106,16 +106,23 @@ namespace OHOS::uitest {
         point = Point(from_x, from_y);
         return true;
     }
-    
-    int32_t SwipeActionInput(int32_t argc, char *argv[], UiDriver &driver, UiOpArgs uiOpArgs)
+    bool CheckStepLength(UiOpArgs &uiOpArgs, to, from, stepLength)
     {
-        opt = argv[TWO];
-        Direction direction;
-        Point screenSize;
-        TouchOp op = TouchOp::SWIPE;
-        if (opt == "drag") {
-            op = TouchOp::DRAG;
+        const int32_t distanceX = to.px_ - from.px_;
+        const int32_t distanceY = to.py_ - from.py_;
+        const uint32_t distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+        if (stepLength <= 0 || stepLength > distance) {
+            std::cout << "The stepLen is out of range" << std::endl;
+            return EXIT_FAILURE;
         }
+        uiOpArgs.swipeStepsCounts_ = distance / stepLength;
+        return true;
+    }
+    int32_t FlingActionInput(int32_t argc, char *argv[], UiDriver &driver, UiOpArgs uiOpArgs)
+    {
+        TouchOp op = TouchOp::SWIPE;
+        Point screenSize;
+        Direction direction;
         Point from, to;
         if (opt == "dircFling" && CheckParams(argc, INDEX_FOUR)) {
             direction = (Direction)atoi(argv[THREE]);
@@ -129,35 +136,50 @@ namespace OHOS::uitest {
             if ((size_t)argc == INDEX_SIX) {
                 uiOpArgs.swipeStepsCounts_ = atoi(argv[FIVE]);
             } else if ((size_t)argc > INDEX_SIX) {
-                std::cout << " Too many parameters. \n" << std::endl;
-                PrintInputMessage();
-                return EXIT_FAILURE;
+                return ParameterRedundancy();
             }
-        } else if ((opt == "fling" || opt == "swipe" || opt == "drag") && CheckParams(argc, INDEX_SEVEN)) {
+        } else if (opt == "fling" && CheckParams(argc, INDEX_SEVEN)) {
             if (!GetPoints(to, from, argc, argv)) {
                 return EXIT_FAILURE;
             }
             if ((size_t)argc == INDEX_EIGHT) {
                 uiOpArgs.swipeVelocityPps_ = (uint32_t)atoi(argv[SEVEN]);
+            } else if ((size_t)argc == INDEX_NINE) {
+                auto stepLength = (uint32_t)atoi(argv[EIGHT]);
+                if(!CheckStepLength(uiOpArgs, to, from, stepLength)) {
+                    return EXIT_FAILURE;
+                }
+            } else if ((size_t)argc > INDEX_NINE) {
+                return ParameterRedundancy();
             }
         } else {
-            std::cout << "Missing parameters. \n" << std::endl;
-            PrintInputMessage();
             return EXIT_FAILURE;
         }
-        if (opt == "fling" && (size_t)argc == INDEX_NINE) {
-            auto stepLength = (uint32_t)atoi(argv[EIGHT]);
-            const int32_t distanceX = to.px_ - from.px_;
-            const int32_t distanceY = to.py_ - from.py_;
-            const uint32_t distance = sqrt(distanceX * distanceX + distanceY * distanceY);
-            if (stepLength <= 0 || stepLength > distance) {
-                exception_ = ApiCallErr(ERR_INVALID_INPUT, "The stepLen is out of range");
-                std::cout << exception_.message_ << std::endl;
+        CheckSwipeVelocityPps(uiOpArgs);
+        auto touch = GenericSwipe(op, from, to);
+        driver.PerformTouch(touch, uiOpArgs, exception_);
+        std::cout << exception_.message_ << std::endl;
+        return EXIT_SUCCESS;
+    }
+    int32_t SwipeActionInput(int32_t argc, char *argv[], UiDriver &driver, UiOpArgs uiOpArgs)
+    {
+        opt = argv[TWO];
+        TouchOp op = TouchOp::SWIPE;
+        if (opt == "drag") {
+            op = TouchOp::DRAG;
+        }
+        Point from, to;
+        if (CheckParams(argc, INDEX_SEVEN)) {
+            if (!GetPoints(to, from, argc, argv)) {
                 return EXIT_FAILURE;
             }
-            uiOpArgs.swipeStepsCounts_ = distance / stepLength;
-        } else if ((opt == "fling" && (size_t)argc > INDEX_NINE) || (opt != "fling" && (size_t)argc > INDEX_EIGHT)) {
-            std::cout << "Too many parameters. \n" << std::endl;
+            if ((size_t)argc == INDEX_EIGHT) {
+                uiOpArgs.swipeVelocityPps_ = (uint32_t)atoi(argv[SEVEN]);
+            } else if ((size_t)argc > INDEX_EIGHT) {
+                std::cout << "Too many parameters. \n" << std::endl;
+                return EXIT_FAILURE;
+            }
+        } else {
             return EXIT_FAILURE;
         }
         CheckSwipeVelocityPps(uiOpArgs);
@@ -256,7 +278,9 @@ namespace OHOS::uitest {
         }
         if (opt == "keyEvent") {
             return KeyEventActionInput(argc, argv, driver, uiOpArgs);
-        } else if (opt == "fling" || opt == "dircFling" || opt == "swipe" || opt == "drag") {
+        } else if (opt == "fling" || opt == "dircFling") {
+            return FlingActionInput(argc, argv, driver, uiOpArgs);
+        } else if (opt == "swipe" || opt == "drag") {
             return SwipeActionInput(argc, argv, driver, uiOpArgs);
         } else if (opt == "click" || opt == "longClick" || opt == "doubleClick") {
             return ClickActionInput(argc, argv, driver, uiOpArgs);
