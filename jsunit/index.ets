@@ -14,6 +14,7 @@
  */
 
 import Core from './src/core';
+import ConfigService from '/src/module/config/configService'
 import {DEFAULT, TestType, Size, Level, TAG} from './src/Constant';
 import DataDriver from './src/module/config/DataDriver';
 import ExpectExtend from './src/module/assert/ExpectExtend';
@@ -24,25 +25,25 @@ import {MockKit, when} from './src/module/mock/MockKit';
 import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
 
 class Hypium {
-    static setData(data) {
+    static setData(data:Object) {
         const core = Core.getInstance();
         const dataDriver = new DataDriver({data});
         core.addService('dataDriver', dataDriver);
     }
 
-    static setTimeConfig(systemTime) {
+    static setTimeConfig(systemTime:Object) {
         SysTestKit.systemTime = systemTime;
     }
 
-    static hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite) {
+    static hypiumTest(abilityDelegator:Object, abilityDelegatorArguments:Object, testsuite:Object) {
         const core = Core.getInstance();
         const expectExtend = new ExpectExtend({
-            'id': 'extend'
+            id: 'extend'
         });
         core.addService('expect', expectExtend);
         const ohReport = new OhReport({
-            'delegator': abilityDelegator,
-            'abilityDelegatorArguments': abilityDelegatorArguments
+            delegator: abilityDelegator,
+            abilityDelegatorArguments: abilityDelegatorArguments
         });
         SysTestKit.delegator = abilityDelegator;
         core.addService('report', ohReport);
@@ -50,28 +51,16 @@ class Hypium {
         core.subscribeEvent('spec', ohReport);
         core.subscribeEvent('suite', ohReport);
         core.subscribeEvent('task', ohReport);
-        const configService = core.getDefaultService('config');
-
-        let testParameters = {};
+        const configService:ConfigService = core.getDefaultService('config');
+        let testParameters:Array = {};
         if (abilityDelegatorArguments !== null) {
             testParameters = configService.translateParams(abilityDelegatorArguments.parameters);
         }
         console.info(`${TAG}parameters:${JSON.stringify(testParameters)}`);
         configService.setConfig(testParameters);
-
+        
         testsuite();
-        if (Object.prototype.hasOwnProperty.call(globalThis, 'setupUiTestEnvironment')) {
-            globalThis.setupUiTestEnvironment().then(() => {
-                console.info(`${TAG}UiTestKit::after run uitest setup, start run testcases`);
-                core.execute(abilityDelegator);
-            }).catch((error) => {
-                console.error(`${TAG}UiTestKit:: call setupUiTestEnvironment failure: ${error}`);
-                core.execute(abilityDelegator);
-            });
-        } else {
-            console.info(`${TAG}UiTestKit:: no need to setup uitest, start run testcases`);
-            core.execute(abilityDelegator);
-        }
+        core.execute(abilityDelegator);
     }
 }
 
