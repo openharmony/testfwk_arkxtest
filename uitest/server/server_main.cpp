@@ -299,7 +299,7 @@ namespace OHOS::uitest {
         } else if (command == "uiRecord") {
             exit(UiRecord(argc, argv));
         } else if (command == "uiInput") {
-            exit(UiInput(argc, argv))
+            exit(UiInput(argc, argv));
         } else if (command == "--version") {
             PrintToConsole(VERSION);
             exit(EXIT_SUCCESS);
