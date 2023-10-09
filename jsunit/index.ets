@@ -13,16 +13,16 @@
  * limitations under the License.
  */
 
-import Core from './src/main/core';
-import ConfigService from '/src/main/module/config/configService'
-import {DEFAULT, TestType, Size, Level, TAG} from './src/main/Constant';
-import DataDriver from './src/main/module/config/DataDriver';
-import ExpectExtend from './src/main/module/assert/ExpectExtend';
-import OhReport from './src/main/module/report/OhReport';
-import SysTestKit from './src/main/module/kit/SysTestKit';
-import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from './src/main/interface';
-import {MockKit, when} from './src/main/module/mock/MockKit';
-import ArgumentMatchers from './src/main/module/mock/ArgumentMatchers';
+import Core from './src/core';
+import ConfigService from '/src/module/config/configService'
+import {DEFAULT, TestType, Size, Level, TAG} from './src/Constant';
+import DataDriver from './src/module/config/DataDriver';
+import ExpectExtend from './src/module/assert/ExpectExtend';
+import OhReport from './src/module/report/OhReport';
+import SysTestKit from './src/module/kit/SysTestKit';
+import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from './src/interface';
+import {MockKit, when} from './src/module/mock/MockKit';
+import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
 
 class Hypium {
     static setData(data:Object) {
@@ -58,7 +58,7 @@ class Hypium {
         }
         console.info(`${TAG}parameters:${JSON.stringify(testParameters)}`);
         configService.setConfig(testParameters);
-        
+		
         testsuite();
         core.execute(abilityDelegator);
     }
