@@ -23,13 +23,14 @@
 #include <typeinfo>
 #include <vector>
 #include <condition_variable>
+#include <cstdio>
+#include <cstdlib>
 #include "ui_driver.h"
 #include "ui_action.h"
 #include "ui_model.h"
 #include "frontend_api_handler.h"
 #include "common_utilities_hpp.h"
-#include <cstdio>
-#include <stdlib.h>
+
 
 namespace OHOS::uitest {
     int32_t UiActionInput(int32_t argc, char *argv[]);

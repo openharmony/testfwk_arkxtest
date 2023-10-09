@@ -40,12 +40,12 @@ namespace OHOS::uitest {
 
     void PrintInputMessage()
     {
-        const std::string usage = 
+        const std::string usage =
         "   The command and default sources are : \n"
         "   dircFling <direction>, direction can choose from 0,1,2,3 (left, right, up, down) \n"
         "   click/doubleClick/longClick <x> <y> \n"
         "   swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity: Value range from 200 to 40000, default 600] \n"
-        "   fling <from_x> <from_y> <to_x> <to_y> [velocity stepLength] \n" 
+        "   fling <from_x> <from_y> <to_x> <to_y> [velocity stepLength] \n"
         "   keyEvent <keyID/Back/Home/Power> \n"
         "   keyEvent <keyID_0> <keyID_1> [keyID_2: default None] \n";
         std::cout << usage << std::endl;
