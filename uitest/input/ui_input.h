@@ -28,7 +28,7 @@
 #include "ui_model.h"
 #include "frontend_api_handler.h"
 #include "common_utilities_hpp.h"
-#include <stdio.h>
+#include <cstdio>
 #include <stdlib.h>
 
 namespace OHOS::uitest {

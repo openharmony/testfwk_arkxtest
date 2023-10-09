@@ -12,9 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- #include "ui_input.h"
 
- namespace OHOS::uitest {
+#include "ui_input.h"
+
+namespace OHOS::uitest {
     using namespace std;
     std::string opt;
     ApiCallErr exception_ = ApiCallErr(NO_ERROR);
@@ -27,7 +28,8 @@
         }
     }
 
-    bool CheckParams(int32_t argc, size_t want) {
+    bool CheckParams(int32_t argc, size_t want)
+    {
         if ((size_t)argc < want) {
             std::cout << "Missing parameter. \n" << std::endl;
             PrintInputMessage();
@@ -39,11 +41,11 @@
     void PrintInputMessage()
     {
         const std::string usage = 
-        "The command and default sources are : \n"
-        "   dircFling <direction>, direction can choose from 0,1,2,3 (left, right, up, down)\n"
+        "   The command and default sources are : \n"
+        "   dircFling <direction>, direction can choose from 0,1,2,3 (left, right, up, down) \n"
         "   click/doubleClick/longClick <x> <y> \n"
         "   swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity: Value range from 200 to 40000, default 600] \n"
-        "   fling <from_x> <from_y> <to_x> <to_y> [velocity stepLength] \n " 
+        "   fling <from_x> <from_y> <to_x> <to_y> [velocity stepLength] \n" 
         "   keyEvent <keyID/Back/Home/Power> \n"
         "   keyEvent <keyID_0> <keyID_1> [keyID_2: default None] \n";
         std::cout << usage << std::endl;
@@ -154,7 +156,7 @@
                 return EXIT_FAILURE;
             }
             uiOpArgs.swipeStepsCounts_ = distance / stepLength;
-        } else if ((opt == "fling" && (size_t)argc > INDEX_NINE) || ((opt == "swipe" || opt == "drag") && (size_t)argc > INDEX_EIGHT)) {
+        } else if ((opt == "fling" && (size_t)argc > INDEX_NINE) || (opt != "fling" && (size_t)argc > INDEX_EIGHT)) {
             std::cout << "Too many parameters. \n" << std::endl;
             return EXIT_FAILURE;
         }
@@ -266,4 +268,4 @@
             return EXIT_FAILURE;
         }
     }
- } // namespace OHOS::uitest
+} // namespace OHOS::uitest
