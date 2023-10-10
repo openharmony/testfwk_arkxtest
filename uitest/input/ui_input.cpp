@@ -114,9 +114,10 @@ namespace OHOS::uitest {
         if (stepLength <= 0 || stepLength > distance) {
             std::cout << "The stepLen is out of range" << std::endl;
             return EXIT_FAILURE;
+        } else {
+            uiOpArgs.swipeStepsCounts_ = distance / stepLength;
+            return true;
         }
-        uiOpArgs.swipeStepsCounts_ = distance / stepLength;
-        return true;
     }
     int32_t FlingActionInput(int32_t argc, char *argv[], UiDriver &driver, UiOpArgs uiOpArgs)
     {
@@ -146,7 +147,7 @@ namespace OHOS::uitest {
                 uiOpArgs.swipeVelocityPps_ = (uint32_t)atoi(argv[SEVEN]);
             } else if ((size_t)argc == INDEX_NINE) {
                 auto stepLength = (uint32_t)atoi(argv[EIGHT]);
-                if(!CheckStepLength(uiOpArgs, to, from, stepLength)) {
+                if (!CheckStepLength(uiOpArgs, to, from, stepLength)) {
                     return EXIT_FAILURE;
                 }
             } else if ((size_t)argc > INDEX_NINE) {
