@@ -188,11 +188,11 @@ namespace OHOS::uitest {
         if (options_.scrollWidgetDeadZone_ > 0) {
             topPoint.py_ += options_.scrollWidgetDeadZone_;
             bottomPoint.py_ -= options_.scrollWidgetDeadZone_;
-            auto screenSize = driver_.GetDisplaySize(error);
-            auto gestureZone = screenSize.py_  / 20;
-            if (screenSize.py_ - bounds.bottom_ <= gestureZone) {
-                bottomPoint.py_ = bottomPoint.py_ - gestureZone;
-            }
+        }
+        auto screenSize = driver_.GetDisplaySize(error);
+        auto gestureZone = screenSize.py_  / 20;
+        if (screenSize.py_ - bounds.bottom_ <= gestureZone) {
+            bottomPoint.py_ = bottomPoint.py_ - gestureZone;
         }
         auto touch = (toTop) ? GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint) :
                                GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
