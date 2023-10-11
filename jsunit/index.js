@@ -51,14 +51,11 @@ class Hypium {
         core.subscribeEvent('suite', ohReport);
         core.subscribeEvent('task', ohReport);
         const configService = core.getDefaultService('config');
-
-        let testParameters = {};
         if (abilityDelegatorArguments !== null) {
-            testParameters = configService.translateParams(abilityDelegatorArguments.parameters);
+            let testParameters = configService.translateParams(abilityDelegatorArguments.parameters);
+            console.info(`${TAG}parameters:${JSON.stringify(testParameters)}`);
+            configService.setConfig(testParameters);
         }
-        console.info(`${TAG}parameters:${JSON.stringify(testParameters)}`);
-        configService.setConfig(testParameters);
-
         testsuite();
         core.execute(abilityDelegator);
     }
