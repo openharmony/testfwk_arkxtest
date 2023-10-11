@@ -55,26 +55,7 @@ namespace OHOS::uitest {
             if (mark1 == mark2) {
                 return;
             }
-            auto bounds = scrollWidget->GetBounds();
-            if (options_.scrollWidgetDeadZone_ > 0) {
-                // scroll widget from its deadZone maybe unresponsive
-                if (bounds.top_ + options_.scrollWidgetDeadZone_ >= bounds.bottom_ - options_.scrollWidgetDeadZone_) {
-                    bounds.top_ += (bounds.bottom_ - bounds.top_) / INDEX_FOUR;
-                    bounds.bottom_ -= (bounds.bottom_ - bounds.top_) / INDEX_FOUR;
-                } else {
-                    bounds.top_ += options_.scrollWidgetDeadZone_;
-                    bounds.bottom_ -= options_.scrollWidgetDeadZone_;
-                }
-            }
-            Point topPoint(bounds.GetCenterX(), bounds.top_);
-            Point bottomPoint(bounds.GetCenterX(), bounds.bottom_);
-            if (toTop) {
-                auto touch = GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint);
-                driver_.PerformTouch(touch, options_, error);
-            } else {
-                auto touch = GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
-                driver_.PerformTouch(touch, options_, error);
-            }
+            TurnPage(toTop, error);
         }
     }
 
@@ -195,23 +176,26 @@ namespace OHOS::uitest {
                     scrollingUp = false;
                 }
             }
-            // execute scrolling on the scroll_widget without update UI
-            auto bounds = scrollWidget->GetBounds();
-            if (options_.scrollWidgetDeadZone_ > 0) {
-                // scroll widget from its deadZone maybe unresponsive
-                if (bounds.top_ + options_.scrollWidgetDeadZone_ >= bounds.bottom_ - options_.scrollWidgetDeadZone_) {
-                    bounds.top_ += (bounds.bottom_ - bounds.top_) / INDEX_FOUR;
-                    bounds.bottom_ -= (bounds.bottom_ - bounds.top_) / INDEX_FOUR;
-                } else {
-                    bounds.top_ += options_.scrollWidgetDeadZone_;
-                    bounds.bottom_ -= options_.scrollWidgetDeadZone_;
-                }
-            }
-            Point topPoint(bounds.GetCenterX(), bounds.top_);
-            Point bottomPoint(bounds.GetCenterX(), bounds.bottom_);
-            auto touch = (scrollingUp) ? GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint) :
-                                         GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
-            driver_.PerformTouch(touch, options_, error);
+            TurnPage(scrollingUp, error);
         }
+    }
+
+    void WidgetOperator::TurnPage(bool toTop, ApiCallErr &error) const
+    {
+        auto bounds = widget_.GetBounds();
+        Point topPoint(bounds.GetCenterX(), bounds.top_);
+        Point bottomPoint(bounds.GetCenterX(), bounds.bottom_);
+        if (options_.scrollWidgetDeadZone_ > 0) {
+            topPoint.py_ += options_.scrollWidgetDeadZone_;
+            bottomPoint.py_ -= options_.scrollWidgetDeadZone_;
+            auto screenSize = driver_.GetDisplaySize(error);
+            auto gestureZone = screenSize.py_  / 20;
+            if (screenSize.py_ - bounds.bottom_ <= gestureZone) {
+                bottomPoint.py_ = bottomPoint.py_ - gestureZone;
+            }
+        }
+        auto touch = (toTop) ? GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint) :
+                               GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
+        driver_.PerformTouch(touch, options_, error);
     }
 } // namespace OHOS::uitest

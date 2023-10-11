@@ -42,6 +42,7 @@ namespace OHOS::uitest {
         std::unique_ptr<Widget> ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const;
 
     private:
+        void TurnPage(bool toTop, ApiCallErr &error) const;
         UiDriver &driver_;
         const Widget &widget_;
         const UiOpArgs &options_;
