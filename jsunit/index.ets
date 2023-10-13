@@ -35,7 +35,7 @@ class Hypium {
         SysTestKit.systemTime = systemTime;
     }
 
-    static hypiumTest(abilityDelegator:Object, abilityDelegatorArguments:Object, testsuite:Object) {
+    static hypiumTest(abilityDelegator:Object, abilityDelegatorArguments:Object, testsuite:Function) {
         const core:Core = Core.getInstance();
         const expectExtend:ExpectExtend = new ExpectExtend({
             id: 'extend'
@@ -53,7 +53,7 @@ class Hypium {
         core.subscribeEvent('task', ohReport);
         const configService:ConfigService = core.getDefaultService('config');
         if (abilityDelegatorArguments !== null) {
-            let testParameters:Object = configService.translateParams(abilityDelegatorArguments.parameters);
+            let testParameters:Object = configService.translateParams((abilityDelegatorArguments as Record<string, Object>).parameters);
             console.info(`${TAG}parameters:${JSON.stringify(testParameters)}`);
             configService.setConfig(testParameters);
         }
