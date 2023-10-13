@@ -55,7 +55,13 @@ namespace OHOS::uitest {
         
         const Widget GetMaxDepWidget()
         {
-            return receiver_.find(maxDep)->second;
+            Widget widget("");
+            if (receiver_.find(maxDep) != receiver_.end()) {
+                return receiver_.find(maxDep)->second;
+            } else {
+                LOG_W("MaxDep widget not found.");
+                return widget;
+            }
         }
 
     private:
