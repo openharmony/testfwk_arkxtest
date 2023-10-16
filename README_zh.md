@@ -1462,20 +1462,100 @@ hdc shell uitest uiRecord read
 // 将记录的Ui操作打印出来
 ```
 
+5、 shell命令方式注入UI模拟操作
+> 支持操作类型：点击 双击 长按 慢滑 快滑 拖拽 输入文字 KeyEvent。
+
+| 配置参数值       | 配置参数含义                                  | 配置参数有值                                                                                                                                                                                              | 示例                                                                                  |
+|-------------|-----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| click       | 模拟单击操作                                  | point_x (必选参数,点击x坐标点)<br/> point_y (必选参数,点击y坐标点)                                                                                                                                                    | hdc shell uitest uiInput click point_x point_y                                      |
+| doubleClick | 模拟双击操作                                  | point_x (必选参数,双击x坐标点)<br/> point_y (必选参数,双击y坐标点)                                                                                                                                                    | hdc shell uitest uiInput doubleClick point_x point_y                                |
+| longClick   | 模拟长按操作                                  | point_x (必选参数,长按x坐标点)<br/> point_y (必选参数,长按y坐标点)                                                                                                                                                    | hdc shell uitest uiInput longClick point_x point_y                                  |
+| fling       | 模拟快滑操作                                  | from_x (必选参数,滑动起点x坐标)<br/> from_y(必选参数,滑动起点y坐标)<br/> to_x(必选参数,滑动终点x坐标)<br/> to_y(必选参数,滑动终点y坐标)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600)<br/> stepLength(可选参数,滑动步长,默认值:滑动距离/50) | hdc shell uitest uiInput fling from_x from_y to_x to_y swipeVelocityPps_ stepLength |
+| swipe       | 模拟慢滑操作                                  | from_x (必选参数,滑动起点x坐标)<br/> from_y(必选参数,滑动起点y坐标)<br/> to_x(必选参数,滑动终点x坐标)<br/> to_y(必选参数,滑动终点y坐标)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600))                                       | hdc shell uitest uiInput swipe from_x from_y to_x to_y swipeVelocityPps_            |
+| drag        | 模拟拖拽操作                                  | from_x (必选参数,拖拽起点x坐标)<br/> from_y(必选参数,拖拽起点y坐标)<br/> to_x(必选参数,拖拽终点x坐标)<br/> to_y(必选参数,拖拽终点y坐标)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600))                                       | hdc shell uitest uiInput drag from_x from_y to_x to_y swipeVelocityPps_             |
+| dircFling   | 模拟指定方向滑动操作                              | direction (可选参数,滑动方向,可选值: [0,1,2,3], 滑动方向: [左,右,上,下],默认值: 0)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600)<br/> stepLength(可选参数,滑动步长,默认值:滑动距离/50)                                                                                                                                  | hdc shell uitest uiInput dircFling direction swipeVelocityPps_ stepLength                                       |
+| input       | 模拟输入框输入文本操作                             | point_x (必选参数,输入框x坐标点)<br/> point_y (必选参数,输入框y坐标点)<br/> input(输入文本)                                                                                                                                 | hdc shell uitest uiInput input point_x point_y text                                 |
+| keyEvent    | 模拟实体按键事件(如:键盘,电源键,返回上一级,返回桌面等),以及组合按键操作 | keyID (必选参数,实体按键对应ID)<br/> keyID2 (可选参数,实体按键对应ID)                                                                                                                                                   | hdc shell uitest uiInput keyEvent keyID                                             |
+
+示例代码1：执行点击事件。
+```shell  
+ hdc shell uitest uiInput click 100 100
+```
+示例代码2：执行双击事件。
+```shell  
+ hdc shell uitest uiInput doubleClick 100 100
+```
+示例代码3：执行长按事件。
+```shell  
+ hdc shell uitest uiInput longClick 100 100
+```
+示例代码4：执行快滑操作。
+```shell  
+hdc shell uitest uiInput fling 0 0 200 200 500 
+```
+示例代码5：执行慢滑操作。
+```shell  
+hdc shell uitest uiInput swipe 0 0 200 200 500 
+```
+示例代码6：执行拖拽操作。
+```shell  
+hdc shell uitest uiInput drag 0 0 100 100 500 
+```
+示例代码6：执行向左滑动操作。
+```shell  
+hdc shell uitest uiInput dircFling 0 500
+```
+示例代码7：执行向右滑动操作。
+```shell  
+hdc shell uitest uiInput dircFling 1 600
+```
+示例代码8：执行向上滑动操作。
+```shell  
+hdc shell uitest uiInput dircFling 2 
+```
+示例代码9：执行向下滑动操作。
+```shell  
+hdc shell uitest uiInput dircFling 3
+```
+
+示例代码10：执行输入框输入操作。
+```shell  
+hdc shell uitest uiInput input 100 100 hello
+```
+
+示例代码11：执行输入框输入操作。
+```shell  
+hdc shell uitest uiInput input 100 100 hello
+```
+
+示例代码12：执行返回主页操作。
+```shell  
+hdc shell uitest uiInput keyEvent home
+```
+示例代码13：执行返回上一步操作。
+```shell  
+hdc shell uitest uiInput keyEvent back
+```
+示例代码14：执行组合键复制粘贴操作。
+```shell  
+hdc shell uitest uiInput keyEvent 2072 2038
+```
+
 ### 版本信息
 
-| 版本号  | 功能说明                                                     |
-| :------ | :----------------------------------------------------------- |
-| 3.2.2.1 | 1、增加抛滑、获取/设置屏幕方向接口<br />2、窗口处理逻辑增加不支持场景处理逻辑 |
-| 3.2.3.0 | 1、滑动控件进行滑动查找、滑动到尾部/顶部功能优化             |
-| 3.2.4.0 | 1、接口调用异常时会抛出错误码                                |
-| 3.2.5.0 | 1、通信机制变更                                              |
-| 3.2.6.0 | 1、增加模拟鼠标操作能力接口<br />2、增加指定应用的窗口下查找目标控件接口 |
-| 4.0.1.1 | 1、支持在daemon运行时执行uitest dumpLayout                   |
-| 4.0.1.2 | 1、模拟鼠标动作、键鼠协同功能优化                            |
-| 4.0.1.3 | 1、示例代码更新<br />2、滑动控件进行滑动查找、滑动到尾部/顶部功能优化 |
-| 4.0.1.4 | 1、可选参数传入undefined时，当作默认值处理                   |
-| 4.0.2.0 | 1、支持监听toast和dialog控件出现，使用callback的形式返回结果。 |
+| 版本号  | 功能说明                                                                   |
+| :------ |:-----------------------------------------------------------------------|
+| 3.2.2.1 | 1、增加抛滑、获取/设置屏幕方向接口<br />2、窗口处理逻辑增加不支持场景处理逻辑                            |
+| 3.2.3.0 | 1、滑动控件进行滑动查找、滑动到尾部/顶部功能优化                                              |
+| 3.2.4.0 | 1、接口调用异常时会抛出错误码                                                        |
+| 3.2.5.0 | 1、通信机制变更                                                               |
+| 3.2.6.0 | 1、增加模拟鼠标操作能力接口<br />2、增加指定应用的窗口下查找目标控件接口                               |
+| 4.0.1.1 | 1、支持在daemon运行时执行uitest dumpLayout                                      |
+| 4.0.1.2 | 1、模拟鼠标动作、键鼠协同功能优化                                                      |
+| 4.0.1.3 | 1、示例代码更新<br />2、滑动控件进行滑动查找、滑动到尾部/顶部功能优化                                |
+| 4.0.1.4 | 1、可选参数传入undefined时，当作默认值处理                                             |
+| 4.0.2.0 | 1、支持监听toast和dialog控件出现，使用callback的形式返回结果。                              |
 | 4.0.3.0 | 1、增加加载运行.abc文件机制。                                |
 | 4.0.4.0 | 1、支持abc_loader框架获取UI操作录制数据，屏幕数据，控件树等，并以callback的形式返回结果<br />2、修改录制数据结构 |
 | 4.1.1.1 | 1、对接批量获取控件信息能力，缩短获取控件信息的耗时。        |
+| 4.1.2.0 | 1、增加shell命令方式注入UI模拟操作。                                                 |

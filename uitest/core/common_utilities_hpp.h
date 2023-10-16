@@ -43,11 +43,19 @@ namespace OHOS::uitest {
     constexpr size_t INDEX_THREE = 3;
     constexpr size_t INDEX_FOUR = 4;
     constexpr size_t INDEX_FIVE = 5;
+    constexpr size_t INDEX_SIX = 6;
+    constexpr size_t INDEX_SEVEN = 7;
+    constexpr size_t INDEX_EIGHT = 8;
+    constexpr size_t INDEX_NINE = 9;
     constexpr int32_t ZERO = 0;
     constexpr int32_t ONE = 1;
     constexpr int32_t TWO = 2;
     constexpr int32_t THREE = 3;
     constexpr int32_t FOUR = 4;
+    constexpr int32_t FIVE = 5;
+    constexpr int32_t SIX = 6;
+    constexpr int32_t SEVEN = 7;
+    constexpr int32_t EIGHT = 8;
 
     /**Get current time millisecond.*/
     inline uint64_t GetCurrentMillisecond()
