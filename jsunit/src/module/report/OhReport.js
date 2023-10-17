@@ -120,17 +120,17 @@ class OhReport {
             let messageStack = '';
             let messageCode = '';
             if (this.specService.currentRunningSpec.error) {
-                messageStack = 'OHOS_REPORT_STATUS: stack=' + this.specService.currentRunningSpec.error?.stack;
+                messageStack = 'OHOS_REPORT_STATUS: stack=' + this.specService.currentRunningSpec.error?.stack?.slice(0,-1);
                 messageCode += 'OHOS_REPORT_STATUS: stream=';
-                messageCode += '\n' + 'Error in ' + this.specService.currentRunningSpec.description;
+                messageCode += 'Error in ' + this.specService.currentRunningSpec.description;
                 messageCode += '\n' + this.specService.currentRunningSpec.error.message;
                 messageCode += '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
                 messageCode += '\n' + 'OHOS_REPORT_STATUS_CODE: -1' + '\n';
             } else if (this.specService.currentRunningSpec) {
                 if (this.specService.currentRunningSpec.fail) {
-                    messageStack += 'OHOS_REPORT_STATUS: stack=' + this.specService.currentRunningSpec.fail?.stack;
+                    messageStack += 'OHOS_REPORT_STATUS: stack=' + this.specService.currentRunningSpec.fail?.stack?.slice(0,-1);
                     messageCode += 'OHOS_REPORT_STATUS: stream=';
-                    messageCode += '\n' + 'Error in ' + this.specService.currentRunningSpec.description;
+                    messageCode += 'Error in ' + this.specService.currentRunningSpec.description;
                     messageCode += '\n' + this.specService.currentRunningSpec.fail?.message + '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
                     messageCode += '\n' + 'OHOS_REPORT_STATUS_CODE: -2' + '\n';
                 } else {
