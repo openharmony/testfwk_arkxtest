@@ -35,7 +35,9 @@
           "hilog",
           "input",
           "pasteboard",
-          "eventhandler"
+          "eventhandler",
+          "hidumper",
+          "samgr"
         ],
         "third_party": [
           "libpng"

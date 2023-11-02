@@ -106,6 +106,8 @@ namespace OHOS::uitest {
         virtual bool IsWorkable() const = 0;
 
         virtual void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const {};
+
+        virtual void GetHidumperInfo(std::string windowId, char **buf, size_t &len) {};
     };
 }
 
