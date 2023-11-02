@@ -24,7 +24,6 @@
 #include <iservice_registry.h>
 #include <system_ability_load_callback_stub.h>
 #include <sys/mman.h>
-#include <sys/time.h>
 #include "idump_broker.h"
 #include "system_ability_definition.h"
 #include "accessibility_event_info.h"

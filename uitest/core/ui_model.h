@@ -124,9 +124,7 @@ namespace OHOS::uitest {
 
     class DumpHandler {
     public:
-        static void AddExternAttrs(nlohmann::json &root, const map<int32_t, string_view> &elementTrees, size_t index);
-        FORCE_INLINE static string_view GetMiddleStr(string_view str, size_t &index, string_view startStr,
-            string_view endStr);
+        static void AddExtraAttrs(nlohmann::json &root, const map<int32_t, string_view> &elementTrees, size_t index);
     };
 
     /**Algorithm of rectangle.*/
