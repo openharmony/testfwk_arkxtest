@@ -105,14 +105,15 @@ namespace OHOS::uitest {
         if (addExternAttr) {
             map <int32_t, string_view> elementTrees;
             vector <char *> buffers;
-            size_t len = 0;
-            char *buffer = nullptr;
             for (auto &win : windows_) {
+                char *buffer = nullptr;
+                size_t len = 0;
                 uiController_->GetHidumperInfo(to_string(win.id_), &buffer, len);
                 if (buffer == nullptr) {
                     continue;
                 }
                 elementTrees.insert(make_pair(win.id_, string_view(buffer, len)));
+                buffers.push_back(buffer);
             }
             DumpHandler::AddExtraAttrs(out, elementTrees, 0);
             for (auto &buf : buffers) {
