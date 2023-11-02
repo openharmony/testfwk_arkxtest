@@ -20,7 +20,24 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
 
-    void DumpHandler::AddExternAttrs(nlohmann::json &root, const map<int32_t, string_view> &elementTrees, size_t index)
+    static string_view GetMiddleStr(string_view str, size_t &index, string_view startStr, string_view endStr)
+    {
+        size_t ori = index;
+        auto begin = str.find(startStr, index);
+        if (begin != string::npos) {
+            index = begin + startStr.size();
+            auto end = str.find(endStr, index);
+            if (end != string::npos) {
+                string_view result = str.substr(index, end - index);
+                index = end;
+                return result;
+            }
+        }
+        index = ori;
+        return "";
+    }
+
+    void DumpHandler::AddExtraAttrs(nlohmann::json &root, const map<int32_t, string_view> &elementTrees, size_t index)
     {
         auto windowIdValue = root["attributes"]["hostWindowId"].dump();
         auto windowId = atoi(windowIdValue.substr(1, windowIdValue.size()-2).c_str());
@@ -56,24 +73,7 @@ namespace OHOS::uitest {
         auto childCount = childrenData.size();
         for (size_t idx = 0; idx < childCount; idx++) {
             auto &child = childrenData.at(idx);
-            AddExternAttrs(child, elementTrees, index);
+            AddExtraAttrs(child, elementTrees, index);
         }
-    }
-
-    string_view DumpHandler::GetMiddleStr(string_view str, size_t &index, string_view startStr, string_view endStr)
-    {
-        size_t ori = index;
-        auto begin = str.find(startStr, index);
-        if (begin != string::npos) {
-            index = begin + startStr.size();
-            auto end = str.find(endStr, index);
-            if (end != string::npos) {
-                string_view result = str.substr(index, end - index);
-                index = end;
-                return result;
-            }
-        }
-        index = ori;
-        return "";
     }
 } // namespace OHOS::uitest

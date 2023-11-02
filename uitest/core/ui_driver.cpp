@@ -107,11 +107,14 @@ namespace OHOS::uitest {
             vector <char *> buffers;
             size_t len = 0;
             char *buffer = nullptr;
-            for (auto win : windows_) {
+            for (auto &win : windows_) {
                 uiController_->GetHidumperInfo(to_string(win.id_), &buffer, len);
+                if (buffer == nullptr) {
+                    continue;
+                }
                 elementTrees.insert(make_pair(win.id_, string_view(buffer, len)));
             }
-            DumpHandler::AddExternAttrs(out, elementTrees, 0);
+            DumpHandler::AddExtraAttrs(out, elementTrees, 0);
             for (auto &buf : buffers) {
                 delete buf;
             }
