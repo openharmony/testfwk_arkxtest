@@ -33,6 +33,7 @@ ohos_static_library("uitest_core") {
   use_exceptions = true
   configs = [ ":uitest_common_configs" ]
   sources = [
+    "${source_root}/core/dump_handler.cpp",
     "${source_root}/core/frontend_api_handler.cpp",
     "${source_root}/core/rect_algorithm.cpp",
     "${source_root}/core/ui_action.cpp",
@@ -170,6 +171,7 @@ ohos_executable("uitest_server") {
     "${source_root}/record",
     "${source_root}/addon",
     "${source_root}/input",
+    "//base/hiviewdfx/hidumper/interfaces/native/innerkits/include",
   ]
 
   # static link the uitest_core as server end
@@ -189,8 +191,10 @@ ohos_executable("uitest_server") {
   external_deps = [
     "ability_runtime:ability_manager",
     "accessibility:accessibleability",
+    "hidumper:hidumper_client",
     "image_framework:image_native",
     "input:libmmi-client",
+    "samgr:samgr_proxy",
     "window_manager:libdm",
     "window_manager:libwm",
   ]

@@ -67,6 +67,7 @@ namespace OHOS::uitest {
 
         void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const override;
 
+        void GetHidumperInfo(std::string windowId, char **buf, size_t &len) override;
     private:
         void  InjectMouseEvent(const MouseEvent &event) const;
         bool connected_ = false;

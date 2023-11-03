@@ -57,7 +57,7 @@ namespace OHOS::uitest {
     "   uiRecord read,                     print file content to the console\n"
     "   uiAction input,                                                     \n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "4.1.2.0";
+    const std::string VERSION = "4.1.3.0";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
@@ -80,6 +80,9 @@ namespace OHOS::uitest {
                 case 'i':
                     params.insert(pair<char, string>(opt, "true"));
                     break;
+                case 'a':
+                    params.insert(pair<char, string>(opt, "true"));
+                    break;
                 default:
                     params.insert(pair<char, string>(opt, optarg));
                     break;
@@ -88,7 +91,8 @@ namespace OHOS::uitest {
         return EXIT_SUCCESS;
     }
 
-    static void DumpLayoutImpl(string_view path, bool listWindows, bool initController, ApiCallErr &err)
+    static void DumpLayoutImpl(string_view path, bool listWindows, bool initController, bool addExternAttr,
+        ApiCallErr &err)
     {
         ofstream fout;
         fout.open(path, ios::out | ios::binary);
@@ -101,7 +105,7 @@ namespace OHOS::uitest {
         }
         auto driver = UiDriver();
         auto data = nlohmann::json();
-        driver.DumpUiHierarchy(data, listWindows, err);
+        driver.DumpUiHierarchy(data, listWindows, addExternAttr, err);
         if (err.code_ != NO_ERROR) {
             fout.close();
             return;
@@ -117,7 +121,7 @@ namespace OHOS::uitest {
         auto savePath = "/data/local/tmp/layout_" + ts + ".json";
         map<char, string> params;
         static constexpr string_view usage = "USAGE: uitestkit dumpLayout -p <path>";
-        if (GetParam(argc, argv, "p:i", usage, params) == EXIT_FAILURE) {
+        if (GetParam(argc, argv, "p:i:a", usage, params) == EXIT_FAILURE) {
             return EXIT_FAILURE;
         }
         auto iter = params.find('p');
@@ -125,8 +129,9 @@ namespace OHOS::uitest {
             savePath = iter->second;
         }
         const bool listWindows = params.find('i') != params.end();
+        const bool addExternAttr = params.find('a') != params.end();
         auto err = ApiCallErr(NO_ERROR);
-        DumpLayoutImpl(savePath, listWindows, true, err);
+        DumpLayoutImpl(savePath, listWindows, true, addExternAttr, err);
         if (err.code_ == NO_ERROR) {
             PrintToConsole("DumpLayout saved to:" + savePath);
             return EXIT_SUCCESS;
@@ -215,7 +220,7 @@ namespace OHOS::uitest {
         }
         // accept remopte dump request during deamon running (initController=false)
         ApiTransactor::SetBroadcastCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
-            DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, err);
+            DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, false, err);
         });
         mutex mtx;
         unique_lock<mutex> lock(mtx);

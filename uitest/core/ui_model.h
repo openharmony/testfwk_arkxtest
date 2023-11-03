@@ -24,6 +24,7 @@
 
 namespace OHOS::uitest {
     using namespace std;
+    using namespace nlohmann;
 
     /**Enumerates the supported UiComponent attributes.*/
     enum UiAttr : uint8_t {
@@ -41,12 +42,12 @@ namespace OHOS::uitest {
         SCROLLABLE,
         CHECKABLE,
         CHECKED,
+        HOST_WINDOW_ID,
         ORIGBOUNDS,
         // inner used attributes
         HIERARCHY,
         HASHCODE,
         BOUNDSCENTER,
-        HOST_WINDOW_ID,
         VISIBLE,
         ABILITYNAME,
         BUNDLENAME,
@@ -69,11 +70,11 @@ namespace OHOS::uitest {
         "scrollable",    // SCROLLABLE
         "checkable",     // CHECKABLE
         "checked",       // CHECKED
+        "hostWindowId",  // HOST_WINDOW_ID
         "origBounds",    // ORIGBOUNDS
         "hierarchy",     // HIERARCHY
         "hashcode",      // HASHCODE
         "boundsCenter",  // BOUNDSCENTER
-        "hostWindowId",  // HOST_WINDOW_ID
         "visible",       // VISIBLE
         "abilityName",   // ABILITYNAME
         "bundleName",    // BUNDLENAME
@@ -119,6 +120,11 @@ namespace OHOS::uitest {
         {
             return bottom_ - top_;
         }
+    };
+
+    class DumpHandler {
+    public:
+        static void AddExtraAttrs(nlohmann::json &root, const map<int32_t, string_view> &elementTrees, size_t index);
     };
 
     /**Algorithm of rectangle.*/
