@@ -165,7 +165,7 @@ namespace OHOS::uitest {
         } else if (type == CAPTURE_LAYOUT && active) {
             auto dom = nlohmann::json();
             auto err = ApiCallErr(NO_ERROR);
-            driver.DumpUiHierarchy(dom, false, err);
+            driver.DumpUiHierarchy(dom, false, false, err);
             if (err.code_ == NO_ERROR) {
                 const auto jsonStr = dom.dump();
                 jsonStr.copy((char *)dumpLayoutBuf, jsonStr.length());

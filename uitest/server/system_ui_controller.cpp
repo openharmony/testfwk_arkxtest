@@ -21,6 +21,11 @@
 #include <thread>
 #include <utility>
 #include <condition_variable>
+#include <iservice_registry.h>
+#include <system_ability_load_callback_stub.h>
+#include <sys/mman.h>
+#include "idump_broker.h"
+#include "system_ability_definition.h"
 #include "accessibility_event_info.h"
 #include "accessibility_ui_test_ability.h"
 #include "ability_manager_client.h"
@@ -41,6 +46,8 @@ namespace OHOS::uitest {
     using namespace OHOS::Accessibility;
     using namespace OHOS::Rosen;
     using namespace OHOS::Media;
+    using namespace OHOS::HiviewDFX;
+    using namespace OHOS;
 
     class UiEventMonitor final : public AccessibleAbilityListener {
     public:
@@ -232,7 +239,6 @@ namespace OHOS::uitest {
         to[ATTR_NAMES[UiAttr::CLICKABLE].data()] = "false";
         to[ATTR_NAMES[UiAttr::LONG_CLICKABLE].data()] = "false";
         to[ATTR_NAMES[UiAttr::SCROLLABLE].data()] = "false";
-        to[ATTR_NAMES[UiAttr::HOST_WINDOW_ID].data()] = to_string(node.GetWindowId());
         to[ATTR_NAMES[UiAttr::VISIBLE].data()] = "false";
         const auto bounds = node.GetRectInScreen();
         const auto rect = GetVisibleRect(windowBounds, bounds);
@@ -261,15 +267,16 @@ namespace OHOS::uitest {
     }
 
     static void BfsVec2JsonTree(const vector<AccessibilityElementInfo> &nodes, json &to, const int32_t nodeIndex,
-        const Rect &windowBounds, bool visitChild)
+        const Window &window, bool visitChild)
     {
         DCHECK(nodes.size() > nodeIndex);
         json attributes;
         auto &node = nodes[nodeIndex];
-        MarshalAccessibilityNodeAttributes(node, attributes, windowBounds);
+        MarshalAccessibilityNodeAttributes(node, attributes, window.bounds_);
         if (node.GetComponentType() == "rootdecortag" || node.GetInspectorKey() == "ContainerModalTitleRow") {
             attributes[ATTR_NAMES[UiAttr::TYPE].data()] = "DecorBar";
         }
+        attributes[ATTR_NAMES[UiAttr::HOST_WINDOW_ID].data()] = to_string(window.id_);
         to["attributes"] = attributes;
         auto childList = json::array();
         if (!visitChild) {
@@ -298,7 +305,7 @@ namespace OHOS::uitest {
                 continue;
             }
             auto parcel = json();
-            BfsVec2JsonTree(nodes, parcel, childNodeIndex, windowBounds, visitChild);
+            BfsVec2JsonTree(nodes, parcel, childNodeIndex, window, visitChild);
             childList.push_back(parcel);
         }
         to["children"] = childList;
@@ -379,7 +386,7 @@ namespace OHOS::uitest {
                 continue;
             }
             if (AccessibilityUITestAbility::GetInstance()->GetRootByWindowBatch(window, elementInfos) != RET_OK) {
-                LOG_W("GetRootByWindow failed, windowId: %{public}d", windowId);
+                LOG_W("GetRootByWindowBatch failed, windowId: %{public}d", windowId);
             } else {
                 const auto app = elementInfos[0].GetBundleName();
                 if (targetApp != "" && app != targetApp) {
@@ -389,7 +396,7 @@ namespace OHOS::uitest {
                 root["bundleName"] = app;
                 root["abilityName"] = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
                 root["pagePath"] = (app == foreAbility.GetBundleName()) ? elementInfos[0].GetPagePath() : "";
-                BfsVec2JsonTree(elementInfos, root, 0, winInfo.bounds_, getWidgetNodes);
+                BfsVec2JsonTree(elementInfos, root, 0, winInfo, getWidgetNodes);
                 overlays.push_back(winInfo.bounds_);
                 out.push_back(make_pair(move(winInfo), move(root)));
                 LOG_I("Get node at layer %{public}d, window Id: %{public}d, appId: %{public}s",
@@ -801,5 +808,81 @@ namespace OHOS::uitest {
         auto displayId = displayMgr.GetDefaultDisplayId();
         auto state = displayMgr.GetDisplayState(displayId);
         return (state != DisplayState::OFF);
+    }
+
+    class OnSaLoadCallback : public SystemAbilityLoadCallbackStub {
+    public:
+        explicit OnSaLoadCallback(mutex &mutex): mutex_(mutex) {};
+        ~OnSaLoadCallback() {};
+        void OnLoadSystemAbilitySuccess(int32_t systemAbilityId, const sptr<IRemoteObject>& remoteObject) override
+        {
+            if (systemAbilityId == OHOS::DFX_HI_DUMPER_SERVICE_ABILITY_ID) {
+                remoteObject_ = remoteObject;
+                mutex_.unlock();
+            }
+        }
+        void OnLoadSystemAbilityFail(int32_t systemAbilityId) override
+        {
+            if (systemAbilityId == OHOS::DFX_HI_DUMPER_SERVICE_ABILITY_ID) {
+                mutex_.unlock();
+            }
+        }
+
+        sptr<IRemoteObject> GetSaObject()
+        {
+            return remoteObject_;
+        }
+        
+    private:
+        mutex &mutex_;
+        sptr<IRemoteObject> remoteObject_ = nullptr;
+    };
+
+    void SysUiController::GetHidumperInfo(std::string windowId, char **buf, size_t &len)
+    {
+        auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+        if (sam == nullptr) {
+            LOG_E("Get samgr failed");
+            return;
+        }
+        auto remoteObject = sam->CheckSystemAbility(OHOS::DFX_HI_DUMPER_SERVICE_ABILITY_ID);
+        if (remoteObject == nullptr) {
+            mutex lock;
+            lock.lock();
+            sptr<OnSaLoadCallback> loadCallback = new OnSaLoadCallback(lock);
+            int32_t result = sam->LoadSystemAbility(OHOS::DFX_HI_DUMPER_SERVICE_ABILITY_ID, loadCallback);
+            if (result != ERR_OK) {
+                LOG_E("Schedule LoadSystemAbility failed");
+                return;
+            }
+            LOG_E("Schedule LoadSystemAbility succeed");
+            lock.lock();
+            remoteObject = loadCallback->GetSaObject();
+            LOG_E("LoadSystemAbility callbacked, result = %{public}s", remoteObject == nullptr ? "FAIL" : "SUCCESS");
+        }
+        if (remoteObject == nullptr) {
+            LOG_E("remoteObject is null");
+            return;
+        }
+        // run dump command
+        sptr<IDumpBroker> client = iface_cast<IDumpBroker>(remoteObject);
+        auto fd = memfd_create("dummy_file", 2);
+        ftruncate(fd, 0);
+        vector<u16string> args;
+        args.emplace_back(u"hidumper");
+        args.emplace_back(u"-s");
+        args.emplace_back(u"WindowManagerService");
+        args.emplace_back(u"-a");
+        auto winIdInUtf16 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t > {}.from_bytes(windowId);
+        auto arg = u16string(u"-w ").append(winIdInUtf16).append(u" -element -c -lastpage");
+        args.emplace_back(move(arg));
+        client->Request(args, fd);
+        auto size = lseek(fd, 0, SEEK_END);
+        char *tempBuf = new char[size + 1];
+        lseek(fd, 0, SEEK_SET);
+        read(fd, tempBuf, size);
+        *buf = tempBuf;
+        len = size;
+        close(fd);
     }
 } // namespace OHOS::uitest

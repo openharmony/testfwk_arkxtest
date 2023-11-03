@@ -83,7 +83,7 @@ namespace OHOS::uitest {
         }
     }
 
-    void UiDriver::DumpUiHierarchy(nlohmann::json &out, bool listWindows, ApiCallErr &error)
+    void UiDriver::DumpUiHierarchy(nlohmann::json &out, bool listWindows, bool addExternAttr, ApiCallErr &error)
     {
         if (listWindows) {
             if (!CheckStatus(true, error)) {
@@ -101,6 +101,24 @@ namespace OHOS::uitest {
                 return;
             }
             widgetTree_->MarshalIntoDom(out);
+        }
+        if (addExternAttr) {
+            map <int32_t, string_view> elementTrees;
+            vector <char *> buffers;
+            for (auto &win : windows_) {
+                char *buffer = nullptr;
+                size_t len = 0;
+                uiController_->GetHidumperInfo(to_string(win.id_), &buffer, len);
+                if (buffer == nullptr) {
+                    continue;
+                }
+                elementTrees.insert(make_pair(win.id_, string_view(buffer, len)));
+                buffers.push_back(buffer);
+            }
+            DumpHandler::AddExtraAttrs(out, elementTrees, 0);
+            for (auto &buf : buffers) {
+                delete buf;
+            }
         }
     }
 
