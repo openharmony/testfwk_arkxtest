@@ -32,7 +32,7 @@ namespace OHOS::uitest {
         ID,
         TEXT,
         KEY,
-        CONTENTDESCRIPTION,
+        DESCRIPTION,
         TYPE,
         BOUNDS,
         ENABLED,
@@ -61,7 +61,7 @@ namespace OHOS::uitest {
         "id",            // ID
         "text",          // TEXT
         "key",           // KEY
-        "contentDescription", //CONTENTDESCRIPTION
+        "description",   //DESCRIPTION
         "type",          // TYPE
         "bounds",        // BOUNDS
         "enabled",       // ENABLED

@@ -337,7 +337,7 @@ namespace OHOS::uitest {
         {"On.text", "(string,int?):On", false, true}, //  MatchPattern enum as int value
         {"On.id", "(string):On", false, true},
         {"On.type", "(string):On", false, true},
-        {"On.contentDescription", "(string):On", false, true},
+        {"On.description", "(string):On", false, true},
         {"On.enabled", "(bool?):On", false, true}, // default bool arg: true
         {"On.focused", "(bool?):On", false, true},
         {"On.selected", "(bool?):On", false, true},
