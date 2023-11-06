@@ -230,6 +230,7 @@ namespace OHOS::uitest {
         to[ATTR_NAMES[UiAttr::ACCESSIBILITY_ID].data()] = to_string(node.GetAccessibilityId());
         to[ATTR_NAMES[UiAttr::ID].data()] = node.GetInspectorKey();
         to[ATTR_NAMES[UiAttr::KEY].data()] = node.GetInspectorKey();
+        to[ATTR_NAMES[UiAttr::CONTENTDESCRIPTION].data()] = node.GetDescriptionInfo();
         to[ATTR_NAMES[UiAttr::TYPE].data()] = node.GetComponentType();
         to[ATTR_NAMES[UiAttr::ENABLED].data()] = node.IsEnabled() ? "true" : "false";
         to[ATTR_NAMES[UiAttr::FOCUSED].data()] = node.IsFocused() ? "true" : "false";
