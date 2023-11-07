@@ -623,6 +623,7 @@ namespace OHOS::uitest {
         server.AddHandler("On.accessibilityId", GenericOnAttrBuilder<UiAttr::ACCESSIBILITY_ID, int32_t>);
         server.AddHandler("On.text", GenericOnAttrBuilder<UiAttr::TEXT, string>);
         server.AddHandler("On.id", GenericOnAttrBuilder<UiAttr::ID, string>);
+        server.AddHandler("On.description", GenericOnAttrBuilder<UiAttr::DESCRIPTION, string>);
         server.AddHandler("On.type", GenericOnAttrBuilder<UiAttr::TYPE, string>);
         server.AddHandler("On.enabled", GenericOnAttrBuilder<UiAttr::ENABLED, bool>);
         server.AddHandler("On.focused", GenericOnAttrBuilder<UiAttr::FOCUSED, bool>);
