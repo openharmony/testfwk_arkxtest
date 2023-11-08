@@ -14,7 +14,7 @@
  */
 
 import Core from './src/core';
-import ConfigService from '/src/module/config/configService'
+import {ConfigService} from './src/module/config/configService'
 import {DEFAULT, TestType, Size, Level, TAG} from './src/Constant';
 import DataDriver from './src/module/config/DataDriver';
 import ExpectExtend from './src/module/assert/ExpectExtend';
@@ -26,8 +26,8 @@ import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
 
 class Hypium {
     static setData(data:Object) {
-        const core = Core.getInstance();
-        const dataDriver = new DataDriver({data});
+        const core:Core = Core.getInstance();
+        const dataDriver:DataDriver = new DataDriver({data});
         core.addService('dataDriver', dataDriver);
     }
 
@@ -35,13 +35,13 @@ class Hypium {
         SysTestKit.systemTime = systemTime;
     }
 
-    static hypiumTest(abilityDelegator:Object, abilityDelegatorArguments:Object, testsuite:Object) {
-        const core = Core.getInstance();
-        const expectExtend = new ExpectExtend({
+    static hypiumTest(abilityDelegator:Object, abilityDelegatorArguments:Object, testsuite:Function) {
+        const core:Core = Core.getInstance();
+        const expectExtend:ExpectExtend = new ExpectExtend({
             id: 'extend'
         });
         core.addService('expect', expectExtend);
-        const ohReport = new OhReport({
+        const ohReport:OhReport = new OhReport({
             delegator: abilityDelegator,
             abilityDelegatorArguments: abilityDelegatorArguments
         });
@@ -52,13 +52,11 @@ class Hypium {
         core.subscribeEvent('suite', ohReport);
         core.subscribeEvent('task', ohReport);
         const configService:ConfigService = core.getDefaultService('config');
-        let testParameters:Array = {};
         if (abilityDelegatorArguments !== null) {
-            testParameters = configService.translateParams(abilityDelegatorArguments.parameters);
+            let testParameters:Object = configService.translateParams((abilityDelegatorArguments as Record<string, Object>).parameters);
+            console.info(`${TAG}parameters:${JSON.stringify(testParameters)}`);
+            configService.setConfig(testParameters);
         }
-        console.info(`${TAG}parameters:${JSON.stringify(testParameters)}`);
-        configService.setConfig(testParameters);
-        
         testsuite();
         core.execute(abilityDelegator);
     }
