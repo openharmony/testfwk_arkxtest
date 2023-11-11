@@ -44,21 +44,24 @@ arkXtest
 | 7    | afterItSpecified  | 在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行，支持两个参数：单个用例名称或用例名称数组、清理动作函数 |
 | 8    | it                | 定义一条测试用例，支持三个参数：用例名称，过滤参数和用例函数。 |
 | 9    | expect            | 支持bool类型判断等多种断言方法。                             |
+| 10   | getDescribeName   | 获取当前正在执行测试套的名称                                 |
+| 11   | getItName         | 获取当前正在执行测试用例的名称                               |
+| 12   | getItAttribute    | 获取当前正在执行测试用例的级别、粒度、测试类型               |
 
 示例代码：
 
 ```javascript
- import { describe, it, expect } from '@ohos/hypium';
+ import { describe, it, expect, beforeItSpecified, afterItSpecified, SysTestKit, TestType, Size, Level} from '@ohos/hypium';
  import demo from '@ohos.bundle'
  import { BusinessError } from '@ohos.base';
  export default function abilityTest() {
   describe('ActsAbilityTest', () => {
     beforeItSpecified(['String_assertContain_success'], () => {
-      const num = 1
+      const num:number = 1
       expect(num).assertEqual(1)
     })
     afterItSpecified(['String_assertContain_success'], async (done) => {
-      const str = 'abc'
+      const str:string = 'abc'
       setTimeout(()=>{
         try {
           expect(str).assertContain('d')
@@ -67,6 +70,16 @@ arkXtest
         }
         done()
       }, 1000)
+    })
+    it('getCurrentRunningSuiteName', 0, () => {
+        let suiteName: string = SysTestKit.getDescribeName();
+        expect(suiteName).assertEqual('ActsAbilityTest')
+    })
+    it('getCurrentRunningItInfo',TestType.SAFETY | Size.SMALLTEST, () => {
+      let itName: string = SysTestKit.getItName();
+      let itAttr: TestType | Size | Level = SysTestKit.getItAttribute()
+      expect(itName).assertEqual('getCurrentRunningItInfo')
+      expect(itAttr).assertEqual(TestType.SAFETY | Size.SMALLTEST)
     })
     it('String_assertContain_success', 0, () => {
       let a = 'abc'
