@@ -21,11 +21,14 @@
 #include <thread>
 #include <utility>
 #include <condition_variable>
+#include <sys/mman.h>
+#ifdef HIDUMPER_ENABLED
 #include <iservice_registry.h>
 #include <system_ability_load_callback_stub.h>
-#include <sys/mman.h>
 #include "idump_broker.h"
 #include "system_ability_definition.h"
+#endif
+#include "pasteboard_client.h"
 #include "accessibility_event_info.h"
 #include "accessibility_ui_test_ability.h"
 #include "ability_manager_client.h"
@@ -34,6 +37,7 @@
 #include "input_manager.h"
 #include "png.h"
 #include "wm_common.h"
+#include "element_node_iterator_impl.h"
 #include "system_ui_controller.h"
 
 using namespace std;
@@ -199,16 +203,6 @@ namespace OHOS::uitest {
         return this->ConnectToSysAbility();
     }
 
-    static size_t GenerateNodeHash(const AccessibilityElementInfo &node)
-    {
-        static constexpr auto SHIFT_BITS = 32U;
-        static constexpr auto hashFunc = hash<string>();
-        int64_t intId = node.GetWindowId();
-        intId = (intId << SHIFT_BITS) + node.GetAccessibilityId();
-        const string strId = node.GetBundleName() + node.GetComponentType() + to_string(intId);
-        return hashFunc(strId);
-    }
-
     static Rect GetVisibleRect(Rect windowBounds, Accessibility::Rect nodeBounds)
     {
         auto leftX = nodeBounds.GetLeftTopXScreenPostion();
@@ -220,96 +214,6 @@ namespace OHOS::uitest {
                        (topY < windowBounds.top_) ? windowBounds.top_ : topY,
                        (bottomY > windowBounds.bottom_) ? windowBounds.bottom_ : bottomY);
         return newBounds;
-    }
-
-    static void MarshalAccessibilityNodeAttributes(const AccessibilityElementInfo &node, json &to,
-        const Rect windowBounds)
-    {
-        to[ATTR_NAMES[UiAttr::HASHCODE].data()] = to_string(GenerateNodeHash(node));
-        to[ATTR_NAMES[UiAttr::TEXT].data()] = node.GetContent();
-        to[ATTR_NAMES[UiAttr::ACCESSIBILITY_ID].data()] = to_string(node.GetAccessibilityId());
-        to[ATTR_NAMES[UiAttr::ID].data()] = node.GetInspectorKey();
-        to[ATTR_NAMES[UiAttr::KEY].data()] = node.GetInspectorKey();
-        to[ATTR_NAMES[UiAttr::DESCRIPTION].data()] = node.GetDescriptionInfo();
-        to[ATTR_NAMES[UiAttr::TYPE].data()] = node.GetComponentType();
-        to[ATTR_NAMES[UiAttr::ENABLED].data()] = node.IsEnabled() ? "true" : "false";
-        to[ATTR_NAMES[UiAttr::FOCUSED].data()] = node.IsFocused() ? "true" : "false";
-        to[ATTR_NAMES[UiAttr::SELECTED].data()] = node.IsSelected() ? "true" : "false";
-        to[ATTR_NAMES[UiAttr::CHECKABLE].data()] = node.IsCheckable() ? "true" : "false";
-        to[ATTR_NAMES[UiAttr::CHECKED].data()] = node.IsChecked() ? "true" : "false";
-        to[ATTR_NAMES[UiAttr::CLICKABLE].data()] = "false";
-        to[ATTR_NAMES[UiAttr::LONG_CLICKABLE].data()] = "false";
-        to[ATTR_NAMES[UiAttr::SCROLLABLE].data()] = "false";
-        to[ATTR_NAMES[UiAttr::VISIBLE].data()] = "false";
-        const auto bounds = node.GetRectInScreen();
-        const auto rect = GetVisibleRect(windowBounds, bounds);
-        stringstream stream;
-        // "[%d,%d][%d,%d]", rect.left, rect.top, rect.right, rect.bottom
-        stream << "[" << rect.left_ << "," << rect.top_ << "]" << "[" << rect.right_ << "," << rect.bottom_ << "]";
-        to[ATTR_NAMES[UiAttr::BOUNDS].data()] = stream.str();
-        to[ATTR_NAMES[UiAttr::ORIGBOUNDS].data()] = stream.str();
-        auto actionList = node.GetActionList();
-        for (auto &action : actionList) {
-            switch (action.GetActionType()) {
-                case ACCESSIBILITY_ACTION_CLICK:
-                    to[ATTR_NAMES[UiAttr::CLICKABLE].data()] = "true";
-                    break;
-                case ACCESSIBILITY_ACTION_LONG_CLICK:
-                    to[ATTR_NAMES[UiAttr::LONG_CLICKABLE].data()] = "true";
-                    break;
-                case ACCESSIBILITY_ACTION_SCROLL_FORWARD:
-                case ACCESSIBILITY_ACTION_SCROLL_BACKWARD:
-                    to[ATTR_NAMES[UiAttr::SCROLLABLE].data()] = "true";
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    static void BfsVec2JsonTree(const vector<AccessibilityElementInfo> &nodes, json &to, const int32_t nodeIndex,
-        const Window &window, bool visitChild)
-    {
-        DCHECK(nodes.size() > nodeIndex);
-        json attributes;
-        auto &node = nodes[nodeIndex];
-        MarshalAccessibilityNodeAttributes(node, attributes, window.bounds_);
-        if (node.GetComponentType() == "rootdecortag" || node.GetInspectorKey() == "ContainerModalTitleRow") {
-            attributes[ATTR_NAMES[UiAttr::TYPE].data()] = "DecorBar";
-        }
-        attributes[ATTR_NAMES[UiAttr::HOST_WINDOW_ID].data()] = to_string(window.id_);
-        to["attributes"] = attributes;
-        auto childList = json::array();
-        if (!visitChild) {
-            to["children"] = childList;
-            return;
-        }
-        const auto childCount = node.GetChildCount();
-        auto childNodeIndex = 0;
-        for (auto index = 0; index < childCount; index++) {
-            auto childId = node.GetChildId(index);
-            if (childNodeIndex > 0) {
-                childNodeIndex++;
-            } else {
-                childNodeIndex = nodeIndex;
-                while (childNodeIndex < nodes.size() && nodes.at(childNodeIndex).GetAccessibilityId() != childId) {
-                    childNodeIndex++;
-                }
-            }
-            auto &child = nodes[childNodeIndex];
-            if (child.GetAccessibilityId() != childId) {
-                LOG_E("Node info error, expect: %{public}d, actual: %{public}d", childId, child.GetAccessibilityId());
-                    continue;
-            }
-            if (!child.IsVisible()) {
-                LOG_I("This node is not visible, node Id: %{public}d", child.GetAccessibilityId());
-                continue;
-            }
-            auto parcel = json();
-            BfsVec2JsonTree(nodes, parcel, childNodeIndex, window, visitChild);
-            childList.push_back(parcel);
-        }
-        to["children"] = childList;
     }
 
     static void InflateWindowInfo(AccessibilityWindowInfo& node, Window& info)
@@ -348,63 +252,83 @@ namespace OHOS::uitest {
             LOG_W("GetWindows from AccessibilityUITestAbility failed");
             return false;
         }
-        sort(windows.begin(), windows.end(), [](auto &w1, auto &w2) -> bool {
-            return w1.GetWindowLayer() > w2.GetWindowLayer();
-        });
+        sort(windows.begin(), windows.end(),
+             [](auto &w1, auto &w2) -> bool { return w1.GetWindowLayer() > w2.GetWindowLayer(); });
         return true;
     }
 
-    void SysUiController::GetUiHierarchy(vector<pair<Window, nlohmann::json>> &out, bool getWidgetNodes,
-        string targetApp)
+    void SysUiController::GetUiWindows(std::vector<Window> &out)
     {
-        static mutex dumpMutex; // disallow concurrent dumpUi
+        std::lock_guard<std::mutex> dumpLocker(dumpMtx); // disallow concurrent dumpUi
         if (!connected_ && !ConnectToSysAbility()) {
             LOG_W("Connect to AccessibilityUITestAbility failed");
             return;
         }
-        dumpMutex.lock();
         vector<AccessibilityWindowInfo> windows;
+        LOG_I("Start Get Window root info");
         if (!GetAamsWindowInfos(windows)) {
-            dumpMutex.unlock();
             return;
         }
+        LOG_I("End Get Window root info");
         auto screenSize = GetDisplaySize();
         auto screenRect = Rect(0, screenSize.px_, 0, screenSize.py_);
-        vector<AccessibilityElementInfo> elementInfos;
-        const auto foreAbility = AAFwk::AbilityManagerClient::GetInstance()->GetTopAbility();
-        vector<Rect> overlays;
-        for (auto &window : windows) {
-            const auto windowId = window.GetWindowId();
-            LOG_I("Get window at layer %{public}d, windowId: %{public}d", window.GetWindowLayer(), windowId);
-            auto boundsInScreen = GetVisibleRect(screenRect, window.GetRectInScreen());
-            auto winInfo = Window(window.GetWindowId());
-            InflateWindowInfo(window, winInfo);
-            winInfo.bounds_ = boundsInScreen;
-            Rect visibleArea = winInfo.bounds_;
-            auto root = nlohmann::json();
-            if (!RectAlgorithm::ComputeMaxVisibleRegion(winInfo.bounds_, overlays, visibleArea)) {
-                LOG_I("This window is covered, windowId: %{public}d", windowId);
+        std::vector<Rect> overplays;
+        // window wrapper
+        for (auto &win : windows) {
+            Rect winRectInScreen = GetVisibleRect(screenRect, win.GetRectInScreen());
+            Rect visibleArea = winRectInScreen;
+            if (!RectAlgorithm::ComputeMaxVisibleRegion(winRectInScreen, overplays, visibleArea)) {
+                LOG_I("This window is covered, windowId : %{public}d", win.GetWindowId());
                 continue;
             }
-            if (AccessibilityUITestAbility::GetInstance()->GetRootByWindowBatch(window, elementInfos) != RET_OK) {
-                LOG_W("GetRootByWindowBatch failed, windowId: %{public}d", windowId);
-            } else {
-                const auto app = elementInfos[0].GetBundleName();
-                if (targetApp != "" && app != targetApp) {
-                    continue;
+            // 从overplays中计算window被遮挡区域
+            LOG_I("This window is visible, windowId : %{public}d", win.GetWindowId());
+            Window winWrapper{win.GetWindowId()};
+            InflateWindowInfo(win, winWrapper);
+            winWrapper.bounds_ = winRectInScreen;
+            for (const auto &overWin : overplays) {
+                Rect intersectionRect{0, 0, 0, 0};
+                if (RectAlgorithm::ComputeIntersection(winRectInScreen, overWin, intersectionRect)) {
+                    winWrapper.invisibleBoundsVec_.emplace_back(overWin);
                 }
-                winInfo.bundleName_ = app;
-                root["bundleName"] = app;
-                root["abilityName"] = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
-                root["pagePath"] = (app == foreAbility.GetBundleName()) ? elementInfos[0].GetPagePath() : "";
-                BfsVec2JsonTree(elementInfos, root, 0, winInfo, getWidgetNodes);
-                overlays.push_back(winInfo.bounds_);
-                out.push_back(make_pair(move(winInfo), move(root)));
-                LOG_I("Get node at layer %{public}d, window Id: %{public}d, appId: %{public}s",
-                    window.GetWindowLayer(), windowId, app.c_str());
             }
+            overplays.emplace_back(winRectInScreen);
+            out.emplace_back(std::move(winWrapper));
         }
-        dumpMutex.unlock();
+    }
+
+    bool SysUiController::GetBundleNameAndNodesInWindow(Window &winInfo,
+                                                        std::unique_ptr<ElementNodeIterator> &elementNodeIterator)
+    {
+        std::lock_guard<std::mutex> dumpLocker(dumpMtx); // disallow concurrent dumpUi
+        if (!connected_) {
+            LOG_W("Connect to AccessibilityUITestAbility failed");
+            return false;
+        }
+        std::vector<AccessibilityElementInfo> elementInfos;
+        const auto foreAbility = AAFwk::AbilityManagerClient::GetInstance()->GetTopAbility();
+        AccessibilityWindowInfo window;
+        LOG_I("Start Get Window by WindowId %{public}d", winInfo.id_);
+        if (AccessibilityUITestAbility::GetInstance()->GetWindow(winInfo.id_, window) != RET_OK) {
+            LOG_E("GetWindowInfo failed, windowId: %{public}d", winInfo.id_);
+            return false;
+        }
+        LOG_I("Start Get nodes from window by WindowId %{public}d", winInfo.id_);
+        if (AccessibilityUITestAbility::GetInstance()->GetRootByWindowBatch(window, elementInfos) != RET_OK) {
+            LOG_E("GetRootByWindowBatch failed, windowId: %{public}d", winInfo.id_);
+            return false;
+        } else {
+            LOG_I("End Get nodes from window by WindowId %{public}d, node size is %{public}zu", winInfo.id_,
+                  elementInfos.size());
+            const auto app = elementInfos[0].GetBundleName();
+            winInfo.bundleName_ = app;
+            winInfo.abilityName_ = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
+            winInfo.pagePath_ = (app == foreAbility.GetBundleName()) ? elementInfos[0].GetPagePath() : "";
+            elementNodeIterator = std::make_unique<ElementNodeIteratorImpl>(elementInfos);
+            LOG_I("Get Node and layer %{public}d, window id: %{public}d, appId: %{public}s", window.GetWindowLayer(),
+                  winInfo.id_, app.data());
+        }
+        return true;
     }
 
     void SysUiController::InjectTouchEventSequence(const PointerMatrix &events) const
@@ -443,6 +367,16 @@ namespace OHOS::uitest {
         }
     }
 
+    static void SetPointerItemAttr(const MouseEvent &event, PointerEvent::PointerItem &item)
+    {
+        item.SetPointerId(0);
+        item.SetToolType(PointerEvent::TOOL_TYPE_MOUSE);
+        item.SetDisplayX(event.point_.px_);
+        item.SetDisplayY(event.point_.py_);
+        item.SetPressed(false);
+        item.SetDownTime(0);
+    }
+
     void SysUiController::InjectMouseEvent(const MouseEvent &event) const
     {
         auto pointerEvent = PointerEvent::Create();
@@ -450,10 +384,7 @@ namespace OHOS::uitest {
         pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
         pointerEvent->SetPointerId(0);
         pointerEvent->SetButtonId(event.button_);
-        item.SetDisplayX(event.point_.px_);
-        item.SetDisplayY(event.point_.py_);
-        item.SetPressed(false);
-        item.SetDownTime(0);
+        SetPointerItemAttr(event, item);
         constexpr double axialValue = 15;
         static bool flag = true;
         auto injectAxialValue = axialValue;
@@ -554,7 +485,13 @@ namespace OHOS::uitest {
         }
     }
 
-    void SysUiController::PutTextToClipboard(string_view text) const {}
+    void SysUiController::PutTextToClipboard(string_view text) const
+    {
+        auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
+        pasteBoardMgr->Clear();
+        auto pasteData = pasteBoardMgr->CreatePlainTextData(string(text));
+        pasteBoardMgr->SetPasteData(*pasteData);
+    }
 
     bool SysUiController::IsWorkable() const
     {
@@ -639,10 +576,10 @@ namespace OHOS::uitest {
         }
         mutex mtx;
         unique_lock<mutex> uLock(mtx);
-        condition_variable condition;
-        auto onConnectCallback = [&condition]() {
+        std::shared_ptr<condition_variable> condition = make_shared<condition_variable>();
+        auto onConnectCallback = [condition]() {
             LOG_I("Success connect to AccessibilityUITestAbility");
-            condition.notify_all();
+            condition->notify_all();
         };
         auto onDisConnectCallback = [this]() { this->connected_ = false; };
         if (g_monitorInstance_ == nullptr) {
@@ -676,7 +613,7 @@ namespace OHOS::uitest {
                 break;
         }
         const auto timeout = chrono::milliseconds(1000);
-        if (condition.wait_for(uLock, timeout) == cv_status::timeout) {
+        if (condition->wait_for(uLock, timeout) == cv_status::timeout) {
             LOG_E("Wait connection to AccessibilityUITestAbility timed out");
             return false;
         }
@@ -841,6 +778,7 @@ namespace OHOS::uitest {
 
     void SysUiController::GetHidumperInfo(std::string windowId, char **buf, size_t &len)
     {
+#ifdef HIDUMPER_ENABLED
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (sam == nullptr) {
             LOG_E("Get samgr failed");
@@ -885,5 +823,9 @@ namespace OHOS::uitest {
         *buf = tempBuf;
         len = size;
         close(fd);
+#else
+        *buf = nullptr;
+        len = 0;
+#endif
     }
 } // namespace OHOS::uitest

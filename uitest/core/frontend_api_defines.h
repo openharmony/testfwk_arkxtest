@@ -247,7 +247,8 @@ namespace OHOS::uitest {
         {"bundleName", "string", false},
         {"title", "string", false},
         {"focused", "bool", false},
-        {"actived", "bool", false},
+        {"actived", "bool", false}, // Deprecated from API 11
+        {"active", "bool", false},
     };
     constexpr FrontEndJsonDef WINDOW_FILTER_DEF = {
         "WindowFilter",
@@ -337,7 +338,7 @@ namespace OHOS::uitest {
         {"On.text", "(string,int?):On", false, true}, //  MatchPattern enum as int value
         {"On.id", "(string):On", false, true},
         {"On.type", "(string):On", false, true},
-        {"On.description", "(string):On", false, true},
+        {"On.description", "(string,int?):On", false, true},
         {"On.enabled", "(bool?):On", false, true}, // default bool arg: true
         {"On.focused", "(bool?):On", false, true},
         {"On.selected", "(bool?):On", false, true},
@@ -410,6 +411,7 @@ namespace OHOS::uitest {
         {"Component.getText", "():string", false, false},
         {"Component.getId", "():string", false, false},
         {"Component.getType", "():string", false, false},
+        {"Component.getDescription", "():string", false, false},
         {"Component.isEnabled", "():bool", false, false},
         {"Component.isFocused", "():bool", false, false},
         {"Component.isSelected", "():bool", false, false},
@@ -445,7 +447,8 @@ namespace OHOS::uitest {
         {"UiWindow.getTitle", "():string", false, false},
         {"UiWindow.getWindowMode", "():int", false, false}, // WindowMode enum as int value
         {"UiWindow.isFocused", "():bool", false, false},
-        {"UiWindow.isActived", "():bool", false, false},
+        {"UiWindow.isActived", "():bool", false, false}, // Deprecated from API 11
+        {"UiWindow.isActive", "():bool", false, false},
         {"UiWindow.focus", "():void", false, false},
         {"UiWindow.moveTo", "(int,int):void", false, false},
         {"UiWindow.resize", "(int,int,int):void", false, false}, // ResizeDirection enum as int value

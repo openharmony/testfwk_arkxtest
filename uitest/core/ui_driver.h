@@ -21,6 +21,11 @@
 #include "widget_selector.h"
 
 namespace OHOS::uitest {
+    struct WindowCacheModel {
+        explicit WindowCacheModel(const Window &win) : window_(win), widgetIterator_(nullptr) {}
+        Window window_;
+        std::unique_ptr<ElementNodeIterator> widgetIterator_;
+    };
     class UiDriver : public BackendClass {
     public:
         UiDriver() {}
@@ -30,14 +35,17 @@ namespace OHOS::uitest {
         /**Find widgets with the given selector. Results are arranged in the receiver in <b>DFS</b> order.
          * @returns the widget object.
          **/
-        void FindWidgets(const WidgetSelector &select, std::vector<std::unique_ptr<Widget>> &rev,
-            ApiCallErr &err, bool updateUi = true);
+        void FindWidgets(WidgetSelector &select,
+                                   vector<unique_ptr<Widget>> &rev,
+                                   ApiCallErr &err,
+                                   bool updateUi = true);
 
         /**Wait for the matching widget appear in the given timeout.*/
-        std::unique_ptr<Widget> WaitForWidget(const WidgetSelector &select, const UiOpArgs &opt, ApiCallErr &err);
-
+        std::unique_ptr<Widget> WaitForWidget(WidgetSelector &select, const UiOpArgs &opt, ApiCallErr &err);
         /**Find window matching the given matcher.*/
-        std::unique_ptr<Window> FindWindow(std::function<bool(const Window &)> matcher, ApiCallErr &err);
+        std::unique_ptr<Window> FindWindow(std::function<bool(const Window &)> matcher,
+                                           bool isMatchBundleName,
+                                           ApiCallErr &err);
 
         /**Retrieve widget from updated UI.*/
         const Widget *RetrieveWidget(const Widget &widget, ApiCallErr &err, bool updateUi = true);
@@ -82,26 +90,34 @@ namespace OHOS::uitest {
 
         Point GetDisplayDensity(ApiCallErr &error);
 
-        void DfsTraverseTree(WidgetVisitor &visitor, const Widget *widget = nullptr);
-
         static void RegisterController(std::unique_ptr<UiController> controller);
 
         bool CheckStatus(bool isConnected, ApiCallErr &error);
 
         static void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener);
 
-        void GetLayoutJson(nlohmann::json &dom);
-
         void InputText(string_view text, ApiCallErr &error);
+
+        void GetMergeWindowBounds(Rect& mergeRect);
 
     private:
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
-        /**Update UI controller and UI objects.*/
-        void UpdateUi(bool updateUiTree, ApiCallErr &error, bool getWidgetNodes, string targetWin = "");
         // UI objects that are needed to be updated before each interaction and used in the interaction
+        void UpdateUIWindows(ApiCallErr &error);
+        void DFSMarshalWidget(int index,
+                              nlohmann::json &dom,
+                              const std::map<std::string, int> &widgetChildCountMap,
+                              std::map<std::string, int> &visitWidgetMap);
+        void DumpWindowsInfoToJson(bool listWindows, Rect& mergeBounds, nlohmann::json& childDom);
         static std::unique_ptr<UiController> uiController_;
-        std::unique_ptr<WidgetTree> widgetTree_ = nullptr;
-        std::vector<Window> windows_;
+        // CacheModel:
+        // 保留有查找中的窗口信息和查找的中间数据，用于对该窗口进行继续查找
+        // win对象，win对应的节点访问迭代器
+        std::vector<WindowCacheModel> windowCacheVec_;
+        // 已访问过的节点信息，作为唯一数据保存
+        std::vector<Widget> visitWidgets_;
+        // 存放下标
+        std::vector<int> targetWidgetsIndex_;
     };
 } // namespace OHOS::uitest
 

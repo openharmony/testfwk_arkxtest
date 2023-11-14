@@ -14,6 +14,7 @@
  */
 
 #include "widget_selector.h"
+#include "climits"
 
 namespace OHOS::uitest {
     using namespace std;
@@ -26,18 +27,18 @@ namespace OHOS::uitest {
         if (!addVisibleMatcher) {
             return;
         }
-        auto visibleMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::VISIBLE], "true", EQ);
+        auto visibleMatcher = WidgetMatchModel(UiAttr::VISIBLE, "true", EQ);
         selfMatchers_.emplace_back(visibleMatcher);
     }
 
-    void WidgetSelector::AddMatcher(const WidgetAttrMatcher &matcher)
+    void WidgetSelector::AddMatcher(const WidgetMatchModel &matcher)
     {
         selfMatchers_.emplace_back(matcher);
     }
 
     void WidgetSelector::AddFrontLocator(const WidgetSelector &selector, ApiCallErr &error)
     {
-        if (!selector.rearLocators_.empty() || !selector.frontLocators_.empty()) {
+        if (!selector.rearLocators_.empty() || !selector.frontLocators_.empty() || !selector.parentLocators_.empty()) {
             error = ApiCallErr(ERR_INVALID_INPUT, NEST_USAGE_ERROR);
             return;
         }
@@ -46,7 +47,7 @@ namespace OHOS::uitest {
 
     void WidgetSelector::AddRearLocator(const WidgetSelector &selector, ApiCallErr &error)
     {
-        if (!selector.rearLocators_.empty() || !selector.frontLocators_.empty()) {
+        if (!selector.rearLocators_.empty() || !selector.frontLocators_.empty() || !selector.parentLocators_.empty()) {
             error = ApiCallErr(ERR_INVALID_INPUT, NEST_USAGE_ERROR);
             return;
         }
@@ -55,7 +56,7 @@ namespace OHOS::uitest {
 
     void WidgetSelector::AddParentLocator(const WidgetSelector &selector, ApiCallErr &error)
     {
-        if (!selector.rearLocators_.empty() || !selector.frontLocators_.empty()) {
+        if (!selector.rearLocators_.empty() || !selector.frontLocators_.empty() || !selector.parentLocators_.empty()) {
             error = ApiCallErr(ERR_INVALID_INPUT, NEST_USAGE_ERROR);
             return;
         }
@@ -67,90 +68,87 @@ namespace OHOS::uitest {
         appLocator_ = app;
     }
 
-    string WidgetSelector::GetAppLocator() const
-    {
-        return appLocator_;
-    }
-
-    static bool CheckHasLocator(const WidgetTree &tree, const Widget &widget, const WidgetMatcher &matcher, size_t idx)
-    {
-        vector<reference_wrapper<const Widget>> locators;
-        locators.clear();
-        MatchedWidgetCollector collector(matcher, locators);
-        switch (idx) {
-            case INDEX_ZERO:
-                tree.DfsTraverseFronts(collector, widget);
-                break;
-            case INDEX_ONE:
-                tree.DfsTraverseRears(collector, widget);
-                break;
-            case INDEX_TWO:
-                tree.DfsTraverseParents(collector, widget);
-                break;
-            default:
-                break;
-        }
-        return !locators.empty();
-    }
-
-    void WidgetSelector::Select(const WidgetTree &tree, vector<std::reference_wrapper<const Widget>> &results) const
-    {
-        auto allSelfMatcher = All(selfMatchers_);
-        MatchedWidgetCollector selfCollector(allSelfMatcher, results);
-        tree.DfsTraverse(selfCollector);
-        if (results.empty()) {
-            LOG_W("Self node not found matching:%{public}s", allSelfMatcher.Describe().c_str());
-            return;
-        }
-
-        vector<uint32_t> discardWidgetOffsets;
-        // check locators at each direction and filter out unsatisfied widgets
-        std::vector<std::vector<WidgetSelector>> allLocators = {frontLocators_, rearLocators_, parentLocators_};
-        for (size_t idx = 0; idx < INDEX_THREE; idx++) {
-            discardWidgetOffsets.clear();
-            uint32_t offset = 0;
-            for (auto &result:results) {
-                const auto &locators = allLocators[idx];
-                for (auto &locator:locators) {
-                    auto locatorMatcher = All(locator.selfMatchers_);
-                    if (!CheckHasLocator(tree, result.get(), locatorMatcher, idx)) {
-                        // this means not all the required front locator are found, exclude this candidate
-                        discardWidgetOffsets.emplace_back(offset);
-                        break;
-                    }
-                }
-                offset++;
-            }
-            // remove unsatisfied candidates, remove from last to first
-            reverse(discardWidgetOffsets.begin(), discardWidgetOffsets.end());
-            for (auto &off:discardWidgetOffsets) {
-                results.erase(results.begin() + off);
-            }
-            if (results.empty()) {
-                break;
-            }
-        }
-    }
-
     string WidgetSelector::Describe() const
     {
         stringstream ss;
-        auto allSelfMatcher = All(selfMatchers_);
         ss << "{";
-        ss << "selfMatcher=[" << allSelfMatcher.Describe() << "]";
+        ss << "selfMatcher=[";
+        for (auto &match : selfMatchers_) {
+            ss << match.Describe() << ",";
+        }
+        ss << "]";
         if (!frontLocators_.empty()) {
             ss << "; frontMatcher=";
-            for (auto &locator:frontLocators_) {
+            for (auto &locator : frontLocators_) {
                 ss << "[" << locator.Describe() << "]";
             }
         }
         if (!rearLocators_.empty()) {
             ss << "; rearMatcher=";
-            for (auto &locator:rearLocators_) {
+            for (auto &locator : rearLocators_) {
+                ss << "[" << locator.Describe() << "]";
+            }
+        }
+        if (!parentLocators_.empty()) {
+            ss << "; parentMatcher=";
+            for (auto &locator : parentLocators_) {
                 ss << "[" << locator.Describe() << "]";
             }
         }
         ss << "}";
         return ss.str();
     }
-}
+
+    void WidgetSelector::SetWantMulti(bool wantMulti)
+    {
+        wantMulti_ = wantMulti;
+    }
+
+    bool WidgetSelector::IsWantMulti() const
+    {
+        return wantMulti_;
+    }
+
+    void WidgetSelector::Select(const Window window,
+                                ElementNodeIterator &elementNodeRef,
+                                std::vector<Widget> &visitWidgets,
+                                std::vector<int> &targetWidgets)
+    {
+        // 判断是否目标窗口
+        if (appLocator_ != "" && window.bundleName_ != appLocator_) {
+            LOG_D("skip window(%{public}s), it is not target window %{public}s", window.bundleName_.data(),
+                  appLocator_.data());
+            return;
+        }
+        std::unique_ptr<SelectStrategy> visitStrategy = ConstructSelectStrategy();
+        LOG_I("Do Select, select strategy is %{public}d", visitStrategy->GetStrategyType());
+        visitStrategy->LocateNode(window, elementNodeRef, visitWidgets, targetWidgets);
+    }
+
+    std::vector<WidgetMatchModel> WidgetSelector::GetSelfMatchers() const
+    {
+        return selfMatchers_;
+    }
+
+    std::unique_ptr<SelectStrategy> WidgetSelector::ConstructSelectStrategy()
+    {
+        StrategyBuildParam buildParam;
+        buildParam.myselfMatcher = selfMatchers_;
+        if (!frontLocators_.empty()) {
+            for (const auto &frontLocator : frontLocators_) {
+                buildParam.afterAnchorMatcherVec.emplace_back(frontLocator.GetSelfMatchers());
+            }
+        }
+        if (!rearLocators_.empty()) {
+            for (const auto &beforeLocator : rearLocators_) {
+                buildParam.beforeAnchorMatcherVec.emplace_back(beforeLocator.GetSelfMatchers());
+            }
+        }
+        if (!parentLocators_.empty()) {
+            for (const auto &withInLocator : parentLocators_) {
+                buildParam.withInAnchorMatcherVec.emplace_back(withInLocator.GetSelfMatchers());
+            }
+        }
+        return SelectStrategy::BuildSelectStrategy(buildParam, wantMulti_);
+    }
+} // namespace OHOS::uitest

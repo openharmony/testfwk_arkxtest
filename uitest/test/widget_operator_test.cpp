@@ -14,53 +14,34 @@
  */
 #include "gtest/gtest.h"
 #include "widget_operator.h"
+#include "mock_element_node_iterator.h"
 
 using namespace OHOS::uitest;
 using namespace std;
 
-static constexpr auto ATTR_TEXT = "text";
-// record the triggered touch events.
-
-static std::unique_ptr<PointerMatrix> touch_event_records = nullptr;
-
-class MockController2 : public UiController {
+static std::unique_ptr<PointerMatrix> touch_event_records_ = nullptr;
+class MockController : public UiController {
 public:
-    explicit MockController2() : UiController() {}
+    MockController() : UiController() {}
 
-    ~MockController2() = default;
+    ~MockController() = default;
 
-    void SetDomFrame(string_view domFrame)
+    void GetUiWindows(std::vector<Window> &out) override
     {
-        mockDomFrames_.clear();
-        mockDomFrames_.emplace_back(string(domFrame));
-        frameIndex_ = 0;
-    }
-
-    void SetDomFrames(vector<string> domFrames)
-    {
-        mockDomFrames_.clear();
-        mockDomFrames_ = move(domFrames);
-        frameIndex_ = 0;
-    }
-
-    uint32_t GetConsumedDomFrameCount() const
-    {
-        return frameIndex_;
-    }
-
-    void GetUiHierarchy(vector<pair<Window, nlohmann::json>>& out, bool getWidgetNodes, string targetApp)
-        override
-    {
-        uint32_t newIndex = frameIndex_;
-        frameIndex_++;
-        auto winInfo = Window(0);
-        auto dom = nlohmann::json();
-        if (newIndex >= mockDomFrames_.size()) {
-            dom = nlohmann::json::parse(mockDomFrames_.at(mockDomFrames_.size() - 1));
-        } else {
-            dom = nlohmann::json::parse(mockDomFrames_.at((newIndex)));
+        for (auto iter = testIn.cbegin(); iter != testIn.cend(); ++iter) {
+            out.emplace_back(iter->second);
         }
-        out.push_back(make_pair(move(winInfo), move(dom)));
+    }
+
+    bool GetBundleNameAndNodesInWindow(Window &winInfo, std::unique_ptr<ElementNodeIterator> &elementNodeIterator) override
+    {
+        // copy ele
+        auto eleCopy = windowNodeMap.at(winInfo.id_);
+        elementNodeIterator = std::make_unique<MockElementNodeIterator>(eleCopy);
+        Widget widget{"test"};
+        elementNodeIterator->DFSNext(widget);
+        winInfo.bundleName_ = widget.GetAttr(UiAttr::BUNDLENAME);
+        return true;
     }
 
     bool IsWorkable() const override
@@ -70,188 +51,274 @@ public:
 
     void InjectTouchEventSequence(const PointerMatrix &events) const override
     {
-        touch_event_records = std::make_unique<PointerMatrix>(events.GetFingers(), events.GetSteps());
-        for (uint32_t step = 0; step < events.GetSteps(); step++) {
-            for (uint32_t finger = 0; finger < events.GetFingers(); finger++) {
-                touch_event_records->PushAction(events.At(finger, step));
+        touch_event_records_ = std::make_unique<PointerMatrix>(events.GetFingers(), events.GetSteps());
+        for (int step = 0; step < events.GetSteps(); step++) {
+            for (int finger = 0; finger < events.GetFingers(); finger++) {
+                touch_event_records_->PushAction(events.At(finger, step));
             }
         }
     }
 
-private:
-    vector<string> mockDomFrames_;
-    mutable uint32_t frameIndex_ = 0;
-};
+    void AddWindowsAndNode(Window in, std::vector<MockAccessibilityElementInfo> eles)
+    {
+        testIn.emplace(in.id_, in);
+        windowNodeMap.emplace(in.id_, eles);
+    }
+    void RemoveWindowsAndNode(Window in)
+    {
+        testIn.erase(in.id_);
+        windowNodeMap.erase(in.id_);
+    }
 
+private:
+    std::map<int, Window> testIn;
+    std::map<int, std::vector<MockAccessibilityElementInfo>> windowNodeMap;
+};
 // test fixture
 class WidgetOperatorTest : public testing::Test {
 protected:
     void SetUp() override
     {
-        touch_event_records.reset(nullptr);
-        auto mockController = make_unique<MockController2>();
+        auto mockController = std::make_unique<MockController>();
         controller_ = mockController.get();
-        UiDriver::RegisterController(move(mockController));
+        UiDriver::RegisterController(std::move(mockController));
         driver_ = make_unique<UiDriver>();
+        ResetWindowAndNode(w1_, eles_);
     }
 
+    // Reset Window and node
+    void ResetWindowAndNode(Window &w, std::vector<MockAccessibilityElementInfo> &eles)
+    {
+std::string domJson = R"(
+        {
+            "attributes":{
+                "windowId":"12",
+                "componentType":"List",
+                "accessibilityId":"1",
+                "content":"Text List",
+                "rectInScreen":"0,1000,0,1200"
+            },
+            "children":[
+                {
+                     "attributes":{
+                        "windowId":"12",
+                        "accessibilityId":"2",
+                        "componentType":"Scroll",
+                        "content":"Text List Scroll",
+                        "rectInScreen":"0,600,0,1000"
+                     },
+                     "children":[
+                        {
+                            "attributes":{
+                                "windowId":"12",
+                                "accessibilityId":"3",
+                                "componentType":"Image",
+                                "content":"Button",
+                                "rectInScreen":"30,40,10,20"
+                            },
+                            "children":[
+                                {
+                                    "attributes":{
+                                        "windowId":"12",
+                                        "accessibilityId":"4",
+                                        "componentType":"Text",
+                                        "content":"Text One",
+                                        "rectInScreen":"30,40,10,20"
+                                    },
+                                    "children":[]
+                                }
+                            ]
+                        },
+                        {
+                            "attributes":{
+                                "windowId":"12",
+                                "componentType":"List",
+                                "accessibilityId":"5",
+                                "content":"Text List12",
+                                "rectInScreen":"40,60,10,20"
+                            },
+                            "children":[
+                                {
+                                    "attributes":{
+                                        "windowId":"12",
+                                        "accessibilityId":"6",
+                                        "componentType":"Text",
+                                        "content":"Text One",
+                                        "rectInScreen":"40,50,10,20"
+                                    },
+                                    "children":[]
+                                },
+                                {
+                                    "attributes":{
+                                        "windowId":"12",
+                                        "accessibilityId":"8",
+                                        "componentType":"Text",
+                                        "content":"Text Two",
+                                        "rectInScreen":"50,60,10,20"
+                                    },
+                                    "children":[]
+                                }
+                            ]
+                        }
+                     ]
+                },
+                {
+                     "attributes":{
+                        "windowId":"12",
+                        "accessibilityId":"10",
+                        "componentType":"Image",
+                        "content":"Button",
+                        "rectInScreen":"10,20,20,100"
+                     },
+                     "children":[]
+                },
+                {
+                     "attributes":{
+                        "windowId":"12",
+                        "accessibilityId":"11",
+                        "componentType":"List",
+                        "content":"Button",
+                        "rectInScreen":"20,100,20,100"
+                     },
+                     "children":[
+                        {
+                            "attributes":{
+                                "windowId":"12",
+                                "accessibilityId":"12",
+                                "componentType":"Image",
+                                "content":"",
+                                "rectInScreen":"20,100,20,100"
+                            },
+                            "children":[]
+                        },
+                        {
+                            "attributes":{
+                                "windowId":"12",
+                                "accessibilityId":"14",
+                                "componentType":"Button",
+                                "content":"Text End Button",
+                                "rectInScreen":"20,100,20,100"
+                            },
+                            "children":[
+                                {
+                                    "attributes":{
+                                        "windowId":"12",
+                                        "accessibilityId":"15",
+                                        "componentType":"Text",
+                                        "content":"Text End",
+                                        "rectInScreen":"20,100,20,100"
+                                    },
+                                    "children":[]
+                                }
+                            ]
+                        }
+                     ]
+                }
+            ]
+        }
+    )";
+    eles_ = MockElementNodeIterator::ConstructIteratorByJson(domJson)->elementInfoLists_;
+        w.windowLayer_ = 2;
+        w.bounds_ = Rect{0, 1000, 0, 1200};
+        w.bundleName_ = "test1";
+    }
     void TearDown() override
     {
         controller_ = nullptr;
     }
 
-    MockController2 *controller_ = nullptr;
+    MockController *controller_ = nullptr;
     unique_ptr<UiDriver> driver_ = nullptr;
     UiOpArgs opt_;
-
+    Window w1_{12};
+    std::vector<MockAccessibilityElementInfo> eles_;
     ~WidgetOperatorTest() override = default;
 };
 
-TEST_F(WidgetOperatorTest, scrollSearchRetrieveSubjectWidgetFailed)
+TEST_F(WidgetOperatorTest, scrollSearchNoTarget)
 {
-    constexpr auto mockDom0 = R"({
-"attributes": {
-"index": "0",
-"resource-id": "id1",
-"bounds": "[0,0][100,100]",
-"text": ""
-},
-"children": [
-{
-"attributes": {
-"index": "0",
-"resource-id": "id4",
-"bounds": "[0,0][50,50]",
-"text": "USB"
-},
-"children": []
-}
-]
-})";
-    constexpr auto mockDom1 = R"({"attributes":{"bounds":"[0,0][100,100]"},"children":[]})";
-    controller_->SetDomFrame(mockDom0);
-
     auto error = ApiCallErr(NO_ERROR);
     auto scrollWidgetSelector = WidgetSelector();
-    auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Text List Scroll", EQ);
     scrollWidgetSelector.AddMatcher(matcher);
     vector<unique_ptr<Widget>> widgets;
-    driver_->FindWidgets(scrollWidgetSelector, widgets, error);
+    controller_->AddWindowsAndNode(w1_, eles_);
+    scrollWidgetSelector.SetWantMulti(false);
+    driver_->FindWidgets(scrollWidgetSelector, widgets, error, true);
 
     ASSERT_EQ(1, widgets.size());
 
     // mock another dom on which the scroll-widget is missing, and perform scroll-search
-    controller_->SetDomFrame(mockDom1);
-    error = ApiCallErr(NO_ERROR);
+
     auto targetWidgetSelector = WidgetSelector();
     auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
+    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text End", EQ);
+    targetWidgetSelector.AddMatcher(matcher0);
     ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
-    // retrieve scroll widget failed should be marked as exception
-    ASSERT_EQ(ERR_COMPONENT_LOST, error.code_);
-    ASSERT_TRUE(error.message_.find(scrollWidgetSelector.Describe()) != string::npos)
-                                << "Error message should contains the scroll-widget selection description";
 }
 
-TEST_F(WidgetOperatorTest, scrollSearchTargetWidgetNotExist)
+TEST_F(WidgetOperatorTest, scrollSearchWithTarget)
 {
-    constexpr auto mockDom = R"({
-"attributes": {
-"index": "0",
-"resource-id": "id1",
-"bounds": "[0,0][100,100]",
-"text": ""
-},
-"children": [
-{
-"attributes": {
-"index": "0",
-"resource-id": "id4",
-"bounds": "[0,0][50,50]",
-"text": "USB"
-},
-"children": []
-}
-]
-}
-)";
-    controller_->SetDomFrame(mockDom);
-
     auto error = ApiCallErr(NO_ERROR);
     auto scrollWidgetSelector = WidgetSelector();
-    auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Text List Scroll", EQ);
     scrollWidgetSelector.AddMatcher(matcher);
     vector<unique_ptr<Widget>> widgets;
-    driver_->FindWidgets(scrollWidgetSelector, widgets, error);
+    controller_->AddWindowsAndNode(w1_, eles_);
+    scrollWidgetSelector.SetWantMulti(false);
+    driver_->FindWidgets(scrollWidgetSelector, widgets, error, true);
 
     ASSERT_EQ(1, widgets.size());
-
-    error = ApiCallErr(NO_ERROR);
-    auto targetWidgetMatcher = WidgetAttrMatcher(ATTR_TEXT, "wyz", EQ);
     auto targetWidgetSelector = WidgetSelector();
-    targetWidgetSelector.AddMatcher(targetWidgetMatcher);
     auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
-    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
+    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    targetWidgetSelector.AddMatcher(matcher0);
+    auto rev = wOp.ScrollFindWidget(targetWidgetSelector, error);
+    ASSERT_FALSE(rev == nullptr);
+    ASSERT_EQ("5", rev->GetAttr(UiAttr::ACCESSIBILITY_ID));
 }
 
 TEST_F(WidgetOperatorTest, scrollSearchCheckSubjectWidget)
 {
-    constexpr auto mockDom = R"({
-"attributes": {
-"bounds": "[0,0][1200,2000]",
-"text": ""
-},
-"children": [
-{
-"attributes": {
-"bounds": "[0,200][600,1000]",
-"text": "USB",
-"type": "List"
-},
-"children": []
-}
-]
-}
-)";
-    controller_->SetDomFrame(mockDom);
-
     auto error = ApiCallErr(NO_ERROR);
     auto scrollWidgetSelector = WidgetSelector();
-    auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Text List Scroll", EQ);
     scrollWidgetSelector.AddMatcher(matcher);
     vector<unique_ptr<Widget>> images;
-    driver_->FindWidgets(scrollWidgetSelector, images, error);
+    controller_->AddWindowsAndNode(w1_, eles_);
+    scrollWidgetSelector.SetWantMulti(false);
+    driver_->FindWidgets(scrollWidgetSelector, images, error, true);
 
     ASSERT_EQ(1, images.size());
 
-    error = ApiCallErr(NO_ERROR);
-    auto targetWidgetMatcher = WidgetAttrMatcher(ATTR_TEXT, "wyz", EQ);
+    auto targetWidgetMatcher = WidgetMatchModel(UiAttr::TEXT, "Text End", EQ);
     auto targetWidgetSelector = WidgetSelector();
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
     opt_.scrollWidgetDeadZone_ = 0; // set deadzone to 0 for easy computation
     auto wOp = WidgetOperator(*driver_, *images.at(0), opt_);
     ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
     // check the scroll action events, should be acted on the subject node specified by WidgetMatcher
-    ASSERT_TRUE(!touch_event_records->Empty());
-    auto &firstEvent = touch_event_records->At(0, 0);
-    auto fin = touch_event_records->GetFingers() - 1;
-    auto ste = touch_event_records->GetSteps() - 1;
-    auto &lastEvent = touch_event_records->At(fin, ste);
+    ASSERT_TRUE(!touch_event_records_->Empty());
+    auto &firstEvent = touch_event_records_->At(0, 0);
+    auto fin = touch_event_records_->GetFingers() - 1;
+    auto ste = touch_event_records_->GetSteps() - 1;
+    auto &lastEvent = touch_event_records_->At(fin, ste);
     // check scroll event pointer_x
     int32_t subjectCx = (0 + 600) / 2;
     ASSERT_NEAR(firstEvent.point_.px_, subjectCx, 5);
     ASSERT_NEAR(lastEvent.point_.px_, subjectCx, 5);
 
     // check scroll event pointer_y
-    constexpr int32_t subjectWidgetHeight = 1000 - 200;
+    constexpr int32_t subjectWidgetHeight = 1000 - 0;
     int32_t maxCy = 0;
     int32_t minCy = 1E5;
-    for (uint32_t finger = 0; finger < touch_event_records->GetFingers(); finger++) {
-        for (uint32_t step = 0; step < touch_event_records->GetSteps(); step++) {
-            if (touch_event_records->At(finger, step).point_.py_ > maxCy) {
-            maxCy = touch_event_records->At(finger, step).point_.py_;
+    for (uint32_t finger = 0; finger < touch_event_records_->GetFingers(); finger++) {
+        for (uint32_t step = 0; step < touch_event_records_->GetSteps(); step++) {
+            if (touch_event_records_->At(finger, step).point_.py_ > maxCy) {
+                maxCy = touch_event_records_->At(finger, step).point_.py_;
             }
-            if (touch_event_records->At(finger, step).point_.py_ < minCy) {
-            minCy = touch_event_records->At(finger, step).point_.py_;
+            if (touch_event_records_->At(finger, step).point_.py_ < minCy) {
+                minCy = touch_event_records_->At(finger, step).point_.py_;
             }
         }
     }
@@ -262,176 +329,40 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckSubjectWidget)
 
 TEST_F(WidgetOperatorTest, scrollSearchCheckDirection)
 {
-    constexpr auto mockDom = R"({
-"attributes": {
-"bounds": "[0,0][100,100]",
-"text": ""
-},
-"children": [
-{
-"attributes": {
-"bounds": "[0,0][50,50]",
-"text": "USB",
-"type": "List"
-},
-"children": []
-}]})";
-    controller_->SetDomFrame(mockDom);
-
     auto error = ApiCallErr(NO_ERROR);
     auto scrollWidgetSelector = WidgetSelector();
-    auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Text List Scroll", EQ);
     scrollWidgetSelector.AddMatcher(matcher);
     vector<unique_ptr<Widget>> widgets;
-    driver_->FindWidgets(scrollWidgetSelector, widgets, error);
+    controller_->AddWindowsAndNode(w1_, eles_);
+    scrollWidgetSelector.SetWantMulti(false);
+    driver_->FindWidgets(scrollWidgetSelector, widgets, error, true);
     ASSERT_EQ(1, widgets.size());
 
     error = ApiCallErr(NO_ERROR);
-    auto targetWidgetMatcher = WidgetAttrMatcher(ATTR_TEXT, "wyz", EQ);
+    auto targetWidgetMatcher = WidgetMatchModel(UiAttr::TEXT, "Text End", EQ);
     auto targetWidgetSelector = WidgetSelector();
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
     opt_.scrollWidgetDeadZone_ = 0; // set deadzone to 0 for easy computation
     auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
     ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
     // check the scroll action events, should be acted on the specified node
-    ASSERT_TRUE(!touch_event_records->Empty());
+    ASSERT_TRUE(!touch_event_records_->Empty());
     // should scroll-search upward (cy_from<cy_to) then downward (cy_from>cy_to)
     uint32_t maxCyEventIndex = 0;
     uint32_t index = 0;
-    for (uint32_t event = 0; event < touch_event_records->GetSize() - 1; event++) {
-        if (touch_event_records->At(0, event).point_.py_ > touch_event_records->At(0, maxCyEventIndex).point_.py_) {
+    for (uint32_t event = 0; event < touch_event_records_->GetSize() - 1; event++) {
+        if (touch_event_records_->At(0, event).point_.py_ > touch_event_records_->At(0, maxCyEventIndex).point_.py_) {
             maxCyEventIndex = index;
         }
         index++;
     }
 
-    for (uint32_t idx = 0; idx < touch_event_records->GetSize() - 1; idx++) {
+    for (uint32_t idx = 0; idx < touch_event_records_->GetSize() - 1; idx++) {
         if (idx < maxCyEventIndex) {
-            ASSERT_LT(touch_event_records->At(0, idx).point_.py_, touch_event_records->At(0, idx + 1).point_.py_);
+            ASSERT_LT(touch_event_records_->At(0, idx).point_.py_, touch_event_records_->At(0, idx + 1).point_.py_);
         } else if (idx > maxCyEventIndex) {
-            ASSERT_GT(touch_event_records->At(0, idx).point_.py_, touch_event_records->At(0, idx + 1).point_.py_);
+            ASSERT_GT(touch_event_records_->At(0, idx).point_.py_, touch_event_records_->At(0, idx + 1).point_.py_);
         }
-    }
-}
-
-/**
- * The expected scroll-search count. The search starts upward till the target widget
- * is found or reach the top (DOM snapshot becomes frozen); then search downward till
- * the target widget is found or reach the bottom (DOM snapshot becomes frozen); */
-TEST_F(WidgetOperatorTest, scrollSearchCheckCount_targetNotExist)
-{
-    auto error = ApiCallErr(NO_ERROR);
-    // mocked widget text
-    const vector<string> domFrameSet[4] = {
-        {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})"
-        },
-        {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})"
-        },
-        {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})"
-        },
-        {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})"
-        }
-    };
-
-    controller_->SetDomFrames(domFrameSet[0]); // set frame, let the scroll-widget be found firstly
-    auto scrollWidgetSelector = WidgetSelector();
-    auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
-    scrollWidgetSelector.AddMatcher(matcher);
-    vector<unique_ptr<Widget>> widgets;
-    driver_->FindWidgets(scrollWidgetSelector, widgets, error);
-
-    ASSERT_EQ(1, widgets.size());
-
-    auto targetWidgetMatcher = WidgetAttrMatcher(ATTR_TEXT, "xyz", EQ); // widget that will never be found
-    auto targetWidgetSelector = WidgetSelector();
-    targetWidgetSelector.AddMatcher(targetWidgetMatcher);
-
-    const uint32_t expectedSearchCount[] = {2, 2, 2, 2};
-    opt_.scrollWidgetDeadZone_ = 0; // set deadzone to 0 for easy computation
-    for (size_t index = 0; index < 4; index++) {
-        controller_->SetDomFrames(domFrameSet[index]);
-        // check search result
-        auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
-        ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
-        // check scroll-search count
-        ASSERT_EQ(expectedSearchCount[index], controller_->GetConsumedDomFrameCount()) << index;
-    }
-}
-
-TEST_F(WidgetOperatorTest, scrollSearchCheckCount_targetExist)
-{
-    auto error = ApiCallErr(NO_ERROR);
-    const vector<string> domFrameSet[4] = {
-        {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})"
-        },
-        {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"XYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})"
-        },
-        {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})"
-        },
-        {
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"USB"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"XYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WLJ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})",
-            R"({"attributes":{"bounds":"[0,0][100,100]","hashcode":"123","type":"List","text":"WYZ"},"children":[]})"
-        }
-    };
-
-    controller_->SetDomFrames(domFrameSet[1]); // set frame, let the scroll-widget be found firstly
-    auto scrollWidgetSelector = WidgetSelector();
-    auto matcher = WidgetAttrMatcher(ATTR_TEXT, "USB", EQ);
-    scrollWidgetSelector.AddMatcher(matcher);
-    vector<unique_ptr<Widget>> widgets;
-    driver_->FindWidgets(scrollWidgetSelector, widgets, error);
-    ASSERT_EQ(1, widgets.size());
-
-    auto targetWidgetMatcher = WidgetAttrMatcher(ATTR_TEXT, "WYZ", EQ);
-    auto targetWidgetSelector = WidgetSelector();
-    targetWidgetSelector.AddMatcher(targetWidgetMatcher);
-
-    const uint32_t expectedSearchCount[] = {1, 2, 3, 4};
-    for (size_t index = 1; index < 2; index++) {
-        controller_->SetDomFrames(domFrameSet[index]);
-        // check search result
-        auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
-        ASSERT_NE(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
-        ASSERT_EQ("NONE", widgets.at(0)->GetHostTreeId()); // should return dettached widget
-        // check scroll-search count
-        ASSERT_EQ(expectedSearchCount[index], controller_->GetConsumedDomFrameCount()) << index;
     }
 }
