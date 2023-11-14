@@ -208,6 +208,7 @@ namespace OHOS::uitest {
         old2NewApiMap_["By.key"] = "On.id";
         old2NewApiMap_["UiComponent.getId"] = "Component.getAccessibilityId";
         old2NewApiMap_["UiComponent.getKey"] = "Component.getId";
+        old2NewApiMap_["UiWindow.isActived"] = "UiWindow.isActive";
         new2OldApiMap_["On"] = "By" ;
         new2OldApiMap_["Driver"] = "UiDriver" ;
         new2OldApiMap_["Component"] = "UiComponent" ;
@@ -237,6 +238,12 @@ namespace OHOS::uitest {
         const string &className = GetClassName(inModifier.apiId_, '.');
         const auto result = old2NewApiMap_.find(className);
         if (result == old2NewApiMap_.end()) {
+            auto iter = old2NewApiMap_.find(inModifier.apiId_);
+            if (iter != old2NewApiMap_.end()) {
+                LOG_D("original api:%{public}s, modified to:%{public}s", inModifier.apiId_.c_str(),
+                    iter->second.c_str());
+                inModifier.apiId_ = iter->second;
+            }
             return "";
         }
         string oldApiName = inModifier.apiId_;
@@ -597,7 +604,6 @@ namespace OHOS::uitest {
 
     template <UiAttr kAttr, typename T> static void GenericOnAttrBuilder(const ApiCallInfo &in, ApiReplyInfo &out)
     {
-        const auto attrName = ATTR_NAMES[kAttr];
         // always create and return a new selector
         auto selector = make_unique<WidgetSelector>();
         if (in.callerObjRef_ != REF_SEED_ON) { // copy-construct from the caller if it's not seed
@@ -612,7 +618,7 @@ namespace OHOS::uitest {
             testValue = to_string(ReadCallArg<T>(in, INDEX_ZERO));
         }
         auto matchPattern = ReadCallArg<uint8_t>(in, INDEX_ONE, ValueMatchPattern::EQ); // match pattern argument
-        auto matcher = WidgetAttrMatcher(attrName, testValue, static_cast<ValueMatchPattern>(matchPattern));
+        auto matcher = WidgetMatchModel(kAttr, testValue, static_cast<ValueMatchPattern>(matchPattern));
         selector->AddMatcher(matcher);
         out.resultValue_ = StoreBackendObject(move(selector));
     }
@@ -673,14 +679,17 @@ namespace OHOS::uitest {
             vector<unique_ptr<Widget>> recv;
             if (in.apiId_ == "Driver.waitForComponent") {
                 uiOpArgs.waitWidgetMaxMs_ = ReadCallArg<uint32_t>(in, INDEX_ONE);
+                selector.SetWantMulti(false);
                 auto result = driver.WaitForWidget(selector, uiOpArgs, out.exception_);
                 if (result != nullptr) {
                     recv.emplace_back(move(result));
                 }
             } else {
+                selector.SetWantMulti(in.apiId_ == "Driver.findComponents");
                 driver.FindWidgets(selector, recv, out.exception_);
             }
             if (out.exception_.code_ != NO_ERROR) {
+                LOG_W("genericFindWidgetHandler has error: %{public}s", out.exception_.message_.c_str());
                 return;
             }
             if (in.apiId_ == "Driver.assertComponentExist") {
@@ -728,10 +737,14 @@ namespace OHOS::uitest {
                 if (filterJson.contains("actived")) {
                     match = match && (filterJson["actived"].get<bool>() == window.actived_);
                 }
+                if (filterJson.contains("active")) {
+                    match = match && (filterJson["active"].get<bool>() == window.actived_);
+                }
                 return match;
             };
-            auto window = driver.FindWindow(matcher, out.exception_);
+            auto window = driver.FindWindow(matcher, filterJson.contains("bundleName"), out.exception_);
             if (window == nullptr) {
+                LOG_W("There is no match window by %{public}s", filterJson.dump().data());
                 out.resultValue_ = nullptr;
             } else {
                 out.resultValue_ = StoreBackendObject(move(window), driverRef);
@@ -1041,7 +1054,7 @@ namespace OHOS::uitest {
             auto from = Point(pointJson1["x"], pointJson1["y"]);
             auto to = Point(pointJson2["x"], pointJson2["y"]);
             UiOpArgs uiOpArgs;
-            uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
+            uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
             CheckSwipeVelocityPps(uiOpArgs);
             auto op = TouchOp::SWIPE;
             if (in.apiId_ == "Driver.mouseDrag") {
@@ -1128,6 +1141,12 @@ namespace OHOS::uitest {
             out.resultValue_ = nullptr; // exception, return null
             return;
         }
+        if (snapshot == nullptr) {
+            LOG_W("RetrieveWidget failed");
+            out.resultValue_ = nullptr; // exception, return null
+            out.exception_.code_ = WIDGET_LOST;
+            return;
+        }
         if (attrName == ATTR_NAMES[UiAttr::BOUNDSCENTER]) { // getBoundsCenter
             const auto bounds = snapshot->GetBounds();
             json data;
@@ -1147,7 +1166,7 @@ namespace OHOS::uitest {
             return;
         }
         // convert value-string to json value of target type
-        auto attrValue = snapshot->GetAttr(attrName, "NA");
+        auto attrValue = snapshot->GetAttr(kAttr);
         if (attrValue == "NA") {
             out.resultValue_ = nullptr; // no such attribute, return null
         } else if (kString) {
@@ -1162,6 +1181,7 @@ namespace OHOS::uitest {
         auto &server = FrontendApiServer::Get();
         server.AddHandler("Component.getAccessibilityId", GenericComponentAttrGetter<UiAttr::ACCESSIBILITY_ID>);
         server.AddHandler("Component.getText", GenericComponentAttrGetter<UiAttr::TEXT, true>);
+        server.AddHandler("Component.getDescription", GenericComponentAttrGetter<UiAttr::DESCRIPTION, true>);
         server.AddHandler("Component.getId", GenericComponentAttrGetter<UiAttr::ID, true>);
         server.AddHandler("Component.getType", GenericComponentAttrGetter<UiAttr::TYPE, true>);
         server.AddHandler("Component.isEnabled", GenericComponentAttrGetter<UiAttr::ENABLED>);
@@ -1255,7 +1275,7 @@ namespace OHOS::uitest {
                 out.resultValue_ = (uint8_t)(snapshot->mode_ - 1);
             } else if (in.apiId_ == "UiWindow.isFocused") {
                 out.resultValue_ = snapshot->focused_;
-            } else if (in.apiId_ == "UiWindow.isActived") {
+            } else if (in.apiId_ == "UiWindow.isActive") {
                 out.resultValue_ = snapshot->actived_;
             }
         };
@@ -1264,7 +1284,7 @@ namespace OHOS::uitest {
         server.AddHandler("UiWindow.getTitle", genericGetter);
         server.AddHandler("UiWindow.getWindowMode", genericGetter);
         server.AddHandler("UiWindow.isFocused", genericGetter);
-        server.AddHandler("UiWindow.isActived", genericGetter);
+        server.AddHandler("UiWindow.isActive", genericGetter);
     }
 
     static void RegisterUiWindowOperators()

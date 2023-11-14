@@ -36,10 +36,10 @@ ohos_static_library("uitest_core") {
     "${source_root}/core/dump_handler.cpp",
     "${source_root}/core/frontend_api_handler.cpp",
     "${source_root}/core/rect_algorithm.cpp",
+    "${source_root}/core/select_strategy.cpp",
     "${source_root}/core/ui_action.cpp",
     "${source_root}/core/ui_driver.cpp",
     "${source_root}/core/ui_model.cpp",
-    "${source_root}/core/widget_matcher.cpp",
     "${source_root}/core/widget_operator.cpp",
     "${source_root}/core/widget_selector.cpp",
     "${source_root}/core/window_operator.cpp",
@@ -127,24 +127,20 @@ ohos_static_library("uitest_ipc") {
 ohos_static_library("uitest_addon") {
   configs = [ ":uitest_common_configs" ]
   sources = [
-    "${source_root}/addon/js_client_loader.cpp",
+    "${source_root}/addon/extension_executor.cpp",
     "${source_root}/addon/screen_copy.cpp",
   ]
   include_dirs = [
     "${source_root}/core",
     "${source_root}/record",
-    "${source_root}/input",
   ]
   deps = [
     ":uitest_core",
     "//third_party/libjpeg-turbo:turbojpeg_static",
   ]
   external_deps = [
-    "ability_runtime:runtime",
-    "eventhandler:libeventhandler",
     "image_framework:image_native",
     "input:libmmi-client",
-    "napi:ace_napi",
     "window_manager:libdm",
     "window_manager:libwm",
   ]
@@ -162,6 +158,7 @@ ohos_static_library("uitest_addon") {
 ohos_executable("uitest_server") {
   configs = [ ":uitest_common_configs" ]
   sources = [
+    "${source_root}/server/element_node_iterator_impl.cpp",
     "${source_root}/server/server_main.cpp",
     "${source_root}/server/system_ui_controller.cpp",
   ]
@@ -171,7 +168,6 @@ ohos_executable("uitest_server") {
     "${source_root}/record",
     "${source_root}/addon",
     "${source_root}/input",
-    "//base/hiviewdfx/hidumper/interfaces/native/innerkits/include",
   ]
 
   # static link the uitest_core as server end
@@ -191,10 +187,9 @@ ohos_executable("uitest_server") {
   external_deps = [
     "ability_runtime:ability_manager",
     "accessibility:accessibleability",
-    "hidumper:hidumper_client",
     "image_framework:image_native",
     "input:libmmi-client",
-    "samgr:samgr_proxy",
+    "pasteboard:pasteboard_client",
     "window_manager:libdm",
     "window_manager:libwm",
   ]
@@ -208,6 +203,17 @@ ohos_executable("uitest_server") {
     "__OHOS__=1",
     "LOG_TAG=\"UiTestKit_Server\"",
   ]
+
+  if (defined(global_parts_info) &&
+      defined(global_parts_info.hiviewdfx_hidumper)) {
+    include_dirs +=
+        [ "//base/hiviewdfx/hidumper/interfaces/native/innerkits/include" ]
+    external_deps += [
+      "hidumper:hidumper_client",
+      "samgr:samgr_proxy",
+    ]
+    defines += [ "HIDUMPER_ENABLED" ]
+  }
 }
 
 es2abc_gen_abc("gen_uitest_exporter_abc") {
@@ -267,6 +273,7 @@ ohos_unittest("uitest_core_unittest") {
     "${source_root}/test/common_utilities_test.cpp",
     "${source_root}/test/frontend_api_handler_test.cpp",
     "${source_root}/test/rect_algorithm_test.cpp",
+    "${source_root}/test/select_strategy_test.cpp",
     "${source_root}/test/ui_action_test.cpp",
     "${source_root}/test/ui_driver_test.cpp",
     "${source_root}/test/ui_model_test.cpp",

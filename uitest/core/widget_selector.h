@@ -17,7 +17,7 @@
 #define WIDGET_SELECTOR_H
 
 #include "frontend_api_handler.h"
-#include "widget_matcher.h"
+#include "select_strategy.h"
 
 namespace OHOS::uitest {
     /**
@@ -28,10 +28,10 @@ namespace OHOS::uitest {
     public:
         explicit WidgetSelector(bool addVisibleMatcher = true);
 
-        ~WidgetSelector() override {};
+        ~WidgetSelector() override{};
 
         /**Add a matcher as the target widget attribute requirement.*/
-        void AddMatcher(const WidgetAttrMatcher &matcher);
+        void AddMatcher(const WidgetMatchModel &matcher);
 
         /**Add a selector as the front locator widget requirement.*/
         void AddFrontLocator(const WidgetSelector &selector, ApiCallErr &error);
@@ -41,29 +41,35 @@ namespace OHOS::uitest {
 
         void AddParentLocator(const WidgetSelector &selector, ApiCallErr &error);
 
-        void AddAppLocator(string app);
-
-        std::string GetAppLocator() const;
-
-        /**Select all the matched widgets on the given tree. Results are arranged in the
-         * receiver in <b>DFS</b> order. */
-        void Select(const WidgetTree &tree, std::vector<std::reference_wrapper<const Widget>> &results) const;
+        void AddAppLocator(string appName);
 
         /**Returns a description of this selector.*/
         std::string Describe() const;
 
-        const FrontEndClassDef& GetFrontendClassDef() const override
+        const FrontEndClassDef &GetFrontendClassDef() const override
         {
             return ON_DEF;
         }
 
+        void SetWantMulti(bool wantMulti);
+
+        bool IsWantMulti() const;
+
+        void Select(const Window window,
+                    ElementNodeIterator &elementNodeRef,
+                    std::vector<Widget> &visitWidgets,
+                    std::vector<int> &targetWidgets);
+
     private:
-        std::vector<WidgetAttrMatcher> selfMatchers_;
+        std::vector<WidgetMatchModel> GetSelfMatchers() const;
+        std::unique_ptr<SelectStrategy> ConstructSelectStrategy();
+        std::vector<WidgetMatchModel> selfMatchers_;
         std::vector<WidgetSelector> frontLocators_;
         std::vector<WidgetSelector> rearLocators_;
         std::vector<WidgetSelector> parentLocators_;
         string appLocator_ = "";
+        bool wantMulti_ = false;
     };
-}
+} // namespace OHOS::uitest
 
 #endif

@@ -43,7 +43,7 @@
 #include "ui_record.h"
 #include "ui_input.h"
 #include "ui_model.h"
-#include "js_client_loader.h"
+#include "extension_executor.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -57,7 +57,7 @@ namespace OHOS::uitest {
     "   uiRecord read,                     print file content to the console\n"
     "   uiAction input,                                                     \n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "4.1.3.0";
+    const std::string VERSION = "4.1.4.1";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
@@ -110,7 +110,7 @@ namespace OHOS::uitest {
             fout.close();
             return;
         }
-        fout << data.dump();
+        fout << data.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
         fout.close();
         return;
     }
@@ -121,7 +121,7 @@ namespace OHOS::uitest {
         auto savePath = "/data/local/tmp/layout_" + ts + ".json";
         map<char, string> params;
         static constexpr string_view usage = "USAGE: uitestkit dumpLayout -p <path>";
-        if (GetParam(argc, argv, "p:i:a", usage, params) == EXIT_FAILURE) {
+        if (GetParam(argc, argv, "p:ia", usage, params) == EXIT_FAILURE) {
             return EXIT_FAILURE;
         }
         auto iter = params.find('p');
@@ -200,28 +200,26 @@ namespace OHOS::uitest {
         }
         LOG_I("Server starting up");
         UiDriver::RegisterController(make_unique<SysUiController>());
+        // accept remopte dump request during deamon running (initController=false)
+        ApiTransactor::SetBroadcastCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
+            DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, false, err);
+        });
+        if (token == "singleness") {
+            ExecuteExtension(VERSION);
+            LOG_I("Server exit");
+            ApiTransactor::UnsetBroadcastCommandHandler();
+            _Exit(0);
+            return 0;
+        }
         ApiTransactor apiTransactServer(true);
         auto &apiServer = FrontendApiServer::Get();
         auto apiHandler = std::bind(&FrontendApiServer::Call, &apiServer, placeholders::_1, placeholders::_2);
         auto cbHandler = std::bind(&ApiTransactor::Transact, &apiTransactServer, placeholders::_1, placeholders::_2);
         apiServer.SetCallbackHandler(cbHandler); // used for callback from server to client
-
-        const auto singlenessMode = token == "singleness";
-        future<void> g_agentFuture;
-        if (singlenessMode) {
-            g_agentFuture = async(launch::async, []() {
-                pthread_setname_np(pthread_self(), "event_runner");
-                RunJsClient(VERSION);
-            });
-        }
         if (!apiTransactServer.InitAndConnectPeer(transalatedToken, apiHandler)) {
             LOG_E("Failed to initialize server");
             return EXIT_FAILURE;
         }
-        // accept remopte dump request during deamon running (initController=false)
-        ApiTransactor::SetBroadcastCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
-            DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, false, err);
-        });
         mutex mtx;
         unique_lock<mutex> lock(mtx);
         condition_variable condVar;

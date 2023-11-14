@@ -28,9 +28,11 @@ namespace OHOS::uitest {
 
         bool Initialize() override;
 
-        void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>>& out, bool getWidgetNodes,
-            string targetApp = "") override;
+        void GetUiWindows(std::vector<Window> &out) override;
 
+        bool GetBundleNameAndNodesInWindow(Window &winInfo,
+                                           std::unique_ptr<ElementNodeIterator> &elementNodeIterator) override;
+                                           
         bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const override;
 
         void InjectTouchEventSequence(const PointerMatrix &events) const override;
@@ -71,6 +73,7 @@ namespace OHOS::uitest {
     private:
         void  InjectMouseEvent(const MouseEvent &event) const;
         bool connected_ = false;
+        std::mutex dumpMtx;
     };
 }
 
