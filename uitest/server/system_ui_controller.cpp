@@ -21,11 +21,13 @@
 #include <thread>
 #include <utility>
 #include <condition_variable>
+#include <sys/mman.h>
+#ifdef HIDUMPER_ENABLED
 #include <iservice_registry.h>
 #include <system_ability_load_callback_stub.h>
-#include <sys/mman.h>
 #include "idump_broker.h"
 #include "system_ability_definition.h"
+#endif
 #include "accessibility_event_info.h"
 #include "accessibility_ui_test_ability.h"
 #include "ability_manager_client.h"
@@ -841,6 +843,7 @@ namespace OHOS::uitest {
 
     void SysUiController::GetHidumperInfo(std::string windowId, char **buf, size_t &len)
     {
+#ifdef HIDUMPER_ENABLED
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (sam == nullptr) {
             LOG_E("Get samgr failed");
@@ -885,5 +888,9 @@ namespace OHOS::uitest {
         *buf = tempBuf;
         len = size;
         close(fd);
+#else
+        *buf = nullptr;
+        len = 0;
+#endif
     }
 } // namespace OHOS::uitest
