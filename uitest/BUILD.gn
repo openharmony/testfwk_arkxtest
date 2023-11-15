@@ -171,7 +171,6 @@ ohos_executable("uitest_server") {
     "${source_root}/record",
     "${source_root}/addon",
     "${source_root}/input",
-    "//base/hiviewdfx/hidumper/interfaces/native/innerkits/include",
   ]
 
   # static link the uitest_core as server end
@@ -191,10 +190,8 @@ ohos_executable("uitest_server") {
   external_deps = [
     "ability_runtime:ability_manager",
     "accessibility:accessibleability",
-    "hidumper:hidumper_client",
     "image_framework:image_native",
     "input:libmmi-client",
-    "samgr:samgr_proxy",
     "window_manager:libdm",
     "window_manager:libwm",
   ]
@@ -208,6 +205,17 @@ ohos_executable("uitest_server") {
     "__OHOS__=1",
     "LOG_TAG=\"UiTestKit_Server\"",
   ]
+
+  if (defined(global_parts_info) &&
+      defined(global_parts_info.hiviewdfx_hidumper)) {
+    include_dirs +=
+        [ "//base/hiviewdfx/hidumper/interfaces/native/innerkits/include" ]
+    external_deps += [
+      "hidumper:hidumper_client",
+      "samgr:samgr_proxy",
+    ]
+    defines += [ "HIDUMPER_ENABLED" ]
+  }
 }
 
 es2abc_gen_abc("gen_uitest_exporter_abc") {
