@@ -15,6 +15,7 @@
 
 import SysTestKit from "./module/kit/SysTestKit";
 import {TAG} from './Constant';
+import LogExpectError from './module/report/LogExpectError'
 
 class AssertException extends Error {
     constructor(message) {
@@ -790,10 +791,12 @@ class ExpectService {
                 };
             },
             assertEqual: function (actualValue, args) {
+                const aClassName = Object.prototype.toString.call(actualValue);
+                const bClassName = Object.prototype.toString.call(args[0]);
                 return {
                     pass: (actualValue) === args[0],
                     expectValue: args[0],
-                    message: 'expect ' + actualValue + ' equals ' + args[0]
+                    message: 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName
                 };
             },
             assertThrow: function (actual, args) {
@@ -864,6 +867,7 @@ class ExpectService {
                     const result = _this.matchers[matcherName](actualValue, arguments);
                     if (wrappedMatchers.isNot) {
                         result.pass = !result.pass;
+                        result.message = LogExpectError.getErrorMsg(matcherName, actualValue, arguments[0], result.message);
                     }
                     result.actualValue = actualValue;
                     result.checkFunc = matcherName;
