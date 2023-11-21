@@ -29,7 +29,7 @@ namespace OHOS::uitest {
         data["top"] = rect.top_;
         data["right"] = rect.right_;
         data["bottom"] = rect.bottom_;
-        return data.dump();
+        return data.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
     }
 
     bool Widget::HasAttr(string_view name) const
