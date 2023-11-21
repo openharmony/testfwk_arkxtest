@@ -1162,6 +1162,7 @@ namespace OHOS::uitest {
         auto &server = FrontendApiServer::Get();
         server.AddHandler("Component.getAccessibilityId", GenericComponentAttrGetter<UiAttr::ACCESSIBILITY_ID>);
         server.AddHandler("Component.getText", GenericComponentAttrGetter<UiAttr::TEXT, true>);
+        server.AddHandler("Component.getDescription", GenericComponentAttrGetter<UiAttr::DESCRIPTION, true>);
         server.AddHandler("Component.getId", GenericComponentAttrGetter<UiAttr::ID, true>);
         server.AddHandler("Component.getType", GenericComponentAttrGetter<UiAttr::TYPE, true>);
         server.AddHandler("Component.isEnabled", GenericComponentAttrGetter<UiAttr::ENABLED>);
