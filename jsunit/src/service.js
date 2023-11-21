@@ -791,12 +791,16 @@ class ExpectService {
                 };
             },
             assertEqual: function (actualValue, args) {
-                const aClassName = Object.prototype.toString.call(actualValue);
-                const bClassName = Object.prototype.toString.call(args[0]);
+                let msg = 'expect ' + actualValue + ' equals ' + args[0];
+                if(actualValue == args[0]) { // 数值相同,提示数据类型
+                    const aClassName = Object.prototype.toString.call(actualValue);
+                    const bClassName = Object.prototype.toString.call(args[0]);
+                    msg = 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName;
+                }
                 return {
                     pass: (actualValue) === args[0],
                     expectValue: args[0],
-                    message: 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName
+                    message: msg
                 };
             },
             assertThrow: function (actual, args) {

@@ -10,10 +10,8 @@ class LogExpectError {
             return "expect not false, actualValue is " + (actualValue)
         }
         if (matcherName === "assertEqual") {
-            const aClassName = Object.prototype.toString.call(actualValue);
-            const bClassName = Object.prototype.toString.call(expect);
             return "expect not Equal, actualValue is "
-                + actualValue + aClassName + ' equals ' + expect + bClassName
+                + actualValue + ' equals ' + expect;
         }
         if (matcherName === "assertContain") {
             return "expect not have, " + actualValue + " have " + expect;
