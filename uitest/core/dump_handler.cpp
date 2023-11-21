@@ -39,12 +39,14 @@ namespace OHOS::uitest {
 
     void DumpHandler::AddExtraAttrs(nlohmann::json &root, const map<int32_t, string_view> &elementTrees, size_t index)
     {
-        auto windowIdValue = root["attributes"]["hostWindowId"].dump();
+        auto windowIdValue = root["attributes"]["hostWindowId"].dump(-1, ' ', false,
+            nlohmann::detail::error_handler_t::replace);
         auto windowId = atoi(windowIdValue.substr(1, windowIdValue.size()-2).c_str());
         auto find = elementTrees.find(windowId);
         auto elementTree = (find != elementTrees.end()) ? find->second : "";
         string_view nodeEndStr = "|->";
-        auto accessibilityIdInfo = root["attributes"]["accessibilityId"].dump();
+        auto accessibilityIdInfo = root["attributes"]["accessibilityId"].dump(-1, ' ', false,
+            nlohmann::detail::error_handler_t::replace);
         auto accessibilityId = accessibilityIdInfo.substr(1, accessibilityIdInfo.size() - 2);
         string_view accessibilityIdStr = "AccessibilityId: " + accessibilityId;
         string_view nodeAttrStr = GetMiddleStr(elementTree, index, accessibilityIdStr, nodeEndStr);
