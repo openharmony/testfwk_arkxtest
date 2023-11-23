@@ -795,7 +795,7 @@ class ExpectService {
                 if(actualValue == args[0]) { // 数值相同,提示数据类型
                     const aClassName = Object.prototype.toString.call(actualValue);
                     const bClassName = Object.prototype.toString.call(args[0]);
-                    msg = 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName;
+                    msg = 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName + "strict mode inspect type";
                 }
                 return {
                     pass: (actualValue) === args[0],
