@@ -60,7 +60,7 @@ arkXtest
       const num:number = 1
       expect(num).assertEqual(1)
     })
-    afterItSpecified(['String_assertContain_success'], async (done) => {
+    afterItSpecified(['String_assertContain_success'], async (done: Function) => {
       const str:string = 'abc'
       setTimeout(()=>{
         try {
