@@ -15,6 +15,7 @@
 
 import SysTestKit from "./module/kit/SysTestKit";
 import {TAG} from './Constant';
+import LogExpectError from './module/report/LogExpectError'
 
 class AssertException extends Error {
     constructor(message) {
@@ -790,10 +791,16 @@ class ExpectService {
                 };
             },
             assertEqual: function (actualValue, args) {
+                let msg = 'expect ' + actualValue + ' equals ' + args[0];
+                if(actualValue == args[0]) { // 数值相同,提示数据类型
+                    const aClassName = Object.prototype.toString.call(actualValue);
+                    const bClassName = Object.prototype.toString.call(args[0]);
+                    msg = 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName + "strict mode inspect type";
+                }
                 return {
                     pass: (actualValue) === args[0],
                     expectValue: args[0],
-                    message: 'expect ' + actualValue + ' equals ' + args[0]
+                    message: msg
                 };
             },
             assertThrow: function (actual, args) {
@@ -864,6 +871,7 @@ class ExpectService {
                     const result = _this.matchers[matcherName](actualValue, arguments);
                     if (wrappedMatchers.isNot) {
                         result.pass = !result.pass;
+                        result.message = LogExpectError.getErrorMsg(matcherName, actualValue, arguments[0], result.message);
                     }
                     result.actualValue = actualValue;
                     result.checkFunc = matcherName;
