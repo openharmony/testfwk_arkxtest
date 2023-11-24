@@ -1041,7 +1041,7 @@ namespace OHOS::uitest {
             auto from = Point(pointJson1["x"], pointJson1["y"]);
             auto to = Point(pointJson2["x"], pointJson2["y"]);
             UiOpArgs uiOpArgs;
-            uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
+            uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
             CheckSwipeVelocityPps(uiOpArgs);
             auto op = TouchOp::SWIPE;
             if (in.apiId_ == "Driver.mouseDrag") {
