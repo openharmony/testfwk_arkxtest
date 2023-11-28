@@ -338,9 +338,21 @@ namespace OHOS::uitest {
         return true;
     }
 
+    static void FaultHandler(int32_t signum)
+    {
+        LOG_E("Fault signal caught during running exteion: %{public}d", signum);
+        (void)signum;
+        _Exit(1);
+    }
+
     bool RunJsClient(string_view serverVersion)
     {
         LOG_I("Enter RunJsClient, serverVersion=%{public}s", serverVersion.data());
+        // Catch fault during executing extension code
+        (void)signal(SIGTERM, FaultHandler);
+        (void)signal(SIGSEGV, FaultHandler);
+        (void)signal(SIGABRT, FaultHandler);
+        (void)signal(SIGILL, FaultHandler);
         if (!OHOS::FileExists(JS_CODE_PATH.data())) {
             LOG_E("Client jsCode not exist");
             return false;
