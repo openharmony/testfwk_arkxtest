@@ -60,7 +60,7 @@ arkXtest
       const num:number = 1
       expect(num).assertEqual(1)
     })
-    afterItSpecified(['String_assertContain_success'], async (done) => {
+    afterItSpecified(['String_assertContain_success'], async (done: Function) => {
       const str:string = 'abc'
       setTimeout(()=>{
         try {
@@ -82,8 +82,8 @@ arkXtest
       expect(itAttr).assertEqual(TestType.SAFETY | Size.SMALLTEST)
     })
     it('String_assertContain_success', 0, () => {
-      let a = 'abc'
-      let b = 'b'
+      let a: string = 'abc'
+      let b: string = 'b'
       expect(a).assertContain(b)
       expect(a).assertEqual(a)
     })
@@ -120,12 +120,12 @@ export default async function nestedDescribeTest() {
   describe('outerDescribe', () => {
     describe('innerDescribe', () => {
       it('innerIt', 0, () =>{
-        let a = 'abc'
+        let a: string = 'abc'
         expect(a).assertEqual(a)
       })
     })
     it('outerIt', 0, () => {
-      let a = 'abc'
+      let a: string = 'abc'
       expect(a).assertEqual(a)
     })
   })
@@ -170,12 +170,12 @@ import { describe, it, expect } from '@ohos/hypium';
 export default function abilityTest() {
   describe('ActsAbilityTest', () => {
     it('assertBeClose_success', 0, () => {
-      let a = 100
-      let b = 0.1
+      let a:number = 100
+      let b:number = 0.1
       expect(a).assertClose(99, b)
     })
     it('assertInstanceOf_success', 0, () => {
-      let a = 'strTest'
+      let a: string = 'strTest'
       expect(a).assertInstanceOf('String')
     })
     it('assertNaN_success',0, () => {
@@ -197,8 +197,8 @@ export default function abilityTest() {
       expect(3).not().assertNaN();
     })
     it('not_contain_true',0,() => {
-      let a = "abc";
-      let b= "cdf"
+      let a: string = "abc";
+      let b: string = "cdf"
       expect(a).not().assertContain(b);
     })
     it('not_large_true',0, () => {
@@ -241,7 +241,7 @@ it("deepEquals_regExp_success_0", 0, () => {
       expect(a).assertDeepEquals(b)
     })
 it('test_isPending_pass_1', 0, () => {
-      let p = new Promise<void>(() =>{
+      let p: Promise = new Promise<void>(() =>{
       });
       expect(p).assertPromiseIsPending();
     });
@@ -249,32 +249,32 @@ it('test_isRejected_pass_1', 0, () => {
   let info: PromiseInfo = {
   res:"no"
 }
-let p = Promise.reject(info);
+let p: Promise = Promise.reject(info);
 expect(p).assertPromiseIsRejected();
 });
 it('test_isRejectedWith_pass_1', 0, () => {
   let info: PromiseInfo = {
   res:"reject value"
 }
-let p = Promise.reject(info);
+let p: Promise = Promise.reject(info);
 expect(p).assertPromiseIsRejectedWith(info);
 });
 it('test_isRejectedWithError_pass_1', 0, () => {
-  let p1 = Promise.reject(new TypeError('number'));
+  let p1: Promise = Promise.reject(new TypeError('number'));
   expect(p1).assertPromiseIsRejectedWithError(TypeError);
 });
 it('test_isResolved_pass_1', 0, () => {
   let info: PromiseInfo = {
   res:"result value"
 }
-let p = Promise.resolve(info);
+let p: Promise = Promise.resolve(info);
 expect(p).assertPromiseIsResolved();
 });
 it('test_isResolvedTo_pass_1', 0, () => {
   let info: PromiseInfo = {
   res:"result value"
 }
-let p = Promise.resolve(info);
+let p: Promise = Promise.resolve(info);
 expect(p).assertPromiseIsResolvedWith(info);
 });
 })
@@ -357,7 +357,7 @@ export default function ActsAbilityTest() {
         }
 }
 
-let claser = new ClassName();
+let claser: ClassName = new ClassName();
 
 //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
 let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
@@ -406,7 +406,7 @@ export default function ActsAbilityTest() {
         }
 }
 
-let claser = new ClassName();
+let claser: ClassName = new ClassName();
 
 //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
 let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
@@ -457,7 +457,7 @@ export default function ActsAbilityTest() {
         }
 }
 
-let claser = new ClassName();
+let claser: ClassName = new ClassName();
 
 //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
 let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
@@ -506,7 +506,7 @@ export default function ActsAbilityTest() {
         }
 }
 
-let claser = new ClassName();
+let claser: ClassName = new ClassName();
 
 //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
 let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
@@ -552,7 +552,7 @@ export default function ActsAbilityTest() {
         }
 }
 
-let claser = new ClassName();
+let claser: ClassName = new ClassName();
 
 //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
 let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
@@ -598,7 +598,7 @@ expect(claser.method_1('abc')).assertEqual('1'); //用例执行通过。
         }
  }
 
- let claser = new ClassName();
+ let claser: ClassName = new ClassName();
 
  //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
  mocker.mockFunc(claser, claser.method_1);
@@ -651,7 +651,7 @@ expect(claser.method_1('abc')).assertEqual('1'); //用例执行通过。
         }
  }
 
- let claser = new ClassName();
+ let claser: ClassName = new ClassName();
 
  //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
  let func_1: Function = mocker.mockFunc(claser, claser.method_1);
@@ -704,7 +704,7 @@ expect(claser.method_1('abc')).assertEqual('1'); //用例执行通过。
         }
  }
 
- let claser = new ClassName();
+ let claser: ClassName = new ClassName();
 
  //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
  let func_1: Function = mocker.mockFunc(claser, claser.method_1);
@@ -754,7 +754,7 @@ export default function ActsAbilityTest() {
         }
 }
 
-let claser = new ClassName();
+let claser: ClassName = new ClassName();
 
 //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
 let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
@@ -802,7 +802,7 @@ export default function ActsAbilityTest() {
         }
 }
 
-let claser = new ClassName();
+let claser: ClassName = new ClassName();
 
 //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
 let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
@@ -865,7 +865,7 @@ export default function ActsAbilityTest() {
         }
 }
  //3.创建类对象
- let claser = new ClassName();
+ let claser: ClassName = new ClassName();
  //4.mock 类ClassName对象的某个方法，比如method_1
  let func_1: Function = mocker.mockFunc(claser, claser.method_1);
  //5.期望被mock后的函数能够返回自己假设的结果
@@ -908,7 +908,7 @@ export default function ActsAbilityTest() {
 }
 
 //3.创建类对象
-let claser = new ClassName();
+let claser: ClassName = new ClassName();
 //4.mock  类ClassName对象的某个方法，比如method_1
 let func_1: Function = mocker.mockFunc(claser, claser.method_1);
 //5.期望被mock后的函数能够返回自己假设的结果
@@ -1206,13 +1206,13 @@ import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.UiTest'
   describe('uiTestDemo', () => {
     it('uitest_demo0', 0, async () => {
       // create Driver
-      let driver = Driver.create()
+      let driver: Driver = Driver.create()
       // find component by text
-      let button = await driver.findComponent(ON.text('hello').enabled(true))
+      let button: Component = await driver.findComponent(ON.text('hello').enabled(true))
       // click component
       await button.click()
       // get and assert component text
-      let content = await button.getText()
+      let content: string = await button.getText()
       expect(content).assertEqual('clicked!')
     })
   })
@@ -1245,7 +1245,7 @@ import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.UiTest'
     it('Uitest_demo0', 0, async (done: Function) => {
       try{
         // create Driver
-        let driver = Driver.create()
+        let driver: Driver = Driver.create()
         // assert text 'hello' exists on current Ui
         await assertComponentExist(ON.text('hello'))
       } finally {
@@ -1291,13 +1291,13 @@ Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹�
 **示例代码1**：查找id是`Id_button`的控件。
 
 ```javascript
-let button = await driver.findComponent(ON.id('Id_button'))
+let button: Component = await driver.findComponent(ON.id('Id_button'))
 ```
 
  **示例代码2**：查找id是`Id_button`并且状态是`enabled`的控件，适用于无法通过单一属性定位的场景。
 
 ```javascript
-let button = await driver.findComponent(ON.id('Id_button').enabled(true))
+let button: Component = await driver.findComponent(ON.id('Id_button').enabled(true))
 ```
 
 通过`On.id(x).enabled(y)`来指定目标控件的多个属性。
@@ -1305,7 +1305,7 @@ let button = await driver.findComponent(ON.id('Id_button').enabled(true))
 **示例代码3**：查找文本中包含`hello`的控件，适用于不能完全确定控件属性取值的场景。
 
 ```javascript
-let txt = await driver.findComponent(ON.text('hello', MatchPattern.CONTAINS))
+let txt: Component = await driver.findComponent(ON.text('hello', MatchPattern.CONTAINS))
 ```
 
 通过向`On.text()`方法传入第二个参数`MatchPattern.CONTAINS`来指定文本匹配规则；默认规则是`MatchPattern.EQUALS`，即目标控件text属性必须严格等于给定值。
@@ -1315,7 +1315,7 @@ let txt = await driver.findComponent(ON.text('hello', MatchPattern.CONTAINS))
 **示例代码1**：查找位于文本控件`Item3_3`后面的，id是`Id_switch`的Switch控件。
 
 ```javascript
-let switch = await driver.findComponent(ON.id('Id_switch').isAfter(ON.text('Item3_3')))
+let switch: Component = await driver.findComponent(ON.id('Id_switch').isAfter(ON.text('Item3_3')))
 ```
 
 通过`On.isAfter`方法，指定位于目标控件前面的特征控件属性，通过该特征控件进行相对定位。一般地，特征控件是某个具有全局唯一特征的控件(例如具有唯一的id或者唯一的text)。
@@ -1345,29 +1345,29 @@ let switch = await driver.findComponent(ON.id('Id_switch').isAfter(ON.text('Item
 **示例代码1**：单击控件。
 
 ```javascript
-let button = await driver.findComponent(ON.id('Id_button'))
+let button: Component = await driver.findComponent(ON.id('Id_button'))
 await button.click()
 ```
 
 **示例代码2**：通过get接口获取控件属性后，可以使用单元测试框架提供的assert*接口做断言检查。
 
 ```javascript
-let component = await driver.findComponent(ON.id('Id_title'))
+let component: Component = await driver.findComponent(ON.id('Id_title'))
 expect(component !== null).assertTrue()
 ```
 
 **示例代码3**：在List控件中滑动查找text是`Item3_3`的子控件。
 
 ```javascript
-let list = await driver.findComponent(ON.id('Id_list'))
-let found = await list.scrollSearch(ON.text('Item3_3'))
+let list: Component = await driver.findComponent(ON.id('Id_list'))
+let found: Component = await list.scrollSearch(ON.text('Item3_3'))
 expect(found).assertTrue()
 ```
 
 **示例代码4**：向输入框控件中输入文本。
 
 ```javascript
-let editText = await driver.findComponent(ON.type('InputText'))
+let editText: Component = await driver.findComponent(ON.type('InputText'))
 await editText.inputText('user_name')
 ```
 ### UiWindow使用说明
@@ -1391,21 +1391,21 @@ await editText.inputText('user_name')
 **示例代码1**：获取窗口属性。
 
 ```javascript
-let window = await driver.findWindow({actived: true})
-let bundelName = await window.getBundleName()
+let window: UiWindow = await driver.findWindow({actived: true})
+let bundelName: string = await window.getBundleName()
 ```
 
 **示例代码2**：移动窗口。
 
 ```javascript
-let window = await driver.findWindow({actived: true})
+let window: UiWindow = await driver.findWindow({actived: true})
 await window.moveTo(500,500)
 ```
 
 **示例代码3**：关闭窗口。
 
 ```javascript
-let window = await driver.findWindow({actived: true})
+let window: UiWindow = await driver.findWindow({actived: true})
 await window.close()
 ```
 
