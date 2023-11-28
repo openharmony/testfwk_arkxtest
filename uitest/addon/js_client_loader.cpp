@@ -340,7 +340,7 @@ namespace OHOS::uitest {
 
     static void FaultHandler(int32_t signum)
     {
-        LOG_E("Fault signal caught during running exteion: %{public}d", signum);
+        LOG_E("Fault signal caught during running exteion: %{public}d, Exit", signum);
         (void)signum;
         _Exit(1);
     }
