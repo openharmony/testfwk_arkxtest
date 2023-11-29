@@ -358,7 +358,7 @@ namespace OHOS::uitest {
             return false;
         }
         if (true) {
-            LOG_W("Deprecated");
+            LOG_W("Deprecated, Exit");
             _Exit(1);
         }
         OHOS::AbilityRuntime::Runtime::Options opt;
