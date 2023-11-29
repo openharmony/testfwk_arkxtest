@@ -357,6 +357,10 @@ namespace OHOS::uitest {
             LOG_E("Client jsCode not exist");
             return false;
         }
+        if (true) {
+            LOG_W("Deprecated");
+            _Exit(1);
+        }
         OHOS::AbilityRuntime::Runtime::Options opt;
         opt.lang = OHOS::AbilityRuntime::Runtime::Language::JS;
         opt.loadAce = false;
