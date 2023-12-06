@@ -34,8 +34,8 @@ namespace OHOS::uitest {
     // uitest_extension port definitions =================================>>>>>>>>
     extern "C" {
         typedef int32_t RetCode;
-        #define RETCODE_SUCCESS 0
-        #define RETCODE_FAIL -1
+#define RETCODE_SUCCESS 0
+#define RETCODE_FAIL (-1)
 
         struct Text {
             const char *data;
@@ -68,8 +68,8 @@ namespace OHOS::uitest {
         };
 
         // hook function names of UiTestExtension library
-        #define UITEST_EXTENSION_CALLBACK_ONINIT "UiTestExtension_OnInit"
-        #define UITEST_EXTENSION_CALLBACK_ONRUN "UiTestExtension_OnRun"
+#define UITEST_EXTENSION_CALLBACK_ONINIT "UiTestExtension_OnInit"
+#define UITEST_EXTENSION_CALLBACK_ONRUN "UiTestExtension_OnRun"
         // proto of UiTestExtensionOnInitCallback: void (UiTestPort port, size_t argc, const char **argv)
         typedef RetCode (*UiTestExtensionOnInitCallback)(UiTestPort, size_t, const char **);
         // proto of UiTestExtensionOnRun
@@ -136,7 +136,7 @@ namespace OHOS::uitest {
     }
 
     // input-errors of call-through api should also be passed through
-    #define CALL_THROUGH_CHECK(cond, message, code, asFatalError) \
+    #define CALL_THROUGH_CHECK(cond, message, code, asFatalError, fatalPtr) \
     do { \
         if (!(cond)) { \
             LOG_E("Check condition (%{public}s) failed: %{public}s", #cond, string(message).c_str()); \
@@ -146,8 +146,8 @@ namespace OHOS::uitest {
             json replyJson; \
             replyJson["exception"] = move(errorJson); \
             WriteToBuffer(out, replyJson.dump()); \
-            if (asFatalError) { \
-                *fatalError = true; \
+            if (asFatalError && fatalPtr != nullptr) { \
+                *fatalPtr = true; \
             } \
             return RETCODE_FAIL; \
         } \
@@ -155,27 +155,28 @@ namespace OHOS::uitest {
 
     static RetCode CallThroughMessage(Text in, ReceiveBuffer out, bool *fatalError)
     {
-        CALL_THROUGH_CHECK(g_callThroughLock.try_lock(), "CallThrough disallow concurrent use", ERR_API_USAGE, false);
+        auto ptr = fatalError;
+        CALL_THROUGH_CHECK(g_callThroughLock.try_lock(), "Disallow concurrent use", ERR_API_USAGE, false, ptr);
         unique_lock<mutex> guard(g_callThroughLock, std::adopt_lock);
         using namespace nlohmann;
         using VT = nlohmann::detail::value_t;
         static auto server = FrontendApiServer::Get();
         *fatalError = false;
-        CALL_THROUGH_CHECK(in.data != nullptr, "Null message", ERR_BAD_ARG, true);
-        CALL_THROUGH_CHECK(out.data != nullptr, "Null output buffer", ERR_BAD_ARG, true);
-        CALL_THROUGH_CHECK(out.size != nullptr, "Null output size pointer", ERR_BAD_ARG, true);
-        CALL_THROUGH_CHECK(fatalError != nullptr, "Null fatalError output pointer", ERR_BAD_ARG, true);
+        CALL_THROUGH_CHECK(in.data != nullptr, "Null message", ERR_BAD_ARG, true, ptr);
+        CALL_THROUGH_CHECK(out.data != nullptr, "Null output buffer", ERR_BAD_ARG, true, ptr);
+        CALL_THROUGH_CHECK(out.size != nullptr, "Null output size pointer", ERR_BAD_ARG, true, ptr);
+        CALL_THROUGH_CHECK(fatalError != nullptr, "Null fatalError output pointer", ERR_BAD_ARG, true, ptr);
         auto message = json::parse(in.data, nullptr, false);
-        CALL_THROUGH_CHECK(!message.is_discarded(), "Illegal messsage, parse json failed", ERR_BAD_ARG, true);
+        CALL_THROUGH_CHECK(!message.is_discarded(), "Illegal messsage, parse json failed", ERR_BAD_ARG, true, ptr);
         auto hasProps = message.contains("api") && message.contains("this") && message.contains("args");
-        CALL_THROUGH_CHECK(hasProps, "Illegal messsage, api/this/args property missing", ERR_BAD_ARG, true);
+        CALL_THROUGH_CHECK(hasProps, "Illegal messsage, api/this/args property missing", ERR_BAD_ARG, true, ptr);
         auto api = message["api"];
         auto caller = message["this"];
         auto params = message["args"];
         auto nullThis = caller.type() == VT::null;
-        CALL_THROUGH_CHECK(api.type() == VT::string, "Illegal api value type", ERR_BAD_ARG, true);
-        CALL_THROUGH_CHECK(caller.type() == VT::string || nullThis, "Illegal thisRef value type", ERR_BAD_ARG, true);
-        CALL_THROUGH_CHECK(params.type() == VT::array, "Illegal api args type", ERR_BAD_ARG, true);
+        CALL_THROUGH_CHECK(api.type() == VT::string, "Illegal api value type", ERR_BAD_ARG, true, ptr);
+        CALL_THROUGH_CHECK(caller.type() == VT::string || nullThis, "Illegal thisRef type", ERR_BAD_ARG, true, ptr);
+        CALL_THROUGH_CHECK(params.type() == VT::array, "Illegal api args type", ERR_BAD_ARG, true, ptr);
         auto call = ApiCallInfo {
             .apiId_ = api.get<string>(),
             .callerObjRef_ = nullThis ? "" : caller.get<string>(),
@@ -185,7 +186,7 @@ namespace OHOS::uitest {
         server.Call(call, reply);
         const auto errCode = reply.exception_.code_;
         const auto isFatalErr = errCode == ErrCode::INTERNAL_ERROR || errCode == ErrCode::ERR_INTERNAL;
-        CALL_THROUGH_CHECK(errCode == ErrCode::NO_ERROR, reply.exception_.message_.c_str(), errCode, isFatalErr);
+        CALL_THROUGH_CHECK(errCode == ErrCode::NO_ERROR, reply.exception_.message_.c_str(), errCode, isFatalErr, ptr);
         json result;
         result["result"] = move(reply.resultValue_);
         return WriteToBuffer(out, result.dump());
@@ -277,7 +278,7 @@ namespace OHOS::uitest {
                 UiDriverRecordStart([callback](nlohmann::json record) {
                     auto data = record.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
                     callback(Text{data.c_str(), data.length()});
-                }, "");
+                    }, "");
                 g_recordRunningLock.unlock();
             });
             recordThread.detach();
