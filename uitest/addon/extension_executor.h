@@ -23,5 +23,3 @@ namespace OHOS::uitest {
 }
 
 #endif
-
-
