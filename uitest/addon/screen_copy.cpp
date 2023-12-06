@@ -149,7 +149,7 @@ void ScreenCopy::Destroy()
 
 void ScreenCopy::PollAndNotifyFrames()
 {
-    constexpr int32_t SCREEN_CHECK_INTERVAL_US = 50 * 1000;
+    constexpr int32_t screenCheckIntervalUs = 50 * 1000;
     auto &dm = DisplayManager::GetInstance();
     const auto displayId = dm.GetDefaultDisplayId();
     LOG_I("Start PollAndNotifyFrames");
@@ -157,7 +157,7 @@ void ScreenCopy::PollAndNotifyFrames()
     bool screenOff = false;
     while (!stopped_.load()) {
         if (screenOff) {
-            usleep(SCREEN_CHECK_INTERVAL_US);
+            usleep(screenCheckIntervalUs);
             if (dm.GetDisplayState(displayId) != DisplayState::OFF) {
                 screenOff = false;
                 LOG_I("Screen turned on! resume screenCopy");
@@ -217,12 +217,12 @@ struct MissionErrorMgr : public jpeg_error_mgr {
 
 static void AdaptJpegSize(jpeg_compress_struct &jpeg, uint32_t width, uint32_t height)
 {
-    constexpr int32_t VIRTUAL_SCREEN_SCALE = 32;
-    if (width % VIRTUAL_SCREEN_SCALE == 0) {
+    constexpr int32_t alignment = 32;
+    if (width % alignment == 0) {
         jpeg.image_width = width;
     } else {
         LOG_D("The width need to be adapted!");
-        jpeg.image_width = ceil((double)width / (double)VIRTUAL_SCREEN_SCALE) * VIRTUAL_SCREEN_SCALE;
+        jpeg.image_width = ceil((double)width / (double)alignment) * alignment;
     }
     jpeg.image_height = height;
 }
@@ -260,17 +260,17 @@ void ScreenCopy::WaitAndConsumeFrames()
         if (scaledPixels == nullptr) {
             continue;
         }
-        constexpr int32_t RGBA_PIXEL_BYTES = 4;
+        constexpr int32_t rgbaPixelBytes = 4;
         jpeg_compress_struct jpeg;
         MissionErrorMgr jerr;
         jpeg.err = jpeg_std_error(&jerr);
         jpeg_create_compress(&jpeg);
         AdaptJpegSize(jpeg, scaledPixels->GetWidth(), scaledPixels->GetHeight());
-        jpeg.input_components = RGBA_PIXEL_BYTES;
+        jpeg.input_components = rgbaPixelBytes;
         jpeg.in_color_space = JCS_EXT_RGBX;
         jpeg_set_defaults(&jpeg);
-        constexpr int32_t COMPRESS_QUALITY = 75;
-        jpeg_set_quality(&jpeg, COMPRESS_QUALITY, 1);
+        constexpr int32_t compressQuality = 75;
+        jpeg_set_quality(&jpeg, compressQuality, 1);
         uint8_t *imgBuf = nullptr;
         unsigned long imgSize = 0;
         jpeg_mem_dest(&jpeg, &imgBuf, &imgSize);
