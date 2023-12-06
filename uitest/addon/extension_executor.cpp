@@ -92,7 +92,7 @@ namespace OHOS::uitest {
 do { \
     if (!(cond)) { \
         g_lastErrorMessage = (errorMessage); \
-        g_lastErrorCode = (int32_t)(errorCode); \
+        g_lastErrorCode = static_cast<int32_t>(errorCode); \
         LOG_E("EXTENSION_API_CHECK failed: %{public}s", g_lastErrorMessage.c_str()); \
         return RETCODE_FAIL; \
     } \
@@ -302,14 +302,14 @@ do { \
     bool ExecuteExtension(string_view version)
     {
         g_version = version;
-        constexpr string_view NATIVE_CODE_PATH = "/data/local/tmp/agent.so";
-        if (!OHOS::FileExists(NATIVE_CODE_PATH.data())) {
+        constexpr string_view extensionPath = "/data/local/tmp/agent.so";
+        if (!OHOS::FileExists(extensionPath.data())) {
             LOG_E("Client nativeCode not exist");
             return false;
         }
-        auto handle = dlopen(NATIVE_CODE_PATH.data(), RTLD_LAZY);
+        auto handle = dlopen(extensionPath.data(), RTLD_LAZY);
         if (handle == nullptr) {
-            LOG_E("Dlopen %{public}s failed: %{public}s", NATIVE_CODE_PATH.data(), strerror(errno));
+            LOG_E("Dlopen %{public}s failed: %{public}s", extensionPath.data(), strerror(errno));
             return false;
         }
         auto symInit = dlsym(handle, UITEST_EXTENSION_CALLBACK_ONINIT);
