@@ -229,7 +229,7 @@ static void AdaptJpegSize(jpeg_compress_struct &jpeg, uint32_t width, uint32_t h
 
 shared_ptr<PixelMap> ScreenCopy::ScaleNewsetFrameLocked()
 {
-    if (newestFrame_ == nullptr || abs(1.0 - scale_) < 1E-2) {
+    if (newestFrame_ == nullptr) {
         return newestFrame_;
     }
     // resize the pixelmap to fit scale
