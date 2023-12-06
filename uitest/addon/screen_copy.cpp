@@ -149,7 +149,7 @@ void ScreenCopy::Destroy()
 
 void ScreenCopy::PollAndNotifyFrames()
 {
-    constexpr int32_t SCREEN_CHECK_INTERVAL_US = 50 * 1000; 
+    constexpr int32_t SCREEN_CHECK_INTERVAL_US = 50 * 1000;
     auto &dm = DisplayManager::GetInstance();
     const auto displayId = dm.GetDefaultDisplayId();
     LOG_I("Start PollAndNotifyFrames");
