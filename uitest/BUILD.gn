@@ -127,24 +127,20 @@ ohos_static_library("uitest_ipc") {
 ohos_static_library("uitest_addon") {
   configs = [ ":uitest_common_configs" ]
   sources = [
-    "${source_root}/addon/js_client_loader.cpp",
+    "${source_root}/addon/extension_executor.cpp",
     "${source_root}/addon/screen_copy.cpp",
   ]
   include_dirs = [
     "${source_root}/core",
     "${source_root}/record",
-    "${source_root}/input",
   ]
   deps = [
     ":uitest_core",
     "//third_party/libjpeg-turbo:turbojpeg_static",
   ]
   external_deps = [
-    "ability_runtime:runtime",
-    "eventhandler:libeventhandler",
     "image_framework:image_native",
     "input:libmmi-client",
-    "napi:ace_napi",
     "window_manager:libdm",
     "window_manager:libwm",
   ]
