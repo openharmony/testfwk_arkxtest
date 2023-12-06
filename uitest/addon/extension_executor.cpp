@@ -26,8 +26,8 @@
 #include "ui_action.h"
 #include "ui_driver.h"
 #include "ui_record.h"
-#include "extension_executor.h"
 #include "screen_copy.h"
+#include "extension_executor.h"
 
 namespace OHOS::uitest {
     using namespace std;
@@ -88,15 +88,15 @@ namespace OHOS::uitest {
     static mutex g_recordRunningLock;
     static set<string> g_runningCaptures;
 
-    #define EXTENSION_API_CHECK(cond, errorMessage, errorCode) \
-    do { \
-        if (!(cond)) { \
-            g_lastErrorMessage = errorMessage; \
-            g_lastErrorCode = (int32_t)(errorCode); \
-            LOG_E("EXTENSION_API_CHECK failed: %{public}s", g_lastErrorMessage.c_str()); \
-            return RETCODE_FAIL; \
-        } \
-    } while (0)
+#define EXTENSION_API_CHECK(cond, errorMessage, errorCode) \
+do { \
+    if (!(cond)) { \
+        g_lastErrorMessage = errorMessage; \
+        g_lastErrorCode = (int32_t)(errorCode); \
+        LOG_E("EXTENSION_API_CHECK failed: %{public}s", g_lastErrorMessage.c_str()); \
+        return RETCODE_FAIL; \
+    } \
+} while (0)
 
     static RetCode WriteToBuffer(ReceiveBuffer &buffer, string_view data)
     {
@@ -120,7 +120,7 @@ namespace OHOS::uitest {
         EXTENSION_API_CHECK(level >= LogRank::DEBUG && level <= LogRank::ERROR, "Illegal log level", ERR_BAD_ARG);
         EXTENSION_API_CHECK(label.data != nullptr && format.data != nullptr, "Illegal log tag/format", ERR_BAD_ARG);
         char buf[LOG_BUF_SIZE];
-        EXTENSION_API_CHECK(vsprintf_s(buf, LOG_BUF_SIZE, format.data, ap) >= 0, format.data, ERR_BAD_ARG);
+        EXTENSION_API_CHECK(vsprintf_s(buf, sizeof(buf), format.data, ap) >= 0, format.data, ERR_BAD_ARG);
         HiLogPrint(type, static_cast<LogLevel>(level), domain, label.data, "%{public}s", buf);
         return RETCODE_SUCCESS;
     }
@@ -135,23 +135,23 @@ namespace OHOS::uitest {
         return ret;
     }
 
-    // input-errors of call-through api should also be passed through
-    #define CALL_THROUGH_CHECK(cond, message, code, asFatalError, fatalPtr) \
-    do { \
-        if (!(cond)) { \
-            LOG_E("Check condition (%{public}s) failed: %{public}s", #cond, string(message).c_str()); \
-            json errorJson; \
-            errorJson["code"] = code; \
-            errorJson["message"] = message; \
-            json replyJson; \
-            replyJson["exception"] = move(errorJson); \
-            WriteToBuffer(out, replyJson.dump()); \
-            if (asFatalError && fatalPtr != nullptr) { \
-                *fatalPtr = true; \
-            } \
-            return RETCODE_FAIL; \
+// input-errors of call-through api should also be passed through
+#define CALL_THROUGH_CHECK(cond, message, code, asFatalError, fatalPtr) \
+do { \
+    if (!(cond)) { \
+        LOG_E("Check condition (%{public}s) failed: %{public}s", #cond, string(message).c_str()); \
+        json errorJson; \
+        errorJson["code"] = code; \
+        errorJson["message"] = message; \
+        json replyJson; \
+        replyJson["exception"] = move(errorJson); \
+        WriteToBuffer(out, replyJson.dump()); \
+        if (asFatalError && (fatalPtr) != nullptr) { \
+            *(fatalPtr) = true; \
         } \
-    } while (0)
+        return RETCODE_FAIL; \
+    } \
+} while (0)
 
     static RetCode CallThroughMessage(Text in, ReceiveBuffer out, bool *fatalError)
     {
@@ -327,10 +327,10 @@ namespace OHOS::uitest {
         auto initFunction = reinterpret_cast<UiTestExtensionOnInitCallback>(symInit);
         auto runFunction = reinterpret_cast<UiTestExtensionOnRunCallback>(symRun);
         auto port = UiTestPort {
-            .GetUiTestVersion = getUiTestVersion,
-            .PrintLog = printLog,
-            .GetAndClearLastError = getAndClearLastError,
-            .InitLowLevelFunctions = initLowLevelFunctions,
+            .getUiTestVersion = GetUiTestVersion,
+            .printLog = PrintLog,
+            .getAndClearLastError = GetAndClearLastError,
+            .initLowLevelFunctions = InitLowLevelFunctions,
         };
         if (initFunction(port, 0, nullptr) != RETCODE_SUCCESS) {
             LOG_I("Initialize UiTest extension failed");
