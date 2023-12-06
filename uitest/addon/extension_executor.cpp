@@ -91,7 +91,7 @@ namespace OHOS::uitest {
 #define EXTENSION_API_CHECK(cond, errorMessage, errorCode) \
 do { \
     if (!(cond)) { \
-        g_lastErrorMessage = errorMessage; \
+        g_lastErrorMessage = (errorMessage); \
         g_lastErrorCode = (int32_t)(errorCode); \
         LOG_E("EXTENSION_API_CHECK failed: %{public}s", g_lastErrorMessage.c_str()); \
         return RETCODE_FAIL; \
@@ -141,12 +141,12 @@ do { \
     if (!(cond)) { \
         LOG_E("Check condition (%{public}s) failed: %{public}s", #cond, string(message).c_str()); \
         json errorJson; \
-        errorJson["code"] = code; \
-        errorJson["message"] = message; \
+        errorJson["code"] = (code); \
+        errorJson["message"] = (message); \
         json replyJson; \
         replyJson["exception"] = move(errorJson); \
         WriteToBuffer(out, replyJson.dump()); \
-        if (asFatalError && (fatalPtr) != nullptr) { \
+        if ((asFatalError) && (fatalPtr) != nullptr) { \
             *(fatalPtr) = true; \
         } \
         return RETCODE_FAIL; \
