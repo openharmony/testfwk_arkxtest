@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-#include "common_utilities_hpp.h"
 #include <csignal>
 #include <dlfcn.h>
 #include <file_ex.h>
@@ -22,6 +21,7 @@
 #include <securec.h>
 #include <set>
 #include <string_view>
+#include "common_utilities_hpp.h"
 #include "frontend_api_handler.h"
 #include "ui_action.h"
 #include "ui_driver.h"
@@ -53,18 +53,18 @@ namespace OHOS::uitest {
         typedef void (*DataCallback)(Text bytes);
 
         struct LowLevelFunctions {
-            RetCode (*CallThroughMessage)(Text in, ReceiveBuffer out, bool *fatalError);
-            RetCode (*SetCallbackMessageHandler)(DataCallback handler);
-            RetCode (*AtomicTouch)(int32_t stage, int32_t px, int32_t py);
-            RetCode (*StartCapture)(Text name, DataCallback callback, Text optJson);
-            RetCode (*StopCapture)(Text name);
+            RetCode (*callThroughMessage)(Text in, ReceiveBuffer out, bool *fatalError);
+            RetCode (*setCallbackMessageHandler)(DataCallback handler);
+            RetCode (*atomicTouch)(int32_t stage, int32_t px, int32_t py);
+            RetCode (*startCapture)(Text name, DataCallback callback, Text optJson);
+            RetCode (*stopCapture)(Text name);
         };
 
         struct UiTestPort {
-            RetCode (*GetUiTestVersion)(ReceiveBuffer out);
-            RetCode (*PrintLog)(int32_t level, Text tag, Text format, va_list ap);
-            RetCode (*GetAndClearLastError)(int32_t *codeOut, ReceiveBuffer msgOut);
-            RetCode (*InitLowLevelFunctions)(LowLevelFunctions *out);
+            RetCode (*getUiTestVersion)(ReceiveBuffer out);
+            RetCode (*printLog)(int32_t level, Text tag, Text format, va_list ap);
+            RetCode (*getAndClearLastError)(int32_t *codeOut, ReceiveBuffer msgOut);
+            RetCode (*initLowLevelFunctions)(LowLevelFunctions *out);
         };
 
         // hook function names of UiTestExtension library
@@ -96,7 +96,7 @@ namespace OHOS::uitest {
             LOG_E("EXTENSION_API_CHECK failed: %{public}s", g_lastErrorMessage.c_str()); \
             return RETCODE_FAIL; \
         } \
-    } while(0)
+    } while (0)
 
     static RetCode WriteToBuffer(ReceiveBuffer &buffer, string_view data)
     {
@@ -120,8 +120,7 @@ namespace OHOS::uitest {
         EXTENSION_API_CHECK(level >= LogRank::DEBUG && level <= LogRank::ERROR, "Illegal log level", ERR_BAD_ARG);
         EXTENSION_API_CHECK(label.data != nullptr && format.data != nullptr, "Illegal log tag/format", ERR_BAD_ARG);
         char buf[LOG_BUF_SIZE];
-        auto ret = vsprintf_s(buf, LOG_BUF_SIZE, format.data, ap);
-        EXTENSION_API_CHECK(ret >= 0, format.data, ERR_BAD_ARG);
+        EXTENSION_API_CHECK(vsprintf_s(buf, LOG_BUF_SIZE, format.data, ap) >= 0, format.data, ERR_BAD_ARG);
         HiLogPrint(type, static_cast<LogLevel>(level), domain, label.data, "%{public}s", buf);
         return RETCODE_SUCCESS;
     }
@@ -137,7 +136,7 @@ namespace OHOS::uitest {
     }
 
     // input-errors of call-through api should also be passed through
-    #define CALL_THROUGH_CHECK(cond,message,code,asFatalError) \
+    #define CALL_THROUGH_CHECK(cond, message, code, asFatalError) \
     do { \
         if (!(cond)) { \
             LOG_E("Check condition (%{public}s) failed: %{public}s", #cond, string(message).c_str()); \
@@ -268,7 +267,7 @@ namespace OHOS::uitest {
                 scale = val.get<float>();
             }
             StartScreenCopy(scale, [callback](uint8_t *data, size_t len) {
-                callback(Text{reinterpret_cast<const char *>(data), len}); 
+                callback(Text{reinterpret_cast<const char *>(data), len});
                 free(data);
             });
         } else if (strcmp(name.data, "recordUiAction") == 0) {
@@ -291,11 +290,11 @@ namespace OHOS::uitest {
     static RetCode InitLowLevelFunctions(LowLevelFunctions *out)
     {
         EXTENSION_API_CHECK(out != nullptr, "Null LowLevelFunctions recveive pointer", ERR_BAD_ARG);
-        out->CallThroughMessage = CallThroughMessage;
-        out->SetCallbackMessageHandler = SetCallbackMessageHandler;
-        out->AtomicTouch = AtomicTouch;
-        out->StartCapture = StartCapture;
-        out->StopCapture = StopCapture;
+        out->callThroughMessage = CallThroughMessage;
+        out->setCallbackMessageHandler = SetCallbackMessageHandler;
+        out->atomicTouch = AtomicTouch;
+        out->startCapture = StartCapture;
+        out->stopCapture = StopCapture;
         return RETCODE_SUCCESS;
     }
 
@@ -327,10 +326,10 @@ namespace OHOS::uitest {
         auto initFunction = reinterpret_cast<UiTestExtensionOnInitCallback>(symInit);
         auto runFunction = reinterpret_cast<UiTestExtensionOnRunCallback>(symRun);
         auto port = UiTestPort {
-            .GetUiTestVersion = GetUiTestVersion,
-            .PrintLog = PrintLog,
-            .GetAndClearLastError = GetAndClearLastError,
-            .InitLowLevelFunctions = InitLowLevelFunctions,
+            .GetUiTestVersion = getUiTestVersion,
+            .PrintLog = printLog,
+            .GetAndClearLastError = getAndClearLastError,
+            .InitLowLevelFunctions = initLowLevelFunctions,
         };
         if (initFunction(port, 0, nullptr) != RETCODE_SUCCESS) {
             LOG_I("Initialize UiTest extension failed");
