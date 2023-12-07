@@ -645,7 +645,7 @@ namespace OHOS::uitest {
         mutex mtx;
         unique_lock<mutex> uLock(mtx);
         std::shared_ptr<condition_variable> condition = make_shared<condition_variable>();
-        auto onConnectCallback = [=]() {
+        auto onConnectCallback = [condition]() {
             LOG_I("Success connect to AccessibilityUITestAbility");
             condition->notify_all();
         };

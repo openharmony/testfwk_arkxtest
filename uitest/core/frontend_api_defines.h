@@ -247,7 +247,7 @@ namespace OHOS::uitest {
         {"bundleName", "string", false},
         {"title", "string", false},
         {"focused", "bool", false},
-        {"actived", "bool", false},
+        {"actived", "bool", false}, // Deprecated from API 11
         {"active", "bool", false},
     };
     constexpr FrontEndJsonDef WINDOW_FILTER_DEF = {
@@ -447,7 +447,7 @@ namespace OHOS::uitest {
         {"UiWindow.getTitle", "():string", false, false},
         {"UiWindow.getWindowMode", "():int", false, false}, // WindowMode enum as int value
         {"UiWindow.isFocused", "():bool", false, false},
-        {"UiWindow.isActived", "():bool", false, false},
+        {"UiWindow.isActived", "():bool", false, false}, // Deprecated from API 11
         {"UiWindow.isActive", "():bool", false, false},
         {"UiWindow.focus", "():void", false, false},
         {"UiWindow.moveTo", "(int,int):void", false, false},

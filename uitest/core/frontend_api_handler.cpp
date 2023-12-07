@@ -208,6 +208,7 @@ namespace OHOS::uitest {
         old2NewApiMap_["By.key"] = "On.id";
         old2NewApiMap_["UiComponent.getId"] = "Component.getAccessibilityId";
         old2NewApiMap_["UiComponent.getKey"] = "Component.getId";
+        old2NewApiMap_["UiWindow.isActived"] = "UiWindow.isActive";
         new2OldApiMap_["On"] = "By" ;
         new2OldApiMap_["Driver"] = "UiDriver" ;
         new2OldApiMap_["Component"] = "UiComponent" ;
@@ -233,6 +234,12 @@ namespace OHOS::uitest {
     
     string FrontendApiServer::ApiMapPre(ApiCallInfo &inModifier) const
     {
+        auto iter = old2NewApiMap_.find(inModifier.apiId_);
+        if (iter != old2NewApiMap_.end()) {
+            LOG_D("original api:%{public}s, modified to:%{public}s", inModifier.apiId_.c_str(), iter->second.c_str());
+            inModifier.apiId_ = iter->second;
+            return "";
+        }
         // 1. map method name
         const string &className = GetClassName(inModifier.apiId_, '.');
         const auto result = old2NewApiMap_.find(className);
@@ -365,9 +372,6 @@ namespace OHOS::uitest {
         // initialize method signature
         if (sApiArgTypesMap.empty()) {
             ParseFrontendMethodsSignature();
-        }
-        if (in.apiId_ == "UiWindow.isActived") {
-            call.apiId_ = "UiWindow.isActive";
         }
         string oldApiName = ApiMapPre(call);
         auto find = handlers_.find(call.apiId_);
