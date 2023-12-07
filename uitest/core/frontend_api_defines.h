@@ -248,6 +248,7 @@ namespace OHOS::uitest {
         {"title", "string", false},
         {"focused", "bool", false},
         {"actived", "bool", false},
+        {"active", "bool", false},
     };
     constexpr FrontEndJsonDef WINDOW_FILTER_DEF = {
         "WindowFilter",
@@ -447,6 +448,7 @@ namespace OHOS::uitest {
         {"UiWindow.getWindowMode", "():int", false, false}, // WindowMode enum as int value
         {"UiWindow.isFocused", "():bool", false, false},
         {"UiWindow.isActived", "():bool", false, false},
+        {"UiWindow.isActive", "():bool", false, false},
         {"UiWindow.focus", "():void", false, false},
         {"UiWindow.moveTo", "(int,int):void", false, false},
         {"UiWindow.resize", "(int,int,int):void", false, false}, // ResizeDirection enum as int value

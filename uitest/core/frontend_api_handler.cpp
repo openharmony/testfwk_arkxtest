@@ -366,6 +366,9 @@ namespace OHOS::uitest {
         if (sApiArgTypesMap.empty()) {
             ParseFrontendMethodsSignature();
         }
+        if (in.apiId_ == "UiWindow.isActived") {
+            call.apiId_ = "UiWindow.isActive";
+        }
         string oldApiName = ApiMapPre(call);
         auto find = handlers_.find(call.apiId_);
         if (find == handlers_.end()) {
@@ -727,6 +730,9 @@ namespace OHOS::uitest {
                 }
                 if (filterJson.contains("actived")) {
                     match = match && (filterJson["actived"].get<bool>() == window.actived_);
+                }
+                if (filterJson.contains("active")) {
+                    match = match && (filterJson["active"].get<bool>() == window.actived_);
                 }
                 return match;
             };
@@ -1256,7 +1262,7 @@ namespace OHOS::uitest {
                 out.resultValue_ = (uint8_t)(snapshot->mode_ - 1);
             } else if (in.apiId_ == "UiWindow.isFocused") {
                 out.resultValue_ = snapshot->focused_;
-            } else if (in.apiId_ == "UiWindow.isActived") {
+            } else if (in.apiId_ == "UiWindow.isActive") {
                 out.resultValue_ = snapshot->actived_;
             }
         };
@@ -1265,7 +1271,7 @@ namespace OHOS::uitest {
         server.AddHandler("UiWindow.getTitle", genericGetter);
         server.AddHandler("UiWindow.getWindowMode", genericGetter);
         server.AddHandler("UiWindow.isFocused", genericGetter);
-        server.AddHandler("UiWindow.isActived", genericGetter);
+        server.AddHandler("UiWindow.isActive", genericGetter);
     }
 
     static void RegisterUiWindowOperators()
