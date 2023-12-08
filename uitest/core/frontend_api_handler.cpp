@@ -240,7 +240,8 @@ namespace OHOS::uitest {
         if (result == old2NewApiMap_.end()) {
             auto iter = old2NewApiMap_.find(inModifier.apiId_);
             if (iter != old2NewApiMap_.end()) {
-                LOG_D("original api:%{public}s, modified to:%{public}s", inModifier.apiId_.c_str(), iter->second.c_str());
+                LOG_D("original api:%{public}s, modified to:%{public}s", inModifier.apiId_.c_str(),
+                    iter->second.c_str());
                 inModifier.apiId_ = iter->second;
             }
             return "";
