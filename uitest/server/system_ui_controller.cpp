@@ -298,6 +298,9 @@ namespace OHOS::uitest {
                     childNodeIndex++;
                 }
             }
+            if (childNodeIndex >= nodes.size()) {
+                continue;
+            }
             auto &child = nodes[childNodeIndex];
             if (child.GetAccessibilityId() != childId) {
                 LOG_E("Node info error, expect: %{public}d, actual: %{public}d", childId, child.GetAccessibilityId());
@@ -641,10 +644,10 @@ namespace OHOS::uitest {
         }
         mutex mtx;
         unique_lock<mutex> uLock(mtx);
-        condition_variable condition;
-        auto onConnectCallback = [&condition]() {
+        std::shared_ptr<condition_variable> condition = make_shared<condition_variable>();
+        auto onConnectCallback = [condition]() {
             LOG_I("Success connect to AccessibilityUITestAbility");
-            condition.notify_all();
+            condition->notify_all();
         };
         auto onDisConnectCallback = [this]() { this->connected_ = false; };
         if (g_monitorInstance_ == nullptr) {
@@ -678,7 +681,7 @@ namespace OHOS::uitest {
                 break;
         }
         const auto timeout = chrono::milliseconds(1000);
-        if (condition.wait_for(uLock, timeout) == cv_status::timeout) {
+        if (condition->wait_for(uLock, timeout) == cv_status::timeout) {
             LOG_E("Wait connection to AccessibilityUITestAbility timed out");
             return false;
         }
