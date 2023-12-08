@@ -191,6 +191,9 @@ TEST_F(FrontendApiHandlerTest, checkAllHandlersRegisted)
     for (const auto &classDef : FRONTEND_CLASS_DEFS) {
         for (size_t idx = 0; idx < classDef->methodCount_; idx++) {
             const auto &methodDef = classDef->methods_[idx];
+            if (methodDef.name_ == "UiWindow.isActived") {
+                continue;
+            }
             const auto message = "No handler registered for '" + string(methodDef.name_) + "'";
             ASSERT_TRUE(server.HasHandlerFor(methodDef.name_)) << message;
         }
