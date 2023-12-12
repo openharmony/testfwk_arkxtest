@@ -22,7 +22,7 @@
 
 注：
 HaMock 服务于 OpenHarmonyOS 应用对外接口测试、系统对外接口测试（SDK 中接口），完成 HAP 自动化测试。详细指导：
-[Deveco Studio](https://developer.harmonyos.com/cn/develop/deveco-studio)
+[Deveco Studio](https://gitee.com/openharmony/testfwk_arkxtest#mock%E8%83%BD%E5%8A%9B)
 
 ## HaMock 开放能力隐私声明
 
