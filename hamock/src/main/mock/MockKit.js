@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,29 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import ExtendInterface from "./ExtendInterface.js";
 import VerificationMode from "./VerificationMode.js";
 import { ArgumentMatchers } from "./ArgumentMatchers.js";
-
-interface IFunction extends Function {
-    container: any;
-    original: any;
-    propName: string;
-    originalFromPrototype: boolean
-    mocker: MockKit
-}
-
 class MockKit {
-
-    private mFunctions:Array<any> = [];
-    private stubs = new Map();
-    private recordCalls = new Map();
-    private currentSetKey = new Map();
-    private mockObj = null;
-    private recordMockedMethod = new Map();
-    private originalMethod: any;
-
     constructor() {
         this.mFunctions = [];
         this.stubs = new Map();
@@ -42,46 +23,50 @@ class MockKit {
         this.currentSetKey = new Map();
         this.mockObj = null;
         this.recordMockedMethod = new Map();
-    }
-
-    init() {
-        this.reset();
-    }
-
-    reset() {
         this.mFunctions = [];
-        this.stubs = new Map()
+        this.stubs = new Map();
         this.recordCalls = new Map();
         this.currentSetKey = new Map();
         this.mockObj = null;
         this.recordMockedMethod = new Map();
     }
-
+    init() {
+        this.reset();
+    }
+    reset() {
+        this.mFunctions = [];
+        this.stubs = new Map();
+        this.recordCalls = new Map();
+        this.currentSetKey = new Map();
+        this.mockObj = null;
+        this.recordMockedMethod = new Map();
+    }
     clearAll() {
         this.reset();
     }
-
-    clear(obj: any) {
-        if (!obj) throw Error("Please enter an object to be cleaned");
-        if (typeof (obj) != 'object') throw new Error('Not a object');
+    clear(obj) {
+        if (!obj)
+            throw Error("Please enter an object to be cleaned");
+        if (typeof (obj) != 'object')
+            throw new Error('Not a object');
         this.recordMockedMethod.forEach(function (value, key, map) {
             if (key) {
                 obj[key] = value;
             }
         });
     }
-
-    ignoreMock(obj:any, method: any) {
-        if (typeof (obj) != 'object') throw new Error('Not a object');
-        if (typeof (method) != 'function') throw new Error('Not a function');
+    ignoreMock(obj, method) {
+        if (typeof (obj) != 'object')
+            throw new Error('Not a object');
+        if (typeof (method) != 'function')
+            throw new Error('Not a function');
         let og = this.recordMockedMethod.get(method.propName);
         if (og) {
             obj[method.propName] = og;
             this.recordMockedMethod.set(method.propName, undefined);
         }
     }
-
-    extend(dest: any, source:any) {
+    extend(dest, source) {
         dest["stub"] = source["stub"];
         dest["afterReturn"] = source["afterReturn"];
         dest["afterReturnNothing"] = source["afterReturnNothing"];
@@ -91,8 +76,7 @@ class MockKit {
         dest["clear"] = source["clear"];
         return dest;
     }
-
-    stubApply(f: any, params:any, returnInfo:any) {
+    stubApply(f, params, returnInfo) {
         let values = this.stubs.get(f);
         if (!values) {
             values = new Map();
@@ -111,8 +95,7 @@ class MockKit {
         values.set(key, returnInfo);
         this.stubs.set(f, values);
     }
-
-    getReturnInfo(f: any, params:any) {
+    getReturnInfo(f, params) {
         let values = this.stubs.get(f);
         if (!values) {
             return undefined;
@@ -122,7 +105,6 @@ class MockKit {
             retrunKet = "anonymous-mock-" + f.propName;
         }
         let stubSetKey = this.currentSetKey.get(f);
-
         if (stubSetKey && (typeof (retrunKet) != "undefined")) {
             retrunKet = stubSetKey;
         }
@@ -130,38 +112,31 @@ class MockKit {
         if (matcher.matcheReturnKey(params[0], undefined, stubSetKey) && matcher.matcheReturnKey(params[0], undefined, stubSetKey) != stubSetKey) {
             retrunKet = params[0];
         }
-
-        values.forEach(function (value: any, key: any, map: any) {
+        values.forEach(function (value, key, map) {
             if (ArgumentMatchers.isRegExp(key) && matcher.matcheReturnKey(params[0], key)) {
                 retrunKet = key;
             }
         });
-
         return values.get(retrunKet);
     }
-
-    findName(obj: any, value: any) {
+    findName(obj, value) {
         let properties = this.findProperties(obj);
         let name = '';
-        properties.filter((item:any) => (item !== 'caller' && item !== 'arguments')).forEach(
-            function (va1:any, idx:any, array:any) {
-                if (obj[va1] === value) {
-                    name = va1;
-                }
+        properties.filter((item) => (item !== 'caller' && item !== 'arguments')).forEach(function (va1, idx, array) {
+            if (obj[va1] === value) {
+                name = va1;
             }
-        );
+        });
         return name;
     }
-
-    isFunctionFromPrototype(f: Function, container:Function, propName: string) {
+    isFunctionFromPrototype(f, container, propName) {
         if (container.constructor != Object && container.constructor.prototype !== container) {
             return container.constructor.prototype[propName] === f;
         }
         return false;
     }
-
-    findProperties(obj: any, ...arg: Array<any>) {
-        function getProperty(new_obj:any): Array<any> {
+    findProperties(obj, ...arg) {
+        function getProperty(new_obj) {
             if (new_obj.__proto__ === null) {
                 return [];
             }
@@ -170,11 +145,10 @@ class MockKit {
         }
         return getProperty(obj);
     }
-
-    recordMethodCall(originalMethod: any, args: any) {
+    recordMethodCall(originalMethod, args) {
         originalMethod['getName'] = function () {
             return this.name || this.toString().match(/function\s*([^(]*)\(/)[1];
-        }
+        };
         let name = originalMethod.getName();
         let arglistString = name + '(' + Array.from(args).toString() + ')';
         let records = this.recordCalls.get(arglistString);
@@ -184,27 +158,25 @@ class MockKit {
         records++;
         this.recordCalls.set(arglistString, records);
     }
-
-    mockFunc(originalObject:any, originalMethod:any) {
+    mockFunc(originalObject, originalMethod) {
         let tmp = this;
         this.originalMethod = originalMethod;
         const _this = this;
-        let f:any  = function () {
+        let f = function () {
             let args = arguments;
             let action = tmp.getReturnInfo(f, args);
             if (originalMethod) {
                 tmp.recordMethodCall(originalMethod, args);
             }
             if (action) {
-                return <IFunction> action.apply(_this, args);
+                return action.apply(_this, args);
             }
         };
-
         f.container = null || originalObject;
         f.original = originalMethod || null;
-
         if (originalObject && originalMethod) {
-            if (typeof (originalMethod) != 'function') throw new Error('Not a function');
+            if (typeof (originalMethod) != 'function')
+                throw new Error('Not a function');
             var name = this.findName(originalObject, originalMethod);
             originalObject[name] = f;
             this.recordMockedMethod.set(name, originalMethod);
@@ -216,32 +188,29 @@ class MockKit {
         this.extend(f, new ExtendInterface(this));
         return f;
     }
-
-    verify(methodName:any, argsArray:any) {
+    verify(methodName, argsArray) {
         if (!methodName) {
             throw Error("not a function name");
         }
         let a = this.recordCalls.get(methodName + '(' + argsArray.toString() + ')');
         return new VerificationMode(a ? a : 0);
     }
-
-    mockObject(object: any) {
+    mockObject(object) {
         if (!object || typeof object === "string") {
             throw Error(`this ${object} cannot be mocked`);
         }
         const _this = this;
-        let mockedObject:any = {};
+        let mockedObject = {};
         let keys = Reflect.ownKeys(object);
         keys.filter(key => (typeof Reflect.get(object, key)) === 'function')
-            .forEach((key:any) => {
-                mockedObject[key] = object[key];
-                mockedObject[key] = _this.mockFunc(mockedObject, mockedObject[key]);
-            });
+            .forEach((key) => {
+            mockedObject[key] = object[key];
+            mockedObject[key] = _this.mockFunc(mockedObject, mockedObject[key]);
+        });
         return mockedObject;
     }
 }
-
-function ifMockedFunction(f: any) {
+function ifMockedFunction(f) {
     if (Object.prototype.toString.call(f) != "[object Function]" &&
         Object.prototype.toString.call(f) != "[object AsyncFunction]") {
         throw Error("not a function");
@@ -251,44 +220,37 @@ function ifMockedFunction(f: any) {
     }
     return true;
 }
-
-function when(f: any) {
+function when(f) {
     if (ifMockedFunction(f)) {
         return f.stub.bind(f);
     }
 }
-
-function MockSetup(target: Object, propertyName: string | Symbol, descriptor: TypedPropertyDescriptor<() => void>): void {
+function MockSetup(target, propertyName, descriptor) {
     const aboutToAppearOrigin = target.aboutToAppear;
     const setup = descriptor.value;
-    target.aboutToAppear = function (...args: any[]) {
+    target.aboutToAppear = function (...args) {
         if (target.__Param) { // copy attributes and params of the original context
             try {
-                const map = target.__Param as Map<string, unknown>;
+                const map = target.__Param;
                 for (const [key, val] of map) {
                     this[key] = val; // 'this' refers to context of current function
                 }
-            } catch (e) {
+            }
+            catch (e) {
                 throw new Error(`Mock setup param error: ${e}`);
             }
         }
-
         if (setup) { // apply the mock content
             try {
                 setup.apply(this);
-            } catch (e) {
+            }
+            catch (e) {
                 throw new Error(`Mock setup apply error: ${e}`);
             }
         }
-
         if (aboutToAppearOrigin) { // append to aboutToAppear function of the original context
             aboutToAppearOrigin.apply(this, args);
         }
-    }
+    };
 }
-
-export {
-    MockSetup,
-    MockKit,
-    when
-};
+export { MockSetup, MockKit, when };
