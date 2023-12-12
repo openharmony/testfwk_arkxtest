@@ -50,7 +50,7 @@ export class MockKit {
 }
 
 export declare function MockSetup(
-    target: any,
+    target: Object,
     propertyName: string | Symbol,
     descriptor: TypedPropertyDescriptor<() => void>
 ): void;
