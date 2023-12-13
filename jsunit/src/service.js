@@ -501,7 +501,8 @@ SuiteService.Suite = class {
                 }
                 await this.runAsyncHookFunc('afterEach');
             } catch (e) {
-                console.error(`${TAG}${e?.stack}`);
+                console.error(`${TAG}stack:${e?.stack}`);
+                console.error(`${TAG}stack end`);
                 if (e instanceof AssertException) {
                     specItem.fail = e;
                 } else {
