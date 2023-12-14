@@ -60,6 +60,10 @@ namespace OHOS::uitest {
         vector<pair<Window, nlohmann::json>> hierarchies;
         uiController_->GetUiHierarchy(hierarchies, getWidgetNodes, targetWin);
         if (hierarchies.empty()) {
+            if (targetWin != "") {
+                LOG_E("Get window nodes failed, bundleName: %{public}s", targetWin.c_str());
+                return;
+            }
             LOG_E("%{public}s", "Get windows failed");
             error = ApiCallErr(ERR_INTERNAL, "Get window nodes failed");
             return;
