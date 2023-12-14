@@ -564,7 +564,7 @@ namespace OHOS::uitest {
     {
       auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
       pasteBoardMgr->Clear();
-      auto pasteData = MiscServices::PasteboardClient::GetInstance()->CreatePlainTextData(string(text));
+      auto pasteData = pasteBoardMgr->CreatePlainTextData(string(text));
       pasteBoardMgr->SetPasteData(*pasteData);
     }
 
