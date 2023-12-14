@@ -456,6 +456,7 @@ namespace OHOS::uitest {
                 auto keyActionForInput = KeysForwarder(events);
                 TriggerKey(keyActionForInput, uiOpArgs, error);
             } else {
+                uiController_->PutTextToClipboard(text);
                 LOG_I("inputText by pasteBoard");
                 auto actionForPatse = CombinedKeys(KEYCODE_CTRL, KEYCODE_V, KEYCODE_NONE);
                 TriggerKey(actionForPatse, uiOpArgs, error);
