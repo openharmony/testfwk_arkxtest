@@ -31,6 +31,8 @@ declare interface when {
     (argMatchers?: any): when;
 }
 
+export const when: when;
+
 export interface VerificationMode {
     times(count: Number): void
     never(): void
