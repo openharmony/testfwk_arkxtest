@@ -562,10 +562,10 @@ namespace OHOS::uitest {
 
     void SysUiController::PutTextToClipboard(string_view text) const
     {
-      auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
-      pasteBoardMgr->Clear();
-      auto pasteData = pasteBoardMgr->CreatePlainTextData(string(text));
-      pasteBoardMgr->SetPasteData(*pasteData);
+        auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
+        pasteBoardMgr->Clear();
+        auto pasteData = pasteBoardMgr->CreatePlainTextData(string(text));
+        pasteBoardMgr->SetPasteData(*pasteData);
     }
 
     bool SysUiController::IsWorkable() const
