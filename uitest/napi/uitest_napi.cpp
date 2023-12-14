@@ -19,9 +19,9 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <fcntl.h>
 #include <unistd.h>
 #include "json.hpp"
-#include "pasteboard_client.h"
 #include "common_utilities_hpp.h"
 #include "frontend_api_defines.h"
 #include "ipc_transactor.h"
