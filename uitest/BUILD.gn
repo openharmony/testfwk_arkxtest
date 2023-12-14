@@ -188,9 +188,9 @@ ohos_executable("uitest_server") {
     "accessibility:accessibleability",
     "image_framework:image_native",
     "input:libmmi-client",
+    "pasteboard:pasteboard_client",
     "window_manager:libdm",
     "window_manager:libwm",
-    "pasteboard:pasteboard_client",
   ]
 
   subsystem_name = "testfwk"
