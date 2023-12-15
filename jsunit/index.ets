@@ -19,9 +19,9 @@ import DataDriver from './src/main/module/config/DataDriver';
 import ExpectExtend from './src/main/module/assert/ExpectExtend';
 import OhReport from './src/main/module/report/OhReport';
 
-export class Hypium {
+export declare class Hypium {
     static setData(data: Object): void
-    static setTimeConfig(systemTime: Object)
+    static setTimeConfig(systemTime: Object): void
     static hypiumTest(abilityDelegator: Object, abilityDelegatorArguments: Object, testsuite: Function): void
 }
 
@@ -38,21 +38,21 @@ export {
 
 type allExpectType = Object | undefined | null
 
-export function describe(testSuiteName: string, callback: Function): void
+export declare function describe(testSuiteName: string, callback: Function): void
 
-export function beforeItSpecified(testCaseNames: Array<string> | string, callback: Function): void
+export declare function beforeItSpecified(testCaseNames: Array<string> | string, callback: Function): void
 
-export function afterItSpecified(testCaseNames: Array<string> | string, callback: Function): void
+export declare function afterItSpecified(testCaseNames: Array<string> | string, callback: Function): void
 
-export function beforeEach(callback: Function): void
+export declare function beforeEach(callback: Function): void
 
-export function afterEach(callback: Function): void
+export declare function afterEach(callback: Function): void
 
-export function beforeAll(callback: Function): void
+export declare function beforeAll(callback: Function): void
 
-export function afterAll(callback: Function): void
+export declare function afterAll(callback: Function): void
 
-export function it(testCaseName: string, attribute: (TestType | Size | Level), callback: Function): void
+export declare function it(testCaseName: string, attribute: (TestType | Size | Level), callback: Function): void
 
 export interface Assert {
     assertClose(expectValue: number, precision: number): void
@@ -82,9 +82,9 @@ export interface Assert {
     assertPromiseIsResolvedWith(expectValue?: allExpectType): void
 }
 
-export function expect(actualValue?: allExpectType): Assert
+export declare function expect(actualValue?: allExpectType): Assert
 
-export class ArgumentMatchers {
+export declare class ArgumentMatchers {
     static any: allExpectType;
     static anyString: string;
     static anyBoolean: Boolean;
@@ -101,9 +101,9 @@ declare interface whenResult {
     afterThrow: (e_msg: string) => string
 }
 
-export declare function when(f:Function): (f: allExpectType | void) => whenResult
+export declare function when(f:Function): (f?: allExpectType | void) => whenResult
 
-export interface VerificationMode {
+export declare interface VerificationMode {
     times(count: Number): void
     never(): void
     once(): void
@@ -111,7 +111,7 @@ export interface VerificationMode {
     atMost(count: Number): void
 }
 
-export class MockKit {
+export declare class MockKit {
     constructor()
     mockFunc(obj: Object, func: Function): Function
     mockObject(obj: Object): Object
@@ -121,7 +121,7 @@ export class MockKit {
     clearAll(): void
 }
 
-export class SysTestKit {
+export declare class SysTestKit {
     static actionStart(tag: string): void
     static actionEnd(tag: string): void
     static existKeyword(keyword: string, timeout?: number): boolean
