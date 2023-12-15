@@ -33,7 +33,7 @@ export {
     TestType,
     Size,
     Level,
-    DEFAULT,
+    DEFAULT
 };
 
 type allExpectType = Object | undefined | null
