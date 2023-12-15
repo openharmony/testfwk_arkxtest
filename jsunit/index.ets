@@ -54,7 +54,7 @@ export declare function afterAll(callback: Function): void
 
 export declare function it(testCaseName: string, attribute: (TestType | Size | Level), callback: Function): void
 
-export interface Assert {
+export declare interface Assert {
     assertClose(expectValue: number, precision: number): void
     assertContain(expectValue: allExpectType): void
     assertEqual(expectValue: allExpectType): void
