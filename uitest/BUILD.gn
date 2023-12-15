@@ -258,6 +258,7 @@ ohos_shared_library("uitest_client") {
   external_deps += [
     "image_framework:image_native",
     "napi:ace_napi",
+    "pasteboard:pasteboard_client",
   ]
   relative_install_dir = "module"
   defines = [
