@@ -124,7 +124,8 @@ namespace OHOS::uitest {
         TouchOp op = TouchOp::SWIPE;
         Point screenSize;
         Direction direction;
-        Point from, to;
+        Point from;
+        Point to;
         if (opt == "dircFling" && CheckParams(argc, INDEX_FOUR)) {
             direction = (Direction)atoi(argv[THREE]);
             screenSize = driver.GetDisplaySize(exception_);
@@ -169,7 +170,8 @@ namespace OHOS::uitest {
         if (opt == "drag") {
             op = TouchOp::DRAG;
         }
-        Point from, to;
+        Point from;
+        Point to;
         if (CheckParams(argc, INDEX_SEVEN)) {
             if (!GetPoints(to, from, argc, argv)) {
                 return EXIT_FAILURE;
@@ -199,7 +201,8 @@ namespace OHOS::uitest {
             driver.TriggerKey(Power(), uiOpArgs, exception_);
         } else if (atoi(argv[THREE]) != 0) {
             int32_t codeZero_ = atoi(argv[THREE]);
-            int32_t codeOne_, codeTwo_;
+            int32_t codeOne_;
+            int32_t codeTwo_;
             if ((size_t)argc == INDEX_FOUR) {
                 auto keyAction_ = AnonymousSingleKey(codeZero_);
                 driver.TriggerKey(keyAction_, uiOpArgs, exception_);
