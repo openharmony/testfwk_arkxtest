@@ -456,6 +456,8 @@ namespace OHOS::uitest {
         pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
         pointerEvent->SetPointerId(0);
         pointerEvent->SetButtonId(event.button_);
+        item.SetPointerId(0);
+        item.SetToolType(PointerEvent::TOOL_TYPE_MOUSE);
         item.SetDisplayX(event.point_.px_);
         item.SetDisplayY(event.point_.py_);
         item.SetPressed(false);
