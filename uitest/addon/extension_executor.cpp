@@ -78,7 +78,7 @@ namespace OHOS::uitest {
     // uitest_extension port definitions =================================<<<<<<<<
 
     static constexpr auto ERR_BAD_ARG = ErrCode::ERR_INVALID_INPUT;
-    static constexpr size_t LOG_BUF_SIZE = 256;
+    static constexpr size_t LOG_BUF_SIZE = 512;
     static constexpr LogType type = LogType::LOG_APP;
     static string_view g_version = "";
     static string g_lastErrorMessage = "";

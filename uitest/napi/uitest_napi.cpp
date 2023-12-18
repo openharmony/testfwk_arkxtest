@@ -101,7 +101,9 @@ namespace OHOS::uitest {
 
     static napi_value CreateJsException(napi_env env, uint32_t code, string_view msg)
     {
-        napi_value codeValue, msgValue, errorValue;
+        napi_value codeValue;
+        napi_value msgValue;
+        napi_value errorValue;
         napi_create_uint32(env, code, &codeValue);
         napi_create_string_utf8(env, msg.data(), NAPI_AUTO_LENGTH, &msgValue);
         napi_create_error(env, nullptr, msgValue, &errorValue);

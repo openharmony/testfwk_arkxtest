@@ -135,7 +135,8 @@ namespace OHOS::uitest {
     void ApiCallerProxy::Call(const ApiCallInfo &call, ApiReplyInfo &result)
     {
         MessageOption option;
-        MessageParcel data, reply;
+        MessageParcel data;
+        MessageParcel reply;
         // IPC io: verify on write
         auto ret = data.WriteInterfaceToken(GetDescriptor()) && data.WriteString(call.apiId_) &&
                    data.WriteString(call.callerObjRef_) && data.WriteString(call.paramList_.dump()) &&
@@ -163,7 +164,8 @@ namespace OHOS::uitest {
     bool ApiCallerProxy::SetBackCaller(const OHOS::sptr<IRemoteObject> &caller)
     {
         MessageOption option;
-        MessageParcel data, reply;
+        MessageParcel data;
+        MessageParcel reply;
         auto writeStat = data.WriteInterfaceToken(GetDescriptor()) && data.WriteRemoteObject(caller);
         if (!writeStat || (Remote()->SendRequest(TRANS_ID_SET_BACKCALLER, data, reply, option) != 0)) {
             LOG_E("IPC SendRequest failed");
