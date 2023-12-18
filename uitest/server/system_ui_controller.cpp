@@ -28,6 +28,7 @@
 #include "idump_broker.h"
 #include "system_ability_definition.h"
 #endif
+#include "pasteboard_client.h"
 #include "accessibility_event_info.h"
 #include "accessibility_ui_test_ability.h"
 #include "ability_manager_client.h"
@@ -559,7 +560,13 @@ namespace OHOS::uitest {
         }
     }
 
-    void SysUiController::PutTextToClipboard(string_view text) const {}
+    void SysUiController::PutTextToClipboard(string_view text) const
+    {
+        auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
+        pasteBoardMgr->Clear();
+        auto pasteData = pasteBoardMgr->CreatePlainTextData(string(text));
+        pasteBoardMgr->SetPasteData(*pasteData);
+    }
 
     bool SysUiController::IsWorkable() const
     {
