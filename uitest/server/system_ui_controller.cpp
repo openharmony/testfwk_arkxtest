@@ -449,7 +449,7 @@ namespace OHOS::uitest {
         }
     }
 
-    static void SetPointerItemAttr(const MouseEvent &event, PointerEvent::PointerItem &item)
+    static void SetMousePointerItemAttr(const MouseEvent &event, PointerEvent::PointerItem &item)
     {
         item.SetPointerId(0);
         item.SetToolType(PointerEvent::TOOL_TYPE_MOUSE);
@@ -466,7 +466,7 @@ namespace OHOS::uitest {
         pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
         pointerEvent->SetPointerId(0);
         pointerEvent->SetButtonId(event.button_);
-        SetPointerItemAttr(event, item);
+        SetMousePointerItemAttr(event, item);
         constexpr double axialValue = 15;
         static bool flag = true;
         auto injectAxialValue = axialValue;
