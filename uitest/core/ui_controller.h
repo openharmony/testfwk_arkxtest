@@ -53,8 +53,7 @@ namespace OHOS::uitest {
 
         virtual void GetUiWindows(std::vector<Window> &out){};
 
-        virtual bool GetBundleNameAndNodesInWindow(Window &winInfo,
-                                                     std::unique_ptr<ElementNodeIterator> &elementNodeIterator)
+        virtual bool GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator)
         {
             return false;
         };

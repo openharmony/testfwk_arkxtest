@@ -742,7 +742,7 @@ namespace OHOS::uitest {
                 }
                 return match;
             };
-            auto window = driver.FindWindow(matcher, filterJson.contains("bundleName"), out.exception_);
+            auto window = driver.FindWindow(matcher, out.exception_);
             if (window == nullptr) {
                 LOG_W("There is no match window by %{public}s", filterJson.dump().data());
                 out.resultValue_ = nullptr;
@@ -1139,12 +1139,6 @@ namespace OHOS::uitest {
         auto snapshot = driver.RetrieveWidget(image, out.exception_);
         if (out.exception_.code_ != NO_ERROR) {
             out.resultValue_ = nullptr; // exception, return null
-            return;
-        }
-        if (snapshot == nullptr) {
-            LOG_W("RetrieveWidget failed");
-            out.resultValue_ = nullptr; // exception, return null
-            out.exception_.code_ = WIDGET_LOST;
             return;
         }
         if (attrName == ATTR_NAMES[UiAttr::BOUNDSCENTER]) { // getBoundsCenter

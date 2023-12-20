@@ -15,66 +15,13 @@
 #include "gtest/gtest.h"
 #include "widget_operator.h"
 #include "mock_element_node_iterator.h"
+#include "mock_controller.h"
 
 using namespace OHOS::uitest;
 using namespace std;
 
-static std::unique_ptr<PointerMatrix> touch_event_records_ = nullptr;
-class MockController : public UiController {
-public:
-    MockController() : UiController() {}
+unique_ptr<PointerMatrix> MockController::touch_event_records_ = nullptr;
 
-    ~MockController() = default;
-
-    void GetUiWindows(std::vector<Window> &out) override
-    {
-        for (auto iter = testIn.cbegin(); iter != testIn.cend(); ++iter) {
-            out.emplace_back(iter->second);
-        }
-    }
-
-    bool GetBundleNameAndNodesInWindow(Window &winInfo, std::unique_ptr<ElementNodeIterator> &elementNodeIterator) override
-    {
-        // copy ele
-        auto eleCopy = windowNodeMap.at(winInfo.id_);
-        elementNodeIterator = std::make_unique<MockElementNodeIterator>(eleCopy);
-        Widget widget{"test"};
-        elementNodeIterator->DFSNext(widget);
-        winInfo.bundleName_ = widget.GetAttr(UiAttr::BUNDLENAME);
-        return true;
-    }
-
-    bool IsWorkable() const override
-    {
-        return true;
-    }
-
-    void InjectTouchEventSequence(const PointerMatrix &events) const override
-    {
-        touch_event_records_ = std::make_unique<PointerMatrix>(events.GetFingers(), events.GetSteps());
-        for (int step = 0; step < events.GetSteps(); step++) {
-            for (int finger = 0; finger < events.GetFingers(); finger++) {
-                touch_event_records_->PushAction(events.At(finger, step));
-            }
-        }
-    }
-
-    void AddWindowsAndNode(Window in, std::vector<MockAccessibilityElementInfo> eles)
-    {
-        testIn.emplace(in.id_, in);
-        windowNodeMap.emplace(in.id_, eles);
-    }
-    void RemoveWindowsAndNode(Window in)
-    {
-        testIn.erase(in.id_);
-        windowNodeMap.erase(in.id_);
-    }
-
-private:
-    std::map<int, Window> testIn;
-    std::map<int, std::vector<MockAccessibilityElementInfo>> windowNodeMap;
-};
-// test fixture
 class WidgetOperatorTest : public testing::Test {
 protected:
     void SetUp() override
@@ -89,7 +36,7 @@ protected:
     // Reset Window and node
     void ResetWindowAndNode(Window &w, std::vector<MockAccessibilityElementInfo> &eles)
     {
-std::string domJson = R"(
+        std::string domJson = R"(
         {
             "attributes":{
                 "windowId":"12",
@@ -217,7 +164,7 @@ std::string domJson = R"(
             ]
         }
     )";
-    eles_ = MockElementNodeIterator::ConstructIteratorByJson(domJson)->elementInfoLists_;
+        eles_ = MockElementNodeIterator::ConstructIteratorByJson(domJson)->elementInfoLists_;
         w.windowLayer_ = 2;
         w.bounds_ = Rect{0, 1000, 0, 1200};
         w.bundleName_ = "test1";
@@ -298,11 +245,11 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckSubjectWidget)
     auto wOp = WidgetOperator(*driver_, *images.at(0), opt_);
     ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
     // check the scroll action events, should be acted on the subject node specified by WidgetMatcher
-    ASSERT_TRUE(!touch_event_records_->Empty());
-    auto &firstEvent = touch_event_records_->At(0, 0);
-    auto fin = touch_event_records_->GetFingers() - 1;
-    auto ste = touch_event_records_->GetSteps() - 1;
-    auto &lastEvent = touch_event_records_->At(fin, ste);
+    ASSERT_TRUE(!MockController::touch_event_records_->Empty());
+    auto &firstEvent = MockController::touch_event_records_->At(0, 0);
+    auto fin = MockController::touch_event_records_->GetFingers() - 1;
+    auto ste = MockController::touch_event_records_->GetSteps() - 1;
+    auto &lastEvent = MockController::touch_event_records_->At(fin, ste);
     // check scroll event pointer_x
     int32_t subjectCx = (0 + 600) / 2;
     ASSERT_NEAR(firstEvent.point_.px_, subjectCx, 5);
@@ -312,13 +259,13 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckSubjectWidget)
     constexpr int32_t subjectWidgetHeight = 1000 - 0;
     int32_t maxCy = 0;
     int32_t minCy = 1E5;
-    for (uint32_t finger = 0; finger < touch_event_records_->GetFingers(); finger++) {
-        for (uint32_t step = 0; step < touch_event_records_->GetSteps(); step++) {
-            if (touch_event_records_->At(finger, step).point_.py_ > maxCy) {
-                maxCy = touch_event_records_->At(finger, step).point_.py_;
+    for (uint32_t finger = 0; finger < MockController::touch_event_records_->GetFingers(); finger++) {
+        for (uint32_t step = 0; step < MockController::touch_event_records_->GetSteps(); step++) {
+            if (MockController::touch_event_records_->At(finger, step).point_.py_ > maxCy) {
+                maxCy = MockController::touch_event_records_->At(finger, step).point_.py_;
             }
-            if (touch_event_records_->At(finger, step).point_.py_ < minCy) {
-                minCy = touch_event_records_->At(finger, step).point_.py_;
+            if (MockController::touch_event_records_->At(finger, step).point_.py_ < minCy) {
+                minCy = MockController::touch_event_records_->At(finger, step).point_.py_;
             }
         }
     }
@@ -347,22 +294,25 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckDirection)
     auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
     ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
     // check the scroll action events, should be acted on the specified node
-    ASSERT_TRUE(!touch_event_records_->Empty());
+    ASSERT_TRUE(!MockController::touch_event_records_->Empty());
     // should scroll-search upward (cy_from<cy_to) then downward (cy_from>cy_to)
     uint32_t maxCyEventIndex = 0;
     uint32_t index = 0;
-    for (uint32_t event = 0; event < touch_event_records_->GetSize() - 1; event++) {
-        if (touch_event_records_->At(0, event).point_.py_ > touch_event_records_->At(0, maxCyEventIndex).point_.py_) {
+    for (uint32_t event = 0; event < MockController::touch_event_records_->GetSize() - 1; event++) {
+        if (MockController::touch_event_records_->At(0, event).point_.py_ >
+            MockController::touch_event_records_->At(0, maxCyEventIndex).point_.py_) {
             maxCyEventIndex = index;
         }
         index++;
     }
 
-    for (uint32_t idx = 0; idx < touch_event_records_->GetSize() - 1; idx++) {
+    for (uint32_t idx = 0; idx < MockController::touch_event_records_->GetSize() - 1; idx++) {
         if (idx < maxCyEventIndex) {
-            ASSERT_LT(touch_event_records_->At(0, idx).point_.py_, touch_event_records_->At(0, idx + 1).point_.py_);
+            ASSERT_LT(MockController::touch_event_records_->At(0, idx).point_.py_,
+                      MockController::touch_event_records_->At(0, idx + 1).point_.py_);
         } else if (idx > maxCyEventIndex) {
-            ASSERT_GT(touch_event_records_->At(0, idx).point_.py_, touch_event_records_->At(0, idx + 1).point_.py_);
+            ASSERT_GT(MockController::touch_event_records_->At(0, idx).point_.py_,
+                      MockController::touch_event_records_->At(0, idx + 1).point_.py_);
         }
     }
 }

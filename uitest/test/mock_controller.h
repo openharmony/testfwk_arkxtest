@@ -21,9 +21,9 @@
 #include "element_node_iterator.h"
 
 namespace OHOS::uitest {
-    static std::unique_ptr<PointerMatrix> touch_event_records = nullptr;
     class MockController : public UiController {
     public:
+        static std::unique_ptr<PointerMatrix> touch_event_records_;
         MockController() : UiController() {}
 
         ~MockController() = default;
@@ -35,15 +35,12 @@ namespace OHOS::uitest {
             }
         }
 
-        bool GetBundleNameAndNodesInWindow(Window &winInfo,
-                                        std::unique_ptr<ElementNodeIterator> &elementNodeIterator) override
+        bool GetWidgetsInWindow(const Window &winInfo,
+                                std::unique_ptr<ElementNodeIterator> &elementNodeIterator) override
         {
             // copy ele
             auto eleCopy = windowNodeMap.at(winInfo.id_);
             elementNodeIterator = std::make_unique<MockElementNodeIterator>(eleCopy);
-            Widget widget{"test"};
-            elementNodeIterator->DFSNext(widget);
-            winInfo.bundleName_ = widget.GetAttr(UiAttr::BUNDLENAME);
             return true;
         }
 
@@ -54,10 +51,10 @@ namespace OHOS::uitest {
 
         void InjectTouchEventSequence(const PointerMatrix &events) const override
         {
-            touch_event_records = std::make_unique<PointerMatrix>(events.GetFingers(), events.GetSteps());
+            touch_event_records_ = std::make_unique<PointerMatrix>(events.GetFingers(), events.GetSteps());
             for (int step = 0; step < events.GetSteps(); step++) {
                 for (int finger = 0; finger < events.GetFingers(); finger++) {
-                    touch_event_records->PushAction(events.At(finger, step));
+                    touch_event_records_->PushAction(events.At(finger, step));
                 }
             }
         }

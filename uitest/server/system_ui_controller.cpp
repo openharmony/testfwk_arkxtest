@@ -221,6 +221,19 @@ namespace OHOS::uitest {
         info.focused_ = node.IsFocused();
         info.actived_ = node.IsActive();
         info.decoratorEnabled_ = node.IsDecorEnable();
+        // get bundle name by root node
+        AccessibilityElementInfo element;
+        LOG_I("Start Get Bundle Name by WindowId %{public}d", node.GetWindowId());
+        if (AccessibilityUITestAbility::GetInstance()->GetRootByWindow(node, element) != RET_OK) {
+            LOG_E("Failed Get Bundle Name by WindowId %{public}d", node.GetWindowId());
+        } else {
+            std::string app = element.GetBundleName();
+            LOG_I("End Get Bundle Name by WindowId %{public}d, app is %{public}s", node.GetWindowId(), app.data());
+            info.bundleName_ = app;
+            const auto foreAbility = AAFwk::AbilityManagerClient::GetInstance()->GetTopAbility();
+            info.abilityName_ = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
+            info.pagePath_ = (app == foreAbility.GetBundleName()) ? element.GetPagePath() : "";
+        }
         info.mode_ = WindowMode::UNKNOWN;
         const auto origMode = static_cast<OHOS::Rosen::WindowMode>(node.GetWindowMode());
         switch (origMode) {
@@ -281,8 +294,8 @@ namespace OHOS::uitest {
                 LOG_I("This window is covered, windowId : %{public}d", win.GetWindowId());
                 continue;
             }
-            // 从overplays中计算window被遮挡区域
-            LOG_I("This window is visible, windowId : %{public}d", win.GetWindowId());
+            LOG_I("This window is visible, windowId : %{public}d, active is %{public}d, focus is %{public}d",
+                  win.GetWindowId(), win.IsActive(), win.IsFocused());
             Window winWrapper{win.GetWindowId()};
             InflateWindowInfo(win, winWrapper);
             winWrapper.bounds_ = winRectInScreen;
@@ -297,8 +310,7 @@ namespace OHOS::uitest {
         }
     }
 
-    bool SysUiController::GetBundleNameAndNodesInWindow(Window &winInfo,
-                                                        std::unique_ptr<ElementNodeIterator> &elementNodeIterator)
+    bool SysUiController::GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator)
     {
         std::lock_guard<std::mutex> dumpLocker(dumpMtx); // disallow concurrent dumpUi
         if (!connected_) {
@@ -306,7 +318,6 @@ namespace OHOS::uitest {
             return false;
         }
         std::vector<AccessibilityElementInfo> elementInfos;
-        const auto foreAbility = AAFwk::AbilityManagerClient::GetInstance()->GetTopAbility();
         AccessibilityWindowInfo window;
         LOG_I("Start Get Window by WindowId %{public}d", winInfo.id_);
         if (AccessibilityUITestAbility::GetInstance()->GetWindow(winInfo.id_, window) != RET_OK) {
@@ -320,13 +331,9 @@ namespace OHOS::uitest {
         } else {
             LOG_I("End Get nodes from window by WindowId %{public}d, node size is %{public}zu", winInfo.id_,
                   elementInfos.size());
-            const auto app = elementInfos[0].GetBundleName();
-            winInfo.bundleName_ = app;
-            winInfo.abilityName_ = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
-            winInfo.pagePath_ = (app == foreAbility.GetBundleName()) ? elementInfos[0].GetPagePath() : "";
-            elementNodeIterator = std::make_unique<ElementNodeIteratorImpl>(elementInfos);
+            elementIterator = std::make_unique<ElementNodeIteratorImpl>(elementInfos);
             LOG_I("Get Node and layer %{public}d, window id: %{public}d, appId: %{public}s", window.GetWindowLayer(),
-                  winInfo.id_, app.data());
+                  winInfo.id_, elementInfos[0].GetBundleName().data());
         }
         return true;
     }
@@ -367,7 +374,7 @@ namespace OHOS::uitest {
         }
     }
 
-    static void SetPointerItemAttr(const MouseEvent &event, PointerEvent::PointerItem &item)
+    static void SetMousePointerItemAttr(const MouseEvent &event, PointerEvent::PointerItem &item)
     {
         item.SetPointerId(0);
         item.SetToolType(PointerEvent::TOOL_TYPE_MOUSE);
@@ -384,7 +391,7 @@ namespace OHOS::uitest {
         pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
         pointerEvent->SetPointerId(0);
         pointerEvent->SetButtonId(event.button_);
-        SetPointerItemAttr(event, item);
+        SetMousePointerItemAttr(event, item);
         constexpr double axialValue = 15;
         static bool flag = true;
         auto injectAxialValue = axialValue;

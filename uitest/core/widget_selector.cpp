@@ -112,9 +112,8 @@ namespace OHOS::uitest {
     void WidgetSelector::Select(const Window window,
                                 ElementNodeIterator &elementNodeRef,
                                 std::vector<Widget> &visitWidgets,
-                                std::vector<int> &targetWidgets)
+                                std::vector<int> &targetWidgets) const
     {
-        // 判断是否目标窗口
         if (appLocator_ != "" && window.bundleName_ != appLocator_) {
             LOG_D("skip window(%{public}s), it is not target window %{public}s", window.bundleName_.data(),
                   appLocator_.data());
@@ -130,7 +129,7 @@ namespace OHOS::uitest {
         return selfMatchers_;
     }
 
-    std::unique_ptr<SelectStrategy> WidgetSelector::ConstructSelectStrategy()
+    std::unique_ptr<SelectStrategy> WidgetSelector::ConstructSelectStrategy() const
     {
         StrategyBuildParam buildParam;
         buildParam.myselfMatcher = selfMatchers_;

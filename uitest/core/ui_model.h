@@ -57,7 +57,7 @@ namespace OHOS::uitest {
         BUNDLENAME,
         PAGEPATH,
         DUMMY_ATTRNAME_SELECTION,
-        MAX, // 仅用于标记属性数量，无业务意义
+        MAX, // mark the max length
     };
 
     /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
@@ -145,11 +145,10 @@ namespace OHOS::uitest {
             return ss.str();
         }
     };
-    
-    struct WidgetMatchModel
-    {
-        WidgetMatchModel(UiAttr name, string value, ValueMatchPattern pattern)
-            : attrName_(name), attrValue_(value), pattern_(pattern)
+
+    struct WidgetMatchModel {
+        WidgetMatchModel(UiAttr name, string value, ValueMatchPattern matchPattern)
+            : attrName(name), attrValue(value), pattern(matchPattern)
         {
         }
         WidgetMatchModel() {}
@@ -157,19 +156,14 @@ namespace OHOS::uitest {
         {
             stringstream ss;
             ss << "{";
-            ss << "attrName:" << ATTR_NAMES[attrName_].data() << "; value:" << attrValue_
-               << "; Pattern:" << to_string(pattern_);
+            ss << "attrName:" << ATTR_NAMES[attrName].data() << "; value:" << attrValue
+               << "; Pattern:" << to_string(pattern);
             ss << "}";
             return ss.str();
         }
-        UiAttr attrName_;
-        string attrValue_;
-        ValueMatchPattern pattern_;
-    };
-
-    class DumpHandler {
-    public:
-        static void AddExtraAttrs(nlohmann::json &root, const map<int32_t, string_view> &elementTrees, size_t index);
+        UiAttr attrName;
+        string attrValue;
+        ValueMatchPattern pattern;
     };
 
     /**Algorithm of rectangle.*/
@@ -308,46 +302,19 @@ namespace OHOS::uitest {
         WindowMode mode_ = UNKNOWN;
     };
 
+    class DumpHandler {
+    public:
+        static void AddExtraAttrs(nlohmann::json &root, const map<int32_t, string_view> &elementTrees, size_t index);
+        static void DumpWindowInfoToJson(vector<Widget> &allWidget, nlohmann::json &root);
+    };
+    
     class WidgetHierarchyBuilder {
     public:
-        static string Build(string_view parentWidgetHierarchy, uint32_t childIndex)
-        {
-            return string(parentWidgetHierarchy) + string(HIERARCHY_SEPARATOR) + to_string(childIndex);
-        }
+        static string Build(string_view parentWidgetHierarchy, uint32_t childIndex);
 
-        static string GetParentWidgetHierarchy(string_view hierarchy)
-        {
-            if (hierarchy == ROOT_HIERARCHY) {
-                // no parent for root widget
-                return "";
-            }
+        static string GetParentWidgetHierarchy(string_view hierarchy);
 
-            auto findRoot = hierarchy.find(ROOT_HIERARCHY);
-            if (findRoot != 0) {
-                // invalid hierarchy string
-                return "";
-            }
-            auto findLastSeparator = hierarchy.find_last_of(HIERARCHY_SEPARATOR);
-            if (findLastSeparator <= 0 || findLastSeparator == string::npos) {
-                return "";
-            }
-            return string(hierarchy).substr(0, findLastSeparator);
-        }
-
-        static string GetChildHierarchy(string_view hierarchy, uint32_t childIndex)
-        {
-            if (hierarchy.find(ROOT_HIERARCHY) != 0) {
-                // invalid hierarchy string
-                return "";
-            }
-            return string(hierarchy) + string(HIERARCHY_SEPARATOR) + to_string(childIndex);
-        }
-
-        inline static bool CheckIsDescendantHierarchy(string_view hierarchy, string_view hierarchyRoot)
-        {
-            // child node hierarchy must startswith parent node hierarchy
-            return hierarchy.find(hierarchyRoot) == 0;
-        }
+        static string GetChildHierarchy(string_view hierarchy, uint32_t childIndex);
 
     private:
         static constexpr auto HIERARCHY_SEPARATOR = ",";

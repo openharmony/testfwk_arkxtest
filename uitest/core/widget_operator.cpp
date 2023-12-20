@@ -40,8 +40,8 @@ namespace OHOS::uitest {
     }
 
     static void ConstructNoFilterInWidgetSelector(WidgetSelector &scrollSelector,
-                                          const std::string &hostApp,
-                                          const std::string &hashCode)
+                                                  const std::string &hostApp,
+                                                  const std::string &hashCode)
     {
         WidgetSelector parentStrategy;
         WidgetMatchModel anchorModel2{UiAttr::HASHCODE, hashCode, ValueMatchPattern::EQ};
@@ -65,6 +65,19 @@ namespace OHOS::uitest {
             ++index;
         }
         return index;
+    }
+
+    static WidgetSelector ConstructScrollFindSelector(const WidgetSelector &selector, const string &hashcode,
+        const string &appName, ApiCallErr &error)
+    {
+        WidgetSelector newSelector = selector;
+        WidgetMatchModel anchorModel{UiAttr::HASHCODE, hashcode, ValueMatchPattern::EQ};
+        WidgetSelector parentSelector{};
+        parentSelector.AddMatcher(anchorModel);
+        newSelector.AddParentLocator(parentSelector, error);
+        newSelector.AddAppLocator(appName);
+        newSelector.SetWantMulti(false);
+        return newSelector;
     }
 
     WidgetOperator::WidgetOperator(UiDriver &driver, const Widget &widget, const UiOpArgs &options)
@@ -92,7 +105,7 @@ namespace OHOS::uitest {
         while (true) {
             auto hostApp = driver_.GetHostApp(widget_);
             WidgetSelector selector{};
-            ConstructNoFilterInWidgetSelector(selector,hostApp, widget_.GetAttr(UiAttr::HASHCODE));
+            ConstructNoFilterInWidgetSelector(selector, hostApp, widget_.GetAttr(UiAttr::HASHCODE));
             std::vector<unique_ptr<Widget>> widgetsInScroll;
             driver_.FindWidgets(selector, widgetsInScroll, error, true);
             if (error.code_ != NO_ERROR) {
@@ -148,7 +161,6 @@ namespace OHOS::uitest {
         if (retrieved == nullptr || error.code_ != NO_ERROR) {
             return;
         }
-        // 找到当前最大的窗口区域
         Rect rootBound{0, 0, 0, 0};
         driver_.GetMergeWindowBounds(rootBound);
         auto rectBound = widget_.GetBounds();
@@ -195,17 +207,17 @@ namespace OHOS::uitest {
         driver_.InputText(text, error);
     }
 
-    unique_ptr<Widget> WidgetOperator::ScrollFindWidget(WidgetSelector &selector, ApiCallErr &error) const
+    unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const
     {
         bool scrollingUp = true;
         int turnDis = -1;
         std::unique_ptr<Widget> lastTopLeafWidget = nullptr;
         std::unique_ptr<Widget> lastBottomLeafWidget = nullptr;
         auto hostApp = driver_.GetHostApp(widget_);
-        ConstructScrollFindSelector(selector, error);
+        auto newSelector = ConstructScrollFindSelector(selector, widget_.GetAttr(UiAttr::HASHCODE), hostApp, error);
         while (true) {
             std::vector<unique_ptr<Widget>> targetsInScroll;
-            driver_.FindWidgets(selector, targetsInScroll, error, true);
+            driver_.FindWidgets(newSelector, targetsInScroll, error, true);
             if (!targetsInScroll.empty()) {
                 return std::move(targetsInScroll.at(0));
             }
@@ -240,17 +252,6 @@ namespace OHOS::uitest {
             }
             TurnPage(scrollingUp, turnDis, error);
         }
-    }
-
-    void WidgetOperator::ConstructScrollFindSelector(WidgetSelector &selector, ApiCallErr &error) const
-    {
-        WidgetMatchModel anchorModel{UiAttr::HASHCODE, widget_.GetAttr(UiAttr::HASHCODE), ValueMatchPattern::EQ};
-        WidgetSelector parentSelector{};
-        auto hostApp = driver_.GetHostApp(widget_);
-        parentSelector.AddMatcher(anchorModel);
-        selector.AddParentLocator(parentSelector, error);
-        selector.AddAppLocator(hostApp);
-        selector.SetWantMulti(false);
     }
 
     void WidgetOperator::TurnPage(bool toTop, int &oriDistance, ApiCallErr &error) const

@@ -35,17 +35,13 @@ namespace OHOS::uitest {
         /**Find widgets with the given selector. Results are arranged in the receiver in <b>DFS</b> order.
          * @returns the widget object.
          **/
-        void FindWidgets(WidgetSelector &select,
-                                   vector<unique_ptr<Widget>> &rev,
-                                   ApiCallErr &err,
-                                   bool updateUi = true);
+        void FindWidgets(const WidgetSelector &select, vector<unique_ptr<Widget>> &rev,
+            ApiCallErr &err, bool updateUi = true);
 
         /**Wait for the matching widget appear in the given timeout.*/
-        std::unique_ptr<Widget> WaitForWidget(WidgetSelector &select, const UiOpArgs &opt, ApiCallErr &err);
+        std::unique_ptr<Widget> WaitForWidget(const WidgetSelector &select, const UiOpArgs &opt, ApiCallErr &err);
         /**Find window matching the given matcher.*/
-        std::unique_ptr<Window> FindWindow(std::function<bool(const Window &)> matcher,
-                                           bool isMatchBundleName,
-                                           ApiCallErr &err);
+        std::unique_ptr<Window> FindWindow(std::function<bool(const Window &)> matcher, ApiCallErr &err);
 
         /**Retrieve widget from updated UI.*/
         const Widget *RetrieveWidget(const Widget &widget, ApiCallErr &err, bool updateUi = true);
@@ -104,19 +100,12 @@ namespace OHOS::uitest {
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction
         void UpdateUIWindows(ApiCallErr &error);
-        void DFSMarshalWidget(int index,
-                              nlohmann::json &dom,
-                              const std::map<std::string, int> &widgetChildCountMap,
-                              std::map<std::string, int> &visitWidgetMap);
-        void DumpWindowsInfoToJson(bool listWindows, Rect& mergeBounds, nlohmann::json& childDom);
+        void DumpWindowsInfo(bool listWindows, Rect& mergeBounds, nlohmann::json& childDom);
         static std::unique_ptr<UiController> uiController_;
         // CacheModel:
-        // 保留有查找中的窗口信息和查找的中间数据，用于对该窗口进行继续查找
-        // win对象，win对应的节点访问迭代器
         std::vector<WindowCacheModel> windowCacheVec_;
-        // 已访问过的节点信息，作为唯一数据保存
+        // unique widget object save
         std::vector<Widget> visitWidgets_;
-        // 存放下标
         std::vector<int> targetWidgetsIndex_;
     };
 } // namespace OHOS::uitest

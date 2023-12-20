@@ -30,9 +30,8 @@ namespace OHOS::uitest {
 
         void GetUiWindows(std::vector<Window> &out) override;
 
-        bool GetBundleNameAndNodesInWindow(Window &winInfo,
-                                           std::unique_ptr<ElementNodeIterator> &elementNodeIterator) override;
-                                           
+        bool GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator) override;
+
         bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const override;
 
         void InjectTouchEventSequence(const PointerMatrix &events) const override;
