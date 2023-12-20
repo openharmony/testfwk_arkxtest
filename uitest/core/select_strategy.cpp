@@ -46,7 +46,7 @@ namespace OHOS::uitest {
                                                  const Rect &containerParentRect,
                                                  Rect &visibleRect)
     {
-        // 1) 与自身window计算可见区域，计算重合区域
+        // calc bounds with its window
         Rect visibleInWindow{0, 0, 0, 0};
         if (!RectAlgorithm::ComputeIntersection(widget.GetBounds(), windowBounds_, visibleInWindow)) {
             LOG_I("Widget %{public}s bounds is %{public}s, without window bounds %{public}s, widget info is %{public}s",
@@ -55,7 +55,7 @@ namespace OHOS::uitest {
             visibleRect = Rect(0, 0, 0, 0);
             return;
         }
-        // 2) 与父组件计算可见区域，取交集
+        // calc bounds with its container parent
         Rect visibleInParent{0, 0, 0, 0};
         if (!RectAlgorithm::ComputeIntersection(visibleInWindow, containerParentRect, visibleInParent)) {
             LOG_I("Widget %{public}s bounds is %{public}s, without parent bounds %{public}s, widget info is %{public}s",
@@ -77,6 +77,7 @@ namespace OHOS::uitest {
             visibleRect = visibleInParent;
             return;
         }
+        // calc bounds with overplay windows
         Rect visibleBounds{0, 0, 0, 0};
         auto visible = RectAlgorithm::ComputeMaxVisibleRegion(visibleInParent, overplayWindowBoundsVec_, visibleBounds);
         if (!visible) {
@@ -90,9 +91,31 @@ namespace OHOS::uitest {
 
     std::string SelectStrategy::Describe() const
     {
+        std::string strategy = "PLAIN";
+        switch (GetStrategyType()) {
+            case StrategyEnum::PLAIN:
+                strategy = "PLAIN";
+                break;
+            case StrategyEnum::WITH_IN:
+                strategy = "WITH_IN";
+                break;
+            case StrategyEnum::IS_AFTER:
+                strategy = "IS_AFTER";
+                break;
+            case StrategyEnum::IS_BEFORE:
+                strategy = "IS_BEFORE";
+                break;
+            case StrategyEnum::COMPLEX:
+                strategy = "COMPLEX";
+                break;
+            default:
+                LOG_I("Error StrategyType, use plain");
+                strategy = "PLAIN";
+                break;
+        }
         stringstream ss;
         ss << "{";
-        ss << STRATEGY_NAMES[GetStrategyType()];
+        ss << strategy;
         if (!anchorMatch_.empty()) {
             ss << "; anchorMatcher=";
             for (auto &locator : anchorMatch_) {
@@ -115,18 +138,14 @@ namespace OHOS::uitest {
         CalcWidgetVisibleBounds(widget, containerParentRect, widgetVisibleBounds);
 
         widget.SetBounds(widgetVisibleBounds);
-        // [left,top][right, bottom]
-        stringstream boundStream;
-        boundStream << "[" << widgetVisibleBounds.left_ << "," << widgetVisibleBounds.top_ << "]["
-                    << widgetVisibleBounds.right_ << "," << widgetVisibleBounds.bottom_ << "]";
-        widget.SetAttr(UiAttr::BOUNDS, boundStream.str());
-
+        if (widgetVisibleBounds.GetHeight() <= 0 && widgetVisibleBounds.GetWidth() <= 0) {
+            widget.SetAttr(UiAttr::VISIBLE, "false");
+            return;
+        }
         if (widget.GetAttr(UiAttr::VISIBLE) == "false") {
             return;
         }
-        if (widgetVisibleBounds.GetHeight() <= 0 && widgetVisibleBounds.GetWidth() <= 0) {
-            widget.SetAttr(UiAttr::VISIBLE, "false");
-        } else if (widgetVisibleBounds.GetHeight() <= 0 || widgetVisibleBounds.GetWidth() <= 0) {
+        if (widgetVisibleBounds.GetHeight() <= 0 || widgetVisibleBounds.GetWidth() <= 0) {
             if (!RectAlgorithm::CheckEqual(containerParentRect, windowBounds_) ||
                 CONTAINER_TYPE.find(widget.GetAttr(UiAttr::TYPE)) != CONTAINER_TYPE.cend()) {
                 widget.SetAttr(UiAttr::VISIBLE, "true");
@@ -158,7 +177,6 @@ namespace OHOS::uitest {
                 Rect anchorParentInWindow = windowBounds_;
                 elementNodeRef.GetParentContainerBounds(anchorParentInWindow);
                 RefreshWidgetBounds(anchorParentInWindow, anchorWidget);
-                // 不可见的节点，在迭代器中删除
                 if (anchorWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     elementNodeRef.RemoveInvisibleWidget();
                     LOG_I("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
@@ -166,7 +184,7 @@ namespace OHOS::uitest {
                 }
                 visitWidgets.emplace_back(move(anchorWidget));
                 std::reference_wrapper<Widget const> tempAnchorWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap(tempAnchorWidget.get().GetBounds());
+                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isAnchorMatch = true;
                 for (const auto &anchorIt : anchorMatch_) {
                     isAnchorMatch = tempAnchorWidget.get().MatchAttr(anchorIt) && isAnchorMatch;
@@ -181,9 +199,10 @@ namespace OHOS::uitest {
             }
         }
 
-        void LocateNodeAfterAnchor(const Window &window, ElementNodeIterator &elementNodeRef,
-                        std::vector<Widget> &visitWidgets,
-                        std::vector<int> &targetWidgets)
+        void LocateNodeAfterAnchor(const Window &window,
+                                   ElementNodeIterator &elementNodeRef,
+                                   std::vector<Widget> &visitWidgets,
+                                   std::vector<int> &targetWidgets)
         {
             while (true) {
                 Widget myselfWidget{"myselfWidget"};
@@ -194,7 +213,6 @@ namespace OHOS::uitest {
                 Rect parentInWindow = windowBounds_;
                 elementNodeRef.GetParentContainerBounds(parentInWindow);
                 RefreshWidgetBounds(parentInWindow, myselfWidget);
-                // 不可见的节点，在迭代器中删除
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     elementNodeRef.RemoveInvisibleWidget();
                     LOG_I("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
@@ -202,7 +220,7 @@ namespace OHOS::uitest {
                 }
                 visitWidgets.emplace_back(move(myselfWidget));
                 std::reference_wrapper<Widget const> tempWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap(tempWidget.get().GetBounds());
+                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isMyselfMatch = true;
                 for (const auto &myselfIt : myselfMatch_) {
                     isMyselfMatch = tempWidget.get().MatchAttr(myselfIt) && isMyselfMatch;
@@ -247,7 +265,6 @@ namespace OHOS::uitest {
                 Rect parentInWindow = windowBounds_;
                 elementNodeRef.GetParentContainerBounds(parentInWindow);
                 RefreshWidgetBounds(parentInWindow, anchorWidget);
-                // 不可见的节点，在迭代器中删除
                 if (anchorWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     elementNodeRef.RemoveInvisibleWidget();
                     LOG_I("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
@@ -255,7 +272,7 @@ namespace OHOS::uitest {
                 }
                 visitWidgets.emplace_back(move(anchorWidget));
                 std::reference_wrapper<Widget const> tempAnchorWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap(tempAnchorWidget.get().GetBounds());
+                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isAnchorMatch = true;
                 for (const auto &anchorIt : anchorMatch_) {
                     isAnchorMatch = tempAnchorWidget.get().MatchAttr(anchorIt) && isAnchorMatch;
@@ -285,9 +302,6 @@ namespace OHOS::uitest {
                     currentId = visitWidgets[i].GetAttr(UiAttr::ACCESSIBILITY_ID);
                     for (const auto &myselfIt : myselfMatch_) {
                         isMyselfMatch = visitWidgets[i].MatchAttr(myselfIt) && isMyselfMatch;
-                        if (!isMyselfMatch) {
-                            break;
-                        }
                     }
                     if (!isMyselfMatch) {
                         continue;
@@ -318,7 +332,6 @@ namespace OHOS::uitest {
         {
             elementNodeRef.ClearDFSNext();
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
-            // withIn存在不需要遍历当前window所有节点信息场景，需要是否能找到节点判断
             while (true) {
                 Widget anchorWidget{"withInWidget"};
                 if (!elementNodeRef.DFSNext(anchorWidget)) {
@@ -328,8 +341,6 @@ namespace OHOS::uitest {
                 Rect anchorParentInWindow = windowBounds_;
                 elementNodeRef.GetParentContainerBounds(anchorParentInWindow);
                 RefreshWidgetBounds(anchorParentInWindow, anchorWidget);
-
-                // 不可见的节点，在迭代器中删除
                 if (anchorWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     elementNodeRef.RemoveInvisibleWidget();
                     LOG_I("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
@@ -337,7 +348,7 @@ namespace OHOS::uitest {
                 }
                 visitWidgets.emplace_back(move(anchorWidget));
                 std::reference_wrapper<Widget const> tempAnchorWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap(tempAnchorWidget.get().GetBounds());
+                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isAnchorMatch = true;
                 for (const auto &anchorIt : anchorMatch_) {
                     isAnchorMatch = tempAnchorWidget.get().MatchAttr(anchorIt) && isAnchorMatch;
@@ -356,11 +367,11 @@ namespace OHOS::uitest {
         }
 
         void LocateNodeWithInAnchor(const Window &window,
-                        ElementNodeIterator &elementNodeRef,
-                        std::vector<Widget> &visitWidgets,
-                        std::vector<int> &targetWidgets)
+                                    ElementNodeIterator &elementNodeRef,
+                                    std::vector<Widget> &visitWidgets,
+                                    std::vector<int> &targetWidgets)
         {
-            // 找到锚点之后，基于锚点重置当前Top信息
+            // restore current index and set top to anchor index
             elementNodeRef.RestoreNodeIndexByAnchor();
             while (true) {
                 Widget myselfWidget{"myselfWidget"};
@@ -372,7 +383,6 @@ namespace OHOS::uitest {
                 elementNodeRef.GetParentContainerBounds(parentInWindow);
                 RefreshWidgetBounds(parentInWindow, myselfWidget);
 
-                // 不可见的节点，在迭代器中删除
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     elementNodeRef.RemoveInvisibleWidget();
                     LOG_I("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
@@ -380,7 +390,7 @@ namespace OHOS::uitest {
                 }
                 visitWidgets.emplace_back(move(myselfWidget));
                 std::reference_wrapper<Widget const> tempWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap(tempWidget.get().GetBounds());
+                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isMyselfMatch = true;
                 for (const auto &myselfIt : myselfMatch_) {
                     isMyselfMatch = tempWidget.get().MatchAttr(myselfIt) && isMyselfMatch;
@@ -417,7 +427,6 @@ namespace OHOS::uitest {
         {
             elementNodeRef.ClearDFSNext();
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
-            // 普通查找不需要锚点
             while (true) {
                 Widget myselfWidget{"myselfWidget"};
                 if (!elementNodeRef.DFSNext(myselfWidget)) {
@@ -428,7 +437,6 @@ namespace OHOS::uitest {
                     Rect parentInWindow = windowBounds_;
                     elementNodeRef.GetParentContainerBounds(parentInWindow);
                     RefreshWidgetBounds(parentInWindow, myselfWidget);
-                    // 不可见的节点，在迭代器中删除
                     if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                         elementNodeRef.RemoveInvisibleWidget();
                         continue;
@@ -436,7 +444,7 @@ namespace OHOS::uitest {
                 }
                 visitWidgets.emplace_back(move(myselfWidget));
                 std::reference_wrapper<Widget const> tempWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap(tempWidget.get().GetBounds());
+                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isMyselfMatch = true;
                 for (const auto &myselfIt : myselfMatch_) {
                     isMyselfMatch = tempWidget.get().MatchAttr(myselfIt) && isMyselfMatch;
@@ -474,7 +482,6 @@ namespace OHOS::uitest {
             elementNodeRef.ClearDFSNext();
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
             std::vector<int> fakeTargetWidgets;
-            // 普通查找不需要锚点
             while (true) {
                 Widget myselfWidget{"myselfWidget"};
                 if (!elementNodeRef.DFSNext(myselfWidget)) {
@@ -485,7 +492,6 @@ namespace OHOS::uitest {
                 Rect parentInWindow = windowBounds_;
                 elementNodeRef.GetParentContainerBounds(parentInWindow);
                 RefreshWidgetBounds(parentInWindow, myselfWidget);
-                // 不可见的节点，在迭代器中删除
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     elementNodeRef.RemoveInvisibleWidget();
                     continue;
@@ -493,7 +499,7 @@ namespace OHOS::uitest {
 
                 visitWidgets.emplace_back(move(myselfWidget));
                 std::reference_wrapper<Widget const> tempWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap(tempWidget.get().GetBounds());
+                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isMyselfMatch = true;
                 for (const auto &myselfIt : myselfMatch_) {
                     isMyselfMatch = tempWidget.get().MatchAttr(myselfIt) && isMyselfMatch;
@@ -524,8 +530,8 @@ namespace OHOS::uitest {
             multiWithInAnchorMatcher.emplace_back(withInAnchor);
         }
 
-        int CalCMaxAfterAnchorIndex(const std::vector<Widget> &visitWidgets) {
-            // after从前向后遍历，找到最大的
+        int CalcMaxAfterAnchorIndex(const std::vector<Widget> &visitWidgets)
+        {
             int startAfterIndex = -1;
             for (auto &afterLocator : multiAfterAnchorMatcher) {
                 int startIndex = 0;
@@ -533,16 +539,12 @@ namespace OHOS::uitest {
                     bool isFrontMatch = true;
                     for (auto &attrModel : afterLocator) {
                         isFrontMatch = isFrontMatch && visitWidgets[startIndex].MatchAttr(attrModel);
-                        if (!isFrontMatch) {
-                            break;
-                        }
                     }
                     if (isFrontMatch) {
                         startAfterIndex = startAfterIndex > startIndex ? startAfterIndex : startIndex;
                         break;
                     }
                 }
-                // 没有找到，访问到了最后
                 if (startIndex == visitWidgets.size()) {
                     startAfterIndex = visitWidgets.size();
                 }
@@ -550,7 +552,8 @@ namespace OHOS::uitest {
             return startAfterIndex;
         }
 
-        int CalCMinBeforeAnchorIndex(const std::vector<Widget> &visitWidgets) {
+        int CalcMinBeforeAnchorIndex(const std::vector<Widget> &visitWidgets)
+        {
             int startBeforeIndex = visitWidgets.size();
             for (auto &beforeLocator : multiBeforeAnchorMatcher) {
                 int beforeIndex = visitWidgets.size() - 1;
@@ -558,9 +561,6 @@ namespace OHOS::uitest {
                     bool isRearMatch = true;
                     for (auto &attrModel : beforeLocator) {
                         isRearMatch = isRearMatch && visitWidgets[beforeIndex].MatchAttr(attrModel);
-                        if (!isRearMatch) {
-                            break;
-                        }
                     }
                     if (isRearMatch) {
                         startBeforeIndex = startBeforeIndex > beforeIndex ? beforeIndex : startBeforeIndex;
@@ -574,7 +574,8 @@ namespace OHOS::uitest {
             return startBeforeIndex;
         }
 
-        bool CheckTargetIdByParentSelect(const std::vector<int>& parentIndexVec, const std::vector<Widget> &visitWidgets)
+        bool CheckTargetIdByParentSelect(const std::vector<int> &parentIndexVec,
+                                         const std::vector<Widget> &visitWidgets)
         {
             bool isAllLocatorMatch = true;
             for (auto &parentLocator : multiWithInAnchorMatcher) {
@@ -583,9 +584,6 @@ namespace OHOS::uitest {
                     bool isMatch = true;
                     for (auto &selfMatch : parentLocator) {
                         isMatch = isMatch && visitWidgets[parentIndex].MatchAttr(selfMatch);
-                        if (!isMatch) {
-                            break;
-                        }
                     }
                     hasValidParent = hasValidParent || isMatch;
                     if (hasValidParent) {
@@ -601,8 +599,8 @@ namespace OHOS::uitest {
         }
 
         void LocateNodeWithInComplexSelect(std::vector<int> &filterParentValidId,
-                                         const std::vector<Widget> &visitWidgets,
-                                         const std::vector<int> &myselfTargets)
+                                           const std::vector<Widget> &visitWidgets,
+                                           const std::vector<int> &myselfTargets)
         {
             for (int targetId : myselfTargets) {
                 std::string_view targetHie = visitWidgets[targetId].GetHierarchy();
@@ -625,15 +623,11 @@ namespace OHOS::uitest {
                              std::vector<int> &fakeTargets,
                              std::vector<int> &myselfTargets)
         {
-            // 找到front和before在visitWidget的边界index
-            // after从前向后遍历，找到最大的
-            int startAfterIndex = CalCMaxAfterAnchorIndex(visitWidgets);
-            // before 从后向前遍历，找到最小的
-            int startBeforeIndex = CalCMinBeforeAnchorIndex(visitWidgets);
+            int startAfterIndex = CalcMaxAfterAnchorIndex(visitWidgets);
+            int startBeforeIndex = CalcMinBeforeAnchorIndex(visitWidgets);
             if (startBeforeIndex <= startAfterIndex) {
                 return;
             }
-            // 基于start，end对target进行过滤
             for (auto index : fakeTargets) {
                 if (index > startAfterIndex && index < startBeforeIndex) {
                     myselfTargets.emplace_back(index);
@@ -649,7 +643,6 @@ namespace OHOS::uitest {
                 }
                 return;
             }
-            // 基于parent进行过滤
             std::vector<int> filterParentValidId;
             LocateNodeWithInComplexSelect(filterParentValidId, visitWidgets, myselfTargets);
             if (filterParentValidId.empty()) {
@@ -676,7 +669,66 @@ namespace OHOS::uitest {
         std::vector<std::vector<WidgetMatchModel>> multiWithInAnchorMatcher;
     };
 
-    std::unique_ptr<SelectStrategy> SelectStrategy::BuildSelectStrategy(StrategyBuildParam buildParam, bool isWantMulti)
+    static std::unique_ptr<SelectStrategy> BuildComplexStrategy(const StrategyBuildParam &buildParam, bool isWantMulti)
+    {
+        std::unique_ptr<ComplexSelectorStrategy> selectStrategy = std::make_unique<ComplexSelectorStrategy>();
+        for (const auto &matchModel : buildParam.myselfMatcher) {
+            selectStrategy->RegisterMyselfMatch(matchModel);
+        }
+        for (const auto &afterWidgetAnchor : buildParam.afterAnchorMatcherVec) {
+            selectStrategy->RegisterMultiAfterAnchor(afterWidgetAnchor);
+        }
+        for (const auto &beforeWidgetAnchor : buildParam.beforeAnchorMatcherVec) {
+            selectStrategy->RegisterMultiBeforeAnchor(beforeWidgetAnchor);
+        }
+        for (const auto &withInWidgetAnchor : buildParam.withInAnchorMatcherVec) {
+            selectStrategy->RegisterMultiWithInAnchor(withInWidgetAnchor);
+        }
+        selectStrategy->SetWantMulti(isWantMulti);
+        return selectStrategy;
+    }
+
+    static std::unique_ptr<SelectStrategy> BuildWithInStrategy(const StrategyBuildParam &buildParam, bool isWantMulti)
+    {
+        std::unique_ptr<SelectStrategy> selectStrategy = std::make_unique<WithInSelectorStrategy>();
+        for (const auto &matchModel : buildParam.myselfMatcher) {
+            selectStrategy->RegisterMyselfMatch(matchModel);
+        }
+        for (const auto &anchorModel : buildParam.withInAnchorMatcherVec.at(0)) {
+            selectStrategy->RegisterAnchorMatch(anchorModel);
+        }
+        selectStrategy->SetWantMulti(isWantMulti);
+        return selectStrategy;
+    }
+
+    static std::unique_ptr<SelectStrategy> BuildBeforeStrategy(const StrategyBuildParam &buildParam, bool isWantMulti)
+    {
+        std::unique_ptr<SelectStrategy> selectStrategy = std::make_unique<BeforeSelectorStrategy>();
+        for (const auto &matchModel : buildParam.myselfMatcher) {
+            selectStrategy->RegisterMyselfMatch(matchModel);
+        }
+        for (const auto &anchorModel : buildParam.beforeAnchorMatcherVec.at(0)) {
+            selectStrategy->RegisterAnchorMatch(anchorModel);
+        }
+        selectStrategy->SetWantMulti(isWantMulti);
+        return selectStrategy;
+    }
+
+    static std::unique_ptr<SelectStrategy> BuildAfterStrategy(const StrategyBuildParam &buildParam, bool isWantMulti)
+    {
+        std::unique_ptr<SelectStrategy> selectStrategy = std::make_unique<AfterSelectorStrategy>();
+        for (const auto &matchModel : buildParam.myselfMatcher) {
+            selectStrategy->RegisterMyselfMatch(matchModel);
+        }
+        for (const auto &anchorModel : buildParam.afterAnchorMatcherVec.at(0)) {
+            selectStrategy->RegisterAnchorMatch(anchorModel);
+        }
+        selectStrategy->SetWantMulti(isWantMulti);
+        return selectStrategy;
+    }
+
+    std::unique_ptr<SelectStrategy> SelectStrategy::BuildSelectStrategy(const StrategyBuildParam &buildParam,
+                                                                        bool isWantMulti)
     {
         if (buildParam.afterAnchorMatcherVec.empty() && buildParam.beforeAnchorMatcherVec.empty() &&
             buildParam.withInAnchorMatcherVec.empty()) {
@@ -688,53 +740,15 @@ namespace OHOS::uitest {
             return selectStrategy;
         } else if (!buildParam.afterAnchorMatcherVec.empty() && (buildParam.afterAnchorMatcherVec.size() == 1) &&
                    buildParam.beforeAnchorMatcherVec.empty() && buildParam.withInAnchorMatcherVec.empty()) {
-            std::unique_ptr<SelectStrategy> selectStrategy = std::make_unique<AfterSelectorStrategy>();
-            for (const auto &matchModel : buildParam.myselfMatcher) {
-                selectStrategy->RegisterMyselfMatch(matchModel);
-            }
-            for (const auto &anchorModel : buildParam.afterAnchorMatcherVec.at(0)) {
-                selectStrategy->RegisterAnchorMatch(anchorModel);
-            }
-            selectStrategy->SetWantMulti(isWantMulti);
-            return selectStrategy;
+            return BuildAfterStrategy(buildParam, isWantMulti);
         } else if (buildParam.afterAnchorMatcherVec.empty() && !buildParam.beforeAnchorMatcherVec.empty() &&
                    (buildParam.beforeAnchorMatcherVec.size() == 1) && buildParam.withInAnchorMatcherVec.empty()) {
-            std::unique_ptr<SelectStrategy> selectStrategy = std::make_unique<BeforeSelectorStrategy>();
-            for (const auto &matchModel : buildParam.myselfMatcher) {
-                selectStrategy->RegisterMyselfMatch(matchModel);
-            }
-            for (const auto &anchorModel : buildParam.beforeAnchorMatcherVec.at(0)) {
-                selectStrategy->RegisterAnchorMatch(anchorModel);
-            }
-            selectStrategy->SetWantMulti(isWantMulti);
-            return selectStrategy;
+            return BuildBeforeStrategy(buildParam, isWantMulti);
         } else if (buildParam.afterAnchorMatcherVec.empty() && buildParam.beforeAnchorMatcherVec.empty() &&
                    !buildParam.withInAnchorMatcherVec.empty() && (buildParam.withInAnchorMatcherVec.size() == 1)) {
-            std::unique_ptr<SelectStrategy> selectStrategy = std::make_unique<WithInSelectorStrategy>();
-            for (const auto &matchModel : buildParam.myselfMatcher) {
-                selectStrategy->RegisterMyselfMatch(matchModel);
-            }
-            for (const auto &anchorModel : buildParam.withInAnchorMatcherVec.at(0)) {
-                selectStrategy->RegisterAnchorMatch(anchorModel);
-            }
-            selectStrategy->SetWantMulti(isWantMulti);
-            return selectStrategy;
+            return BuildWithInStrategy(buildParam, isWantMulti);
         } else {
-            std::unique_ptr<ComplexSelectorStrategy> selectStrategy = std::make_unique<ComplexSelectorStrategy>();
-            for (const auto &matchModel : buildParam.myselfMatcher) {
-                selectStrategy->RegisterMyselfMatch(matchModel);
-            }
-            for (const auto &afterWidgetAnchor : buildParam.afterAnchorMatcherVec) {
-                selectStrategy->RegisterMultiAfterAnchor(afterWidgetAnchor);
-            }
-            for (const auto &beforeWidgetAnchor : buildParam.beforeAnchorMatcherVec) {
-                selectStrategy->RegisterMultiBeforeAnchor(beforeWidgetAnchor);
-            }
-            for (const auto &withInWidgetAnchor : buildParam.withInAnchorMatcherVec) {
-                selectStrategy->RegisterMultiWithInAnchor(withInWidgetAnchor);
-            }
-            selectStrategy->SetWantMulti(isWantMulti);
-            return selectStrategy;
+            return BuildComplexStrategy(buildParam, isWantMulti);
         }
     }
 } // namespace OHOS::uitest

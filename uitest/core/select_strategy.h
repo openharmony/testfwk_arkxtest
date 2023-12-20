@@ -28,14 +28,6 @@ namespace OHOS::uitest {
         COMPLEX,
     };
 
-    constexpr std::string_view STRATEGY_NAMES[] = {
-        "plain strategy",   // PLAIN
-        "with In strategy", // WITH_IN
-        "after strategy",   // IS_AFTER
-        "before strategy",  // IS_BEFORE
-        "complex strategy", // COMPLEX
-    };
-
     struct StrategyBuildParam {
         std::vector<WidgetMatchModel> myselfMatcher;
         std::vector<std::vector<WidgetMatchModel>> afterAnchorMatcherVec;
@@ -46,19 +38,15 @@ namespace OHOS::uitest {
     class SelectStrategy {
     public:
         SelectStrategy() = default;
-        static std::unique_ptr<SelectStrategy> BuildSelectStrategy(StrategyBuildParam buildParam, bool isWantMulti);
-
+        static unique_ptr<SelectStrategy> BuildSelectStrategy(const StrategyBuildParam &buildParam, bool isWantMulti);
         virtual void SetAndCalcSelectWindowRect(const Rect &windowBounds, const std::vector<Rect> &windowBoundsVec);
         virtual std::string Describe() const;
         virtual void RegisterAnchorMatch(const WidgetMatchModel &matchModel);
         virtual void RegisterMyselfMatch(const WidgetMatchModel &matchModel);
         virtual void SetWantMulti(bool isWantMulti);
         virtual StrategyEnum GetStrategyType() const = 0;
-        virtual void LocateNode(const Window &window,
-                                ElementNodeIterator &elementNodeRef,
-                                std::vector<Widget> &visitWidgets,
-                                std::vector<int> &targetWidgets,
-                                bool isSkipInvisible = true) = 0;
+        virtual void LocateNode(const Window &window, ElementNodeIterator &elementNodeRef,
+            vector<Widget> &visitWidgets, vector<int> &targetWidgets, bool isSkipInvisible = true) = 0;
         virtual ~SelectStrategy();
 
     protected:

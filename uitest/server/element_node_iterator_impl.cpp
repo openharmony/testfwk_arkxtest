@@ -16,7 +16,7 @@
 #include "element_node_iterator_impl.h"
 namespace OHOS::uitest {
     using namespace OHOS::Accessibility;
-    
+
     ElementNodeIteratorImpl::ElementNodeIteratorImpl(
         const std::vector<AccessibilityElementInfo> &elements)
     {
@@ -43,7 +43,6 @@ namespace OHOS::uitest {
 
     bool ElementNodeIteratorImpl::DFSNextWithInTarget(Widget &widget)
     {
-        // 搜索起点为自己
         if (currentIndex_ == topIndex_) {
             int count = elementInfoLists_[currentIndex_].GetChildCount();
             if (count <= 0) {
@@ -72,7 +71,6 @@ namespace OHOS::uitest {
             return false;
         }
 
-        // 首次查找
         if (currentIndex_ == -1) {
             currentIndex_ = 0;
             elementToParentIndexMap_.emplace(currentIndex_, -1);
@@ -123,10 +121,13 @@ namespace OHOS::uitest {
         }
     }
 
-    void ElementNodeIteratorImpl::CheckAndUpdateContainerRectMap(const Rect &widgetRect)
+    void ElementNodeIteratorImpl::CheckAndUpdateContainerRectMap()
     {
         if (CONTAINER_TYPE.find(elementInfoLists_[currentIndex_].GetComponentType()) != CONTAINER_TYPE.cend()) {
-            elementIndexToRectMap_.emplace(currentIndex_, widgetRect);
+            Accessibility::Rect nodeOriginRect = elementInfoLists_[currentIndex_].GetRectInScreen();
+            Rect visibleRect{nodeOriginRect.GetLeftTopXScreenPostion(), nodeOriginRect.GetRightBottomXScreenPostion(),
+                             nodeOriginRect.GetLeftTopYScreenPostion(), nodeOriginRect.GetRightBottomYScreenPostion()};
+            elementIndexToRectMap_.emplace(currentIndex_, visibleRect);
         }
     }
 
@@ -155,30 +156,12 @@ namespace OHOS::uitest {
     bool ElementNodeIteratorImpl::VisitNodeByChildAndBrother(Widget &widget)
     {
         int childCount = elementInfoLists_[currentIndex_].GetChildCount();
-        // 判断是否存在子
         if (childCount > 0) {
-            if (visitAndVisibleIndexSet_.find(currentIndex_) == visitAndVisibleIndexSet_.cend()) {
-                LOG_I("node %{public}d is invisible not find its children",
-                      elementInfoLists_[currentIndex_].GetAccessibilityId());
-            } else {
-                for (int i = currentIndex_ + 1; i < elementInfoLists_.size(); ++i) {
-                    if (elementInfoLists_[i].GetAccessibilityId() != elementInfoLists_[currentIndex_].GetChildId(0)) {
-                        continue;
-                    }
-                    // 找到了第一个子在列表的位置
-                    elementToParentIndexMap_.emplace(i, currentIndex_);
-                    std::string parentHierarchy = elementIndexToHierarch_.at(currentIndex_);
-                    currentIndex_ = i;
-                    visitAndVisibleIndexSet_.insert(currentIndex_);
-                    WrapperElement(widget);
-                    widget.SetHierarchy(WidgetHierarchyBuilder::Build(parentHierarchy, 0));
-                    elementIndexToHierarch_.emplace(currentIndex_, widget.GetHierarchy());
-                    return true;
-                }
+            if (VisitChildren(widget)) {
+                return true;
             }
         }
 
-        // 不存在子，就找兄弟
         if (elementToParentIndexMap_.find(currentIndex_) == elementToParentIndexMap_.cend()) {
             LOG_I("This node has no parent: %{public}d", elementInfoLists_[currentIndex_].GetAccessibilityId());
             return false;
@@ -190,29 +173,9 @@ namespace OHOS::uitest {
             return false;
         }
         while (parentIndex != elementToParentIndexMap_.at(topIndex_)) {
-            AccessibilityElementInfo &parentModel = elementInfoLists_[parentIndex];
-            int parentChildCount = parentModel.GetChildCount();
-            // 找到当前node位置
-            for (int i = 0; i < parentChildCount; ++i) {
-                if ((parentModel.GetChildId(i) == elementInfoLists_[tempChildIndex].GetAccessibilityId()) &&
-                    (i < parentChildCount - 1)) {
-                    if (parentModel.GetChildId(i + 1) == elementInfoLists_[tempChildIndex + 1].GetAccessibilityId()) {
-                        elementToParentIndexMap_.emplace(tempChildIndex + 1, parentIndex);
-                        std::string parentHierarchy = elementIndexToHierarch_.at(parentIndex);
-                        currentIndex_ = tempChildIndex + 1;
-                        visitAndVisibleIndexSet_.insert(currentIndex_);
-                        WrapperElement(widget);
-                        widget.SetHierarchy(WidgetHierarchyBuilder::Build(parentHierarchy, i + 1));
-                        elementIndexToHierarch_.emplace(currentIndex_, widget.GetHierarchy());
-                        return true;
-                    } else {
-                        LOG_E("Node info error, except: %{public}d, actual is %{public}d",
-                              parentModel.GetChildId(i + 1),
-                              elementInfoLists_[tempChildIndex + 1].GetAccessibilityId());
-                    }
-                }
+            if (VisitBrother(widget, parentIndex, tempChildIndex)) {
+                return true;
             }
-            // 未找到，继续查找父节点
             if (elementToParentIndexMap_.find(parentIndex) == elementToParentIndexMap_.cend()) {
                 LOG_I("This node has no parent: %{public}d", elementInfoLists_[parentIndex].GetAccessibilityId());
                 return false;
@@ -220,34 +183,73 @@ namespace OHOS::uitest {
             tempChildIndex = parentIndex;
             parentIndex = elementToParentIndexMap_.at(parentIndex);
         }
-        // 已完成搜索
         return false;
     }
 
-    void ElementNodeIteratorImpl::WrapperNodeAttrToVec(Widget &widget,
-                                                                     const AccessibilityElementInfo &element)
+    bool ElementNodeIteratorImpl::VisitChildren(Widget& widget)
     {
-        // 存放原始的尺寸
+        if (visitAndVisibleIndexSet_.find(currentIndex_) == visitAndVisibleIndexSet_.cend()) {
+            LOG_I("node %{public}d is invisible not find its children",
+                  elementInfoLists_[currentIndex_].GetAccessibilityId());
+            return false;
+        } else {
+            for (int i = currentIndex_ + 1; i < elementInfoLists_.size(); ++i) {
+                if (elementInfoLists_[i].GetAccessibilityId() != elementInfoLists_[currentIndex_].GetChildId(0)) {
+                    continue;
+                }
+                elementToParentIndexMap_.emplace(i, currentIndex_);
+                std::string parentHierarchy = elementIndexToHierarch_.at(currentIndex_);
+                currentIndex_ = i;
+                visitAndVisibleIndexSet_.insert(currentIndex_);
+                WrapperElement(widget);
+                widget.SetHierarchy(WidgetHierarchyBuilder::Build(parentHierarchy, 0));
+                elementIndexToHierarch_.emplace(currentIndex_, widget.GetHierarchy());
+                return true;
+            }
+            return false;
+        }
+    }
+
+    bool ElementNodeIteratorImpl::VisitBrother(Widget &widget, int parentIndex, int tempChildIndex)
+    {
+        AccessibilityElementInfo &parentModel = elementInfoLists_[parentIndex];
+        int parentChildCount = parentModel.GetChildCount();
+        for (int i = 0; i < parentChildCount; ++i) {
+            if ((parentModel.GetChildId(i) == elementInfoLists_[tempChildIndex].GetAccessibilityId()) &&
+                (i < parentChildCount - 1)) {
+                if (parentModel.GetChildId(i + 1) == elementInfoLists_[tempChildIndex + 1].GetAccessibilityId()) {
+                    elementToParentIndexMap_.emplace(tempChildIndex + 1, parentIndex);
+                    std::string parentHierarchy = elementIndexToHierarch_.at(parentIndex);
+                    currentIndex_ = tempChildIndex + 1;
+                    visitAndVisibleIndexSet_.insert(currentIndex_);
+                    WrapperElement(widget);
+                    widget.SetHierarchy(WidgetHierarchyBuilder::Build(parentHierarchy, i + 1));
+                    elementIndexToHierarch_.emplace(currentIndex_, widget.GetHierarchy());
+                    return true;
+                } else {
+                    LOG_E("Node info error, except: %{public}d, actual is %{public}d", parentModel.GetChildId(i + 1),
+                          elementInfoLists_[tempChildIndex + 1].GetAccessibilityId());
+                }
+            }
+        }
+        return false;
+    }
+
+    void ElementNodeIteratorImpl::WrapperNodeAttrToVec(Widget &widget, const AccessibilityElementInfo &element)
+    {
         Accessibility::Rect nodeOriginRect = elementInfoLists_[currentIndex_].GetRectInScreen();
         Rect visibleRect{nodeOriginRect.GetLeftTopXScreenPostion(), nodeOriginRect.GetRightBottomXScreenPostion(),
                          nodeOriginRect.GetLeftTopYScreenPostion(), nodeOriginRect.GetRightBottomYScreenPostion()};
         widget.SetBounds(visibleRect);
-
-        // 属性处理
         widget.SetAttr(UiAttr::ACCESSIBILITY_ID, std::to_string(element.GetAccessibilityId()));
         widget.SetAttr(UiAttr::ID, element.GetInspectorKey());
         widget.SetAttr(UiAttr::TEXT, element.GetContent());
         widget.SetAttr(UiAttr::KEY, element.GetInspectorKey());
-        // Description怎么处理
         widget.SetAttr(UiAttr::TYPE, element.GetComponentType());
+        widget.SetAttr(UiAttr::DESCRIPTION, element.GetDescriptionInfo());
         if (element.GetComponentType() == "rootdecortag" || element.GetInspectorKey() == "ContainerModalTitleRow") {
             widget.SetAttr(UiAttr::TYPE, "DecorBar");
         }
-        //[left,top][right, bottom]
-        stringstream boundStream;
-        boundStream << "[" << visibleRect.left_ << "," << visibleRect.top_ << "][" << visibleRect.right_ << ","
-                    << visibleRect.bottom_ << "]";
-        widget.SetAttr(UiAttr::BOUNDS, boundStream.str());
         widget.SetAttr(UiAttr::ENABLED, element.IsEnabled() ? "true" : "false");
         widget.SetAttr(UiAttr::FOCUSED, element.IsFocused() ? "true" : "false");
         widget.SetAttr(UiAttr::SELECTED, element.IsSelected() ? "true" : "false");
@@ -257,17 +259,22 @@ namespace OHOS::uitest {
         widget.SetAttr(UiAttr::CHECKABLE, element.IsCheckable() ? "true" : "false");
         widget.SetAttr(UiAttr::CHECKED, element.IsChecked() ? "true" : "false");
         widget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(element.GetWindowId()));
+        stringstream boundStream;
+        boundStream << "[" << visibleRect.left_ << "," << visibleRect.top_ << "][" << visibleRect.right_ << ","
+                    << visibleRect.bottom_ << "]";
         widget.SetAttr(UiAttr::ORIGBOUNDS, boundStream.str());
         widget.SetAttr(UiAttr::HASHCODE, ElementNodeIteratorImpl::GenerateNodeHashCode(element));
-        // 后续处理会根据实际是否可见rect刷新为true
         if (!element.IsVisible()) {
             LOG_I("widget %{public}s is not visible", widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
         }
         widget.SetAttr(UiAttr::VISIBLE, element.IsVisible() ? "true" : "false");
-        // 是否只有根节点需要abilityName和bundleName以及pagePath
         const auto app = element.GetBundleName();
         widget.SetAttr(UiAttr::BUNDLENAME, app);
-        // 刷新action属性
+        WrapperNodeActionAttrToVec(widget, element);
+    }
+
+    void ElementNodeIteratorImpl::WrapperNodeActionAttrToVec(Widget &widget, const AccessibilityElementInfo &element)
+    {
         auto actions = element.GetActionList();
         for (auto &action : actions) {
             switch (action.GetActionType()) {

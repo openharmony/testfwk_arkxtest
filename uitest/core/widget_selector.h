@@ -58,11 +58,11 @@ namespace OHOS::uitest {
         void Select(const Window window,
                     ElementNodeIterator &elementNodeRef,
                     std::vector<Widget> &visitWidgets,
-                    std::vector<int> &targetWidgets);
+                    std::vector<int> &targetWidgets) const;
 
     private:
         std::vector<WidgetMatchModel> GetSelfMatchers() const;
-        std::unique_ptr<SelectStrategy> ConstructSelectStrategy();
+        std::unique_ptr<SelectStrategy> ConstructSelectStrategy() const;
         std::vector<WidgetMatchModel> selfMatchers_;
         std::vector<WidgetSelector> frontLocators_;
         std::vector<WidgetSelector> rearLocators_;

@@ -23,11 +23,6 @@ namespace OHOS::uitest {
     void Widget::SetBounds(const Rect &bounds)
     {
         bounds_ = bounds;
-        // save bounds attribute as structured data
-        stringstream boundStream;
-        boundStream << "[" << bounds.left_ << "," << bounds.top_ << "][" << bounds.right_ << "," << bounds.bottom_
-                    << "]";
-        attributeVec_[UiAttr::BOUNDS] = boundStream.str();
     }
 
     string Widget::ToStr() const
@@ -51,7 +46,14 @@ namespace OHOS::uitest {
 
     std::vector<std::string> Widget::GetAttrVec() const
     {
-        return attributeVec_;
+        std::vector<std::string> retVec = attributeVec_;
+        if (attributeVec_[UiAttr::BOUNDS].empty()) {
+            stringstream boundStream;
+            boundStream << "[" << bounds_.left_ << "," << bounds_.top_ << "][" << bounds_.right_ << ","
+                        << bounds_.bottom_ << "]";
+            retVec[UiAttr::BOUNDS] = boundStream.str();
+        }
+        return retVec;
     }
 
     void Widget::SetAttr(UiAttr attrId, string value)
@@ -68,14 +70,20 @@ namespace OHOS::uitest {
         if (attrId >= UiAttr::MAX) {
             return "none";
         }
+        if (attrId == UiAttr::BOUNDS && attributeVec_[UiAttr::BOUNDS].empty()) {
+            stringstream boundStream;
+            boundStream << "[" << bounds_.left_ << "," << bounds_.top_ << "][" << bounds_.right_ << ","
+                        << bounds_.bottom_ << "]";
+            return boundStream.str();
+        }
         return attributeVec_[attrId];
     }
 
     bool Widget::MatchAttr(const WidgetMatchModel& matchModel) const
     {
-        UiAttr attr = matchModel.attrName_;
-        std::string_view value = matchModel.attrValue_;
-        ValueMatchPattern pattern = matchModel.pattern_;
+        UiAttr attr = matchModel.attrName;
+        std::string_view value = matchModel.attrValue;
+        ValueMatchPattern pattern = matchModel.pattern;
         std::string_view attrValue = attributeVec_[attr];
         switch (pattern) {
             case ValueMatchPattern::EQ:
@@ -95,7 +103,8 @@ namespace OHOS::uitest {
         return false;
     }
 
-    void Widget::SetHierarchy(const std::string& hierarch) {
+    void Widget::SetHierarchy(const std::string &hierarch)
+    {
         hierarchy_ = hierarch;
         attributeVec_[UiAttr::HIERARCHY] = hierarch;
     }
@@ -103,7 +112,48 @@ namespace OHOS::uitest {
     void Widget::WrapperWidgetToJson(nlohmann::json &out)
     {
         for (int i = 0; i < UiAttr::HIERARCHY; ++i) {
+            if (i == UiAttr::BOUNDS && attributeVec_[UiAttr::BOUNDS].empty()) {
+                stringstream boundStream;
+                boundStream << "[" << bounds_.left_ << "," << bounds_.top_ << "][" << bounds_.right_ << ","
+                            << bounds_.bottom_ << "]";
+                attributeVec_[i] = boundStream.str();
+            }
             out[ATTR_NAMES[i].data()] = attributeVec_[i];
         }
+        out[ATTR_NAMES[UiAttr::VISIBLE].data()] = attributeVec_[UiAttr::VISIBLE];
+        out[ATTR_NAMES[UiAttr::HASHCODE].data()] = attributeVec_[UiAttr::HASHCODE];
+    }
+
+    string WidgetHierarchyBuilder::Build(string_view parentWidgetHierarchy, uint32_t childIndex)
+    {
+        return string(parentWidgetHierarchy) + string(HIERARCHY_SEPARATOR) + to_string(childIndex);
+    }
+
+    string WidgetHierarchyBuilder::GetParentWidgetHierarchy(string_view hierarchy)
+    {
+        if (hierarchy == ROOT_HIERARCHY) {
+            // no parent for root widget
+            return "";
+        }
+
+        auto findRoot = hierarchy.find(ROOT_HIERARCHY);
+        if (findRoot != 0) {
+            // invalid hierarchy string
+            return "";
+        }
+        auto findLastSeparator = hierarchy.find_last_of(HIERARCHY_SEPARATOR);
+        if (findLastSeparator <= 0 || findLastSeparator == string::npos) {
+            return "";
+        }
+        return string(hierarchy).substr(0, findLastSeparator);
+    }
+
+    string WidgetHierarchyBuilder::GetChildHierarchy(string_view hierarchy, uint32_t childIndex)
+    {
+        if (hierarchy.find(ROOT_HIERARCHY) != 0) {
+            // invalid hierarchy string
+            return "";
+        }
+        return string(hierarchy) + string(HIERARCHY_SEPARATOR) + to_string(childIndex);
     }
 } // namespace OHOS::uitest

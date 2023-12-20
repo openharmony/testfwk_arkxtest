@@ -16,9 +16,9 @@
 #ifndef MOCK_ELEMENT_NODE_ITERATOR_H
 #define MOCK_ELEMENT_NODE_ITERATOR_H
 
+#include <iostream>
 #include "element_node_iterator.h"
 #include "json.hpp"
-#include <iostream>
 
 using json = nlohmann::json;
 
@@ -133,7 +133,6 @@ namespace OHOS::uitest {
             auto child = data["children"];
             std::vector<MockAccessibilityElementInfo> eles;
             DFSVisitJson(eles, data, "ROOT");
-            // 封装parent和child信息
             for (int index = 0; index < eles.size(); ++index) {
                 std::vector<int> childVec;
                 for (int childIndex = index + 1; childIndex < eles.size(); ++childIndex) {
@@ -158,7 +157,6 @@ namespace OHOS::uitest {
 
         bool DFSNextWithInTarget(Widget &widget) override
         {
-            // 已经到锚点的兄弟了
             if (elementInfoLists_[currentIndex_ + 1].parentIndex == elementInfoLists_[topIndex_].parentIndex) {
                 return false;
             }
@@ -211,10 +209,10 @@ namespace OHOS::uitest {
                 }
             }
         }
-        void CheckAndUpdateContainerRectMap(const Rect &widgetRect) override
+        void CheckAndUpdateContainerRectMap() override
         {
             if (CONTAINER_TYPE.find(elementInfoLists_[currentIndex_].componentType) != CONTAINER_TYPE.cend()) {
-                elementIndexToRectMap_.emplace(currentIndex_, widgetRect);
+                elementIndexToRectMap_.emplace(currentIndex_, elementInfoLists_[currentIndex_].rectInScreen);
             }
         }
         void RemoveInvisibleWidget() override
@@ -236,28 +234,24 @@ namespace OHOS::uitest {
         }
         void WrapperNodeAttrToVec(Widget &widget, const MockAccessibilityElementInfo &element)
         {
-            // 存放原始的尺寸
             Rect nodeOriginRect = element.rectInScreen;
             widget.SetBounds(nodeOriginRect);
 
             // mock hierarchy
             widget.SetHierarchy(element.hierarchy);
-            // 属性处理
             widget.SetAttr(UiAttr::ACCESSIBILITY_ID, element.accessibilityId);
             widget.SetAttr(UiAttr::ID, element.inspectorKey);
             widget.SetAttr(UiAttr::BUNDLENAME, element.bundleName);
             widget.SetAttr(UiAttr::TEXT, element.content);
             widget.SetAttr(UiAttr::KEY, element.inspectorKey);
-            // Description怎么处理
             widget.SetAttr(UiAttr::TYPE, element.componentType);
             if (element.inspectorKey == "rootdecortag" || element.inspectorKey == "ContainerModalTitleRow") {
                 widget.SetAttr(UiAttr::TYPE, "DecorBar");
             }
-            //[left,top][right, bottom]
+            // [left,top][right, bottom]
             stringstream boundStream;
             boundStream << "[" << nodeOriginRect.left_ << "," << nodeOriginRect.top_ << "][" << nodeOriginRect.right_
                         << "," << nodeOriginRect.bottom_ << "]";
-            widget.SetAttr(UiAttr::BOUNDS, boundStream.str());
             widget.SetAttr(UiAttr::ENABLED, element.enabled ? "true" : "false");
             widget.SetAttr(UiAttr::FOCUSED, element.focused ? "true" : "false");
             widget.SetAttr(UiAttr::SELECTED, element.selected ? "true" : "false");
@@ -269,7 +263,6 @@ namespace OHOS::uitest {
             widget.SetAttr(UiAttr::HOST_WINDOW_ID, element.windowId);
             widget.SetAttr(UiAttr::ORIGBOUNDS, boundStream.str());
             widget.SetAttr(UiAttr::HASHCODE, GenerateNodeHashCode(element));
-            // 后续处理会根据实际是否可见rect刷新为true
             widget.SetAttr(UiAttr::VISIBLE,
                            nodeOriginRect.GetHeight() > 0 && nodeOriginRect.GetWidth() > 0 ? "true" : "false");
         }

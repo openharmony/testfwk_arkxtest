@@ -57,7 +57,7 @@ namespace OHOS::uitest {
     "   uiRecord read,                     print file content to the console\n"
     "   uiAction input,                                                     \n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "4.1.4.1";
+    const std::string VERSION = "4.1.4.4";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
@@ -293,7 +293,7 @@ namespace OHOS::uitest {
         }
         string command(argv[1]);
         if (command == "dumpLayout") {
-            exit(DumpLayout(argc, argv));
+            _Exit(DumpLayout(argc, argv));
         } else if (command == "start-daemon") {
             string_view token = argc < 3 ? "" : argv[2];
             exit(StartDaemon(token));

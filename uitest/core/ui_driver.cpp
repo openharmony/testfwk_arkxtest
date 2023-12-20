@@ -80,6 +80,7 @@ namespace OHOS::uitest {
             LOG_E("Get Windows Failed");
             error = ApiCallErr(ERR_INTERNAL, "Get window nodes failed");
         }
+
         for (const auto &win : currentWindowVec) {
             WindowCacheModel cacheModel(win);
             windowCacheVec_.emplace_back(std::move(cacheModel));
@@ -94,51 +95,11 @@ namespace OHOS::uitest {
             ss << "]";
             LOG_I("window id is %{public}d, rect info is %{public}s", win.id_, ss.str().data());
         }
-        // 基于将active或者focus的windows排在最前面，其余按照layer层级排列
+        // actice or focus window move to top
         std::sort(windowCacheVec_.begin(), windowCacheVec_.end(), WindowCacheCompareGreater());
     }
 
-    void UiDriver::DFSMarshalWidget(int index,
-                                    nlohmann::json &dom,
-                                    const std::map<std::string, int> &widgetChildCountMap,
-                                    std::map<std::string, int> &visitWidgetMap)
-    {
-        auto attrData = json();
-        visitWidgets_.at(index).WrapperWidgetToJson(attrData);
-        stringstream ss;
-        auto rect = visitWidgets_.at(index).GetBounds();
-        ss << "[" << rect.left_ << "," << rect.top_ << "]"
-           << "[" << rect.right_ << "," << rect.bottom_ << "]";
-        attrData[ATTR_NAMES[UiAttr::BOUNDS].data()] = ss.str();
-        auto childrenData = json::array();
-        int childIndex = 0;
-        int childCount = 0;
-        int childVisit = 0;
-        auto hierarchy = visitWidgets_.at(index).GetHierarchy();
-        if (widgetChildCountMap.find(hierarchy) != widgetChildCountMap.cend()) {
-            childCount = widgetChildCountMap.at(hierarchy);
-        }
-        while (childVisit < childCount) {
-            auto tempChildHierarchy = WidgetHierarchyBuilder::GetChildHierarchy(hierarchy, childIndex);
-            ++childIndex;
-            if (visitWidgetMap.find(tempChildHierarchy) == visitWidgetMap.cend()) {
-                continue;
-            }
-            auto childWidIndex = visitWidgetMap.at(tempChildHierarchy);
-            if (!visitWidgets_.at(childWidIndex).IsVisible()) {
-                ++childVisit;
-                continue;
-            }
-            auto childData = json();
-            DFSMarshalWidget(childWidIndex, childData, widgetChildCountMap, visitWidgetMap);
-            childrenData.emplace_back(childData);
-            ++childVisit;
-        }
-        dom["attributes"] = attrData;
-        dom["children"] = childrenData;
-    }
-
-    void UiDriver::DumpWindowsInfoToJson(bool listWindows, Rect& mergeBounds, nlohmann::json& childDom)
+    void UiDriver::DumpWindowsInfo(bool listWindows, Rect& mergeBounds, nlohmann::json& childDom)
     {
         std::vector<WidgetMatchModel> emptyMatcher;
         StrategyBuildParam buildParam;
@@ -147,32 +108,19 @@ namespace OHOS::uitest {
         for (auto &winCache : windowCacheVec_) {
             visitWidgets_.clear();
             targetWidgetsIndex_.clear();
-            nlohmann::json child = nlohmann::json();
-            if (!uiController_->GetBundleNameAndNodesInWindow(winCache.window_, winCache.widgetIterator_)) {
+            if (!uiController_->GetWidgetsInWindow(winCache.window_, winCache.widgetIterator_)) {
                 LOG_W("Get Widget from window[%{public}d] failed, skip the window", winCache.window_.id_);
                 continue;
             }
             selectStrategy->LocateNode(winCache.window_, *winCache.widgetIterator_, visitWidgets_, targetWidgetsIndex_,
                                        !listWindows);
-            std::map<std::string, int> visitWidgetMap;
-            std::map<std::string, int> widgetCountMap;
-            for (int i = 0; i < visitWidgets_.size(); ++i) {
-                const Widget &wid = visitWidgets_.at(i);
-                std::string hie = wid.GetHierarchy();
-                visitWidgetMap.emplace(hie, i);
-                std::string parentHie = WidgetHierarchyBuilder::GetParentWidgetHierarchy(hie);
-                if (widgetCountMap.find(parentHie) == widgetCountMap.cend()) {
-                    widgetCountMap[parentHie] = 1;
-                } else {
-                    widgetCountMap[parentHie] = widgetCountMap[parentHie] + 1;
-                }
-            }
+            nlohmann::json child = nlohmann::json();
             if (visitWidgets_.empty()) {
-                LOG_I("Window %{public}s has no node, skip it", winCache.window_.bundleName_.data());
+                LOG_E("Window %{public}s has no node, skip it", winCache.window_.bundleName_.data());
                 continue;
+            } else {
+                DumpHandler::DumpWindowInfoToJson(visitWidgets_, child);
             }
-            DFSMarshalWidget(0, child, widgetCountMap, visitWidgetMap);
-            // root节点增加属性
             child["attributes"]["abilityName"] = winCache.window_.abilityName_;
             child["attributes"]["bundleName"] = winCache.window_.bundleName_;
             child["attributes"]["pagePath"] = winCache.window_.pagePath_;
@@ -192,7 +140,7 @@ namespace OHOS::uitest {
         }
         nlohmann::json childDom = nlohmann::json::array();
         Rect mergeBounds{0, 0, 0, 0};
-        DumpWindowsInfoToJson(listWindows, mergeBounds, childDom);
+        DumpWindowsInfo(listWindows, mergeBounds, childDom);
         if (listWindows) {
             out = childDom;
         } else {
@@ -237,7 +185,8 @@ namespace OHOS::uitest {
         return clone;
     }
 
-    static std::unique_ptr<SelectStrategy> ConstructSelectStrategyByRetrieve(const Widget &widget) {
+    static std::unique_ptr<SelectStrategy> ConstructSelectStrategyByRetrieve(const Widget &widget)
+    {
         WidgetMatchModel attrMatch{UiAttr::HASHCODE, widget.GetAttr(UiAttr::HASHCODE), EQ};
         StrategyBuildParam buildParam;
         buildParam.myselfMatcher.emplace_back(attrMatch);
@@ -277,7 +226,6 @@ namespace OHOS::uitest {
         }
 
         std::unique_ptr<SelectStrategy> selectStrategy = ConstructSelectStrategyByRetrieve(widget);
-        // 默认按照layer层级访问
         for (auto &curWinCache : windowCacheVec_) {
             if (widget.GetAttr(UiAttr::HOST_WINDOW_ID) != std::to_string(curWinCache.window_.id_)) {
                 continue;
@@ -285,7 +233,7 @@ namespace OHOS::uitest {
             selectStrategy->SetAndCalcSelectWindowRect(curWinCache.window_.bounds_,
                                                        curWinCache.window_.invisibleBoundsVec_);
             if (curWinCache.widgetIterator_ == nullptr) {
-                if (!uiController_->GetBundleNameAndNodesInWindow(curWinCache.window_, curWinCache.widgetIterator_)) {
+                if (!uiController_->GetWidgetsInWindow(curWinCache.window_, curWinCache.widgetIterator_)) {
                     LOG_W("Get Widget from window[%{public}d] failed, skip the window", curWinCache.window_.id_);
                     continue;
                 }
@@ -330,10 +278,8 @@ namespace OHOS::uitest {
         uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
     }
 
-    void UiDriver::FindWidgets(WidgetSelector &selector,
-                               vector<unique_ptr<Widget>> &rev,
-                               ApiCallErr &err,
-                               bool updateUi)
+    void UiDriver::FindWidgets(const WidgetSelector &selector, vector<unique_ptr<Widget>> &rev,
+        ApiCallErr &err, bool updateUi)
     {
         if (updateUi) {
             UpdateUIWindows(err);
@@ -348,7 +294,7 @@ namespace OHOS::uitest {
             LOG_I("Start find in Window, window id is %{public}d", curWinCache.window_.id_);
             if (curWinCache.widgetIterator_ == nullptr) {
                 std::unique_ptr<ElementNodeIterator> widgetIterator = nullptr;
-                if (!uiController_->GetBundleNameAndNodesInWindow(curWinCache.window_, curWinCache.widgetIterator_)) {
+                if (!uiController_->GetWidgetsInWindow(curWinCache.window_, curWinCache.widgetIterator_)) {
                     LOG_W("Get Widget from window[%{public}d] failed, skip the window", curWinCache.window_.id_);
                     continue;
                 }
@@ -376,7 +322,7 @@ namespace OHOS::uitest {
         }
     }
 
-    std::unique_ptr<Widget> UiDriver::WaitForWidget(WidgetSelector &selector, const UiOpArgs &opt, ApiCallErr &err)
+    unique_ptr<Widget> UiDriver::WaitForWidget(const WidgetSelector &selector, const UiOpArgs &opt, ApiCallErr &err)
     {
         const uint32_t sliceMs = 20;
         const auto startMs = GetCurrentMillisecond();
@@ -449,25 +395,13 @@ namespace OHOS::uitest {
         }
     }
 
-    unique_ptr<Window> UiDriver::FindWindow(function<bool(const Window &)> matcher,
-                                            bool isMatchBundleName,
-                                            ApiCallErr &err)
+    unique_ptr<Window> UiDriver::FindWindow(function<bool(const Window &)> matcher, ApiCallErr &err)
     {
         UpdateUIWindows(err);
         if (err.code_ != NO_ERROR) {
             return nullptr;
         }
         for (auto &windowCache : windowCacheVec_) {
-            if (isMatchBundleName) {
-                LOG_I("Start to get bundle name from node, window id is %{public}d", windowCache.window_.id_);
-                std::unique_ptr<ElementNodeIterator> widgetIterator = nullptr;
-                if (!uiController_->GetBundleNameAndNodesInWindow(windowCache.window_, windowCache.widgetIterator_)) {
-                    LOG_W("Get BundleName from window[%{public}d] failed, skip the window", windowCache.window_.id_);
-                    continue;
-                }
-                LOG_I("End to get bundle name from node, window id is %{public}d, bundleName is %{public}s",
-                      windowCache.window_.id_, windowCache.window_.bundleName_.data());
-            }
             if (matcher(windowCache.window_)) {
                 auto clone = make_unique<Window>(0);
                 *clone = windowCache.window_; // copy construct
@@ -486,16 +420,6 @@ namespace OHOS::uitest {
         for (auto &winCache : windowCacheVec_) {
             if (winCache.window_.id_ != window.id_) {
                 continue;
-            }
-            if (winCache.window_.bundleName_.length() < 1) {
-                std::unique_ptr<ElementNodeIterator> widgetIterator = nullptr;
-                LOG_I("Start to get bundle name from node, window id is %{public}d", winCache.window_.id_);
-                if (!uiController_->GetBundleNameAndNodesInWindow(winCache.window_, winCache.widgetIterator_)) {
-                    LOG_W("Get Node from window[%{public}d] failed, skip the window", winCache.window_.id_);
-                    continue;
-                }
-                LOG_I("End to get bundle name from node, window id is %{public}d, bundleName is %{public}s",
-                      winCache.window_.id_, winCache.window_.bundleName_.data());
             }
             return &winCache.window_;
         }
