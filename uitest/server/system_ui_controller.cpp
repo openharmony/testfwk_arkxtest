@@ -304,11 +304,12 @@ namespace OHOS::uitest {
             }
             auto &child = nodes[childNodeIndex];
             if (child.GetAccessibilityId() != childId) {
-                LOG_E("Node info error, expect: %{public}d, actual: %{public}d", childId, child.GetAccessibilityId());
-                    continue;
+                LOG_E("Node info error, expect: %{public}s, actual: %{public}s", to_string(childId).c_str(),
+                    to_string(child.GetAccessibilityId()).c_str());
+                continue;
             }
             if (!child.IsVisible()) {
-                LOG_I("This node is not visible, node Id: %{public}d", child.GetAccessibilityId());
+                LOG_I("This node is not visible, node Id: %{public}s", to_string(child.GetAccessibilityId()).c_str());
                 continue;
             }
             auto parcel = json();
