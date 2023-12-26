@@ -306,7 +306,7 @@ namespace OHOS::uitest {
             if (child.GetAccessibilityId() != childId) {
                 LOG_E("Node info error, expect: %{public}" PRId64", actual: %{public}" PRId64"", childId,
                     child.GetAccessibilityId());
-                    continue;
+                continue;
             }
             if (!child.IsVisible()) {
                 LOG_I("This node is not visible, node Id: %{public}" PRId64"", child.GetAccessibilityId());
