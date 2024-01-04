@@ -163,7 +163,7 @@ namespace OHOS::uitest {
         }
 
         if (elementToParentIndexMap_.find(currentIndex_) == elementToParentIndexMap_.cend()) {
-            LOG_I("This node has no parent: %{public}d", elementInfoLists_[currentIndex_].GetAccessibilityId());
+            LOG_I("This node has no parent: %{public}" PRId64"", elementInfoLists_[currentIndex_].GetAccessibilityId());
             return false;
         }
         int parentIndex = elementToParentIndexMap_.at(currentIndex_);
@@ -177,7 +177,7 @@ namespace OHOS::uitest {
                 return true;
             }
             if (elementToParentIndexMap_.find(parentIndex) == elementToParentIndexMap_.cend()) {
-                LOG_I("This node has no parent: %{public}d", elementInfoLists_[parentIndex].GetAccessibilityId());
+                LOG_I("This node has no parent: %{public}" PRId64"", elementInfoLists_[parentIndex].GetAccessibilityId());
                 return false;
             }
             tempChildIndex = parentIndex;
@@ -189,7 +189,7 @@ namespace OHOS::uitest {
     bool ElementNodeIteratorImpl::VisitChildren(Widget& widget)
     {
         if (visitAndVisibleIndexSet_.find(currentIndex_) == visitAndVisibleIndexSet_.cend()) {
-            LOG_I("node %{public}d is invisible not find its children",
+            LOG_I("node %{public}" PRId64" is invisible not find its children",
                   elementInfoLists_[currentIndex_].GetAccessibilityId());
             return false;
         } else {
@@ -227,7 +227,7 @@ namespace OHOS::uitest {
                     elementIndexToHierarch_.emplace(currentIndex_, widget.GetHierarchy());
                     return true;
                 } else {
-                    LOG_E("Node info error, except: %{public}d, actual is %{public}d", parentModel.GetChildId(i + 1),
+                    LOG_E("Node info error, except: %{public}d, actual is %{public}" PRId64"", parentModel.GetChildId(i + 1),
                           elementInfoLists_[tempChildIndex + 1].GetAccessibilityId());
                 }
             }
