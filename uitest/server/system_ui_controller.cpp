@@ -291,11 +291,12 @@ namespace OHOS::uitest {
             Rect winRectInScreen = GetVisibleRect(screenRect, win.GetRectInScreen());
             Rect visibleArea = winRectInScreen;
             if (!RectAlgorithm::ComputeMaxVisibleRegion(winRectInScreen, overplays, visibleArea)) {
-                LOG_I("This window is covered, windowId : %{public}d", win.GetWindowId());
+                LOG_I("window is covered, windowId : %{public}d, layer is %{public}d", win.GetWindowId(),
+                      win.GetWindowLayer());
                 continue;
             }
-            LOG_I("This window is visible, windowId : %{public}d, active is %{public}d, focus is %{public}d",
-                  win.GetWindowId(), win.IsActive(), win.IsFocused());
+            LOG_I("window is visible, windowId: %{public}d, active: %{public}d, focus: %{public}d, layer: %{public}d",
+                win.GetWindowId(), win.IsActive(), win.IsFocused(), win.GetWindowLayer());
             Window winWrapper{win.GetWindowId()};
             InflateWindowInfo(win, winWrapper);
             winWrapper.bounds_ = winRectInScreen;
