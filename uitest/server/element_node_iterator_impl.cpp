@@ -227,7 +227,7 @@ namespace OHOS::uitest {
                     elementIndexToHierarch_.emplace(currentIndex_, widget.GetHierarchy());
                     return true;
                 } else {
-                    LOG_E("Node info error, except: %{public}lld, actual is %{public}lld", parentModel.GetChildId(i + 1),
+                    LOG_E("Node error, except: %{public}lld, actual is %{public}lld", parentModel.GetChildId(i + 1),
                           elementInfoLists_[tempChildIndex + 1].GetAccessibilityId());
                 }
             }
