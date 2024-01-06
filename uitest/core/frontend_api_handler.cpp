@@ -367,7 +367,7 @@ namespace OHOS::uitest {
 
     void FrontendApiServer::Call(const ApiCallInfo &in, ApiReplyInfo &out) const
     {
-        LOG_I("Begin to invoke api '%{public}s'", in.apiId_.data());
+        LOG_D("Begin to invoke api '%{public}s'", in.apiId_.data());
         auto call = in;
         // initialize method signature
         if (sApiArgTypesMap.empty()) {
@@ -406,7 +406,7 @@ namespace OHOS::uitest {
 
     void ApiTransact(const ApiCallInfo &in, ApiReplyInfo &out)
     {
-        LOG_I("Begin to invoke api '%{public}s'", in.apiId_.data());
+        LOG_D("Begin to invoke api '%{public}s'", in.apiId_.data());
         FrontendApiServer::Get().Call(in, out);
     }
 
