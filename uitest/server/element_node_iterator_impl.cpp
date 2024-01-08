@@ -163,7 +163,8 @@ namespace OHOS::uitest {
         }
 
         if (elementToParentIndexMap_.find(currentIndex_) == elementToParentIndexMap_.cend()) {
-            LOG_I("This node has no parent: %{public}lld", elementInfoLists_[currentIndex_].GetAccessibilityId());
+            LOG_I("This node has no parent: %{public}s",
+                  std::to_string(elementInfoLists_[currentIndex_].GetAccessibilityId()).data());
             return false;
         }
         int parentIndex = elementToParentIndexMap_.at(currentIndex_);
@@ -177,7 +178,8 @@ namespace OHOS::uitest {
                 return true;
             }
             if (elementToParentIndexMap_.find(parentIndex) == elementToParentIndexMap_.cend()) {
-                LOG_I("This node has no parent: %{public}lld", elementInfoLists_[parentIndex].GetAccessibilityId());
+                LOG_I("This node has no parent: %{public}s",
+                      std::to_string(elementInfoLists_[parentIndex].GetAccessibilityId()).data());
                 return false;
             }
             tempChildIndex = parentIndex;
@@ -189,8 +191,8 @@ namespace OHOS::uitest {
     bool ElementNodeIteratorImpl::VisitChildren(Widget& widget)
     {
         if (visitAndVisibleIndexSet_.find(currentIndex_) == visitAndVisibleIndexSet_.cend()) {
-            LOG_I("node %{public}lld is invisible not find its children",
-                  elementInfoLists_[currentIndex_].GetAccessibilityId());
+            LOG_I("node %{public}s is invisible not find its children",
+                  std::to_string(elementInfoLists_[currentIndex_].GetAccessibilityId()).data());
             return false;
         } else {
             for (int i = currentIndex_ + 1; i < elementInfoLists_.size(); ++i) {
@@ -227,8 +229,9 @@ namespace OHOS::uitest {
                     elementIndexToHierarch_.emplace(currentIndex_, widget.GetHierarchy());
                     return true;
                 } else {
-                    LOG_E("Node error, except: %{public}lld, actual is %{public}lld", parentModel.GetChildId(i + 1),
-                          elementInfoLists_[tempChildIndex + 1].GetAccessibilityId());
+                    LOG_E("Node error, except: %{public}s, actual is %{public}s",
+                          std::to_string(parentModel.GetChildId(i + 1)).data(),
+                          std::to_string(elementInfoLists_[tempChildIndex + 1].GetAccessibilityId()).data());
                 }
             }
         }
