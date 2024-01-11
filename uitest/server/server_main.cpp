@@ -57,7 +57,7 @@ namespace OHOS::uitest {
     "   uiRecord read,                     print file content to the console\n"
     "   uiAction input,                                                     \n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "4.1.4.3";
+    const std::string VERSION = "4.1.4.4";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
@@ -218,6 +218,8 @@ namespace OHOS::uitest {
         apiServer.SetCallbackHandler(cbHandler); // used for callback from server to client
         if (!apiTransactServer.InitAndConnectPeer(transalatedToken, apiHandler)) {
             LOG_E("Failed to initialize server");
+            ApiTransactor::UnsetBroadcastCommandHandler();
+            _Exit(0);
             return EXIT_FAILURE;
         }
         mutex mtx;
