@@ -157,12 +157,12 @@ namespace OHOS::uitest {
         auto capturedEvent = GetWatchedEvent(eventInfo);
         if (evenrType == Accessibility::EventType::TYPE_VIEW_SCROLLED_START) {
             LOG_I("Capture scroll begin");
-            scrollCompelete_.store(true);
+            scrollCompelete_.store(false);
             lastScrollBeginEventMillis_.store(GetCurrentMillisecond());
         }
         if (evenrType == Accessibility::EventType::TYPE_VIEW_SCROLLED_EVENT) {
             LOG_I("Capture scroll end");
-            scrollCompelete_.store(false);
+            scrollCompelete_.store(true);
         }
         if (capturedEvent != "undefine") {
             auto bundleName = eventInfo.GetBundleName();
