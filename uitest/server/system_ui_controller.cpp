@@ -75,12 +75,16 @@ namespace OHOS::uitest {
 
         bool WaitEventIdle(uint32_t idleThresholdMs, uint32_t timeoutMs);
 
+        void WaitScrollCompelete();
+
         void RegisterUiEventListener(shared_ptr<UiEventListener> listerner);
 
     private:
         function<void()> onConnectCallback_ = nullptr;
         function<void()> onDisConnectCallback_ = nullptr;
         atomic<uint64_t> lastEventMillis_ = 0;
+        atomic<uint64_t> lastScrollBeginEventMillis_ = 0;
+        atomic<bool> scrollCompelete_ = true;
         vector<shared_ptr<UiEventListener>> listeners_;
     };
 
@@ -148,14 +152,24 @@ namespace OHOS::uitest {
 
     void UiEventMonitor::OnAccessibilityEvent(const AccessibilityEventInfo &eventInfo)
     {
-        LOG_W("OnEvent:0x%{public}x", eventInfo.GetEventType());
+        auto eventType = eventInfo.GetEventType();
+        LOG_W("OnEvent:0x%{public}x", eventType);
         auto capturedEvent = GetWatchedEvent(eventInfo);
+        if (eventType == Accessibility::EventType::TYPE_VIEW_SCROLLED_START) {
+            LOG_I("Capture scroll begin");
+            scrollCompelete_.store(false);
+            lastScrollBeginEventMillis_.store(GetCurrentMillisecond());
+        }
+        if (eventType == Accessibility::EventType::TYPE_VIEW_SCROLLED_EVENT) {
+            LOG_I("Capture scroll end");
+            scrollCompelete_.store(true);
+        }
         if (capturedEvent != "undefine") {
-                auto bundleName = eventInfo.GetBundleName();
-                auto contentList = eventInfo.GetContentList();
-                auto text = !contentList.empty() ? contentList[0] : "";
-                auto type = eventInfo.GetComponentType();
-                UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type};
+            auto bundleName = eventInfo.GetBundleName();
+            auto contentList = eventInfo.GetContentList();
+            auto text = !contentList.empty() ? contentList[0] : "";
+            auto type = eventInfo.GetComponentType();
+            UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type};
             for (auto &listener : listeners_) {
                 listener->OnEvent(capturedEvent, uiEventSourceInfo);
             }
@@ -171,6 +185,26 @@ namespace OHOS::uitest {
             lastEventMillis_.store(GetCurrentMillisecond());
         }
         return lastEventMillis_.load();
+    }
+
+    void UiEventMonitor::WaitScrollCompelete()
+    {
+        if (scrollCompelete_.load()) {
+            return;
+        }
+        const auto currentMs = GetCurrentMillisecond();
+        if (lastScrollBeginEventMillis_.load() <= 0) {
+            lastScrollBeginEventMillis_.store(currentMs);
+        }
+        const auto idleThresholdMs = 10000;
+        if (currentMs - lastScrollBeginEventMillis_.load() >= idleThresholdMs) {
+            LOG_E("wai for scrollEnd event timeout.");
+            scrollCompelete_.store(true);
+            return;
+        }
+        static constexpr auto sliceMs = 10;
+        this_thread::sleep_for(chrono::milliseconds(sliceMs));
+        return WaitScrollCompelete();
     }
 
     bool UiEventMonitor::WaitEventIdle(uint32_t idleThresholdMs, uint32_t timeoutMs)
@@ -351,6 +385,7 @@ namespace OHOS::uitest {
     static bool GetAamsWindowInfos(vector<AccessibilityWindowInfo> &windows)
     {
         auto ability = AccessibilityUITestAbility::GetInstance();
+        g_monitorInstance_->WaitScrollCompelete();
         if (ability->GetWindows(windows) != RET_OK) {
             LOG_W("GetWindows from AccessibilityUITestAbility failed");
             return false;
