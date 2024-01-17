@@ -15,522 +15,451 @@
 
 #include "gtest/gtest.h"
 #include "widget_selector.h"
-#include "mock_element_node_iterator.h"
-#include "mock_controller.h"
 
 using namespace OHOS::uitest;
 using namespace std;
+
+static constexpr char DOM_TEXT[] = R"({
+"attributes": {
+"rotation": "0"
+},
+"children": [
+{
+"attributes": {
+"resource-id": "id1",
+"text": ""
+},
+"children": [
+{
+"attributes": {
+"resource-id": "id2",
+"text": ""
+},
+"children": [
+{
+"attributes": {
+"resource-id": "id3",
+"text": ""
+},
+"children": [
+{
+"attributes": {
+"resource-id": "id4",
+"text": "Use USB to"
+},
+"children": []
+}
+]
+}
+]
+},
+{
+"attributes": {
+"resource-id": "id5",
+"text": "wyz"
+},
+"children": [
+{
+"attributes": {
+"resource-id": "id6",
+"text": ""
+},
+"children": [
+{
+"attributes": {
+"resource-id": "id7",
+"text": ""
+},
+"children": [
+{
+"attributes": {
+"resource-id": "id8",
+"text": "Transfer photos"
+},
+"children": []
+}
+]
+},
+{
+"attributes": {
+"resource-id": "id9",
+"text": ""
+},
+"children": [
+{
+"attributes": {
+"resource-id": "id10",
+"text": "Transfer files"
+},
+"children": []
+}
+]
+}
+]
+}
+]
+}
+]
+}
+]
+}
+)";
 
 static constexpr auto ATTR_TEXT = "text";
 
 class WidgetSelectorTest : public testing::Test {
 protected:
+    WidgetTree tree_ = WidgetTree("dummy_tree");
+
     void SetUp() override
     {
-    std::string domJson = R"(
-        {
-            "attributes":{
-                "windowId":"12",
-                "componentType":"List",
-                "accessibilityId":"1",
-                "content":"Text List",
-                "rectInScreen":"30,60,10,120"
-            },
-            "children":[
-                {
-                     "attributes":{
-                        "windowId":"12",
-                        "accessibilityId":"2",
-                        "componentType":"List",
-                        "content":"Text List",
-                        "rectInScreen":"30,60,10,120"
-                     },
-                     "children":[
-                        {
-                            "attributes":{
-                                "windowId":"12",
-                                "accessibilityId":"3",
-                                "componentType":"Image",
-                                "content":"Button",
-                                "rectInScreen":"30,40,10,20"
-                            },
-                            "children":[
-                                {
-                                    "attributes":{
-                                        "windowId":"12",
-                                        "accessibilityId":"4",
-                                        "componentType":"Text",
-                                        "content":"Text One",
-                                        "rectInScreen":"30,40,10,20"
-                                    },
-                                    "children":[]
-                                }
-                            ]
-                        },
-                        {
-                            "attributes":{
-                                "windowId":"12",
-                                "componentType":"List",
-                                "accessibilityId":"5",
-                                "content":"Text List12",
-                                "rectInScreen":"40,60,10,20"
-                            },
-                            "children":[
-                                {
-                                    "attributes":{
-                                        "windowId":"12",
-                                        "accessibilityId":"6",
-                                        "componentType":"Text",
-                                        "content":"Text One",
-                                        "rectInScreen":"40,50,10,20"
-                                    },
-                                    "children":[]
-                                },
-                                {
-                                    "attributes":{
-                                        "windowId":"12",
-                                        "accessibilityId":"8",
-                                        "componentType":"Text",
-                                        "content":"Text Two",
-                                        "rectInScreen":"50,60,10,20"
-                                    },
-                                    "children":[]
-                                }
-                            ]
-                        }
-                     ]
-                },
-                {
-                     "attributes":{
-                        "windowId":"12",
-                        "accessibilityId":"10",
-                        "componentType":"Image",
-                        "content":"Button",
-                        "rectInScreen":"10,20,20,100"
-                     },
-                     "children":[]
-                },
-                {
-                     "attributes":{
-                        "windowId":"12",
-                        "accessibilityId":"11",
-                        "componentType":"Scroll",
-                        "content":"Button",
-                        "rectInScreen":"20,100,20,100"
-                     },
-                     "children":[
-                        {
-                            "attributes":{
-                                "windowId":"12",
-                                "accessibilityId":"12",
-                                "componentType":"Image",
-                                "content":"",
-                                "rectInScreen":"20,100,20,100"
-                            },
-                            "children":[]
-                        },
-                        {
-                            "attributes":{
-                                "windowId":"12",
-                                "accessibilityId":"14",
-                                "componentType":"Button",
-                                "content":"Text End Button",
-                                "rectInScreen":"20,100,20,100"
-                            },
-                            "children":[
-                                {
-                                    "attributes":{
-                                        "windowId":"12",
-                                        "accessibilityId":"15",
-                                        "componentType":"Text",
-                                        "content":"Text End",
-                                        "rectInScreen":"20,100,20,100"
-                                    },
-                                    "children":[]
-                                }
-                            ]
-                        }
-                     ]
-                }
-            ]
-        }
-    )";
-        iterator = MockElementNodeIterator::ConstructIteratorByJson(domJson);
-        w1.windowLayer_ = 2;
-        w1.bounds_ = Rect{0, 1000, 0, 1200};
-        w1.bundleName_ = "test1";
+        auto data = nlohmann::json::parse(DOM_TEXT);
+        tree_.ConstructFromDom(data, false);
     }
-    Window w1{12};
-    std::unique_ptr<ElementNodeIterator> iterator = nullptr;
-    ~WidgetSelectorTest() override = default;
 };
 
 TEST_F(WidgetSelectorTest, signleMatcherWithoutLocatorAndExistsNoTarget)
 {
     auto selector = WidgetSelector();
-    auto matcher = WidgetMatchModel(UiAttr::TEXT, "WLJ", EQ);
+    auto matcher = WidgetAttrMatcher(ATTR_TEXT, "WLJ", EQ);
     selector.AddMatcher(matcher);
 
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-    ASSERT_EQ(0, targets.size());
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+
+    ASSERT_EQ(0, receiver.size());
 }
 
 TEST_F(WidgetSelectorTest, signleMatcherWithoutLocatorAndExistsSingleTarget)
 {
     auto selector = WidgetSelector();
-    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Text One", EQ);
+    auto matcher = WidgetAttrMatcher(ATTR_TEXT, "wyz", EQ);
     selector.AddMatcher(matcher);
 
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
 
-    ASSERT_EQ(1, targets.size());
+    ASSERT_EQ(1, receiver.size());
     // check the result widget
-    ASSERT_EQ("4", visits[targets[0]].GetAttr(UiAttr::ACCESSIBILITY_ID));
+    ASSERT_EQ("id5", receiver.at(0).get().GetAttr("resource-id", ""));
 }
 
 TEST_F(WidgetSelectorTest, multiMatcherWithoutLocatorAndExistsSingleTarget)
 {
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", EQ);
-    auto matcher1 = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "6", EQ);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Transfer", CONTAINS);
+    auto matcher1 = WidgetAttrMatcher("resource-id", "8", CONTAINS);
     selector.AddMatcher(matcher0);
     selector.AddMatcher(matcher1);
 
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
 
-    ASSERT_EQ(1, targets.size());
+    ASSERT_EQ(1, receiver.size());
     // check the result widget
-    ASSERT_EQ("6", visits[targets[0]].GetAttr(UiAttr::ACCESSIBILITY_ID));
+    ASSERT_EQ("id8", receiver.at(0).get().GetAttr("resource-id", ""));
 }
 
 TEST_F(WidgetSelectorTest, multiMatcherWithoutLocatorAndExistMultiTargets)
 {
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Transfer", CONTAINS);
     selector.AddMatcher(matcher0);
-    selector.SetWantMulti(true);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
 
-    ASSERT_EQ(2, targets.size());
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+
+    ASSERT_EQ(2, receiver.size());
     // check the result widgets and the order, should arranges in DFS order
-
-    ASSERT_EQ("4", visits[targets[0]].GetAttr(UiAttr::ACCESSIBILITY_ID));
-    ASSERT_EQ("6", visits[targets[1]].GetAttr(UiAttr::ACCESSIBILITY_ID));
+    ASSERT_EQ("id8", receiver.at(0).get().GetAttr("resource-id", ""));
+    ASSERT_EQ("id10", receiver.at(1).get().GetAttr("resource-id", ""));
 }
 
 TEST_F(WidgetSelectorTest, singleFrontLocatorAndExistsNoTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text List", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Transfer", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id10", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
     // "id10" is not in front of "*Transfer*", so no widget should be selected
-    ASSERT_EQ(0, targets.size());
+    ASSERT_EQ(0, receiver.size());
 }
 
 TEST_F(WidgetSelectorTest, singleFrontLocatorAndExistsSingleTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Transfer", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id9", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-    // "id10" is not in front of "*Transfer*", so no widget should be selected
-    ASSERT_EQ(1, targets.size());
-    ASSERT_EQ("6", visits[targets[0]].GetAttr(UiAttr::ACCESSIBILITY_ID));
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    // "id9" is not in front of "Transfer files" but not "Transfer photos", so one widget should be selected
+    ASSERT_EQ(1, receiver.size());
+    ASSERT_EQ("Transfer files", receiver.at(0).get().GetAttr(ATTR_TEXT, ""));
 }
 
 TEST_F(WidgetSelectorTest, singleFrontLocatorAndExistMultiTargets)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text", STARTS_WITH);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Transfer", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TYPE, "Scroll", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id7", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
-    selector.SetWantMulti(true);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
     // "id9" is not in front of "Transfer files" and "Transfer photos", so two widgets should be selected
-    ASSERT_EQ(2, targets.size());
+    ASSERT_EQ(2, receiver.size());
     // check the result widgets and the order, should arranges in DFS order
-    ASSERT_EQ("14", visits[targets[0]].GetAttr(UiAttr::ACCESSIBILITY_ID));
-    ASSERT_EQ("15", visits[targets[1]].GetAttr(UiAttr::ACCESSIBILITY_ID));
+    ASSERT_EQ("Transfer photos", receiver.at(0).get().GetAttr(ATTR_TEXT, ""));
+    ASSERT_EQ("Transfer files", receiver.at(1).get().GetAttr(ATTR_TEXT, ""));
 }
 
 TEST_F(WidgetSelectorTest, multiFrontLocatorAndExistsNoTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text List", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Transfer", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto frontMatcher0 = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto frontMatcher0 = WidgetAttrMatcher("resource-id", "id1", EQ);
     auto frontLocator0 = WidgetSelector();
     frontLocator0.AddMatcher(frontMatcher0);
     selector.AddFrontLocator(frontLocator0, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    auto frontMatcher1 = WidgetMatchModel(UiAttr::TYPE, "Image", EQ);
+    auto frontMatcher1 = WidgetAttrMatcher("resource-id", "id10", EQ);
     auto frontLocator1 = WidgetSelector();
     frontLocator1.AddMatcher(frontMatcher1);
     selector.AddFrontLocator(frontLocator1, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
     // "id1" is in front of "*Transfer*" but "id10" isn't, so no widget should be selected
-    ASSERT_EQ(0, targets.size());
+    ASSERT_EQ(0, receiver.size());
 }
 
 TEST_F(WidgetSelectorTest, multiFrontLocatorAndExistsSingleTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text Two", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Transfer", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto frontMatcher0 = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto frontMatcher0 = WidgetAttrMatcher("resource-id", "id8", EQ);
     auto frontLocator0 = WidgetSelector();
     frontLocator0.AddMatcher(frontMatcher0);
     selector.AddFrontLocator(frontLocator0, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    auto frontMatcher1 = WidgetMatchModel(UiAttr::TYPE, "Image", EQ);
+    auto frontMatcher1 = WidgetAttrMatcher("resource-id", "id9", EQ);
     auto frontLocator1 = WidgetSelector();
     frontLocator1.AddMatcher(frontMatcher1);
     selector.AddFrontLocator(frontLocator1, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-    // "id1" is in front of "*Transfer*" but "id10" isn't, so no widget should be selected
-    ASSERT_EQ(1, targets.size());
-    ASSERT_EQ("8", visits[targets[0]].GetAttr(UiAttr::ACCESSIBILITY_ID));
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    // both "id8" and "id9" are in front of "Transfer files" but not "Transfer photos", so one widget should be selected
+    ASSERT_EQ(1, receiver.size());
+    ASSERT_EQ("Transfer files", receiver.at(0).get().GetAttr(ATTR_TEXT, ""));
 }
 
 TEST_F(WidgetSelectorTest, multiFrontLocatorAndExistMultiTargets)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text", STARTS_WITH);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Transfer", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto frontMatcher0 = WidgetMatchModel(UiAttr::TYPE, "Image", EQ);
+    auto frontMatcher0 = WidgetAttrMatcher("resource-id", "id6", EQ);
     auto frontLocator0 = WidgetSelector();
     frontLocator0.AddMatcher(frontMatcher0);
     selector.AddFrontLocator(frontLocator0, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    auto frontMatcher1 = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto frontMatcher1 = WidgetAttrMatcher("resource-id", "id7", EQ);
     auto frontLocator1 = WidgetSelector();
     frontLocator1.AddMatcher(frontMatcher1);
     selector.AddFrontLocator(frontLocator1, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    selector.SetWantMulti(true);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
 
     // both "id8" and "id9" are in front of "Transfer files" but not "*Transfer*", two widgets should be selected
-    ASSERT_EQ(4, targets.size());
+    ASSERT_EQ(2, receiver.size());
     // check the result widgets and the order, should arranges in DFS order
-    ASSERT_EQ("6", visits.at(targets.at(0)).GetAttr(ACCESSIBILITY_ID));
-    ASSERT_EQ("8", visits.at(targets.at(1)).GetAttr(ACCESSIBILITY_ID));
-    ASSERT_EQ("14", visits.at(targets.at(2)).GetAttr(ACCESSIBILITY_ID));
-    ASSERT_EQ("15", visits.at(targets.at(3)).GetAttr(ACCESSIBILITY_ID));
+    ASSERT_EQ("Transfer photos", receiver.at(0).get().GetAttr(ATTR_TEXT, ""));
+    ASSERT_EQ("Transfer files", receiver.at(1).get().GetAttr(ATTR_TEXT, ""));
 }
 
 TEST_F(WidgetSelectorTest, singleRearLocatorAndExistsNoTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text End", EQ);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Transfer", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto rearMatcher = WidgetMatchModel(UiAttr::TYPE, "Scroll", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id7", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
     // "id10" is not in rear of "*Transfer*", so no widget should be selected
-    ASSERT_EQ(0, targets.size());
+    ASSERT_EQ(0, receiver.size());
 }
 
 TEST_F(WidgetSelectorTest, singleRearLocatorAndExistsSingleTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text Two", EQ);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Transfer", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto rearMatcher = WidgetMatchModel(UiAttr::TYPE, "Scroll", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id9", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
     // "id9" is not in rear of "Transfer photos" but not "Transfer files", so one widget should be selected
-    ASSERT_EQ(1, targets.size());
-    ASSERT_EQ("8", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
+    ASSERT_EQ(1, receiver.size());
+    ASSERT_EQ("Transfer photos", receiver.at(0).get().GetAttr(ATTR_TEXT, ""));
 }
 
 TEST_F(WidgetSelectorTest, singleRearLocatorAndExistMultiTargets)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", EQ);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "s", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto rearMatcher = WidgetMatchModel(UiAttr::TYPE, "Scroll", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id10", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    selector.SetWantMulti(true);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-    // "id9" is not in rear of "Transfer photos" but not "Transfer files", so one widget should be selected
-    ASSERT_EQ(2, targets.size());
-    ASSERT_EQ("4", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
-    ASSERT_EQ("6", visits.at(targets.at(1)).GetAttr(UiAttr::ACCESSIBILITY_ID));
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    // "id10" is rear in front of "Use USB to" and "Transfer photos", so two widgets should be selected
+    ASSERT_EQ(2, receiver.size());
+    // check the result widgets and the order, should arranges in DFS order
+    ASSERT_EQ("Use USB to", receiver.at(0).get().GetAttr(ATTR_TEXT, ""));
+    ASSERT_EQ("Transfer photos", receiver.at(1).get().GetAttr(ATTR_TEXT, ""));
 }
 
 TEST_F(WidgetSelectorTest, frontAndRearLocatorsAndExistsNoTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text Two", EQ);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Transfer", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TYPE, "Scroll", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id8", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    auto rearMatcher = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id10", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
     // no "*Transfer*" is between "id8" and "id10", so no widget should be selected
-    ASSERT_EQ(0, targets.size());
+    ASSERT_EQ(0, receiver.size());
 }
 
 TEST_F(WidgetSelectorTest, frontAndRearLocatorsAndExistsSingleTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", EQ);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Transfer", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id7", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    auto rearMatcher = WidgetMatchModel(UiAttr::TYPE, "Scroll", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id10", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    selector.SetWantMulti(true);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
 
     // only "Transfer photos" is between "id7" and "id10", one widget should be selected
-    ASSERT_EQ(1, targets.size());
-    ASSERT_EQ("6", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
+    ASSERT_EQ(1, receiver.size());
+    ASSERT_EQ("Transfer photos", receiver.at(0).get().GetAttr(ATTR_TEXT, ""));
 }
 
 TEST_F(WidgetSelectorTest, frontAndRearLocatorsAndExistMultiTargets)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "s", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id3", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    auto rearMatcher = WidgetMatchModel(UiAttr::TYPE, "Button", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id9", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    selector.SetWantMulti(true);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
 
     // both of "Use USB to" and "Transfer photos" are between "id3" and "id9", so two widgets should be selected
-    ASSERT_EQ(2, targets.size());
+    ASSERT_EQ(2, receiver.size());
     // check the result widgets and the order, should arranges in DFS order
-    ASSERT_EQ("6", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
-    ASSERT_EQ("8", visits.at(targets.at(1)).GetAttr(UiAttr::ACCESSIBILITY_ID));
-
-    selector.SetWantMulti(false);
-    std::vector<Widget> visits2;
-    std::vector<int> targets2;
-    selector.Select(w1, *iterator.get(), visits2, targets2);
-
-    // both of "Use USB to" and "Transfer photos" are between "id3" and "id9", so two widgets should be selected
-    ASSERT_EQ(1, targets2.size());
-    // check the result widgets and the order, should arranges in DFS order
-    ASSERT_EQ("6", visits2.at(targets2.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
+    ASSERT_EQ("Use USB to", receiver.at(0).get().GetAttr(ATTR_TEXT, ""));
+    ASSERT_EQ("Transfer photos", receiver.at(1).get().GetAttr(ATTR_TEXT, ""));
 }
 
 TEST_F(WidgetSelectorTest, nestingUsageDetect)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "s", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TEXT, "Text", CONTAINS);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id3", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     ASSERT_EQ(NO_ERROR, err.code_);
@@ -546,15 +475,15 @@ TEST_F(WidgetSelectorTest, selectorDescription)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "s", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id3", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    auto rearMatcher = WidgetMatchModel(UiAttr::TYPE, "Button", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id9", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
@@ -579,431 +508,298 @@ TEST_F(WidgetSelectorTest, singleParentLocatorAndExistsNoTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", EQ);
+    auto matcher0 = WidgetAttrMatcher(ATTR_TEXT, "Use USB to", EQ);
     selector.AddMatcher(matcher0);
 
-    auto parentMatcher = WidgetMatchModel(UiAttr::TYPE, "Scroll", EQ);
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id5", EQ);
     auto parentLocator = WidgetSelector();
     parentLocator.AddMatcher(parentMatcher);
     selector.AddParentLocator(parentLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
 
-    // both of "Use USB to" and "Transfer photos" are between "id3" and "id9", so two widgets should be selected
-    ASSERT_EQ(0, targets.size());
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    // "Use USB to" is not a chilid of "id5", so no widget should be selected
+    ASSERT_EQ(0, receiver.size());
 }
 
 TEST_F(WidgetSelectorTest, singleParentLocatorAndExistsSingleTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text End", EQ);
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id4", EQ);
     selector.AddMatcher(matcher0);
 
-    auto parentMatcher = WidgetMatchModel(UiAttr::TYPE, "Scroll", EQ);
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id3", EQ);
     auto parentLocator = WidgetSelector();
     parentLocator.AddMatcher(parentMatcher);
     selector.AddParentLocator(parentLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
 
-    // both of "Use USB to" and "Transfer photos" are between "id3" and "id9", so two widgets should be selected
-    ASSERT_EQ(1, targets.size());
-    ASSERT_EQ("15", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(1, receiver.size());
+    ASSERT_EQ("Use USB to", receiver.at(0).get().GetAttr(ATTR_TEXT, ""));
 }
 
 TEST_F(WidgetSelectorTest, singleParentLocatorAndExistMultiTargets)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto parentMatcher = WidgetMatchModel(UiAttr::TYPE, "Scroll", EQ);
-    auto parentLocator = WidgetSelector();
-    parentLocator.AddMatcher(parentMatcher);
-    selector.AddParentLocator(parentLocator, err);
-    selector.SetWantMulti(true);
-    ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-
-    // both of "Use USB to" and "Transfer photos" are between "id3" and "id9", so two widgets should be selected
-    ASSERT_EQ(2, targets.size());
-    ASSERT_EQ("14", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
-    ASSERT_EQ("15", visits.at(targets.at(1)).GetAttr(UiAttr::ACCESSIBILITY_ID));
-}
-
-TEST_F(WidgetSelectorTest, singleParentLocatorAndExistMultiAnchor)
-{
-    ApiCallErr err(NO_ERROR);
-    auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text", CONTAINS);
-    selector.AddMatcher(matcher0);
-
-    auto parentMatcher = WidgetMatchModel(UiAttr::TYPE, "Image", EQ);
-    auto parentLocator = WidgetSelector();
-    parentLocator.AddMatcher(parentMatcher);
-    selector.AddParentLocator(parentLocator, err);
-    selector.SetWantMulti(true);
-    ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-
-    // both of "Use USB to" and "Transfer photos" are between "id3" and "id9", so two widgets should be selected
-    ASSERT_EQ(1, targets.size());
-    ASSERT_EQ("4", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
-}
-
-TEST_F(WidgetSelectorTest, parentAndParentLocatorsAndExistsNoTarget)
-{
-    ApiCallErr err(NO_ERROR);
-    auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text End", EQ);
-    selector.AddMatcher(matcher0);
-
-    auto parentMatcher = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "2", EQ);
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id2", EQ);
     auto parentLocator = WidgetSelector();
     parentLocator.AddMatcher(parentMatcher);
     selector.AddParentLocator(parentLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto parentMatcher1 = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "5", EQ);
-    auto parentLocator1 = WidgetSelector();
-    parentLocator1.AddMatcher(parentMatcher1);
-    selector.AddParentLocator(parentLocator1, err);
-    ASSERT_EQ(NO_ERROR, err.code_);
-
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-
-    ASSERT_EQ(0, targets.size());
-}
-
-TEST_F(WidgetSelectorTest, parentAndParentLocatorsAndExistsSingleTarget)
-{
-    ApiCallErr err(NO_ERROR);
-    auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", EQ);
-    selector.AddMatcher(matcher0);
-
-    auto parentMatcher = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "2", EQ);
-    auto parentLocator = WidgetSelector();
-    parentLocator.AddMatcher(parentMatcher);
-    selector.AddParentLocator(parentLocator, err);
-    ASSERT_EQ(NO_ERROR, err.code_);
-
-    auto parentMatcher1 = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "5", EQ);
-    auto parentLocator1 = WidgetSelector();
-    parentLocator1.AddMatcher(parentMatcher1);
-    selector.AddParentLocator(parentLocator1, err);
-    ASSERT_EQ(NO_ERROR, err.code_);
-
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-
-    ASSERT_EQ(1, targets.size());
-    ASSERT_EQ("6", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
-}
-
-TEST_F(WidgetSelectorTest, parentAndParentLocatorsAndExistsMultiTarget)
-{
-    ApiCallErr err(NO_ERROR);
-    auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text", CONTAINS);
-    selector.AddMatcher(matcher0);
-
-    auto parentMatcher = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "2", EQ);
-    auto parentLocator = WidgetSelector();
-    parentLocator.AddMatcher(parentMatcher);
-    selector.AddParentLocator(parentLocator, err);
-    ASSERT_EQ(NO_ERROR, err.code_);
-
-    auto parentMatcher1 = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "5", EQ);
-    auto parentLocator1 = WidgetSelector();
-    parentLocator1.AddMatcher(parentMatcher1);
-    selector.AddParentLocator(parentLocator1, err);
-    ASSERT_EQ(NO_ERROR, err.code_);
-    selector.SetWantMulti(true);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-
-    ASSERT_EQ(2, targets.size());
-    ASSERT_EQ("6", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
-    ASSERT_EQ("8", visits.at(targets.at(1)).GetAttr(UiAttr::ACCESSIBILITY_ID));
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(2, receiver.size());
+    ASSERT_EQ("id3", receiver.at(0).get().GetAttr("resource-id", ""));
+    ASSERT_EQ("id4", receiver.at(1).get().GetAttr("resource-id", ""));
 }
 
 TEST_F(WidgetSelectorTest, frontAndParentLocatorsAndExistsNoTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto parentMatcher = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "2", EQ);
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id2", EQ);
     auto parentLocator = WidgetSelector();
     parentLocator.AddMatcher(parentMatcher);
     selector.AddParentLocator(parentLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TYPE, "Scroll", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id4", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    selector.SetWantMulti(true);
-    ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-
-    ASSERT_EQ(0, targets.size());
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(0, receiver.size());
 }
 
 TEST_F(WidgetSelectorTest, frontAndParentLocatorsAndExistsSingleTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto parentMatcher = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "2", EQ);
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id2", EQ);
     auto parentLocator = WidgetSelector();
     parentLocator.AddMatcher(parentMatcher);
     selector.AddParentLocator(parentLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id3", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-    ASSERT_EQ(1, targets.size());
-    ASSERT_EQ("6", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(1, receiver.size());
+    ASSERT_EQ("id4", receiver.at(0).get().GetAttr("resource-id", ""));
 }
 
 TEST_F(WidgetSelectorTest, frontAndParentLocatorsAndExistsMultiTargets)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto parentMatcher = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "2", EQ);
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id2", EQ);
     auto parentLocator = WidgetSelector();
     parentLocator.AddMatcher(parentMatcher);
     selector.AddParentLocator(parentLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TYPE, "Image", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id1", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    selector.SetWantMulti(true);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-    ASSERT_EQ(2, targets.size());
-    ASSERT_EQ("4", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
-    ASSERT_EQ("6", visits.at(targets.at(1)).GetAttr(UiAttr::ACCESSIBILITY_ID));
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(2, receiver.size());
+    ASSERT_EQ("id3", receiver.at(0).get().GetAttr("resource-id", ""));
+    ASSERT_EQ("id4", receiver.at(1).get().GetAttr("resource-id", ""));
 }
 
 TEST_F(WidgetSelectorTest, rearAndParentLocatorsAndExistsNoTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto parentMatcher = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "11", EQ);
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id2", EQ);
     auto parentLocator = WidgetSelector();
     parentLocator.AddMatcher(parentMatcher);
     selector.AddParentLocator(parentLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto rearMatcher = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id3", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-    ASSERT_EQ(0, targets.size());
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(0, receiver.size());
 }
 
 TEST_F(WidgetSelectorTest, rearAndParentLocatorsAndExistsSingleTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto parentMatcher = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "2", EQ);
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id2", EQ);
     auto parentLocator = WidgetSelector();
     parentLocator.AddMatcher(parentMatcher);
     selector.AddParentLocator(parentLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto rearMatcher = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id4", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-    ASSERT_EQ(1, targets.size());
-    ASSERT_EQ("4", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
+
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(1, receiver.size());
+    ASSERT_EQ("id3", receiver.at(0).get().GetAttr("resource-id", ""));
 }
 
 TEST_F(WidgetSelectorTest, rearAndParentLocatorsAndExistsMultiTargets)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", CONTAINS);
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto parentMatcher = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "2", EQ);
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id5", EQ);
     auto parentLocator = WidgetSelector();
     parentLocator.AddMatcher(parentMatcher);
     selector.AddParentLocator(parentLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto rearMatcher = WidgetMatchModel(UiAttr::TEXT, "Text Two", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id8", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-    ASSERT_EQ(1, targets.size());
-    ASSERT_EQ("4", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
 
-    selector.SetWantMulti(true);
-    std::vector<Widget> visits2;
-    std::vector<int> targets2;
-    selector.Select(w1, *iterator.get(), visits2, targets2);
-    ASSERT_EQ(2, targets2.size());
-    ASSERT_EQ("4", visits2.at(targets2.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
-    ASSERT_EQ("6", visits2.at(targets2.at(1)).GetAttr(UiAttr::ACCESSIBILITY_ID));
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(2, receiver.size());
+    ASSERT_EQ("id6", receiver.at(0).get().GetAttr("resource-id", ""));
+    ASSERT_EQ("id7", receiver.at(1).get().GetAttr("resource-id", ""));
 }
 
 TEST_F(WidgetSelectorTest, frontAndrearAndParentLocatorsAndExistsNoTargets)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "4", EQ);
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto parentMatcher = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "2", EQ);
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id5", EQ);
     auto parentLocator = WidgetSelector();
     parentLocator.AddMatcher(parentMatcher);
     selector.AddParentLocator(parentLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto rearMatcher = WidgetMatchModel(UiAttr::TEXT, "Text Two", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id8", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id7", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-    ASSERT_EQ(0, targets.size());
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(0, receiver.size());
 }
 
 TEST_F(WidgetSelectorTest, frontAndrearAndParentLocatorsAndExistsSingleTarget)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", EQ);
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto parentMatcher = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "2", EQ);
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id5", EQ);
     auto parentLocator = WidgetSelector();
     parentLocator.AddMatcher(parentMatcher);
     selector.AddParentLocator(parentLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto rearMatcher = WidgetMatchModel(UiAttr::TEXT, "Text Two", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id8", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id6", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-    ASSERT_EQ(1, targets.size());
-    ASSERT_EQ("6", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(1, receiver.size());
+    ASSERT_EQ("id7", receiver.at(0).get().GetAttr("resource-id", ""));
 }
 
 TEST_F(WidgetSelectorTest, frontAndrearAndParentLocatorsAndExistsMultiTargets)
 {
     ApiCallErr err(NO_ERROR);
     auto selector = WidgetSelector();
-    auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text One", EQ);
+    auto matcher0 = WidgetAttrMatcher("resource-id", "id", CONTAINS);
     selector.AddMatcher(matcher0);
 
-    auto parentMatcher = WidgetMatchModel(UiAttr::ACCESSIBILITY_ID, "2", EQ);
+    auto parentMatcher = WidgetAttrMatcher("resource-id", "id5", EQ);
     auto parentLocator = WidgetSelector();
     parentLocator.AddMatcher(parentMatcher);
     selector.AddParentLocator(parentLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto rearMatcher = WidgetMatchModel(UiAttr::TEXT, "Text Two", EQ);
+    auto rearMatcher = WidgetAttrMatcher("resource-id", "id9", EQ);
     auto rearLocator = WidgetSelector();
     rearLocator.AddMatcher(rearMatcher);
     selector.AddRearLocator(rearLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    auto frontMatcher = WidgetMatchModel(UiAttr::TYPE, "Image", EQ);
+    auto frontMatcher = WidgetAttrMatcher("resource-id", "id6", EQ);
     auto frontLocator = WidgetSelector();
     frontLocator.AddMatcher(frontMatcher);
     selector.AddFrontLocator(frontLocator, err);
     ASSERT_EQ(NO_ERROR, err.code_);
 
-    std::vector<Widget> visits;
-    std::vector<int> targets;
-    selector.Select(w1, *iterator.get(), visits, targets);
-    ASSERT_EQ(1, targets.size());
-    ASSERT_EQ("4", visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
-
-    selector.SetWantMulti(true);
-    std::vector<Widget> visits2;
-    std::vector<int> targets2;
-    selector.Select(w1, *iterator.get(), visits2, targets2);
-    ASSERT_EQ(2, targets2.size());
-    ASSERT_EQ("4", visits2.at(targets2.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID));
-    ASSERT_EQ("6", visits2.at(targets2.at(1)).GetAttr(UiAttr::ACCESSIBILITY_ID));
+    vector<reference_wrapper<const Widget>> receiver;
+    selector.Select(tree_, receiver);
+    ASSERT_EQ(2, receiver.size());
+    ASSERT_EQ("id7", receiver.at(0).get().GetAttr("resource-id", ""));
 }
