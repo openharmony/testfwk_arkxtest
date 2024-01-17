@@ -18,67 +18,6 @@
 namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
-    
-    static constexpr float SCROLL_MOVE_FACTOR = 0.7;
-
-    static bool IsScrolledToBorder(int oriDis,
-                                   const std::vector<unique_ptr<Widget>> &allWidgets,
-                                   const unique_ptr<Widget> &anchorLeafWidget)
-    {
-        if (oriDis < 0) {
-            return false;
-        }
-        int index = 0;
-        for (; index < allWidgets.size(); ++index) {
-            if (allWidgets.at(index)->GetAttr(UiAttr::ACCESSIBILITY_ID) ==
-                anchorLeafWidget->GetAttr(UiAttr::ACCESSIBILITY_ID)) {
-                return std::abs(allWidgets.at(index)->GetBounds().top_ - anchorLeafWidget->GetBounds().top_) <
-                       oriDis * SCROLL_MOVE_FACTOR;
-            }
-        }
-        return false;
-    }
-
-    static void ConstructNoFilterInWidgetSelector(WidgetSelector &scrollSelector,
-                                                  const std::string &hostApp,
-                                                  const std::string &hashCode)
-    {
-        WidgetSelector parentStrategy;
-        WidgetMatchModel anchorModel2{UiAttr::HASHCODE, hashCode, ValueMatchPattern::EQ};
-        parentStrategy.AddMatcher(anchorModel2);
-        scrollSelector.AddAppLocator(hostApp);
-        auto error = ApiCallErr(NO_ERROR);
-        scrollSelector.AddParentLocator(parentStrategy, error);
-        scrollSelector.SetWantMulti(true);
-    }
-
-    static int CalcFirstLeafWithInScroll(const std::vector<unique_ptr<Widget>>& widgetsInScroll)
-    {
-        std::string parentHie = "ROOT";
-        int index = -1;
-        for (auto &tempWid : widgetsInScroll) {
-            const std::string &curHie = tempWid->GetHierarchy();
-            if (curHie.find(parentHie) == std::string::npos) {
-                break;
-            }
-            parentHie = curHie;
-            ++index;
-        }
-        return index;
-    }
-
-    static WidgetSelector ConstructScrollFindSelector(const WidgetSelector &selector, const string &hashcode,
-        const string &appName, ApiCallErr &error)
-    {
-        WidgetSelector newSelector = selector;
-        WidgetMatchModel anchorModel{UiAttr::HASHCODE, hashcode, ValueMatchPattern::EQ};
-        WidgetSelector parentSelector{};
-        parentSelector.AddMatcher(anchorModel);
-        newSelector.AddParentLocator(parentSelector, error);
-        newSelector.AddAppLocator(appName);
-        newSelector.SetWantMulti(false);
-        return newSelector;
-    }
 
     WidgetOperator::WidgetOperator(UiDriver &driver, const Widget &widget, const UiOpArgs &options)
         : driver_(driver), widget_(widget), options_(options)
@@ -99,41 +38,24 @@ namespace OHOS::uitest {
 
     void WidgetOperator::ScrollToEnd(bool toTop, ApiCallErr &error) const
     {
-        int turnDis = -1;
-        std::unique_ptr<Widget> lastTopLeafWidget = nullptr;
-        std::unique_ptr<Widget> lastBottomLeafWidget = nullptr;
         while (true) {
-            auto hostApp = driver_.GetHostApp(widget_);
-            WidgetSelector selector{};
-            ConstructNoFilterInWidgetSelector(selector, hostApp, widget_.GetAttr(UiAttr::HASHCODE));
-            std::vector<unique_ptr<Widget>> widgetsInScroll;
-            driver_.FindWidgets(selector, widgetsInScroll, error, true);
-            if (error.code_ != NO_ERROR) {
-                LOG_E("There is error when ScrollToEnd, msg is %{public}s", error.message_.c_str());
+            auto scrollWidget = driver_.RetrieveWidget(widget_, error);
+            if (scrollWidget == nullptr || error.code_ != NO_ERROR) {
                 return;
             }
-            if (widgetsInScroll.empty()) {
-                LOG_I("There is no child when ScrollToEnd");
+            vector<string> visibleNodes;
+            vector<string> allNodes;
+            TreeSnapshotTaker snapshotTaker(visibleNodes, allNodes);
+            driver_.DfsTraverseTree(snapshotTaker, scrollWidget);
+            if (visibleNodes.empty() && allNodes.empty()) {
                 return;
             }
-            if (toTop && IsScrolledToBorder(turnDis, widgetsInScroll, lastTopLeafWidget)) {
+            auto mark1 = toTop ? visibleNodes.front() : visibleNodes.back();
+            auto mark2 = toTop ? allNodes.front() : allNodes.back();
+            if (mark1 == mark2) {
                 return;
             }
-            if (!toTop && IsScrolledToBorder(turnDis, widgetsInScroll, lastBottomLeafWidget)) {
-                return;
-            }
-            if (toTop) {
-                int index = CalcFirstLeafWithInScroll(widgetsInScroll);
-                if (index < 0) {
-                    LOG_E("There is error when Find Widget's fist leaf");
-                    return;
-                }
-                lastTopLeafWidget = std::move(widgetsInScroll.at(index));
-                lastBottomLeafWidget = std::move(widgetsInScroll.at(widgetsInScroll.size() - 1));
-            } else {
-                lastBottomLeafWidget = std::move(widgetsInScroll.at(widgetsInScroll.size() - 1));
-            }
-            TurnPage(toTop, turnDis, error);
+            TurnPage(toTop, error);
         }
     }
 
@@ -161,8 +83,19 @@ namespace OHOS::uitest {
         if (retrieved == nullptr || error.code_ != NO_ERROR) {
             return;
         }
-        Rect rootBound{0, 0, 0, 0};
-        driver_.GetMergeWindowBounds(rootBound);
+        auto matcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HIERARCHY], "ROOT", ValueMatchPattern::EQ);
+        auto selector = WidgetSelector();
+        selector.AddMatcher(matcher);
+        vector<unique_ptr<Widget>> recv;
+        driver_.FindWidgets(selector, recv, error, false);
+        if (error.code_ != NO_ERROR) {
+            return;
+        }
+        if (recv.empty()) {
+            error = ApiCallErr(ERR_INTERNAL, "Cannot find root widget");
+            return;
+        }
+        auto rootBound = recv.front()->GetBounds();
         auto rectBound = widget_.GetBounds();
         float_t widthScale = (float_t)(rootBound.GetWidth()) / (float_t)(rectBound.GetWidth());
         float_t heightScale = (float_t)(rootBound.GetHeight()) / (float_t)(rectBound.GetHeight());
@@ -183,7 +116,7 @@ namespace OHOS::uitest {
         if (retrieved == nullptr || error.code_ != NO_ERROR) {
             return;
         }
-        auto origText = retrieved->GetAttr(UiAttr::TEXT);
+        auto origText = retrieved->GetAttr(ATTR_NAMES[UiAttr::TEXT], "");
         if (origText.empty() && text.empty()) {
             return;
         }
@@ -192,10 +125,10 @@ namespace OHOS::uitest {
         vector<KeyEvent> events;
         if (!origText.empty()) {
             for (size_t index = 0; index < origText.size(); index++) {
-                events.emplace_back(KeyEvent{ActionStage::DOWN, KEYCODE_DPAD_RIGHT, typeCharTimeMs});
-                events.emplace_back(KeyEvent{ActionStage::UP, KEYCODE_DPAD_RIGHT, 0});
-                events.emplace_back(KeyEvent{ActionStage::DOWN, KEYCODE_DEL, typeCharTimeMs});
-                events.emplace_back(KeyEvent{ActionStage::UP, KEYCODE_DEL, 0});
+                events.emplace_back(KeyEvent {ActionStage::DOWN, KEYCODE_DPAD_RIGHT, typeCharTimeMs});
+                events.emplace_back(KeyEvent {ActionStage::UP, KEYCODE_DPAD_RIGHT, 0});
+                events.emplace_back(KeyEvent {ActionStage::DOWN, KEYCODE_DEL, typeCharTimeMs});
+                events.emplace_back(KeyEvent {ActionStage::UP, KEYCODE_DEL, 0});
             }
         }
         const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY());
@@ -210,51 +143,44 @@ namespace OHOS::uitest {
     unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const
     {
         bool scrollingUp = true;
-        int turnDis = -1;
-        std::unique_ptr<Widget> lastTopLeafWidget = nullptr;
-        std::unique_ptr<Widget> lastBottomLeafWidget = nullptr;
-        auto hostApp = driver_.GetHostApp(widget_);
-        auto newSelector = ConstructScrollFindSelector(selector, widget_.GetAttr(UiAttr::HASHCODE), hostApp, error);
+        vector<unique_ptr<Widget>> receiver;
         while (true) {
-            std::vector<unique_ptr<Widget>> targetsInScroll;
-            driver_.FindWidgets(newSelector, targetsInScroll, error, true);
-            if (!targetsInScroll.empty()) {
-                return std::move(targetsInScroll.at(0));
-            }
-            WidgetSelector scrollSelector;
-            ConstructNoFilterInWidgetSelector(scrollSelector, hostApp, widget_.GetAttr(UiAttr::HASHCODE));
-            std::vector<unique_ptr<Widget>> widgetsInScroll;
-            driver_.FindWidgets(scrollSelector, widgetsInScroll, error, false);
-            if (error.code_ != NO_ERROR) {
-                LOG_E("There is error when Find Widget's subwidget, msg is %{public}s", error.message_.c_str());
+            auto scrollWidget = driver_.RetrieveWidget(widget_, error);
+            if (scrollWidget == nullptr || error.code_ != NO_ERROR) {
                 return nullptr;
             }
-            if (widgetsInScroll.empty()) {
-                LOG_I("There is no child when Find Widget's subwidget");
+            driver_.FindWidgets(selector, receiver, error, false);
+            if (!receiver.empty()) {
+                auto first = receiver.begin();
+                auto clone = (*first)->Clone("NONE", (*first)->GetHierarchy());
+                // save the selection desc as dummy attribute
+                clone->SetAttr("selectionDesc", selector.Describe());
+                return clone;
+            }
+            vector<string> visibleNodes;
+            vector<string> allNodes;
+            TreeSnapshotTaker snapshotTaker(visibleNodes, allNodes);
+            driver_.DfsTraverseTree(snapshotTaker, scrollWidget);
+            if (visibleNodes.empty() && allNodes.empty()) {
                 return nullptr;
             }
-            if (scrollingUp && IsScrolledToBorder(turnDis, widgetsInScroll, lastTopLeafWidget)) {
-                scrollingUp = false;
-            } else if (IsScrolledToBorder(turnDis, widgetsInScroll, lastBottomLeafWidget)) {
-                LOG_W("Scroll search widget failed: %{public}s", selector.Describe().data());
-                return nullptr;
-            }
-            if (scrollingUp) {
-                int index = CalcFirstLeafWithInScroll(widgetsInScroll);
-                if (index < 0) {
-                    LOG_E("There is error when Find Widget's fist leaf");
+            auto mark1 = scrollingUp ? visibleNodes.front() : visibleNodes.back();
+            auto mark2 = scrollingUp ? allNodes.front() : allNodes.back();
+            if (mark1 == mark2) {
+                // scrolling down to bottom, search completed with failure
+                if (!scrollingUp) {
+                    LOG_W("Scroll search widget failed: %{public}s", selector.Describe().data());
                     return nullptr;
+                } else {
+                    // scrolling down to top, change direction
+                    scrollingUp = false;
                 }
-                lastTopLeafWidget = std::move(widgetsInScroll.at(index));
-                lastBottomLeafWidget = std::move(widgetsInScroll.at(widgetsInScroll.size() - 1));
-            } else {
-                lastBottomLeafWidget = std::move(widgetsInScroll.at(widgetsInScroll.size() - 1));
             }
-            TurnPage(scrollingUp, turnDis, error);
+            TurnPage(scrollingUp, error);
         }
     }
 
-    void WidgetOperator::TurnPage(bool toTop, int &oriDistance, ApiCallErr &error) const
+    void WidgetOperator::TurnPage(bool toTop, ApiCallErr &error) const
     {
         auto bounds = widget_.GetBounds();
         Point topPoint(bounds.GetCenterX(), bounds.top_);
@@ -264,18 +190,12 @@ namespace OHOS::uitest {
             bottomPoint.py_ -= options_.scrollWidgetDeadZone_;
         }
         auto screenSize = driver_.GetDisplaySize(error);
-        auto gestureZone = screenSize.py_ / 20;
+        auto gestureZone = screenSize.py_  / 20;
         if (screenSize.py_ - bounds.bottom_ <= gestureZone) {
             bottomPoint.py_ = bottomPoint.py_ - gestureZone;
         }
-        auto touch = (toTop) ? GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint)
-                             : GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
+        auto touch = (toTop) ? GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint) :
+                               GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
         driver_.PerformTouch(touch, options_, error);
-        oriDistance = std::abs(topPoint.py_ - bottomPoint.py_);
-        if (toTop) {
-            LOG_I("turn page from %{public}d to %{public}d", topPoint.py_, bottomPoint.py_);
-        } else {
-            LOG_I("turn page from %{public}d to %{public}d", bottomPoint.py_, topPoint.py_);
-        }
     }
 } // namespace OHOS::uitest
