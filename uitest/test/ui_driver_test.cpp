@@ -237,7 +237,7 @@ TEST_F(UiDriverTest, retrieveWidgetFailure)
     controller_->RemoveWindowsAndNode(w1);
     controller_->AddWindowsAndNode(w1, eles_);
     error = ApiCallErr(NO_ERROR);
-    auto ret = driver_->RetrieveWidget(*widgets.at(0), error, true);
+    driver_->RetrieveWidget(*widgets.at(0), error, true);
 
     // retrieve widget failed should be marked as exception
     ASSERT_EQ(ERR_COMPONENT_LOST, error.code_);

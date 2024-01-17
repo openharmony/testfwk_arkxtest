@@ -21,8 +21,6 @@
 using namespace OHOS::uitest;
 using namespace std;
 
-static constexpr auto ATTR_TEXT = "text";
-
 class WidgetSelectorTest : public testing::Test {
 protected:
     void SetUp() override
