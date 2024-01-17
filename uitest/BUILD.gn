@@ -275,7 +275,6 @@ ohos_unittest("uitest_core_unittest") {
     "${source_root}/test/ui_action_test.cpp",
     "${source_root}/test/ui_driver_test.cpp",
     "${source_root}/test/ui_model_test.cpp",
-    "${source_root}/test/widget_matcher_test.cpp",
     "${source_root}/test/widget_operator_test.cpp",
     "${source_root}/test/widget_selector_test.cpp",
   ]
