@@ -18,7 +18,6 @@ import {TestType, Size, Level, DEFAULT} from './src/Constant';
 import DataDriver from './src/module/config/DataDriver';
 import ExpectExtend from './src/module/assert/ExpectExtend';
 import OhReport from './src/module/report/OhReport';
-import coverageCollectHelp from './src/module/coverage/coverageCollect';
 
 export declare class Hypium {
     static setData(data: Object): void
@@ -34,8 +33,7 @@ export {
     TestType,
     Size,
     Level,
-    DEFAULT,
-    coverageCollectHelp
+    DEFAULT
 };
 
 type allExpectType = Object | undefined | null
