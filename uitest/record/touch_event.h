@@ -46,7 +46,7 @@ struct TouchEventInfo final {
     int64_t actionTime;
     int64_t downTime;
     double durationSeconds;
-    std::vector<std::string> attributes;
+    std::map<std::string, std::string> attributes;
     std::string bundleName;
     std::string abilityName;
     Point GetPoint() const

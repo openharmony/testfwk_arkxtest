@@ -34,19 +34,29 @@ namespace OHOS::uitest {
         auto data = nlohmann::json();
         data["X_POSI"] = std::to_string(firstTouchEventInfo.x);
         data["Y_POSI"] = std::to_string(firstTouchEventInfo.y);
-        data["W1_ID"] = firstTouchEventInfo.attributes[UiAttr::ID];
-        data["W1_Type"] = firstTouchEventInfo.attributes[UiAttr::TYPE];
-        data["W1_Text"] = firstTouchEventInfo.attributes[UiAttr::TEXT];
-        data["W1_BOUNDS"] = firstTouchEventInfo.attributes[UiAttr::BOUNDS];
-        data["W1_HIER"] = firstTouchEventInfo.attributes[UiAttr::HIERARCHY];
+        data["W1_ID"] = firstTouchEventInfo.attributes.count("id")?
+            firstTouchEventInfo.attributes.find("id")->second : "";
+        data["W1_Type"] = firstTouchEventInfo.attributes.count("type") ?
+            firstTouchEventInfo.attributes.find("type")->second : "";
+        data["W1_Text"] = firstTouchEventInfo.attributes.count("text") ?
+            firstTouchEventInfo.attributes.find("text")->second : "";
+        data["W1_BOUNDS"] = firstTouchEventInfo.attributes.count("bounds") ?
+            firstTouchEventInfo.attributes.find("bounds")->second : "";
+        data["W1_HIER"] = firstTouchEventInfo.attributes.count("hierarchy") ?
+            firstTouchEventInfo.attributes.find("hierarchy")->second : "";
 
         data["X2_POSI"] = lastTouchEventInfo.x != 0 ? std::to_string(lastTouchEventInfo.x) : "";
         data["Y2_POSI"] = lastTouchEventInfo.y != 0 ? std::to_string(lastTouchEventInfo.y) : "";
-        data["W2_ID"] = lastTouchEventInfo.attributes[UiAttr::ID];
-        data["W2_Type"] = lastTouchEventInfo.attributes[UiAttr::TYPE];
-        data["W2_Text"] = lastTouchEventInfo.attributes[UiAttr::TEXT];
-        data["W2_BOUNDS"] = lastTouchEventInfo.attributes[UiAttr::BOUNDS];
-        data["W2_HIER"] = lastTouchEventInfo.attributes[UiAttr::HIERARCHY];
+        data["W2_ID"] = lastTouchEventInfo.attributes.count("id")?
+            lastTouchEventInfo.attributes.find("id")->second : "";
+        data["W2_Type"] = lastTouchEventInfo.attributes.count("type") ?
+            lastTouchEventInfo.attributes.find("type")->second : "";
+        data["W2_Text"] = lastTouchEventInfo.attributes.count("text") ?
+            lastTouchEventInfo.attributes.find("text")->second : "";
+        data["W2_BOUNDS"] = lastTouchEventInfo.attributes.count("bounds") ?
+            lastTouchEventInfo.attributes.find("bounds")->second : "";
+        data["W2_HIER"] = lastTouchEventInfo.attributes.count("hierarchy") ?
+            lastTouchEventInfo.attributes.find("hierarchy")->second : "";
 
         data["LENGTH"] = std::to_string(stepLength);
         data["MAX_VEL"] = std::to_string(MAX_VELOCITY);
@@ -60,19 +70,19 @@ namespace OHOS::uitest {
     {
         std::stringstream sout;
         if (actionType == "fling" || actionType == "swipe" || actionType == "drag") {
-            if (firstTouchEventInfo.attributes[UiAttr::ID] != "" ||
-                firstTouchEventInfo.attributes[UiAttr::TEXT] != "") {
-                sout << "from Widget(id: " << firstTouchEventInfo.attributes[UiAttr::ID] << ", "
-                     << "type: " << firstTouchEventInfo.attributes[UiAttr::TYPE] << ", "
-                     << "text: " << firstTouchEventInfo.attributes[UiAttr::TEXT] << ") " << "; ";
+            if (firstTouchEventInfo.attributes.find("id")->second != "" ||
+                firstTouchEventInfo.attributes.find("text")->second != "") {
+                sout << "from Widget(id: " << firstTouchEventInfo.attributes.find("id")->second << ", "
+                     << "type: " << firstTouchEventInfo.attributes.find("type")->second << ", "
+                     << "text: " << firstTouchEventInfo.attributes.find("text")->second << ") " << "; ";
             } else {
                 sout << "from Point(x:" << firstTouchEventInfo.x << ", y:" << firstTouchEventInfo.y << ") ";
             }
-            if (lastTouchEventInfo.attributes[UiAttr::ID] != "" ||
-                lastTouchEventInfo.attributes[UiAttr::TEXT] != "") {
-                sout << "to Widget(id: " << lastTouchEventInfo.attributes[UiAttr::ID] << ", "
-                     << "type: " << lastTouchEventInfo.attributes[UiAttr::TYPE] << ", "
-                     << "text: " << lastTouchEventInfo.attributes[UiAttr::TEXT] << ") " << "; ";
+            if (lastTouchEventInfo.attributes.find("id")->second != "" ||
+                lastTouchEventInfo.attributes.find("text")->second != "") {
+                sout << "to Widget(id: " << lastTouchEventInfo.attributes.find("id")->second << ", "
+                     << "type: " << lastTouchEventInfo.attributes.find("type")->second << ", "
+                     << "text: " << lastTouchEventInfo.attributes.find("text")->second << ") " << "; ";
             } else {
                 sout << " to Point(x:" << lastTouchEventInfo.x << ", y:" << lastTouchEventInfo.y << ") " << "; ";
             }
@@ -82,11 +92,11 @@ namespace OHOS::uitest {
             }
         } else if (actionType == "click" || actionType == "longClick" || actionType == "doubleClick") {
             sout << actionType << ": " ;
-            if (firstTouchEventInfo.attributes[UiAttr::ID] != "" ||
-                firstTouchEventInfo.attributes[UiAttr::TEXT] != "") {
-                sout << " at Widget( id: " << firstTouchEventInfo.attributes[UiAttr::ID] << ", "
-                     << "text: " << firstTouchEventInfo.attributes[UiAttr::TEXT] << ", "
-                     << "type: " << firstTouchEventInfo.attributes[UiAttr::TYPE] << ") "<< "; ";
+            if (firstTouchEventInfo.attributes.find("id")->second != "" ||
+                firstTouchEventInfo.attributes.find("text")->second != "") {
+                sout << " at Widget( id: " << firstTouchEventInfo.attributes.find("id")->second << ", "
+                     << "text: " << firstTouchEventInfo.attributes.find("text")->second << ", "
+                     << "type: " << firstTouchEventInfo.attributes.find("type")->second<< ") "<< "; ";
             } else {
                 sout <<" at Point(x:" << firstTouchEventInfo.x << ", y:" << firstTouchEventInfo.y << ") "<< "; ";
             }
