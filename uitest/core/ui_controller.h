@@ -24,6 +24,7 @@
 #include <functional>
 #include "json.hpp"
 #include "ui_action.h"
+#include "select_strategy.h"
 
 namespace OHOS::uitest {
     struct UiEventSourceInfo {
@@ -50,8 +51,12 @@ namespace OHOS::uitest {
             return true;
         };
 
-        virtual void GetUiHierarchy(std::vector<std::pair<Window, nlohmann::json>> &out, bool getWidgetNodes,
-            string targetApp = "") {};
+        virtual void GetUiWindows(std::vector<Window> &out){};
+
+        virtual bool GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator)
+        {
+            return false;
+        };
 
         virtual bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec) const
         {
