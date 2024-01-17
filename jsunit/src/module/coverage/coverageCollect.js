@@ -14,18 +14,53 @@
  */
 
 import SysTestKit from "../kit/SysTestKit";
+import fs from '@ohos.file.fs';
 
 export async function collectCoverageData() {
-  if (globalThis.__coverage__ === undefined) {
-    return;
-  }
-  const strJson = JSON.stringify(globalThis.__coverage__);
-  const strLen = strJson.length;
-  const maxLen = 500;
-  const maxCount = Math.floor(strLen / maxLen);
-  const OHOS_REPORT_COVERAGE_DATA = 'OHOS_REPORT_COVERAGE_DATA:';
-  for (let count = 0; count <= maxCount; count++) {
-    console.info(`${OHOS_REPORT_COVERAGE_DATA} ${strJson.substring(count * maxLen, (count + 1) * maxLen)}`);
-    await SysTestKit.print(`${OHOS_REPORT_COVERAGE_DATA} ${strJson.substring(count * maxLen, (count + 1) * maxLen)}`);
-  }
+    if (globalThis.__coverage__ === undefined) {
+        return;
+    }
+    const strJson = JSON.stringify(globalThis.__coverage__);
+
+    let savePath = coverageCollectHelp.getSavePath();
+    let readPath = coverageCollectHelp.getReadPath();
+
+
+    console.info("write coverage data to:", savePath);
+    console.info("get coverage data in:", readPath);
+
+    let file = fs.openSync(savePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
+    let writeLen = fs.writeSync(file.fd, strJson, {encoding:"utf-8"});
+    console.info("write coverage data success:" + writeLen);
+    fs.closeSync(file);
+
+    const OHOS_REPORT_COVERAGE_PATH = 'OHOS_REPORT_COVERAGE_PATH:';
+    await SysTestKit.print(`${OHOS_REPORT_COVERAGE_PATH} ${readPath}`);
+    console.info(`${OHOS_REPORT_COVERAGE_PATH} ${readPath}`);
 }
+
+class CoverageCollectHelp {
+    constructor() {
+        this.savePath = "";
+        this.readPath = "";
+    }
+
+    setSavePath(savePath) {
+        this.savePath = savePath;
+    }
+
+    getSavePath() {
+        return this.savePath;
+    }
+
+    setReadPath(readPath) {
+        this.readPath = readPath;
+    }
+
+    getReadPath() {
+        return this.readPath;
+    }
+}
+
+let coverageCollectHelp = new CoverageCollectHelp();
+export default coverageCollectHelp;

@@ -367,7 +367,7 @@ namespace OHOS::uitest {
 
     void FrontendApiServer::Call(const ApiCallInfo &in, ApiReplyInfo &out) const
     {
-        LOG_D("Begin to invoke api '%{public}s'", in.apiId_.data());
+        LOG_I("Begin to invoke api '%{public}s'", in.apiId_.data());
         auto call = in;
         // initialize method signature
         if (sApiArgTypesMap.empty()) {
@@ -406,7 +406,7 @@ namespace OHOS::uitest {
 
     void ApiTransact(const ApiCallInfo &in, ApiReplyInfo &out)
     {
-        LOG_D("Begin to invoke api '%{public}s'", in.apiId_.data());
+        LOG_I("Begin to invoke api '%{public}s'", in.apiId_.data());
         FrontendApiServer::Get().Call(in, out);
     }
 
@@ -604,7 +604,6 @@ namespace OHOS::uitest {
 
     template <UiAttr kAttr, typename T> static void GenericOnAttrBuilder(const ApiCallInfo &in, ApiReplyInfo &out)
     {
-        const auto attrName = ATTR_NAMES[kAttr];
         // always create and return a new selector
         auto selector = make_unique<WidgetSelector>();
         if (in.callerObjRef_ != REF_SEED_ON) { // copy-construct from the caller if it's not seed
@@ -619,7 +618,7 @@ namespace OHOS::uitest {
             testValue = to_string(ReadCallArg<T>(in, INDEX_ZERO));
         }
         auto matchPattern = ReadCallArg<uint8_t>(in, INDEX_ONE, ValueMatchPattern::EQ); // match pattern argument
-        auto matcher = WidgetAttrMatcher(attrName, testValue, static_cast<ValueMatchPattern>(matchPattern));
+        auto matcher = WidgetMatchModel(kAttr, testValue, static_cast<ValueMatchPattern>(matchPattern));
         selector->AddMatcher(matcher);
         out.resultValue_ = StoreBackendObject(move(selector));
     }
@@ -680,14 +679,17 @@ namespace OHOS::uitest {
             vector<unique_ptr<Widget>> recv;
             if (in.apiId_ == "Driver.waitForComponent") {
                 uiOpArgs.waitWidgetMaxMs_ = ReadCallArg<uint32_t>(in, INDEX_ONE);
+                selector.SetWantMulti(false);
                 auto result = driver.WaitForWidget(selector, uiOpArgs, out.exception_);
                 if (result != nullptr) {
                     recv.emplace_back(move(result));
                 }
             } else {
+                selector.SetWantMulti(in.apiId_ == "Driver.findComponents");
                 driver.FindWidgets(selector, recv, out.exception_);
             }
             if (out.exception_.code_ != NO_ERROR) {
+                LOG_W("genericFindWidgetHandler has error: %{public}s", out.exception_.message_.c_str());
                 return;
             }
             if (in.apiId_ == "Driver.assertComponentExist") {
@@ -742,6 +744,7 @@ namespace OHOS::uitest {
             };
             auto window = driver.FindWindow(matcher, out.exception_);
             if (window == nullptr) {
+                LOG_W("There is no match window by %{public}s", filterJson.dump().data());
                 out.resultValue_ = nullptr;
             } else {
                 out.resultValue_ = StoreBackendObject(move(window), driverRef);
@@ -1157,7 +1160,7 @@ namespace OHOS::uitest {
             return;
         }
         // convert value-string to json value of target type
-        auto attrValue = snapshot->GetAttr(attrName, "NA");
+        auto attrValue = snapshot->GetAttr(kAttr);
         if (attrValue == "NA") {
             out.resultValue_ = nullptr; // no such attribute, return null
         } else if (kString) {
