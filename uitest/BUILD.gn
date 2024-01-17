@@ -36,10 +36,10 @@ ohos_static_library("uitest_core") {
     "${source_root}/core/dump_handler.cpp",
     "${source_root}/core/frontend_api_handler.cpp",
     "${source_root}/core/rect_algorithm.cpp",
-    "${source_root}/core/select_strategy.cpp",
     "${source_root}/core/ui_action.cpp",
     "${source_root}/core/ui_driver.cpp",
     "${source_root}/core/ui_model.cpp",
+    "${source_root}/core/widget_matcher.cpp",
     "${source_root}/core/widget_operator.cpp",
     "${source_root}/core/widget_selector.cpp",
     "${source_root}/core/window_operator.cpp",
@@ -158,7 +158,6 @@ ohos_static_library("uitest_addon") {
 ohos_executable("uitest_server") {
   configs = [ ":uitest_common_configs" ]
   sources = [
-    "${source_root}/server/element_node_iterator_impl.cpp",
     "${source_root}/server/server_main.cpp",
     "${source_root}/server/system_ui_controller.cpp",
   ]
@@ -273,10 +272,10 @@ ohos_unittest("uitest_core_unittest") {
     "${source_root}/test/common_utilities_test.cpp",
     "${source_root}/test/frontend_api_handler_test.cpp",
     "${source_root}/test/rect_algorithm_test.cpp",
-    "${source_root}/test/select_strategy_test.cpp",
     "${source_root}/test/ui_action_test.cpp",
     "${source_root}/test/ui_driver_test.cpp",
     "${source_root}/test/ui_model_test.cpp",
+    "${source_root}/test/widget_matcher_test.cpp",
     "${source_root}/test/widget_operator_test.cpp",
     "${source_root}/test/widget_selector_test.cpp",
   ]
