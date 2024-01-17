@@ -195,12 +195,11 @@ namespace OHOS::uitest {
             out.exception_ = ApiCallErr(NO_ERROR, "");
             // call split bar.
             auto selector = WidgetSelector();
-            auto attrMatcher = WidgetMatchModel(UiAttr::KEY, "EnhanceMaximizeBtn", EQ);
-            auto windowMatcher = WidgetMatchModel(UiAttr::HOST_WINDOW_ID, to_string(window_.id_), EQ);
+            auto attrMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::KEY], "EnhanceMaximizeBtn", EQ);
+            auto windowMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], to_string(window_.id_), EQ);
             selector.AddMatcher(attrMatcher);
             selector.AddMatcher(windowMatcher);
             selector.AddAppLocator(window_.bundleName_);
-            selector.SetWantMulti(false);
             vector<unique_ptr<Widget>> widgets;
             driver_.FindWidgets(selector, widgets, out.exception_);
             if (out.exception_.code_ != NO_ERROR) {
@@ -218,9 +217,8 @@ namespace OHOS::uitest {
             driver_.DelayMs(focusTime);
             // find split btn and click.
             auto selector2 = WidgetSelector();
-            auto attrMatcher2 = WidgetMatchModel(UiAttr::KEY, "EnhanceMenuScreenLeftRow", EQ);
+            auto attrMatcher2 = WidgetAttrMatcher(ATTR_NAMES[UiAttr::KEY], "EnhanceMenuScreenLeftRow", EQ);
             selector2.AddMatcher(attrMatcher2);
-            selector2.SetWantMulti(false);
             vector<unique_ptr<Widget>> widgets2;
             driver_.FindWidgets(selector2, widgets2, out.exception_);
             if (widgets2.empty()) {
@@ -290,12 +288,11 @@ namespace OHOS::uitest {
     {
         CallBar(out);
         auto selector = WidgetSelector();
-        auto attrMatcher = WidgetMatchModel(UiAttr::KEY, std::string(buttonId), EQ);
-        auto windowMatcher = WidgetMatchModel(UiAttr::HOST_WINDOW_ID, to_string(window_.id_), EQ);
+        auto attrMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::KEY], buttonId, EQ);
+        auto windowMatcher = WidgetAttrMatcher(ATTR_NAMES[UiAttr::HOST_WINDOW_ID], to_string(window_.id_), EQ);
         selector.AddMatcher(attrMatcher);
         selector.AddMatcher(windowMatcher);
         selector.AddAppLocator(window_.bundleName_);
-        selector.SetWantMulti(false);
         vector<unique_ptr<Widget>> widgets;
         driver_.FindWidgets(selector, widgets, out.exception_);
         if (out.exception_.code_ != NO_ERROR) {
