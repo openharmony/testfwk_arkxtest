@@ -37,43 +37,10 @@ namespace OHOS::uitest {
         return "";
     }
 
-    static void DFSMarshalWidget(std::vector<Widget> &allWidget, int index, nlohmann::json &dom,
-        const std::map<std::string, int> &widgetChildCountMap, std::map<std::string, int> &visitWidgetMap)
-    {
-        auto attrData = json();
-        allWidget.at(index).WrapperWidgetToJson(attrData);
-        auto childrenData = json::array();
-        int childIndex = 0;
-        int childCount = 0;
-        int childVisit = 0;
-        auto hierarchy = allWidget.at(index).GetHierarchy();
-        if (widgetChildCountMap.find(hierarchy) != widgetChildCountMap.cend()) {
-            childCount = widgetChildCountMap.at(hierarchy);
-        }
-        while (childVisit < childCount) {
-            auto tempChildHierarchy = WidgetHierarchyBuilder::GetChildHierarchy(hierarchy, childIndex);
-            ++childIndex;
-            if (visitWidgetMap.find(tempChildHierarchy) == visitWidgetMap.cend()) {
-                continue;
-            }
-            auto childWidIndex = visitWidgetMap.at(tempChildHierarchy);
-            if (!allWidget.at(childWidIndex).IsVisible()) {
-                ++childVisit;
-                continue;
-            }
-            auto childData = json();
-            DFSMarshalWidget(allWidget, childWidIndex, childData, widgetChildCountMap, visitWidgetMap);
-            childrenData.emplace_back(childData);
-            ++childVisit;
-        }
-        dom["attributes"] = attrData;
-        dom["children"] = childrenData;
-    }
-
     void DumpHandler::AddExtraAttrs(nlohmann::json &root, const map<int32_t, string_view> &elementTrees, size_t index)
     {
         auto windowIdValue = root["attributes"]["hostWindowId"].dump();
-        auto windowId = atoi(windowIdValue.substr(1, windowIdValue.size() - 2).c_str());
+        auto windowId = atoi(windowIdValue.substr(1, windowIdValue.size()-2).c_str());
         auto find = elementTrees.find(windowId);
         auto elementTree = (find != elementTrees.end()) ? find->second : "";
         string_view nodeEndStr = "|->";
@@ -97,7 +64,7 @@ namespace OHOS::uitest {
             extraAttrs["FontColor"] = move(fontColor);
         }
         if (!fontSize.empty()) {
-            extraAttrs["FontSize"] = move(fontSize);
+            extraAttrs["FontSize"] =move(fontSize);
         }
         if (!extraAttrs.empty()) {
             root["extraAttrs"] = extraAttrs;
@@ -108,23 +75,5 @@ namespace OHOS::uitest {
             auto &child = childrenData.at(idx);
             AddExtraAttrs(child, elementTrees, index);
         }
-    }
-
-    void DumpHandler::DumpWindowInfoToJson(vector<Widget> &allWidget, nlohmann::json &root)
-    {
-        std::map<std::string, int> visitWidgetMap;
-        std::map<std::string, int> widgetCountMap;
-        for (int i = 0; i < allWidget.size(); ++i) {
-            const Widget &wid = allWidget.at(i);
-            std::string hie = wid.GetHierarchy();
-            visitWidgetMap.emplace(hie, i);
-            std::string parentHie = WidgetHierarchyBuilder::GetParentWidgetHierarchy(hie);
-            if (widgetCountMap.find(parentHie) == widgetCountMap.cend()) {
-                widgetCountMap[parentHie] = 1;
-            } else {
-                widgetCountMap[parentHie] = widgetCountMap[parentHie] + 1;
-            }
-        }
-        DFSMarshalWidget(allWidget, 0, root, widgetCountMap, visitWidgetMap);
     }
 } // namespace OHOS::uitest
