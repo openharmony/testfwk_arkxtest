@@ -25,6 +25,9 @@
 namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
+    const std::string ROOT_HIERARCHY = "ROOT";
+    /**Enumerates the supported string value match rules.*/
+    enum ValueMatchPattern : uint8_t { EQ, CONTAINS, STARTS_WITH, ENDS_WITH };
 
     /**Enumerates the supported UiComponent attributes.*/
     enum UiAttr : uint8_t {
@@ -53,6 +56,8 @@ namespace OHOS::uitest {
         ABILITYNAME,
         BUNDLENAME,
         PAGEPATH,
+        DUMMY_ATTRNAME_SELECTION,
+        MAX, // mark the max length
     };
 
     /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
@@ -81,11 +86,15 @@ namespace OHOS::uitest {
         "abilityName",   // ABILITYNAME
         "bundleName",    // BUNDLENAME
         "pagePath",      // PAGEPATH
+        "dummyAttrnameSelection", // DUMMY_ATTRNAME_SELECTION
     };
 
+    const std::set<std::string> CONTAINER_TYPE = {
+        "List",          "Grid",   "WaterFlow", "GridCol",  "GridRow",    "Scroll",     "Flex",
+        "ListItemGroup", "Swiper", "DecorBar",  "_Common_", "TabContent", "WindowScene"};
     struct Point {
-        Point() : px_(0), py_(0) {};
-        Point(int32_t px, int32_t py) : px_(px), py_(py) {};
+        Point() : px_(0), py_(0){};
+        Point(int32_t px, int32_t py) : px_(px), py_(py){};
         int32_t px_;
         int32_t py_;
     };
@@ -97,7 +106,13 @@ namespace OHOS::uitest {
         {
             DCHECK(right_ >= left_ && bottom_ >= top_);
         };
-
+        Rect()
+        {
+            left_ = 0;
+            right_ = 0;
+            top_ = 0;
+            bottom_ = 0;
+        };
         int32_t left_;
         int32_t right_;
         int32_t top_;
@@ -122,11 +137,33 @@ namespace OHOS::uitest {
         {
             return bottom_ - top_;
         }
+
+        std::string Describe() const
+        {
+            std::stringstream ss;
+            ss << "Rect {left:" << left_ << ",right:" << right_ << ",top:" << top_ << ",bottom:" << bottom_ << "}";
+            return ss.str();
+        }
     };
 
-    class DumpHandler {
-    public:
-        static void AddExtraAttrs(nlohmann::json &root, const map<int32_t, string_view> &elementTrees, size_t index);
+    struct WidgetMatchModel {
+        WidgetMatchModel(UiAttr name, string value, ValueMatchPattern matchPattern)
+            : attrName(name), attrValue(value), pattern(matchPattern)
+        {
+        }
+        WidgetMatchModel() {}
+        std::string Describe() const
+        {
+            stringstream ss;
+            ss << "{";
+            ss << "attrName:" << ATTR_NAMES[attrName].data() << "; value:" << attrValue
+               << "; Pattern:" << to_string(pattern);
+            ss << "}";
+            return ss.str();
+        }
+        UiAttr attrName;
+        string attrValue;
+        ValueMatchPattern pattern;
     };
 
     /**Algorithm of rectangle.*/
@@ -183,7 +220,7 @@ namespace OHOS::uitest {
         // disable default constructor, copy constructor and assignment operator
         explicit Widget(std::string_view hierarchy) : hierarchy_(hierarchy)
         {
-            attributes_.insert(std::make_pair(ATTR_NAMES[UiAttr::HIERARCHY], hierarchy));
+            attributeVec_[UiAttr::HIERARCHY] = hierarchy;
         };
 
         ~Widget() override {}
@@ -192,10 +229,6 @@ namespace OHOS::uitest {
         {
             return COMPONENT_DEF;
         }
-
-        bool HasAttr(std::string_view name) const;
-
-        std::string GetAttr(std::string_view name, std::string_view defaultVal) const;
 
         Rect GetBounds() const
         {
@@ -207,145 +240,36 @@ namespace OHOS::uitest {
             return hierarchy_;
         }
 
-        void SetAttr(std::string_view name, std::string_view value);
-
-        void SetHostTreeId(std::string_view tid);
-
-        std::string GetHostTreeId() const;
-
         void SetBounds(const Rect &bounds);
 
         std::string ToStr() const;
 
-        std::unique_ptr<Widget> Clone(std::string_view hostTreeId, std::string_view hierarchy) const;
+        std::unique_ptr<Widget> Clone(std::string_view hierarchy) const;
 
-        std::map<std::string, std::string> GetAttrMap() const;
+        std::vector<std::string> GetAttrVec() const;
 
         bool IsVisible() const
         {
-            return GetAttr(ATTR_NAMES[UiAttr::VISIBLE], "") == "true";
+            return GetAttr(UiAttr::VISIBLE) == "true";
         }
 
+        void SetAttr(UiAttr attrId, string value);
+
+        std::string GetAttr(UiAttr attrId) const;
+
+        bool MatchAttr(const WidgetMatchModel& matchModel) const;
+
+        void SetHierarchy(const std::string& hierarch);
+
+        void WrapperWidgetToJson(nlohmann::json& out);
     private:
-        const std::string hierarchy_;
-        std::string hostTreeId_;
-        std::map<std::string, std::string> attributes_;
+        std::string hierarchy_;
+        std::vector<string> attributeVec_ = std::vector<string>(UiAttr::MAX + 1);
         Rect bounds_ = {0, 0, 0, 0};
     };
 
     // ensure Widget is movable, since we need to move a constructed Widget object into WidgetTree
     static_assert(std::is_move_constructible<Widget>::value, "Widget need to be movable");
-
-    class WidgetVisitor {
-    public:
-        virtual void Visit(const Widget &widget) = 0;
-    };
-
-    class WidgetTree {
-    public:
-        WidgetTree() = delete;
-
-        ~WidgetTree() {}
-
-        explicit WidgetTree(std::string name) : name_(std::move(name)), identifier_(GenerateTreeId()) {}
-
-        /**
-         * Construct tree nodes from the given dom data.
-         *
-         * @param dom: the dom json data.
-         * @param amendBounds: if or not amend widget bounds and visibility.
-         * */
-        void ConstructFromDom(const nlohmann::json &dom, bool amendBounds);
-
-        /**
-         * Marshal tree nodes hierarchy into the given dom data.
-         *
-         * @param dom: the dom json data.
-         * */
-        void MarshalIntoDom(nlohmann::json &dom) const;
-
-        void DfsTraverse(WidgetVisitor &visitor) const;
-
-        void DfsTraverseFronts(WidgetVisitor &visitor, const Widget &pivot) const;
-
-        void DfsTraverseRears(WidgetVisitor &visitor, const Widget &pivot) const;
-
-        void DfsTraverseParents(WidgetVisitor &visitor, const Widget &pivot) const;
-
-        void DfsTraverseDescendants(WidgetVisitor &visitor, const Widget &root) const;
-
-        /**
-         * Get the root widget node.
-         *
-         * @return the root widget node, or <code>nullptr</code> if the tree is empty or not constructed.
-         * */
-        const Widget *GetRootWidget() const;
-
-        /**
-         * Get the parent widget node of the given widget
-         *
-         * @param widget: the child widget.
-         * @returns the parent widget pointer, <code>nullptr</code> if the given node it's the root node.
-         * */
-        const Widget *GetParentWidget(const Widget &widget) const;
-
-        /**
-         * Get the child widget node of the given widget at the given index.
-         *
-         * @param widget: the parent widget.
-         * @param index: the child widget index, <b>starts from 0</b>.
-         * @returns the child widget pointer, or <code>nullptr</code> if there's no such child.
-         * */
-        const Widget *GetChildWidget(const Widget &widget, uint32_t index) const;
-
-        /**Check if the given widget node hierarchy is the root node hierarchy.*/
-        static bool IsRootWidgetHierarchy(std::string_view hierarchy);
-
-        /**
-         * Merge several tree into one tree.
-         *
-         * @param from: the subtrees to merge, should be sorted by z-order and the top one be at first.
-         * @param to: the root tree to merge into.
-         * @param mergedOrders: receive the indexes of subtree merged into the root.
-         * */
-        static void MergeTrees(const std::vector<std::unique_ptr<WidgetTree>> &from, WidgetTree &to,
-            vector<int32_t> &mergedOrders);
-
-    private:
-        const std::string name_;
-        const std::string identifier_;
-        bool widgetsConstructed_ = false;
-        // widget-hierarchy VS widget-ptr
-        std::map<std::string, Widget> widgetMap_;
-        // widget-hierarchies, dfs order
-        std::vector<std::string> widgetHierarchyIdDfsOrder_;
-
-        /**
-         * Get WidgetTree by hierarchy,return <code>nullptr</code> if no such widget exist.
-         * */
-        const Widget *GetWidgetByHierarchy(std::string_view hierarchy) const;
-
-        /**Check if the given widget is in this tree.*/
-        inline bool CheckIsMyNode(const Widget &widget) const;
-
-        /**Generated an unique tree-identifier.*/
-        static std::string GenerateTreeId();
-
-        void EnsureParentVisible(const Widget &widget);
-    };
-    
-    class TreeSnapshotTaker : public WidgetVisitor {
-    public:
-        explicit TreeSnapshotTaker(vector<string> &displayNodes, vector<string> &allNodes)
-            : displayNodes_(displayNodes), allNodes_(allNodes) {};
-
-        ~TreeSnapshotTaker() {}
-
-        void Visit(const Widget &widget) override;
-    private:
-        vector<string> &displayNodes_;
-        vector<string> &allNodes_;
-    };
 
     /**Enumerates the supported UiComponent attributes.*/
     enum WindowMode : uint8_t { UNKNOWN, FULLSCREEN, SPLIT_PRIMARY, SPLIT_SECONDARY, FLOATING, PIP };
@@ -361,8 +285,10 @@ namespace OHOS::uitest {
         {
             return UI_WINDOW_DEF;
         }
+
         // plain properties, make them public for easy access
         int32_t id_ = 0;
+        int32_t windowLayer_ = 0;
         std::string bundleName_ = "";
         std::string title_ = "";
         bool focused_ = false;
@@ -370,7 +296,28 @@ namespace OHOS::uitest {
         bool decoratorEnabled_ = false;
         Rect bounds_ = {0, 0, 0, 0};
         Rect visibleBounds_ = {0, 0, 0, 0};
+        std::vector<Rect> invisibleBoundsVec_;
+        std::string abilityName_ = "";
+        std::string pagePath_ = "";
         WindowMode mode_ = UNKNOWN;
+    };
+
+    class DumpHandler {
+    public:
+        static void AddExtraAttrs(nlohmann::json &root, const map<int32_t, string_view> &elementTrees, size_t index);
+        static void DumpWindowInfoToJson(vector<Widget> &allWidget, nlohmann::json &root);
+    };
+    
+    class WidgetHierarchyBuilder {
+    public:
+        static string Build(string_view parentWidgetHierarchy, uint32_t childIndex);
+
+        static string GetParentWidgetHierarchy(string_view hierarchy);
+
+        static string GetChildHierarchy(string_view hierarchy, uint32_t childIndex);
+
+    private:
+        static constexpr auto HIERARCHY_SEPARATOR = ",";
     };
 } // namespace OHOS::uitest
 

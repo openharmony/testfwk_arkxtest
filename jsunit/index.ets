@@ -14,66 +14,118 @@
  */
 
 import Core from './src/core';
-import {ConfigService} from './src/module/config/configService'
-import {DEFAULT, TestType, Size, Level, TAG} from './src/Constant';
+import {TestType, Size, Level, DEFAULT} from './src/Constant';
 import DataDriver from './src/module/config/DataDriver';
 import ExpectExtend from './src/module/assert/ExpectExtend';
 import OhReport from './src/module/report/OhReport';
-import SysTestKit from './src/module/kit/SysTestKit';
-import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified} from './src/interface';
-import {MockKit, when} from './src/module/mock/MockKit';
-import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
+import coverageCollectHelp from './src/module/coverage/coverageCollect';
 
-class Hypium {
-    static setData(data:Object) {
-        const core:Core = Core.getInstance();
-        const dataDriver:DataDriver = new DataDriver({data});
-        core.addService('dataDriver', dataDriver);
-    }
-
-    static setTimeConfig(systemTime:Object) {
-        SysTestKit.systemTime = systemTime;
-    }
-
-    static hypiumTest(abilityDelegator:Object, abilityDelegatorArguments:Object, testsuite:Function) {
-        const core:Core = Core.getInstance();
-        const expectExtend:ExpectExtend = new ExpectExtend({
-            id: 'extend'
-        });
-        core.addService('expect', expectExtend);
-        const ohReport:OhReport = new OhReport({
-            delegator: abilityDelegator,
-            abilityDelegatorArguments: abilityDelegatorArguments
-        });
-        SysTestKit.delegator = abilityDelegator;
-        core.addService('report', ohReport);
-        core.init();
-        core.subscribeEvent('spec', ohReport);
-        core.subscribeEvent('suite', ohReport);
-        core.subscribeEvent('task', ohReport);
-        const configService:ConfigService = core.getDefaultService('config');
-        if (abilityDelegatorArguments !== null) {
-            let testParameters:Object = configService.translateParams((abilityDelegatorArguments as Record<string, Object>).parameters);
-            console.info(`${TAG}parameters:${JSON.stringify(testParameters)}`);
-            configService.setConfig(testParameters);
-        }
-        testsuite();
-        core.execute(abilityDelegator);
-    }
+export declare class Hypium {
+    static setData(data: Object): void
+    static setTimeConfig(systemTime: Object): void
+    static hypiumTest(abilityDelegator: Object, abilityDelegatorArguments: Object, testsuite: Function): void
 }
 
 export {
-    Hypium,
     Core,
-    DEFAULT,
-    TestType,
-    Size,
-    Level,
     DataDriver,
     ExpectExtend,
     OhReport,
-    SysTestKit,
-    describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified,
-    MockKit, when,
-    ArgumentMatchers
+    TestType,
+    Size,
+    Level,
+    DEFAULT,
+    coverageCollectHelp
 };
+
+type allExpectType = Object | undefined | null
+
+export declare function describe(testSuiteName: string, callback: Function): void
+
+export declare function beforeItSpecified(testCaseNames: Array<string> | string, callback: Function): void
+
+export declare function afterItSpecified(testCaseNames: Array<string> | string, callback: Function): void
+
+export declare function beforeEach(callback: Function): void
+
+export declare function afterEach(callback: Function): void
+
+export declare function beforeAll(callback: Function): void
+
+export declare function afterAll(callback: Function): void
+
+export declare function it(testCaseName: string, attribute: (TestType | Size | Level), callback: Function): void
+
+export declare interface Assert {
+    assertClose(expectValue: number, precision: number): void
+    assertContain(expectValue: allExpectType): void
+    assertEqual(expectValue: allExpectType): void
+    assertFail(): void
+    assertFalse(): void
+    assertTrue(): void
+    assertInstanceOf(expectValue: string): void
+    assertLarger(expectValue: number): void
+    assertLess(expectValue: number): void
+    assertNull(): void
+    assertThrowError(expectValue: string): void
+    assertUndefined(): void
+    assertLargerOrEqual(expectValue: number):void
+    assertLessOrEqual(expectValue: number):void
+    assertNaN():void
+    assertNegUnlimited(): void
+    assertPosUnlimited(): void
+    not(): Assert;
+    assertDeepEquals(expectValue: allExpectType):void
+    assertPromiseIsPending(): void
+    assertPromiseIsRejected(): void
+    assertPromiseIsRejectedWith(expectValue?: allExpectType): void
+    assertPromiseIsRejectedWithError(...expectValue: allExpectType[]): void
+    assertPromiseIsResolved(): void
+    assertPromiseIsResolvedWith(expectValue?: allExpectType): void
+}
+
+export declare function expect(actualValue?: allExpectType): Assert
+
+export declare class ArgumentMatchers {
+    static any: allExpectType;
+    static anyString: string;
+    static anyBoolean: Boolean;
+    static anyNumber: Number;
+    static anyObj: Object;
+    static anyFunction: Function;
+    static matchRegexs(Regex: RegExp): void
+}
+
+declare interface whenResult {
+    afterReturn: (value: allExpectType) => allExpectType
+    afterReturnNothing: () => undefined
+    afterAction: (action: allExpectType) => allExpectType
+    afterThrow: (e_msg: string) => string
+}
+
+export declare function when(f:Function): (f?: allExpectType | void) => whenResult
+
+export declare interface VerificationMode {
+    times(count: Number): void
+    never(): void
+    once(): void
+    atLeast(count: Number): void
+    atMost(count: Number): void
+}
+
+export declare class MockKit {
+    constructor()
+    mockFunc(obj: Object, func: Function): Function
+    mockObject(obj: Object): Object
+    verify(methodName: String, argsArray: Array<allExpectType>): VerificationMode
+    ignoreMock(obj: Object, func: Function): void
+    clear(obj: Object): void
+    clearAll(): void
+}
+
+export declare class SysTestKit {
+    static actionStart(tag: string): void
+    static actionEnd(tag: string): void
+    static existKeyword(keyword: string, timeout?: number): boolean
+}
+
