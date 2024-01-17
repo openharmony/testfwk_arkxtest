@@ -242,8 +242,7 @@ namespace OHOS::uitest {
             std::this_thread::sleep_for(std::chrono::milliseconds(VelocityTracker::TIME_INDEX)); // 确保界面已更新
             ApiCallErr err(NO_ERROR);
             auto layout = nlohmann::json();
-            driver.DumpUiHierarchy(layout, false, false, err);
-            selector.SetWantMulti(true);
+            driver.GetLayoutJson(layout);
             driver.FindWidgets(selector, rev, err, true);
             PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
             pointerTracker_.WriteData(info, cout_lock);
@@ -303,7 +302,7 @@ namespace OHOS::uitest {
                 widgetsCon.wait(widgetsLck);
             }
             if (recordMode != "point") {
-                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y)->GetAttrVec();
+                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y).GetAttrMap();
             }
             pointerTracker_.HandleDownEvent(touchEvent);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
@@ -312,13 +311,13 @@ namespace OHOS::uitest {
             pointerTracker_.HandleMoveEvent(touchEvent, OP_DRAG);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP) {
             if (recordMode != "point") {
-                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y)->GetAttrVec();
+                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y).GetAttrMap();
             }
             pointerTracker_.HandleUpEvent(touchEvent);
             WritePointerInfo();
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_PULL_UP) {
             if (recordMode != "point") {
-                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y)->GetAttrVec();
+                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y).GetAttrMap();
             }
             pointerTracker_.HandleUpEvent(touchEvent, OP_DRAG);
             WritePointerInfo();
@@ -355,7 +354,6 @@ namespace OHOS::uitest {
     {
         recordMode = modeOpt;
         ApiCallErr err(NO_ERROR);
-        selector.SetWantMulti(true);
         driver.FindWidgets(selector, rev, err, true);
         auto screenSize = driver.GetDisplaySize(err);
         Rect windowBounds = Rect(0, screenSize.px_, 0,  screenSize.py_);
