@@ -22,7 +22,6 @@ import SysTestKit from './src/module/kit/SysTestKit';
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified} from './src/interface';
 import {MockKit, when} from './src/module/mock/MockKit';
 import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
-import coverageCollectHelp from './src/module/coverage/coverageCollect';
 
 class Hypium {
     static setData(data) {
@@ -75,6 +74,5 @@ export {
     SysTestKit,
     describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified,
     MockKit, when,
-    ArgumentMatchers,
-    coverageCollectHelp
+    ArgumentMatchers
 };
