@@ -20,56 +20,9 @@
 #include "ui_model.h"
 #include "widget_operator.h"
 #include "widget_selector.h"
-#include "widget_matcher.h"
 #include "frontend_api_defines.h"
 namespace OHOS::uitest {
-    const Widget FindWidget(UiDriver &driver, float x, float y);
-    class WidgetMatcherByCoord final : public WidgetMatcher {
-    public:
-        WidgetMatcherByCoord() = delete;
-
-        explicit WidgetMatcherByCoord(float x, float y)
-        {
-            x_ = x;
-            y_ = y;
-        }
-        std::string Describe() const override;
-
-        bool Matches(const Widget &widget) const override;
-
-    private:
-        float x_;
-        float y_;
-    };
-
-    class WidgetCollector : public WidgetVisitor {
-    public:
-        WidgetCollector(const WidgetMatcherByCoord &matcher, std::map<float, Widget> &recv, Point down)
-            : matcher_(matcher), receiver_(recv), downPoint_(down) {}
-
-        ~WidgetCollector() {}
-
-        void Visit(const Widget &widget) override;
-
-        int32_t GetDept(const Widget &widget) const;
-        
-        const Widget GetMaxDepWidget()
-        {
-            Widget widget("");
-            if (receiver_.find(maxDep) != receiver_.end()) {
-                return receiver_.find(maxDep)->second;
-            } else {
-                LOG_W("MaxDep widget not found.");
-                return widget;
-            }
-        }
-
-    private:
-        const WidgetMatcherByCoord &matcher_;
-        std::map<float, Widget> &receiver_;
-        int32_t maxDep = 0;
-        Point downPoint_;
-    };
+    std::unique_ptr<Widget> FindWidget(UiDriver &driver, float x, float y);
 } // namespace OHOS::uitest
 
 #endif // FIND_WIDGET_H
