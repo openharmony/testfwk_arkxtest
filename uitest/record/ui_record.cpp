@@ -51,7 +51,7 @@ namespace OHOS::uitest {
         StartUp = 0, StartEnd, StartFindWidgets, FindWidgetsEnd
     };
 
-    inline const std::string InputEventCallback::DEFAULT_DIR = "/data/local/tmp/layout";
+    inline const std::string InputEventCallback::DEFAULT_DIR = "/data/local/tmp";
     std::string EventData::defaultDir = InputEventCallback::DEFAULT_DIR;
 
     bool SpecialKeyMapExistKey(int32_t keyCode, TouchOpt &touchop)
