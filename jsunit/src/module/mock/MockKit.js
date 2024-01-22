@@ -59,7 +59,7 @@ class MockKit {
 
     clear(obj) {
         if (!obj) throw Error("Please enter an object to be cleaned");
-        if (typeof (obj) != 'object') throw new Error('Not a object');
+        if (typeof (obj) !== 'object' || typeof (obj) !== 'function') throw new Error('Not a object');
         this.recordMockedMethod.forEach(function (value, key, map) {
             if (key) {
                 obj[key] = value;
@@ -68,8 +68,8 @@ class MockKit {
     }
 
     ignoreMock(obj, method) {
-        if (typeof (obj) != 'object') throw new Error('Not a object');
-        if (typeof (method) != 'function') throw new Error('Not a function');
+        if (typeof (obj) !== 'object' && typeof (obj) !== 'function') throw new Error('Not a object');
+        if (typeof (method) !== 'function') throw new Error('Not a function');
         let og = this.recordMockedMethod.get(method.propName);
         if (og) {
             obj[method.propName] = og;
@@ -119,11 +119,11 @@ class MockKit {
         }
         let stubSetKey = this.currentSetKey.get(f);
 
-        if (stubSetKey && (typeof (retrunKet) != "undefined")) {
+        if (stubSetKey && (typeof (retrunKet) !== "undefined")) {
             retrunKet = stubSetKey;
         }
         let matcher = new ArgumentMatchers();
-        if (matcher.matcheReturnKey(params[0], undefined, stubSetKey) && matcher.matcheReturnKey(params[0], undefined, stubSetKey) != stubSetKey) {
+        if (matcher.matcheReturnKey(params[0], undefined, stubSetKey) && matcher.matcheReturnKey(params[0], undefined, stubSetKey) !== stubSetKey) {
             retrunKet = params[0];
         }
 
@@ -150,7 +150,7 @@ class MockKit {
     }
 
     isFunctionFromPrototype(f, container, propName) {
-        if (container.constructor != Object && container.constructor.prototype !== container) {
+        if (container.constructor !== Object && container.constructor.prototype !== container) {
             return container.constructor.prototype[propName] === f;
         }
         return false;
@@ -199,7 +199,7 @@ class MockKit {
         f.original = originalMethod || null;
 
         if (originalObject && originalMethod) {
-            if (typeof (originalMethod) != 'function') throw new Error('Not a function');
+            if (typeof (originalMethod) !== 'function') throw new Error('Not a function');
             var name = this.findName(originalObject, originalMethod);
             originalObject[name] = f;
             this.recordMockedMethod.set(name, originalMethod);
@@ -237,8 +237,8 @@ class MockKit {
 }
 
 function ifMockedFunction(f) {
-    if (Object.prototype.toString.call(f) != "[object Function]" &&
-        Object.prototype.toString.call(f) != "[object AsyncFunction]") {
+    if (Object.prototype.toString.call(f) !== "[object Function]" &&
+        Object.prototype.toString.call(f) !== "[object AsyncFunction]") {
         throw Error("not a function");
     }
     if (!f.stub) {
