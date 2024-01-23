@@ -59,7 +59,7 @@ class MockKit {
 
     clear(obj) {
         if (!obj) throw Error("Please enter an object to be cleaned");
-        if (typeof (obj) !== 'object' || typeof (obj) !== 'function') throw new Error('Not a object');
+        if (typeof (obj) !== 'object' && typeof (obj) !== 'function') throw new Error('Not a object');
         this.recordMockedMethod.forEach(function (value, key, map) {
             if (key) {
                 obj[key] = value;
