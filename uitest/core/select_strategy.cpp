@@ -134,6 +134,14 @@ namespace OHOS::uitest {
 
     void SelectStrategy::RefreshWidgetBounds(const Rect &containerParentRect, Widget &widget)
     {
+        Rect oriBounds = widget.GetBounds();
+        // parent rect is 0, but it has child, keep visible from access not refresh bound
+        if ((oriBounds.GetHeight() == 0 || oriBounds.GetWidth() == 0) &&
+            (oriBounds.left_ >= 0 && oriBounds.top_ >= 0)) {
+            LOG_I("Widget %{public}s height or widget is zero, rect is %{public}s, keep it visible",
+                  widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data(), oriBounds.Describe().data());
+            return;
+        }
         Rect widgetVisibleBounds = Rect{0, 0, 0, 0};
         CalcWidgetVisibleBounds(widget, containerParentRect, widgetVisibleBounds);
 
