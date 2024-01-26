@@ -59,7 +59,7 @@ class MockKit {
 
     clear(obj) {
         if (!obj) throw Error("Please enter an object to be cleaned");
-        if (typeof (obj) !== 'object' && typeof (obj) !== 'function') throw new Error('Not a object');
+        if (typeof (obj) !== 'object' && typeof (obj) !== 'function') throw new Error('Not a object or static class');
         this.recordMockedMethod.forEach(function (value, key, map) {
             if (key) {
                 obj[key] = value;
@@ -68,7 +68,7 @@ class MockKit {
     }
 
     ignoreMock(obj, method) {
-        if (typeof (obj) !== 'object' && typeof (obj) !== 'function') throw new Error('Not a object');
+        if (typeof (obj) !== 'object' && typeof (obj) !== 'function') throw new Error('Not a object or static class');
         if (typeof (method) !== 'function') throw new Error('Not a function');
         let og = this.recordMockedMethod.get(method.propName);
         if (og) {
