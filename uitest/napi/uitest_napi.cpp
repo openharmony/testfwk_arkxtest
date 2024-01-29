@@ -206,7 +206,7 @@ namespace OHOS::uitest {
             auto fd = ctx.callInfo_.paramList_.at(INDEX_ZERO).get<int>();
             (void) close(fd);
         }
-        LOG_D("Start to Unmarshal transaction result");
+        LOG_I("Start to Unmarshal transaction result");
         const auto &message = reply.exception_.message_;
         ErrCode code = reply.exception_.code_;
         if (code == INTERNAL_ERROR || code == ERR_INTERNAL) {
@@ -215,7 +215,7 @@ namespace OHOS::uitest {
             LOG_I("ErrorInfo: code='%{public}u', message='%{public}s'", code, message.c_str());
             return CreateJsException(env, code, message);
         }
-        LOG_D("Start to Unmarshal return value: %{public}s", reply.resultValue_.dump().c_str());
+        LOG_I("Start to Unmarshal return value: %{public}s", reply.resultValue_.dump().c_str());
         const auto resultType = reply.resultValue_.type();
         napi_value result = nullptr;
         if (resultType == nlohmann::detail::value_t::null) { // return null
