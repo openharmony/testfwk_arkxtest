@@ -93,7 +93,7 @@ namespace OHOS::uitest {
                 ss << ", ";
             }
             ss << "]";
-            LOG_I("window id is %{public}d, rect info is %{public}s", win.id_, ss.str().data());
+            LOG_D("window id is %{public}d, rect info is %{public}s", win.id_, ss.str().data());
         }
         // actice or focus window move to top
         std::sort(windowCacheVec_.begin(), windowCacheVec_.end(), WindowCacheCompareGreater());
