@@ -22,12 +22,12 @@ class VerificationMode {
         }
     }
     never() {
-        if (this.doTimes === 0) {
+        if (this.doTimes !== 0) {
             throw Error(`expect 0 actual ${this.doTimes}`);
         }
     }
     once() {
-        if (this.doTimes === 1) {
+        if (this.doTimes !== 1) {
             throw Error(`expect 1 actual ${this.doTimes}`);
         }
     }
