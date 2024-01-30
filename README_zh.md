@@ -1238,8 +1238,8 @@ import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.UiTest'
 其中assertComponentExist接口是断言API，用于断言当前界面存在目标控件；如果控件不存在，该API将抛出JS异常，使当前测试用例失败。
 
 ```javascript
- import {ON,Driver,Component} from '@ohos.UiTest'
-
+ import { Driver, ON } from '@ohos.UiTest';
+ import { describe, it} from '@ohos/hypium';
  export default async function abilityTest() {
   describe('UiTestDemo', () => {
     it('Uitest_demo0', 0, async (done: Function) => {
@@ -1247,7 +1247,7 @@ import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.UiTest'
         // create Driver
         let driver: Driver = Driver.create()
         // assert text 'hello' exists on current Ui
-        await assertComponentExist(ON.text('hello'))
+        await driver.assertComponentExist(ON.text('hello'))
       } finally {
         done()
       }
