@@ -45,10 +45,8 @@ class MockKit {
         this.reset();
     }
     clear(obj) {
-        if (!obj)
-            throw Error("Please enter an object to be cleaned");
-        if (typeof (obj) != 'object')
-            throw new Error('Not a object');
+        if (!obj) throw Error("Please enter an object to be cleaned");
+        if (typeof (obj) !== 'object' && typeof (obj) !== 'function') throw new Error('Not a object or static class');
         this.recordMockedMethod.forEach(function (value, key, map) {
             if (key) {
                 obj[key] = value;
@@ -56,10 +54,8 @@ class MockKit {
         });
     }
     ignoreMock(obj, method) {
-        if (typeof (obj) != 'object')
-            throw new Error('Not a object');
-        if (typeof (method) != 'function')
-            throw new Error('Not a function');
+        if (typeof (obj) !== 'object' && typeof (obj) !== 'function') throw new Error('Not a object or static class');
+        if (typeof (method) !== 'function') throw new Error('Not a function');
         let og = this.recordMockedMethod.get(method.propName);
         if (og) {
             obj[method.propName] = og;
@@ -82,7 +78,7 @@ class MockKit {
             values = new Map();
         }
         let key = params[0];
-        if (typeof key == "undefined") {
+        if (typeof key === "undefined") {
             key = "anonymous-mock-" + f.propName;
         }
         let matcher = new ArgumentMatchers();
@@ -101,15 +97,16 @@ class MockKit {
             return undefined;
         }
         let retrunKet = params[0];
-        if (typeof retrunKet == "undefined") {
+        if (typeof retrunKet === "undefined") {
             retrunKet = "anonymous-mock-" + f.propName;
         }
         let stubSetKey = this.currentSetKey.get(f);
-        if (stubSetKey && (typeof (retrunKet) != "undefined")) {
+
+        if (stubSetKey && (typeof (retrunKet) !== "undefined")) {
             retrunKet = stubSetKey;
         }
         let matcher = new ArgumentMatchers();
-        if (matcher.matcheReturnKey(params[0], undefined, stubSetKey) && matcher.matcheReturnKey(params[0], undefined, stubSetKey) != stubSetKey) {
+        if (matcher.matcheReturnKey(params[0], undefined, stubSetKey) && matcher.matcheReturnKey(params[0], undefined, stubSetKey) !== stubSetKey) {
             retrunKet = params[0];
         }
         values.forEach(function (value, key, map) {
@@ -130,7 +127,7 @@ class MockKit {
         return name;
     }
     isFunctionFromPrototype(f, container, propName) {
-        if (container.constructor != Object && container.constructor.prototype !== container) {
+        if (container.constructor !== Object && container.constructor.prototype !== container) {
             return container.constructor.prototype[propName] === f;
         }
         return false;
