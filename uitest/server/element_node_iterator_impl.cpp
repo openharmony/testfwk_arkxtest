@@ -273,6 +273,7 @@ namespace OHOS::uitest {
         widget.SetAttr(UiAttr::VISIBLE, element.IsVisible() ? "true" : "false");
         const auto app = element.GetBundleName();
         widget.SetAttr(UiAttr::BUNDLENAME, app);
+        widget.SetAttr(UiAttr::HINT, element.GetHint());
         WrapperNodeActionAttrToVec(widget, element);
     }
 
