@@ -57,6 +57,7 @@ namespace OHOS::uitest {
         BUNDLENAME,
         PAGEPATH,
         DUMMY_ATTRNAME_SELECTION,
+        HINT,
         MAX, // mark the max length
     };
 
@@ -87,6 +88,7 @@ namespace OHOS::uitest {
         "bundleName",    // BUNDLENAME
         "pagePath",      // PAGEPATH
         "dummyAttrnameSelection", // DUMMY_ATTRNAME_SELECTION
+        "hint", // HINT
     };
 
     const std::set<std::string> CONTAINER_TYPE = {
