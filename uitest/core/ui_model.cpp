@@ -122,6 +122,7 @@ namespace OHOS::uitest {
         }
         out[ATTR_NAMES[UiAttr::VISIBLE].data()] = attributeVec_[UiAttr::VISIBLE];
         out[ATTR_NAMES[UiAttr::HASHCODE].data()] = attributeVec_[UiAttr::HASHCODE];
+        out[ATTR_NAMES[UiAttr::HINT].data()] = attributeVec_[UiAttr::HINT];
     }
 
     string WidgetHierarchyBuilder::Build(string_view parentWidgetHierarchy, uint32_t childIndex)
