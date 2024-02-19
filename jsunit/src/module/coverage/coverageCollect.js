@@ -14,18 +14,57 @@
  */
 
 import SysTestKit from "../kit/SysTestKit";
+import fs from '@ohos.file.fs';
+import {TAG} from '../../Constant';
 
 export async function collectCoverageData() {
     if (globalThis.__coverage__ === undefined) {
+        console.info(`${TAG} globalThis not have coverage`);
         return;
     }
     const strJson = JSON.stringify(globalThis.__coverage__);
-    const strLen = strJson.length;
-    const maxLen = 500;
-    const maxCount = Math.floor(strLen / maxLen);
-    const OHOS_REPORT_COVERAGE_DATA = 'OHOS_REPORT_COVERAGE_DATA:';
-    for (let count = 0; count <= maxCount; count++) {
-        console.info(`${OHOS_REPORT_COVERAGE_DATA} ${strJson.substring(count * maxLen, (count + 1) * maxLen)}`);
-        await SysTestKit.print(`${OHOS_REPORT_COVERAGE_DATA} ${strJson.substring(count * maxLen, (count + 1) * maxLen)}`);
+    let testMode = globalThis.__testMode__;
+    console.info(`${TAG} coverage data testMode: ${testMode}`)
+    let savePath = globalThis.__savePath__;
+    console.info(`${TAG} write coverage data to: ${savePath}`);
+    let readPath = globalThis.__readPath__;
+    console.info(`${TAG} read coverage data in: ${readPath}`);
+
+    // run callback mode if local test or (save path and read path ) is not defined
+    if (!testMode || !isCoveragePathValid(savePath)) {
+        console.info(`${TAG} run coverage data in call back mode`)
+        const strLen = strJson.length;
+        const maxLen = 500;
+        const maxCount = Math.floor(strLen / maxLen);
+        const OHOS_REPORT_COVERAGE_DATA = 'OHOS_REPORT_COVERAGE_DATA:';
+        for (let count = 0; count <= maxCount; count++) {
+            console.info(`${OHOS_REPORT_COVERAGE_DATA} ${strJson.substring(count * maxLen, (count + 1) * maxLen)}`);
+            await SysTestKit.print(`${OHOS_REPORT_COVERAGE_DATA} ${strJson.substring(count * maxLen, (count + 1) * maxLen)}`);
+        }
+        return;
     }
+    console.info(`${TAG} run coverage data in save file mode`);
+    if(fs.accessSync(savePath)) {
+        fs.unlinkSync(savePath)
+    }
+    let file = fs.openSync(savePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
+    let writeLen = fs.writeSync(file.fd, strJson, {encoding:"utf-8"});
+    console.info(`${TAG} write coverage data success: ${writeLen}`);
+    fs.closeSync(file);
+    const OHOS_REPORT_COVERAGE_PATH = 'OHOS_REPORT_COVERAGE_PATH:';
+    await SysTestKit.print(`${OHOS_REPORT_COVERAGE_PATH} ${readPath}`);
+    console.info(`${OHOS_REPORT_COVERAGE_PATH} ${readPath}`);
+}
+
+function isCoveragePathValid(inputPath) {
+    if (!inputPath) {
+        return false;
+    }
+    const jsCoverageFileName = 'js_coverage.json';
+    if (inputPath.indexOf(jsCoverageFileName) === -1) {
+        return false;
+    }
+    let inputPathDir = inputPath.substring(0, inputPath.length - jsCoverageFileName.length);
+    console.info(`${TAG} coverage data inputPathDir: ${inputPathDir}`);
+    return fs.accessSync(inputPathDir);
 }
