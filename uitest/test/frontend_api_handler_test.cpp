@@ -17,8 +17,10 @@
 
 #include "gtest/gtest.h"
 // For testing private method
+#include "json.hpp"
 #define private public
 #include "frontend_api_handler.h"
+#undef private
 #include "dummy_controller.h"
 #include "widget_selector.h"
 #include "ui_driver.h"
