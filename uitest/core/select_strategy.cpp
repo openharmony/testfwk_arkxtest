@@ -603,10 +603,10 @@ namespace OHOS::uitest {
                                            const std::vector<int> &myselfTargets)
         {
             for (int targetId : myselfTargets) {
-                std::string_view targetHie = visitWidgets[targetId].GetHierarchy();
+                const std::string &targetHie = visitWidgets[targetId].GetHierarchy();
                 std::vector<int> parentIndexVec;
                 for (int index = 0; index < visitWidgets.size(); ++index) {
-                    std::string_view visitHie = visitWidgets[index].GetHierarchy();
+                    const std::string &visitHie = visitWidgets[index].GetHierarchy();
                     if (targetHie.length() <= visitHie.length() || targetHie.find(visitHie) != 0) {
                         continue;
                     }
