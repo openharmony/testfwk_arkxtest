@@ -291,33 +291,31 @@ namespace OHOS::uitest {
                 if (!isAnchorMatch) {
                     continue;
                 }
-                std::string endId = tempAnchorWidget.get().GetAttr(UiAttr::ACCESSIBILITY_ID);
-                LocateNodeAfterBeforeAnchor(endId, visitWidgets, targetWidgets);
+                LocateNodeAfterBeforeAnchor(visitWidgets, targetWidgets);
                 if (!targetWidgets.empty() && !wantMulti_) {
                     return;
                 }
             }
         }
 
-        void LocateNodeAfterBeforeAnchor(std::string_view endId,
-                                         std::vector<Widget> &visitWidgets,
+        void LocateNodeAfterBeforeAnchor(std::vector<Widget> &visitWidgets,
                                          std::vector<int> &targetWidgets)
         {
-            std::string currentId = "";
-            while (currentId != endId) {
-                for (int i = 0; i < visitWidgets.size(); ++i) {
-                    bool isMyselfMatch = true;
-                    currentId = visitWidgets[i].GetAttr(UiAttr::ACCESSIBILITY_ID);
-                    for (const auto &myselfIt : myselfMatch_) {
-                        isMyselfMatch = visitWidgets[i].MatchAttr(myselfIt) && isMyselfMatch;
-                    }
-                    if (!isMyselfMatch) {
-                        continue;
-                    }
-                    targetWidgets.emplace_back(i);
-                    if (!wantMulti_) {
-                        return;
-                    }
+            int index = 0;
+            if (targetWidgets.size() > 0) {
+                index = targetWidgets[targetWidgets.size() - 1] + 1;
+            }
+            for (; index < visitWidgets.size() - 1; ++index) {
+                bool isMyselfMatch = true;
+                for (const auto &myselfIt : myselfMatch_) {
+                    isMyselfMatch = visitWidgets[index].MatchAttr(myselfIt) && isMyselfMatch;
+                }
+                if (!isMyselfMatch) {
+                    continue;
+                }
+                targetWidgets.emplace_back(index);
+                if (!wantMulti_) {
+                    return;
                 }
             }
         }
