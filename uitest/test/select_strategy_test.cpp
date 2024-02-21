@@ -15,10 +15,12 @@
 
 #include "gtest/gtest.h"
 
+#include "mock_element_node_iterator.h"
 #define private public
 #define protected public
-#include "mock_element_node_iterator.h"
 #include "select_strategy.h"
+#undef private
+#undef protected
 #include "ui_controller.h"
 #include "ui_action.h"
 
@@ -373,6 +375,58 @@ TEST(SelectStrategyTest, beforeStrategyForAnchorIsBeforeMultiTarget)
     ASSERT_EQ(visits3[targets3[1]].GetAttr(UiAttr::ACCESSIBILITY_ID), "5");
 }
 
+TEST(SelectStrategyTest, beforeStrategyForAnchorIsTargetForMultiTargets)
+{
+    std::unique_ptr<ElementNodeIterator> iterator = nullptr;
+    ConstructIterator(iterator);
+    Window w1{12};
+    w1.windowLayer_ = 2;
+    w1.bounds_ = Rect{0, 100, 0, 120};
+    std::vector<Widget> visits3;
+    std::vector<int> targets3;
+    WidgetMatchModel anchor3{UiAttr::TEXT, "Text End", ValueMatchPattern::EQ};
+    WidgetMatchModel sef3{UiAttr::TYPE, "Text", ValueMatchPattern::EQ};
+    std::vector<WidgetMatchModel> anchorMatchers;
+    anchorMatchers.emplace_back(anchor3);
+    std::vector<WidgetMatchModel> myselfMatchers;
+    myselfMatchers.emplace_back(sef3);
+    StrategyBuildParam buildParam;
+    buildParam.myselfMatcher = myselfMatchers;
+    buildParam.beforeAnchorMatcherVec.emplace_back(anchorMatchers);
+    std::unique_ptr<SelectStrategy> beforeStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, true);
+    beforeStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3, false);
+    ASSERT_EQ(visits3.size(), 12);
+    ASSERT_EQ(targets3.size(), 3);
+    ASSERT_EQ(visits3[targets3[0]].GetAttr(UiAttr::TEXT), "Text One");
+    ASSERT_EQ(visits3[targets3[1]].GetAttr(UiAttr::TEXT), "Text One");
+    ASSERT_EQ(visits3[targets3[2]].GetAttr(UiAttr::TEXT), "");
+}
+
+TEST(SelectStrategyTest, beforeStrategyForAnchorIsTargetForSingleTarget)
+{
+    std::unique_ptr<ElementNodeIterator> iterator = nullptr;
+    ConstructIterator(iterator);
+    Window w1{12};
+    w1.windowLayer_ = 2;
+    w1.bounds_ = Rect{0, 100, 0, 120};
+    std::vector<Widget> visits3;
+    std::vector<int> targets3;
+    WidgetMatchModel anchor3{UiAttr::TEXT, "Text One", ValueMatchPattern::EQ};
+    WidgetMatchModel sef3{UiAttr::TYPE, "Image", ValueMatchPattern::EQ};
+    std::vector<WidgetMatchModel> anchorMatchers;
+    anchorMatchers.emplace_back(anchor3);
+    std::vector<WidgetMatchModel> myselfMatchers;
+    myselfMatchers.emplace_back(sef3);
+    StrategyBuildParam buildParam;
+    buildParam.myselfMatcher = myselfMatchers;
+    buildParam.beforeAnchorMatcherVec.emplace_back(anchorMatchers);
+    std::unique_ptr<SelectStrategy> beforeStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, true);
+    beforeStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3, false);
+    ASSERT_EQ(visits3.size(), 12);
+    ASSERT_EQ(targets3.size(), 1);
+    ASSERT_EQ(visits3[targets3[0]].GetAttr(UiAttr::TEXT), "Button");
+}
+
 TEST(SelectStrategyTest, withInStrategyForAnchorIsOutTarget)
 {
     std::unique_ptr<ElementNodeIterator> iterator = nullptr;
@@ -442,6 +496,32 @@ TEST(SelectStrategyTest, withInStrategyFoTwoAnchorIsInTarget)
     withInStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3);
     ASSERT_EQ(targets3.size(), 1);
     ASSERT_EQ(visits3[targets3[0]].GetAttr(UiAttr::ACCESSIBILITY_ID), "11");
+}
+
+TEST(SelectStrategyTest, withInStrategyFoTwoAnchorIsInMultiTarget)
+{
+    std::unique_ptr<ElementNodeIterator> iterator = nullptr;
+    ConstructIterator(iterator);
+    Window w1{12};
+    w1.windowLayer_ = 2;
+    w1.bounds_ = Rect{0, 100, 0, 120};
+    std::vector<Widget> visits3;
+    std::vector<int> targets3;
+    WidgetMatchModel anchor3{UiAttr::TEXT, "Text List", ValueMatchPattern::EQ};
+    WidgetMatchModel sef3{UiAttr::TEXT, "Button", ValueMatchPattern::EQ};
+    std::vector<WidgetMatchModel> anchorMatchers;
+    anchorMatchers.emplace_back(anchor3);
+    std::vector<WidgetMatchModel> myselfMatchers;
+    myselfMatchers.emplace_back(sef3);
+    StrategyBuildParam buildParam;
+    buildParam.myselfMatcher = myselfMatchers;
+    buildParam.withInAnchorMatcherVec.emplace_back(anchorMatchers);
+    std::unique_ptr<SelectStrategy> withInStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, true);
+    withInStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3);
+    ASSERT_EQ(targets3.size(), 3);
+    ASSERT_EQ(visits3[targets3[0]].GetAttr(UiAttr::TYPE), "Image");
+    ASSERT_EQ(visits3[targets3[1]].GetAttr(UiAttr::TYPE), "Image");
+    ASSERT_EQ(visits3[targets3[2]].GetAttr(UiAttr::TYPE), "Scroll");
 }
 
 TEST(SelectStrategyTest, plainStrategyForOnlyOneTarget)
@@ -685,6 +765,3 @@ TEST(SelectStrategyTest, complexStrategyForAfterAndWithInMultiTarget)
     ASSERT_EQ(visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID), "5");
     ASSERT_EQ(visits.at(targets.at(1)).GetAttr(UiAttr::ACCESSIBILITY_ID), "4");
 }
-
-#undef private
-#undef protected
