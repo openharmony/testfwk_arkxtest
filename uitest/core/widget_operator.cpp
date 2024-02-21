@@ -143,11 +143,11 @@ namespace OHOS::uitest {
         if (widgetFrom == nullptr || error.code_ != NO_ERROR) {
             return;
         }
+        auto boundsFrom = widgetFrom->GetBounds();
         auto widgetTo = driver_.RetrieveWidget(another, error, false);
         if (widgetTo == nullptr || error.code_ != NO_ERROR) {
             return;
         }
-        auto boundsFrom = widgetFrom->GetBounds();
         auto boundsTo = widgetTo->GetBounds();
         auto centerFrom = Point(boundsFrom.GetCenterX(), boundsFrom.GetCenterY());
         auto centerTo = Point(boundsTo.GetCenterX(), boundsTo.GetCenterY());
