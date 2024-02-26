@@ -15,10 +15,12 @@
 
 #include "gtest/gtest.h"
 
+#include "mock_element_node_iterator.h"
 #define private public
 #define protected public
-#include "mock_element_node_iterator.h"
 #include "select_strategy.h"
+#undef private
+#undef protected
 #include "ui_controller.h"
 #include "ui_action.h"
 
@@ -685,6 +687,3 @@ TEST(SelectStrategyTest, complexStrategyForAfterAndWithInMultiTarget)
     ASSERT_EQ(visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID), "5");
     ASSERT_EQ(visits.at(targets.at(1)).GetAttr(UiAttr::ACCESSIBILITY_ID), "4");
 }
-
-#undef private
-#undef protected
