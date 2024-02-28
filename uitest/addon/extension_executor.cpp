@@ -27,56 +27,11 @@
 #include "ui_driver.h"
 #include "ui_record.h"
 #include "screen_copy.h"
+#include "extension_c_api.h"
 #include "extension_executor.h"
 
 namespace OHOS::uitest {
     using namespace std;
-    // uitest_extension port definitions =================================>>>>>>>>
-    extern "C" {
-        typedef int32_t RetCode;
-#define RETCODE_SUCCESS 0
-#define RETCODE_FAIL (-1)
-
-        struct Text {
-            const char *data;
-            size_t size;
-        };
-
-        struct ReceiveBuffer {
-            uint8_t *data;
-            size_t capacity;
-            size_t *size;
-        };
-
-        // enum LogLevel : int32_t { DEBUG = 0, INFO = 1, WARN = 2, ERROR = 3 };
-
-        typedef void (*DataCallback)(Text bytes);
-
-        struct LowLevelFunctions {
-            RetCode (*callThroughMessage)(Text in, ReceiveBuffer out, bool *fatalError);
-            RetCode (*setCallbackMessageHandler)(DataCallback handler);
-            RetCode (*atomicTouch)(int32_t stage, int32_t px, int32_t py);
-            RetCode (*startCapture)(Text name, DataCallback callback, Text optJson);
-            RetCode (*stopCapture)(Text name);
-        };
-
-        struct UiTestPort {
-            RetCode (*getUiTestVersion)(ReceiveBuffer out);
-            RetCode (*printLog)(int32_t level, Text tag, Text format, va_list ap);
-            RetCode (*getAndClearLastError)(int32_t *codeOut, ReceiveBuffer msgOut);
-            RetCode (*initLowLevelFunctions)(LowLevelFunctions *out);
-        };
-
-        // hook function names of UiTestExtension library
-#define UITEST_EXTENSION_CALLBACK_ONINIT "UiTestExtension_OnInit"
-#define UITEST_EXTENSION_CALLBACK_ONRUN "UiTestExtension_OnRun"
-        // proto of UiTestExtensionOnInitCallback: void (UiTestPort port, size_t argc, const char **argv)
-        typedef RetCode (*UiTestExtensionOnInitCallback)(UiTestPort, size_t, const char **);
-        // proto of UiTestExtensionOnRun
-        typedef RetCode (*UiTestExtensionOnRunCallback)();
-    };
-    // uitest_extension port definitions =================================<<<<<<<<
-
     static constexpr auto ERR_BAD_ARG = ErrCode::ERR_INVALID_INPUT;
     static constexpr size_t LOG_BUF_SIZE = 512;
     static constexpr LogType type = LogType::LOG_APP;
@@ -127,6 +82,10 @@ do { \
 
     static RetCode GetAndClearLastError(int32_t *codeOut, ReceiveBuffer msgOut)
     {
+        if (codeOut == nullptr) {
+            LOG_E("Code receiver is nullptr, cannot write error");
+            return RETCODE_FAIL;
+        }
         *codeOut = g_lastErrorCode;
         auto ret = WriteToBuffer(msgOut, g_lastErrorMessage);
         // clear error
@@ -161,11 +120,11 @@ do { \
         using namespace nlohmann;
         using VT = nlohmann::detail::value_t;
         static auto server = FrontendApiServer::Get();
-        *fatalError = false;
         CALL_THROUGH_CHECK(in.data != nullptr, "Null message", ERR_BAD_ARG, true, ptr);
         CALL_THROUGH_CHECK(out.data != nullptr, "Null output buffer", ERR_BAD_ARG, true, ptr);
         CALL_THROUGH_CHECK(out.size != nullptr, "Null output size pointer", ERR_BAD_ARG, true, ptr);
         CALL_THROUGH_CHECK(fatalError != nullptr, "Null fatalError output pointer", ERR_BAD_ARG, true, ptr);
+        *fatalError = false;
         auto message = json::parse(in.data, nullptr, false);
         CALL_THROUGH_CHECK(!message.is_discarded(), "Illegal messsage, parse json failed", ERR_BAD_ARG, true, ptr);
         auto hasProps = message.contains("api") && message.contains("this") && message.contains("args");
@@ -272,7 +231,9 @@ do { \
                 free(data);
             });
         } else if (strcmp(name.data, "recordUiAction") == 0) {
-            StopCapture(name);
+            UiDriverRecordStop();
+            g_recordRunningLock.lock(); // wait for running thread terminates
+            g_recordRunningLock.unlock();
             auto recordThread = thread([callback]() {
                 g_recordRunningLock.lock();
                 UiDriverRecordStart([callback](nlohmann::json record) {
@@ -299,17 +260,23 @@ do { \
         return RETCODE_SUCCESS;
     }
 
-    bool ExecuteExtension(string_view version)
+    bool ExecuteExtension(string_view version, int32_t argc, char *argv[])
     {
+        int32_t used_argc = 0;
+        const char *name = "agent.so";
+        if (argc > 1 && string_view(argv[0]) == "--extension-name") {
+            name = argv[1];
+            used_argc = TWO; // argv0,1 is consumed, donot pass down
+        }
+        string extensionPath = string("/data/local/tmp/") + name;
         g_version = version;
-        constexpr string_view extensionPath = "/data/local/tmp/agent.so";
         if (!OHOS::FileExists(extensionPath.data())) {
             LOG_E("Client nativeCode not exist");
             return false;
         }
         auto handle = dlopen(extensionPath.data(), RTLD_LAZY);
         if (handle == nullptr) {
-            LOG_E("Dlopen %{public}s failed: %{public}s", extensionPath.data(), strerror(errno));
+            LOG_E("Dlopen %{public}s failed: %{public}s", extensionPath.data(), dlerror());
             return false;
         }
         auto symInit = dlsym(handle, UITEST_EXTENSION_CALLBACK_ONINIT);
@@ -332,7 +299,7 @@ do { \
             .getAndClearLastError = GetAndClearLastError,
             .initLowLevelFunctions = InitLowLevelFunctions,
         };
-        if (initFunction(port, 0, nullptr) != RETCODE_SUCCESS) {
+        if (initFunction(port, argc - used_argc, argv + used_argc) != RETCODE_SUCCESS) {
             LOG_I("Initialize UiTest extension failed");
             dlclose(handle);
             return false;

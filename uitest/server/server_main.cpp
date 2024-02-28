@@ -57,7 +57,7 @@ namespace OHOS::uitest {
     "   uiRecord read,                     print file content to the console\n"
     "   uiAction input,                                                     \n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "4.1.4.5";
+    const std::string VERSION = "4.1.4.6";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
@@ -187,7 +187,7 @@ namespace OHOS::uitest {
         return "default";
     }
     
-    static int32_t StartDaemon(string_view token)
+    static int32_t StartDaemon(string_view token, int32_t argc, char *argv[])
     {
         if (token.empty()) {
             LOG_E("Empty transaction token");
@@ -205,7 +205,7 @@ namespace OHOS::uitest {
             DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, false, err);
         });
         if (token == "singleness") {
-            ExecuteExtension(VERSION);
+            ExecuteExtension(VERSION, argc, argv);
             LOG_I("Server exit");
             ApiTransactor::UnsetBroadcastCommandHandler();
             _Exit(0);
@@ -298,7 +298,7 @@ namespace OHOS::uitest {
             _Exit(DumpLayout(argc, argv));
         } else if (command == "start-daemon") {
             string_view token = argc < 3 ? "" : argv[2];
-            exit(StartDaemon(token));
+            exit(StartDaemon(token, argc - THREE, argv + THREE));
         } else if (command == "screenCap") {
             exit(ScreenCap(argc, argv));
         } else if (command == "uiRecord") {
