@@ -16,7 +16,6 @@
 #include <csignal>
 #include <dlfcn.h>
 #include <file_ex.h>
-#include <hilog/log.h>
 #include <mutex>
 #include <securec.h>
 #include <set>
