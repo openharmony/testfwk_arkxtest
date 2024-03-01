@@ -16,7 +16,6 @@
 #include <csignal>
 #include <dlfcn.h>
 #include <file_ex.h>
-#include <hilog/log.h>
 #include <mutex>
 #include <securec.h>
 #include <set>
@@ -71,12 +70,19 @@ do { \
 
     static RetCode PrintLog(int32_t level, Text label, Text format, va_list ap)
     {
-        constexpr uint32_t domain = 0xD003100;
         EXTENSION_API_CHECK(level >= LogRank::DEBUG && level <= LogRank::ERROR, "Illegal log level", ERR_BAD_ARG);
         EXTENSION_API_CHECK(label.data != nullptr && format.data != nullptr, "Illegal log tag/format", ERR_BAD_ARG);
         char buf[LOG_BUF_SIZE];
         EXTENSION_API_CHECK(vsprintf_s(buf, sizeof(buf), format.data, ap) >= 0, format.data, ERR_BAD_ARG);
-        HiLogPrint(type, static_cast<LogLevel>(level), domain, label.data, "%{public}s", buf);
+        if (level == LogRank::DEBUG) {
+            HILOG_DEBUG(type, "%{public}s", buf);
+        } else if (level == LogRank::INFO) {
+            HILOG_INFO(type, "%{public}s", buf);
+        } else if (level == LogRank::WARN) {
+            HILOG_WARN(type, "%{public}s", buf);
+        } else if (level == LogRank::ERROR) {
+            HILOG_ERROR(type, "%{public}s", buf);
+        }
         return RETCODE_SUCCESS;
     }
 

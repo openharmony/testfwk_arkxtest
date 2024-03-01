@@ -91,7 +91,7 @@ namespace OHOS::uitest {
             case ValueMatchPattern::CONTAINS:
                 return attrValue.find(value) != std::string_view::npos;
             case ValueMatchPattern::STARTS_WITH:
-                return attrValue.rfind(value) != std::string_view::npos;
+                return attrValue.find(value) == 0;
             case ValueMatchPattern::ENDS_WITH:
                 if (attrValue.length() < value.length()) {
                     return false;

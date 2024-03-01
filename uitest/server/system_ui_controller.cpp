@@ -856,7 +856,7 @@ namespace OHOS::uitest {
         args.emplace_back(u"WindowManagerService");
         args.emplace_back(u"-a");
         auto winIdInUtf16 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t > {}.from_bytes(windowId);
-        auto arg = u16string(u"-w ").append(winIdInUtf16).append(u" -element -c -lastpage");
+        auto arg = u16string(u"-w ").append(winIdInUtf16).append(u" -default -lastpage");
         args.emplace_back(move(arg));
         client->Request(args, fd);
         auto size = lseek(fd, 0, SEEK_END);
