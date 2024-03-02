@@ -117,6 +117,8 @@ namespace OHOS::uitest {
 #ifndef LOG_TAG
 #define LOG_TAG "UiTestKit"
 #endif
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD003100
 // print pretty log with pretty format, auto-generate tag by fileName and functionName at compile time
 #define LOG(LEVEL, FMT, VARS...) do { \
     static constexpr auto tagChars= GenLogTag(__FILE__, __FUNCTION__); \
@@ -124,8 +126,7 @@ namespace OHOS::uitest {
     if constexpr (tagLen > 0) { \
         auto tag = std::string_view(tagChars.data(), tagLen); \
         static constexpr LogType type = LogType::LOG_CORE; \
-        static constexpr uint32_t domain = 0xD003100;                \
-        HiLogPrint(type, static_cast<LogLevel>(LEVEL), domain, LOG_TAG, "%{public}s " FMT, tag.data(), ##VARS); \
+        HILOG_##LEVEL(type, "%{public}s " FMT, tag.data(), ##VARS); \
     } \
 }while (0)
 #else
@@ -134,13 +135,13 @@ namespace OHOS::uitest {
 #endif
 
 // print debug log
-#define LOG_D(FMT, VARS...) LOG(LogRank::DEBUG, FMT, ##VARS)
+#define LOG_D(FMT, VARS...) LOG(DEBUG, FMT, ##VARS)
 // print info log
-#define LOG_I(FMT, VARS...) LOG(LogRank::INFO, FMT, ##VARS)
+#define LOG_I(FMT, VARS...) LOG(INFO, FMT, ##VARS)
 // print warning log
-#define LOG_W(FMT, VARS...) LOG(LogRank::WARN, FMT, ##VARS)
+#define LOG_W(FMT, VARS...) LOG(WARN, FMT, ##VARS)
 // print error log
-#define LOG_E(FMT, VARS...) LOG(LogRank::ERROR, FMT, ##VARS)
+#define LOG_E(FMT, VARS...) LOG(ERROR, FMT, ##VARS)
 }
 
 #endif

@@ -318,6 +318,34 @@ ohos_unittest("uitest_ipc_unittest") {
   part_name = "arkxtest"
 }
 
+ohos_unittest("uitest_extension_unittest") {
+  sources = [ "${source_root}/test/extension_test.cpp" ]
+  deps = [
+    ":uitest_addon",
+    ":uitest_core",
+  ]
+  include_dirs = [
+    "${source_root}/addon",
+    "${source_root}/core",
+    "//third_party/json/single_include/nlohmann",
+    "//third_party/json/single_include",
+  ]
+  cflags = [ "-g" ]
+  cflags_cc = [ "-g" ]
+  module_out_path = "uitestkit/unittest"
+  testonly = true
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
+}
+
+ohos_shared_library("uitest_dummy_extension") {
+  sources = [ "${source_root}/test/dummy_extension.cpp" ]
+  include_dirs = [ "${source_root}/addon" ]
+  testonly = true
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
+}
+
 group("uitestkit") {
   deps = [
     ":uitest_client",
@@ -329,6 +357,8 @@ group("uitestkit_test") {
   testonly = true
   deps = [
     ":uitest_core_unittest",
+    ":uitest_dummy_extension",
+    ":uitest_extension_unittest",
     ":uitest_ipc_unittest",
   ]
 }
