@@ -19,7 +19,7 @@
 #include <string_view>
 
 namespace OHOS::uitest {
-    bool ExecuteExtension(std::string_view serverVersion);
+    bool ExecuteExtension(std::string_view serverVersion, int32_t argc = 0, char *argv[] = nullptr);
 }
 
 #endif

@@ -257,7 +257,7 @@ namespace OHOS::uitest {
         info.decoratorEnabled_ = node.IsDecorEnable();
         // get bundle name by root node
         AccessibilityElementInfo element;
-        LOG_I("Start Get Bundle Name by WindowId %{public}d", node.GetWindowId());
+        LOG_D("Start Get Bundle Name by WindowId %{public}d", node.GetWindowId());
         if (AccessibilityUITestAbility::GetInstance()->GetRootByWindow(node, element) != RET_OK) {
             LOG_E("Failed Get Bundle Name by WindowId %{public}d", node.GetWindowId());
         } else {
@@ -314,11 +314,11 @@ namespace OHOS::uitest {
             return;
         }
         vector<AccessibilityWindowInfo> windows;
-        LOG_I("Start Get Window root info");
+        LOG_I("Get Window root info");
         if (!GetAamsWindowInfos(windows)) {
             return;
         }
-        LOG_I("End Get Window root info");
+        LOG_D("End Get Window root info");
         auto screenSize = GetDisplaySize();
         auto screenRect = Rect(0, screenSize.px_, 0, screenSize.py_);
         std::vector<Rect> overplays;
@@ -356,7 +356,7 @@ namespace OHOS::uitest {
         }
         std::vector<AccessibilityElementInfo> elementInfos;
         AccessibilityWindowInfo window;
-        LOG_I("Start Get Window by WindowId %{public}d", winInfo.id_);
+        LOG_D("Get Window by WindowId %{public}d", winInfo.id_);
         if (AccessibilityUITestAbility::GetInstance()->GetWindow(winInfo.id_, window) != RET_OK) {
             LOG_E("GetWindowInfo failed, windowId: %{public}d", winInfo.id_);
             return false;
@@ -366,11 +366,9 @@ namespace OHOS::uitest {
             LOG_E("GetRootByWindowBatch failed, windowId: %{public}d", winInfo.id_);
             return false;
         } else {
-            LOG_I("End Get nodes from window by WindowId %{public}d, node size is %{public}zu", winInfo.id_,
-                  elementInfos.size());
+            LOG_I("End Get nodes from window by WindowId %{public}d, node size is %{public}zu, appId: %{public}s",
+                  winInfo.id_, elementInfos.size(), winInfo.bundleName_.data());
             elementIterator = std::make_unique<ElementNodeIteratorImpl>(elementInfos);
-            LOG_I("Get Node and layer %{public}d, window id: %{public}d, appId: %{public}s", window.GetWindowLayer(),
-                  winInfo.id_, elementInfos[0].GetBundleName().data());
         }
         return true;
     }
@@ -714,7 +712,9 @@ namespace OHOS::uitest {
         DCHECK(screenMgr);
         bool isLocked = false;
         screenMgr.IsScreenRotationLocked(isLocked);
-        screenMgr.SetScreenRotationLocked(false);
+        if (isLocked) {
+            screenMgr.SetScreenRotationLocked(false);
+        }
         auto screen = screenMgr.GetScreenById(screenId);
         if (screen == nullptr) {
             LOG_E("ScreenManager init fail");
@@ -736,7 +736,6 @@ namespace OHOS::uitest {
             default :
                 break;
         }
-        screenMgr.SetScreenRotationLocked(isLocked);
     }
 
     DisplayRotation SysUiController::GetDisplayRotation() const
@@ -857,7 +856,7 @@ namespace OHOS::uitest {
         args.emplace_back(u"WindowManagerService");
         args.emplace_back(u"-a");
         auto winIdInUtf16 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t > {}.from_bytes(windowId);
-        auto arg = u16string(u"-w ").append(winIdInUtf16).append(u" -element -c -lastpage");
+        auto arg = u16string(u"-w ").append(winIdInUtf16).append(u" -default -lastpage");
         args.emplace_back(move(arg));
         client->Request(args, fd);
         auto size = lseek(fd, 0, SEEK_END);
