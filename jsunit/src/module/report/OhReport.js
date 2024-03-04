@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,8 +14,8 @@
  */
 
 import SysTestKit from "../kit/SysTestKit";
-import {collectCoverageData} from '../coverage/coverageCollect';
-import {TAG} from '../../Constant';
+import { collectCoverageData } from '../coverage/coverageCollect';
+import { TAG } from '../../Constant';
 
 class OhReport {
   constructor(attr) {
@@ -40,6 +40,8 @@ class OhReport {
       this.taskDoneTime = new Date().getTime();
       let summary = this.suiteService.getSummary();
       const configService = this.coreContext.getDefaultService('config');
+      const suiteService = this.coreContext.getDefaultService('suite');
+      const specService = this.coreContext.getDefaultService('spec');
       if (configService['coverage'] === 'true') {
         await collectCoverageData();
       }
@@ -73,8 +75,11 @@ class OhReport {
 
   async suiteStart() {
     if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + 'OHOS_REPORT_SUM: ' + this.suiteService.getCurrentRunningSuite().getSpecsNum();
-      message += '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description + '\n';
+      let specArr = [];
+      this.suiteService.getAllChildSuiteNum(this.suiteService.getCurrentRunningSuite(), specArr);
+      let message = '\n' + 'OHOS_REPORT_SUM: ' + specArr.length;
+      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.rootSuite, this.suiteService.getCurrentRunningSuite(), '');
+      message += '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.currentRunningSuiteDesc;
       console.info(`${message}`);
       await SysTestKit.print(message);
       console.info(`${TAG}${this.suiteService.getCurrentRunningSuite().description} suiteStart print success`);
@@ -84,7 +89,8 @@ class OhReport {
   async suiteDone() {
     if (this.abilityDelegatorArguments !== null) {
       const currentRunningSuite = this.suiteService.getCurrentRunningSuite();
-      let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
+      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.rootSuite, this.suiteService.getCurrentRunningSuite(), '');
+      let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.currentRunningSuiteDesc;
       message += '\n' + 'OHOS_REPORT_STATUS: suiteconsuming=' + this.suiteService.getCurrentRunningSuite().duration;
       if (currentRunningSuite.hookError) {
         message += '\n' + `OHOS_REPORT_STATUS: ${currentRunningSuite.hookError.message}`;
@@ -98,7 +104,7 @@ class OhReport {
 
   async specStart() {
     if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
+      let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.currentRunningSuiteDesc;
       message += '\n' + 'OHOS_REPORT_STATUS: current=' + (++this.index);
       message += '\n' + 'OHOS_REPORT_STATUS: id=JS';
       message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.specService.getTestTotal();
@@ -113,7 +119,7 @@ class OhReport {
 
   async specDone() {
     if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuite().description;
+      let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.currentRunningSuiteDesc;
       message += '\n' + 'OHOS_REPORT_STATUS: current=' + (this.index);
       message += '\n' + 'OHOS_REPORT_STATUS: id=JS';
       message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.specService.getTestTotal();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,8 +14,9 @@
  */
 
 import SysTestKit from "./module/kit/SysTestKit";
-import {TAG} from './Constant';
+import { TAG } from './Constant';
 import LogExpectError from './module/report/LogExpectError'
+import { NestFilter } from "./module/config/Filter";
 
 class AssertException extends Error {
     constructor(message) {
@@ -141,15 +142,27 @@ class SuiteService {
         this.rootSuite = new SuiteService.Suite({});
         this.currentRunningSuite = this.rootSuite;
         this.suitesStack = [this.rootSuite];
+        this.targetSuiteArray = [];
+        this.targetSpecArray = [];
+        this.currentRunningSuiteDesc = null;
+        this.fullRun = false;
     }
 
     describe(desc, func) {
         const configService = this.coreContext.getDefaultService('config');
-        if (configService.filterSuite(desc)) {
-            console.info(`${TAG}filter suite : ${desc}`);
+        //避免测试套循环嵌套
+        if (this.suitesStack.some(suite => { return suite.description === desc })) {
+            console.error(`${TAG} Loop nesting occurs : ${desc}`);
             return;
         }
-        const suite = new SuiteService.Suite({description: desc});
+        let isFilter = this.analyzeConfigServiceClass(configService.class, desc);
+        if (configService.filterSuite(desc) && isFilter) {
+            if (this.currentRunningSuite.description === '' || this.currentRunningSuite.description == null) {
+                console.info(`${TAG}filter suite : ${desc}`);
+                return;
+            }
+        }
+        const suite = new SuiteService.Suite({ description: desc });
         if (typeof this.coreContext.getServices('dataDriver') !== 'undefined' && configService['dryRun'] !== 'true') {
             let suiteStress = this.coreContext.getServices('dataDriver').dataDriver.getSuiteStress(desc);
             for (let i = 1; i < suiteStress; i++) {
@@ -160,17 +173,9 @@ class SuiteService {
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);
         func.call();
-        let childSuite = this.suitesStack.pop();
-        if (this.suitesStack.length === 0) {
-            this.currentRunningSuite = childSuite;
-            this.suitesStack.push(childSuite);
-        }
-        if (this.suitesStack.length > 1) {
-            this.currentRunningSuite = this.suitesStack.pop();
-        } else {
-            this.currentRunningSuite = this.suitesStack.pop();
-            this.suitesStack.push(this.currentRunningSuite);
-        }
+        this.suitesStack.pop();
+        this.currentRunningSuite = this.suitesStack.pop();
+        this.suitesStack.push(this.currentRunningSuite);
     }
 
     beforeAll(func) {
@@ -205,6 +210,40 @@ class SuiteService {
         this.currentRunningSuite = suite;
     }
 
+
+    setCurrentRunningSuiteDesc(suite, currentSuite, prefix) {
+        if (suite != null && suite === currentSuite) {
+            this.currentRunningSuiteDesc = prefix;
+        } else if (suite != null && suite !== currentSuite) {
+            suite.childSuites.forEach(it => {
+                let temp = prefix;
+                if (it.description != null || it.description !== '') {
+                    temp = prefix === '' ? it.description : prefix + "." + it.description;
+                }
+                this.setCurrentRunningSuiteDesc(it, currentSuite, temp);
+            }
+            )
+        }
+    }
+    analyzeConfigServiceClass(configServiceClass, desc) {
+        if (configServiceClass == null || configServiceClass === '') {
+            this.fullRun = true
+            return false;
+        }
+        if (this.targetSuiteArray.length === 0) {
+            const targetArray = configServiceClass.split(",")
+            for (let index in targetArray) {
+                if (targetArray[index].includes("#")) {
+                    this.targetSpecArray.push(targetArray[index])
+                } else {
+                    this.targetSuiteArray.push(targetArray[index])
+                }
+            }
+
+        }
+        return !configServiceClass.includes(desc);
+
+    }
     traversalResults(suite, obj, breakOnError) {
         if (suite.childSuites.length === 0 && suite.specs.length === 0) {
             return obj;
@@ -266,7 +305,7 @@ class SuiteService {
         let breakOnError = configService.isBreakOnError();
         let isError = specService.getStatus();
         let isBreaKOnError = breakOnError && isError;
-        let obj = {total: 0, failure: 0, error: 0, pass: 0, ignore: 0, duration: 0};
+        let obj = { total: 0, failure: 0, error: 0, pass: 0, ignore: 0, duration: 0 };
         for (const suiteItem of rootSuite.childSuites) {
             this.traversalResults(suiteItem, obj, isBreaKOnError);
         }
@@ -286,12 +325,11 @@ class SuiteService {
             let itArray = [];
             for (const itItem of suite['specs']) {
                 if (!configService.filterDesc(suite.description, itItem.description, itItem.fi, null)) {
-                    itArray.push({'itName': itItem.description});
+                    itArray.push({ 'itName': itItem.description });
                 }
             }
             obj[suite.description] = itArray;
         }
-
         if (suite.childSuites.length > 0) {
             let suiteArray = [];
             for (const suiteItem of suite.childSuites) {
@@ -305,29 +343,57 @@ class SuiteService {
         }
     }
 
+    //适配嵌套执行输出结果
     async dryRun(abilityDelegator) {
-        const configService = this.coreContext.getDefaultService('config');
-        let testSuitesObj = {};
-        let suitesArray = [];
-        for (const suiteItem of this.rootSuite.childSuites) {
-            let obj = {};
-            this.traversalSuites(suiteItem, obj, configService);
-            if (!configService.filterSuite(suiteItem.description)) {
-                suitesArray.push(obj);
-            }
-        }
-        testSuitesObj['suites'] = suitesArray;
-
-        let strJson = JSON.stringify(testSuitesObj);
+        console.log(`${TAG} rootSuite : ` + JSON.stringify(this.rootSuite));
+        let obj = this.rootSuite;
+        let prefixStack = [];
+        let suiteArray = [];
+        this.analyzeSuitesArray(prefixStack, suiteArray, obj);
+        let result = { "suites": suiteArray };
+        let strJson = JSON.stringify(result);
         let strLen = strJson.length;
         let maxLen = 500;
         let maxCount = Math.floor(strLen / maxLen);
-
         for (let count = 0; count <= maxCount; count++) {
             await SysTestKit.print(strJson.substring(count * maxLen, (count + 1) * maxLen));
         }
         console.info(`${TAG}dryRun print success`);
         abilityDelegator.finishTest('dry run finished!!!', 0, () => { });
+    }
+
+    //将suitesArray的嵌套结构展开成三层结构
+    analyzeSuitesArray(prefixStack, suiteArray, obj) {
+        obj.childSuites.map(suite => {
+            if (suite.description != null && suite.description !== '') {
+                let prefix = '';
+                if (prefixStack.length > 0) {
+                    prefix = prefixStack.join('.') + '.' + suite.description;
+                } else {
+                    prefix = suite.description;
+                }
+                prefixStack.push(suite.description);
+
+                let temp = {};
+                temp[prefix] = [];
+                suite.specs.map(spec => {
+                    let it = { 'itName': spec.description }
+                    temp[prefix].push(it);
+                })
+                suiteArray.push(temp);
+            }
+            this.analyzeSuitesArray(prefixStack, suiteArray, suite);
+            prefixStack.pop();
+        });
+    }
+    //获取当前测试套下的所有测试用例数量
+    getAllChildSuiteNum(suite, specArray) {
+        if (suite.specs != null) {
+            suite.specs.forEach(spec => specArray.push(spec));
+        }
+        if (suite.childSuites != null) {
+            suite.childSuites.forEach(it => this.getAllChildSuiteNum(it, specArray))
+        }
     }
 
     execute() {
@@ -336,15 +402,14 @@ class SuiteService {
             this.coreContext.fireEvents('task', 'incorrectFormat');
             return;
         }
-
         if (configService.isRandom() && this.rootSuite.childSuites.length > 0) {
             this.rootSuite.childSuites.sort(function () {
                 return Math.random().toFixed(1) > 0.5 ? -1 : 1;
             });
             this.currentRunningSuite = this.rootSuite.childSuites[0];
         }
-
         if (configService.isSupportAsync()) {
+            console.info(`${TAG} rootSuite:` + JSON.stringify(this.rootSuite));
             let asyncExecute = async () => {
                 await this.coreContext.fireEvents('task', 'taskStart');
                 await this.rootSuite.asyncRun(this.coreContext);
@@ -353,6 +418,7 @@ class SuiteService {
                 await this.coreContext.fireEvents('task', 'taskDone');
             });
         } else {
+            console.info('${TAG} rootSuite:' + JSON.stringify(this.rootSuite));
             this.coreContext.fireEvents('task', 'taskStart');
             this.rootSuite.run(this.coreContext);
             this.coreContext.fireEvents('task', 'taskDone');
@@ -569,16 +635,9 @@ SuiteService.Suite = class {
         if (this.description !== '') {
             await coreContext.fireEvents('suite', 'suiteDone');
             let childSuite = suiteService.suitesStack.pop();
-            if (suiteService.suitesStack.length === 0) {
-                suiteService.suitesStack.push(childSuite);
-            }
-            if (suiteService.suitesStack.length > 1) {
-                suiteService.setCurrentRunningSuite(suiteService.suitesStack.pop());
-            } else {
-                let currentRunningSuite = suiteService.suitesStack.pop();
-                suiteService.setCurrentRunningSuite(currentRunningSuite);
-                suiteService.suitesStack.push(currentRunningSuite);
-            }
+            let currentRunningSuite = suiteService.suitesStack.pop();
+            suiteService.setCurrentRunningSuite(currentRunningSuite);
+            suiteService.suitesStack.push(currentRunningSuite);
         }
     }
 
@@ -639,14 +698,18 @@ class SpecService {
     }
 
     it(desc, filter, func) {
+        const suiteService = this.coreContext.getDefaultService('suite');
         const configService = this.coreContext.getDefaultService('config');
-        const currentSuiteName = this.coreContext.getDefaultService('suite').getCurrentRunningSuite().description;
-        if (configService.filterDesc(currentSuiteName, desc, filter, this.coreContext)) {
+        let isFilter = new NestFilter().filterNestName(suiteService.targetSuiteArray, suiteService.targetSpecArray, suiteService.suitesStack, desc);
+        if (configService.filterWithNest(desc, filter)) {
+            console.info(`${TAG}filter it :${desc}`);
+            return;
+        }
+        if (configService.filterDesc(suiteService.currentRunningSuite.description, desc, filter, this.coreContext) && isFilter && !suiteService.fullRun) {
             console.info(`${TAG}filter it :${desc}`);
         } else {
             let processedFunc = processFunc(this.coreContext, func);
-            const spec = new SpecService.Spec({description: desc, fi: filter, fn: processedFunc});
-            const suiteService = this.coreContext.getDefaultService('suite');
+            const spec = new SpecService.Spec({ description: desc, fi: filter, fn: processedFunc });
             if (typeof this.coreContext.getServices('dataDriver') !== 'undefined' && configService['dryRun'] !== 'true') {
                 let specStress = this.coreContext.getServices('dataDriver').dataDriver.getSpecStress(desc);
                 for (let i = 1; i < specStress; i++) {
@@ -793,7 +856,7 @@ class ExpectService {
             },
             assertEqual: function (actualValue, args) {
                 let msg = 'expect ' + actualValue + ' equals ' + args[0];
-                if(actualValue == args[0]) { // 数值相同,提示数据类型
+                if (actualValue == args[0]) { // 数值相同,提示数据类型
                     const aClassName = Object.prototype.toString.call(actualValue);
                     const bClassName = Object.prototype.toString.call(args[0]);
                     msg = 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName + "strict mode inspect type";
