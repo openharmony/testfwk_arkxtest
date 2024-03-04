@@ -78,8 +78,8 @@ class OhReport {
       let specArr = [];
       this.suiteService.getAllChildSuiteNum(this.suiteService.getCurrentRunningSuite(), specArr);
       let message = '\n' + 'OHOS_REPORT_SUM: ' + specArr.length;
-      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.rootSuite, this.suiteService.getCurrentRunningSuite(), '');
-      message += '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.currentRunningSuiteDesc;
+      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), this.suiteService.getCurrentRunningSuite(), '');
+      message += '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuiteDesc();
       console.info(`${message}`);
       await SysTestKit.print(message);
       console.info(`${TAG}${this.suiteService.getCurrentRunningSuite().description} suiteStart print success`);
@@ -89,8 +89,8 @@ class OhReport {
   async suiteDone() {
     if (this.abilityDelegatorArguments !== null) {
       const currentRunningSuite = this.suiteService.getCurrentRunningSuite();
-      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.rootSuite, this.suiteService.getCurrentRunningSuite(), '');
-      let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.currentRunningSuiteDesc;
+      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), this.suiteService.getCurrentRunningSuite(), '');
+      let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuiteDesc();
       message += '\n' + 'OHOS_REPORT_STATUS: suiteconsuming=' + this.suiteService.getCurrentRunningSuite().duration;
       if (currentRunningSuite.hookError) {
         message += '\n' + `OHOS_REPORT_STATUS: ${currentRunningSuite.hookError.message}`;
@@ -104,7 +104,7 @@ class OhReport {
 
   async specStart() {
     if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.currentRunningSuiteDesc;
+      let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuiteDesc();
       message += '\n' + 'OHOS_REPORT_STATUS: current=' + (++this.index);
       message += '\n' + 'OHOS_REPORT_STATUS: id=JS';
       message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.specService.getTestTotal();
@@ -119,7 +119,7 @@ class OhReport {
 
   async specDone() {
     if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.currentRunningSuiteDesc;
+      let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuiteDesc();
       message += '\n' + 'OHOS_REPORT_STATUS: current=' + (this.index);
       message += '\n' + 'OHOS_REPORT_STATUS: id=JS';
       message += '\n' + 'OHOS_REPORT_STATUS: numtests=' + this.specService.getTestTotal();

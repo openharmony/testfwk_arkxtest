@@ -210,6 +210,14 @@ class SuiteService {
         this.currentRunningSuite = suite;
     }
 
+    getRootSuite() {
+        return this.rootSuite;
+    }
+
+    getCurrentRunningSuiteDesc() {
+        return this.currentRunningSuiteDesc;
+    }
+
 
     setCurrentRunningSuiteDesc(suite, currentSuite, prefix) {
         if (suite != null && suite === currentSuite) {
