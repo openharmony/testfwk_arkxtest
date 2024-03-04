@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import {ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter} from './Filter';
-import {TAG} from '../../Constant';
+import { ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter, NestFilter } from './Filter';
+import { TAG, TESTTYPE, LEVEL, SIZE, KEYSET } from '../../Constant';
 const STRESS_RULE = /^[1-9]\d*$/;
 
 class ConfigService {
@@ -118,7 +118,7 @@ class ConfigService {
         try {
             this.class = params.class;
             this.notClass = params.notClass;
-            this.flag = params.flag || {flag: false};
+            this.flag = params.flag || { flag: false };
             this.suite = params.suite;
             this.itName = params.itName;
             this.filter = params.filter;
@@ -132,31 +132,9 @@ class ConfigService {
             this.stress = params.stress;
             this.coverage = params.coverage;
             this.filterParam = {
-                testType: {
-                    'function': 1,
-                    'performance': 1 << 1,
-                    'power': 1 << 2,
-                    'reliability': 1 << 3,
-                    'security': 1 << 4,
-                    'global': 1 << 5,
-                    'compatibility': 1 << 6,
-                    'user': 1 << 7,
-                    'standard': 1 << 8,
-                    'safety': 1 << 9,
-                    'resilience': 1 << 10,
-                },
-                level: {
-                    '0': 1 << 24,
-                    '1': 1 << 25,
-                    '2': 1 << 26,
-                    '3': 1 << 27,
-                    '4': 1 << 28,
-                },
-                size: {
-                    'small': 1 << 16,
-                    'medium': 1 << 17,
-                    'large': 1 << 18,
-                }
+                testType: TESTTYPE,
+                level: LEVEL,
+                size: SIZE
             };
             this.parseParams();
         } catch (err) {
@@ -232,6 +210,23 @@ class ConfigService {
         return result;
     }
 
+    filterWithNest(desc, filter) {
+        const nestFilter = new NestFilter();
+        const targetSuiteArray = this.coreContext.getDefaultService('suite').targetSuiteArray;
+        const targetSpecArray = this.coreContext.getDefaultService('suite').targetSpecArray;
+        const suiteStack = this.coreContext.getDefaultService('suite').suitesStack;
+        let isFilter = nestFilter.filterNestName(targetSuiteArray, targetSpecArray, suiteStack, desc);
+        const isFullRun = this.coreContext.getDefaultService('suite').fullRun;
+        if (nestFilter.filterLevelOrSizeOrTestType(this.level, this.size, this.testType, filter)) {
+            return true;
+        }
+        if (isFilter && !isFullRun) {
+            return true;
+        }
+        return nestFilter.filterNotClass(this.notClass, suiteStack, desc);
+
+    }
+
     isRandom() {
         return this.random || false;
     }
@@ -249,14 +244,7 @@ class ConfigService {
     }
 
     translateParams(parameters) {
-        const keySet = new Set([
-            '-s class', '-s notClass', '-s suite', '-s itName',
-            '-s level', '-s testType', '-s size', '-s timeout',
-            '-s dryRun', '-s random', '-s breakOnError', '-s stress',
-            '-s coverage', 'class', 'notClass', 'suite', 'itName',
-            'level', 'testType', 'size', 'timeout', 'dryRun', 'random',
-            'breakOnError', 'stress', 'coverage'
-        ]);
+        const keySet = new Set(KEYSET);
         let targetParams = {};
         for (const key in parameters) {
             if (keySet.has(key)) {
@@ -267,14 +255,7 @@ class ConfigService {
         return targetParams;
     }
     translateParamsToString(parameters) {
-        const keySet = new Set([
-            '-s class', '-s notClass', '-s suite', '-s itName',
-            '-s level', '-s testType', '-s size', '-s timeout',
-            '-s dryRun', '-s random', '-s breakOnError', '-s stress',
-            '-s coverage', 'class', 'notClass', 'suite', 'itName',
-            'level', 'testType', 'size', 'timeout', 'dryRun', 'random',
-            'breakOnError', 'stress', 'coverage'
-        ]);
+        const keySet = new Set(KEYSET);
         let targetParams = '';
         for (const key in parameters) {
             if (keySet.has(key)) {
