@@ -289,6 +289,7 @@ ohos_unittest("uitest_core_unittest") {
     "//third_party/json/single_include/nlohmann",
     "${source_root}/core",
   ]
+  external_deps = [ "hilog:libhilog" ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   use_exceptions = true
@@ -310,6 +311,7 @@ ohos_unittest("uitest_ipc_unittest") {
     "//third_party/json/single_include/nlohmann",
     "//third_party/json/single_include",
   ]
+  external_deps = [ "hilog:libhilog" ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   module_out_path = "uitestkit/unittest"
@@ -330,6 +332,7 @@ ohos_unittest("uitest_extension_unittest") {
     "//third_party/json/single_include/nlohmann",
     "//third_party/json/single_include",
   ]
+  external_deps = [ "hilog:libhilog" ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   module_out_path = "uitestkit/unittest"
