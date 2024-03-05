@@ -1186,7 +1186,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
 **使用者在测试脚本通过如下方式引入使用：**
 
 ```typescript
-import {Driver,ON,Component,Uiwindow,MatchPattern} from '@ohos.UiTest'
+import {Driver,ON,Component,UiWindow,MatchPattern} from '@ohos.UiTest'
 ```
 
 > 须知
