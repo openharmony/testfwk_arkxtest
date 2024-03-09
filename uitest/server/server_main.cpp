@@ -55,7 +55,7 @@ namespace OHOS::uitest {
     "   dumpLayout,                                                         \n"
     "   uiRecord record,     wirte location coordinates of events into files\n"
     "   uiRecord read,                     print file content to the console\n"
-    "   uiAction input,                                                     \n"
+    "   uiInput,                                                            \n"
     "   --version,                                print current tool version\n";
     const std::string VERSION = "4.1.4.6";
     struct option g_longoptions[] = {
