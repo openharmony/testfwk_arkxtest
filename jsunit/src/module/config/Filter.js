@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,6 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { LEVEL, SIZE, TESTTYPE } from "../../Constant";
 
 class ClassFilter {
     constructor(suiteName, itName, params) {
@@ -78,4 +80,64 @@ class TestTypesFilter {
     }
 }
 
-export {ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter};
+class NestFilter {
+    filterNestName(targetSuiteArray, targetSpecArray, suiteStack, desc) {
+        let targetSuiteName = "";
+        for (let key in suiteStack) {
+            targetSuiteName = targetSuiteName + "." + suiteStack[key].description;
+        }
+        targetSuiteName = targetSuiteName.substring(2);
+        const targetSpecName = targetSuiteName + "#" + desc;
+        let isFilter = true;
+        if (targetSpecArray.includes(targetSpecName)) {
+            return false;
+        }
+        for (let index in targetSuiteArray) {
+            if (targetSuiteName.startsWith(targetSuiteArray[index])) {
+                return false;
+            }
+        }
+        return isFilter;
+    }
+
+    filterNotClass(notClass, suiteStack, desc) {
+        let isFilterNotClass = false;
+        if (notClass != null) {
+            let notClassArray = notClass.split(",");
+            let targetSuiteName = "";
+            for (let key in suiteStack) {
+                targetSuiteName = targetSuiteName + "." + suiteStack[key].description;
+            }
+            targetSuiteName = targetSuiteName.substring(2);
+            const targetSpecName = targetSuiteName + "#" + desc;
+            if (notClassArray.includes(targetSpecName) || notClassArray.some(key => targetSpecName.startsWith(key))) {
+                isFilterNotClass = true;
+            }
+        }
+        return isFilterNotClass;
+    }
+
+    filterLevelOrSizeOrTestType(level, size, testType, filter) {
+        let result = false;
+        if (filter === 0 || filter === '0') {
+            return result;
+        }
+        if (level == null && size == null && testType == null) {
+            return result;
+        }
+        if (level != null) {
+            let levelFilter = LEVEL[`${level}`];
+            result = result || filter === levelFilter;
+        }
+        if (size != null) {
+            let sizeFilter = SIZE[`${size}`];
+            result = result || filter === sizeFilter;
+        }
+        if (testType != null) {
+            let testTypeFilter = TESTTYPE[`${testType}`];
+            result = result || filter === testTypeFilter;
+        }
+        return !result;
+    }
+}
+export { ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter, NestFilter };
