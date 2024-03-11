@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -47,3 +47,41 @@ export class Level {
     static LEVEL3 = 0B1 << 27;
     static LEVEL4 = 0B1 << 28;
 }
+
+export const TESTTYPE = {
+    'function': 1,
+    'performance': 1 << 1,
+    'power': 1 << 2,
+    'reliability': 1 << 3,
+    'security': 1 << 4,
+    'global': 1 << 5,
+    'compatibility': 1 << 6,
+    'user': 1 << 7,
+    'standard': 1 << 8,
+    'safety': 1 << 9,
+    'resilience': 1 << 10,
+}
+
+export const LEVEL = {
+    '0': 1 << 24,
+    '1': 1 << 25,
+    '2': 1 << 26,
+    '3': 1 << 27,
+    '4': 1 << 28,
+}
+
+export const SIZE = {
+    'small': 1 << 16,
+    'medium': 1 << 17,
+    'large': 1 << 18,
+}
+
+export const KEYSET = [
+    '-s class', '-s notClass', '-s suite', '-s itName',
+    '-s level', '-s testType', '-s size', '-s timeout',
+    '-s dryRun', '-s random', '-s breakOnError', '-s stress',
+    '-s coverage',
+    'class', 'notClass', 'suite', 'itName',
+    'level', 'testType', 'size', 'timeout', 'dryRun', 'random',
+    'breakOnError', 'stress', 'coverage'
+]
