@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License")
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -18,6 +18,7 @@ import {TestType, Size, Level, DEFAULT} from './src/Constant';
 import DataDriver from './src/module/config/DataDriver';
 import ExpectExtend from './src/module/assert/ExpectExtend';
 import OhReport from './src/module/report/OhReport';
+export { xdescribe, xit, describe, it } from './index.ts';
 
 export declare class Hypium {
     static setData(data: Object): void
@@ -38,8 +39,6 @@ export {
 
 type allExpectType = Object | undefined | null
 
-export declare function describe(testSuiteName: string, callback: Function): void
-
 export declare function beforeItSpecified(testCaseNames: Array<string> | string, callback: Function): void
 
 export declare function afterItSpecified(testCaseNames: Array<string> | string, callback: Function): void
@@ -51,8 +50,6 @@ export declare function afterEach(callback: Function): void
 export declare function beforeAll(callback: Function): void
 
 export declare function afterAll(callback: Function): void
-
-export declare function it(testCaseName: string, attribute: (TestType | Size | Level), callback: Function): void
 
 export declare interface Assert {
     assertClose(expectValue: number, precision: number): void
@@ -80,6 +77,7 @@ export declare interface Assert {
     assertPromiseIsRejectedWithError(...expectValue: allExpectType[]): void
     assertPromiseIsResolved(): void
     assertPromiseIsResolvedWith(expectValue?: allExpectType): void
+    message(msg: string): Assert
 }
 
 export declare function expect(actualValue?: allExpectType): Assert

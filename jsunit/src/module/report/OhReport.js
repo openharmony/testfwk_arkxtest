@@ -49,6 +49,9 @@ class OhReport {
       message += ', Error: ' + summary.error;
       message += ', Pass: ' + summary.pass;
       message += ', Ignore: ' + summary.ignore;
+      if (specService.skipSpecNum > 0) {
+        message += ', SkipSpec: ' + specService.skipSpecNum;
+      }
       message += '\n' + 'OHOS_REPORT_CODE: ' + (summary.failure > 0 ? -1 : 0) + '\n';
       let isHasError = summary.failure > 0 || summary.error > 0;
       let config = this.coreContext.getDefaultService('config');
@@ -73,6 +76,14 @@ class OhReport {
     }
   }
 
+  incorrectTestSuiteFormat() {
+    if (this.coreContext.getDefaultService('config').filterXdescribe.length !== 0) {
+      let value = this.coreContext.getDefaultService('config').filterXdescribe;
+      let message = 'xdescribe ' + value.join(',') + ' should not contain it' + '\n';
+      this.delegator.finishTest(message, 0, () => {
+      });
+    }
+  }
   async suiteStart() {
     if (this.abilityDelegatorArguments !== null) {
       let specArr = [];
@@ -80,6 +91,9 @@ class OhReport {
       let message = '\n' + 'OHOS_REPORT_SUM: ' + specArr.length;
       this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), this.suiteService.getCurrentRunningSuite(), '');
       message += '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuiteDesc();
+      if (this.suiteService.currentRunningSuite.isSkip) {
+        message += '\n' + 'OHOS_REPORT_STATUS: skipReason=' + this.suiteService.currentRunningSuite.skipReason + '\n';
+      }
       console.info(`${message}`);
       await SysTestKit.print(message);
       console.info(`${TAG}${this.suiteService.getCurrentRunningSuite().description} suiteStart print success`);
@@ -91,6 +105,9 @@ class OhReport {
       const currentRunningSuite = this.suiteService.getCurrentRunningSuite();
       this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), this.suiteService.getCurrentRunningSuite(), '');
       let message = '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuiteDesc();
+      if (this.suiteService.currentRunningSuite.isSkip && this.suiteService.currentRunningSuite.skipReason !== '') {
+        message += '\n' + 'OHOS_REPORT_STATUS: skipReason=' + this.suiteService.currentRunningSuite.skipReason;
+      }
       message += '\n' + 'OHOS_REPORT_STATUS: suiteconsuming=' + this.suiteService.getCurrentRunningSuite().duration;
       if (currentRunningSuite.hookError) {
         message += '\n' + `OHOS_REPORT_STATUS: ${currentRunningSuite.hookError.message}`;
@@ -111,6 +128,9 @@ class OhReport {
       message += '\n' + 'OHOS_REPORT_STATUS: stream=';
       message += '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
       message += '\n' + 'OHOS_REPORT_STATUS_CODE: 1' + '\n';
+      if (this.specService.currentRunningSpec.isSkip) {
+        message += 'OHOS_REPORT_STATUS: skipReason=' + this.specService.currentRunningSpec.skipReason + '\n';
+      }
       console.info(`${message}`);
       await SysTestKit.print(message);
       console.info(`${TAG}${this.specService.currentRunningSpec.description} specStart start print success`);
@@ -142,6 +162,9 @@ class OhReport {
           messageStack += 'OHOS_REPORT_STATUS: stream=';
           messageCode += 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
           messageCode += '\n' + 'OHOS_REPORT_STATUS_CODE: 0' + '\n';
+          if (this.specService.currentRunningSpec.isSkip) {
+            messageCode += 'OHOS_REPORT_STATUS: skipReason=' + this.specService.currentRunningSpec.skipReason + '\n';
+          }
         }
       } else {
         messageCode += '\n';

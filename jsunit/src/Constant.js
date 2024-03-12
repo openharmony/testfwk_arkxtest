@@ -80,8 +80,8 @@ export const KEYSET = [
     '-s class', '-s notClass', '-s suite', '-s itName',
     '-s level', '-s testType', '-s size', '-s timeout',
     '-s dryRun', '-s random', '-s breakOnError', '-s stress',
-    '-s coverage',
+    '-s coverage', '-s skipMessage', '-s skipRun',
     'class', 'notClass', 'suite', 'itName',
     'level', 'testType', 'size', 'timeout', 'dryRun', 'random',
-    'breakOnError', 'stress', 'coverage'
+    'breakOnError', 'stress', 'coverage', 'skipMessage', 'skipRun'
 ]
