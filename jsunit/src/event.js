@@ -92,9 +92,9 @@ class TaskEvent {
 
     incorrectTestSuiteFormat() {
         for (const monitor of this.eventMonitors) {
-            monitor["incorrectTestSuiteFormat"]();
+            monitor.incorrectTestSuiteFormat();
         }
     }
 }
 
-export {SpecEvent, TaskEvent, SuiteEvent};
+export { SpecEvent, TaskEvent, SuiteEvent };
