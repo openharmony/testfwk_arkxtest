@@ -37,7 +37,10 @@
           "pasteboard",
           "eventhandler",
           "hidumper",
-          "samgr"
+          "samgr",
+          "safwk",
+          "init",
+          "access_token"
         ],
         "third_party": [
           "libpng"
@@ -46,10 +49,15 @@
       "build": {
         "sub_component": [
             "//test/testfwk/arkxtest/uitest:uitestkit",
-            "//test/testfwk/arkxtest/coverage_signal_handler:coverage_signal_handler"
+            "//test/testfwk/arkxtest/coverage_signal_handler:coverage_signal_handler",
+            "//test/testfwk/arkxtest/testserver/init:testserver_etc",
+            "//test/testfwk/arkxtest/testserver/sa_profile:testserver_sa_profile",
+            "//test/testfwk/arkxtest/testserver/src:test_server_service",
+            "//test/testfwk/arkxtest/testserver/src:test_server_client"
         ],
     "test": [
-      "//test/testfwk/arkxtest/uitest:uitestkit_test"
+      "//test/testfwk/arkxtest/uitest:uitestkit_test",
+      "//test/testfwk/arkxtest/testserver/test:testserver_unittest"
     ]
       }
     }
