@@ -190,8 +190,8 @@ class SuiteService {
     }
     xdescribe(desc, func, reason) {
         const configService = this.coreContext.getDefaultService('config');
-        if (!configService.skipMessage && configService.skipRun !== 'all') {
-            if (configService.skipRun != null && configService.skipRun !== '') {
+        if (!configService.skipMessage && configService.runSkipped !== 'all') {
+            if (configService.runSkipped != null && configService.runSkipped !== '') {
                 let finalDesc = '';
                 this.suitesStack.map(suite => {
                     finalDesc = finalDesc + '.' + suite.description;
@@ -199,7 +199,7 @@ class SuiteService {
                 finalDesc = (finalDesc + '.' + desc).substring(2);
                 console.info(`${TAG} finalDesc ${finalDesc}`);
                 if (configService.checkIfSuiteInSkipRun(finalDesc)) {
-                    console.log(`${TAG} skipRun suite: ${desc}`);
+                    console.log(`${TAG} runSkipped suite: ${desc}`);
                 } else {
                     console.log(reason == null ? `${TAG} skip suite: ${desc}` : `${TAG} skip suite: ${desc}, and the reason is ${reason}`);
                     return;
@@ -791,8 +791,8 @@ class SpecService {
                 spec.skipReason = this.specSkipReason;
             }
             this.initSpecService();
-            if (configService.skipRun === 'skipped' && !spec.isSkip) {
-                console.info(`${TAG} skipRun is skipped , just run xit, don't run it: ${spec.description}`);
+            if (configService.runSkipped === 'skipped' && !spec.isSkip) {
+                console.info(`${TAG} runSkipped is skipped , just run xit, don't run it: ${spec.description}`);
                 return;
             }
             if (suiteService.getCurrentRunningSuite().isSkip && !spec.isSkip) {
@@ -822,15 +822,15 @@ class SpecService {
     xit(desc, filter, func, reason) {
         const configService = this.coreContext.getDefaultService('config');
         const suiteService = this.coreContext.getDefaultService('suite');
-        if (!configService.skipMessage && configService.skipRun !== 'all') {
-            if (configService.skipRun != null && configService.skipRun !== '') {
+        if (!configService.skipMessage && configService.runSkipped !== 'all') {
+            if (configService.runSkipped != null && configService.runSkipped !== '') {
                 let finalDesc = '';
                 suiteService.suitesStack.map(suite => {
                     finalDesc = finalDesc + '.' + suite.description;
                 })
                 finalDesc = (finalDesc + "#" + desc).substring(2);
                 if (configService.checkIfSpecInSkipRun(finalDesc)) {
-                    console.log(`${TAG} skipRun spec: ${desc}`);
+                    console.log(`${TAG} runSkipped spec: ${desc}`);
                 } else {
                     console.log(reason == null ? `${TAG} skip spec: ${desc}` : `${TAG} skip spec: ${desc}, and the reason is ${reason}`);
                     return;

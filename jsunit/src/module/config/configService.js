@@ -38,7 +38,7 @@ class ConfigService {
         // 压力测试配置
         this.stress = null;
         this.skipMessage = false;
-        this.skipRun = '';
+        this.runSkipped = '';
         this.filterXdescribe = [];
     }
 
@@ -136,7 +136,7 @@ class ConfigService {
             this.stress = params.stress;
             this.coverage = params.coverage;
             this.skipMessage = params.skipMessage;
-            this.skipRun = params.skipRun;
+            this.runSkipped = params.runSkipped;
             this.filterParam = {
                 testType: TESTTYPE,
                 level: LEVEL,
@@ -275,17 +275,17 @@ class ConfigService {
     }
 
     checkIfSuiteInSkipRun(desc) {
-        return this.skipRun.split(",").some(item => {
-            return item === desc || item.startsWith(desc + '.') || item.startsWith(desc + '#') || desc.startsWith(item + '.') || this.skipRun === 'skipped';
+        return this.runSkipped.split(",").some(item => {
+            return item === desc || item.startsWith(desc + '.') || item.startsWith(desc + '#') || desc.startsWith(item + '.') || this.runSkipped === 'skipped';
         });
     }
 
     checkIfSpecInSkipRun(desc) {
-        return this.skipRun.split(",").some(item => {
+        return this.runSkipped.split(",").some(item => {
             if (item.includes("#")) {
                 return item === desc;
             } else {
-                return desc.startsWith(item + ".") || desc.startsWith(item + "#") || this.skipRun === 'skipped';
+                return desc.startsWith(item + ".") || desc.startsWith(item + "#") || this.runSkipped === 'skipped';
             }
         }
         );
