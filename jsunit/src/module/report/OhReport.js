@@ -90,9 +90,9 @@ class OhReport {
       this.suiteService.getAllChildSuiteNum(this.suiteService.getCurrentRunningSuite(), specArr);
       let message = '\n' + 'OHOS_REPORT_SUM: ' + specArr.length;
       this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), this.suiteService.getCurrentRunningSuite(), '');
-      message += '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuiteDesc();
+      message += '\n' + 'OHOS_REPORT_STATUS: class=' + this.suiteService.getCurrentRunningSuiteDesc() + '\n';
       if (this.suiteService.currentRunningSuite.isSkip) {
-        message += '\n' + 'OHOS_REPORT_STATUS: skipReason=' + this.suiteService.currentRunningSuite.skipReason + '\n';
+        message += 'OHOS_REPORT_STATUS: skipReason=' + this.suiteService.currentRunningSuite.skipReason + '\n';
       }
       console.info(`${message}`);
       await SysTestKit.print(message);
