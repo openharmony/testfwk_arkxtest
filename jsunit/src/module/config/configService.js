@@ -37,6 +37,9 @@ class ConfigService {
         this.breakOnError = false;
         // 压力测试配置
         this.stress = null;
+        this.skipMessage = false;
+        this.runSkipped = '';
+        this.filterXdescribe = [];
     }
 
     init(coreContext) {
@@ -47,6 +50,7 @@ class ConfigService {
         const n = Math.floor(Number(str));
         return n !== Infinity && String(n) === String(str) && n >= 0;
     }
+
 
     getStress() {
         if (this.stress === undefined || this.stress === '' || this.stress === null) {
@@ -88,7 +92,7 @@ class ConfigService {
             }
         }
 
-        let paramKeys = ['dryRun', 'random', 'breakOnError', 'coverage'];
+        let paramKeys = ['dryRun', 'random', 'breakOnError', 'coverage', 'skipMessage'];
         for (const key of paramKeys) {
             if (params[key] !== undefined && params[key] !== 'true' && params[key] !== 'false') {
                 this.filterValid.push(`${key}:${params[key]}`);
@@ -131,6 +135,8 @@ class ConfigService {
             this.random = params.random === 'true' ? true : false;
             this.stress = params.stress;
             this.coverage = params.coverage;
+            this.skipMessage = params.skipMessage;
+            this.runSkipped = params.runSkipped;
             this.filterParam = {
                 testType: TESTTYPE,
                 level: LEVEL,
@@ -266,6 +272,23 @@ class ConfigService {
     }
 
     execute() {
+    }
+
+    checkIfSuiteInSkipRun(desc) {
+        return this.runSkipped.split(",").some(item => {
+            return item === desc || item.startsWith(desc + '.') || item.startsWith(desc + '#') || desc.startsWith(item + '.') || this.runSkipped === 'skipped';
+        });
+    }
+
+    checkIfSpecInSkipRun(desc) {
+        return this.runSkipped.split(",").some(item => {
+            if (item.includes("#")) {
+                return item === desc;
+            } else {
+                return desc.startsWith(item + ".") || desc.startsWith(item + "#") || this.runSkipped === 'skipped';
+            }
+        }
+        );
     }
 }
 

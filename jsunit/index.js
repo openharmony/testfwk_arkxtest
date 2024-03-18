@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,19 +14,19 @@
  */
 
 import Core from './src/core';
-import {DEFAULT, TestType, Size, Level, TAG} from './src/Constant';
+import { DEFAULT, TestType, Size, Level, TAG } from './src/Constant';
 import DataDriver from './src/module/config/DataDriver';
 import ExpectExtend from './src/module/assert/ExpectExtend';
 import OhReport from './src/module/report/OhReport';
 import SysTestKit from './src/module/kit/SysTestKit';
-import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified} from './src/interface';
-import {MockKit, when} from './src/module/mock/MockKit';
+import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified, xdescribe, xit } from './src/interface';
+import { MockKit, when } from './src/module/mock/MockKit';
 import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
 
 class Hypium {
     static setData(data) {
         const core = Core.getInstance();
-        const dataDriver = new DataDriver({data});
+        const dataDriver = new DataDriver({ data });
         core.addService('dataDriver', dataDriver);
     }
 
@@ -72,7 +72,7 @@ export {
     ExpectExtend,
     OhReport,
     SysTestKit,
-    describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified,
+    describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified, xdescribe, xit,
     MockKit, when,
     ArgumentMatchers
 };
