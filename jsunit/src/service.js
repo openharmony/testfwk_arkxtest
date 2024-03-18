@@ -146,23 +146,34 @@ class SuiteService {
         this.targetSpecArray = [];
         this.currentRunningSuiteDesc = null;
         this.fullRun = false;
+        this.isSkipSuite = false;
+        this.suiteSkipReason = null;
     }
 
     describe(desc, func) {
         const configService = this.coreContext.getDefaultService('config');
-        //避免测试套循环嵌套
         if (this.suitesStack.some(suite => { return suite.description === desc })) {
             console.error(`${TAG} Loop nesting occurs : ${desc}`);
+            this.suiteSkipReason = '';
+            this.isSkipSuite = false;
             return;
         }
         let isFilter = this.analyzeConfigServiceClass(configService.class, desc);
         if (configService.filterSuite(desc) && isFilter) {
             if (this.currentRunningSuite.description === '' || this.currentRunningSuite.description == null) {
                 console.info(`${TAG}filter suite : ${desc}`);
+                this.suiteSkipReason = '';
+                this.isSkipSuite = false;
                 return;
             }
         }
         const suite = new SuiteService.Suite({ description: desc });
+        if (this.isSkipSuite) {
+            suite.isSkip = true;
+            suite.skipReason = this.suiteSkipReason;
+        }
+        this.suiteSkipReason = '';
+        this.isSkipSuite = false;
         if (typeof this.coreContext.getServices('dataDriver') !== 'undefined' && configService['dryRun'] !== 'true') {
             let suiteStress = this.coreContext.getServices('dataDriver').dataDriver.getSuiteStress(desc);
             for (let i = 1; i < suiteStress; i++) {
@@ -176,6 +187,31 @@ class SuiteService {
         this.suitesStack.pop();
         this.currentRunningSuite = this.suitesStack.pop();
         this.suitesStack.push(this.currentRunningSuite);
+    }
+    xdescribe(desc, func, reason) {
+        const configService = this.coreContext.getDefaultService('config');
+        if (!configService.skipMessage && configService.runSkipped !== 'all') {
+            if (configService.runSkipped != null && configService.runSkipped !== '') {
+                let finalDesc = '';
+                this.suitesStack.map(suite => {
+                    finalDesc = finalDesc + '.' + suite.description;
+                })
+                finalDesc = (finalDesc + '.' + desc).substring(2);
+                console.info(`${TAG} finalDesc ${finalDesc}`);
+                if (configService.checkIfSuiteInSkipRun(finalDesc)) {
+                    console.log(`${TAG} runSkipped suite: ${desc}`);
+                } else {
+                    console.log(reason == null ? `${TAG} skip suite: ${desc}` : `${TAG} skip suite: ${desc}, and the reason is ${reason}`);
+                    return;
+                }
+            } else {
+                console.log(reason == null ? `${TAG} skip suite: ${desc}` : `${TAG} skip suite: ${desc}, and the reason is ${reason}`);
+                return;
+            }
+        }
+        this.isSkipSuite = true;
+        this.suiteSkipReason = reason;
+        this.describe(desc, func);
     }
 
     beforeAll(func) {
@@ -351,14 +387,20 @@ class SuiteService {
         }
     }
 
-    //适配嵌套执行输出结果
     async dryRun(abilityDelegator) {
         console.log(`${TAG} rootSuite : ` + JSON.stringify(this.rootSuite));
         let obj = this.rootSuite;
         let prefixStack = [];
         let suiteArray = [];
-        this.analyzeSuitesArray(prefixStack, suiteArray, obj);
-        let result = { "suites": suiteArray };
+        let skipSuiteArray = [];
+        this.analyzeSuitesArray(prefixStack, suiteArray, skipSuiteArray, obj);
+        const configService = this.coreContext.getDefaultService('config');
+        let result;
+        if (configService.skipMessage) {
+            result = { "suites": suiteArray, "skipSuites": skipSuiteArray };
+        } else {
+            result = { "suites": suiteArray };
+        }
         let strJson = JSON.stringify(result);
         let strLen = strJson.length;
         let maxLen = 500;
@@ -371,7 +413,7 @@ class SuiteService {
     }
 
     //将suitesArray的嵌套结构展开成三层结构
-    analyzeSuitesArray(prefixStack, suiteArray, obj) {
+    analyzeSuitesArray(prefixStack, suiteArray, skipSuiteArray, obj) {
         obj.childSuites.map(suite => {
             if (suite.description != null && suite.description !== '') {
                 let prefix = '';
@@ -381,16 +423,18 @@ class SuiteService {
                     prefix = suite.description;
                 }
                 prefixStack.push(suite.description);
-
                 let temp = {};
                 temp[prefix] = [];
+                let skipTemp = {};
+                skipTemp[prefix] = [];
                 suite.specs.map(spec => {
                     let it = { 'itName': spec.description }
-                    temp[prefix].push(it);
+                    spec.isSkip ? skipTemp[prefix].push(it) : temp[prefix].push(it);
                 })
                 suiteArray.push(temp);
+                skipSuiteArray.push(skipTemp);
             }
-            this.analyzeSuitesArray(prefixStack, suiteArray, suite);
+            this.analyzeSuitesArray(prefixStack, suiteArray, skipSuiteArray, suite);
             prefixStack.pop();
         });
     }
@@ -408,6 +452,10 @@ class SuiteService {
         const configService = this.coreContext.getDefaultService('config');
         if (configService.filterValid.length !== 0) {
             this.coreContext.fireEvents('task', 'incorrectFormat');
+            return;
+        }
+        if (configService.filterXdescribe.length !== 0) {
+            this.coreContext.fireEvents('task', 'incorrectTestSuiteFormat');
             return;
         }
         if (configService.isRandom() && this.rootSuite.childSuites.length > 0) {
@@ -438,6 +486,9 @@ class SuiteService {
         return {
             describe: function (desc, func) {
                 return _this.describe(desc, func);
+            },
+            xdescribe: function (desc, func, reason) {
+                return _this.xdescribe(desc, func, reason);
             },
             beforeItSpecified: function (itDescs, func) {
                 return _this.beforeItSpecified(itDescs, func);
@@ -474,6 +525,8 @@ SuiteService.Suite = class {
         this.afterEach = [];
         this.duration = 0;
         this.hookError = null;
+        this.isSkip = false;
+        this.skipReason = '';
     }
 
     pushSpec(spec) {
@@ -679,6 +732,9 @@ class SpecService {
         this.id = attr.id;
         this.totalTest = 0;
         this.hasError = false;
+        this.skipSpecNum = 0;
+        this.isSkipSpec = false;
+        this.specSkipReason = '';
     }
 
     init(coreContext) {
@@ -705,19 +761,43 @@ class SpecService {
         return this.currentRunningSpec;
     }
 
+
+    getSkipSpecNum() {
+        return this.skipSpecNum;
+    }
+
+    initSpecService() {
+        this.isSkipSpec = false;
+        this.specSkipReason = '';
+    }
+
     it(desc, filter, func) {
         const suiteService = this.coreContext.getDefaultService('suite');
         const configService = this.coreContext.getDefaultService('config');
         let isFilter = new NestFilter().filterNestName(suiteService.targetSuiteArray, suiteService.targetSpecArray, suiteService.suitesStack, desc);
         if (configService.filterWithNest(desc, filter)) {
             console.info(`${TAG}filter it :${desc}`);
+            this.initSpecService();
             return;
         }
         if (configService.filterDesc(suiteService.currentRunningSuite.description, desc, filter, this.coreContext) && isFilter && !suiteService.fullRun) {
             console.info(`${TAG}filter it :${desc}`);
+            this.initSpecService();
         } else {
             let processedFunc = processFunc(this.coreContext, func);
             const spec = new SpecService.Spec({ description: desc, fi: filter, fn: processedFunc });
+            if (this.isSkipSpec) {
+                spec.isSkip = true;
+                spec.skipReason = this.specSkipReason;
+            }
+            this.initSpecService();
+            if (configService.runSkipped === 'skipped' && !spec.isSkip) {
+                console.info(`${TAG} runSkipped is skipped , just run xit, don't run it: ${spec.description}`);
+                return;
+            }
+            if (suiteService.getCurrentRunningSuite().isSkip && !spec.isSkip) {
+                configService.filterXdescribe.push(suiteService.getCurrentRunningSuite().description);
+            }
             if (typeof this.coreContext.getServices('dataDriver') !== 'undefined' && configService['dryRun'] !== 'true') {
                 let specStress = this.coreContext.getServices('dataDriver').dataDriver.getSpecStress(desc);
                 for (let i = 1; i < specStress; i++) {
@@ -725,7 +805,6 @@ class SpecService {
                     suiteService.getCurrentRunningSuite().pushSpec(spec);
                 }
             }
-
             // dryRun 状态下不统计压力测试重复数据
             if (configService['dryRun'] !== 'true') {
                 let stress = configService.getStress(); // 命令配置压力测试
@@ -740,11 +819,41 @@ class SpecService {
         }
     }
 
+    xit(desc, filter, func, reason) {
+        const configService = this.coreContext.getDefaultService('config');
+        const suiteService = this.coreContext.getDefaultService('suite');
+        if (!configService.skipMessage && configService.runSkipped !== 'all') {
+            if (configService.runSkipped != null && configService.runSkipped !== '') {
+                let finalDesc = '';
+                suiteService.suitesStack.map(suite => {
+                    finalDesc = finalDesc + '.' + suite.description;
+                })
+                finalDesc = (finalDesc + "#" + desc).substring(2);
+                if (configService.checkIfSpecInSkipRun(finalDesc)) {
+                    console.log(`${TAG} runSkipped spec: ${desc}`);
+                } else {
+                    console.log(reason == null ? `${TAG} skip spec: ${desc}` : `${TAG} skip spec: ${desc}, and the reason is ${reason}`);
+                    return;
+                }
+            } else {
+                console.log(reason == null ? `${TAG} skip spec: ${desc}` : `${TAG} skip spec: ${desc}, and the reason is ${reason}`);
+                return;
+            }
+        }
+        this.skipSpecNum++;
+        this.isSkipSpec = true;
+        this.specSkipReason = reason;
+        this.it(desc, filter, func);
+    }
+
     apis() {
         const _this = this;
         return {
             it: function (desc, filter, func) {
                 return _this.it(desc, filter, func);
+            },
+            xit: function (desc, filter, func, reason) {
+                return _this.xit(desc, filter, func, reason);
             }
         };
     }
@@ -761,6 +870,9 @@ SpecService.Spec = class {
         this.duration = 0;
         this.startTime = 0;
         this.isExecuted = false; // 当前用例是否执行
+        this.isSkip = false;
+        this.skipReason = '';
+        this.expectMsg = '';
     }
 
     setResult() {
@@ -1033,6 +1145,14 @@ class ReportService {
             this.coreContext.getDefaultService('config').filterValid.forEach(function (item) {
                 console.info(`${TAG}this param ${item} is invalid`);
             });
+        }
+    }
+
+    incorrectTestSuiteFormat() {
+        if (this.coreContext.getDefaultService('config').filterXdescribe.length !== 0) {
+            this.coreContext.getDefaultService('config').filterXdescribe.forEach(function (item) {
+                console.info(`${TAG}xdescribe: ${item} should not contain it`);
+            })
         }
     }
 

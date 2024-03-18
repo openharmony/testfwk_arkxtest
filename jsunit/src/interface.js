@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,6 +46,23 @@ const expect = function (actualValue) {
     return Reflect.has(core, 'expect') ? core.expect(actualValue) : (actualValue) => { };
 };
 
+const xdescribe = function (desc, func) {
+    return Reflect.has(core, 'xdescribe') ? core.xdescribe(desc, func, null) : (desc, func, reason) => { };
+};
+xdescribe.reason = (reason) => {
+    return (desc, func) => {
+        return Reflect.has(core, 'xdescribe') ? core.xdescribe(desc, func, reason) : (desc, func, reason) => { };
+    }
+}
+const xit = function (desc, filter, func) {
+    return Reflect.has(core, 'xit') ? core.xit(desc, filter, func, null) : (desc, filter, func, reason) => { };
+};
+xit.reason = (reason) => {
+    return (desc, filter, func) => {
+        return Reflect.has(core, 'xit') ? core.xit(desc, filter, func, reason) : (desc, filter, func, reason) => { };
+    }
+}
+
 export {
-    describe, it, beforeAll, beforeEach, afterEach, afterAll, expect, beforeItSpecified, afterItSpecified
+    describe, it, beforeAll, beforeEach, afterEach, afterAll, expect, beforeItSpecified, afterItSpecified, xdescribe, xit
 };

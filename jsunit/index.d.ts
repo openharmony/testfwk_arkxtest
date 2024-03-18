@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License")
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -44,8 +44,9 @@ export enum Level {
   LEVEL3 = 0B1 << 27,
   LEVEL4 = 0B1 << 28
 }
+export { xdescribe, xit, describe, it } from './index';
 
-export function describe(testSuiteName: string, callback: Function): void
+
 
 export function beforeItSpecified(testCaseNames: Array<string> | string, callback: Function): void
 
@@ -59,7 +60,6 @@ export function beforeAll(callback: Function): void
 
 export function afterAll(callback: Function): void
 
-export function it(testCaseName: string, attribute: (TestType | Size | Level), callback: Function)
 
 export interface Assert {
   assertClose(expectValue: number, precision: number): void
