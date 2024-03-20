@@ -1015,20 +1015,28 @@ class ExpectService {
         };
     }
 
-    wrapMatchers(actualValue) {
-        const _this = this;
-        const wrappedMatchers = {
+    initWrapMatchers(currentRunningSpec) {
+        return {
             // 翻转标识
             isNot: false,
-
             // 翻转方法
             not: function () {
                 this.isNot = true;
                 return this;
+            },
+            message: function (msg) {
+                currentRunningSpec.expectMsg = msg;
+                console.info(`${TAG} msg: ${msg}`);
+                return this;
             }
         };
+
+    }
+    wrapMatchers(actualValue) {
+        const _this = this;
         const specService = _this.coreContext.getDefaultService('spec');
         const currentRunningSpec = specService.getCurrentRunningSpec();
+        const wrappedMatchers = this.initWrapMatchers(currentRunningSpec);
         const currentRunningSuite = _this.coreContext.getDefaultService('suite').getCurrentRunningSuite();
         for (const matcherName in this.matchers) {
             let result = Object.prototype.hasOwnProperty.call(this.matchers, matcherName);
