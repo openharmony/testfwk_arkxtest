@@ -148,6 +148,9 @@ class OhReport {
       if (this.specService.currentRunningSpec.error) {
         messageStack = 'OHOS_REPORT_STATUS: stack=' + this.specService.currentRunningSpec.error?.stack?.slice(0, -1);
         messageCode += 'OHOS_REPORT_STATUS: stream=';
+        messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
+          `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}` :
+          `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}`;
         messageCode += `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}`;
         messageCode += '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
         messageCode += '\n' + 'OHOS_REPORT_STATUS_CODE: -1' + '\n';
@@ -155,7 +158,9 @@ class OhReport {
         if (this.specService.currentRunningSpec.fail) {
           messageStack += 'OHOS_REPORT_STATUS: stack=' + this.specService.currentRunningSpec.fail?.stack?.slice(0, -1);
           messageCode += 'OHOS_REPORT_STATUS: stream=';
-          messageCode += `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`;
+          messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
+            `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}` :
+            `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`;
           messageCode += '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
           messageCode += '\n' + 'OHOS_REPORT_STATUS_CODE: -2' + '\n';
         } else {
