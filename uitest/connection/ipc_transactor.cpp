@@ -424,6 +424,10 @@ namespace OHOS::uitest {
                 } else {
                     g_broadcastCommandHandler(commandWant, err);
                 }
+                if (err.code_ != NO_ERROR) {
+                    LOG_E("Cannot handle this.");
+                    return;
+                }
                 replyWant.SetAction("uitest.broadcast.command.reply");
                 replyWant.SetParam("code", (int)(err.code_));
                 replyWant.SetParam("message", err.message_);
