@@ -275,12 +275,13 @@ namespace OHOS::uitest {
             return;
         }
         uiController_->InjectKeyEventSequence(events);
-        uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
     }
 
     void UiDriver::FindWidgets(const WidgetSelector &selector, vector<unique_ptr<Widget>> &rev,
         ApiCallErr &err, bool updateUi)
     {
+        UiOpArgs opt;
+        uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
         if (updateUi) {
             UpdateUIWindows(err);
             if (err.code_ != NO_ERROR) {
@@ -358,7 +359,6 @@ namespace OHOS::uitest {
             return;
         }
         uiController_->InjectTouchEventSequence(events);
-        uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
     }
 
     void UiDriver::PerformMouseAction(const MouseAction &touch, const UiOpArgs &opt, ApiCallErr &err)
@@ -372,7 +372,6 @@ namespace OHOS::uitest {
             return;
         }
         uiController_->InjectMouseEventSequence(events);
-        uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
     }
 
     void UiDriver::TakeScreenCap(int32_t fd, ApiCallErr &err, Rect rect)
