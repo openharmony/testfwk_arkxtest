@@ -287,7 +287,7 @@ namespace OHOS::uitest {
 
     extern "C" int32_t main(int32_t argc, char *argv[])
     {
-        static constexpr string_view usage = "USAGE: uitest <help|screenCap|dumpLayout|uiRecord|--version>";
+        static constexpr string_view usage = "USAGE: uitest <help|screenCap|dumpLayout|uiRecord|uiInput|--version>";
         if ((size_t)argc < INDEX_TWO) {
             PrintToConsole("Missing argument");
             PrintToConsole(usage);
