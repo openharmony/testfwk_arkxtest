@@ -190,22 +190,22 @@ namespace OHOS::uitest {
 
     void UiEventMonitor::WaitScrollCompelete()
     {
-        if (scrollCompelete_.load()) {
-            return;
-        }
-        const auto currentMs = GetCurrentMillisecond();
+        auto currentMs = GetCurrentMillisecond();
         if (lastScrollBeginEventMillis_.load() <= 0) {
             lastScrollBeginEventMillis_.store(currentMs);
         }
         const auto idleThresholdMs = 10000;
-        if (currentMs - lastScrollBeginEventMillis_.load() >= idleThresholdMs) {
-            LOG_E("wai for scrollEnd event timeout.");
-            scrollCompelete_.store(true);
-            return;
-        }
         static constexpr auto sliceMs = 10;
-        this_thread::sleep_for(chrono::milliseconds(sliceMs));
-        return WaitScrollCompelete();
+        while (currentMs - lastScrollBeginEventMillis_.load() < idleThresholdMs) {
+            if (scrollCompelete_.load()) {
+                return;
+            }
+            this_thread::sleep_for(chrono::milliseconds(sliceMs));
+            currentMs = GetCurrentMillisecond();
+        }
+        LOG_E("wai for scrollEnd event timeout.");
+        scrollCompelete_.store(true);
+        return;
     }
 
     bool UiEventMonitor::WaitEventIdle(uint32_t idleThresholdMs, uint32_t timeoutMs)
