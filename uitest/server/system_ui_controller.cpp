@@ -373,7 +373,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    static void AddPinterItems(PointerEvent &event, vector<pair<bool, Point>> &fingerStatus, uint32_t currentFinger)
+    static void AddPinterItems(PointerEvent &event, const vector<pair<bool, Point>> &fingerStatus, uint32_t currentFinger)
     {
         // add pinterItem of other fingers which in pressed state.
         for (auto index = 0; index < fingerStatus.size(); index++) {
