@@ -373,16 +373,37 @@ namespace OHOS::uitest {
         return true;
     }
 
+    static void AddPinterItems(PointerEvent &event, vector<pair<bool, Point>> &fingerStatus, uint32_t currentFinger)
+    {
+        for (auto index = 0; index < fingerStatus.size(); index++) {
+            if (fingerStatus[index].first) {
+                PointerEvent::PointerItem pinterItem;
+                pinterItem.SetPointerId(index);
+                pinterItem.SetDisplayX(fingerStatus[index].second.px_);
+                pinterItem.SetDisplayY(fingerStatus[index].second.py_);
+                pinterItem.SetPressed(true);
+                event.AddPointerItem(pinterItem);
+            }
+        }
+        if (!fingerStatus[currentFinger].first) {
+            PointerEvent::PointerItem pinterItem;
+            pinterItem.SetPointerId(currentFinger);
+            pinterItem.SetDisplayX(fingerStatus[currentFinger].second.px_);
+            pinterItem.SetDisplayY(fingerStatus[currentFinger].second.py_);
+            pinterItem.SetPressed(false);
+            event.AddPointerItem(pinterItem);
+        }
+    }
+
     void SysUiController::InjectTouchEventSequence(const PointerMatrix &events) const
     {
+        vector<pair<bool, Point>> fingerStatus(events.GetFingers(), make_pair(false, Point(0,0)));
         for (uint32_t step = 0; step < events.GetSteps(); step++) {
             auto pointerEvent = PointerEvent::Create();
             for (uint32_t finger = 0; finger < events.GetFingers(); finger++) {
+                bool isPressed = events.At(finger, step).stage_ != ActionStage::UP;
+                fingerStatus[finger] = make_pair(isPressed, events.At(finger, step).point_);
                 pointerEvent->SetPointerId(finger);
-                PointerEvent::PointerItem pinterItem;
-                pinterItem.SetPointerId(finger);
-                pinterItem.SetDisplayX(events.At(finger, step).point_.px_);
-                pinterItem.SetDisplayY(events.At(finger, step).point_.py_);
                 switch (events.At(finger, step).stage_) {
                     case ActionStage::DOWN:
                         pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_DOWN);
@@ -396,8 +417,7 @@ namespace OHOS::uitest {
                     default:
                         break;
                 }
-                pinterItem.SetPressed(events.At(finger, step).stage_ != ActionStage::UP);
-                pointerEvent->AddPointerItem(pinterItem);
+                AddPinterItems(*pointerEvent, fingerStatus, finger);
                 pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
                 DisplayManager &displayMgr = DisplayManager::GetInstance();
                 pointerEvent->SetTargetDisplayId(displayMgr.GetDefaultDisplayId());
