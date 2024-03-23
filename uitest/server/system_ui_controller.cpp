@@ -203,7 +203,7 @@ namespace OHOS::uitest {
             this_thread::sleep_for(chrono::milliseconds(sliceMs));
             currentMs = GetCurrentMillisecond();
         }
-        LOG_E("wai for scrollEnd event timeout.");
+        LOG_E("wait for scrollEnd event timeout.");
         scrollCompelete_.store(true);
         return;
     }
@@ -375,6 +375,7 @@ namespace OHOS::uitest {
 
     static void AddPinterItems(PointerEvent &event, vector<pair<bool, Point>> &fingerStatus, uint32_t currentFinger)
     {
+        // add pinterItem of other fingers which in pressed state.
         for (auto index = 0; index < fingerStatus.size(); index++) {
             if (fingerStatus[index].first) {
                 PointerEvent::PointerItem pinterItem;
@@ -397,6 +398,7 @@ namespace OHOS::uitest {
 
     void SysUiController::InjectTouchEventSequence(const PointerMatrix &events) const
     {
+        // fingerStatus stores the press status and coordinates of each finger.
         vector<pair<bool, Point>> fingerStatus(events.GetFingers(), make_pair(false, Point(0,0)));
         for (uint32_t step = 0; step < events.GetSteps(); step++) {
             auto pointerEvent = PointerEvent::Create();
