@@ -376,24 +376,25 @@ namespace OHOS::uitest {
     static void AddPinterItems(PointerEvent &event, const vector<pair<bool, Point>> &fingerStatus,
         uint32_t currentFinger)
     {
-        // add pinterItem of other fingers which in pressed state.
-        for (auto index = 0; index < fingerStatus.size(); index++) {
+        PointerEvent::PointerItem pinterItem1;
+        pinterItem1.SetPointerId(currentFinger);
+        pinterItem1.SetDisplayX(fingerStatus[currentFinger].second.px_);
+        pinterItem1.SetDisplayY(fingerStatus[currentFinger].second.py_);
+        pinterItem1.SetPressed(fingerStatus[currentFinger].first);
+        event.UpdatePointerItem(currentFinger, pinterItem1);
+        // update pinterItem of other fingers which in pressed state.
+        for (uint32_t index = 0; index < fingerStatus.size(); index++) {
+            if (index == currentFinger) {
+                continue;
+            }
             if (fingerStatus[index].first) {
                 PointerEvent::PointerItem pinterItem;
                 pinterItem.SetPointerId(index);
                 pinterItem.SetDisplayX(fingerStatus[index].second.px_);
                 pinterItem.SetDisplayY(fingerStatus[index].second.py_);
                 pinterItem.SetPressed(true);
-                event.AddPointerItem(pinterItem);
+                event.UpdatePointerItem(index, pinterItem);
             }
-        }
-        if (!fingerStatus[currentFinger].first) {
-            PointerEvent::PointerItem pinterItem;
-            pinterItem.SetPointerId(currentFinger);
-            pinterItem.SetDisplayX(fingerStatus[currentFinger].second.px_);
-            pinterItem.SetDisplayY(fingerStatus[currentFinger].second.py_);
-            pinterItem.SetPressed(false);
-            event.AddPointerItem(pinterItem);
         }
     }
 
