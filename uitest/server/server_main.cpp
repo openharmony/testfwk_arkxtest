@@ -57,7 +57,7 @@ namespace OHOS::uitest {
     "   uiRecord read,                     print file content to the console\n"
     "   uiInput,                                                            \n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "4.1.4.6";
+    const std::string VERSION = "4.1.4.7";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}

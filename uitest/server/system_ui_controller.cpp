@@ -190,22 +190,22 @@ namespace OHOS::uitest {
 
     void UiEventMonitor::WaitScrollCompelete()
     {
-        if (scrollCompelete_.load()) {
-            return;
-        }
-        const auto currentMs = GetCurrentMillisecond();
+        auto currentMs = GetCurrentMillisecond();
         if (lastScrollBeginEventMillis_.load() <= 0) {
             lastScrollBeginEventMillis_.store(currentMs);
         }
         const auto idleThresholdMs = 10000;
-        if (currentMs - lastScrollBeginEventMillis_.load() >= idleThresholdMs) {
-            LOG_E("wai for scrollEnd event timeout.");
-            scrollCompelete_.store(true);
-            return;
-        }
         static constexpr auto sliceMs = 10;
-        this_thread::sleep_for(chrono::milliseconds(sliceMs));
-        return WaitScrollCompelete();
+        while (currentMs - lastScrollBeginEventMillis_.load() < idleThresholdMs) {
+            if (scrollCompelete_.load()) {
+                return;
+            }
+            this_thread::sleep_for(chrono::milliseconds(sliceMs));
+            currentMs = GetCurrentMillisecond();
+        }
+        LOG_E("wait for scrollEnd event timeout.");
+        scrollCompelete_.store(true);
+        return;
     }
 
     bool UiEventMonitor::WaitEventIdle(uint32_t idleThresholdMs, uint32_t timeoutMs)
@@ -373,16 +373,41 @@ namespace OHOS::uitest {
         return true;
     }
 
+    static void AddPinterItems(PointerEvent &event, const vector<pair<bool, Point>> &fingerStatus,
+        uint32_t currentFinger)
+    {
+        PointerEvent::PointerItem pinterItem1;
+        pinterItem1.SetPointerId(currentFinger);
+        pinterItem1.SetDisplayX(fingerStatus[currentFinger].second.px_);
+        pinterItem1.SetDisplayY(fingerStatus[currentFinger].second.py_);
+        pinterItem1.SetPressed(fingerStatus[currentFinger].first);
+        event.UpdatePointerItem(currentFinger, pinterItem1);
+        // update pinterItem of other fingers which in pressed state.
+        for (uint32_t index = 0; index < fingerStatus.size(); index++) {
+            if (index == currentFinger) {
+                continue;
+            }
+            if (fingerStatus[index].first) {
+                PointerEvent::PointerItem pinterItem;
+                pinterItem.SetPointerId(index);
+                pinterItem.SetDisplayX(fingerStatus[index].second.px_);
+                pinterItem.SetDisplayY(fingerStatus[index].second.py_);
+                pinterItem.SetPressed(true);
+                event.UpdatePointerItem(index, pinterItem);
+            }
+        }
+    }
+
     void SysUiController::InjectTouchEventSequence(const PointerMatrix &events) const
     {
+        // fingerStatus stores the press status and coordinates of each finger.
+        vector<pair<bool, Point>> fingerStatus(events.GetFingers(), make_pair(false, Point(0,0)));
         for (uint32_t step = 0; step < events.GetSteps(); step++) {
             auto pointerEvent = PointerEvent::Create();
             for (uint32_t finger = 0; finger < events.GetFingers(); finger++) {
+                bool isPressed = events.At(finger, step).stage_ != ActionStage::UP;
+                fingerStatus[finger] = make_pair(isPressed, events.At(finger, step).point_);
                 pointerEvent->SetPointerId(finger);
-                PointerEvent::PointerItem pinterItem;
-                pinterItem.SetPointerId(finger);
-                pinterItem.SetDisplayX(events.At(finger, step).point_.px_);
-                pinterItem.SetDisplayY(events.At(finger, step).point_.py_);
                 switch (events.At(finger, step).stage_) {
                     case ActionStage::DOWN:
                         pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_DOWN);
@@ -396,8 +421,7 @@ namespace OHOS::uitest {
                     default:
                         break;
                 }
-                pinterItem.SetPressed(events.At(finger, step).stage_ != ActionStage::UP);
-                pointerEvent->AddPointerItem(pinterItem);
+                AddPinterItems(*pointerEvent, fingerStatus, finger);
                 pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
                 DisplayManager &displayMgr = DisplayManager::GetInstance();
                 pointerEvent->SetTargetDisplayId(displayMgr.GetDefaultDisplayId());
