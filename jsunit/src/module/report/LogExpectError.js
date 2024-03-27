@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,23 +34,23 @@ class LogExpectError {
         if (matcherName === "assertInstanceOf") {
             return "expect not InstanceOf, "
                 + actualValue + ' is '
-                + Object.prototype.toString.call(actualValue) +  expected;
+                + Object.prototype.toString.call(actualValue) +  expect;
         }
         if (matcherName === "assertLarger") {
             return "expect not Larger, "
-                + (actualValue) + ' is larger than ' + expected;
+                + (actualValue) + ' is larger than ' + expect;
         }
         if (matcherName === "assertLargerOrEqual") {
             return "expect not LargerOrEqual, "
-                + (actualValue) + ' larger than ' + expected;
+                + (actualValue) + ' larger than ' + expect;
         }
         if (matcherName === "assertLess") {
             return "expect not Less, "
-                + (actualValue) + ' less than ' + expected;
+                + (actualValue) + ' less than ' + expect;
         }
         if (matcherName === "assertLessOrEqual") {
             return "expect not LessOrEqual, "
-                + (actualValue) + ' is less than ' + expected;
+                + (actualValue) + ' is less than ' + expect;
         }
         if (matcherName === "assertNaN") {
             return "expect not NaN, actualValue is " + (actualValue)
