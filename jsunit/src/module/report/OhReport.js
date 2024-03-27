@@ -151,7 +151,6 @@ class OhReport {
         messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
           `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}` :
           `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}`;
-        messageCode += `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}`;
         messageCode += '\n' + 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
         messageCode += '\n' + 'OHOS_REPORT_STATUS_CODE: -1' + '\n';
       } else if (this.specService.currentRunningSpec) {
@@ -167,9 +166,7 @@ class OhReport {
           messageStack += 'OHOS_REPORT_STATUS: stream=';
           messageCode += 'OHOS_REPORT_STATUS: test=' + this.specService.currentRunningSpec.description;
           messageCode += '\n' + 'OHOS_REPORT_STATUS_CODE: 0' + '\n';
-          if (this.specService.currentRunningSpec.isSkip) {
-            messageCode += 'OHOS_REPORT_STATUS: skipReason=' + this.specService.currentRunningSpec.skipReason + '\n';
-          }
+          messageCode += this.specService.currentRunningSpec.isSkip ?  ('OHOS_REPORT_STATUS: skipReason=' + this.specService.currentRunningSpec.skipReason + '\n') : '';
         }
       } else {
         messageCode += '\n';
