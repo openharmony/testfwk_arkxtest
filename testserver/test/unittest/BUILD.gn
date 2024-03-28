@@ -11,10 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-base_root = "../../../../.."
-import("$base_root/build/ohos.gni")
-import("$base_root/build/test.gni")
-source_root = "$base_root/test/testfwk/arkxtest/testserver"
+import("//build/ohos.gni")
+import("//build/test.gni")
+source_root = "//test/testfwk/arkxtest/testserver"
 
 ohos_unittest("testserver_unittest") {
   sources = [
@@ -42,12 +41,14 @@ ohos_unittest("testserver_unittest") {
   include_dirs = [
     "${source_root}/src/service",
     "${source_root}/src/client",
+    "${source_root}/src/utils",
     "${target_gen_dir}/../src",
   ]
-  cflags = [ "-g" ]
-  cflags_cc = [ "-g" ]
+  ldflags = [ "--coverage" ]
+  cflags = [ "--coverage" ]
+  cflags_cc = [ "--coverage" ]
   use_exceptions = true
-  module_out_path = "uitestkit/unittest"
+  module_out_path = "testserver/unittest"
   testonly = true
   subsystem_name = "testfwk"
   part_name = "arkxtest"

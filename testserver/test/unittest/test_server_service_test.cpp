@@ -22,8 +22,10 @@
 #include "test_server_service.h"
 #include "mock_permission.h"
 #include "start_test_server.h"
+#include "test_server_error_code.h"
 
 using namespace std;
+using namespace testing::ext;
 using namespace OHOS;
 using namespace OHOS::testserver;
 
@@ -36,7 +38,11 @@ public:
         TestServerService::OnStart();
     }
 
-    // These test should convert function IsRootVersion(), IsDeveloperMode() to virtual
+    void OnStop()
+    {
+        TestServerService::OnStop();
+    }
+
     MOCK_METHOD0(IsRootVersion, bool());
     MOCK_METHOD0(IsDeveloperMode, bool());
 
@@ -55,6 +61,11 @@ public:
         TestServerService::AddCaller();
         return true;
     }
+
+    int GetCallerCount()
+    {
+        return TestServerService::GetCallerCount();
+    }
 };
 
 class ServiceTest : public testing::Test {
@@ -62,7 +73,7 @@ public:
     ~ServiceTest() override = default;
 
 protected:
-    const int32_t systemAbilityId = TEST_SERVER_SA_ID;
+    const int32_t SYSTEM_ABILITY_ID = TEST_SERVER_SA_ID;
     sptr<ISystemAbilityManager> samgr_ = nullptr;
     unique_ptr<TestServerServiceMock> testServerServiceMock_ = nullptr;
     const int32_t UNLOAD_SYSTEMABILITY_WAITTIME = 2000;
@@ -71,75 +82,76 @@ protected:
     {
         TestServerMockPermission::MockProcess("testserver");
         samgr_ = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-        testServerServiceMock_ = make_unique<TestServerServiceMock>(systemAbilityId, false);
+        testServerServiceMock_ = make_unique<TestServerServiceMock>(SYSTEM_ABILITY_ID, false);
     }
 
     void TearDown() override
     {
-        samgr_->UnloadSystemAbility(systemAbilityId);
-        samgr_->RemoveSystemAbility(systemAbilityId);
+        samgr_->UnloadSystemAbility(SYSTEM_ABILITY_ID);
+        samgr_->RemoveSystemAbility(SYSTEM_ABILITY_ID);
         this_thread::sleep_for(chrono::milliseconds(UNLOAD_SYSTEMABILITY_WAITTIME));
-        EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+        EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
         testServerServiceMock_.reset();
         EXPECT_EQ(testServerServiceMock_, nullptr);
     }
 };
 
-TEST_F(ServiceTest, testOnStartWhenMock)
+HWTEST_F(ServiceTest, testOnStartWhenMock, TestSize.Level1)
 {
-    EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     EXPECT_CALL(*testServerServiceMock_, IsRootVersion()).WillOnce(testing::Return(true));
     testServerServiceMock_->OnStart();
-    EXPECT_NE(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_NE(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
 }
 
-TEST_F(ServiceTest, testOnStartWhenUserDeveloper)
+HWTEST_F(ServiceTest, testOnStartWhenUserDeveloper, TestSize.Level1)
 {
-    EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     EXPECT_CALL(*testServerServiceMock_, IsRootVersion()).WillOnce(testing::Return(false));
     EXPECT_CALL(*testServerServiceMock_, IsDeveloperMode()).WillOnce(testing::Return(true));
     testServerServiceMock_->OnStart();
-    EXPECT_NE(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_NE(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
 }
 
-TEST_F(ServiceTest, testOnStartWhenUserNonDeveloper)
+HWTEST_F(ServiceTest, testOnStartWhenUserNonDeveloper, TestSize.Level1)
 {
-    EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     EXPECT_CALL(*testServerServiceMock_, IsRootVersion()).WillOnce(testing::Return(false));
     EXPECT_CALL(*testServerServiceMock_, IsDeveloperMode()).WillOnce(testing::Return(false));
     testServerServiceMock_->OnStart();
-    EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
 }
 
-TEST_F(ServiceTest, testRemoveTestServer)
+HWTEST_F(ServiceTest, testRemoveTestServer, TestSize.Level1)
 {
-    EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     sptr<ITestServerInterface> iTestServerInterface = StartTestServer::GetInstance().LoadTestServer();
-    EXPECT_NE(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_NE(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     EXPECT_TRUE(testServerServiceMock_->RemoveTestServer());
     this_thread::sleep_for(chrono::milliseconds(UNLOAD_SYSTEMABILITY_WAITTIME));
-    EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
 }
 
-TEST_F(ServiceTest, testDestorySessionWithCaller)
+HWTEST_F(ServiceTest, testDestorySessionWithCaller, TestSize.Level1)
 {
-    EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     sptr<ITestServerInterface> iTestServerInterface = StartTestServer::GetInstance().LoadTestServer();
-    EXPECT_NE(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_NE(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     testServerServiceMock_->CreateSessionMock();
     testServerServiceMock_->DestorySession();
     this_thread::sleep_for(chrono::milliseconds(UNLOAD_SYSTEMABILITY_WAITTIME));
-    EXPECT_NE(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_NE(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
+    EXPECT_EQ(testServerServiceMock_->GetCallerCount(), 1);
 }
 
-TEST_F(ServiceTest, testDestorySessionWithoutCaller)
+HWTEST_F(ServiceTest, testDestorySessionWithoutCaller, TestSize.Level1)
 {
-    EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     sptr<ITestServerInterface> iTestServerInterface = StartTestServer::GetInstance().LoadTestServer();
-    EXPECT_NE(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_NE(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     testServerServiceMock_->DestorySession();
     this_thread::sleep_for(chrono::milliseconds(UNLOAD_SYSTEMABILITY_WAITTIME));
-    EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
 }
 
 class CallerDetectTimerTest : public testing::Test {
@@ -147,7 +159,7 @@ public:
     ~CallerDetectTimerTest() override = default;
 
 protected:
-    const int32_t systemAbilityId = TEST_SERVER_SA_ID;
+    const int32_t SYSTEM_ABILITY_ID = TEST_SERVER_SA_ID;
     sptr<ISystemAbilityManager> samgr_ = nullptr;
     const int32_t UNLOAD_SYSTEMABILITY_WAITTIME = 2000;
     const int32_t CALLER_DECTECT_TIMER_WAITTIME = 12000;
@@ -159,27 +171,27 @@ protected:
 
     void TearDown() override
     {
-        samgr_->UnloadSystemAbility(systemAbilityId);
+        samgr_->UnloadSystemAbility(SYSTEM_ABILITY_ID);
         this_thread::sleep_for(chrono::milliseconds(UNLOAD_SYSTEMABILITY_WAITTIME));
     }
 };
 
-TEST_F(CallerDetectTimerTest, testCallerDetectTimerWithCaller)
+HWTEST_F(CallerDetectTimerTest, testCallerDetectTimerWithCaller, TestSize.Level1)
 {
-    EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     sptr<ITestServerInterface> iTestServerInterface = StartTestServer::GetInstance().LoadTestServer();
     sptr<SessionToken> sessionToken = new (std::nothrow) SessionToken();
-    EXPECT_EQ(iTestServerInterface->CreateSession(*sessionToken), ERR_OK);
-    EXPECT_NE(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(iTestServerInterface->CreateSession(*sessionToken), TEST_SERVER_OK);
+    EXPECT_NE(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     this_thread::sleep_for(chrono::milliseconds(CALLER_DECTECT_TIMER_WAITTIME));
-    EXPECT_NE(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_NE(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
 }
 
-TEST_F(CallerDetectTimerTest, testCallerDetectTimerWithoutCaller)
+HWTEST_F(CallerDetectTimerTest, testCallerDetectTimerWithoutCaller, TestSize.Level1)
 {
-    EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     sptr<ITestServerInterface> iTestServerInterface = StartTestServer::GetInstance().LoadTestServer();
-    EXPECT_NE(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_NE(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     this_thread::sleep_for(chrono::milliseconds(CALLER_DECTECT_TIMER_WAITTIME));
-    EXPECT_EQ(samgr_->CheckSystemAbility(systemAbilityId), nullptr);
+    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
 }
