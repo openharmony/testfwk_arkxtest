@@ -15,6 +15,8 @@
 
 #include <chrono>
 #include <thread>
+#include <gtest/hwext/gtest-multithread.h>
+#include <unistd.h>
 #include "gtest/gtest.h"
 #include "system_ability_definition.h"
 #include "system_ability.h"
@@ -22,18 +24,40 @@
 #include "test_server_client.h"
 #include "mock_permission.h"
 
+using namespace std;
+using namespace testing::ext;
+using namespace testing::mt;
 using namespace OHOS;
 using namespace OHOS::testserver;
 
-const int32_t systemAbilityId = TEST_SERVER_SA_ID;
+const int32_t SYSTEM_ABILITY_ID = TEST_SERVER_SA_ID;
+const int32_t UNLOAD_SYSTEMABILITY_WAITTIME = 2000;
 
-TEST(ClientTest, testLoadTestServer)
+HWTEST(ClientTest, testLoadTestServer, TestSize.Level1)
 {
     TestServerMockPermission::MockProcess("testserver");
     sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     sptr<ITestServerInterface> iTestServerInterface = TestServerClient::GetInstance().LoadTestServer();
     EXPECT_NE(iTestServerInterface, nullptr);
-    EXPECT_NE(samgr->CheckSystemAbility(systemAbilityId), nullptr);
-    samgr->UnloadSystemAbility(systemAbilityId);
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    EXPECT_NE(samgr->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
+    samgr->UnloadSystemAbility(SYSTEM_ABILITY_ID);
+    std::this_thread::sleep_for(std::chrono::milliseconds(UNLOAD_SYSTEMABILITY_WAITTIME));
+}
+
+void load_test_server_test(sptr<ISystemAbilityManager> samgr)
+{
+    TestServerMockPermission::MockProcess("testserver");
+    sptr<ITestServerInterface> iTestServerInterface = TestServerClient::GetInstance().LoadTestServer();
+    EXPECT_NE(iTestServerInterface, nullptr);
+    EXPECT_NE(samgr->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
+}
+
+HWMTEST(ClientTest, testMutilLoadTestServer, TestSize.Level1, 3)
+{
+    sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    EXPECT_EQ(samgr->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
+    load_test_server_test(samgr);
+    EXPECT_NE(samgr->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
+    samgr->UnloadSystemAbility(SYSTEM_ABILITY_ID);
+    std::this_thread::sleep_for(std::chrono::milliseconds(UNLOAD_SYSTEMABILITY_WAITTIME));
 }

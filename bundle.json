@@ -55,9 +55,27 @@
             "//test/testfwk/arkxtest/testserver/src:test_server_service",
             "//test/testfwk/arkxtest/testserver/src:test_server_client"
         ],
+        "inner_api": [
+          {
+            "type": "none",
+            "name": "//test/testfwk/arkxtest/testserver/src:test_server_client",
+            "header": {
+              "header_base": [
+                "${root_out_dir}/gen/test/testfwk/arkxtest/testserver/src",
+                "//test/testfwk/arkxtest/testserver/src/client"
+              ],
+              "header_files": [
+                "itest_server_interface.h",
+                "test_server_client.h",
+                "session_token.h"
+              ]
+            }
+          }
+        ],
     "test": [
       "//test/testfwk/arkxtest/uitest:uitestkit_test",
-      "//test/testfwk/arkxtest/testserver/test:testserver_unittest"
+      "//test/testfwk/arkxtest/testserver/test/unittest:testserver_unittest",
+      "//test/testfwk/arkxtest/testserver/test/fuzztest:fuzztest"
     ]
       }
     }
