@@ -21,6 +21,7 @@
 #include "test_server_interface_proxy.h"
 #include "system_ability_definition.h"
 #include "session_token.h"
+#include "test_server_error_code.h"
 
 namespace OHOS::testserver {
     using namespace OHOS::HiviewDFX;
@@ -130,7 +131,7 @@ namespace OHOS::testserver {
             return nullptr;
         }
         sptr<SessionToken> sessionToken = new (std::nothrow) SessionToken();
-        if (iTestServerInterface->CreateSession(*sessionToken) != ERR_OK) {
+        if (iTestServerInterface->CreateSession(*sessionToken) != TEST_SERVER_OK) {
             HiLog::Error(LABEL, "%{public}s. Create session FAILED", __func__);
             return nullptr;
         }
