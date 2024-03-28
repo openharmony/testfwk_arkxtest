@@ -20,6 +20,7 @@
 #include "hilog/log.h"
 #include "parameters.h"
 #include "iservice_registry.h"
+#include "test_server_error_code.h"
 
 namespace OHOS::testserver {
     // TEST_SERVER_SA_ID
@@ -91,12 +92,12 @@ namespace OHOS::testserver {
         if (!result) {
             HiLog::Error(LABEL_SERVICE, "%{public}s. AddDeathRecipient FAILD.", __func__);
             DestorySession();
-            return IPC_PROXY_DEAD_OBJECT_ERR;
+            return TEST_SERVER_ADD_DEATH_RECIPIENT_FAILED;
         }
         AddCaller();
         HiLog::Info(LABEL_SERVICE, "%{public}s. Create session SUCCESS. callerCount=%{public}d",
             __func__, GetCallerCount());
-        return ERR_OK;
+        return TEST_SERVER_OK;
     }
 
     void TestServerService::AddCaller()
@@ -153,7 +154,7 @@ namespace OHOS::testserver {
         HiLog::Info(LABEL_TIMER, "%{public}s called.", __func__);
         thread_ = thread([this] {
             this_thread::sleep_for(chrono::milliseconds(CALLER_DETECT_DURING));
-            HiLog::Info(LABEL_SERVICE, "%{public}s. Timer is done.", __func__);
+            HiLog::Info(LABEL_TIMER, "%{public}s. Timer is done.", __func__);
             if (!testServerExit_) {
                 testServerService_->DestorySession();
             }
@@ -163,7 +164,7 @@ namespace OHOS::testserver {
 
     void TestServerService::CallerDetectTimer::Cancel()
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        HiLog::Info(LABEL_TIMER, "%{public}s called.", __func__);
         testServerExit_ = true;
     }
 
