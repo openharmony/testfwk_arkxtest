@@ -34,20 +34,24 @@ namespace OHOS::uitest {
         auto data = nlohmann::json();
         data["X_POSI"] = std::to_string(firstTouchEventInfo.x);
         data["Y_POSI"] = std::to_string(firstTouchEventInfo.y);
-        data["W1_ID"] = firstTouchEventInfo.attributes[UiAttr::ID];
-        data["W1_Type"] = firstTouchEventInfo.attributes[UiAttr::TYPE];
-        data["W1_Text"] = firstTouchEventInfo.attributes[UiAttr::TEXT];
-        data["W1_BOUNDS"] = firstTouchEventInfo.attributes[UiAttr::BOUNDS];
-        data["W1_HIER"] = firstTouchEventInfo.attributes[UiAttr::HIERARCHY];
-
+        auto first_event_attr = firstTouchEventInfo.attributes;
+        if (!first_event_attr.empty()) {
+            data["W1_ID"] = first_event_attr[UiAttr::ID];
+            data["W1_Type"] = first_event_attr[UiAttr::TYPE];
+            data["W1_Text"] = first_event_attr[UiAttr::TEXT];
+            data["W1_BOUNDS"] = first_event_attr[UiAttr::BOUNDS];
+            data["W1_HIER"] = first_event_attr[UiAttr::HIERARCHY];
+        }
         data["X2_POSI"] = lastTouchEventInfo.x != 0 ? std::to_string(lastTouchEventInfo.x) : "";
         data["Y2_POSI"] = lastTouchEventInfo.y != 0 ? std::to_string(lastTouchEventInfo.y) : "";
-        data["W2_ID"] = lastTouchEventInfo.attributes[UiAttr::ID];
-        data["W2_Type"] = lastTouchEventInfo.attributes[UiAttr::TYPE];
-        data["W2_Text"] = lastTouchEventInfo.attributes[UiAttr::TEXT];
-        data["W2_BOUNDS"] = lastTouchEventInfo.attributes[UiAttr::BOUNDS];
-        data["W2_HIER"] = lastTouchEventInfo.attributes[UiAttr::HIERARCHY];
-
+        auto last_event_attr = lastTouchEventInfo.attributes;
+        if (!last_event_attr.empty()) {
+            data["W2_ID"] = last_event_attr[UiAttr::ID];
+            data["W2_Type"] = last_event_attr[UiAttr::TYPE];
+            data["W2_Text"] = last_event_attr[UiAttr::TEXT];
+            data["W2_BOUNDS"] = last_event_attr[UiAttr::BOUNDS];
+            data["W2_HIER"] = last_event_attr[UiAttr::HIERARCHY];
+        }
         data["LENGTH"] = std::to_string(stepLength);
         data["MAX_VEL"] = std::to_string(MAX_VELOCITY);
         data["VELO"] = std::to_string(velocity);
@@ -59,20 +63,22 @@ namespace OHOS::uitest {
     std::string FingerInfo::WriteWindowData(std::string actionType)
     {
         std::stringstream sout;
+        auto first_event_attr = firstTouchEventInfo.attributes;
+        auto last_event_attr = lastTouchEventInfo.attributes;
         if (actionType == "fling" || actionType == "swipe" || actionType == "drag") {
-            if (firstTouchEventInfo.attributes[UiAttr::ID] != "" ||
-                firstTouchEventInfo.attributes[UiAttr::TEXT] != "") {
-                sout << "from Widget(id: " << firstTouchEventInfo.attributes[UiAttr::ID] << ", "
-                     << "type: " << firstTouchEventInfo.attributes[UiAttr::TYPE] << ", "
-                     << "text: " << firstTouchEventInfo.attributes[UiAttr::TEXT] << ") " << "; ";
+            if ((!first_event_attr.empty()) && (first_event_attr[UiAttr::ID] != "" ||
+                first_event_attr[UiAttr::TEXT] != "")) {
+                sout << "from Widget(id: " << first_event_attr[UiAttr::ID] << ", "
+                     << "type: " << first_event_attr[UiAttr::TYPE] << ", "
+                     << "text: " << first_event_attr[UiAttr::TEXT] << ") " << "; ";
             } else {
                 sout << "from Point(x:" << firstTouchEventInfo.x << ", y:" << firstTouchEventInfo.y << ") ";
             }
-            if (lastTouchEventInfo.attributes[UiAttr::ID] != "" ||
-                lastTouchEventInfo.attributes[UiAttr::TEXT] != "") {
-                sout << "to Widget(id: " << lastTouchEventInfo.attributes[UiAttr::ID] << ", "
-                     << "type: " << lastTouchEventInfo.attributes[UiAttr::TYPE] << ", "
-                     << "text: " << lastTouchEventInfo.attributes[UiAttr::TEXT] << ") " << "; ";
+            if ((!last_event_attr.empty()) && (last_event_attr[UiAttr::ID] != "" ||
+                last_event_attr[UiAttr::TEXT] != "")) {
+                sout << "to Widget(id: " << last_event_attr[UiAttr::ID] << ", "
+                     << "type: " << last_event_attr[UiAttr::TYPE] << ", "
+                     << "text: " << last_event_attr[UiAttr::TEXT] << ") " << "; ";
             } else {
                 sout << " to Point(x:" << lastTouchEventInfo.x << ", y:" << lastTouchEventInfo.y << ") " << "; ";
             }
@@ -82,11 +88,11 @@ namespace OHOS::uitest {
             }
         } else if (actionType == "click" || actionType == "longClick" || actionType == "doubleClick") {
             sout << actionType << ": " ;
-            if (firstTouchEventInfo.attributes[UiAttr::ID] != "" ||
-                firstTouchEventInfo.attributes[UiAttr::TEXT] != "") {
-                sout << " at Widget( id: " << firstTouchEventInfo.attributes[UiAttr::ID] << ", "
-                     << "text: " << firstTouchEventInfo.attributes[UiAttr::TEXT] << ", "
-                     << "type: " << firstTouchEventInfo.attributes[UiAttr::TYPE] << ") "<< "; ";
+            if ((!first_event_attr.empty()) && (first_event_attr[UiAttr::ID] != "" ||
+               first_event_attr[UiAttr::TEXT] != "")) {
+                sout << " at Widget( id: " << first_event_attr[UiAttr::ID] << ", "
+                     << "text: " << first_event_attr[UiAttr::TEXT] << ", "
+                     << "type: " << first_event_attr[UiAttr::TYPE] << ") "<< "; ";
             } else {
                 sout <<" at Point(x:" << firstTouchEventInfo.x << ", y:" << firstTouchEventInfo.y << ") "<< "; ";
             }
