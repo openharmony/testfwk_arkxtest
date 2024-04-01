@@ -22,7 +22,7 @@
 #include "widget_selector.h"
 #include "frontend_api_defines.h"
 namespace OHOS::uitest {
-    std::unique_ptr<Widget> FindWidget(UiDriver &driver, float x, float y);
+    std::vector<std::string> FindWidget(UiDriver &driver, float x, float y);
 } // namespace OHOS::uitest
 
 #endif // FIND_WIDGET_H
