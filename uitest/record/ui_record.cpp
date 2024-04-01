@@ -51,7 +51,7 @@ namespace OHOS::uitest {
         StartUp = 0, StartEnd, StartFindWidgets, FindWidgetsEnd
     };
 
-    inline const std::string InputEventCallback::DEFAULT_DIR = "/data/local/tmp";
+    inline const std::string InputEventCallback::DEFAULT_DIR = "/data/local/tmp/layout";
     std::string EventData::defaultDir = InputEventCallback::DEFAULT_DIR;
 
     bool SpecialKeyMapExistKey(int32_t keyCode, TouchOpt &touchop)
@@ -303,7 +303,7 @@ namespace OHOS::uitest {
                 widgetsCon.wait(widgetsLck);
             }
             if (recordMode != "point") {
-                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y)->GetAttrVec();
+                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y);
             }
             pointerTracker_.HandleDownEvent(touchEvent);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_MOVE) {
@@ -312,13 +312,13 @@ namespace OHOS::uitest {
             pointerTracker_.HandleMoveEvent(touchEvent, OP_DRAG);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP) {
             if (recordMode != "point") {
-                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y)->GetAttrVec();
+                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y);
             }
             pointerTracker_.HandleUpEvent(touchEvent);
             WritePointerInfo();
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_PULL_UP) {
             if (recordMode != "point") {
-                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y)->GetAttrVec();
+                touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y);
             }
             pointerTracker_.HandleUpEvent(touchEvent, OP_DRAG);
             WritePointerInfo();
