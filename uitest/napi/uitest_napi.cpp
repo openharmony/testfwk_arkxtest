@@ -349,10 +349,15 @@ namespace OHOS::uitest {
         const auto &id = ctx.callInfo_.apiId_;
         if (id  == "Component.inputText" && paramList.size() > 0) {
             auto text = paramList.at(INDEX_ZERO).get<string>();
-            SetPasteBoardData(text);
-        } else if (id  == "Driver.inputText" && paramList.size() > 0) {
-            auto text = paramList.at(INDEX_ONE).get<string>();
-            SetPasteBoardData(text);
+            if (paramList.at(INDEX_ZERO) != nlohmann::detail::value_t::null) {
+                auto text0 = paramList.at(INDEX_ZERO).get<string>();
+                SetPasteBoardData(text0);
+            }
+        } else if (id  == "Driver.inputText" && paramList.size() > 1) {
+            if (paramList.at(INDEX_ONE) != nlohmann::detail::value_t::null) {
+                auto text1 = paramList.at(INDEX_ONE).get<string>();
+                SetPasteBoardData(text1);
+            }
         } else if (id  == "Driver.screenCap" || id  == "UiDriver.screenCap" || id  == "Driver.screenCapture") {
             if (paramList.size() < 1 || paramList.at(0).type() != nlohmann::detail::value_t::string) {
                 LOG_E("Missing file path argument");
