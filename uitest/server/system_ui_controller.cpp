@@ -859,10 +859,11 @@ namespace OHOS::uitest {
             int32_t result = sam->LoadSystemAbility(OHOS::DFX_HI_DUMPER_SERVICE_ABILITY_ID, loadCallback);
             if (result != ERR_OK) {
                 LOG_E("Schedule LoadSystemAbility failed");
+                lock.unlock();
                 return;
             }
             LOG_E("Schedule LoadSystemAbility succeed");
-            lock.lock();
+            lock.unlock();
             remoteObject = loadCallback->GetSaObject();
             LOG_E("LoadSystemAbility callbacked, result = %{public}s", remoteObject == nullptr ? "FAIL" : "SUCCESS");
         }
