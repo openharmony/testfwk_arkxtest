@@ -154,15 +154,15 @@ namespace OHOS::uitest {
     void UiEventMonitor::OnAccessibilityEvent(const AccessibilityEventInfo &eventInfo)
     {
         auto eventType = eventInfo.GetEventType();
-        LOG_W("OnEvent:0x%{public}x", eventType);
+        LOG_D("OnEvent:0x%{public}x", eventType);
         auto capturedEvent = GetWatchedEvent(eventInfo);
         if (eventType == Accessibility::EventType::TYPE_VIEW_SCROLLED_START) {
-            LOG_I("Capture scroll begin");
+            LOG_D("Capture scroll begin");
             scrollCompelete_.store(false);
             lastScrollBeginEventMillis_.store(GetCurrentMillisecond());
         }
         if (eventType == Accessibility::EventType::TYPE_VIEW_SCROLLED_EVENT) {
-            LOG_I("Capture scroll end");
+            LOG_D("Capture scroll end");
             scrollCompelete_.store(true);
         }
         if (capturedEvent != "undefine") {
@@ -876,12 +876,9 @@ namespace OHOS::uitest {
         auto fd = memfd_create("dummy_file", 2);
         ftruncate(fd, 0);
         vector<u16string> args;
-        args.emplace_back(u"hidumper");
-        args.emplace_back(u"-s");
-        args.emplace_back(u"WindowManagerService");
-        args.emplace_back(u"-a");
+        args.emplace_back(u"hidumper -s WindowManagerService -a");
         auto winIdInUtf16 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t > {}.from_bytes(windowId);
-        auto arg = u16string(u"-w ").append(winIdInUtf16).append(u" -default -lastpage");
+        auto arg = u16string(u"'-w ").append(winIdInUtf16).append(u" -default -lastpage '");
         args.emplace_back(move(arg));
         client->Request(args, fd);
         auto size = lseek(fd, 0, SEEK_END);
