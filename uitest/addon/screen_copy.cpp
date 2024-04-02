@@ -84,7 +84,7 @@ static void AdapteScreenChange()
         return;
     }
     // destrory current one and create a new one
-    LOG_I("Screen changed, auto restart ScreenCopy");
+    LOG_D("Screen changed, auto restart ScreenCopy");
     const auto scale = g_screenCopy->scale_;
     g_screenCopy->Destroy();
     g_screenCopy = make_unique<ScreenCopy>(scale);
