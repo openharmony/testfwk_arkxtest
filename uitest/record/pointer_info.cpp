@@ -65,31 +65,11 @@ namespace OHOS::uitest {
         std::stringstream sout;
         auto first_event_attr = firstTouchEventInfo.attributes;
         auto last_event_attr = lastTouchEventInfo.attributes;
-        if (actionType == "fling" || actionType == "swipe" || actionType == "drag") {
-            if ((!first_event_attr.empty()) && (first_event_attr[UiAttr::ID] != "" ||
-                first_event_attr[UiAttr::TEXT] != "")) {
-                sout << "from Widget(id: " << first_event_attr[UiAttr::ID] << ", "
-                     << "type: " << first_event_attr[UiAttr::TYPE] << ", "
-                     << "text: " << first_event_attr[UiAttr::TEXT] << ") " << "; ";
-            } else {
-                sout << "from Point(x:" << firstTouchEventInfo.x << ", y:" << firstTouchEventInfo.y << ") ";
-            }
-            if ((!last_event_attr.empty()) && (last_event_attr[UiAttr::ID] != "" ||
-                last_event_attr[UiAttr::TEXT] != "")) {
-                sout << "to Widget(id: " << last_event_attr[UiAttr::ID] << ", "
-                     << "type: " << last_event_attr[UiAttr::TYPE] << ", "
-                     << "text: " << last_event_attr[UiAttr::TEXT] << ") " << "; ";
-            } else {
-                sout << " to Point(x:" << lastTouchEventInfo.x << ", y:" << lastTouchEventInfo.y << ") " << "; ";
-            }
-        }
-        if (actionType == "fling" || actionType == "swipe") {
-            sout << "Off-hand speed:" << velocity << ", " << "Step length:" << stepLength << ";";
-        }
         if (actionType == "click" || actionType == "longClick" || actionType == "doubleClick") {
             sout << actionType << ": " ;
-            if ((!first_event_attr.empty()) && (first_event_attr[UiAttr::ID] != "" ||
-               first_event_attr[UiAttr::TEXT] != "")) {
+            if (first_event_attr.empty()) {
+                sout <<" at Point(x:" << firstTouchEventInfo.x << ", y:" << firstTouchEventInfo.y << ") "<< "; ";
+            } else if (first_event_attr[UiAttr::ID] != "" || first_event_attr[UiAttr::TEXT] != "") {
                 sout << " at Widget( id: " << first_event_attr[UiAttr::ID] << ", "
                      << "text: " << first_event_attr[UiAttr::TEXT] << ", "
                      << "type: " << first_event_attr[UiAttr::TYPE] << ") "<< "; ";
@@ -97,6 +77,29 @@ namespace OHOS::uitest {
                 sout <<" at Point(x:" << firstTouchEventInfo.x << ", y:" << firstTouchEventInfo.y << ") "<< "; ";
             }
         }
+        // fling swipe drag
+        if (first_event_attr.empty()) {
+            sout << "from Point(x:" << firstTouchEventInfo.x << ", y:" << firstTouchEventInfo.y << ") ";
+        } else if (first_event_attr[UiAttr::ID] != "" || first_event_attr[UiAttr::TEXT] != "") {
+            sout << "from Widget(id: " << first_event_attr[UiAttr::ID] << ", "
+                    << "type: " << first_event_attr[UiAttr::TYPE] << ", "
+                    << "text: " << first_event_attr[UiAttr::TEXT] << ") " << "; ";
+        } else {
+            sout << "from Point(x:" << firstTouchEventInfo.x << ", y:" << firstTouchEventInfo.y << ") ";
+        }
+        if (last_event_attr.empty()) {
+            sout << " to Point(x:" << lastTouchEventInfo.x << ", y:" << lastTouchEventInfo.y << ") " << "; ";
+        } else if (last_event_attr[UiAttr::ID] != "" || last_event_attr[UiAttr::TEXT] != "") {
+            sout << "to Widget(id: " << last_event_attr[UiAttr::ID] << ", "
+                    << "type: " << last_event_attr[UiAttr::TYPE] << ", "
+                    << "text: " << last_event_attr[UiAttr::TEXT] << ") " << "; ";
+        } else {
+            sout << " to Point(x:" << lastTouchEventInfo.x << ", y:" << lastTouchEventInfo.y << ") " << "; ";
+        } 
+        if (actionType == "fling" || actionType == "swipe") {
+            sout << "Off-hand speed:" << velocity << ", " << "Step length:" << stepLength << ";";
+        }
+
         return sout.str();
     }
 
