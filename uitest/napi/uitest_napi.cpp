@@ -348,11 +348,11 @@ namespace OHOS::uitest {
         auto &paramList = ctx.callInfo_.paramList_;
         const auto &id = ctx.callInfo_.apiId_;
         if (id  == "Component.inputText" && paramList.size() > 0) {
-            if (paramList.at(INDEX_ZERO) == nlohmann::detail::value_t::string) {
+            if (paramList.at(INDEX_ZERO).type() == nlohmann::detail::value_t::string) {
                 SetPasteBoardData(paramList.at(INDEX_ZERO).get<string>());
             }
         } else if (id  == "Driver.inputText" && paramList.size() > 1) {
-            if (paramList.at(INDEX_ONE) == nlohmann::detail::value_t::string) {
+            if (paramList.at(INDEX_ONE).type() == nlohmann::detail::value_t::string) {
                 SetPasteBoardData(paramList.at(INDEX_ONE).get<string>());
             }
         } else if (id  == "Driver.screenCap" || id  == "UiDriver.screenCap" || id  == "Driver.screenCapture") {
