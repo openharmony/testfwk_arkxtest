@@ -82,11 +82,11 @@ namespace OHOS::uitest {
             } else {
                 sout << " to Point(x:" << lastTouchEventInfo.x << ", y:" << lastTouchEventInfo.y << ") " << "; ";
             }
-            if (actionType == "fling" || actionType == "swipe") {
-                sout << "Off-hand speed:" << velocity << ", "
-                     << "Step length:" << stepLength << ";";
-            }
-        } else if (actionType == "click" || actionType == "longClick" || actionType == "doubleClick") {
+        }
+        if (actionType == "fling" || actionType == "swipe") {
+            sout << "Off-hand speed:" << velocity << ", " << "Step length:" << stepLength << ";";
+        }
+        if (actionType == "click" || actionType == "longClick" || actionType == "doubleClick") {
             sout << actionType << ": " ;
             if ((!first_event_attr.empty()) && (first_event_attr[UiAttr::ID] != "" ||
                first_event_attr[UiAttr::TEXT] != "")) {
