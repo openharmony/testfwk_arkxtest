@@ -49,7 +49,7 @@ namespace OHOS::uitest {
         // calc bounds with its window
         Rect visibleInWindow{0, 0, 0, 0};
         if (!RectAlgorithm::ComputeIntersection(widget.GetBounds(), windowBounds_, visibleInWindow)) {
-            LOG_I("Widget %{public}s bounds is %{public}s, without window bounds %{public}s, widget info is %{public}s",
+            LOG_D("Widget %{public}s bounds is %{public}s, without window bounds %{public}s, widget info is %{public}s",
                   widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data(), widget.GetBounds().Describe().data(),
                   windowBounds_.Describe().data(), widget.ToStr().data());
             visibleRect = Rect(0, 0, 0, 0);
@@ -58,7 +58,7 @@ namespace OHOS::uitest {
         // calc bounds with its container parent
         Rect visibleInParent{0, 0, 0, 0};
         if (!RectAlgorithm::ComputeIntersection(visibleInWindow, containerParentRect, visibleInParent)) {
-            LOG_I("Widget %{public}s bounds is %{public}s, without parent bounds %{public}s, widget info is %{public}s",
+            LOG_D("Widget %{public}s bounds is %{public}s, without parent bounds %{public}s, widget info is %{public}s",
                   widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data(), widget.GetBounds().Describe().data(),
                   containerParentRect.Describe().data(), widget.ToStr().data());
             visibleRect = Rect(0, 0, 0, 0);
@@ -67,7 +67,7 @@ namespace OHOS::uitest {
         if (!RectAlgorithm::CheckEqual(containerParentRect, windowBounds_) ||
             CONTAINER_TYPE.find(widget.GetAttr(UiAttr::TYPE)) != CONTAINER_TYPE.cend()) {
             if (widget.IsVisible() && (visibleInParent.GetHeight() == 0 || visibleInParent.GetWidth() == 0)) {
-                LOG_I("Widget %{public}s height or widget is zero, but it is container, keep it visible",
+                LOG_D("Widget %{public}s height or widget is zero, but it is container, keep it visible",
                       widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                 visibleRect = visibleInParent;
                 return;
@@ -81,7 +81,7 @@ namespace OHOS::uitest {
         Rect visibleBounds{0, 0, 0, 0};
         auto visible = RectAlgorithm::ComputeMaxVisibleRegion(visibleInParent, overplayWindowBoundsVec_, visibleBounds);
         if (!visible) {
-            LOG_I("widget %{public}s is hide by overplays, widget info is %{public}s",
+            LOG_D("widget %{public}s is hide by overplays, widget info is %{public}s",
                   widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data(), widget.ToStr().data());
             visibleRect = Rect{0, 0, 0, 0};
         } else {
@@ -138,7 +138,7 @@ namespace OHOS::uitest {
         // parent rect is 0, but it has child, keep visible from access not refresh bound
         if ((oriBounds.GetHeight() == 0 || oriBounds.GetWidth() == 0) &&
             (oriBounds.left_ >= 0 && oriBounds.top_ >= 0)) {
-            LOG_I("Widget %{public}s height or widget is zero, rect is %{public}s, keep it visible",
+            LOG_D("Widget %{public}s height or widget is zero, rect is %{public}s, keep it visible",
                   widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data(), oriBounds.Describe().data());
             return;
         }
@@ -187,7 +187,7 @@ namespace OHOS::uitest {
                 RefreshWidgetBounds(anchorParentInWindow, anchorWidget);
                 if (anchorWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     elementNodeRef.RemoveInvisibleWidget();
-                    LOG_I("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
+                    LOG_D("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
                 }
                 visitWidgets.emplace_back(move(anchorWidget));
@@ -223,7 +223,7 @@ namespace OHOS::uitest {
                 RefreshWidgetBounds(parentInWindow, myselfWidget);
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     elementNodeRef.RemoveInvisibleWidget();
-                    LOG_I("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
+                    LOG_D("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
                 }
                 visitWidgets.emplace_back(move(myselfWidget));
@@ -275,7 +275,7 @@ namespace OHOS::uitest {
                 RefreshWidgetBounds(parentInWindow, anchorWidget);
                 if (anchorWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     elementNodeRef.RemoveInvisibleWidget();
-                    LOG_I("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
+                    LOG_D("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
                 }
                 visitWidgets.emplace_back(move(anchorWidget));
@@ -349,7 +349,7 @@ namespace OHOS::uitest {
                 RefreshWidgetBounds(anchorParentInWindow, anchorWidget);
                 if (anchorWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     elementNodeRef.RemoveInvisibleWidget();
-                    LOG_I("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
+                    LOG_D("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
                 }
                 visitWidgets.emplace_back(move(anchorWidget));
@@ -391,7 +391,7 @@ namespace OHOS::uitest {
 
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     elementNodeRef.RemoveInvisibleWidget();
-                    LOG_I("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
+                    LOG_D("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
                 }
                 visitWidgets.emplace_back(move(myselfWidget));

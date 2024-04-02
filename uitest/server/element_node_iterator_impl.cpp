@@ -92,7 +92,7 @@ namespace OHOS::uitest {
     {
         topIndex_ = currentIndex_;
         lastCurrentIndex_ = currentIndex_;
-        LOG_I("select in widget, store current index is %{public}d", currentIndex_);
+        LOG_D("select in widget, store current index is %{public}d", currentIndex_);
     }
 
     void ElementNodeIteratorImpl::ResetNodeIndexToAnchor()
@@ -163,14 +163,14 @@ namespace OHOS::uitest {
         }
 
         if (elementToParentIndexMap_.find(currentIndex_) == elementToParentIndexMap_.cend()) {
-            LOG_I("This node has no parent: %{public}s",
+            LOG_D("This node has no parent: %{public}s",
                   std::to_string(elementInfoLists_[currentIndex_].GetAccessibilityId()).data());
             return false;
         }
         int parentIndex = elementToParentIndexMap_.at(currentIndex_);
         int tempChildIndex = currentIndex_;
         if (elementToParentIndexMap_.find(topIndex_) == elementToParentIndexMap_.cend()) {
-            LOG_I("This topIndex_ has no parent: %{public}d", topIndex_);
+            LOG_D("This topIndex_ has no parent: %{public}d", topIndex_);
             return false;
         }
         while (parentIndex != elementToParentIndexMap_.at(topIndex_)) {
@@ -178,7 +178,7 @@ namespace OHOS::uitest {
                 return true;
             }
             if (elementToParentIndexMap_.find(parentIndex) == elementToParentIndexMap_.cend()) {
-                LOG_I("This node has no parent: %{public}s",
+                LOG_D("This node has no parent: %{public}s",
                       std::to_string(elementInfoLists_[parentIndex].GetAccessibilityId()).data());
                 return false;
             }
@@ -191,7 +191,7 @@ namespace OHOS::uitest {
     bool ElementNodeIteratorImpl::VisitChildren(Widget& widget)
     {
         if (visitAndVisibleIndexSet_.find(currentIndex_) == visitAndVisibleIndexSet_.cend()) {
-            LOG_I("node %{public}s is invisible not find its children",
+            LOG_D("node %{public}s is invisible not find its children",
                   std::to_string(elementInfoLists_[currentIndex_].GetAccessibilityId()).data());
             return false;
         } else {

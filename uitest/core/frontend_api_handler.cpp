@@ -502,7 +502,7 @@ namespace OHOS::uitest {
             }
             // check argument type
             for (size_t idx = 0; idx < argc; idx++) {
-                auto isDefArg = (argc - idx <= argSupportDefault) ? true : false;
+                auto isDefArg = (idx >= minArgc) ? true : false;
                 CheckCallArgType(types.at(idx), in.paramList_.at(idx), isDefArg, out.exception_);
                 if (out.exception_.code_ != NO_ERROR) {
                     out.exception_.message_ = "Check arg" + to_string(idx) + " failed: " + out.exception_.message_;
@@ -623,6 +623,16 @@ namespace OHOS::uitest {
         out.resultValue_ = StoreBackendObject(move(selector));
     }
 
+    static bool CheckTimeVaild(int32_t time, ApiReplyInfo &out)
+    {
+        if (time < 0) {
+            out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Illegal time parameter");
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     static void RegisterOnBuilders()
     {
         auto &server = FrontendApiServer::Get();
@@ -678,7 +688,10 @@ namespace OHOS::uitest {
             UiOpArgs uiOpArgs;
             vector<unique_ptr<Widget>> recv;
             if (in.apiId_ == "Driver.waitForComponent") {
-                uiOpArgs.waitWidgetMaxMs_ = ReadCallArg<uint32_t>(in, INDEX_ONE);
+                uiOpArgs.waitWidgetMaxMs_ = ReadCallArg<int32_t>(in, INDEX_ONE);
+                if (!CheckTimeVaild(uiOpArgs.waitWidgetMaxMs_, out)) {
+                    return;
+                }
                 selector.SetWantMulti(false);
                 auto result = driver.WaitForWidget(selector, uiOpArgs, out.exception_);
                 if (result != nullptr) {
@@ -772,7 +785,10 @@ namespace OHOS::uitest {
 
         auto delay = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
-            driver.DelayMs(ReadCallArg<uint32_t>(in, INDEX_ZERO));
+            auto time = ReadCallArg<int32_t>(in, INDEX_ZERO);
+            if (CheckTimeVaild(time, out)) {
+                driver.DelayMs(time);
+            }
         };
         server.AddHandler("Driver.delayMs", delay);
 
@@ -1102,9 +1118,11 @@ namespace OHOS::uitest {
                 auto enabled = ReadCallArg<bool>(in, INDEX_ZERO);
                 driver.SetDisplayRotationEnabled(enabled, out.exception_);
             } else if (in.apiId_ == "Driver.waitForIdle") {
-                auto idleTime = ReadCallArg<uint32_t>(in, INDEX_ZERO);
-                auto timeout = ReadCallArg<uint32_t>(in, INDEX_ONE);
-                out.resultValue_ = driver.WaitForUiSteady(idleTime, timeout, out.exception_);
+                auto idleTime = ReadCallArg<int32_t>(in, INDEX_ZERO);
+                auto timeout = ReadCallArg<int32_t>(in, INDEX_ONE);
+                if (CheckTimeVaild(idleTime, out) && CheckTimeVaild(timeout, out)) {
+                    out.resultValue_ = driver.WaitForUiSteady(idleTime, timeout, out.exception_);
+                }
             } else if (in.apiId_ == "Driver.wakeUpDisplay") {
                 driver.WakeUpDisplay(out.exception_);
             } else if (in.apiId_ == "Driver.getDisplaySize") {

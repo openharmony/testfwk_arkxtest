@@ -477,6 +477,20 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks2)
     ASSERT_TRUE(reply7.exception_.message_.find("Illegal property") != string::npos);
 }
 
+TEST_F(FrontendApiHandlerTest, parameterPreChecks3)
+{
+    const auto& server =  FrontendApiServer::Get();
+    auto call0 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply0 = ApiReplyInfo();
+    server.Call(call0, reply0);
+
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.delayMs", .callerObjRef_ = reply0.resultValue_.get<string>()};
+    call1.paramList_.emplace_back(-100);
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    ASSERT_EQ(reply1.exception_.message_, "Illegal time parameter");
+}
+
 TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
 {
     const auto& server =  FrontendApiServer::Get();
