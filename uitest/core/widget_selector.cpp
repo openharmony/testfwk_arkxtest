@@ -120,7 +120,7 @@ namespace OHOS::uitest {
             return;
         }
         std::unique_ptr<SelectStrategy> visitStrategy = ConstructSelectStrategy();
-        LOG_I("Do Select, select strategy is %{public}d", visitStrategy->GetStrategyType());
+        LOG_D("Do Select, select strategy is %{public}d", visitStrategy->GetStrategyType());
         visitStrategy->LocateNode(window, elementNodeRef, visitWidgets, targetWidgets);
     }
 
