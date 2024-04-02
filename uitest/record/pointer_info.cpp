@@ -95,11 +95,10 @@ namespace OHOS::uitest {
                     << "text: " << last_event_attr[UiAttr::TEXT] << ") " << "; ";
         } else {
             sout << " to Point(x:" << lastTouchEventInfo.x << ", y:" << lastTouchEventInfo.y << ") " << "; ";
-        } 
+        }
         if (actionType == "fling" || actionType == "swipe") {
             sout << "Off-hand speed:" << velocity << ", " << "Step length:" << stepLength << ";";
         }
-
         return sout.str();
     }
 
