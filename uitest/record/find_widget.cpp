@@ -14,8 +14,9 @@
  */
 #include "find_widget.h"
 using namespace std;
+
 namespace OHOS::uitest {
-    std::unique_ptr<Widget> FindWidget(UiDriver &driver, float x, float y)
+    std::vector<std::string> FindWidget(UiDriver &driver, float x, float y)
     {
         ApiCallErr err(NO_ERROR);
         std::vector<std::unique_ptr<Widget>> rec;
@@ -23,7 +24,7 @@ namespace OHOS::uitest {
         selector.SetWantMulti(true);
         driver.FindWidgets(selector, rec, err, true);
         if (err.code_ != NO_ERROR) {
-            return nullptr;
+            return {};
         }
         int maxDep = 0;
         int maxIndex = -1;
@@ -39,9 +40,9 @@ namespace OHOS::uitest {
             }
         }
         if (maxIndex > -1) {
-            return std::move(rec[maxIndex]);
+            return std::move(rec[maxIndex])->GetAttrVec();
         } else {
-            return nullptr;
+            return {};
         }
     }
 } // namespace OHOS::uitest
