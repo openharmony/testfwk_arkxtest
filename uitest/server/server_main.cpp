@@ -55,9 +55,9 @@ namespace OHOS::uitest {
     "   dumpLayout,                                                         \n"
     "   uiRecord record,     wirte location coordinates of events into files\n"
     "   uiRecord read,                     print file content to the console\n"
-    "   uiInput,                                                            \n"
+    "   uiAction input,                                                     \n"
     "   --version,                                print current tool version\n";
-    const std::string VERSION = "4.1.4.7";
+    const std::string VERSION = "4.1.4.6";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
@@ -277,17 +277,13 @@ namespace OHOS::uitest {
             return OHOS::ERR_OK;
         }
         auto controller = make_unique<SysUiController>();
-        if (!controller->ConnectToSysAbility()) {
-            PrintToConsole("Failed, cannot connect to AMMS ");
-            return EXIT_FAILURE;
-        }
         UiDriver::RegisterController(move(controller));
         return UiActionInput(argc, argv);
     }
 
     extern "C" int32_t main(int32_t argc, char *argv[])
     {
-        static constexpr string_view usage = "USAGE: uitest <help|screenCap|dumpLayout|uiRecord|uiInput|--version>";
+        static constexpr string_view usage = "USAGE: uitest <help|screenCap|dumpLayout|uiRecord|--version>";
         if ((size_t)argc < INDEX_TWO) {
             PrintToConsole("Missing argument");
             PrintToConsole(usage);
