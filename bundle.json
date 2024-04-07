@@ -37,45 +37,21 @@
           "pasteboard",
           "eventhandler",
           "hidumper",
-          "samgr",
-          "safwk",
-          "init",
-          "access_token"
+          "samgr",          
+          "graphic_2d"
         ],
         "third_party": [
-          "libpng"
+          "libpng",
+          "libjpeg-turbo"
         ]
       },
       "build": {
         "sub_component": [
             "//test/testfwk/arkxtest/uitest:uitestkit",
-            "//test/testfwk/arkxtest/coverage_signal_handler:coverage_signal_handler",
-            "//test/testfwk/arkxtest/testserver/init:testserver_etc",
-            "//test/testfwk/arkxtest/testserver/sa_profile:testserver_sa_profile",
-            "//test/testfwk/arkxtest/testserver/src:test_server_service",
-            "//test/testfwk/arkxtest/testserver/src:test_server_client"
-        ],
-        "inner_api": [
-          {
-            "type": "none",
-            "name": "//test/testfwk/arkxtest/testserver/src:test_server_client",
-            "header": {
-              "header_base": [
-                "${root_out_dir}/gen/test/testfwk/arkxtest/testserver/src",
-                "//test/testfwk/arkxtest/testserver/src/client"
-              ],
-              "header_files": [
-                "itest_server_interface.h",
-                "test_server_client.h",
-                "session_token.h"
-              ]
-            }
-          }
+            "//test/testfwk/arkxtest/coverage_signal_handler:coverage_signal_handler"
         ],
     "test": [
-      "//test/testfwk/arkxtest/uitest:uitestkit_test",
-      "//test/testfwk/arkxtest/testserver/test/unittest:testserver_unittest",
-      "//test/testfwk/arkxtest/testserver/test/fuzztest:fuzztest"
+      "//test/testfwk/arkxtest/uitest:uitestkit_test"
     ]
       }
     }
