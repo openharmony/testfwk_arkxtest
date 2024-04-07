@@ -1,86 +1,86 @@
 {
-    "name": "@openharmony/arkxtest",
-    "version": "3.1",
-    "description": "test framwork",
-    "publishAs": "code-segment",
-    "segment": {
-       "destPath": "test/testfwk/arkxtest"
-    },
-    "scripts": {
-    },
-    "author": {},
-    "repository": "",
-    "license": "Apache License 2.0",
-    "component": {
-      "name": "arkxtest",
-      "subsystem": "testfwk",
-      "syscap": [ "SystemCapability.Test.UiTest" ],
-      "adapted_system_type": [ 
-        "standard"
+  "name": "@openharmony/arkxtest",
+  "version": "3.1",
+  "description": "test framwork",
+  "publishAs": "code-segment",
+  "segment": {
+     "destPath": "test/testfwk/arkxtest"
+  },
+  "scripts": {
+  },
+  "author": {},
+  "repository": "",
+  "license": "Apache License 2.0",
+  "component": {
+    "name": "arkxtest",
+    "subsystem": "testfwk",
+    "syscap": [ "SystemCapability.Test.UiTest" ],
+    "adapted_system_type": [ 
+      "standard"
+    ],
+    "features": [],
+    "rom": "500KB",
+    "ram": "100KB",
+    "deps": {
+      "components": [
+        "common_event_service",
+        "ipc",
+        "ability_base",
+        "window_manager",
+        "c_utils",
+        "napi",
+        "accessibility",
+        "image_framework",
+        "ability_runtime",
+        "hilog",
+        "input",
+        "pasteboard",
+        "eventhandler",
+        "hidumper",
+        "samgr",
+        "safwk",
+        "init",
+        "access_token",
+        "graphic_2d"
       ],
-      "features": [],
-      "rom": "500KB",
-      "ram": "100KB",
-      "deps": {
-        "components": [
-          "common_event_service",
-          "ipc",
-          "ability_base",
-          "window_manager",
-          "c_utils",
-          "napi",
-          "accessibility",
-          "image_framework",
-          "ability_runtime",
-          "hilog",
-          "input",
-          "pasteboard",
-          "eventhandler",
-          "hidumper",
-          "samgr",
-          "safwk",
-          "init",
-          "access_token",
-	  "graphic_2d",
-          "libjpeg-turbo"
-        ],
-        "third_party": [
-          "libpng"
-        ]
-      },
-      
-      
-      "build": {
-        "sub_component": [
-            "//test/testfwk/arkxtest/uitest:uitestkit",
-            "//test/testfwk/arkxtest/coverage_signal_handler:coverage_signal_handler",
-            "//test/testfwk/arkxtest/testserver/init:testserver_etc",
-            "//test/testfwk/arkxtest/testserver/sa_profile:testserver_sa_profile",
-            "//test/testfwk/arkxtest/testserver/src:test_server_service",
-            "//test/testfwk/arkxtest/testserver/src:test_server_client"
-        ],
-        "inner_api": [
-          {
-            "type": "none",
-            "name": "//test/testfwk/arkxtest/testserver/src:test_server_client",
-            "header": {
-              "header_base": [
-                "${root_out_dir}/gen/test/testfwk/arkxtest/testserver/src",
-                "//test/testfwk/arkxtest/testserver/src/client"
-              ],
-              "header_files": [
-                "itest_server_interface.h",
-                "test_server_client.h",
-                "session_token.h"
-              ]
-            }
+      "third_party": [
+        "libpng",
+        "libjpeg-turbo"
+      ]
+    },
+    
+    
+    "build": {
+      "sub_component": [
+          "//test/testfwk/arkxtest/uitest:uitestkit",
+          "//test/testfwk/arkxtest/coverage_signal_handler:coverage_signal_handler",
+          "//test/testfwk/arkxtest/testserver/init:testserver_etc",
+          "//test/testfwk/arkxtest/testserver/sa_profile:testserver_sa_profile",
+          "//test/testfwk/arkxtest/testserver/src:test_server_service",
+          "//test/testfwk/arkxtest/testserver/src:test_server_client"
+      ],
+      "inner_api": [
+        {
+          "type": "none",
+          "name": "//test/testfwk/arkxtest/testserver/src:test_server_client",
+          "header": {
+            "header_base": [
+              "${root_out_dir}/gen/test/testfwk/arkxtest/testserver/src",
+              "//test/testfwk/arkxtest/testserver/src/client"
+            ],
+            "header_files": [
+              "itest_server_interface.h",
+              "test_server_client.h",
+              "session_token.h"
+            ]
           }
-        ],
-    "test": [
-      "//test/testfwk/arkxtest/uitest:uitestkit_test",
-      "//test/testfwk/arkxtest/testserver/test/unittest:testserver_unittest",
-      "//test/testfwk/arkxtest/testserver/test/fuzztest:fuzztest"
-    ]
-      }
+        }
+      ],
+  "test": [
+    "//test/testfwk/arkxtest/uitest:uitestkit_test",
+    "//test/testfwk/arkxtest/testserver/test/unittest:testserver_unittest",
+    "//test/testfwk/arkxtest/testserver/test/fuzztest:fuzztest"
+  ]
     }
   }
+}
