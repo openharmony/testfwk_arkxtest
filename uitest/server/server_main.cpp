@@ -277,10 +277,6 @@ namespace OHOS::uitest {
             return OHOS::ERR_OK;
         }
         auto controller = make_unique<SysUiController>();
-        if (!controller->ConnectToSysAbility()) {
-            PrintToConsole("Failed, cannot connect to AMMS ");
-            return EXIT_FAILURE;
-        }
         UiDriver::RegisterController(move(controller));
         return UiActionInput(argc, argv);
     }
