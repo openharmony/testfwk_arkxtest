@@ -40,10 +40,12 @@
           "samgr",
           "safwk",
           "init",
-          "access_token"
+          "access_token",
+	  "graphic_2d"
         ],
         "third_party": [
-          "libpng"
+          "libpng",
+          "libjpeg-turbo"
         ]
       },
       "build": {
