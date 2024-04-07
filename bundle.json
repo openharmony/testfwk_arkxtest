@@ -48,8 +48,6 @@
           "libjpeg-turbo"
         ]
       },
-      
-      
       "build": {
         "sub_component": [
             "//test/testfwk/arkxtest/uitest:uitestkit",
