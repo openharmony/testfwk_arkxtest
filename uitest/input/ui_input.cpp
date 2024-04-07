@@ -45,7 +45,8 @@ namespace OHOS::uitest {
         "   swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity: Value range from 200 to 40000, default 600] \n"
         "   fling <from_x> <from_y> <to_x> <to_y> [velocity stepLength] \n"
         "   keyEvent <keyID/Back/Home/Power> \n"
-        "   keyEvent <keyID_0> <keyID_1> [keyID_2: default None] \n";
+        "   keyEvent <keyID_0> <keyID_1> [keyID_2: default None] \n"
+        "   inputText <x> <y> <text>";
         std::cout << usage << std::endl;
     }
     bool ParameterRedundancy()
