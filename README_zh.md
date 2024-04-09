@@ -1514,37 +1514,37 @@ hdc shell uitest uiInput swipe 10 10 200 200 500
 ```shell  
 hdc shell uitest uiInput drag 10 10 100 100 500 
 ```
-示例代码6：执行向左滑动操作。
+示例代码7：执行向左滑动操作。
 ```shell  
 hdc shell uitest uiInput dircFling 0 500
 ```
-示例代码7：执行向右滑动操作。
+示例代码8：执行向右滑动操作。
 ```shell  
 hdc shell uitest uiInput dircFling 1 600
 ```
-示例代码8：执行向上滑动操作。
+示例代码9：执行向上滑动操作。
 ```shell  
 hdc shell uitest uiInput dircFling 2 
 ```
-示例代码9：执行向下滑动操作。
+示例代码10：执行向下滑动操作。
 ```shell  
 hdc shell uitest uiInput dircFling 3
 ```
 
-示例代码10：执行输入框输入操作。
+示例代码11：执行输入框输入操作。
 ```shell  
 hdc shell uitest uiInput inputText 100 100 hello
 ```
 
-示例代码11：执行返回主页操作。
+示例代码12：执行返回主页操作。
 ```shell  
 hdc shell uitest uiInput keyEvent Home
 ```
-示例代码12：执行返回上一步操作。
+示例代码13：执行返回上一步操作。
 ```shell  
 hdc shell uitest uiInput keyEvent Back
 ```
-示例代码13：执行组合键粘贴操作。
+示例代码14：执行组合键粘贴操作。
 ```shell  
 hdc shell uitest uiInput keyEvent 2072 2038
 ```
