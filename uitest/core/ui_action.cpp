@@ -127,16 +127,16 @@ namespace OHOS::uitest {
         PointerMatrix pointer2;
         if (scale_ > 1) {
             auto fromPoint0 = Point(rect_.GetCenterX() - options.pinchWidgetDeadZone_, rect_.GetCenterY());
-            auto toPoint0 = Point((rect_.GetCenterX() - distanceX0), rect_.GetCenterY());
+            auto toPoint0 = Point((fromPoint0.px_ - distanceX0), rect_.GetCenterY());
             auto fromPoint1 = Point(rect_.GetCenterX() + options.pinchWidgetDeadZone_, rect_.GetCenterY());
-            auto toPoint1 = Point((rect_.GetCenterX() + distanceX0), rect_.GetCenterY());
+            auto toPoint1 = Point((fromPoint1.px_ + distanceX0), rect_.GetCenterY());
             DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, false, options);
             DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, false, options);
         } else if (scale_ < 1) {
             auto fromPoint0 = Point(rect_.left_ + options.pinchWidgetDeadZone_, rect_.GetCenterY());
-            auto toPoint0 = Point((rect_.left_ + distanceX0), rect_.GetCenterY());
+            auto toPoint0 = Point((fromPoint0.px_ + distanceX0), rect_.GetCenterY());
             auto fromPoint1 = Point(rect_.right_ - options.pinchWidgetDeadZone_, rect_.GetCenterY());
-            auto toPoint1 = Point((rect_.right_ - distanceX0), rect_.GetCenterY());
+            auto toPoint1 = Point((fromPoint1.px_- distanceX0), rect_.GetCenterY());
             DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, false, options);
             DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, false, options);
         }

@@ -161,17 +161,10 @@ namespace OHOS::uitest {
         if (retrieved == nullptr || error.code_ != NO_ERROR) {
             return;
         }
-        Rect rootBound{0, 0, 0, 0};
-        driver_.GetMergeWindowBounds(rootBound);
         auto rectBound = widget_.GetBounds();
-        float_t widthScale = (float_t)(rootBound.GetWidth()) / (float_t)(rectBound.GetWidth());
-        float_t heightScale = (float_t)(rootBound.GetHeight()) / (float_t)(rectBound.GetHeight());
-        float_t originalScale = min(widthScale, heightScale);
         if (scale < 0) {
             error = ApiCallErr(ERR_INVALID_INPUT, "Please input the correct scale");
             return;
-        } else if (scale > originalScale) {
-            scale = originalScale;
         }
         auto touch = GenericPinch(rectBound, scale);
         driver_.PerformTouch(touch, options_, error);
