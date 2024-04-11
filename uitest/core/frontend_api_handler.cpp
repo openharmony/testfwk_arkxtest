@@ -383,7 +383,7 @@ namespace OHOS::uitest {
             for (auto &[name, processor] : commonPreprocessors_) {
                 processor(call, out);
                 if (out.exception_.code_ != NO_ERROR) {
-                    out.exception_.message_ = out.exception_.message_ + "(PreProcessing: " + name + ")";
+                    out.exception_.message_ = "(PreProcessing: " + name + ")" + out.exception_.message_;
                     if (oldApiName.length() > 0) {
                         ApiMapPost(oldApiName, out);
                     }
