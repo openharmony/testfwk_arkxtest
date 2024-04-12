@@ -438,6 +438,10 @@ namespace OHOS::uitest {
         auto find1 = find_if(begin1, end1, [&expect](const FrontEndJsonDef *def) { return def->name_ == expect; });
         if (expect == "int") {
             CHECK_CALL_ARG(isInteger, ERR_INVALID_INPUT, "Expect integer", error);
+            if (atoi(value.dump().c_str()) < 0) {
+                error = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which greaters than 0");
+                return;
+            }
         } else if (expect == "float") {
             CHECK_CALL_ARG(isInteger || type == value_t::number_float, ERR_INVALID_INPUT, "Expect float", error);
         } else if (expect == "bool") {
@@ -623,16 +627,6 @@ namespace OHOS::uitest {
         out.resultValue_ = StoreBackendObject(move(selector));
     }
 
-    static bool CheckTimeVaild(int32_t time, ApiReplyInfo &out)
-    {
-        if (time < 0) {
-            out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Illegal time parameter");
-            return false;
-        } else {
-            return true;
-        }
-    }
-
     static void RegisterOnBuilders()
     {
         auto &server = FrontendApiServer::Get();
@@ -689,9 +683,6 @@ namespace OHOS::uitest {
             vector<unique_ptr<Widget>> recv;
             if (in.apiId_ == "Driver.waitForComponent") {
                 uiOpArgs.waitWidgetMaxMs_ = ReadCallArg<int32_t>(in, INDEX_ONE);
-                if (!CheckTimeVaild(uiOpArgs.waitWidgetMaxMs_, out)) {
-                    return;
-                }
                 selector.SetWantMulti(false);
                 auto result = driver.WaitForWidget(selector, uiOpArgs, out.exception_);
                 if (result != nullptr) {
@@ -786,9 +777,7 @@ namespace OHOS::uitest {
         auto delay = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto time = ReadCallArg<int32_t>(in, INDEX_ZERO);
-            if (CheckTimeVaild(time, out)) {
-                driver.DelayMs(time);
-            }
+            driver.DelayMs(time);
         };
         server.AddHandler("Driver.delayMs", delay);
 
@@ -1120,9 +1109,7 @@ namespace OHOS::uitest {
             } else if (in.apiId_ == "Driver.waitForIdle") {
                 auto idleTime = ReadCallArg<int32_t>(in, INDEX_ZERO);
                 auto timeout = ReadCallArg<int32_t>(in, INDEX_ONE);
-                if (CheckTimeVaild(idleTime, out) && CheckTimeVaild(timeout, out)) {
-                    out.resultValue_ = driver.WaitForUiSteady(idleTime, timeout, out.exception_);
-                }
+                out.resultValue_ = driver.WaitForUiSteady(idleTime, timeout, out.exception_);
             } else if (in.apiId_ == "Driver.wakeUpDisplay") {
                 driver.WakeUpDisplay(out.exception_);
             } else if (in.apiId_ == "Driver.getDisplaySize") {
