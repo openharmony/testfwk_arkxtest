@@ -488,7 +488,7 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks3)
     call1.paramList_.emplace_back(-100);
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    ASSERT_TRUE(reply1.exception_.message_.find("Expect integer which greaters than 0") != string::npos);
+    ASSERT_TRUE(reply1.exception_.message_.find("Expect integer which cannot be less than 0") != string::npos);
 }
 
 TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
