@@ -439,7 +439,7 @@ namespace OHOS::uitest {
         if (expect == "int") {
             CHECK_CALL_ARG(isInteger, ERR_INVALID_INPUT, "Expect integer", error);
             if (atoi(value.dump().c_str()) < 0) {
-                error = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which greaters than 0");
+                error = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which cannot be less than 0");
                 return;
             }
         } else if (expect == "float") {
