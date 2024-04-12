@@ -521,7 +521,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
     // call with argument illegal fingers
     auto call5 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
     auto reply5 = ApiReplyInfo();
-    call5.paramList_.emplace_back(11);
+    call5.paramList_.emplace_back(0);
     call5.paramList_.emplace_back(5);
     server.Call(call5, reply5);
     ASSERT_EQ(ERR_INVALID_INPUT, reply5.exception_.code_);
