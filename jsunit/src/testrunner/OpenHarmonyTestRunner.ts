@@ -32,11 +32,10 @@ export default class OpenHarmonyTestRunner implements TestRunner {
   }
 
   onPrepare() {
-    hilog.info(domain, 'testTag', '%{public}s', 'OpenHarmonyTestRunner OnPrepare');
+    hilog.info(domain, tag, '%{public}s', 'OpenHarmonyTestRunner OnPrepare');
   }
 
   async onRun() {
-    let tag = 'testTag';
     hilog.info(domain, tag, '%{public}s', 'OpenHarmonyTestRunner onRun run');
     abilityDelegatorArguments = abilityDelegatorRegistry.getArguments();
     abilityDelegator = abilityDelegatorRegistry.getAbilityDelegator();
@@ -44,7 +43,7 @@ export default class OpenHarmonyTestRunner implements TestRunner {
     let context = abilityDelegator.getAppContext().getApplicationContext().createModuleContext(moduleName);
     let mResourceManager = context.resourceManager;
     await checkMock(abilityDelegator, mResourceManager);
-    hilog.info(domain, 'testTag', '%{public}s', 'start run testcase!!!');
+    hilog.info(domain, tag, '%{public}s', 'start run testcase!!!');
     Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
     hilog.info(domain, tag, '%{public}s', 'OpenHarmonyTestRunner onRun end');
   }
