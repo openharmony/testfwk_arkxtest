@@ -1257,7 +1257,7 @@ namespace OHOS::uitest {
                     out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which gerater 1");
                 }
                 wOp.PinchWidget(pinchScale, out.exception_);
-	            } else if (in.apiId_ == "Component.pinchIn") {
+            } else if (in.apiId_ == "Component.pinchIn") {
                 auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
                 if (pinchScale > 1) {
                     out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which ranges from 0 to 1.");
