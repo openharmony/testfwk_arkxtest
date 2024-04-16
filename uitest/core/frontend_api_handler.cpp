@@ -1195,7 +1195,7 @@ namespace OHOS::uitest {
         server.AddHandler("Component.getBoundsCenter", GenericComponentAttrGetter<UiAttr::BOUNDSCENTER>);
     }
 
-    static void RegisterUiComponentOperators()
+    static void RegisterUiComponentOperators1()
     {
         auto &server = FrontendApiServer::Get();
         auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1230,9 +1230,6 @@ namespace OHOS::uitest {
                 if (res != nullptr) {
                     out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
                 }
-            } else if (in.apiId_ == "Component.pinchOut" || in.apiId_ == "Component.pinchIn") {
-                auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
-                wOp.PinchWidget(pinchScale, out.exception_);
             }
         };
         server.AddHandler("Component.click", genericOperationHandler);
@@ -1244,6 +1241,30 @@ namespace OHOS::uitest {
         server.AddHandler("Component.inputText", genericOperationHandler);
         server.AddHandler("Component.clearText", genericOperationHandler);
         server.AddHandler("Component.scrollSearch", genericOperationHandler);
+    }
+
+    static void RegisterUiComponentOperators2()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &widget = GetBackendObject<Widget>(in.callerObjRef_);
+            auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto wOp = WidgetOperator(driver, widget, uiOpArgs);
+            if (in.apiId_ == "Component.pinchOut") {
+                auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
+                if (pinchScale < 1) {
+                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which gerater 1");
+                }
+                wOp.PinchWidget(pinchScale, out.exception_);
+	            } else if (in.apiId_ == "Component.pinchIn") {
+                auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
+                if (pinchScale > 1) {
+                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which ranges from 0 to 1.");
+                }
+                wOp.PinchWidget(pinchScale, out.exception_);
+            }
+        };
         server.AddHandler("Component.pinchOut", genericOperationHandler);
         server.AddHandler("Component.pinchIn", genericOperationHandler);
     }
@@ -1406,7 +1427,8 @@ namespace OHOS::uitest {
         RegisterUiDriverMiscMethods2();
         RegisterUiDriverTouchOperators();
         RegisterUiComponentAttrGetters();
-        RegisterUiComponentOperators();
+        RegisterUiComponentOperators1();
+        RegisterUiComponentOperators2();
         RegisterUiWindowAttrGetters();
         RegisterUiWindowOperators();
         RegisterUiWinBarOperators();
