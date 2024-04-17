@@ -28,7 +28,7 @@ namespace OHOS::uitest {
         }
         int maxDep = 0;
         int maxIndex = -1;
-        for (int index = 0; index < rec.size(); index++) {
+        for (size_t index = 0; index < rec.size(); index++) {
             const auto &rect = rec[index]->GetBounds();
             if (!(x <= rect.right_ && x >= rect.left_ && y <= rect.bottom_ && y >= rect.top_)) {
                 continue;

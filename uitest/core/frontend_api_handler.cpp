@@ -71,7 +71,7 @@ namespace OHOS::uitest {
             uiElementInfo["type"] = source.type;
             uiElementInfo["text"] = source.text;
             auto count = callBackInfos_.count(event);
-            auto index = 0;
+            size_t index = 0;
             while (index < count) {
                 auto find = callBackInfos_.find(event);
                 if (find == callBackInfos_.end()) {
@@ -1083,7 +1083,7 @@ namespace OHOS::uitest {
             auto key2 = ReadCallArg<int32_t>(in, INDEX_FOUR, KEYCODE_NONE);
             const uint32_t maxScrollSpeed = 500;
             const uint32_t defaultScrollSpeed = 20;
-            auto speed = ReadCallArg<int32_t>(in, INDEX_FIVE, defaultScrollSpeed);
+            auto speed = ReadCallArg<uint32_t>(in, INDEX_FIVE, defaultScrollSpeed);
             if (speed < 1 || speed > maxScrollSpeed) {
                 speed = defaultScrollSpeed;
             }
@@ -1317,8 +1317,8 @@ namespace OHOS::uitest {
             auto wOp = WindowOperator(driver, window, uiOpArgs);
             auto action = in.apiId_;
             if (action == "UiWindow.resize") {
-                auto width = ReadCallArg<uint32_t>(in, INDEX_ZERO);
-                auto highth = ReadCallArg<uint32_t>(in, INDEX_ONE);
+                auto width = ReadCallArg<int32_t>(in, INDEX_ZERO);
+                auto highth = ReadCallArg<int32_t>(in, INDEX_ONE);
                 auto direction = ReadCallArg<ResizeDirection>(in, INDEX_TWO);
                 if ((((direction == LEFT) || (direction == RIGHT)) && highth != window.bounds_.GetHeight()) ||
                     (((direction == D_UP) || (direction == D_DOWN)) && width != window.bounds_.GetWidth())) {

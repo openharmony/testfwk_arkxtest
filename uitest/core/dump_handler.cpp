@@ -114,7 +114,7 @@ namespace OHOS::uitest {
     {
         std::map<std::string, int> visitWidgetMap;
         std::map<std::string, int> widgetCountMap;
-        for (int i = 0; i < allWidget.size(); ++i) {
+        for (size_t i = 0; i < allWidget.size(); ++i) {
             const Widget &wid = allWidget.at(i);
             std::string hie = wid.GetHierarchy();
             visitWidgetMap.emplace(hie, i);
