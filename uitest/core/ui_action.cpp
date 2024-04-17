@@ -258,8 +258,8 @@ namespace OHOS::uitest {
 
     void PointerMatrix::ConvertToMouseEvents(vector<MouseEvent> &recv) const
     {
-        for (auto finger = 0; finger < fingerNum_; finger++) {
-            for (auto step = 0; step < stepNum_; step++) {
+        for (uint32_t finger = 0; finger < fingerNum_; finger++) {
+            for (uint32_t step = 0; step < stepNum_; step++) {
                 auto touchEvent = At(finger, step);
                 recv.push_back(MouseEvent {touchEvent.stage_, touchEvent.point_, MouseButton::BUTTON_LEFT, {},
                                            touchEvent.holdMs_});
@@ -302,7 +302,7 @@ namespace OHOS::uitest {
                 break;
         }
         touchEvents.ConvertToMouseEvents(recv);
-        for (auto index = 0; index < recv.size(); index++) {
+        for (size_t index = 0; index < recv.size(); index++) {
             recv[index].button_ = button_;
         }
         vector<KeyEvent> keyAction1;

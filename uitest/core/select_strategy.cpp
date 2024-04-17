@@ -301,7 +301,7 @@ namespace OHOS::uitest {
         void LocateNodeAfterBeforeAnchor(std::vector<Widget> &visitWidgets,
                                          std::vector<int> &targetWidgets)
         {
-            int index = 0;
+            size_t index = 0;
             if (targetWidgets.size() > 0) {
                 index = targetWidgets[targetWidgets.size() - 1] + 1;
             }
@@ -538,9 +538,9 @@ namespace OHOS::uitest {
 
         int CalcMaxAfterAnchorIndex(const std::vector<Widget> &visitWidgets)
         {
-            int startAfterIndex = -1;
+            size_t startAfterIndex = -1;
             for (auto &afterLocator : multiAfterAnchorMatcher) {
-                int startIndex = 0;
+                size_t startIndex = 0;
                 for (; startIndex < visitWidgets.size(); ++startIndex) {
                     bool isFrontMatch = true;
                     for (auto &attrModel : afterLocator) {
@@ -611,7 +611,7 @@ namespace OHOS::uitest {
             for (int targetId : myselfTargets) {
                 const std::string &targetHie = visitWidgets[targetId].GetHierarchy();
                 std::vector<int> parentIndexVec;
-                for (int index = 0; index < visitWidgets.size(); ++index) {
+                for (size_t index = 0; index < visitWidgets.size(); ++index) {
                     const std::string &visitHie = visitWidgets[index].GetHierarchy();
                     if (targetHie.length() <= visitHie.length() || targetHie.find(visitHie) != 0) {
                         continue;
