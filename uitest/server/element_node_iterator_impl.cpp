@@ -48,7 +48,7 @@ namespace OHOS::uitest {
             if (count <= 0) {
                 return false;
             }
-            for (int64_t i = currentIndex_ + 1; i < elementInfoLists_.size(); ++i) {
+            for (size_t i = currentIndex_ + 1; i < elementInfoLists_.size(); ++i) {
                 if (elementInfoLists_[i].GetAccessibilityId() != elementInfoLists_[currentIndex_].GetChildId(0)) {
                     continue;
                 }
@@ -195,7 +195,7 @@ namespace OHOS::uitest {
                   std::to_string(elementInfoLists_[currentIndex_].GetAccessibilityId()).data());
             return false;
         } else {
-            for (int i = currentIndex_ + 1; i < elementInfoLists_.size(); ++i) {
+            for (size_t i = currentIndex_ + 1; i < elementInfoLists_.size(); ++i) {
                 if (elementInfoLists_[i].GetAccessibilityId() != elementInfoLists_[currentIndex_].GetChildId(0)) {
                     continue;
                 }

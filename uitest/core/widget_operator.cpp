@@ -28,7 +28,7 @@ namespace OHOS::uitest {
         if (oriDis < 0) {
             return false;
         }
-        int index = 0;
+        size_t index = 0;
         for (; index < allWidgets.size(); ++index) {
             if (allWidgets.at(index)->GetAttr(UiAttr::ACCESSIBILITY_ID) ==
                 anchorLeafWidget->GetAttr(UiAttr::ACCESSIBILITY_ID)) {
