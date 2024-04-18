@@ -488,7 +488,7 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks3)
     call1.paramList_.emplace_back(-100);
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    ASSERT_EQ(reply1.exception_.message_, "Illegal time parameter");
+    ASSERT_TRUE(reply1.exception_.message_.find("Expect integer which cannot be less than 0") != string::npos);
 }
 
 TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
@@ -521,7 +521,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
     // call with argument illegal fingers
     auto call5 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
     auto reply5 = ApiReplyInfo();
-    call5.paramList_.emplace_back(-1);
+    call5.paramList_.emplace_back(0);
     call5.paramList_.emplace_back(5);
     server.Call(call5, reply5);
     ASSERT_EQ(ERR_INVALID_INPUT, reply5.exception_.code_);
@@ -543,7 +543,7 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecksOne)
     auto call7 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
     auto reply7 = ApiReplyInfo();
     call7.paramList_.emplace_back(5);
-    call7.paramList_.emplace_back(-5);
+    call7.paramList_.emplace_back(0);
     server.Call(call7, reply7);
     ASSERT_EQ(ERR_INVALID_INPUT, reply7.exception_.code_);
     ASSERT_TRUE(reply7.exception_.message_.find("Number of illegal steps") != string::npos);

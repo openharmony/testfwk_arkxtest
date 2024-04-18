@@ -71,7 +71,7 @@ namespace OHOS::uitest {
             uiElementInfo["type"] = source.type;
             uiElementInfo["text"] = source.text;
             auto count = callBackInfos_.count(event);
-            auto index = 0;
+            size_t index = 0;
             while (index < count) {
                 auto find = callBackInfos_.find(event);
                 if (find == callBackInfos_.end()) {
@@ -383,7 +383,7 @@ namespace OHOS::uitest {
             for (auto &[name, processor] : commonPreprocessors_) {
                 processor(call, out);
                 if (out.exception_.code_ != NO_ERROR) {
-                    out.exception_.message_ = out.exception_.message_ + "(PreProcessing: " + name + ")";
+                    out.exception_.message_ = "(PreProcessing: " + name + ")" + out.exception_.message_;
                     if (oldApiName.length() > 0) {
                         ApiMapPost(oldApiName, out);
                     }
@@ -438,6 +438,10 @@ namespace OHOS::uitest {
         auto find1 = find_if(begin1, end1, [&expect](const FrontEndJsonDef *def) { return def->name_ == expect; });
         if (expect == "int") {
             CHECK_CALL_ARG(isInteger, ERR_INVALID_INPUT, "Expect integer", error);
+            if (atoi(value.dump().c_str()) < 0) {
+                error = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which cannot be less than 0");
+                return;
+            }
         } else if (expect == "float") {
             CHECK_CALL_ARG(isInteger || type == value_t::number_float, ERR_INVALID_INPUT, "Expect float", error);
         } else if (expect == "bool") {
@@ -623,16 +627,6 @@ namespace OHOS::uitest {
         out.resultValue_ = StoreBackendObject(move(selector));
     }
 
-    static bool CheckTimeVaild(int32_t time, ApiReplyInfo &out)
-    {
-        if (time < 0) {
-            out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Illegal time parameter");
-            return false;
-        } else {
-            return true;
-        }
-    }
-
     static void RegisterOnBuilders()
     {
         auto &server = FrontendApiServer::Get();
@@ -689,9 +683,6 @@ namespace OHOS::uitest {
             vector<unique_ptr<Widget>> recv;
             if (in.apiId_ == "Driver.waitForComponent") {
                 uiOpArgs.waitWidgetMaxMs_ = ReadCallArg<int32_t>(in, INDEX_ONE);
-                if (!CheckTimeVaild(uiOpArgs.waitWidgetMaxMs_, out)) {
-                    return;
-                }
                 selector.SetWantMulti(false);
                 auto result = driver.WaitForWidget(selector, uiOpArgs, out.exception_);
                 if (result != nullptr) {
@@ -786,9 +777,7 @@ namespace OHOS::uitest {
         auto delay = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto time = ReadCallArg<int32_t>(in, INDEX_ZERO);
-            if (CheckTimeVaild(time, out)) {
-                driver.DelayMs(time);
-            }
+            driver.DelayMs(time);
         };
         server.AddHandler("Driver.delayMs", delay);
 
@@ -1094,7 +1083,7 @@ namespace OHOS::uitest {
             auto key2 = ReadCallArg<int32_t>(in, INDEX_FOUR, KEYCODE_NONE);
             const uint32_t maxScrollSpeed = 500;
             const uint32_t defaultScrollSpeed = 20;
-            auto speed = ReadCallArg<int32_t>(in, INDEX_FIVE, defaultScrollSpeed);
+            auto speed = ReadCallArg<uint32_t>(in, INDEX_FIVE, defaultScrollSpeed);
             if (speed < 1 || speed > maxScrollSpeed) {
                 speed = defaultScrollSpeed;
             }
@@ -1120,9 +1109,7 @@ namespace OHOS::uitest {
             } else if (in.apiId_ == "Driver.waitForIdle") {
                 auto idleTime = ReadCallArg<int32_t>(in, INDEX_ZERO);
                 auto timeout = ReadCallArg<int32_t>(in, INDEX_ONE);
-                if (CheckTimeVaild(idleTime, out) && CheckTimeVaild(timeout, out)) {
-                    out.resultValue_ = driver.WaitForUiSteady(idleTime, timeout, out.exception_);
-                }
+                out.resultValue_ = driver.WaitForUiSteady(idleTime, timeout, out.exception_);
             } else if (in.apiId_ == "Driver.wakeUpDisplay") {
                 driver.WakeUpDisplay(out.exception_);
             } else if (in.apiId_ == "Driver.getDisplaySize") {
@@ -1208,7 +1195,7 @@ namespace OHOS::uitest {
         server.AddHandler("Component.getBoundsCenter", GenericComponentAttrGetter<UiAttr::BOUNDSCENTER>);
     }
 
-    static void RegisterUiComponentOperators()
+    static void RegisterUiComponentOperators1()
     {
         auto &server = FrontendApiServer::Get();
         auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1243,9 +1230,6 @@ namespace OHOS::uitest {
                 if (res != nullptr) {
                     out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
                 }
-            } else if (in.apiId_ == "Component.pinchOut" || in.apiId_ == "Component.pinchIn") {
-                auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
-                wOp.PinchWidget(pinchScale, out.exception_);
             }
         };
         server.AddHandler("Component.click", genericOperationHandler);
@@ -1257,6 +1241,30 @@ namespace OHOS::uitest {
         server.AddHandler("Component.inputText", genericOperationHandler);
         server.AddHandler("Component.clearText", genericOperationHandler);
         server.AddHandler("Component.scrollSearch", genericOperationHandler);
+    }
+
+    static void RegisterUiComponentOperators2()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &widget = GetBackendObject<Widget>(in.callerObjRef_);
+            auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto wOp = WidgetOperator(driver, widget, uiOpArgs);
+            if (in.apiId_ == "Component.pinchOut") {
+                auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
+                if (pinchScale < 1) {
+                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which gerater 1");
+                }
+                wOp.PinchWidget(pinchScale, out.exception_);
+            } else if (in.apiId_ == "Component.pinchIn") {
+                auto pinchScale = ReadCallArg<float_t>(in, INDEX_ZERO);
+                if (pinchScale > 1) {
+                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which ranges from 0 to 1.");
+                }
+                wOp.PinchWidget(pinchScale, out.exception_);
+            }
+        };
         server.AddHandler("Component.pinchOut", genericOperationHandler);
         server.AddHandler("Component.pinchIn", genericOperationHandler);
     }
@@ -1309,8 +1317,8 @@ namespace OHOS::uitest {
             auto wOp = WindowOperator(driver, window, uiOpArgs);
             auto action = in.apiId_;
             if (action == "UiWindow.resize") {
-                auto width = ReadCallArg<uint32_t>(in, INDEX_ZERO);
-                auto highth = ReadCallArg<uint32_t>(in, INDEX_ONE);
+                auto width = ReadCallArg<int32_t>(in, INDEX_ZERO);
+                auto highth = ReadCallArg<int32_t>(in, INDEX_ONE);
                 auto direction = ReadCallArg<ResizeDirection>(in, INDEX_TWO);
                 if ((((direction == LEFT) || (direction == RIGHT)) && highth != window.bounds_.GetHeight()) ||
                     (((direction == D_UP) || (direction == D_DOWN)) && width != window.bounds_.GetWidth())) {
@@ -1419,7 +1427,8 @@ namespace OHOS::uitest {
         RegisterUiDriverMiscMethods2();
         RegisterUiDriverTouchOperators();
         RegisterUiComponentAttrGetters();
-        RegisterUiComponentOperators();
+        RegisterUiComponentOperators1();
+        RegisterUiComponentOperators2();
         RegisterUiWindowAttrGetters();
         RegisterUiWindowOperators();
         RegisterUiWinBarOperators();
