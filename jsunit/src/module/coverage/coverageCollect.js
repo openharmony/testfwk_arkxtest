@@ -17,6 +17,8 @@ import SysTestKit from "../kit/SysTestKit";
 import fs from '@ohos.file.fs';
 import {TAG} from '../../Constant';
 
+const jsCoverageFileName = 'js_coverage.json';
+
 export async function collectCoverageData() {
     if (globalThis.__coverage__ === undefined) {
         console.info(`${TAG} globalThis not have coverage`);
@@ -47,6 +49,13 @@ export async function collectCoverageData() {
     if(fs.accessSync(savePath)) {
         fs.unlinkSync(savePath)
     }
+    
+    let inputPathDir = savePath.substring(0, savePath.length - jsCoverageFileName.length);
+    if (!fs.accessSync(inputPathDir)) {
+        console.info(`${TAG} coverage data create dir: ${inputPathDir}`);
+        fs.mkdirSync(inputPathDir)
+    }
+
     let file = fs.openSync(savePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
     let writeLen = fs.writeSync(file.fd, strJson, {encoding:"utf-8"});
     console.info(`${TAG} write coverage data success: ${writeLen}`);
@@ -60,11 +69,8 @@ function isCoveragePathValid(inputPath) {
     if (!inputPath) {
         return false;
     }
-    const jsCoverageFileName = 'js_coverage.json';
     if (inputPath.indexOf(jsCoverageFileName) === -1) {
         return false;
     }
-    let inputPathDir = inputPath.substring(0, inputPath.length - jsCoverageFileName.length);
-    console.info(`${TAG} coverage data inputPathDir: ${inputPathDir}`);
-    return fs.accessSync(inputPathDir);
+    return true;
 }
