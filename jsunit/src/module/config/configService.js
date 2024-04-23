@@ -217,14 +217,16 @@ class ConfigService {
     }
 
     filterWithNest(desc, filter) {
+        let filterArray = [];
         const nestFilter = new NestFilter();
         const targetSuiteArray = this.coreContext.getDefaultService('suite').targetSuiteArray;
         const targetSpecArray = this.coreContext.getDefaultService('suite').targetSpecArray;
         const suiteStack = this.coreContext.getDefaultService('suite').suitesStack;
         let isFilter = nestFilter.filterNestName(targetSuiteArray, targetSpecArray, suiteStack, desc);
         const isFullRun = this.coreContext.getDefaultService('suite').fullRun;
-        if (nestFilter.filterLevelOrSizeOrTestType(this.level, this.size, this.testType, filter)) {
-            return true;
+        if (typeof (this.filter) !== 'undefined' && this.filter !== 0 && filter !== 0) {
+            filterArray.push(new TestTypesFilter('', '', filter, this.filter));
+            return filterArray.map(item => item.filterIt()).reduce((pre, cur) => pre || cur, false);
         }
         if (isFilter && !isFullRun) {
             return true;
