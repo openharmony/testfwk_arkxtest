@@ -24,7 +24,7 @@ import { MockKit, when } from './src/module/mock/MockKit';
 import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
 
 class Hypium {
-	static context = new Map();
+    static context = new Map();
     static setData(data) {
         const core = Core.getInstance();
         const dataDriver = new DataDriver({ data });
@@ -35,7 +35,7 @@ class Hypium {
         SysTestKit.systemTime = systemTime;
     }
 	
-	static set(key,  value) {
+    static set(key, value) {
         Hypium.context.set(key, value);
     }
 
