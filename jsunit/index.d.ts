@@ -140,4 +140,6 @@ export class Hypium {
   static setData(data: { [key: string]: any }): void
   static setTimeConfig(systemTime: any)
   static hypiumTest(abilityDelegator: any, abilityDelegatorArguments: any, testsuite: Function): void
+    static set(key: string, value: any): void
+  static get(key: string): any
 }
