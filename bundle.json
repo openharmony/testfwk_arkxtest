@@ -34,6 +34,7 @@
           "ability_runtime",
           "hilog",
           "input",
+          "json",
           "pasteboard",
           "eventhandler",
           "hidumper",
