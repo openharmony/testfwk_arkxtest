@@ -24,7 +24,7 @@ export declare class Hypium {
     static setData(data: Object): void
     static setTimeConfig(systemTime: Object): void
     static hypiumTest(abilityDelegator: Object, abilityDelegatorArguments: Object, testsuite: Function): void
-	static set(key: string, value: Object): void
+    static set(key: string, value: Object): void
     static get(key: string): Object
 }
 
