@@ -87,6 +87,7 @@ export interface Assert {
   assertPromiseIsRejectedWithError(...expectValue): void
   assertPromiseIsResolved(): void
   assertPromiseIsResolvedWith(expectValue?: any): void
+  message(msg: string): Assert
 }
 
 export function expect(actualValue?: any): Assert
@@ -140,4 +141,6 @@ export class Hypium {
   static setData(data: { [key: string]: any }): void
   static setTimeConfig(systemTime: any)
   static hypiumTest(abilityDelegator: any, abilityDelegatorArguments: any, testsuite: Function): void
+  static registerAssert(customAssertion: Function): void
+  static unregisterAssert(customAssertion: string | Function): void
 }
