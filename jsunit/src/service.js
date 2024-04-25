@@ -947,6 +947,7 @@ class ExpectService {
     constructor(attr) {
         this.id = attr.id;
         this.matchers = {};
+        this.customMatchers = [];
     }
 
     expect(actualValue) {
@@ -963,6 +964,18 @@ class ExpectService {
             if (Object.prototype.hasOwnProperty.call(matchers, matcherName)) {
                 this.matchers[matcherName] = matchers[matcherName];
             }
+        }
+    }
+
+    removeMatchers(customAssertionName) {
+        if (customAssertionName === 'all') {
+            for (const matcherName in this.matchers) {
+                this.matchers[matcherName] = this.customMatchers.includes(matcherName) ? (() => {throw new Error(`${matcherName} is unregistered`)}) : undefined;
+            }
+        }else {
+            this.matchers[customAssertionName] = () => {
+                throw new Error(`${customAssertionName} is unregistered`)
+            };
         }
     }
 
@@ -1060,7 +1073,7 @@ class ExpectService {
                 };
             } else {
                 wrappedMatchers[matcherName] = function () {
-                    const result = _this.matchers[matcherName](actualValue, arguments);
+                    const result = _this.customMatchers.includes(matcherName) ? _this.matchers[matcherName](actualValue, arguments[0]) : _this.matchers[matcherName](actualValue, arguments);
                     if (wrappedMatchers.isNot) {
                         result.pass = !result.pass;
                         result.message = LogExpectError.getErrorMsg(matcherName, actualValue, arguments[0], result.message);

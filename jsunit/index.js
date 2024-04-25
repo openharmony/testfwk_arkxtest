@@ -68,6 +68,25 @@ class Hypium {
         testsuite();
         core.execute(abilityDelegator);
     }
+
+    static registerAssert(customAssertion) {
+        const core = Core.getInstance();
+        const expectService = core.getDefaultService('expect');
+        let matchers = {};
+        matchers[customAssertion.name] = customAssertion;
+        expectService.addMatchers(matchers);
+        expectService.customMatchers.push(customAssertion.name);
+        console.log(`${TAG}success to register the ${customAssertion.name}`);
+    }
+
+    static unregisterAssert(customAssertion) {
+        const core = Core.getInstance();
+        const expectService = core.getDefaultService('expect');
+        let customAssertionName = typeof customAssertion === 'function' ? customAssertion.name : customAssertion;
+        expectService.removeMatchers(customAssertionName);
+        console.log(`${TAG}success to unregister the ${customAssertionName}`);
+    }
+
 }
 
 export {

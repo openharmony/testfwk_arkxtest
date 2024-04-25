@@ -26,6 +26,8 @@ export declare class Hypium {
     static hypiumTest(abilityDelegator: Object, abilityDelegatorArguments: Object, testsuite: Function): void
     static set(key: string, value: Object): void
     static get(key: string): Object
+    static registerAssert(customAssertion: Function): void
+    static unregisterAssert(customAssertion: string | Function): void
 }
 
 export {

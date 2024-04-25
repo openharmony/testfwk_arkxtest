@@ -172,7 +172,9 @@ class OhReport {
         messageCode += '\n';
       }
       messageCode += 'OHOS_REPORT_STATUS: consuming=' + this.specService.currentRunningSpec.duration + '\n';
-      console.info(`${message}\n${messageStack}\n${messageCode}`);
+      console.info(`${message}`);
+      console.info(`\n${messageStack}`);
+      console.info(`\n${messageCode}`);
       await SysTestKit.print(message);
       await SysTestKit.print(messageStack);
       await SysTestKit.print(messageCode);
