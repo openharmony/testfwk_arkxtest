@@ -190,6 +190,9 @@ namespace OHOS::uitest {
 
     void UiEventMonitor::WaitScrollCompelete()
     {
+        if (scrollCompelete_.load()) {
+            return;
+        }
         auto currentMs = GetCurrentMillisecond();
         if (lastScrollBeginEventMillis_.load() <= 0) {
             lastScrollBeginEventMillis_.store(currentMs);
@@ -843,6 +846,17 @@ namespace OHOS::uitest {
         sptr<IRemoteObject> remoteObject_ = nullptr;
     };
 
+    static void CreateHidumperCmd(const std::string &windowId, vector<u16string> &result)
+    {
+        result.emplace_back(u"hidumper");
+        result.emplace_back(u"-s");
+        result.emplace_back(u"WindowManagerService");
+        result.emplace_back(u"-a");
+        auto winIdInUtf16 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(windowId);
+        auto arg = u16string(u"-w ").append(winIdInUtf16).append(u" -default -lastpage");
+        result.emplace_back(move(arg));
+    }
+
     void SysUiController::GetHidumperInfo(std::string windowId, char **buf, size_t &len)
     {
 #ifdef HIDUMPER_ENABLED
@@ -876,10 +890,7 @@ namespace OHOS::uitest {
         auto fd = memfd_create("dummy_file", 2);
         ftruncate(fd, 0);
         vector<u16string> args;
-        args.emplace_back(u"hidumper -s WindowManagerService -a");
-        auto winIdInUtf16 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t > {}.from_bytes(windowId);
-        auto arg = u16string(u"'-w ").append(winIdInUtf16).append(u" -default -lastpage '");
-        args.emplace_back(move(arg));
+        CreateHidumperCmd(windowId, windowId);
         client->Request(args, fd);
         auto size = lseek(fd, 0, SEEK_END);
         char *tempBuf = new char[size + 1];
