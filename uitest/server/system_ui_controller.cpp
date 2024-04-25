@@ -890,7 +890,7 @@ namespace OHOS::uitest {
         auto fd = memfd_create("dummy_file", 2);
         ftruncate(fd, 0);
         vector<u16string> args;
-        CreateHidumperCmd(windowId, windowId);
+        CreateHidumperCmd(windowId, args);
         client->Request(args, fd);
         auto size = lseek(fd, 0, SEEK_END);
         char *tempBuf = new char[size + 1];
