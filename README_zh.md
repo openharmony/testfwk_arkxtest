@@ -1303,18 +1303,18 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
   }
   ```
 
-  2.示例命令
+  2.示例筛选参数
     ```shell
-    //执行test1的全部测试用例
-    hdc shell aa test -b xxx -m xxx -s unittest /ets/testrunner/OpenHarmonyTestRunner -s class test1 -s timeout 15000
+    #执行test1的全部测试用例
+    -s class test1 
     ```
     ```shell
-    //执行test1的子测试用例
-    hdc shell aa test -b xxx -m xxx -s unittest /ets/testrunner/OpenHarmonyTestRunner -s class test1#assertContain1 -s timeout 15000
+    #执行test1的子测试用例
+    -s class test1#assertContain1
     ```
     ```shell
-    //执行test1的子测试套test2的测试用例
-    hdc shell aa test -b xxx -m xxx -s unittest /ets/testrunner/OpenHarmonyTestRunner -s class test1.test2#assertContain1 -s timeout 15000
+    #执行test1的子测试套test2的测试用例
+    -s class test1.test2#assertContain1
     ```
 
 - **跳过能力**
