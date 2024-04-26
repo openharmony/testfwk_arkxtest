@@ -116,7 +116,7 @@ arkXtest
 ```javascript
 import { describe, it, expect } from '@ohos/hypium';
 
-export default async function nestedDescribeTest() {
+export default function nestedDescribeTest() {
   describe('outerDescribe', () => {
     describe('innerDescribe', () => {
       it('innerIt', 0, () =>{
@@ -1202,7 +1202,7 @@ import {Driver,ON,Component,UiWindow,MatchPattern} from '@ohos.UiTest'
  import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '@ohos/hypium'
  import {ON, Driver, Component, MatchPattern} from '@ohos.UiTest'
 
- export default async function abilityTest() {
+ export default function abilityTest() {
   describe('uiTestDemo', () => {
     it('uitest_demo0', 0, async () => {
       // create Driver
@@ -1240,7 +1240,7 @@ import {Driver,ON,Component,UiWindow,MatchPattern} from '@ohos.UiTest'
 ```javascript
  import { Driver, ON } from '@ohos.UiTest';
  import { describe, it} from '@ohos/hypium';
- export default async function abilityTest() {
+ export default function abilityTest() {
   describe('UiTestDemo', () => {
     it('Uitest_demo0', 0, async (done: Function) => {
       try{
