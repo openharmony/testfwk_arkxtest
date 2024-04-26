@@ -47,7 +47,7 @@ arkXtest
 | 10   | getDescribeName   | 获取当前正在执行测试套的名称                                 |
 | 11   | getItName         | 获取当前正在执行测试用例的名称                               |
 | 12   | getItAttribute    | 获取当前正在执行测试用例的级别、粒度、测试类型               |
-| 13   | xdescribe    | 定义一个跳过的测试套，支持两个参数：测试套名称和测试套函               |
+| 13   | xdescribe    | 定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。   |
 | 14    | xit                | 定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。 |
 
 示例代码：
@@ -352,7 +352,6 @@ export default function abilityTest1() {
     it('assertContain1', 0, () => {
       let a = true;
       let b = true;
-      //customAssert是为了避免编译报错
       (expect(a) as customAssert).myAssertEqual(b);
       Hypium.unregisterAssert(myAssertEqual);
     })
@@ -1305,15 +1304,15 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
   ```
 
   2.示例命令
-    ```javascript
+    ```shell
     //执行test1的全部测试用例
     hdc shell aa test -b xxx -m xxx -s unittest /ets/testrunner/OpenHarmonyTestRunner -s class test1 -s timeout 15000
     ```
-    ```javascript
+    ```shell
     //执行test1的子测试用例
     hdc shell aa test -b xxx -m xxx -s unittest /ets/testrunner/OpenHarmonyTestRunner -s class test1#assertContain1 -s timeout 15000
     ```
-    ```javascript
+    ```shell
     //执行test1的子测试套test2的测试用例
     hdc shell aa test -b xxx -m xxx -s unittest /ets/testrunner/OpenHarmonyTestRunner -s class test1.test2#assertContain1 -s timeout 15000
     ```
@@ -1344,11 +1343,17 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
 
     ```javascript
   //Skip2.test.ets
-  import { describe, expect, xit } from '@ohos/hypium';
+  import { describe, expect, xit, it } from '@ohos/hypium';
   
   export default function skip2() {
     describe('skip2', () => {
+      //默认会跳过assertContain1
       xit('assertContain1', 0, () => {
+        let a = true;
+        let b = true;
+        expect(a).assertEqual(b);
+      });
+      it('assertContain2', 0, () => {
         let a = true;
         let b = true;
         expect(a).assertEqual(b);
@@ -1357,26 +1362,6 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
   }
     ```
 
-  2.示例命令
-  ```javascript
-  //dry模式下打印跳过的测试套和测试用例
-  hdc shell aa test -b xxx -m xxx -s unittest /ets/testrunner/OpenHarmonyTestRunner -s timeout 15000 -s dryRun true -s skipMessage true
-  ```
-
-  ```javascript
-  //执行正常和所有跳过的测试套和测试用例
-  hdc shell aa test -b xxx -m xxx -s unittest /ets/testrunner/OpenHarmonyTestRunner -s timeout 15000 -s runSkipped all
-  ```
-
-  ```javascript
-  //不执行正常的，执行所有跳过的测试套和测试用例
-  hdc shell aa test -b xxx -m xxx -s unittest /ets/testrunner/OpenHarmonyTestRunner -s timeout 15000 -s runSkipped skipped
-  ```
-
-  ```javascript
-  //执行正常的测试套和测试用以及skip1测试套
-  hdc shell aa test -b xxx -m xxx -s unittest /ets/testrunner/OpenHarmonyTestRunner -s timeout 15000 -s runSkipped skip1
-  ```
 
 
 ### 使用方式
