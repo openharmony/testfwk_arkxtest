@@ -48,7 +48,7 @@ arkXtest
 | 11   | getItName         | 获取当前正在执行测试用例的名称                               |
 | 12   | getItAttribute    | 获取当前正在执行测试用例的级别、粒度、测试类型               |
 | 13   | xdescribe    | 定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。   |
-| 14    | xit                | 定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。 |
+| 14   | xit                | 定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。 |
 
 示例代码：
 
@@ -1138,6 +1138,8 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
 
   2、按测试套/测试用例名称筛选
 
+  注意：测试套和测试用例的命名要符合框架规则，即以字母开头，后跟一个或多个字母、数字、下划线、‘#’或‘.’，不能包含其他特殊符号。
+
   hypium可以通过指定测试套与测试用例名称，来指定特定用例的执行，测试套与用例名称用“#”号连接，多个用“,”英文逗号分隔
 
   | Key      | 含义说明                | Value取值范围                                                |
@@ -1366,7 +1368,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
 
 ### 使用方式
 
-单元测试框架以npm包（hypium）形式发布至[服务组件官网](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
+单元测试框架以ohpm包（hypium）形式发布至[OHPM中心仓](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
 
 ## Ui测试框架功能特性
 
