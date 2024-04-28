@@ -47,8 +47,8 @@ arkXtest
 | 10   | getDescribeName   | 获取当前正在执行测试套的名称                                 |
 | 11   | getItName         | 获取当前正在执行测试用例的名称                               |
 | 12   | getItAttribute    | 获取当前正在执行测试用例的级别、粒度、测试类型               |
-| 13   | xdescribe    | 定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。   |
-| 14   | xit                | 定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。 |
+| 13   | xdescribe    | @since1.0.17定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。 |
+| 14   | xit                | @since1.0.17定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。 |
 
 示例代码：
 
@@ -164,7 +164,7 @@ export default async function nestedDescribeTest() {
 | 21   | assertPromiseIsResolved | @since1.0.4 判断promise是否处于Resolved状态。           |
 | 22   | assertPromiseIsResolvedWith | @since1.0.4 判断promise是否处于Resolved状态，并且比较执行的结果值。 |
 | 23   | not                | @since1.0.4 断言取反,支持上面所有的断言功能                     |
-| 24   | message                | 自定义断言异常信息
+| 24   | message                | @since1.0.17自定义断言异常信息 |
 
 示例代码：
 
@@ -293,7 +293,7 @@ interface PromiseInfo {
 }
 ```
 
-##### 自定义断言
+##### 自定义断言@since1.0.18
 
 示例代码：
 
@@ -1014,7 +1014,7 @@ mocker.verify('method_1', []).atLeast(2);
 
 ##### 约束限制
 
-单元测试框架数据驱动能力从[hypium 1.0.2版本](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)开始支持。
+单元测试框架数据驱动能力从[hypium 1.0.2版本](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)开始支持，对应DevEco Studio的版本是V3.0 Release（2022-09-06）。
 
 - 数据参数传递 : 为指定测试套、测试用例传递测试输入数据参数。
 - 压力测试 : 为指定测试套、测试用例设置执行次数。
@@ -1063,7 +1063,13 @@ mocker.verify('method_1', []).atLeast(2);
 
 示例代码：
 
+stage模型：
+
 在TestAbility目录下TestAbility.ets文件中导入data.json，并在Hypium.hypiumTest() 方法执行前，设置参数数据
+
+FA模型：
+
+在TestAbility目录下app.js或app.ets文件中导入data.json，并在Hypium.hypiumTest() 方法执行前，设置参数数据
 
 ```javascript
 import AbilityDelegatorRegistry from '@ohos.application.abilityDelegatorRegistry'
