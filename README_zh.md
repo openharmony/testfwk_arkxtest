@@ -1014,7 +1014,7 @@ mocker.verify('method_1', []).atLeast(2);
 
 ##### 约束限制
 
-单元测试框架数据驱动能力从[hypium 1.0.2版本](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)开始支持，对应DevEco Studio的版本是V3.0 Release（2022-09-06）。
+单元测试框架数据驱动能力从[hypium 1.0.2版本](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)开始支持。
 
 - 数据参数传递 : 为指定测试套、测试用例传递测试输入数据参数。
 - 压力测试 : 为指定测试套、测试用例设置执行次数。
@@ -1062,6 +1062,8 @@ mocker.verify('method_1', []).atLeast(2);
 | 6    | "stress"   | 测试套 / 测试用例 指定执行次数 。     | 否   |
 
 示例代码：
+
+从DevEco Studio的版本V3.0 Release（2022-09-06）开始支持
 
 stage模型：
 
