@@ -1063,7 +1063,7 @@ mocker.verify('method_1', []).atLeast(2);
 
 示例代码：
 
-从DevEco Studio的版本V3.0 Release（2022-09-06）开始支持
+DevEco Studio从V3.0 Release（2022-09-06）版本开始支持
 
 stage模型：
 
@@ -1331,10 +1331,11 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
 
     | Key          | 含义说明                                                     | Value取值范围                                        |
   | ------------ | ------------------------------------------------------------ | ---------------------------------------------------- |
-  | skipMessage | dryRun模式下是否在控制台打印跳过测试套和用例的信息 | true/false, 不传参默认为false， 例如：-s skipMessage true |
-  | runSkipped | 执行筛选的跳过测试套和测试用例 | all/skipped/特定测试套or测试用例, 不传参默认为空， 例如：-s runSkipped all |
+  | skipMessage | @since1.0.17 显示待执行的测试用例信息全集中是否包含跳过测试套和跳过用例的信息 | true/false, 不传参默认为false， 例如：-s skipMessage true |
+  | runSkipped | @since1.0.17 指定要执行的跳过测试套&跳过用例 | all，skipped，${describeName}#${itName}，${describeName}，不传参默认为空，例如：-s runSkipped all |
 
   1.示例代码
+  
   ```javascript
   //Skip1.test.ets
   import { expect, xdescribe, xit } from '@ohos/hypium';
@@ -1350,7 +1351,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
     })
   }
   ```
-
+  
     ```javascript
   //Skip2.test.ets
   import { describe, expect, xit, it } from '@ohos/hypium';
