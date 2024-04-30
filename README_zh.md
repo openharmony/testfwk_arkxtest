@@ -25,7 +25,7 @@ arkXtest
 | 2    | 断言库   | 判断用例实际期望值与预期值是否相符。                         |
 | 3    | Mock能力 | 支持函数级mock能力，对定义的函数进行mock后修改函数的行为，使其返回指定的值或者执行某种动作。 |
 | 4    | 数据驱动 | 提供数据驱动能力，支持复用同一个测试脚本，使用不同输入数据驱动执行。 |
-| 5    | 专项能力 | 支持测试套与用例筛选、随机执行、压力测试、超时设置、遇错即停模式等。 |
+| 5    | 专项能力 | 支持测试套与用例筛选、随机执行、压力测试、超时设置、遇错即停模式，跳过，支持测试套嵌套等。 |
 
 ### 使用说明
 
@@ -47,6 +47,8 @@ arkXtest
 | 10   | getDescribeName   | 获取当前正在执行测试套的名称                                 |
 | 11   | getItName         | 获取当前正在执行测试用例的名称                               |
 | 12   | getItAttribute    | 获取当前正在执行测试用例的级别、粒度、测试类型               |
+| 13   | xdescribe    | @since1.0.17定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。 |
+| 14   | xit                | @since1.0.17定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。 |
 
 示例代码：
 
@@ -134,7 +136,7 @@ export default function nestedDescribeTest() {
 
 ####  断言库
 
-断言功能列表：
+##### 断言功能列表
 
 
 | No.  | API                | 功能说明                                                     |
@@ -162,6 +164,7 @@ export default function nestedDescribeTest() {
 | 21   | assertPromiseIsResolved | @since1.0.4 判断promise是否处于Resolved状态。           |
 | 22   | assertPromiseIsResolvedWith | @since1.0.4 判断promise是否处于Resolved状态，并且比较执行的结果值。 |
 | 23   | not                | @since1.0.4 断言取反,支持上面所有的断言功能                     |
+| 24   | message                | @since1.0.17自定义断言异常信息 |
 
 示例代码：
 
@@ -277,6 +280,9 @@ it('test_isResolvedTo_pass_1', 0, () => {
 let p: Promise = Promise.resolve(info);
 expect(p).assertPromiseIsResolvedWith(info);
 });
+it("test_message", 0, () => {
+  expect(1).message('1 is not equal 2!').assertEqual(2);
+});
 })
 }
 interface SampleTest {
@@ -284,6 +290,83 @@ interface SampleTest {
 }
 interface PromiseInfo {
   res: string
+}
+```
+
+##### 自定义断言@since1.0.18
+
+示例代码：
+
+```javascript
+//custom.ets
+import { Assert } from '@ohos/hypium';
+
+
+interface customAssert extends Assert {
+  //自定义断言声明
+  myAssertEqual(expectValue: boolean): void;
+}
+
+//自定义断言实现
+let myAssertEqual = (actualValue: boolean, expectValue: boolean) => {
+  interface R {
+    pass: boolean,
+    message: string
+  }
+
+  let result: R = {
+    pass: true,
+    message: 'just is a msg'
+  }
+
+  let compare = () => {
+    if (expectValue === actualValue) {
+      result.pass = true;
+      result.message = ''
+    } else {
+      result.pass = false;
+      result.message = 'expectValue !== actualValue!';
+    }
+    return result
+  }
+  result = compare();
+  return result;
+}
+
+export { myAssertEqual, customAssert }
+```
+
+```javascript
+//Ability1.test.ets 
+//与上述custom.ets同目录
+import { describe, beforeAll, it, expect, Hypium } from '@ohos/hypium';
+import { myAssertEqual, customAssert } from './custom'
+
+export default function abilityTest1() {
+  describe('ActsAbilityTest1', () => {
+    beforeAll(() => {
+      //注册自定义断言，只有先注册才可以使用
+      Hypium.registerAssert(myAssertEqual)
+    })
+
+    it('assertContain1', 0, () => {
+      let a = true;
+      let b = true;
+      (expect(a) as customAssert).myAssertEqual(b);
+      Hypium.unregisterAssert(myAssertEqual);
+    })
+
+    it('assertContain2', 0, () => {
+      //注销自定义断言，注销以后就无法使用
+      //以下三种方式都可以注销断言，其中all是注销所有自定义断言
+      Hypium.registerAssert(myAssertEqual)
+      //Hypium.registerAssert('myAssertEqual')
+      //Hypium.registerAssert('all')
+      let a = true;
+      let b = true;
+      (expect(a) as customAssert).myAssertEqual(b);
+    })
+  })
 }
 ```
 
@@ -980,7 +1063,15 @@ mocker.verify('method_1', []).atLeast(2);
 
 示例代码：
 
-在TestAbility目录下app.js|ets文件中导入data.json，并在Hypium.hypiumTest() 方法执行前，设置参数数据
+DevEco Studio从V3.0 Release（2022-09-06）版本开始支持
+
+stage模型：
+
+在TestAbility目录下TestAbility.ets文件中导入data.json，并在Hypium.hypiumTest() 方法执行前，设置参数数据
+
+FA模型：
+
+在TestAbility目录下app.js或app.ets文件中导入data.json，并在Hypium.hypiumTest() 方法执行前，设置参数数据
 
 ```javascript
 import AbilityDelegatorRegistry from '@ohos.application.abilityDelegatorRegistry'
@@ -1054,6 +1145,8 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
   该命令作用是筛选测试应用中同时满足，用例测试类型是“function”、用例粒度是“small”、用例级别是“0”的三个条件用例执行。
 
   2、按测试套/测试用例名称筛选
+
+  注意：测试套和测试用例的命名要符合框架规则，即以字母开头，后跟一个或多个字母、数字，不能包含特殊符号。
 
   hypium可以通过指定测试套与测试用例名称，来指定特定用例的执行，测试套与用例名称用“#”号连接，多个用“,”英文逗号分隔
 
@@ -1169,6 +1262,118 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
   ```shell
   hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s dryRun true
   ```
+
+- **嵌套能力**
+
+  1.示例代码
+  ```javascript
+  //Test1.test.ets
+  import { describe, expect, it } from '@ohos/hypium';
+  import test2 from './Test2.test';
+
+  export default function test1() {
+    describe('test1', () => {
+      it('assertContain1', 0, () => {
+        let a = true;
+        let b = true;
+        expect(a).assertEqual(b);
+      })
+      //引入测试套test2
+      test2();
+    })
+  }
+  ```
+
+  ```javascript
+  //Test2.test.ets
+  import { describe, expect, it } from '@ohos/hypium';
+
+  export default function test2() {
+    describe('test2', () => {
+      it('assertContain1', 0, () => {
+        let a = true;
+        let b = true;
+        expect(a).assertEqual(b);
+      })
+      it('assertContain2', 0, () => {
+        let a = true;
+        let b = true;
+        expect(a).assertEqual(b);
+      })
+    })
+  }
+  ```
+
+  ```javascript
+  //List.test.ets
+  import test1 from './nest/Test1.test';
+
+  export default function testsuite() {
+    test1();
+  }
+  ```
+
+  2.示例筛选参数
+    ```shell
+    #执行test1的全部测试用例
+    -s class test1 
+    ```
+    ```shell
+    #执行test1的子测试用例
+    -s class test1#assertContain1
+    ```
+    ```shell
+    #执行test1的子测试套test2的测试用例
+    -s class test1.test2#assertContain1
+    ```
+
+- **跳过能力**
+
+    | Key          | 含义说明                                                     | Value取值范围                                        |
+  | ------------ | ------------------------------------------------------------ | ---------------------------------------------------- |
+  | skipMessage | @since1.0.17 显示待执行的测试用例信息全集中是否包含跳过测试套和跳过用例的信息 | true/false, 不传参默认为false， 例如：-s skipMessage true |
+  | runSkipped | @since1.0.17 指定要执行的跳过测试套&跳过用例 | all，skipped，${describeName}#${itName}，${describeName}，不传参默认为空，例如：-s runSkipped all |
+
+  1.示例代码
+  
+  ```javascript
+  //Skip1.test.ets
+  import { expect, xdescribe, xit } from '@ohos/hypium';
+  
+  export default function skip1() {
+    xdescribe('skip1', () => {
+      //注意：在xdescribe中不支持编写it用例
+      xit('assertContain1', 0, () => {
+        let a = true;
+        let b = true;
+        expect(a).assertEqual(b);
+      })
+    })
+  }
+  ```
+  
+    ```javascript
+  //Skip2.test.ets
+  import { describe, expect, xit, it } from '@ohos/hypium';
+  
+  export default function skip2() {
+    describe('skip2', () => {
+      //默认会跳过assertContain1
+      xit('assertContain1', 0, () => {
+        let a = true;
+        let b = true;
+        expect(a).assertEqual(b);
+      });
+      it('assertContain2', 0, () => {
+        let a = true;
+        let b = true;
+        expect(a).assertEqual(b);
+      })
+    })
+  }
+    ```
+
+
 
 ### 使用方式
 
