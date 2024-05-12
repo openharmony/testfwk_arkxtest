@@ -381,6 +381,7 @@ namespace OHOS::uitest {
     {
         PointerEvent::PointerItem pinterItem1;
         pinterItem1.SetPointerId(currentFinger);
+        pinterItem1.SetOriginPointerId(currentFinger);
         pinterItem1.SetDisplayX(fingerStatus[currentFinger].second.px_);
         pinterItem1.SetDisplayY(fingerStatus[currentFinger].second.py_);
         pinterItem1.SetPressed(fingerStatus[currentFinger].first);
@@ -393,6 +394,7 @@ namespace OHOS::uitest {
             if (fingerStatus[index].first) {
                 PointerEvent::PointerItem pinterItem;
                 pinterItem.SetPointerId(index);
+                pinterItem.SetOriginPointerId(index);
                 pinterItem.SetDisplayX(fingerStatus[index].second.px_);
                 pinterItem.SetDisplayY(fingerStatus[index].second.py_);
                 pinterItem.SetPressed(true);
@@ -439,6 +441,7 @@ namespace OHOS::uitest {
     static void SetMousePointerItemAttr(const MouseEvent &event, PointerEvent::PointerItem &item)
     {
         item.SetPointerId(0);
+        item.SetOriginPointerId(0);
         item.SetToolType(PointerEvent::TOOL_TYPE_MOUSE);
         item.SetDisplayX(event.point_.px_);
         item.SetDisplayY(event.point_.py_);
