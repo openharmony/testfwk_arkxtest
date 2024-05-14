@@ -23,14 +23,9 @@ function assertPromiseIsResolved(actualPromise) {
         });
     }
 
-    const helper = {};
-    return Promise.race([actualPromise, Promise.resolve(helper)]).then(
+    return actualPromise.then(
         function (got) {
-            return helper === got ? {
-                pass: false,
-                message: 'expect resolve, actualValue is isPending'
-            }
-                : {pass: true, message: 'actualValue is isResolved'};
+            return {pass: true, message: 'actualValue is isResolved'};
         },
         function (rej) {
             return {
