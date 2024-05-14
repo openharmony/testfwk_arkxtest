@@ -66,7 +66,7 @@ export declare interface Assert {
     assertLarger(expectValue: number): void
     assertLess(expectValue: number): void
     assertNull(): void
-    assertThrowError(expectValue: string): void
+    assertThrowError(expectValue: string | Function): void
     assertUndefined(): void
     assertLargerOrEqual(expectValue: number):void
     assertLessOrEqual(expectValue: number):void
