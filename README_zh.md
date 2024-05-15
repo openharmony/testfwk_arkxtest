@@ -149,6 +149,22 @@ export default function abilityTest() {
 
 ```
 
+测试用例获取context对象示例
+```javascript
+import { describe, expect, it } from '@ohos/hypium'
+import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
+const delegatorRegistry = abilityDelegatorRegistry.getAbilityDelegator();
+export default function getContextTest() {
+  describe('getContextTest', () => {
+    it('getContext_test', 0, () => {
+      let context = delegatorRegistry.getAppContext();
+      expect(context.applicationInfo.name).assertEqual("com.ohos.myapplication");
+      expect(context.filesDir).assertEqual("/data/storage/el2/base/files");
+    });
+  });
+}
+```
+
 beforeItSpecified, afterItSpecified 示例代码：
 
 ```javascript
@@ -217,8 +233,8 @@ export default function abilityTest() {
 
 ```javascript
 import { describe, it, expect } from '@ohos/hypium';
-export default function abilityTest() {
-  describe('ActsAbilityTest', () => {
+export default function exceptTest() {
+  describe('exceptTest', () => {
     it('assertBeClose_success', 0, () => {
       let a:number = 100
       let b:number = 0.1
@@ -290,53 +306,10 @@ it("deepEquals_regExp_success_0", 0, () => {
       const b: RegExp = new RegExp("/test/");
       expect(a).assertDeepEquals(b)
     })
-it('test_isPending_pass_1', 0, () => {
-      let p: Promise = new Promise<void>(() =>{
-      });
-      expect(p).assertPromiseIsPending();
-    });
-it('test_isRejected_pass_1', 0, () => {
-  let info: PromiseInfo = {
-  res:"no"
-}
-let p: Promise = Promise.reject(info);
-expect(p).assertPromiseIsRejected();
-});
-it('test_isRejectedWith_pass_1', 0, () => {
-  let info: PromiseInfo = {
-  res:"reject value"
-}
-let p: Promise = Promise.reject(info);
-expect(p).assertPromiseIsRejectedWith(info);
-});
-it('test_isRejectedWithError_pass_1', 0, () => {
-  let p1: Promise = Promise.reject(new TypeError('number'));
-  expect(p1).assertPromiseIsRejectedWithError(TypeError);
-});
-it('test_isResolved_pass_1', 0, () => {
-  let info: PromiseInfo = {
-  res:"result value"
-}
-let p: Promise = Promise.resolve(info);
-expect(p).assertPromiseIsResolved();
-});
-it('test_isResolvedTo_pass_1', 0, () => {
-  let info: PromiseInfo = {
-  res:"result value"
-}
-let p: Promise = Promise.resolve(info);
-expect(p).assertPromiseIsResolvedWith(info);
-});
-it("test_message", 0, () => {
-  expect(1).message('1 is not equal 2!').assertEqual(2);
-});
 })
 }
 interface SampleTest {
   x: number;
-}
-interface PromiseInfo {
-  res: string
 }
 ```
 
@@ -753,10 +726,10 @@ mocker.verify('method_2',['111']).once();//执行success，原因同上
 
 **示例7：  ignoreMock(obj, method) 忽略函数的使用**
 ```javascript
- import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
+import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
 
- export default function ActsAbilityTest() {
-  describe('ActsAbilityTest', () => {
+export default function ignoreMockTest() {
+  describe('ignoreMockTest', () => {
     it('testMockfunc', 0, () => {
       console.info("it1 begin");
 
@@ -775,32 +748,32 @@ mocker.verify('method_2',['111']).once();//执行success，原因同上
         method_2(...arg: number[]) {
           return '999999';
         }
- }
+}
 
- let claser: ClassName = new ClassName();
+let claser: ClassName = new ClassName();
 
- //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
- let func_1: Function = mocker.mockFunc(claser, claser.method_1);
- let func_2: Function = mocker.mockFunc(claser, claser.method_2);
+//3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
+let func_1: Function = mocker.mockFunc(claser, claser.method_1);
+let func_2: Function = mocker.mockFunc(claser, claser.method_2);
 
- //4.对mock后的函数的行为进行修改
- when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
- when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
+//4.对mock后的函数的行为进行修改
+when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
+when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
 
- //5.方法调用如下
- console.log(claser.method_1(123)); //执行结果是4，符合步骤4中的预期
- console.log(claser.method_2(456)); //执行结果是5，符合步骤4中的预期
+//5.方法调用如下
+console.log(claser.method_1(123)); //执行结果是4，符合步骤4中的预期
+console.log(claser.method_2(456)); //执行结果是5，符合步骤4中的预期
 
- //6.现在对mock后的两个函数的其中一个函数method_1进行忽略处理（原理是就是还原）
- mocker.ignoreMock(claser, claser.method_1);
- //然后再去调用 claser.method_1函数，看执行结果
- console.log(claser.method_1(123)); //执行结果是888888，发现这时结果跟步骤4中的预期不一样了，执行了claser.method_1没被mock之前的结果
- //用断言测试
- expect(claser.method_1(123)).assertEqual('4'); //结果为failed 符合ignoreMock预期
- claser.method_2(456); //执行结果是5，因为method_2没有执行ignore忽略，所有也符合步骤4中的预期
- });
- });
- }
+//6.现在对mock后的两个函数的其中一个函数method_1进行忽略处理（原理是就是还原）
+mocker.ignoreMock(claser, claser.method_1);
+//然后再去调用 claser.method_1函数，看执行结果
+console.log(claser.method_1(123)); //执行结果是888888，发现这时结果跟步骤4中的预期不一样了，执行了claser.method_1没被mock之前的结果
+//用断言测试
+expect(claser.method_1(123)).assertEqual('888888');
+claser.method_2(456); //执行结果是5，因为method_2没有执行ignore忽略，所有也符合步骤4中的预期
+});
+});
+}
 ```
 
 **示例8：  clear（）函数的使用**
