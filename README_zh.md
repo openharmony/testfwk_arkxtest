@@ -50,13 +50,110 @@ arkXtest
 | 13   | xdescribe    | @since1.0.17定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。 |
 | 14   | xit                | @since1.0.17定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。 |
 
-示例代码：
+基础示例代码
+```javascript
+import { describe, it, expect, TestType } from '@ohos/hypium';
+export default function basicExampleTest() {
+  describe('basicExampleTest', () => {
+
+    /**
+     * @tc.number:basicExampleTest_001
+     * @tc.name: basic_StartAbility_001
+     * @tc.type: 0 || TestType.FUNCTION || Size.SMALLTEST || Level.LEVEL0
+     * @tc.desc: 基础测试用例
+     */
+    it('basic_StartAbility_001',TestType.FUNCTION, () =>  {
+      expect(1).assertEqual(1);
+    })
+  })
+}
+```
+
+Promise异步测试
+```javascript
+import { describe, it, expect } from '@ohos/hypium';
+import { BusinessError } from '@kit.BasicServicesKit';
+
+// promise
+function resolveTestFun() {
+  return new Promise<string>((resolve, reject) => {
+    setTimeout(() => {
+      resolve("resolveTest")
+    }, 5000)
+  })
+}
+
+function rejectTestFun() {
+  return new Promise<string>((resolve, reject) => {
+    setTimeout(() => {
+      reject("rejectTest")
+    }, 5000)
+  })
+}
+
+export default function abilityTest() {
+  describe('ActsAbilityTest', () => {
+    it('resolveTestFun_Test', 0, async (done: Function) => {
+      let result = await resolveTestFun();
+      expect(result).assertEqual("resolveTest");
+      // 调用done 函数异步函数结束
+      done()
+    })
+    it('rejectTestFun_Test', 0, async (done: Function) => {
+      let result =  rejectTestFun().then((result) => {
+
+      }, (error: BusinessError) => {
+        try {
+          expect(error).assertEqual("rejectTest");
+          // 调用done 函数异步函数结束
+        } catch (e) {
+        }
+        done()
+      });
+    })
+  })
+}
+
+```
+
+CallBack异步测试
+```javascript
+import { describe, it, expect } from '@ohos/hypium';
+
+// callBack
+ function callBackTestFun(callBack: Function, a?: string,) {
+    setTimeout(() => {
+      if (a) {
+        callBack("result");
+      } else {
+       callBack("fail")
+      }
+    }, 5000)
+
+ }
+
+export default function abilityTest() {
+  describe('ActsAbilityTest', () => {
+    it('callBackTestFun_Test', 0, async (done: Function) => {
+      callBackTestFun((result: string) => {
+        try {
+          expect(result).assertEqual("result");
+        } catch (e) {
+        }
+        // 异步函数调用结束。
+        done()
+      }, "a")
+    })
+  })
+}
+
+```
+
+beforeItSpecified, afterItSpecified 示例代码：
 
 ```javascript
- import { describe, it, expect, beforeItSpecified, afterItSpecified, SysTestKit, TestType, Size, Level} from '@ohos/hypium';
- import demo from '@ohos.bundle'
- import { BusinessError } from '@ohos.base';
- export default function abilityTest() {
+import { describe, it, expect, beforeItSpecified, afterItSpecified, SysTestKit, TestType, Size, Level} from '@ohos/hypium';
+export default function abilityTest() {
   describe('ActsAbilityTest', () => {
     beforeItSpecified(['String_assertContain_success'], () => {
       const num:number = 1
@@ -66,63 +163,18 @@ arkXtest
       const str:string = 'abc'
       setTimeout(()=>{
         try {
-          expect(str).assertContain('d')
+          expect(str).assertContain('b')
         } catch (error) {
           console.error(`error message ${JSON.stringify(error)}`)
         }
         done()
       }, 1000)
     })
-    it('getCurrentRunningSuiteName', 0, () => {
-        let suiteName: string = SysTestKit.getDescribeName();
-        expect(suiteName).assertEqual('ActsAbilityTest')
-    })
 
     it('String_assertContain_success', 0, () => {
       let a: string = 'abc'
       let b: string = 'b'
       expect(a).assertContain(b)
-      expect(a).assertEqual(a)
-    })
-    it('getBundleInfo_0100', 0, async () => {
-      const NAME1 = "com.example.myapplication0009921"
-      await demo.getBundleInfo(NAME1,
-        demo.BundleFlag.GET_BUNDLE_WITH_ABILITIES | demo.BundleFlag.GET_BUNDLE_WITH_REQUESTED_PERMISSION)
-        .then((value: BundleInfo) => {
-          console.info(value.appId)
-        })
-        .catch((err:BusinessError) => {
-          console.info(err.code.toString())
-        })
-    })
-  })
-}
-
- interface BundleInfo {
-   name: string;
-   appId: string
- }
-```
-
-同时，@since1.0.6 测试套describe支持嵌套定义 。
-
-约束限制：describe仅支持两层嵌套定义，且内层的describe-“innerDescribe”不支持“数据驱动”、“专项能力”特性。
-
-示例代码：
-
-```javascript
-import { describe, it, expect } from '@ohos/hypium';
-
-export default function nestedDescribeTest() {
-  describe('outerDescribe', () => {
-    describe('innerDescribe', () => {
-      it('innerIt', 0, () =>{
-        let a: string = 'abc'
-        expect(a).assertEqual(a)
-      })
-    })
-    it('outerIt', 0, () => {
-      let a: string = 'abc'
       expect(a).assertEqual(a)
     })
   })
@@ -648,10 +700,10 @@ expect(claser.method_1('test')).assertEqual('1'); //用例执行通过。
 
 **示例6： 验证功能 Verify函数的使用**
 ```javascript
- import {describe, expect, it, MockKit, when} from '@ohos/hypium';
+import {describe, expect, it, MockKit, when} from '@ohos/hypium';
 
- export default function ActsAbilityTest() {
-  describe('ActsAbilityTest',  () => {
+export default function ActsAbilityTest11() {
+  describe('ActsAbilityTest11',  () => {
     it('testMockfunc', 0, () => {
       console.info("it1 begin");
 
@@ -670,33 +722,33 @@ expect(claser.method_1('test')).assertEqual('1'); //用例执行通过。
         method_2(...arg: string[]) {
           return '999999';
         }
- }
+}
 
- let claser: ClassName = new ClassName();
+let claser: ClassName = new ClassName();
 
- //3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
- mocker.mockFunc(claser, claser.method_1);
- mocker.mockFunc(claser, claser.method_2);
+//3.进行mock操作,比如需要对ClassName类的method_1和method_2两个函数进行mock
+mocker.mockFunc(claser, claser.method_1);
+mocker.mockFunc(claser, claser.method_2);
 
- //4.方法调用如下
- claser.method_1('abc', 'ppp');
- claser.method_1('abc');
- claser.method_1('xyz');
- claser.method_1();
- claser.method_1('abc', 'xxx', 'yyy');
- claser.method_1();
- claser.method_2('111');
- claser.method_2('111', '222');
+//4.方法调用如下
+claser.method_1('abc', 'ppp');
+claser.method_1('abc');
+claser.method_1('xyz');
+claser.method_1();
+claser.method_1('abc', 'xxx', 'yyy');
+claser.method_1();
+claser.method_2('111');
+claser.method_2('111', '222');
 
- //5.现在对mock后的两个函数进行验证，验证调用情况
- mocker.verify('method_1', []).atLeast(3); //结果为failed
- //解释：验证函数'method_1'，参数列表为空：[] 的函数，至少执行过3次，
- //执行结果为failed，因为'method_1'且无参数 在4中只执行过2次
- //mocker.verify('method_2',['111']).once();//执行success，原因同上
- //mocker.verify('method_2',['111',,'222']).once();//执行success，原因同上
- });
- });
- } 
+//5.现在对mock后的两个函数进行验证，验证调用情况
+// mocker.verify('method_1', []).atLeast(3); //结果为failed
+//解释：验证函数'method_1'，参数列表为空：[] 的函数，至少执行过3次，
+//执行结果为failed，因为'method_1'且无参数 在4中只执行过2次
+mocker.verify('method_2',['111']).once();//执行success，原因同上
+//mocker.verify('method_2',['111',,'222']).once();//执行success，原因同上
+});
+});
+}
 ```
 
 **示例7：  ignoreMock(obj, method) 忽略函数的使用**
