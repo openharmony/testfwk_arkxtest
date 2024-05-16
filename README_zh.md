@@ -623,7 +623,7 @@ export default function verifyTest() {
       claser.method_2('111');
       claser.method_2('111', '222');
 
-      // 5.现在对mock后的两个函数进行验证，验证调用情况
+      // 5.现在对mock后的两个函数进行验证，验证method_2,参数为'111'执行过一次
       mocker.verify('method_2',['111']).once();// 执行success
     });
   });
@@ -756,7 +756,7 @@ export default function afterThrowTest() {
       // 3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
       let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
 
-      // 4.期望claser.method_1函数被mock后, 以任何'test'为参数调用函数时抛出error xxx异常
+      // 4.期望claser.method_1函数被mock后, 以'test'为参数调用函数时抛出error xxx异常
       when(mockfunc)('test').afterThrow('error xxx');
 
       //5.执行mock后的函数，捕捉异常并使用assertEqual对比msg否符合预期
@@ -803,7 +803,7 @@ export default function mockPromiseTest() {
       // 3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
       let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
 
-      // 4.期望claser.method_1函数被mock后, 以任何'test'为参数调用函数时返回一个promise对象
+      // 4.期望claser.method_1函数被mock后, 以'test'为参数调用函数时返回一个promise对象
       when(mockfunc)('test').afterReturn(new Promise<string>((resolve: Function, reject: Function) => {
         console.log("do something");
         resolve('success something');
