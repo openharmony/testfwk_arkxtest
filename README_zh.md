@@ -77,7 +77,7 @@ export default function beforeItSpecifiedTest() {
       let a: string = 'abc';
       let b: string = 'b';
       expect(a).assertContain(b);
-      expect(a).assertEqual(a)
+      expect(a).assertEqual(a);
     })
   })
 }
@@ -186,10 +186,10 @@ export default function expectTest() {
     it("deepEquals_obj_success_1", 0, () => {
       const a: SampleTest = {
       x: 1
-      }
+      };
       const b: SampleTest = {
       x: 1
-      }
+      };
       expect(a).assertDeepEquals(b);
     })
     it("deepEquals_regExp_success_0", 0, () => {
@@ -255,9 +255,9 @@ interface PromiseInfo {
 
 ```javascript
 
+//custom.ets
 import {describe, Assert, beforeAll, expect, Hypium, it } from '@ohos/hypium';
 
-// custom.ets
 interface customAssert extends Assert {
   //自定义断言声明
   myAssertEqual(expectValue: boolean): void;
@@ -289,8 +289,6 @@ result = compare();
 return result;
 }
 
-export { myAssertEqual, customAssert }
-
 export default function customAssertTest() {
   describe('customAssertTest', () => {
     beforeAll(() => {
@@ -306,12 +304,17 @@ export default function customAssertTest() {
     })
 
     it('assertContain2', 0, () => {
-      //注销自定义断言，注销以后就无法使用
-      //以下三种方式都可以注销断言，其中all是注销所有自定义断言
       Hypium.registerAssert(myAssertEqual);
       let a = true;
       let b = true;
       (expect(a) as customAssert).myAssertEqual(b);
+      // 注销自定义断言，注销以后就无法使用
+      Hypium.unregisterAssert(myAssertEqual);
+      try {
+        (expect(a) as customAssert).myAssertEqual(b);
+      }catch(e) {
+        expect(e.message).assertEqual("myAssertEqual is unregistered");
+      }
     })
   })
 }
@@ -382,17 +385,18 @@ export default function afterReturnTest() {
     it('afterReturnTest', 0, () => {
       console.info("it1 begin");
 
-      //1.创建一个mock能力的对象MockKit
+      // 1.创建一个mock能力的对象MockKit
       let mocker: MockKit = new MockKit();
 
-      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      // 2.定类ClassName，里面两个函数，然后创建一个对象claser
       let claser: ClassName = new ClassName();
 
-      //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
+      // 3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
       let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
+      // 4.期望claser.method_1函数被mock后, 以'test'为入参时调用函数返回结果'1'
       when(mockfunc)('test').afterReturn('1');
 
-      //4.对mock后的函数进行断言，看是否符合预期
+      // 5.对mock后的函数进行断言，看是否符合预期
       //执行成功案例，参数为'test'
       expect(claser.method_1('test')).assertEqual('1'); // 执行通过
     });
@@ -427,21 +431,21 @@ export default function  afterReturnNothingTest() {
     it('testMockfunc', 0, () => {
       console.info("it1 begin");
 
-      //1.创建一个mock能力的对象MockKit
+      // 1.创建一个mock能力的对象MockKit
       let mocker: MockKit = new MockKit();
 
-      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      // 2.定类ClassName，里面两个函数，然后创建一个对象claser
       let claser: ClassName = new ClassName();
 
-      //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
+      // 3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
       let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
 
-      //4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterReturnNothing();即不返回任何值
+      // 4.期望claser.method_1函数被mock后, 以'test'为入参时调用函数返回结果undefined
       when(mockfunc)('test').afterReturnNothing();
 
-      //5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
-      //执行成功案例，参数为'test'，这时候执行原对象claser.method_1的方法，会发生变化
-      // 这时候执行的claser.method_1不会再返回'888888'，而是设定的afterReturnNothing()生效//不返回任何值;
+      // 5.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+      // 执行成功案例，参数为'test'，这时候执行原对象claser.method_1的方法，会发生变化
+      // 这时候执行的claser.method_1不会再返回'888888'，而是设定的afterReturnNothing()生效// 不返回任何值;
       expect(claser.method_1('test')).assertUndefined(); // 执行通过
     });
   });
@@ -474,24 +478,24 @@ export default function argumentMatchersAnyTest() {
     it('testMockfunc', 0, () => {
       console.info("it1 begin");
 
-      //1.创建一个mock能力的对象MockKit
+      // 1.创建一个mock能力的对象MockKit
       let mocker: MockKit = new MockKit();
 
-      //2.定类ClassName，里面两个函数，然后创建一个对象claser
+      // 2.定类ClassName，里面两个函数，然后创建一个对象claser
       let claser: ClassName = new ClassName();
 
-      //3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
+      // 3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
       let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
-      //根据自己需求进行选择参数匹配器和预期方法,
+      // 4.期望claser.method_1函数被mock后, 以任何参数调用函数时返回结果'1'
       when(mockfunc)(ArgumentMatchers.any).afterReturn('1');
 
-      //4.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
-      //执行成功的案例1，传参为字符串类型
-      expect(claser.method_1('test')).assertEqual('1'); //用例执行通过。
-      //执行成功的案例2，传参为数字类型123
-      expect(claser.method_1("123")).assertEqual('1');//用例执行通过。
-      //执行成功的案例3，传参为boolean类型true
-      expect(claser.method_1("true")).assertEqual('1');//用例执行通过。
+      // 4.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+      // 执行成功的案例1，传参为字符串类型
+      expect(claser.method_1('test')).assertEqual('1'); // 用例执行通过。
+      // 执行成功的案例2，传参为数字类型123
+      expect(claser.method_1("123")).assertEqual('1');// 用例执行通过。
+      // 执行成功的案例3，传参为boolean类型true
+      expect(claser.method_1("true")).assertEqual('1');// 用例执行通过。
     });
   });
 }
@@ -527,7 +531,7 @@ export default function argumentMatchersTest() {
 
       // 3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
       let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
-      //根据自己需求进行选择
+      // 4.期望claser.method_1函数被mock后, 以任何string类型为参数调用函数时返回结果'1'
       when(mockfunc)(ArgumentMatchers.anyString).afterReturn('1');
 
       // 4.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
@@ -567,7 +571,7 @@ export default function matchRegexsTest() {
 
       // 2.进行mock操作,比如需要对ClassName类的method_1函数进行mock
       let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
-      //根据自己需求进行选择
+      // 3.期望claser.method_1函数被mock后, 以"test"为入参调用函数时返回结果'1'
       when(mockfunc)(ArgumentMatchers.matchRegexs(new RegExp("test"))).afterReturn('1');
 
       // 3.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
@@ -620,7 +624,7 @@ export default function verifyTest() {
       claser.method_2('111', '222');
 
       // 5.现在对mock后的两个函数进行验证，验证调用情况
-      mocker.verify('method_2',['111']).once();//执行success，原因同上
+      mocker.verify('method_2',['111']).once();// 执行success
     });
   });
 }
@@ -657,18 +661,18 @@ export default function ignoreMockTest() {
       let func_1: Function = mocker.mockFunc(claser, claser.method_1);
       let func_2: Function = mocker.mockFunc(claser, claser.method_2);
 
-      // 4.对mock后的函数的行为进行修改
+      // 4.期望claser.method_1函数被mock后, 以number类型为入参时调用函数返回结果'4'
       when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
+      // 4.期望claser.method_2函数被mock后, 以number类型为入参时调用函数返回结果'5'
       when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
 
       // 5.方法调用如下
-      console.log(claser.method_1(123)); //执行结果是4，符合步骤4中的预期
-      console.log(claser.method_2(456)); //执行结果是5，符合步骤4中的预期
+      expect(claser.method_1(123)).assertEqual("4");
+      expect(claser.method_2(456)).assertEqual("5");
 
       // 6.现在对mock后的两个函数的其中一个函数method_1进行忽略处理（原理是就是还原）
       mocker.ignoreMock(claser, claser.method_1);
-      // 然后再去调用 claser.method_1函数，看执行结果
-      // 用断言测试
+      // 然后再去调用 claser.method_1函数，用断言测试結果
       expect(claser.method_1(123)).assertEqual('888888');
     });
   });
@@ -707,8 +711,9 @@ export default function clearTest() {
       let func_1: Function = mocker.mockFunc(claser, claser.method_1);
       let func_2: Function = mocker.mockFunc(claser, claser.method_2);
 
-      // 4.对mock后的函数的行为进行修改
+      // 4.期望claser.method_1函数被mock后, 以任何number类型为参数调用函数时返回结果'4'
       when(func_1)(ArgumentMatchers.anyNumber).afterReturn('4');
+      // 4.期望claser.method_2函数被mock后, 以任何number类型为参数调用函数时返回结果'5'
       when(func_2)(ArgumentMatchers.anyNumber).afterReturn('5');
 
       // 5.方法调用如下
@@ -716,8 +721,7 @@ export default function clearTest() {
       expect(claser.method_2(123)).assertEqual('5');
       // 6.清除obj上所有的mock能力（原理是就是还原）
       mocker.clear(claser);
-      // 然后再去调用 claser.method_1函数，看执行结果
-      // 用断言测试
+      // 然后再去调用 claser.method_1,claser.method_2 函数，测试结果
       expect(claser.method_1(123)).assertEqual('888888');
       expect(claser.method_2(123)).assertEqual('999999');
     });
@@ -752,7 +756,7 @@ export default function afterThrowTest() {
       // 3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
       let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
 
-      // 4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterReturnNothing();即不返回任何值
+      // 4.期望claser.method_1函数被mock后, 以任何'test'为参数调用函数时抛出error xxx异常
       when(mockfunc)('test').afterThrow('error xxx');
 
       //5.执行mock后的函数，捕捉异常并使用assertEqual对比msg否符合预期
@@ -799,7 +803,7 @@ export default function mockPromiseTest() {
       // 3.进行mock操作,比如需要对ClassName类的method_1函数进行mock
       let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
 
-      // 4.根据自己需求进行选择 执行完毕后的动作，比如这里选择afterRetrun; 可以自定义返回一个promise
+      // 4.期望claser.method_1函数被mock后, 以任何'test'为参数调用函数时返回一个promise对象
       when(mockfunc)('test').afterReturn(new Promise<string>((resolve: Function, reject: Function) => {
         console.log("do something");
         resolve('success something');
@@ -836,7 +840,7 @@ export default function verifyTimesTest() {
       let claser: ClassName = new ClassName();
       // 3.mock 类ClassName对象的某个方法，比如method_1
       let func_1: Function = mocker.mockFunc(claser, claser.method_1);
-      // 4.期望被mock后的函数能够返回自己假设的结果
+      // 4.期望被mock后的函数返回结果'4'
       when(func_1)('123').afterReturn('4');
 
       // 5.随机执行几次函数，参数如下
@@ -877,16 +881,16 @@ export default function verifyAtLeastTest() {
       let claser: ClassName = new ClassName();
       // 3.mock  类ClassName对象的某个方法，比如method_1
       let func_1: Function = mocker.mockFunc(claser, claser.method_1);
-      // 4.期望被mock后的函数能够返回自己假设的结果
+      // 4.期望被mock后的函数返回结果'4'
       when(func_1)('123').afterReturn('4');
-      //6.随机执行几次函数，参数如下
+      // 5.随机执行几次函数，参数如下
       claser.method_1('123', 'ppp');
       claser.method_1('abc');
       claser.method_1('xyz');
       claser.method_1();
       claser.method_1('abc', 'xxx', 'yyy');
       claser.method_1();
-      //7.验证函数method_1且参数为空时，是否至少执行过2次
+      // 6.验证函数method_1且参数为空时，是否至少执行过2次
       mocker.verify('method_1', []).atLeast(2);
     });
   });
