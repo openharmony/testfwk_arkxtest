@@ -1093,7 +1093,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
   示例命令：
 
   ```shell
-  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s dryRun true
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s random true
   ```
 
 - **压力测试**
