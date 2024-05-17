@@ -238,10 +238,9 @@ interface PromiseInfo {
 示例代码：
 
 ```javascript
-
-// custom.ets
 import { describe, Assert, beforeAll, expect, Hypium, it } from '@ohos/hypium';
 
+// custom.ets
 interface customAssert extends Assert {
   // 自定义断言声明
   myAssertEqual(expectValue: boolean): void;
@@ -279,14 +278,12 @@ export default function customAssertTest() {
       //注册自定义断言，只有先注册才可以使用
       Hypium.registerAssert(myAssertEqual);
     })
-
     it('assertContain1', 0, () => {
       let a = true;
       let b = true;
       (expect(a) as customAssert).myAssertEqual(b);
       Hypium.unregisterAssert(myAssertEqual);
     })
-
     it('assertContain2', 0, () => {
       Hypium.registerAssert(myAssertEqual);
       let a = true;
