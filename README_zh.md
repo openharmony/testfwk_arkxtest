@@ -58,7 +58,6 @@ export default function beforeItSpecifiedTest() {
       const num:number = 1;
       expect(num).assertEqual(1);
     })
-    
     afterItSpecified(['String_assertContain_success'], async (done: Function) => {
       const str:string = 'abc';
       setTimeout(()=>{
@@ -70,7 +69,6 @@ export default function beforeItSpecifiedTest() {
         done()
       }, 1000)
     })
-
     it('String_assertContain_success', 0, () => {
       let a: string = 'abc';
       let b: string = 'b';
@@ -197,16 +195,12 @@ export default function expectTest() {
       expect(p).assertPromiseIsPending();
     })
     it('test_isRejected_pass_1', 0, () => {
-      let info: PromiseInfo = {
-      res: "no"
-      };
+      let info: PromiseInfo = { res: "no" };
       let p: Promise<PromiseInfo> = Promise.reject(info);
       expect(p).assertPromiseIsRejected();
     })
     it('test_isRejectedWith_pass_1', 0, () => {
-      let info: PromiseInfo = {
-      res: "reject value"
-      };
+      let info: PromiseInfo = { res: "reject value" };
       let p: Promise<PromiseInfo> = Promise.reject(info);
       expect(p).assertPromiseIsRejectedWith(info);
     })
@@ -215,16 +209,12 @@ export default function expectTest() {
       expect(p1).assertPromiseIsRejectedWithError(TypeError);
     })
     it('test_isResolved_pass_1', 0, () => {
-      let info: PromiseInfo = {
-      res: "result value"
-      };
+      let info: PromiseInfo = { res: "result value" };
       let p: Promise<PromiseInfo> = Promise.resolve(info);
       expect(p).assertPromiseIsResolved();
     })
     it('test_isResolvedTo_pass_1', 0, () => {
-      let info: PromiseInfo = {
-      res: "result value"
-      };
+      let info: PromiseInfo = { res: "result value" };
       let p: Promise<PromiseInfo> = Promise.resolve(info);
       expect(p).assertPromiseIsResolvedWith(info);
     })
