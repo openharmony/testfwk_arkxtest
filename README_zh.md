@@ -347,7 +347,7 @@ export default function customAssertTest() {
 **示例1: afterReturn 的使用**
 
 ```javascript
-import { describe, expect, it, MockKit, when} from '@ohos/hypium';
+import { describe, expect, it, MockKit, when } from '@ohos/hypium';
 
 class ClassName {
   constructor() {
@@ -628,7 +628,7 @@ export default function ignoreMockTest() {
 }
 ```
 
-**示例8: clear（）函数的使用**
+**示例8: clear(obj)函数的使用**
 
 ```javascript
 import { describe, expect, it, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
@@ -673,7 +673,7 @@ export default function clearTest() {
 }
 ```
 
-**示例9: afterThrow(msg) 函数的使用**
+**示例9: afterThrow(msg)函数的使用**
 
 ```javascript
 import { describe, expect, it, MockKit, when } from '@ohos/hypium';
@@ -704,8 +704,8 @@ export default function afterThrowTest() {
       } catch (e) {
         expect(e).assertEqual('error xxx'); // 执行通过
       }
-    });
-  });
+    })
+  })
 }
 ```
 
