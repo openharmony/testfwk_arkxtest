@@ -33,22 +33,19 @@ arkXtest
 
 测试用例采用业内通用语法，describe代表一个测试套， it代表一条用例。
 
-| No.  | API               | 功能说明                                                                   |
-| ---- | ----------------- |------------------------------------------------------------------------|
-| 1    | describe          | 定义一个测试套，支持两个参数：测试套名称和测试套函数。                                            |
-| 2    | beforeAll         | 在测试套内定义一个预置条件，在所有测试用例开始前执行且仅执行一次，支持一个参数：预置动作函数。                        |
-| 3    | beforeEach        | 在测试套内定义一个单元预置条件，在每条测试用例开始前执行，执行次数与it定义的测试用例数一致，支持一个参数：预置动作函数。          |
-| 4    | afterEach         | 在测试套内定义一个单元清理条件，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致，支持一个参数：清理动作函数。          |
-| 5    | afterAll          | 在测试套内定义一个清理条件，在所有测试用例结束后执行且仅执行一次，支持一个参数：清理动作函数。                        |
-| 6    | beforeItSpecified | @since1.0.15在测试套内定义一个单元预置条件，仅在指定测试用例开始前执行，支持两个参数：单个用例名称或用例名称数组、预置动作函数。 |
-| 7    | afterItSpecified  | @since1.0.15在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行，支持两个参数：单个用例名称或用例名称数组、清理动作函数  |
-| 8    | it                | 定义一条测试用例，支持三个参数：用例名称，过滤参数和用例函数。                                        |
-| 9    | expect            | 支持bool类型判断等多种断言方法。                                                     |
-| 10   | getDescribeName   | @since1.0.15获取当前正在执行测试套的名称                                                         |
-| 11   | getItName         | @since1.0.15获取当前正在执行测试用例的名称                                                        |
-| 12   | getItAttribute    | @since1.0.15获取当前正在执行测试用例的级别、粒度、测试类型                                                |
-| 13   | xdescribe    | @since1.0.17定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。                             |
-| 14   | xit                | @since1.0.17定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。                         |
+| No. | API               | 功能说明                                                                   |
+|-----| ----------------- |------------------------------------------------------------------------|
+| 1   | describe          | 定义一个测试套，支持两个参数：测试套名称和测试套函数。                                            |
+| 2   | beforeAll         | 在测试套内定义一个预置条件，在所有测试用例开始前执行且仅执行一次，支持一个参数：预置动作函数。                        |
+| 3   | beforeEach        | 在测试套内定义一个单元预置条件，在每条测试用例开始前执行，执行次数与it定义的测试用例数一致，支持一个参数：预置动作函数。          |
+| 4   | afterEach         | 在测试套内定义一个单元清理条件，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致，支持一个参数：清理动作函数。          |
+| 5   | afterAll          | 在测试套内定义一个清理条件，在所有测试用例结束后执行且仅执行一次，支持一个参数：清理动作函数。                        |
+| 6   | beforeItSpecified | @since1.0.15在测试套内定义一个单元预置条件，仅在指定测试用例开始前执行，支持两个参数：单个用例名称或用例名称数组、预置动作函数。 |
+| 7   | afterItSpecified  | @since1.0.15在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行，支持两个参数：单个用例名称或用例名称数组、清理动作函数  |
+| 8   | it                | 定义一条测试用例，支持三个参数：用例名称，过滤参数和用例函数。                                        |
+| 9   | expect            | 支持bool类型判断等多种断言方法。                                                     |
+| 10  | xdescribe    | @since1.0.17定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。                             |
+| 11  | xit                | @since1.0.17定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。                         |
 
 
 beforeItSpecified, afterItSpecified 示例代码：
@@ -61,6 +58,7 @@ export default function beforeItSpecifiedTest() {
       const num:number = 1;
       expect(num).assertEqual(1);
     })
+    
     afterItSpecified(['String_assertContain_success'], async (done: Function) => {
       const str:string = 'abc';
       setTimeout(()=>{
@@ -184,12 +182,8 @@ export default function expectTest() {
       expect(a).assertDeepEquals(b);
     })
     it("deepEquals_obj_success_1", 0, () => {
-      const a: SampleTest = {
-      x: 1
-      };
-      const b: SampleTest = {
-      x: 1
-      };
+      const a: SampleTest = { x: 1 };
+      const b: SampleTest = { x: 1 };
       expect(a).assertDeepEquals(b);
     })
     it("deepEquals_regExp_success_0", 0, () => {
@@ -255,11 +249,11 @@ interface PromiseInfo {
 
 ```javascript
 
-//custom.ets
-import {describe, Assert, beforeAll, expect, Hypium, it } from '@ohos/hypium';
+// custom.ets
+import { describe, Assert, beforeAll, expect, Hypium, it } from '@ohos/hypium';
 
 interface customAssert extends Assert {
-  //自定义断言声明
+  // 自定义断言声明
   myAssertEqual(expectValue: boolean): void;
 }
 
@@ -278,12 +272,12 @@ let result: R = {
 let compare = () => {
   if (expectValue === actualValue) {
     result.pass = true;
-    result.message = ''
+    result.message = '';
   } else {
     result.pass = false;
     result.message = 'expectValue !== actualValue!';
   }
-  return result
+  return result;
 }
 result = compare();
 return result;
@@ -363,21 +357,21 @@ export default function customAssertTest() {
 根据自己用例需要引入断言能力api
 例如：`import { describe, expect, it, MockKit, when} from '@ohos/hypium'`
 
-**示例1：afterReturn 的使用**
+**示例1: afterReturn 的使用**
 
 ```javascript
-import {describe, expect, it, MockKit, when} from '@ohos/hypium';
+import { describe, expect, it, MockKit, when} from '@ohos/hypium';
 
 class ClassName {
   constructor() {
   }
 
   method_1(arg: string) {
-  return '888888';
+    return '888888';
   }
 
   method_2(arg: string) {
-  return '999999';
+    return '999999';
   }
 }
 export default function afterReturnTest() {
@@ -397,10 +391,10 @@ export default function afterReturnTest() {
       when(mockfunc)('test').afterReturn('1');
 
       // 5.对mock后的函数进行断言，看是否符合预期
-      //执行成功案例，参数为'test'
+      // 执行成功案例，参数为'test'
       expect(claser.method_1('test')).assertEqual('1'); // 执行通过
-    });
-  });
+    })
+  })
 }
 ```
 - **须知：**
@@ -409,21 +403,21 @@ export default function afterReturnTest() {
 `afterReturn('1')`是用户需要预期返回的结果。
 有且只有在参数是`('test')`的时候，执行的结果才是用户自定义的预期结果。
 
-**示例2： afterReturnNothing 的使用**
+**示例2: afterReturnNothing 的使用**
 
 ```javascript
-import {describe, expect, it, MockKit, when} from '@ohos/hypium';
+import { describe, expect, it, MockKit, when } from '@ohos/hypium';
 
 class ClassName {
   constructor() {
   }
 
   method_1(arg: string) {
-  return '888888';
+    return '888888';
   }
 
   method_2(arg: string) {
-  return '999999';
+    return '999999';
   }
 }
 export default function  afterReturnNothingTest() {
@@ -447,30 +441,30 @@ export default function  afterReturnNothingTest() {
       // 执行成功案例，参数为'test'，这时候执行原对象claser.method_1的方法，会发生变化
       // 这时候执行的claser.method_1不会再返回'888888'，而是设定的afterReturnNothing()生效// 不返回任何值;
       expect(claser.method_1('test')).assertUndefined(); // 执行通过
-    });
-  });
+    })
+  })
 }
 ```
 
-**示例3： 设定参数类型为any ，即接受任何参数（undefine和null除外）的使用**
+**示例3: 设定参数类型为any ，即接受任何参数（undefine和null除外）的使用**
 
 
 - **须知：**
 需要引入ArgumentMatchers类，即参数匹配器，例如：ArgumentMatchers.any
 
 ```javascript
-import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
+import { describe, expect, it, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
 
 class ClassName {
   constructor() {
   }
 
   method_1(arg: string) {
-  return '888888';
+    return '888888';
   }
 
   method_2(arg: string) {
-  return '999999';
+    return '999999';
   }
 }
 export default function argumentMatchersAnyTest() {
@@ -496,26 +490,26 @@ export default function argumentMatchersAnyTest() {
       expect(claser.method_1("123")).assertEqual('1');// 用例执行通过。
       // 执行成功的案例3，传参为boolean类型true
       expect(claser.method_1("true")).assertEqual('1');// 用例执行通过。
-    });
-  });
+    })
+  })
 }
 ```
 
-**示例4： 设定参数类型ArgumentMatchers的使用**
+**示例4: 设定参数类型ArgumentMatchers的使用**
 
 ```javascript
-import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
+import { describe, expect, it, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
 
 class ClassName {
   constructor() {
   }
 
   method_1(arg: string) {
-  return '888888';
+    return '888888';
   }
 
   method_2(arg: string) {
-  return '999999';
+    return '999999';
   }
 }
 export default function argumentMatchersTest() {
@@ -538,29 +532,29 @@ export default function argumentMatchersTest() {
       // 执行成功的案例，传参为字符串类型
       expect(claser.method_1('test')).assertEqual('1'); // 用例执行通过。
       expect(claser.method_1('abc')).assertEqual('1'); // 用例执行通过。
-    });
-  });
+    })
+  })
 }
 ```
 
-**示例5： 设定参数类型为matchRegexs（Regex）等 的使用**
+**示例5: 设定参数类型为matchRegexs（Regex）等 的使用**
 ```javascript
-import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
+import { describe, expect, it, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
 
 class ClassName {
   constructor() {
   }
 
   method_1(arg: string) {
-  return '888888';
+    return '888888';
   }
 
   method_2(arg: string) {
-  return '999999';
+    return '999999';
   }
 }
 export default function matchRegexsTest() {
-  describe('matchRegexsTest',  () => {
+  describe('matchRegexsTest', () => {
     it('testMockfunc', 0, () => {
       console.info("it1 begin");
 
@@ -577,25 +571,25 @@ export default function matchRegexsTest() {
       // 3.对mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
       // 执行成功的案例，传参为字符串类型
       expect(claser.method_1('test')).assertEqual('1'); // 用例执行通过。
-    });
-  });
+    })
+  })
 }
 ```
 
-**示例6： 验证功能 Verify函数的使用**
+**示例6: 验证功能 Verify函数的使用**
 ```javascript
-import {describe, it, MockKit } from '@ohos/hypium';
+import { describe, it, MockKit } from '@ohos/hypium';
 
 class ClassName {
   constructor() {
   }
 
   method_1(...arg: string[]) {
-  return '888888';
+    return '888888';
   }
 
   method_2(...arg: string[]) {
-  return '999999';
+    return '999999';
   }
 }
 export default function verifyTest() {
@@ -624,26 +618,26 @@ export default function verifyTest() {
       claser.method_2('111', '222');
 
       // 5.现在对mock后的两个函数进行验证，验证method_2,参数为'111'执行过一次
-      mocker.verify('method_2',['111']).once();// 执行success
-    });
-  });
+      mocker.verify('method_2',['111']).once(); // 执行success
+    })
+  })
 }
 ```
 
-**示例7：  ignoreMock(obj, method) 忽略函数的使用**
+**示例7: ignoreMock(obj, method) 忽略函数的使用**
 ```javascript
-import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
+import { describe, expect, it, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
 
 class ClassName {
   constructor() {
   }
 
   method_1(...arg: number[]) {
-  return '888888';
+    return '888888';
   }
 
   method_2(...arg: number[]) {
-  return '999999';
+    return '999999';
   }
 }
 export default function ignoreMockTest() {
@@ -652,7 +646,7 @@ export default function ignoreMockTest() {
       console.info("it1 begin");
 
       // 1.创建一个mock能力的对象MockKit
-      let mocker:MockKit = new MockKit();
+      let mocker: MockKit = new MockKit();
 
       // 2.创建一个对象claser
       let claser: ClassName = new ClassName();
@@ -674,26 +668,26 @@ export default function ignoreMockTest() {
       mocker.ignoreMock(claser, claser.method_1);
       // 然后再去调用 claser.method_1函数，用断言测试結果
       expect(claser.method_1(123)).assertEqual('888888');
-    });
-  });
+    })
+  })
 }
 ```
 
-**示例8：  clear（）函数的使用**
+**示例8: clear（）函数的使用**
 
 ```javascript
-import {describe, expect, it, MockKit, when, ArgumentMatchers} from '@ohos/hypium';
+import { describe, expect, it, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
 
 class ClassName {
   constructor() {
   }
 
   method_1(...arg: number[]) {
-  return '888888';
+    return '888888';
   }
 
   method_2(...arg: number[]) {
-  return '999999';
+    return '999999';
   }
 }
 export default function clearTest() {
@@ -724,26 +718,26 @@ export default function clearTest() {
       // 然后再去调用 claser.method_1,claser.method_2 函数，测试结果
       expect(claser.method_1(123)).assertEqual('888888');
       expect(claser.method_2(123)).assertEqual('999999');
-    });
-  });
+    })
+  })
 }
 ```
 
-**示例9：  afterThrow(msg) 函数的使用**
+**示例9: afterThrow(msg) 函数的使用**
 
 ```javascript
-import {describe, expect, it, MockKit, when} from '@ohos/hypium';
+import { describe, expect, it, MockKit, when } from '@ohos/hypium';
 
 class ClassName {
   constructor() {
   }
 
   method_1(arg: string) {
-  return '888888';
+    return '888888';
   }
 }
 export default function afterThrowTest() {
-  describe('afterThrowTest',  () => {
+  describe('afterThrowTest', () => {
     it('testMockfunc', 0, () => {
       console.info("it1 begin");
 
@@ -759,39 +753,38 @@ export default function afterThrowTest() {
       // 4.期望claser.method_1函数被mock后, 以'test'为参数调用函数时抛出error xxx异常
       when(mockfunc)('test').afterThrow('error xxx');
 
-      //5.执行mock后的函数，捕捉异常并使用assertEqual对比msg否符合预期
+      // 5.执行mock后的函数，捕捉异常并使用assertEqual对比msg否符合预期
       try {
         claser.method_1('test');
       } catch (e) {
-        expect(e).assertEqual('error xxx');//执行通过
+        expect(e).assertEqual('error xxx'); // 执行通过
       }
     });
   });
 }
 ```
 
-**示例10：mock异步 函数的使用**
+**示例10： mock异步 函数的使用**
 
 ```javascript
-import {describe, expect, it, MockKit, when} from '@ohos/hypium';
+import { describe, expect, it, MockKit, when } from '@ohos/hypium';
 
 class ClassName {
   constructor() {
   }
 
   async method_1(arg: string) {
-  return new Promise<string>((resolve: Function, reject: Function) => {
-  //做一些异步操作
-  setTimeout(() => {
-  console.log('执行');
-  resolve('数据传递');
-  }, 2000);
-  });
- }
+    return new Promise<string>((resolve: Function, reject: Function) => {
+      setTimeout(() => {
+        console.log('执行');
+        resolve('数据传递');
+      }, 2000);
+    });
+  }
 }
 export default function mockPromiseTest() {
   describe('mockPromiseTest', () => {
-    it('testMockfunc', 0,  async (done: Function) => {
+    it('testMockfunc', 0, async (done: Function) => {
       console.info("it1 begin");
 
       // 1.创建一个mock能力的对象MockKit
@@ -813,8 +806,8 @@ export default function mockPromiseTest() {
       let result = await claser.method_1('test');
       expect(result).assertEqual("success something");
       done()
-    });
-  });
+    })
+  })
 }
 ```
 
@@ -828,7 +821,7 @@ class ClassName {
   }
 
   method_1(...arg: string[]) {
-  return '888888';
+    return '888888';
   }
 }
 export default function verifyTimesTest() {
@@ -853,13 +846,13 @@ export default function verifyTimesTest() {
       claser.method_1();
       // 6.验证函数method_1且参数为'abc'时，执行过的次数是否为2
       mocker.verify('method_1', ['abc']).times(2);
-    });
-  });
+    })
+  })
 }
 ```
 
 
-**示例12：  verify atLeast 函数的使用 （验证函数调用次数）**
+**示例12：verify atLeast 函数的使用 （验证函数调用次数）**
 
 ```javascript
 import { describe, it, MockKit, when } from '@ohos/hypium'
@@ -869,7 +862,7 @@ class ClassName {
   }
 
   method_1(...arg: string[]) {
-  return '888888';
+    return '888888';
   }
 }
 export default function verifyAtLeastTest() {
@@ -892,8 +885,8 @@ export default function verifyAtLeastTest() {
       claser.method_1();
       // 6.验证函数method_1且参数为空时，是否至少执行过2次
       mocker.verify('method_1', []).atLeast(2);
-    });
-  });
+    })
+  })
 }
 ```
 
@@ -968,12 +961,12 @@ import data from '../test/data.json';
 
 ...
 Hypium.setData(data);
-Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
+Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
 ...
 ```
 
 ```javascript
- import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '@ohos/hypium';
+ import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium';
 
  export default function abilityTest() {
   describe('actsAbilityTest', () => {
@@ -985,8 +978,8 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
 
     it('testDataDriver', 0, () => {
       console.info('stress test');
-    });
-  });
+    })
+  })
 }
  interface ParmObj {
    name: string,
@@ -1154,7 +1147,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
 
   1.示例代码
   ```javascript
-  //Test1.test.ets
+  // Test1.test.ets
   import { describe, expect, it } from '@ohos/hypium';
   import test2 from './Test2.test';
 
@@ -1165,7 +1158,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
         let b = true;
         expect(a).assertEqual(b);
       })
-      //引入测试套test2
+      // 引入测试套test2
       test2();
     })
   }
@@ -1250,7 +1243,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite)
         let a = true;
         let b = true;
         expect(a).assertEqual(b);
-      });
+      })
       it('assertContain2', 0, () => {
         let a = true;
         let b = true;
@@ -1570,7 +1563,7 @@ hdc shell uitest uiRecord read
 5、 shell命令方式注入UI模拟操作
 > 支持操作类型：点击 双击 长按 慢滑 快滑 拖拽 输入文字 KeyEvent。
 
-| 配置参数值       | 配置参数含义                                  | 配置参数有值                                                                                                                                                                                              | 示例                                                                                  |
+| 配置参数名       | 配置参数含义                                  | 配置参数取值                                                                                                                                                                                             | 示例                                                                                  |
 |-------------|-----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
 | click       | 模拟单击操作                                  | point_x (必选参数,点击x坐标点)<br/> point_y (必选参数,点击y坐标点)                                                                                                                                                    | hdc shell uitest uiInput click point_x point_y                                      |
 | doubleClick | 模拟双击操作                                  | point_x (必选参数,双击x坐标点)<br/> point_y (必选参数,双击y坐标点)                                                                                                                                                    | hdc shell uitest uiInput doubleClick point_x point_y                                |
