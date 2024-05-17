@@ -1223,21 +1223,21 @@ import {Driver,ON,Component,UiWindow,MatchPattern} from '@ohos.UiTest'
 在测试用例文件中import `On/Driver/Component`类，然后调用API接口编写测试用例。
 
 ```javascript
- import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from '@ohos/hypium'
- import {ON, Driver, Component, MatchPattern} from '@ohos.UiTest'
+import { Driver, ON, Component } from '@kit.TestKit'
+import { describe, it, expect } from '@ohos/hypium'
 
- export default function abilityTest() {
-  describe('uiTestDemo', () => {
+export default function findComponentTest() {
+  describe('findComponentTest', () => {
     it('uitest_demo0', 0, async () => {
       // create Driver
-      let driver: Driver = Driver.create()
+      let driver: Driver = Driver.create();
       // find component by text
-      let button: Component = await driver.findComponent(ON.text('hello').enabled(true))
+      let button: Component = await driver.findComponent(ON.text('Hello World').enabled(true));
       // click component
-      await button.click()
+      await button.click();
       // get and assert component text
-      let content: string = await button.getText()
-      expect(content).assertEqual('clicked!')
+      let content: string = await button.getText();
+      expect(content).assertEqual('Hello World');
     })
   })
 }
@@ -1262,18 +1262,19 @@ import {Driver,ON,Component,UiWindow,MatchPattern} from '@ohos.UiTest'
 其中assertComponentExist接口是断言API，用于断言当前界面存在目标控件；如果控件不存在，该API将抛出JS异常，使当前测试用例失败。
 
 ```javascript
- import { Driver, ON } from '@ohos.UiTest';
- import { describe, it} from '@ohos/hypium';
- export default function abilityTest() {
-  describe('UiTestDemo', () => {
+import { describe, it} from '@ohos/hypium';
+import { Driver, ON } from '@kit.TestKit';
+
+export default function assertComponentExistTest() {
+  describe('assertComponentExistTest', () => {
     it('Uitest_demo0', 0, async (done: Function) => {
       try{
         // create Driver
-        let driver: Driver = Driver.create()
+        let driver: Driver = Driver.create();
         // assert text 'hello' exists on current Ui
-        await driver.assertComponentExist(ON.text('hello'))
+        await driver.assertComponentExist(ON.text('hello'));
       } finally {
-        done()
+        done();
       }
     })
   })
