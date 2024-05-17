@@ -35,7 +35,7 @@ function assertThrowError(actualValue, expected) {
             result = err.constructor.name === expected[0].name;
             message = 'expected throw failed , ' + err.constructor.name + ' is not ' + expected[0].name;
         }else if(type === 'string'){
-            result = err.message === expected[0];
+            result = err.message.includes(expected[0]);
             message = 'expected throw failed , ' + err.message + ' is not ' + expected[0];
         }
     }
