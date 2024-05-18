@@ -563,7 +563,8 @@ namespace OHOS::uitest {
                 }
                 auto center = (!widgets.empty()) ?
                     Point(widgets[0]->GetBounds().GetCenterX(), widgets[0]->GetBounds().GetCenterY()):
-                    Point(widgetsForEnglisgh[0]->GetBounds().GetCenterX(), widgetsForEnglisgh[0]->GetBounds().GetCenterY());
+                    Point(widgetsForEnglisgh[0]->GetBounds().GetCenterX(),
+                        widgetsForEnglisgh[0]->GetBounds().GetCenterY());
                 auto click = GenericClick(TouchOp::CLICK, center);
                 PerformTouch(click, uiOpArgs, error);
             }
