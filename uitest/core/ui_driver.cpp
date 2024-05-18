@@ -541,14 +541,15 @@ namespace OHOS::uitest {
                 DelayMs(focusTimeMs);
 
                 auto selector = WidgetSelector();
-                auto attrMatcher = WidgetMatchModel(UiAttr::TEXT, std::string("Õ³Ìù"), EQ);
+                auto value = string("\u7c98\u8d34");
+                auto attrMatcher = WidgetMatchModel(UiAttr::TEXT, value, EQ);
                 selector.AddMatcher(attrMatcher);
                 selector.SetWantMulti(false);
                 vector<unique_ptr<Widget>> widgets;
                 FindWidgets(selector, widgets, error);
 
                 auto selectorForEnglisgh = WidgetSelector();
-                auto attrMatcherForEnglisgh = WidgetMatchModel(UiAttr::TEXT, std::string("Patse"), EQ);
+                auto attrMatcherForEnglisgh = WidgetMatchModel(UiAttr::TEXT, std::string("Paste"), EQ);
                 selectorForEnglisgh.AddMatcher(attrMatcherForEnglisgh);
                 selectorForEnglisgh.SetWantMulti(false);
                 vector<unique_ptr<Widget>> widgetsForEnglisgh;
@@ -560,10 +561,9 @@ namespace OHOS::uitest {
                     error = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
                     return;
                 }
-                // auto target = (!widgets.empty()) ? widgets[0] : widgetsForEnglisgh[0];
                 auto center = (!widgets.empty()) ?
-                              Point(widgets[0]->GetBounds().GetCenterX(), widgets[0]->GetBounds().GetCenterY()):
-                              Point(widgetsForEnglisgh[0]->GetBounds().GetCenterX(), widgetsForEnglisgh[0]->GetBounds().GetCenterY());
+                    Point(widgets[0]->GetBounds().GetCenterX(), widgets[0]->GetBounds().GetCenterY()):
+                    Point(widgetsForEnglisgh[0]->GetBounds().GetCenterX(), widgetsForEnglisgh[0]->GetBounds().GetCenterY());
                 auto click = GenericClick(TouchOp::CLICK, center);
                 PerformTouch(click, uiOpArgs, error);
             }
