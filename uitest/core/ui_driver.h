@@ -92,7 +92,7 @@ namespace OHOS::uitest {
 
         static void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener);
 
-        void InputText(string_view text, ApiCallErr &error);
+        void InputText(string_view text, Point point, ApiCallErr &error);
 
         void GetMergeWindowBounds(Rect& mergeRect);
 

@@ -178,19 +178,21 @@ TEST_F(UiActionTest, computeFlingAction)
     const uint32_t totalCostMs = distance * 1000 / opt.swipeVelocityPps_;
     opt.swipeStepsCounts_ = distance / stepLen;
 
-    GenericSwipe action(TouchOp::SWIPE, point0, point1);
+    GenericSwipe action(TouchOp::FLING, point0, point1);
     PointerMatrix events;
     action.Decompose(events, opt);
     // there should be more than 1 touches
-    const uint16_t steps = opt.swipeStepsCounts_;
+    const uint32_t steps = opt.swipeStepsCounts_;
     ASSERT_TRUE(steps > 1);
     ASSERT_EQ(steps, 141);
 
     uint32_t step = 0;
+    int32_t stepLengthX = disX / static_cast<int32_t>(steps);
+    int32_t stepLengthY = disY / static_cast<int32_t>(steps);
     // check the TouchEvent of each step
-    for (uint32_t event = 0; event < events.GetSize(); event++) {
-        int32_t expectedPointerX = point0.px_ + (disX * step) / steps;
-        int32_t expectedPointerY = point0.py_ + (disY * step) / steps;
+    for (uint32_t event = 0; event < steps; event++) {
+        int32_t expectedPointerX = point0.px_ + stepLengthX * event;
+        int32_t expectedPointerY = point0.py_ + stepLengthY * event;
         uint32_t expectedTimeOffset = (totalCostMs * step) / steps;
         ASSERT_NEAR(expectedPointerX, events.At(0, event).point_.px_, 5);
         ASSERT_NEAR(expectedPointerY, events.At(0, event).point_.py_, 5);
@@ -221,8 +223,8 @@ TEST_F(UiActionTest, computePinchInAction)
     // there should be more than 1 touches
     const int32_t steps = events.GetSteps() - 1;
     ASSERT_TRUE(steps > 1);
-    ASSERT_EQ(102, events.GetSize());
-    ASSERT_EQ(51, events.GetSteps());
+    ASSERT_EQ(6, events.GetSize());
+    ASSERT_EQ(3, events.GetSteps());
 
     const int32_t disX0 = abs(rect.left_ - rect.GetCenterX()) * abs(scale - 1);
     ASSERT_EQ(75, disX0);
@@ -361,8 +363,8 @@ TEST_F(UiActionTest, computePinchOutAction)
     // there should be more than 1 touches
     const int32_t steps = events.GetSteps() - 1;
     ASSERT_TRUE(steps > 1);
-    ASSERT_EQ(102, events.GetSize());
-    ASSERT_EQ(51, events.GetSteps());
+    ASSERT_EQ(6, events.GetSize());
+    ASSERT_EQ(3, events.GetSteps());
 
     const int32_t disX0 = abs(rect.left_ - rect.GetCenterX()) * abs(scale - 1);
     ASSERT_EQ(75, disX0);
