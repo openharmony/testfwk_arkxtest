@@ -1186,10 +1186,9 @@ namespace OHOS::uitest {
             auto &image = GetBackendObject<Widget>(in.callerObjRef_);
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
             auto snapshot = driver.RetrieveWidget(image, out.exception_);
-            if (out.exception_.code_ != NO_ERROR)
-            {
-              out.resultValue_ = nullptr; // exception, return null
-              return;
+            if (out.exception_.code_ != NO_ERROR) {
+                out.resultValue_ = nullptr; // exception, return null
+                return;
             }
             json data;
             data["text"] = snapshot->GetAttr(UiAttr::TEXT);
