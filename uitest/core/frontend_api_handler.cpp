@@ -166,6 +166,10 @@ namespace OHOS::uitest {
                 sApiArgTypesMap.insert(make_pair(string(methodDef.name_), make_pair(paramTypes, hasDefaultArg)));
             }
         }
+        auto paramTypes = vector<string>();
+        paramTypes.push_back("");
+        string extension = "Component.getAllProperties";
+        sApiArgTypesMap.insert(make_pair(extension, make_pair(paramTypes, 0)));
     }
 
     static string GetClassName(const string &apiName, char splitter)
@@ -1175,6 +1179,44 @@ namespace OHOS::uitest {
         }
     }
 
+    static void RegisterUiComponentAttrGetters2()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &image = GetBackendObject<Widget>(in.callerObjRef_);
+            auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            auto snapshot = driver.RetrieveWidget(image, out.exception_);
+            if (out.exception_.code_ != NO_ERROR)
+            {
+              out.resultValue_ = nullptr; // exception, return null
+              return;
+            }
+            json data;
+            data["text"] = snapshot->GetAttr(UiAttr::TEXT);
+            data["id"] = snapshot->GetAttr(UiAttr::ID);
+            data["type"] = snapshot->GetAttr(UiAttr::TYPE);
+            data["hierarchy"] = snapshot->GetAttr(UiAttr::HIERARCHY);
+            data["enabled"] = snapshot->GetAttr(UiAttr::ENABLED);
+            data["focused"] = snapshot->GetAttr(UiAttr::FOCUSED);
+            data["selected"] = snapshot->GetAttr(UiAttr::SELECTED);
+            data["clickable"] = snapshot->GetAttr(UiAttr::CLICKABLE);
+            data["longClickable"] = snapshot->GetAttr(UiAttr::LONG_CLICKABLE);
+            data["scrollable"] = snapshot->GetAttr(UiAttr::SCROLLABLE);
+            data["checkable"] = snapshot->GetAttr(UiAttr::CHECKABLE);
+            data["checked"] = snapshot->GetAttr(UiAttr::CHECKED);
+
+            const auto bounds = snapshot->GetBounds();
+            json rect;
+            rect["left"] = bounds.left_;
+            rect["top"] = bounds.top_;
+            rect["right"] = bounds.right_;
+            rect["bottom"] = bounds.bottom_;
+            data["bounds"] = rect;
+            out.resultValue_ = data;
+        };
+        server.AddHandler("Component.getAllProperties", genericOperationHandler);
+    }
+
     static void RegisterUiComponentAttrGetters()
     {
         auto &server = FrontendApiServer::Get();
@@ -1439,5 +1481,6 @@ namespace OHOS::uitest {
         RegisterUiDriverMouseOperators1();
         RegisterUiDriverMouseOperators2();
         RegisterUiEventObserverMethods();
+        RegisterUiComponentAttrGetters2();
     }
 } // namespace OHOS::uitest
