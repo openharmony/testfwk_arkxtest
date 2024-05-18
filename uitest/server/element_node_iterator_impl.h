@@ -28,7 +28,7 @@ namespace OHOS::uitest {
         ElementNodeIteratorImpl();
         ~ElementNodeIteratorImpl() override;
         bool DFSNextWithInTarget(Widget &widget) override;
-        bool DFSNext(Widget &widget) override;
+        bool DFSNext(Widget &widget, uint32_t windowId) override;
         bool IsVisitFinish() const override;
         void RestoreNodeIndexByAnchor() override;
         void ResetNodeIndexToAnchor() override;
