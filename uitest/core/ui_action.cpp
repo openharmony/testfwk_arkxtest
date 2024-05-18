@@ -68,11 +68,12 @@ namespace OHOS::uitest {
         }
         uint32_t steps = options.swipeStepsCounts_;
         uint32_t intervalMs = timeCostMs / steps + 1;
+        constexpr uint32_t fingers = 1;
+        constexpr uint32_t intervalMsInSwipe = 5;
         if (type != TouchOp::FLING) {
             steps = distance / intervalMs;
-            intervalMs = 5;
+            intervalMs = intervalMsInSwipe;
         }
-        constexpr uint32_t fingers = 1;
         PointerMatrix pointer(fingers, steps + 1);
 
         pointer.PushAction(TouchEvent {ActionStage::DOWN, {from.px_, from.py_}, 0, intervalMs});
