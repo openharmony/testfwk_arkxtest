@@ -66,7 +66,7 @@ export default function beforeItSpecifiedTest() {
         } catch (error) {
           console.error(`error message ${JSON.stringify(error)}`);
         }
-        done()
+        done();
       }, 1000)
     })
     it('String_assertContain_success', 0, () => {
@@ -180,8 +180,8 @@ export default function expectTest() {
       expect(a).assertDeepEquals(b);
     })
     it("deepEquals_obj_success_1", 0, () => {
-      const a: SampleTest = { x: 1 };
-      const b: SampleTest = { x: 1 };
+      const a: SampleTest = {x: 1};
+      const b: SampleTest = {x: 1};
       expect(a).assertDeepEquals(b);
     })
     it("deepEquals_regExp_success_0", 0, () => {
@@ -190,17 +190,16 @@ export default function expectTest() {
       expect(a).assertDeepEquals(b);
     })
     it('test_isPending_pass_1', 0, () => {
-      let p: Promise<void> = new Promise<void>(() => {
-      });
+      let p: Promise<void> = new Promise<void>(() => {});
       expect(p).assertPromiseIsPending();
     })
     it('test_isRejected_pass_1', 0, () => {
-      let info: PromiseInfo = { res: "no" };
+      let info: PromiseInfo = {res: "no"};
       let p: Promise<PromiseInfo> = Promise.reject(info);
       expect(p).assertPromiseIsRejected();
     })
     it('test_isRejectedWith_pass_1', 0, () => {
-      let info: PromiseInfo = { res: "reject value" };
+      let info: PromiseInfo = {res: "reject value"};
       let p: Promise<PromiseInfo> = Promise.reject(info);
       expect(p).assertPromiseIsRejectedWith(info);
     })
@@ -209,12 +208,12 @@ export default function expectTest() {
       expect(p1).assertPromiseIsRejectedWithError(TypeError);
     })
     it('test_isResolved_pass_1', 0, () => {
-      let info: PromiseInfo = { res: "result value" };
+      let info: PromiseInfo = {res: "result value"};
       let p: Promise<PromiseInfo> = Promise.resolve(info);
       expect(p).assertPromiseIsResolved();
     })
     it('test_isResolvedTo_pass_1', 0, () => {
-      let info: PromiseInfo = { res: "result value" };
+      let info: PromiseInfo = {res: "result value"};
       let p: Promise<PromiseInfo> = Promise.resolve(info);
       expect(p).assertPromiseIsResolvedWith(info);
     })
@@ -1254,7 +1253,7 @@ export default function findComponentTest() {
 | 3    | pressBack():Promise<void>                                       | 单击BACK键。           |
 | 4    | click(x:number, y:number):Promise<void>                         | 基于坐标点的单击。      |
 | 5    | swipe(x1:number, y1:number, x2:number, y2:number):Promise<void> | 基于坐标点的滑动。      |
-| 6    | assertComponentExist(on:On):Promise<void>                       | 断言匹配的控件存在。     |
+| 6    | assert[arkxtest-guidelines.md](..%2F..%2F..%2Fdoc%2Fdoc%2Fdocs%2Fzh-cn%2Fapplication-dev%2Fapplication-test%2Farkxtest-guidelines.md)ComponentExist(on:On):Promise<void>                       | 断言匹配的控件存在。     |
 | 7    | delayMs(t:number):Promise<void>                                 | 延时。                 |
 | 8    | screenCap(s:path):Promise<void>                                 | 截屏。                 |
 | 9    | findWindow(filter: WindowFilter): Promise<UiWindow>             | 查找匹配窗口。         |
