@@ -304,7 +304,7 @@ export default function customAssertTest() {
 
 ##### 约束限制
 
-单元测试框架Mock能力从npm包[1.0.1版本](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)开始支持，需修改源码工程中package.info中配置依赖npm包版本号后使用。
+单元测试框架Mock能力从npm包[1.0.1版本](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fhypium)开始支持，需修改源码工程中package.info中配置依赖npm包版本号后使用。
 > -  仅支持mock自定义对象,不支持mock系统API对象。
 > -  不支持mock对象的私有函数。 
 -  **接口列表：**
@@ -832,7 +832,7 @@ export default function verifyAtLeastTest() {
 
 ##### 约束限制
 
-单元测试框架数据驱动能力从[hypium 1.0.2版本](https://repo.harmonyos.com/#/cn/application/atomService/@ohos%2Fhypium)开始支持。
+单元测试框架数据驱动能力从[hypium 1.0.2版本](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fhypium)开始支持。
 
 - 数据参数传递 : 为指定测试套、测试用例传递测试输入数据参数。
 - 压力测试 : 为指定测试套、测试用例设置执行次数。
