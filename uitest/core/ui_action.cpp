@@ -55,7 +55,7 @@ namespace OHOS::uitest {
         recv = move(pointer);
     }
 
-    static void DecomposeComputeSwipe(PointerMatrix &recv, const Point &from, const Point &to, bool drag,
+    static void DecomposeComputeSwipe(PointerMatrix &recv, const Point &from, const Point &to, TouchOp type,
                                       const UiOpArgs &options)
     {
         const int32_t distanceX = to.px_ - from.px_;
@@ -66,21 +66,29 @@ namespace OHOS::uitest {
             // do not need to execute swipe
             return;
         }
-        const auto steps = options.swipeStepsCounts_;
-        const uint32_t intervalMs = timeCostMs / steps + 1;
+        uint32_t steps = options.swipeStepsCounts_;
+        uint32_t intervalMs = timeCostMs / steps + 1;
         constexpr uint32_t fingers = 1;
+        constexpr uint32_t intervalMsInSwipe = 5;
+        if (type != TouchOp::FLING) {
+            steps = distance / intervalMs;
+            intervalMs = intervalMsInSwipe;
+        }
         PointerMatrix pointer(fingers, steps + 1);
 
         pointer.PushAction(TouchEvent {ActionStage::DOWN, {from.px_, from.py_}, 0, intervalMs});
-        for (uint16_t step = 1; step < steps; step++) {
-            const int32_t pointX = from.px_ + (distanceX * step) / steps;
-            const int32_t pointY = from.py_ + (distanceY * step) / steps;
+        int32_t stepLengthX = distanceX / static_cast<int32_t>(steps);
+        int32_t stepLengthY = distanceY / static_cast<int32_t>(steps);
+
+        for (uint32_t step = 1; step < steps; step++) {
+            const int32_t pointX = from.px_ + stepLengthX * step;
+            const int32_t pointY = from.py_ + stepLengthY * step;
             const uint32_t timeOffsetMs = (timeCostMs * step) / steps;
             pointer.PushAction(TouchEvent {ActionStage::MOVE, {pointX, pointY}, timeOffsetMs, intervalMs});
         }
 
         pointer.PushAction(TouchEvent {ActionStage::UP, {to.px_, to.py_}, timeCostMs, intervalMs});
-        if (drag) {
+        if (type == TouchOp::DRAG) {
             // drag needs longPressDown firstly
             pointer.At(fingers - 1, 0).holdMs_ += options.longClickHoldMs_;
             for (uint32_t idx = 1; idx < pointer.GetSize(); idx++) {
@@ -113,8 +121,8 @@ namespace OHOS::uitest {
 
     void GenericSwipe::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
     {
-        DCHECK(type_ >= TouchOp::SWIPE && type_ <= TouchOp::DRAG);
-        DecomposeComputeSwipe(recv, from_, to_, type_ == TouchOp::DRAG, options);
+        DCHECK(type_ >= TouchOp::SWIPE && type_ <= TouchOp::FLING);
+        DecomposeComputeSwipe(recv, from_, to_, type_, options);
         for (uint32_t index = 0; index < recv.GetSize(); index++) {
             recv.At(recv.GetFingers() - 1, index).flags_ = type_;
         }
@@ -130,15 +138,15 @@ namespace OHOS::uitest {
             auto toPoint0 = Point((fromPoint0.px_ - distanceX0), rect_.GetCenterY());
             auto fromPoint1 = Point(rect_.GetCenterX() + options.pinchWidgetDeadZone_, rect_.GetCenterY());
             auto toPoint1 = Point((fromPoint1.px_ + distanceX0), rect_.GetCenterY());
-            DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, false, options);
-            DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, false, options);
+            DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, TouchOp::SWIPE, options);
+            DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, TouchOp::SWIPE, options);
         } else if (scale_ < 1) {
             auto fromPoint0 = Point(rect_.left_ + options.pinchWidgetDeadZone_, rect_.GetCenterY());
             auto toPoint0 = Point((fromPoint0.px_ + distanceX0), rect_.GetCenterY());
             auto fromPoint1 = Point(rect_.right_ - options.pinchWidgetDeadZone_, rect_.GetCenterY());
             auto toPoint1 = Point((fromPoint1.px_- distanceX0), rect_.GetCenterY());
-            DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, false, options);
-            DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, false, options);
+            DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, TouchOp::SWIPE, options);
+            DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, TouchOp::SWIPE, options);
         }
 
         PointerMatrix pointer3(pointer1.GetFingers() + pointer2.GetFingers(), pointer1.GetSteps());
@@ -276,7 +284,7 @@ namespace OHOS::uitest {
     {
         DCHECK(type_ >= TouchOp::SWIPE && type_ <= TouchOp::DRAG);
         PointerMatrix touchEvents;
-        DecomposeComputeSwipe(touchEvents, from_, to_, type_ == TouchOp::DRAG, opt);
+        DecomposeComputeSwipe(touchEvents, from_, to_, type_, opt);
         touchEvents.ConvertToMouseEvents(recv);
         if (type_ == TouchOp::SWIPE) {
             recv.front().stage_ = ActionStage::MOVE;

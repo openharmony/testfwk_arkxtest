@@ -843,7 +843,7 @@ namespace OHOS::uitest {
             driver.PerformTouch(touch, uiOpArgs, out.exception_);
             static constexpr uint32_t focusTimeMs = 500;
             driver.DelayMs(focusTimeMs);
-            driver.InputText(text, out.exception_);
+            driver.InputText(text, point, out.exception_);
         };
         server.AddHandler("Driver.inputText", inputText);
     }
@@ -956,7 +956,7 @@ namespace OHOS::uitest {
         auto genericFling = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
-            auto op = TouchOp::SWIPE;
+            auto op = TouchOp::FLING;
             auto params = in.paramList_;
             Point from;
             Point to;

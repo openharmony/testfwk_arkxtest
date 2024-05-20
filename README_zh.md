@@ -1773,3 +1773,5 @@ hdc shell uitest uiInput keyEvent 2072 2038
 | 4.1.1.1 | 1、对接批量获取控件信息能力，缩短获取控件信息的耗时。        |
 | 4.1.2.0 | 1、增加shell命令方式注入UI模拟操作。                         |
 | 4.1.3.0 | 1、新增命令行功能，uitest dumuLayout -a ,dump信息中包含控件的背景色、字体颜色/大小信息。 |
+| 4.1.4.0 | 1、dump信息中增加hint与description字段。<br />2、优化多指操作。<br />3、优化查找控件的效率。<br />4、uitest uiInput执行效率提升。 |
+| 5.0.1.0 | 1、优化swipe操作。<br />2、inputText输入中文的实现方式改为设置剪贴板数据后，长按控件点击粘贴。 |
