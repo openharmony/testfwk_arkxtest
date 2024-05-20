@@ -1253,7 +1253,7 @@ export default function findComponentTest() {
 | 3    | pressBack():Promise<void>                                       | 单击BACK键。           |
 | 4    | click(x:number, y:number):Promise<void>                         | 基于坐标点的单击。      |
 | 5    | swipe(x1:number, y1:number, x2:number, y2:number):Promise<void> | 基于坐标点的滑动。      |
-| 6    | assert[arkxtest-guidelines.md](..%2F..%2F..%2Fdoc%2Fdoc%2Fdocs%2Fzh-cn%2Fapplication-dev%2Fapplication-test%2Farkxtest-guidelines.md)ComponentExist(on:On):Promise<void>                       | 断言匹配的控件存在。     |
+| 6    | assertComponentExist(on:On):Promise<void>                       | 断言匹配的控件存在。     |
 | 7    | delayMs(t:number):Promise<void>                                 | 延时。                 |
 | 8    | screenCap(s:path):Promise<void>                                 | 截屏。                 |
 | 9    | findWindow(filter: WindowFilter): Promise<UiWindow>             | 查找匹配窗口。         |
