@@ -538,10 +538,10 @@ namespace OHOS::uitest {
 
         int CalcMaxAfterAnchorIndex(const std::vector<Widget> &visitWidgets)
         {
-            size_t startAfterIndex = -1;
+            int32_t startAfterIndex = -1;
             for (auto &afterLocator : multiAfterAnchorMatcher) {
-                size_t startIndex = 0;
-                for (; startIndex < visitWidgets.size(); ++startIndex) {
+                int32_t startIndex = 0;
+                for (; static_cast<size_t>(startIndex) < visitWidgets.size(); ++startIndex) {
                     bool isFrontMatch = true;
                     for (auto &attrModel : afterLocator) {
                         isFrontMatch = isFrontMatch && visitWidgets[startIndex].MatchAttr(attrModel);
@@ -551,7 +551,7 @@ namespace OHOS::uitest {
                         break;
                     }
                 }
-                if (startIndex == visitWidgets.size()) {
+                if (static_cast<size_t>(startIndex) == visitWidgets.size()) {
                     startAfterIndex = visitWidgets.size();
                 }
             }
