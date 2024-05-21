@@ -178,7 +178,7 @@ namespace OHOS::uitest {
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
             while (true) {
                 Widget anchorWidget{"test"};
-                if (!elementNodeRef.DFSNext(anchorWidget)) {
+                if (!elementNodeRef.DFSNext(anchorWidget, window.id_)) {
                     return;
                 }
                 anchorWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
@@ -214,7 +214,7 @@ namespace OHOS::uitest {
         {
             while (true) {
                 Widget myselfWidget{"myselfWidget"};
-                if (!elementNodeRef.DFSNext(myselfWidget)) {
+                if (!elementNodeRef.DFSNext(myselfWidget, window.id_)) {
                     return;
                 }
                 myselfWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
@@ -266,7 +266,7 @@ namespace OHOS::uitest {
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
             while (true) {
                 Widget anchorWidget{"anchorWidget"};
-                if (!elementNodeRef.DFSNext(anchorWidget)) {
+                if (!elementNodeRef.DFSNext(anchorWidget, window.id_)) {
                     return;
                 }
                 anchorWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
@@ -340,7 +340,7 @@ namespace OHOS::uitest {
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
             while (true) {
                 Widget anchorWidget{"withInWidget"};
-                if (!elementNodeRef.DFSNext(anchorWidget)) {
+                if (!elementNodeRef.DFSNext(anchorWidget, window.id_)) {
                     return;
                 }
                 anchorWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
@@ -435,7 +435,7 @@ namespace OHOS::uitest {
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
             while (true) {
                 Widget myselfWidget{"myselfWidget"};
-                if (!elementNodeRef.DFSNext(myselfWidget)) {
+                if (!elementNodeRef.DFSNext(myselfWidget, window.id_)) {
                     return;
                 }
                 myselfWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
@@ -490,7 +490,7 @@ namespace OHOS::uitest {
             std::vector<int> fakeTargetWidgets;
             while (true) {
                 Widget myselfWidget{"myselfWidget"};
-                if (!elementNodeRef.DFSNext(myselfWidget)) {
+                if (!elementNodeRef.DFSNext(myselfWidget, window.id_)) {
                     break;
                 }
                 myselfWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));

@@ -65,7 +65,7 @@ namespace OHOS::uitest {
         return VisitNodeByChildAndBrother(widget);
     }
 
-    bool ElementNodeIteratorImpl::DFSNext(Widget &widget)
+    bool ElementNodeIteratorImpl::DFSNext(Widget &widget, uint32_t windowId)
     {
         if (IsVisitFinish()) {
             return false;
@@ -76,7 +76,7 @@ namespace OHOS::uitest {
             elementToParentIndexMap_.emplace(currentIndex_, -1);
             visitAndVisibleIndexSet_.insert(currentIndex_);
             WrapperElement(widget);
-            widget.SetHierarchy(ROOT_HIERARCHY);
+            widget.SetHierarchy(ROOT_HIERARCHY + to_string(windowId));
             elementIndexToHierarch_.emplace(currentIndex_, widget.GetHierarchy());
             return true;
         }

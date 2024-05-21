@@ -111,7 +111,7 @@ namespace OHOS::uitest {
 
     void Widget::WrapperWidgetToJson(nlohmann::json &out)
     {
-        for (int i = 0; i < UiAttr::HIERARCHY; ++i) {
+        for (int i = 0; i < UiAttr::HIERARCHY + 1; ++i) {
             if (i == UiAttr::BOUNDS && attributeVec_[UiAttr::BOUNDS].empty()) {
                 stringstream boundStream;
                 boundStream << "[" << bounds_.left_ << "," << bounds_.top_ << "][" << bounds_.right_ << ","

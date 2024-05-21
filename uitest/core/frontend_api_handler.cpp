@@ -168,6 +168,14 @@ namespace OHOS::uitest {
         }
     }
 
+    static void ParseExtensionMethodsSignature()
+    {
+        auto paramTypes = vector<string>();
+        paramTypes.push_back("");
+        string extension = "Component.getAllProperties";
+        sApiArgTypesMap.insert(make_pair(extension, make_pair(paramTypes, 0)));
+    }
+
     static string GetClassName(const string &apiName, char splitter)
     {
         auto classNameLen = apiName.find(splitter);
@@ -372,6 +380,7 @@ namespace OHOS::uitest {
         // initialize method signature
         if (sApiArgTypesMap.empty()) {
             ParseFrontendMethodsSignature();
+            ParseExtensionMethodsSignature();
         }
         string oldApiName = ApiMapPre(call);
         auto find = handlers_.find(call.apiId_);
@@ -1175,6 +1184,36 @@ namespace OHOS::uitest {
         }
     }
 
+static void RegisterExtensionHandler()
+{
+    auto &server = FrontendApiServer::Get();
+    auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+        auto &image = GetBackendObject<Widget>(in.callerObjRef_);
+        auto &driver = GetBoundUiDriver(in.callerObjRef_);
+        auto snapshot = driver.RetrieveWidget(image, out.exception_);
+        if (out.exception_.code_ != NO_ERROR) {
+            out.resultValue_ = nullptr; // exception, return null
+            return;
+        }
+        json data;
+        for (auto i = 0; i < UiAttr::HIERARCHY + 1; ++i) {
+            if (i == UiAttr::BOUNDS) {
+                const auto bounds = snapshot->GetBounds();
+                json rect;
+                rect["left"] = bounds.left_;
+                rect["top"] = bounds.top_;
+                rect["right"] = bounds.right_;
+                rect["bottom"] = bounds.bottom_;
+                data["bounds"] = rect;
+                continue;
+            }
+            data[ATTR_NAMES[i].data()] = snapshot->GetAttr(static_cast<UiAttr> (i));
+        }
+        out.resultValue_ = data;
+    };
+    server.AddHandler("Component.getAllProperties", genericOperationHandler);
+}
+
     static void RegisterUiComponentAttrGetters()
     {
         auto &server = FrontendApiServer::Get();
@@ -1439,5 +1478,6 @@ namespace OHOS::uitest {
         RegisterUiDriverMouseOperators1();
         RegisterUiDriverMouseOperators2();
         RegisterUiEventObserverMethods();
+        RegisterExtensionHandler();
     }
 } // namespace OHOS::uitest
