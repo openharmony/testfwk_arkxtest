@@ -168,7 +168,7 @@ namespace OHOS::uitest {
             return true;
         }
 
-        bool DFSNext(Widget &widget) override
+        bool DFSNext(Widget &widget, uint32_t windowId) override
         {
             ++currentIndex_;
             if (currentIndex_ < elementInfoLists_.size()) {
