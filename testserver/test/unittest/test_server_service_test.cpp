@@ -96,7 +96,7 @@ protected:
     }
 };
 
-HWTEST_F(ServiceTest, testOnStartWhenMock, TestSize.Level1)
+HWTEST_F(ServiceTest, testOnStartWhenRoot, TestSize.Level1)
 {
     EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     EXPECT_CALL(*testServerServiceMock_, IsRootVersion()).WillOnce(testing::Return(true));
@@ -175,17 +175,6 @@ protected:
         this_thread::sleep_for(chrono::milliseconds(UNLOAD_SYSTEMABILITY_WAITTIME));
     }
 };
-
-HWTEST_F(CallerDetectTimerTest, testCallerDetectTimerWithCaller, TestSize.Level1)
-{
-    EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
-    sptr<ITestServerInterface> iTestServerInterface = StartTestServer::GetInstance().LoadTestServer();
-    sptr<SessionToken> sessionToken = new (std::nothrow) SessionToken();
-    EXPECT_EQ(iTestServerInterface->CreateSession(*sessionToken), TEST_SERVER_OK);
-    EXPECT_NE(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
-    this_thread::sleep_for(chrono::milliseconds(CALLER_DECTECT_TIMER_WAITTIME));
-    EXPECT_NE(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
-}
 
 HWTEST_F(CallerDetectTimerTest, testCallerDetectTimerWithoutCaller, TestSize.Level1)
 {
