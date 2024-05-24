@@ -21,7 +21,7 @@
 #include "system_ability_definition.h"
 #include "system_ability.h"
 #include "iservice_registry.h"
-#include "test_server_client.h"
+#include "start_test_server.h"
 #include "mock_permission.h"
 
 using namespace std;
@@ -37,7 +37,7 @@ HWTEST(ClientTest, testLoadTestServer, TestSize.Level1)
 {
     TestServerMockPermission::MockProcess("testserver");
     sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    sptr<ITestServerInterface> iTestServerInterface = TestServerClient::GetInstance().LoadTestServer();
+    sptr<ITestServerInterface> iTestServerInterface = StartTestServer::GetInstance().LoadTestServer();
     EXPECT_NE(iTestServerInterface, nullptr);
     EXPECT_NE(samgr->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     samgr->UnloadSystemAbility(SYSTEM_ABILITY_ID);
@@ -47,7 +47,7 @@ HWTEST(ClientTest, testLoadTestServer, TestSize.Level1)
 void load_test_server_test(sptr<ISystemAbilityManager> samgr)
 {
     TestServerMockPermission::MockProcess("testserver");
-    sptr<ITestServerInterface> iTestServerInterface = TestServerClient::GetInstance().LoadTestServer();
+    sptr<ITestServerInterface> iTestServerInterface = StartTestServer::GetInstance().LoadTestServer();
     EXPECT_NE(iTestServerInterface, nullptr);
     EXPECT_NE(samgr->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
 }
