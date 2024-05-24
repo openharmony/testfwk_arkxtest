@@ -22,13 +22,11 @@ function assertPromiseIsRejected(actualPromise) {
             return {pass: false, message: 'Expected not be called on a promise.'};
         });
     }
-    const helper = {};
-    return Promise.race([actualPromise, Promise.resolve(helper)]).then(
+    return actualPromise.then(
         function (got) {
             return {
                 pass: false,
-                message: 'expect isRejected, but actualValue is '
-                    + (helper === got ? 'isPending' : 'resolve')
+                message: 'expect isRejected, but actualValue is resolve'
             };
         },
         function () {
