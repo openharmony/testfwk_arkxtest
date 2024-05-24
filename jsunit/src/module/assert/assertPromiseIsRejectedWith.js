@@ -29,13 +29,11 @@ function assertPromiseIsRejectedWith(actualPromise, expectedValue) {
             'to be rejected with ' + JSON.stringify(expectedValue[0]));
     }
 
-    const helper = {};
-    return Promise.race([actualPromise, Promise.resolve(helper)]).then(
+    return actualPromise.then(
         function (got) {
             return {
                 pass: false,
-                message: tips(false) + ' but actualValue is '
-                    + (helper === got ? 'isPending' : 'resolve')
+                message: tips(false) + ' but actualValue is resolve'
             };
         },
         function (actualValue) {
