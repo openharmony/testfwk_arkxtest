@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-import Core from './src/core';
-import {TestType, Size, Level, DEFAULT} from './src/Constant';
-import DataDriver from './src/module/config/DataDriver';
-import ExpectExtend from './src/module/assert/ExpectExtend';
-import OhReport from './src/module/report/OhReport';
+import Core from './src/main/core';
+import {TestType, Size, Level, DEFAULT} from './src/main/Constant';
+import DataDriver from './src/main/module/config/DataDriver';
+import ExpectExtend from './src/main/module/assert/ExpectExtend';
+import OhReport from './src/main/module/report/OhReport';
 export { xdescribe, xit, describe, it } from './index.ts';
 
 export declare class Hypium {
@@ -124,6 +124,9 @@ export declare class MockKit {
 }
 
 export declare class SysTestKit {
+    static getDescribeName(): string;
+    static getItName(): string;
+    static getItAttribute(): TestType | Size | Level
     static actionStart(tag: string): void
     static actionEnd(tag: string): void
     static existKeyword(keyword: string, timeout?: number): boolean
