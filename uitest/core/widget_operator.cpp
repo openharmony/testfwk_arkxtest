@@ -200,7 +200,7 @@ namespace OHOS::uitest {
         driver_.DelayMs(focusTimeMs);
         auto retrievedAfterClear = driver_.RetrieveWidget(widget_, error);
         const auto centerAfterClear = Point(retrievedAfterClear->GetBounds().GetCenterX(),
-                                  retrievedAfterClear->GetBounds().GetCenterY());
+                                            retrievedAfterClear->GetBounds().GetCenterY());
         driver_.InputText(text, centerAfterClear, error);
     }
 
