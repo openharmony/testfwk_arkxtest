@@ -345,6 +345,7 @@ namespace OHOS::uitest {
                     winWrapper.invisibleBoundsVec_.emplace_back(overWin);
                 }
             }
+            RectAlgorithm::ComputeMaxVisibleRegion(winWrapper.bounds_, overplays, winWrapper.visibleBounds_);
             overplays.emplace_back(winRectInScreen);
             out.emplace_back(std::move(winWrapper));
         }

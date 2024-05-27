@@ -22,13 +22,11 @@ function assertPromiseIsRejectedWithError(actualPromise, expectedValue) {
             return {pass: false, message: 'Expected not be called on a promise.'};
         });
     }
-    const helper = {};
-    return Promise.race([actualPromise, Promise.resolve(helper)]).then(
+    return actualPromise.then(
         function (got) {
             return {
                 pass: false,
-                message: 'Expected a promise to be rejected but actualValue is '
-                    + (helper === got ? 'isPending' : 'resolve')
+                message: 'Expected a promise to be rejected but actualValue is resolve'
             };
         },
         function (actualValue) {

@@ -23,7 +23,7 @@ namespace OHOS::uitest {
     public:
         ElementNodeIterator() = default;
         virtual bool DFSNextWithInTarget(Widget &widget) = 0;
-        virtual bool DFSNext(Widget &widget) = 0;
+        virtual bool DFSNext(Widget &widget, uint32_t windowId) = 0;
         virtual bool IsVisitFinish() const = 0;
         virtual void RestoreNodeIndexByAnchor() = 0;
         virtual void ResetNodeIndexToAnchor() = 0;

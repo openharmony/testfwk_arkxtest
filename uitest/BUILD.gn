@@ -352,7 +352,6 @@ ohos_shared_library("uitest_dummy_extension") {
 
 group("uitestkit") {
   deps = [
-    ":cj_ui_test_ffi",
     ":uitest_client",
     ":uitest_server",
   ]
@@ -366,47 +365,4 @@ group("uitestkit_test") {
     ":uitest_extension_unittest",
     ":uitest_ipc_unittest",
   ]
-}
-
-ohos_shared_library("cj_ui_test_ffi") {
-  cflags = [
-    "-Wfloat-equal",
-    "-Wformat=2",
-    "-Wshadow",
-  ]
-
-  defines = [
-    "__OHOS__=1",
-    "LOG_TAG=\"UiTestKit_Client\"",
-  ]
-
-  sources = [
-    "${source_root}/cj/ui_event_observer_impl.cpp",
-    "${source_root}/cj/uitest_ffi.cpp",
-  ]
-
-  include_dirs = [
-    "${source_root}/core",
-    "${source_root}/connection",
-  ]
-
-  if (product_name == "ohos-sdk") {
-    defines += [ "PREVIEWER" ]
-    sources = [ "${source_root}/cj/uitest_mock.cpp" ]
-  }
-
-  deps = [ ":uitest_ipc" ]
-
-  external_deps = common_external_deps
-  external_deps += [
-    "image_framework:image_native",
-    "json:nlohmann_json_static",
-    "napi:cj_bind_ffi",
-    "napi:cj_bind_native",
-    "pasteboard:pasteboard_client",
-  ]
-
-  relative_install_dir = "platformsdk"
-  subsystem_name = "testfwk"
-  part_name = "arkxtest"
 }
