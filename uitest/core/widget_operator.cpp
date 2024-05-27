@@ -197,7 +197,11 @@ namespace OHOS::uitest {
         driver_.DelayMs(focusTimeMs); // short delay to ensure focus gaining
         auto keyActionForDelete = KeysForwarder(events);
         driver_.TriggerKey(keyActionForDelete, options_, error);
-        driver_.InputText(text, center, error);
+        driver_.DelayMs(focusTimeMs);
+        auto retrievedAfterClear = driver_.RetrieveWidget(widget_, error);
+        const auto centerAfterClear = Point(retrievedAfterClear->GetBounds().GetCenterX(),
+                                  retrievedAfterClear->GetBounds().GetCenterY());
+        driver_.InputText(text, centerAfterClear, error);
     }
 
     unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const
