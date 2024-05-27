@@ -75,12 +75,12 @@ export declare interface Assert {
     assertPosUnlimited(): void
     not(): Assert;
     assertDeepEquals(expectValue: allExpectType):void
-    assertPromiseIsPending(): void
-    assertPromiseIsRejected(): void
-    assertPromiseIsRejectedWith(expectValue?: allExpectType): void
-    assertPromiseIsRejectedWithError(...expectValue: allExpectType[]): void
-    assertPromiseIsResolved(): void
-    assertPromiseIsResolvedWith(expectValue?: allExpectType): void
+    assertPromiseIsPending(): Promise<void>
+    assertPromiseIsRejected(): Promise<void>
+    assertPromiseIsRejectedWith(expectValue?: any): Promise<void>
+    assertPromiseIsRejectedWithError(...expectValue): Promise<void>
+    assertPromiseIsResolved(): Promise<void>
+    assertPromiseIsResolvedWith(expectValue?: any): Promise<void>
     message(msg: string): Assert
 }
 

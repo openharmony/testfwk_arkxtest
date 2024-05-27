@@ -29,12 +29,8 @@ function assertPromiseIsResolvedWith(actualPromise, expectedValue) {
             'to be resolved with ' + JSON.stringify(expectedValue[0]));
     }
 
-    const helper = {};
-    return Promise.race([actualPromise, Promise.resolve(helper)]).then(
+    return actualPromise.then(
         function (got) {
-            if (helper === got) {
-                return {pass: false, message: 'expect resolve, actualValue is isPending'};
-            }
             if (JSON.stringify(got) == JSON.stringify(expectedValue[0])) {
                 return {
                     pass: true,

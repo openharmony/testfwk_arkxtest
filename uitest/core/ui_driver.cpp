@@ -523,7 +523,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void UiDriver::InputText(string_view text, ApiCallErr &error)
+    void UiDriver::InputText(string_view text, Point point, ApiCallErr &error)
     {
         vector<KeyEvent> events;
         UiOpArgs uiOpArgs;
@@ -535,8 +535,38 @@ namespace OHOS::uitest {
             } else {
                 uiController_->PutTextToClipboard(text);
                 LOG_I("inputText by pasteBoard");
-                auto actionForPatse = CombinedKeys(KEYCODE_CTRL, KEYCODE_V, KEYCODE_NONE);
-                TriggerKey(actionForPatse, uiOpArgs, error);
+                auto longClick = GenericClick(TouchOp::LONG_CLICK, point);
+                PerformTouch(longClick, uiOpArgs, error);
+                static constexpr uint32_t focusTimeMs = 1000;
+                DelayMs(focusTimeMs);
+
+                auto selector = WidgetSelector();
+                auto value = string("\u7c98\u8d34");
+                auto attrMatcher = WidgetMatchModel(UiAttr::TEXT, value, EQ);
+                selector.AddMatcher(attrMatcher);
+                selector.SetWantMulti(false);
+                vector<unique_ptr<Widget>> widgets;
+                FindWidgets(selector, widgets, error);
+
+                auto selectorForEnglisgh = WidgetSelector();
+                auto attrMatcherForEnglisgh = WidgetMatchModel(UiAttr::TEXT, std::string("Paste"), EQ);
+                selectorForEnglisgh.AddMatcher(attrMatcherForEnglisgh);
+                selectorForEnglisgh.SetWantMulti(false);
+                vector<unique_ptr<Widget>> widgetsForEnglisgh;
+                FindWidgets(selectorForEnglisgh, widgetsForEnglisgh, error, false);
+                if (error.code_ != NO_ERROR) {
+                    return;
+                }
+                if (widgets.empty() && widgetsForEnglisgh.empty()) {
+                    error = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+                    return;
+                }
+                auto center = (!widgets.empty()) ?
+                    Point(widgets[0]->GetBounds().GetCenterX(), widgets[0]->GetBounds().GetCenterY()):
+                    Point(widgetsForEnglisgh[0]->GetBounds().GetCenterX(),
+                        widgetsForEnglisgh[0]->GetBounds().GetCenterY());
+                auto click = GenericClick(TouchOp::CLICK, center);
+                PerformTouch(click, uiOpArgs, error);
             }
         }
     }
