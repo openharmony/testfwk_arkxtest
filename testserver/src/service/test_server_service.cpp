@@ -88,7 +88,12 @@ namespace OHOS::testserver {
     ErrCode TestServerService::CreateSession(const SessionToken &sessionToken)
     {
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
-        bool result = sessionToken.AddDeathRecipient(new TestServerProxyDeathRecipient(this));
+        bool result = true;
+        try {
+            result = sessionToken.AddDeathRecipient(new TestServerProxyDeathRecipient(this));
+        } catch(...) {
+            result = false;
+        }
         if (!result) {
             HiLog::Error(LABEL_SERVICE, "%{public}s. AddDeathRecipient FAILD.", __func__);
             DestorySession();

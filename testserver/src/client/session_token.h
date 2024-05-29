@@ -57,6 +57,9 @@ namespace OHOS::testserver {
         bool AddDeathRecipient(const sptr<IRemoteObject::DeathRecipient> &recipient) const
         {
             HiLog::Info(LABEL_SESSION_TOKEN, "%{public}s called. ", __func__);
+            if (iRemoteObject_ == nullptr) {
+                return false;
+            }
             return iRemoteObject_->AddDeathRecipient(recipient);
         }
 
