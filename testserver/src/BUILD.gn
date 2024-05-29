@@ -34,6 +34,7 @@ config("test_server_service_config") {
     "utils",
     "${target_gen_dir}",
   ]
+  cflags_cc = [ "-fexceptions" ]
 }
 
 ohos_shared_library("test_server_service") {
