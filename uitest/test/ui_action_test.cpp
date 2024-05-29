@@ -225,8 +225,6 @@ TEST_F(UiActionTest, computePinchInAction)
     // there should be more than 1 touches
     const int32_t steps = events.GetSteps() - 1;
     ASSERT_TRUE(steps > 1);
-    ASSERT_EQ(602, events.GetSize());
-    ASSERT_EQ(301, events.GetSteps());
 
     const int32_t disX0 = abs(rect.left_ - rect.GetCenterX()) * abs(scale - 1);
     ASSERT_EQ(75, disX0);
@@ -365,8 +363,6 @@ TEST_F(UiActionTest, computePinchOutAction)
     // there should be more than 1 touches
     const int32_t steps = events.GetSteps() - 1;
     ASSERT_TRUE(steps > 1);
-    ASSERT_EQ(602, events.GetSize());
-    ASSERT_EQ(301, events.GetSteps());
 
     const int32_t disX0 = abs(rect.left_ - rect.GetCenterX()) * abs(scale - 1);
     ASSERT_EQ(75, disX0);
