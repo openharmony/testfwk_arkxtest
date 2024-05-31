@@ -87,13 +87,13 @@ export declare interface Assert {
 export declare function expect(actualValue?: allExpectType): Assert
 
 export declare class ArgumentMatchers {
-    public static any: allExpectType;
-    public static anyString: string;
-    public static anyBoolean: Boolean;
-    public static anyNumber: Number;
-    public static anyObj: Object;
-    public static anyFunction: Function;
-    public static matchRegexs(regex: RegExp): void
+    static any: allExpectType;
+    static anyString: string;
+    static anyBoolean: Boolean;
+    static anyNumber: Number;
+    static anyObj: Object;
+    static anyFunction: Function;
+    static matchRegexs(Regex: RegExp): void
 }
 
 declare interface whenResult {
