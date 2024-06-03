@@ -124,6 +124,9 @@ export declare class MockKit {
 }
 
 export declare class SysTestKit {
+    static getDescribeName(): string;
+    static getItName(): string;
+    static getItAttribute(): TestType | Size | Level
     static actionStart(tag: string): void
     static actionEnd(tag: string): void
     static existKeyword(keyword: string, timeout?: number): boolean
