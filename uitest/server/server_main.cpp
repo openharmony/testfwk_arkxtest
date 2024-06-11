@@ -251,8 +251,9 @@ namespace OHOS::uitest {
         }
         if (opt == "record") {
             auto controller = make_unique<SysUiController>();
-            if (!controller->ConnectToSysAbility()) {
-                PrintToConsole("Failed, cannot connect to AMMS ");
+            ApiCallErr error = ApiCallErr(NO_ERROR);
+            if (!controller->ConnectToSysAbility(error)) {
+                PrintToConsole(error.message_);
                 return EXIT_FAILURE;
             }
             UiDriver::RegisterController(move(controller));
