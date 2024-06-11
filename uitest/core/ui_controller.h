@@ -46,7 +46,7 @@ namespace OHOS::uitest {
 
         virtual ~UiController() = default;
 
-        virtual bool Initialize()
+        virtual bool Initialize(ApiCallErr &error)
         {
             return true;
         };
