@@ -667,6 +667,7 @@ namespace OHOS::uitest {
             return false;
         }
         auto ret = ability->Connect();
+        LOG_I("Connect to AAMS, result: %{public}d", ret);
         switch (ret) {
             case (RET_ERR_INVALID_PARAM):
                 error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS, RET_ERR_INVALID_PARAM");
