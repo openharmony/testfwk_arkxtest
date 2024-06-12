@@ -235,9 +235,9 @@ namespace OHOS::uitest {
         DisConnectFromSysAbility();
     }
 
-    bool SysUiController::Initialize()
+    bool SysUiController::Initialize(ApiCallErr &error)
     {
-        return this->ConnectToSysAbility();
+        return this->ConnectToSysAbility(error);
     }
 
     static Rect GetVisibleRect(Rect windowBounds, Accessibility::Rect nodeBounds)
@@ -312,8 +312,9 @@ namespace OHOS::uitest {
     void SysUiController::GetUiWindows(std::vector<Window> &out)
     {
         std::lock_guard<std::mutex> dumpLocker(dumpMtx); // disallow concurrent dumpUi
-        if (!connected_ && !ConnectToSysAbility()) {
-            LOG_W("Connect to AccessibilityUITestAbility failed");
+        ApiCallErr error = ApiCallErr(NO_ERROR);
+        if (!connected_ && !ConnectToSysAbility(error)) {
+            LOG_E("%{public}s", error.message_.c_str());
             return;
         }
         vector<AccessibilityWindowInfo> windows;
@@ -642,7 +643,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    bool SysUiController::ConnectToSysAbility()
+    bool SysUiController::ConnectToSysAbility(ApiCallErr &error)
     {
         if (connected_) {
             return true;
@@ -662,28 +663,19 @@ namespace OHOS::uitest {
         g_monitorInstance_->SetOnAbilityDisConnectCallback(onDisConnectCallback);
         auto ability = AccessibilityUITestAbility::GetInstance();
         if (ability->RegisterAbilityListener(g_monitorInstance_) != RET_OK) {
-            LOG_E("Failed to register UiEventMonitor");
+            error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS, REGISTER_LISTENER_FAILED");
             return false;
         }
         auto ret = ability->Connect();
-        switch (ret) {
-            case (RET_ERR_INVALID_PARAM):
-                LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_INVALID_PARAM");
-                return false;
-            case (RET_ERR_NULLPTR):
-                LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_NULLPTR");
-                return false;
-            case (RET_ERR_CONNECTION_EXIST):
-                LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_CONNECTION_EXIST");
-                return false;
-            case (RET_ERR_IPC_FAILED):
-                LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_IPC_FAILED");
-                return false;
-            case (RET_ERR_SAMGR):
-                LOG_E("Failed to connect to AccessibilityUITestAbility, RET_ERR_SAMGR");
-                return false;
-            default:
-                break;
+        LOG_I("Connect to AAMS, result: %{public}d", ret);
+        if (ret != RET_OK) {
+            error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS");
+            if (ret == RET_ERR_CONNECTION_EXIST) {
+                error.message_ += ", RET_ERR_CONNECTION_EXIST";
+            } else {
+                error.message_ += ", RET_ERR_AAMS";
+            }
+            return false;
         }
         const auto timeout = chrono::milliseconds(1000);
         if (condition->wait_for(uLock, timeout) == cv_status::timeout) {

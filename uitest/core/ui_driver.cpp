@@ -58,8 +58,8 @@ namespace OHOS::uitest {
         DCHECK(uiController_);
         if (isConnected && !uiController_->IsWorkable()) {
             LOG_W("Not connect to AAMS, try to reconnect");
-            if (!uiController_->Initialize()) {
-                error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS");
+            if (!uiController_->Initialize(error)) {
+                LOG_E("%{public}s", error.message_.c_str());
                 return false;
             }
         }

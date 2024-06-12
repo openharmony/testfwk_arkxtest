@@ -26,7 +26,7 @@ namespace OHOS::uitest {
 
         ~SysUiController() override;
 
-        bool Initialize() override;
+        bool Initialize(ApiCallErr &error) override;
 
         void GetUiWindows(std::vector<Window> &out) override;
 
@@ -49,7 +49,7 @@ namespace OHOS::uitest {
         bool IsWorkable() const override;
 
         // setup method, connect to system ability AAMS
-        bool ConnectToSysAbility();
+        bool ConnectToSysAbility(ApiCallErr &error);
 
         // teardown method, disconnect from system ability AAMS
         void DisConnectFromSysAbility();
