@@ -673,7 +673,7 @@ namespace OHOS::uitest {
             if (ret == RET_ERR_CONNECTION_EXIST) {
                 error.message_ += ", RET_ERR_CONNECTION_EXIST";
             } else {
-                error.message_ += ", RET_AAMS_ERROR";
+                error.message_ += ", RET_ERR_AAMS";
             }
             return false;
         }
