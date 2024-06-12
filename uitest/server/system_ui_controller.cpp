@@ -668,24 +668,14 @@ namespace OHOS::uitest {
         }
         auto ret = ability->Connect();
         LOG_I("Connect to AAMS, result: %{public}d", ret);
-        switch (ret) {
-            case (RET_ERR_INVALID_PARAM):
-                error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS, RET_ERR_INVALID_PARAM");
-                return false;
-            case (RET_ERR_NULLPTR):
-                error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS, RET_ERR_NULLPTR");
-                return false;
-            case (RET_ERR_CONNECTION_EXIST):
-                error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS, RET_ERR_CONNECTION_EXIST");
-                return false;
-            case (RET_ERR_IPC_FAILED):
-                error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS, RET_ERR_IPC_FAILED");
-                return false;
-            case (RET_ERR_SAMGR):
-                error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS, RET_ERR_SAMGR");
-                return false;
-            default:
-                break;
+        if (ret != RET_OK) {
+            error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS");
+            if (ret == RET_ERR_CONNECTION_EXIST) {
+                error.message_ += ", RET_ERR_CONNECTION_EXIST";
+            } else {
+                error.message_ += ", RET_AAMS_ERROR";
+            }
+            return false;
         }
         const auto timeout = chrono::milliseconds(1000);
         if (condition->wait_for(uLock, timeout) == cv_status::timeout) {
