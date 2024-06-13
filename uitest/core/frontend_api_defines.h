@@ -56,10 +56,10 @@ namespace OHOS::uitest {
     const std::map<ErrCode, std::string> ErrDescMap = {
         /**Correspondence between error codes and descriptions*/
         {NO_ERROR, "No Error"},
-        {ERR_INITIALIZE_FAILED, "If the test framework failed to initialize."},
-        {ERR_API_USAGE, "If the async function was not called with await."},
-        {ERR_ASSERTION_FAILED, "If the assertion failed."},
-        {ERR_COMPONENT_LOST, "If the window or window is invisible or destroyed."},
+        {ERR_INITIALIZE_FAILED, "Initialization failed."},
+        {ERR_API_USAGE, "The async function is not called with await."},
+        {ERR_ASSERTION_FAILED, "Assertion failed."},
+        {ERR_COMPONENT_LOST, "The window or component is invisible or destroyed."},
         {ERR_OPERATION_UNSUPPORTED, "This operation is not supported."},
         {ERR_INTERNAL, "Internal error."},
         {ERR_NO_SYSTEM_CAPABILITY, "The specified SystemCapability name was not found."},
