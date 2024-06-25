@@ -288,30 +288,30 @@ namespace OHOS::uitest {
         if ((size_t)argc < INDEX_TWO) {
             PrintToConsole("Missing argument");
             PrintToConsole(usage);
-            exit(EXIT_FAILURE);
+            _Exit(EXIT_FAILURE);
         }
         string command(argv[1]);
         if (command == "dumpLayout") {
             _Exit(DumpLayout(argc, argv));
         } else if (command == "start-daemon") {
             string_view token = argc < 3 ? "" : argv[2];
-            exit(StartDaemon(token, argc - THREE, argv + THREE));
+            _Exit(StartDaemon(token, argc - THREE, argv + THREE));
         } else if (command == "screenCap") {
-            exit(ScreenCap(argc, argv));
+            _Exit(ScreenCap(argc, argv));
         } else if (command == "uiRecord") {
-            exit(UiRecord(argc, argv));
+            _Exit(UiRecord(argc, argv));
         } else if (command == "uiInput") {
-            exit(UiInput(argc, argv));
+            _Exit(UiInput(argc, argv));
         } else if (command == "--version") {
             PrintToConsole(VERSION);
-            exit(EXIT_SUCCESS);
+            _Exit(EXIT_SUCCESS);
         } else if (command == "help") {
             PrintToConsole(HELP_MSG);
-            exit(EXIT_SUCCESS);
+            _Exit(EXIT_SUCCESS);
         } else {
             PrintToConsole("Illegal argument: " + command);
             PrintToConsole(usage);
-            exit(EXIT_FAILURE);
+            _Exit(EXIT_FAILURE);
         }
     }
 }
