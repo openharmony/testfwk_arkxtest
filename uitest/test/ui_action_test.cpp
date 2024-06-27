@@ -142,8 +142,8 @@ TEST_F(UiActionTest, computeSwipeAction)
     ASSERT_EQ(steps, totalCostMs / intervalMsInSwipe);
 
     uint32_t step = 0;
-    int32_t stepLengthX = disX / static_cast<int32_t>(steps);
-    int32_t stepLengthY = disY / static_cast<int32_t>(steps);
+    float stepLengthX = (double)disX / (double)static_cast<int32_t>(steps);
+    float stepLengthY = (double)disY / (double)static_cast<int32_t>(steps);
     // check the TouchEvent of each step
     for (uint32_t event = 0; event < steps; event++) {
         int32_t expectedPointerX = point0.px_ + stepLengthX * event;
@@ -189,8 +189,8 @@ TEST_F(UiActionTest, computeFlingAction)
     ASSERT_EQ(steps, 141);
 
     uint32_t step = 0;
-    int32_t stepLengthX = disX / static_cast<int32_t>(steps);
-    int32_t stepLengthY = disY / static_cast<int32_t>(steps);
+    float stepLengthX = (double)disX / (double)static_cast<int32_t>(steps);
+    float stepLengthY = (double)disY / (double)static_cast<int32_t>(steps);
     // check the TouchEvent of each step
     for (uint32_t event = 0; event < steps; event++) {
         int32_t expectedPointerX = point0.px_ + stepLengthX * event;
@@ -250,9 +250,11 @@ TEST_F(UiActionTest, computePinchInAction)
         step++;
     }
     step = 0;
+    float stepLengthX = (double)disX0 / (double)static_cast<int32_t>(steps);
+
     for (uint32_t eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
         uint32_t eventFinger = 1;
-        int32_t expectedPointerX0 = rect.right_ - (disX0 * step) / steps;
+        int32_t expectedPointerX0 = rect.right_ - stepLengthX * step;
         ASSERT_NEAR(expectedPointerX0, events.At(eventFinger, eventStep).point_.px_, opt.pinchWidgetDeadZone_);
         if (eventStep == 0) {
         // should start with Action.DOWN
@@ -368,10 +370,11 @@ TEST_F(UiActionTest, computePinchOutAction)
     ASSERT_EQ(75, disX0);
 
     uint32_t step = 0;
+    float stepLengthX = (double)disX0 / (double)static_cast<int32_t>(steps);
     // check the TouchEvent of each step
     for (uint32_t eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
         uint32_t eventFinger = 0;
-        int32_t expectedPointerX0 = rect.GetCenterX() - (disX0 * step) / steps;
+        int32_t expectedPointerX0 = rect.GetCenterX() - stepLengthX * step;
         uint32_t x0 = events.At(eventFinger, eventStep).point_.px_;
         ASSERT_NEAR(expectedPointerX0, x0, opt.pinchWidgetDeadZone_);
         if (eventStep == 0) {
