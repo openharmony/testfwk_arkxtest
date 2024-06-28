@@ -68,7 +68,6 @@ function logMsg(actualValue, expected) {
 
 function eq(a, b, aStack, bStack) {
     let result = true;
-    console.log('a is:' + a + ',b is:' + b);
     const asymmetricResult = asymmetricMatch_(a,b);
     if (!DeepTypeUtils.isUndefined(asymmetricResult)) {
         return asymmetricResult;
@@ -91,8 +90,6 @@ function eq(a, b, aStack, bStack) {
     // 获取a的对象名称
     const aClassName = Object.prototype.toString.call(a);
     const bClassName = Object.prototype.toString.call(b);
-    console.log('aClassName is:' + aClassName);
-    console.log('bClassName is:' + bClassName);
     // 不同类型不同对象
     if (aClassName != bClassName) {
         return false;
@@ -273,7 +270,6 @@ function eq(a, b, aStack, bStack) {
 
     // 俩对象属性数量相同， 递归比较每个属性值得值
     for (const key of aKeys) {
-        console.log('key is:' + key);
         // b 没有 key 属性
         if(!DeepTypeUtils.has(b, key)) {
             result = false;
