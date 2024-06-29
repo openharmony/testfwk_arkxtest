@@ -95,6 +95,42 @@ namespace OHOS::uitest {
         std::string_view event;
     };
 
+    const std::map<char, int32_t> SingleKeySymbalMap = {
+        {' ', OHOS::MMI::KeyEvent::KEYCODE_SPACE},
+        {'`', OHOS::MMI::KeyEvent::KEYCODE_GRAVE},
+        {'[', OHOS::MMI::KeyEvent::KEYCODE_LEFT_BRACKET},
+        {']', OHOS::MMI::KeyEvent::KEYCODE_RIGHT_BRACKET},
+        {'\\', OHOS::MMI::KeyEvent::KEYCODE_BACKSLASH},
+        {',', OHOS::MMI::KeyEvent::KEYCODE_COMMA},
+        {';', OHOS::MMI::KeyEvent::KEYCODE_SEMICOLON},
+        {'\'', OHOS::MMI::KeyEvent::KEYCODE_APOSTROPHE},
+        {'@', OHOS::MMI::KeyEvent::KEYCODE_AT},
+        {'+', OHOS::MMI::KeyEvent::KEYCODE_PLUS},
+        {'/', OHOS::MMI::KeyEvent::KEYCODE_SLASH},
+        {'*', OHOS::MMI::KeyEvent::KEYCODE_NUMPAD_MULTIPLY},
+        {'-', OHOS::MMI::KeyEvent::KEYCODE_MINUS},
+        {'+', OHOS::MMI::KeyEvent::KEYCODE_NUMPAD_ADD},
+        {'.', OHOS::MMI::KeyEvent::KEYCODE_PERIOD},
+        {'=', OHOS::MMI::KeyEvent::KEYCODE_EQUALS},
+        {'(', OHOS::MMI::KeyEvent::KEYCODE_NUMPAD_LEFT_PAREN},
+        {')', OHOS::MMI::KeyEvent::KEYCODE_NUMPAD_RIGHT_PAREN}};
+
+    const std::map<char, int32_t> MultiKeySymbalMap = {
+        {'~', OHOS::MMI::KeyEvent::KEYCODE_GRAVE},
+        {'!', OHOS::MMI::KeyEvent::KEYCODE_1},
+        {'#', OHOS::MMI::KeyEvent::KEYCODE_3},
+        {'$', OHOS::MMI::KeyEvent::KEYCODE_4},
+        {'%', OHOS::MMI::KeyEvent::KEYCODE_5},
+        {'^', OHOS::MMI::KeyEvent::KEYCODE_6},
+        {'&', OHOS::MMI::KeyEvent::KEYCODE_7},
+        {'_', OHOS::MMI::KeyEvent::KEYCODE_MINUS},
+        {':', OHOS::MMI::KeyEvent::KEYCODE_SEMICOLON},
+        {'"', OHOS::MMI::KeyEvent::KEYCODE_APOSTROPHE},
+        {'<', OHOS::MMI::KeyEvent::KEYCODE_COMMA},
+        {'>', OHOS::MMI::KeyEvent::KEYCODE_PERIOD},
+        {'?', OHOS::MMI::KeyEvent::KEYCODE_SLASH}
+    };
+
     static constexpr EventSpec WATCHED_EVENTS[] = {
         {"Toast", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "toastShow"},
         {"AlertDialog", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "dialogShow"}
@@ -582,6 +618,11 @@ namespace OHOS::uitest {
             code = OHOS::MMI::KeyEvent::KEYCODE_A + static_cast<int32_t>(ch - 'A');
         } else if (ch >= '0' && ch <= '9') {
             code = OHOS::MMI::KeyEvent::KEYCODE_0 + static_cast<int32_t>(ch - '0');
+        } else if (SingleKeySymbalMap.find(ch) != SingleKeySymbalMap.end()) {
+            code = SingleKeySymbalMap.find(ch)->second;
+        } else if (MultiKeySymbalMap.find(ch) != MultiKeySymbalMap.end()) {
+            ctrlCode = OHOS::MMI::KeyEvent::KEYCODE_SHIFT_LEFT;
+            code = MultiKeySymbalMap.find(ch)->second;
         } else {
             return false;
         }
