@@ -131,7 +131,7 @@ namespace OHOS::uitest {
         {'?', OHOS::MMI::KeyEvent::KEYCODE_SLASH},
         {'{', OHOS::MMI::KeyEvent::KEYCODE_LEFT_BRACKET},
         {'}', OHOS::MMI::KeyEvent::KEYCODE_RIGHT_BRACKET},
-        {'|', OHOS::MMI::KeyEvent::KEYCODE_APOSTROPHE}
+        {'|', OHOS::MMI::KeyEvent::KEYCODE_BACKSLASH}
     };
 
     static constexpr EventSpec WATCHED_EVENTS[] = {
