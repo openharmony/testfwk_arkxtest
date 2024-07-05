@@ -145,4 +145,6 @@ export class Hypium {
   static get(key: string): any
   static registerAssert(customAssertion: Function): void
   static unregisterAssert(customAssertion: string | Function): void
+  static hypiumWorkerTest(abilityDelegator: Object, abilityDelegatorArguments: Object, testsuite: Function, workerPort: Object): void;
+  static hypiumInitWorkers(abilityDelegator: Object, scriptURL: string, workerNum: number, params: Object): void;
 }
