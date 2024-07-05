@@ -20,6 +20,7 @@ export default class SysTestKit {
 
   static delegator = null;
   static systemTime = null;
+  static workerPort = null;
 
   constructor() {
     this.id = 'sysTestKit';
