@@ -69,9 +69,10 @@ class Hypium {
         testsuite();
         core.execute(abilityDelegator);
     }
-    static hypiumInitWorkers(abilityDelegator, scriptURL, workerNum = 8, params) {
+    static async hypiumInitWorkers(abilityDelegator, scriptURL, workerNum = 8, params) {
         console.log(`${TAG}, hypiumInitWorkers call,${scriptURL}`);
         let workerPromiseArray = [];
+        let startTime = await SysTestKit.getRealTime();
         for (let i = 0; i < workerNum; i++) {
             console.log(`${TAG}, create worker ${i}`);
             const workerPromise = new Promise((resolve, reject) => {
@@ -101,7 +102,7 @@ class Hypium {
             workerPromiseArray.push(workerPromise);
         }
         const ret = {total: 0, failure: 0, error: 0, pass: 0, ignore: 0, duration: 0};
-        Promise.all(workerPromiseArray).then((items) => {
+        Promise.all(workerPromiseArray).then(async (items) => {
             console.log(`${TAG}, all result from workers, ${JSON.stringify(workerPromiseArray)}`);
             let allItemList = new Array();
             for (const {total, failure, error, pass, ignore, duration, itItemList} of items) {
@@ -172,10 +173,13 @@ class Hypium {
                 abilityDelegator.printSync(msg);
                 index ++;
             }
+            // 用例执行完成统计时间
+            let endTime = await SysTestKit.getRealTime();
+            const taskConsuming = endTime - startTime;
             const message =
                 `OHOS_REPORT_ALL_RESULT: stream=Test run: runTimes: ${ret.total},total: ${retResult.total}, Failure: ${retResult.failure}, Error: ${retResult.error}, Pass: ${retResult.pass}, Ignore: ${retResult.ignore}` +
                  `\nOHOS_REPORT_ALL_CODE: ${retResult.failure > 0 || retResult.error > 0 ? -1 : 0}` +
-                 `\nOHOS_REPORT_ALL_STATUS: taskconsuming=${ret.duration}`
+                 `\nOHOS_REPORT_ALL_STATUS: taskconsuming=${taskConsuming > 0 ? taskConsuming : ret.duration}`
             abilityDelegator.printSync(message);
             console.log(`${TAG}, [end] you worker test`)
             abilityDelegator.finishTest("you worker test finished!!!", 0, () => {});

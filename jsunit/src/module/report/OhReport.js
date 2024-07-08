@@ -40,9 +40,9 @@ class OhReport {
   }
 
   async taskDone() {
+    let summary = this.suiteService.getSummary();
     if (this.abilityDelegatorArguments !== null) {
       this.taskDoneTime = new Date().getTime();
-      let summary = this.suiteService.getSummary();
       const configService = this.coreContext.getDefaultService('config');
       const suiteService = this.coreContext.getDefaultService('suite');
       const specService = this.coreContext.getDefaultService('spec');
@@ -69,20 +69,19 @@ class OhReport {
       }
       console.info(`${message}`);
       await SysTestKit.print(message);
-
-      if (SysTestKit.workerPort === null || SysTestKit.workerPort === undefined) {
-        // 主线程执行完成 结束任务。
-        console.log(`${TAG}report print success`);
-        this.delegator.finishTest('your test finished!!!', 0, () => { });
-      } else {
-        // worker线程执行完成将数据发送到主线程中。
-        let sendData = {
-          currentThreadName: this.currentThreadName,
-          summary: summary
-        }
-        console.log(`${TAG}, send data to mainThread, ${this.currentThreadName}, ${JSON.stringify(sendData)}`);
-        SysTestKit.workerPort.postMessage(sendData);
+    }
+    if (SysTestKit.workerPort === null || SysTestKit.workerPort === undefined) {
+      // 主线程执行完成 结束任务。
+      console.log(`${TAG}report print success`);
+      this.delegator.finishTest('your test finished!!!', 0, () => { });
+    } else {
+      // worker线程执行完成将数据发送到主线程中。
+      let sendData = {
+        currentThreadName: this.currentThreadName,
+        summary: summary
       }
+      console.log(`${TAG}, send data to mainThread, ${this.currentThreadName}, ${JSON.stringify(sendData)}`);
+      SysTestKit.workerPort.postMessage(sendData);
     }
   }
 
