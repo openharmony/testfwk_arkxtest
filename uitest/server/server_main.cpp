@@ -241,6 +241,7 @@ namespace OHOS::uitest {
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
         if (!(argc == INDEX_THREE || argc == INDEX_FOUR)) {
+            PrintToConsole("Missing parameter. \n");
             PrintToConsole(usage);
             return EXIT_FAILURE;
         }
@@ -262,6 +263,7 @@ namespace OHOS::uitest {
             EventData::ReadEventLine();
             return OHOS::ERR_OK;
         } else {
+            PrintToConsole("Illegal argument: " + opt);
             PrintToConsole(usage);
             return EXIT_FAILURE;
         }
@@ -270,6 +272,7 @@ namespace OHOS::uitest {
     static int32_t UiInput(int32_t argc, char *argv[])
     {
         if ((size_t)argc < INDEX_FOUR) {
+            std::cout << "Missing parameter. \n" << std::endl;
             PrintInputMessage();
             return EXIT_FAILURE;
         }
