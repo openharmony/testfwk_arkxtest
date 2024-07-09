@@ -64,9 +64,6 @@ class OhReport {
         message += '\n' + 'OHOS_REPORT_RESULT: breakOnError model, Stopping whole test suite if one specific test case failed or error' + '\n';
       }
       message += 'OHOS_REPORT_STATUS: taskconsuming=' + summary.duration + '\n';
-      if (SysTestKit.workerPort !== null) {
-        message += 'OHOS_REPORT_STATUS: currentWorkerName=' + this.currentThreadName + '\n';
-      }
       console.info(`${message}`);
       await SysTestKit.print(message);
     }
