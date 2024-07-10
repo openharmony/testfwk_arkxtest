@@ -22,7 +22,7 @@ import SysTestKit from './src/module/kit/SysTestKit';
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified, xdescribe, xit } from './src/interface';
 import { MockKit, when } from './src/module/mock/MockKit';
 import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
-import  worker  from '@ohos.worker';
+import worker from '@ohos.worker';
 
 class Hypium {
     static context = new Map();
@@ -104,7 +104,7 @@ class Hypium {
             console.log(`${TAG}, [end] you worker test`)
             abilityDelegator.finishTest('you worker test finished!!!', 0, () => {});
         }).catch((e) => {
-            console.log(`${TAG}, [end] error you worker test, ${JSON.stringify(e)}`)
+            console.log(`${TAG}, [end] error you worker test, ${JSON.stringify(e)}`);
             abilityDelegator.finishTest('you worker test error finished!!!', 0, () => {});
         }).finally(() => {
             console.log(`${TAG}, all promise finally end`);
