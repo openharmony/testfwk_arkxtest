@@ -295,15 +295,27 @@ class SuiteService {
         if (suite.specs.length > 0) {
             for (const itItem of suite.specs) {
                 obj.total++;
+                let itInfo = {
+                    currentThreadName: 'mainThread',
+                    description: suite.description + '#' + itItem.description,
+                    result: -3
+                };
+                if (SysTestKit.workerPort !== null) {
+                    itInfo.currentThreadName = SysTestKit.workerPort.name;
+                }
+                obj.itItemList.push(itInfo);
                 if (breakOnError && (obj.error > 0 || obj.failure > 0)) { // breakOnError模式
                     continue;
                 }
                 if (itItem.error) {
                     obj.error++;
+                    itInfo.result = -1;
                 } else if (itItem.fail) {
                     obj.failure++;
+                    itInfo.result = -2;
                 } else if (itItem.pass === true) {
                     obj.pass++;
+                    itInfo.result = 0;
                 }
             }
         }
@@ -349,7 +361,8 @@ class SuiteService {
         let breakOnError = configService.isBreakOnError();
         let isError = specService.getStatus();
         let isBreaKOnError = breakOnError && isError;
-        let obj = { total: 0, failure: 0, error: 0, pass: 0, ignore: 0, duration: 0 };
+        // itItemList 保存当前用例执行情况, 发送到主线程用例计算最终结果
+        let obj = { total: 0, failure: 0, error: 0, pass: 0, ignore: 0, duration: 0, itItemList: []};
         for (const suiteItem of rootSuite.childSuites) {
             this.traversalResults(suiteItem, obj, isBreaKOnError);
         }

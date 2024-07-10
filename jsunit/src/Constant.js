@@ -20,6 +20,18 @@ export const TAG = '[Hypium]';
 
 export const DEFAULT = 0B0000;
 
+export class PrintTag {
+    static OHOS_REPORT_WORKER_STATUS = 'OHOS_REPORT_WORKER_STATUS';
+    static OHOS_REPORT_ALL_RESULT = 'OHOS_REPORT_ALL_RESULT';
+    static OHOS_REPORT_ALL_CODE = 'OHOS_REPORT_ALL_CODE';
+    static OHOS_REPORT_ALL_STATUS = 'OHOS_REPORT_ALL_STATUS';
+    static OHOS_REPORT_RESULT = 'OHOS_REPORT_RESULT';
+    static OHOS_REPORT_CODE = 'OHOS_REPORT_CODE';
+    static OHOS_REPORT_STATUS = 'OHOS_REPORT_STATUS';
+    static OHOS_REPORT_SUM = 'OHOS_REPORT_SUM';
+    static OHOS_REPORT_STATUS_CODE = 'OHOS_REPORT_STATUS_CODE';
+};
+
 export class TestType {
     static FUNCTION = 0B1;
     static PERFORMANCE = 0B1 << 1;
