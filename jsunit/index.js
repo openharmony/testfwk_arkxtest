@@ -14,7 +14,7 @@
  */
 
 import Core from './src/core';
-import { DEFAULT, TestType, Size, Level, TAG } from './src/Constant';
+import { DEFAULT, TestType, Size, Level, TAG, PrintTag } from './src/Constant';
 import DataDriver from './src/module/config/DataDriver';
 import ExpectExtend from './src/module/assert/ExpectExtend';
 import OhReport from './src/module/report/OhReport';
@@ -97,9 +97,9 @@ class Hypium {
             let endTime = await SysTestKit.getRealTime();
             const taskConsuming = endTime - startTime;
             const message =
-                `OHOS_REPORT_ALL_RESULT: stream=Test run: runTimes: ${ret.total},total: ${retResult.total}, Failure: ${retResult.failure}, Error: ${retResult.error}, Pass: ${retResult.pass}, Ignore: ${retResult.ignore}` +
-                 `\nOHOS_REPORT_ALL_CODE: ${retResult.failure > 0 || retResult.error > 0 ? -1 : 0}` +
-                 `\nOHOS_REPORT_ALL_STATUS: taskconsuming=${taskConsuming > 0 ? taskConsuming : ret.duration}`
+                `${PrintTag.OHOS_REPORT_ALL_RESULT}: stream=Test run: runTimes: ${ret.total},total: ${retResult.total}, Failure: ${retResult.failure}, Error: ${retResult.error}, Pass: ${retResult.pass}, Ignore: ${retResult.ignore}` +
+                    `\n${PrintTag.OHOS_REPORT_ALL_CODE}: ${retResult.failure > 0 || retResult.error > 0 ? -1 : 0}` +
+                    `\n${PrintTag.OHOS_REPORT_ALL_STATUS}: taskconsuming=${taskConsuming > 0 ? taskConsuming : ret.duration}`
             abilityDelegator.printSync(message);
             console.log(`${TAG}, [end] you worker test`)
             abilityDelegator.finishTest("you worker test finished!!!", 0, () => {});
@@ -204,10 +204,11 @@ class Hypium {
                 des = 'undefined';
                 itName = 'undefined';
             }
-            let msg = `OHOS_REPORT_WORKER_STATUS: class=${des}`
-            msg += `\nOHOS_REPORT_WORKER_STATUS: test=${itName}`
-            msg += `\nOHOS_REPORT_WORKER_STATUS: current=${index}`
-            msg += `\nOHOS_REPORT_WORKER_STATUS: CODE=${result}\n`
+
+            let msg = `\n${PrintTag.OHOS_REPORT_WORKER_STATUS}: class=${des}`
+            msg += `\n${PrintTag.OHOS_REPORT_WORKER_STATUS}: test=${itName}`
+            msg += `\n${PrintTag.OHOS_REPORT_WORKER_STATUS}: current=${index}`
+            msg += `\n${PrintTag.OHOS_REPORT_WORKER_STATUS}: CODE=${result}`
             abilityDelegator.printSync(msg);
             index ++;
         }
