@@ -102,13 +102,13 @@ class Hypium {
                     `\n${PrintTag.OHOS_REPORT_ALL_STATUS}: taskconsuming=${taskConsuming > 0 ? taskConsuming : ret.duration}`
             abilityDelegator.printSync(message);
             console.log(`${TAG}, [end] you worker test`)
-            abilityDelegator.finishTest("you worker test finished!!!", 0, () => {});
+            abilityDelegator.finishTest('you worker test finished!!!', 0, () => {});
         }).catch((e) => {
             console.log(`${TAG}, [end] error you worker test, ${JSON.stringify(e)}`)
-            abilityDelegator.finishTest("you worker test error finished!!!", 0, () => {});
+            abilityDelegator.finishTest('you worker test error finished!!!', 0, () => {});
         }).finally(() => {
             console.log(`${TAG}, all promise finally end`);
-        })
+        });
     }
     // 创建worker线程
     static createWorkerPromise(scriptURL, i, params) {
@@ -125,18 +125,18 @@ class Hypium {
                 resolve(e.data?.summary);
                 console.log(`${TAG}, ${currentThreadName} finish`);
                 workerInstance.terminate();
-            }
-            workerInstance.onerror = function (e)  {
+            };
+            workerInstance.onerror = function (e) {
                 console.log(`${TAG}, worker error, ${JSON.stringify(e)}`);
                 reject(e);
                 workerInstance.terminate();
-            }
+            };
             workerInstance.onmessageerror = function (e) {
                 console.log(`${TAG}, worker message error, ${JSON.stringify(e)}`);
                 reject(e);
                 workerInstance.terminate();
-            }
-        })
+            };
+        });
         return workerPromise;
     }
     static handleWorkerTestResult(ret, allItemList, items) {
@@ -148,25 +148,27 @@ class Hypium {
             ret.pass += pass;
             ret.ignore += ignore;
             ret.duration += duration;
-
-            // 遍历所有的用例结果统计最终结果
-            for (const {currentThreadName, description, result} of itItemList) {
-                let item = allItemList.find((it) => it.description === description);
-                if (item) {
-                    let itResult = item.result;
-                    // 当在worker中出现一次failure就标记为failure, 出现一次error就标记为error, 所有线程都pass才标记为pass
-                    if (itResult === 0) {
-                        item.result = result;
-                        item.currentThreadName = currentThreadName;
-                    }
-                } else {
-                    let it = {
-                        description: description,
-                        currentThreadName: currentThreadName,
-                        result: result
-                    }
-                    allItemList.push(it);
+            Hypium.handleItResult(allItemList, itItemList);
+        }
+    }
+    static handleItResult(allItemList, itItemList) {
+        // 遍历所有的用例结果统计最终结果
+        for (const {currentThreadName, description, result} of itItemList) {
+            let item = allItemList.find((it) => it.description === description);
+            if (item) {
+                let itResult = item.result;
+                // 当在worker中出现一次failure就标记为failure, 出现一次error就标记为error, 所有线程都pass才标记为pass
+                if (itResult === 0) {
+                    item.result = result;
+                    item.currentThreadName = currentThreadName;
                 }
+            } else {
+                let it = {
+                    description: description,
+                    currentThreadName: currentThreadName,
+                    result: result
+                };
+                allItemList.push(it);
             }
         }
     }
@@ -191,7 +193,7 @@ class Hypium {
         let index = 1;
         for (const {currentThreadName, description, result} of allItemList) {
             console.log(`${TAG}, description print, ${description}, result,${result}`);
-            let itArray = description.split("#");
+            let itArray = description.split('#');
             let des;
             let itName;
             if (itArray.length > 1) {
@@ -205,10 +207,10 @@ class Hypium {
                 itName = 'undefined';
             }
 
-            let msg = `\n${PrintTag.OHOS_REPORT_WORKER_STATUS}: class=${des}`
-            msg += `\n${PrintTag.OHOS_REPORT_WORKER_STATUS}: test=${itName}`
-            msg += `\n${PrintTag.OHOS_REPORT_WORKER_STATUS}: current=${index}`
-            msg += `\n${PrintTag.OHOS_REPORT_WORKER_STATUS}: CODE=${result}`
+            let msg = `\n${PrintTag.OHOS_REPORT_WORKER_STATUS}: class=${des}`;
+            msg += `\n${PrintTag.OHOS_REPORT_WORKER_STATUS}: test=${itName}`;
+            msg += `\n${PrintTag.OHOS_REPORT_WORKER_STATUS}: current=${index}`;
+            msg += `\n${PrintTag.OHOS_REPORT_WORKER_STATUS}: CODE=${result}`;
             abilityDelegator.printSync(msg);
             index ++;
         }

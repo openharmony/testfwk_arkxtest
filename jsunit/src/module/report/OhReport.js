@@ -24,7 +24,7 @@ class OhReport {
     this.id = 'report';
     this.index = 0;
     this.duration = 0;
-    this.currentThreadName = "mainThread";
+    this.currentThreadName = 'mainThread';
   }
 
   init(coreContext) {
@@ -76,7 +76,7 @@ class OhReport {
       let sendData = {
         currentThreadName: this.currentThreadName,
         summary: summary
-      }
+      };
       console.log(`${TAG}, send data to mainThread, ${this.currentThreadName}, ${JSON.stringify(sendData)}`);
       SysTestKit.workerPort.postMessage(sendData);
     }

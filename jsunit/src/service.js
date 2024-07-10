@@ -296,10 +296,10 @@ class SuiteService {
             for (const itItem of suite.specs) {
                 obj.total++;
                 let itInfo = {
-                    currentThreadName: "mainThread",
-                    description: suite.description + "#" + itItem.description,
+                    currentThreadName: 'mainThread',
+                    description: suite.description + '#' + itItem.description,
                     result: -3
-                }
+                };
                 if (SysTestKit.workerPort !== null) {
                     itInfo.currentThreadName = SysTestKit.workerPort.name;
                 }
