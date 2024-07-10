@@ -101,7 +101,7 @@ class Hypium {
                     `\n${PrintTag.OHOS_REPORT_ALL_CODE}: ${retResult.failure > 0 || retResult.error > 0 ? -1 : 0}` +
                     `\n${PrintTag.OHOS_REPORT_ALL_STATUS}: taskconsuming=${taskConsuming > 0 ? taskConsuming : ret.duration}`
             abilityDelegator.printSync(message);
-            console.log(`${TAG}, [end] you worker test`)
+            console.log(`${TAG}, [end] you worker test`);
             abilityDelegator.finishTest('you worker test finished!!!', 0, () => {});
         }).catch((e) => {
             console.log(`${TAG}, [end] error you worker test, ${JSON.stringify(e)}`);
