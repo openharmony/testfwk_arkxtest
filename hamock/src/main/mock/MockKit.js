@@ -15,7 +15,7 @@
 
 import ExtendInterface from './ExtendInterface';
 import VerificationMode from './VerificationMode';
-import ArgumentMatchers from './ArgumentMatchers';
+import { ArgumentMatchers } from './ArgumentMatchers';
 
 class MockKit {
     constructor() {
