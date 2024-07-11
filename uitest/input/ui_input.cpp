@@ -39,8 +39,8 @@ namespace OHOS::uitest {
     void PrintInputMessage()
     {
         const std::string usage =
-        "   The command and default sources are : \n"
-        "   dircFling <direction>, direction can choose from 0,1,2,3 (left, right, up, down) \n"
+        "USAGE : \n"
+        "   dircFling <direction>, direction can choose from 0,1,2,3 (left, right, up, down) [velocity stepLength] \n"
         "   click/doubleClick/longClick <x> <y> \n"
         "   swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity: Value range from 200 to 40000, default 600] \n"
         "   fling <from_x> <from_y> <to_x> <to_y> [velocity stepLength] \n"
@@ -76,6 +76,7 @@ namespace OHOS::uitest {
                 from.py_ = to.py_ + screenSize.py_ / INDEX_FOUR;
                 return true;
             default:
+                std::cout << "Illegal argument: " + std::to_string(direction) << std::endl;
                 PrintInputMessage();
                 return false;
         }
