@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import ExtendInterface from './ExtendInterface';
-import VerificationMode from './VerificationMode';
-import { ArgumentMatchers } from './ArgumentMatchers';
+import ExtendInterface from './ExtendInterface.js';
+import VerificationMode from './VerificationMode.js';
+import { ArgumentMatchers } from './ArgumentMatchers.js';
 
 class MockKit {
     constructor() {
