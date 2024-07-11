@@ -104,25 +104,25 @@ namespace OHOS::uitest {
         {',', OHOS::MMI::KeyEvent::KEYCODE_COMMA},
         {';', OHOS::MMI::KeyEvent::KEYCODE_SEMICOLON},
         {'\'', OHOS::MMI::KeyEvent::KEYCODE_APOSTROPHE},
-        {'@', OHOS::MMI::KeyEvent::KEYCODE_AT},
-        {'+', OHOS::MMI::KeyEvent::KEYCODE_PLUS},
         {'/', OHOS::MMI::KeyEvent::KEYCODE_SLASH},
         {'*', OHOS::MMI::KeyEvent::KEYCODE_NUMPAD_MULTIPLY},
         {'-', OHOS::MMI::KeyEvent::KEYCODE_MINUS},
-        {'+', OHOS::MMI::KeyEvent::KEYCODE_NUMPAD_ADD},
         {'.', OHOS::MMI::KeyEvent::KEYCODE_PERIOD},
-        {'=', OHOS::MMI::KeyEvent::KEYCODE_EQUALS},
-        {'(', OHOS::MMI::KeyEvent::KEYCODE_NUMPAD_LEFT_PAREN},
-        {')', OHOS::MMI::KeyEvent::KEYCODE_NUMPAD_RIGHT_PAREN}};
+        {'=', OHOS::MMI::KeyEvent::KEYCODE_EQUALS}
+    };
 
     const std::map<char, int32_t> MultiKeySymbalMap = {
         {'~', OHOS::MMI::KeyEvent::KEYCODE_GRAVE},
         {'!', OHOS::MMI::KeyEvent::KEYCODE_1},
+        {'@', OHOS::MMI::KeyEvent::KEYCODE_2},
         {'#', OHOS::MMI::KeyEvent::KEYCODE_3},
         {'$', OHOS::MMI::KeyEvent::KEYCODE_4},
         {'%', OHOS::MMI::KeyEvent::KEYCODE_5},
         {'^', OHOS::MMI::KeyEvent::KEYCODE_6},
         {'&', OHOS::MMI::KeyEvent::KEYCODE_7},
+        {'(', OHOS::MMI::KeyEvent::KEYCODE_9},
+        {')', OHOS::MMI::KeyEvent::KEYCODE_0},
+        {'+', OHOS::MMI::KeyEvent::KEYCODE_EQUALS},
         {'_', OHOS::MMI::KeyEvent::KEYCODE_MINUS},
         {':', OHOS::MMI::KeyEvent::KEYCODE_SEMICOLON},
         {'"', OHOS::MMI::KeyEvent::KEYCODE_APOSTROPHE},
@@ -721,9 +721,10 @@ namespace OHOS::uitest {
             }
             return false;
         }
-        const auto timeout = chrono::milliseconds(1000);
+        const auto timeout = chrono::milliseconds(3000);
         if (condition->wait_for(uLock, timeout) == cv_status::timeout) {
             LOG_E("Wait connection to AccessibilityUITestAbility timed out");
+            error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS, RET_TIMEOUT");
             return false;
         }
         connected_ = true;

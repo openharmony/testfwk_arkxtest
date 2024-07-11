@@ -77,8 +77,8 @@ namespace OHOS::uitest {
         PointerMatrix pointer(fingers, steps + 1);
 
         pointer.PushAction(TouchEvent {ActionStage::DOWN, {from.px_, from.py_}, 0, intervalMs});
-        float stepLengthX = (double)distanceX / (double)static_cast<int32_t>(steps);
-        float stepLengthY = (double)distanceY / (double)static_cast<int32_t>(steps);
+        float stepLengthX = static_cast<double>(distanceX) / static_cast<double>(steps);
+        float stepLengthY = static_cast<double>(distanceY) / static_cast<double>(steps);
 
         for (uint32_t step = 1; step < steps; step++) {
             const int32_t pointX = from.px_ + stepLengthX * step;
