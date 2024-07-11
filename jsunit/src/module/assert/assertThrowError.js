@@ -15,7 +15,7 @@
 
 function assertThrowError(actualValue, expected) {
     let result = false;
-    let message = "";
+    let message = '';
     let err;
     if (typeof actualValue !== 'function') {
         throw new Error('actualValue is not a function');

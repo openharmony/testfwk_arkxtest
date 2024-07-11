@@ -52,16 +52,16 @@ const xdescribe = function (desc, func) {
 xdescribe.reason = (reason) => {
     return (desc, func) => {
         return Reflect.has(core, 'xdescribe') ? core.xdescribe(desc, func, reason) : (desc, func, reason) => { };
-    }
-}
+    };
+};
 const xit = function (desc, filter, func) {
     return Reflect.has(core, 'xit') ? core.xit(desc, filter, func, null) : (desc, filter, func, reason) => { };
 };
 xit.reason = (reason) => {
     return (desc, filter, func) => {
         return Reflect.has(core, 'xit') ? core.xit(desc, filter, func, reason) : (desc, filter, func, reason) => { };
-    }
-}
+    };
+};
 
 export {
     describe, it, beforeAll, beforeEach, afterEach, afterAll, expect, beforeItSpecified, afterItSpecified, xdescribe, xit

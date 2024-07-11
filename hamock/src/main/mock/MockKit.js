@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,9 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import ExtendInterface from "./ExtendInterface.js";
-import VerificationMode from "./VerificationMode.js";
-import { ArgumentMatchers } from "./ArgumentMatchers.js";
+
+import ExtendInterface from './ExtendInterface';
+import VerificationMode from './VerificationMode';
+import ArgumentMatchers from './ArgumentMatchers';
+
 class MockKit {
     constructor() {
         this.mFunctions = [];
@@ -45,8 +47,12 @@ class MockKit {
         this.reset();
     }
     clear(obj) {
-        if (!obj) throw Error("Please enter an object to be cleaned");
-        if (typeof (obj) !== 'object' && typeof (obj) !== 'function') throw new Error('Not a object or static class');
+        if (!obj) {
+            throw Error('Please enter an object to be cleaned');
+        }
+        if (typeof (obj) !== 'object' && typeof (obj) !== 'function') {
+            throw new Error('Not a object or static class');
+        }
         this.recordMockedMethod.forEach(function (value, key, map) {
             if (key) {
                 obj[key] = value;
@@ -54,8 +60,12 @@ class MockKit {
         });
     }
     ignoreMock(obj, method) {
-        if (typeof (obj) !== 'object' && typeof (obj) !== 'function') throw new Error('Not a object or static class');
-        if (typeof (method) !== 'function') throw new Error('Not a function');
+        if (typeof (obj) !== 'object' && typeof (obj) !== 'function') {
+            throw new Error('Not a object or static class');
+        }
+        if (typeof (method) !== 'function') {
+            throw new Error('Not a function');
+        }
         let og = this.recordMockedMethod.get(method.propName);
         if (og) {
             obj[method.propName] = og;
@@ -63,13 +73,13 @@ class MockKit {
         }
     }
     extend(dest, source) {
-        dest["stub"] = source["stub"];
-        dest["afterReturn"] = source["afterReturn"];
-        dest["afterReturnNothing"] = source["afterReturnNothing"];
-        dest["afterAction"] = source["afterAction"];
-        dest["afterThrow"] = source["afterThrow"];
-        dest["stubMockedCall"] = source["stubMockedCall"];
-        dest["clear"] = source["clear"];
+        dest['stub'] = source['stub'];
+        dest['afterReturn'] = source['afterReturn'];
+        dest['afterReturnNothing'] = source['afterReturnNothing'];
+        dest['afterAction'] = source['afterAction'];
+        dest['afterThrow'] = source['afterThrow'];
+        dest['stubMockedCall'] = source['stubMockedCall'];
+        dest['clear'] = source['clear'];
         return dest;
     }
     stubApply(f, params, returnInfo) {
@@ -78,8 +88,8 @@ class MockKit {
             values = new Map();
         }
         let key = params[0];
-        if (typeof key === "undefined") {
-            key = "anonymous-mock-" + f.propName;
+        if (typeof key == 'undefined') {
+            key = 'anonymous-mock-' + f.propName;
         }
         let matcher = new ArgumentMatchers();
         if (matcher.matcheStubKey(key)) {
@@ -97,12 +107,12 @@ class MockKit {
             return undefined;
         }
         let retrunKet = params[0];
-        if (typeof retrunKet === "undefined") {
-            retrunKet = "anonymous-mock-" + f.propName;
+        if (typeof retrunKet == 'undefined') {
+            retrunKet = 'anonymous-mock-' + f.propName;
         }
         let stubSetKey = this.currentSetKey.get(f);
 
-        if (stubSetKey && (typeof (retrunKet) !== "undefined")) {
+        if (stubSetKey && (typeof (retrunKet) !== 'undefined')) {
             retrunKet = stubSetKey;
         }
         let matcher = new ArgumentMatchers();
@@ -133,12 +143,12 @@ class MockKit {
         return false;
     }
     findProperties(obj, ...arg) {
-        function getProperty(new_obj) {
-            if (new_obj.__proto__ === null) {
+        function getProperty(newObj) {
+            if (newObj.__proto__ === null) {
                 return [];
             }
-            let properties = Object.getOwnPropertyNames(new_obj);
-            return [...properties, ...getProperty(new_obj.__proto__)];
+            let properties = Object.getOwnPropertyNames(newObj);
+            return [...properties, ...getProperty(newObj.__proto__)];
         }
         return getProperty(obj);
     }
@@ -172,8 +182,9 @@ class MockKit {
         f.container = null || originalObject;
         f.original = originalMethod || null;
         if (originalObject && originalMethod) {
-            if (typeof (originalMethod) != 'function')
+            if (typeof (originalMethod) !== 'function') {
                 throw new Error('Not a function');
+            }
             var name = this.findName(originalObject, originalMethod);
             originalObject[name] = f;
             this.recordMockedMethod.set(name, originalMethod);
@@ -187,13 +198,13 @@ class MockKit {
     }
     verify(methodName, argsArray) {
         if (!methodName) {
-            throw Error("not a function name");
+            throw Error('not a function name');
         }
         let a = this.recordCalls.get(methodName + '(' + argsArray.toString() + ')');
         return new VerificationMode(a ? a : 0);
     }
     mockObject(object) {
-        if (!object || typeof object === "string") {
+        if (!object || typeof object === 'string') {
             throw Error(`this ${object} cannot be mocked`);
         }
         const _this = this;
@@ -208,12 +219,12 @@ class MockKit {
     }
 }
 function ifMockedFunction(f) {
-    if (Object.prototype.toString.call(f) != "[object Function]" &&
-        Object.prototype.toString.call(f) != "[object AsyncFunction]") {
-        throw Error("not a function");
+    if (Object.prototype.toString.call(f) !== '[object Function]' &&
+        Object.prototype.toString.call(f) !== '[object AsyncFunction]') {
+        throw Error('not a function');
     }
     if (!f.stub) {
-        throw Error("not a mock function");
+        throw Error('not a mock function');
     }
     return true;
 }

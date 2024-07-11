@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import SysTestKit from "../kit/SysTestKit";
+import SysTestKit from '../kit/SysTestKit';
 import fs from '@ohos.file.fs';
 import {TAG} from '../../Constant';
 
@@ -26,7 +26,7 @@ export async function collectCoverageData() {
     }
     const strJson = JSON.stringify(globalThis.__coverage__);
     let testMode = globalThis.__testMode__;
-    console.info(`${TAG} coverage data testMode: ${testMode}`)
+    console.info(`${TAG} coverage data testMode: ${testMode}`);
     let savePath = globalThis.__savePath__;
     console.info(`${TAG} write coverage data to: ${savePath}`);
     let readPath = globalThis.__readPath__;
@@ -34,7 +34,7 @@ export async function collectCoverageData() {
 
     // run callback mode if local test or (save path and read path ) is not defined
     if (!testMode || !isCoveragePathValid(savePath)) {
-        console.info(`${TAG} run coverage data in call back mode`)
+        console.info(`${TAG} run coverage data in call back mode`);
         const strLen = strJson.length;
         const maxLen = 500;
         const maxCount = Math.floor(strLen / maxLen);
@@ -46,18 +46,18 @@ export async function collectCoverageData() {
         return;
     }
     console.info(`${TAG} run coverage data in save file mode`);
-    if(fs.accessSync(savePath)) {
-        fs.unlinkSync(savePath)
+    if (fs.accessSync(savePath)) {
+        fs.unlinkSync(savePath);
     }
     
     let inputPathDir = savePath.substring(0, savePath.length - jsCoverageFileName.length);
     if (!fs.accessSync(inputPathDir)) {
         console.info(`${TAG} coverage data create dir: ${inputPathDir}`);
-        fs.mkdirSync(inputPathDir)
+        fs.mkdirSync(inputPathDir);
     }
 
     let file = fs.openSync(savePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
-    let writeLen = fs.writeSync(file.fd, strJson, {encoding:"utf-8"});
+    let writeLen = fs.writeSync(file.fd, strJson, {encoding:'utf-8'});
     console.info(`${TAG} write coverage data success: ${writeLen}`);
     fs.closeSync(file);
     const OHOS_REPORT_COVERAGE_PATH = 'OHOS_REPORT_COVERAGE_PATH:';
