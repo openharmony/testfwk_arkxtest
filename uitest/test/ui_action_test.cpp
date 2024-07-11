@@ -142,8 +142,8 @@ TEST_F(UiActionTest, computeSwipeAction)
     ASSERT_EQ(steps, totalCostMs / intervalMsInSwipe);
 
     uint32_t step = 0;
-    float stepLengthX = (double)disX / (double)static_cast<int32_t>(steps);
-    float stepLengthY = (double)disY / (double)static_cast<int32_t>(steps);
+    float stepLengthX = static_cast<double>(disX) / static_cast<double>(steps);
+    float stepLengthY = static_cast<double>(disY) / static_cast<double>(steps);
     // check the TouchEvent of each step
     for (uint32_t event = 0; event < steps; event++) {
         int32_t expectedPointerX = point0.px_ + stepLengthX * event;
@@ -189,8 +189,8 @@ TEST_F(UiActionTest, computeFlingAction)
     ASSERT_EQ(steps, 141);
 
     uint32_t step = 0;
-    float stepLengthX = (double)disX / (double)static_cast<int32_t>(steps);
-    float stepLengthY = (double)disY / (double)static_cast<int32_t>(steps);
+    float stepLengthX = static_cast<double>(disX) / static_cast<double>(steps);
+    float stepLengthY = static_cast<double>(disY) / static_cast<double>(steps);
     // check the TouchEvent of each step
     for (uint32_t event = 0; event < steps; event++) {
         int32_t expectedPointerX = point0.px_ + stepLengthX * event;
@@ -250,7 +250,7 @@ TEST_F(UiActionTest, computePinchInAction)
         step++;
     }
     step = 0;
-    float stepLengthX = (double)disX0 / (double)static_cast<int32_t>(steps);
+    float stepLengthX = static_cast<double>(disX0) / static_cast<double>(steps);
 
     for (uint32_t eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
         uint32_t eventFinger = 1;
@@ -370,7 +370,7 @@ TEST_F(UiActionTest, computePinchOutAction)
     ASSERT_EQ(75, disX0);
 
     uint32_t step = 0;
-    float stepLengthX = (double)disX0 / (double)static_cast<int32_t>(steps);
+    float stepLengthX = static_cast<double>(disX0) / static_cast<double>(steps);
     // check the TouchEvent of each step
     for (uint32_t eventStep = 0; eventStep < events.GetSteps(); eventStep++) {
         uint32_t eventFinger = 0;
