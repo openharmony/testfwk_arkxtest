@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-import DeepTypeUtils from './DeepTypeUtils'
+import DeepTypeUtils from './DeepTypeUtils';
 function assertDeepEquals(actualValue, expected) {
     console.log('actualValue:' + actualValue + ',expected:' + expected[0]);
-    let result = eq(actualValue, expected[0],[], [])
+    let result = eq(actualValue, expected[0], [], [])
     let msg = logMsg(actualValue, expected[0]);
     return {
         pass: result,
@@ -35,40 +35,40 @@ function logMsg(actualValue, expected) {
     const bClassName = Object.prototype.toString.call(expected);
     let actualMsg;
     let expectMsg;
-    if(aClassName == "[object Function]") {
-        actualMsg = "actualValue Function"
-    }else if(aClassName == "[object Promise]") {
-        actualMsg = "actualValue Promise"
-    }else if(aClassName == "[object Set]" || aClassName == "[object Map]") {
-        actualMsg = JSON.stringify(Array.from(actualValue));;
-    }else if(aClassName == "[object RegExp]") {
-        actualMsg = JSON.stringify(actualValue.source.replace("\\",""));;
-    }else if(aClassName == "[object BigInt]") {
+    if (aClassName == '[object Function]') {
+        actualMsg = 'actualValue Function';
+    } else if (aClassName == '[object Promise]') {
+        actualMsg = 'actualValue Promise';
+    } else if (aClassName == '[object Set]' || aClassName == '[object Map]') {
+        actualMsg = JSON.stringify(Array.from(actualValue));
+    } else if (aClassName == '[object RegExp]') {
+        actualMsg = JSON.stringify(actualValue.source.replace('\\',''));
+    } else if (aClassName == '[object BigInt]') {
         actualMsg = actualValue;
     }
-    else{
+    else {
         actualMsg = JSON.stringify(actualValue);
     }
-    if(bClassName == "[object Function]") {
-        expectMsg = "expected Function"
-    }else if(bClassName == "[object Promise]") {
-        expectMsg = "expected Promise"
-    }else if(bClassName == "[object Set]" || bClassName == "[object Map]") {
+    if (bClassName == '[object Function]') {
+        expectMsg = 'expected Function';
+    } else if (bClassName == '[object Promise]') {
+        expectMsg = 'expected Promise';
+    } else if (bClassName == '[object Set]' || bClassName == '[object Map]') {
         expectMsg = JSON.stringify(Array.from(expected));
-    }else if(bClassName == "[object RegExp]") {
-        expectMsg = JSON.stringify(expected.source.replace("\\",""));;
-    }else if(bClassName == "[object BigInt]") {
+    } else if (bClassName == '[object RegExp]') {
+        expectMsg = JSON.stringify(expected.source.replace('\\',''));
+    } else if (bClassName == '[object BigInt]') {
         expectMsg = expected;
     }
-    else{
+    else {
         expectMsg = JSON.stringify(expected);
     }
-    return actualMsg + " is not deep equal " + expectMsg;
+    return actualMsg + ' is not deep equal ' + expectMsg;
 }
 
 function eq(a, b, aStack, bStack) {
     let result = true;
-    const asymmetricResult = asymmetricMatch_(a,b);
+     const asymmetricResult = asymmetricMatch(a, b);
     if (!DeepTypeUtils.isUndefined(asymmetricResult)) {
         return asymmetricResult;
     }
@@ -95,28 +95,28 @@ function eq(a, b, aStack, bStack) {
         return false;
     }
     // 俩个string对象
-    if(aClassName === '[object String]') {
+    if (aClassName === '[object String]') {
         result = a == String(b);
         return result;
     }
     // 俩个Number对象
-    if(aClassName === '[object Number]') {
+    if (aClassName === '[object Number]') {
         result = a != +a ? b != +b : a === 0 && b === 0 ? 1 / a == 1 / b : a == +b;
         return result;
     }
 
-    if(aClassName === '[object Date]' || aClassName === '[object Boolean]') {
+    if (aClassName === '[object Date]' || aClassName === '[object Boolean]') {
         result = +a == +b;
         return result;
     }
 
     // 数组
-    if(aClassName === '[object ArrayBuffer]') {
+    if (aClassName === '[object ArrayBuffer]') {
         return eq(new Uint8Array(a), new Uint8Array(b), aStack, bStack);
     }
 
     // 正则表达式
-    if(aClassName === '[object RegExp]') {
+    if (aClassName === '[object RegExp]') {
         return (
             a.source == b.source &&
             a.global == b.global &&
@@ -155,7 +155,7 @@ function eq(a, b, aStack, bStack) {
     let size = 0;
 
     // 都是数组
-    if(aClassName == '[object Array]') {
+    if (aClassName == '[object Array]') {
         const aLength = a.length;
         const bLength = b.length;
         if (aLength !== bLength) {
@@ -169,7 +169,7 @@ function eq(a, b, aStack, bStack) {
         if (!result) {
             return false;
         }
-    } else if(DeepTypeUtils.isMap(a) && DeepTypeUtils.isMap(b)) {
+    } else if (DeepTypeUtils.isMap(a) && DeepTypeUtils.isMap(b)) {
         if (a.size != b.size) {
             return false;
         }
@@ -193,8 +193,8 @@ function eq(a, b, aStack, bStack) {
                 const mapValueA = a.get(mapKey);
                 let mapValueB;
                 if (
-                DeepTypeUtils.isAsymmetricEqualityTester_(mapKey) ||
-                (DeepTypeUtils.isAsymmetricEqualityTester_(cmpKey) &&
+                DeepTypeUtils.isAsymmetricEqualityTester(mapKey) ||
+                (DeepTypeUtils.isAsymmetricEqualityTester(cmpKey) &&
                 eq(mapKey, cmpKey))
                 ) {
                     mapValueB = b.get(cmpKey);
@@ -207,7 +207,7 @@ function eq(a, b, aStack, bStack) {
         if (!result) {
             return false;
         }
-    } else if(DeepTypeUtils.isSet(a) && DeepTypeUtils.isSet(b)) {
+    } else if (DeepTypeUtils.isSet(a) && DeepTypeUtils.isSet(b)) {
         if (a.size != b.size) {
             return false;
         }
@@ -249,8 +249,8 @@ function eq(a, b, aStack, bStack) {
             bCtor = b.constructor;
         if (
         aCtor !== bCtor &&
-        DeepTypeUtils.isFunction_(aCtor) &&
-        DeepTypeUtils.isFunction_(bCtor) &&
+        DeepTypeUtils.isFunction(aCtor) &&
+        DeepTypeUtils.isFunction(bCtor) &&
         a instanceof aCtor &&
         b instanceof bCtor &&
         !(aCtor instanceof aCtor && bCtor instanceof bCtor)
@@ -287,9 +287,9 @@ function eq(a, b, aStack, bStack) {
     return result;
 }
 
-function asymmetricMatch_(a, b) {
-    const asymmetricA = DeepTypeUtils.isAsymmetricEqualityTester_(a);
-    const asymmetricB = DeepTypeUtils.isAsymmetricEqualityTester_(b);
+function asymmetricMatch(a, b) {
+    const asymmetricA = DeepTypeUtils.isAsymmetricEqualityTester(a);
+    const asymmetricB = DeepTypeUtils.isAsymmetricEqualityTester(b);
 
     if (asymmetricA === asymmetricB) {
         return undefined;
