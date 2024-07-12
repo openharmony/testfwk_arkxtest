@@ -95,7 +95,7 @@ function eq(a, b, aStack, bStack) {
     const aClassName = Object.prototype.toString.call(a);
     const bClassName = Object.prototype.toString.call(b);
     // 不同类型不同对象
-    if (aClassName != bClassName) {
+    if (aClassName !== bClassName) {
         return false;
     }
     // 俩个string对象
@@ -109,12 +109,13 @@ function eq(a, b, aStack, bStack) {
         return result;
     }
 
+    // 俩个Date对象/ boolean对象
     if (aClassName === '[object Date]' || aClassName === '[object Boolean]') {
         result = +a == +b;
         return result;
     }
 
-    // 数组
+    // 俩个ArrayBuffer
     if (aClassName === '[object ArrayBuffer]') {
         return eq(new Uint8Array(a), new Uint8Array(b), aStack, bStack);
     }
@@ -145,6 +146,7 @@ function eq(a, b, aStack, bStack) {
     }
     const aIsPromise = DeepTypeUtils.isPromise(a);
     const bIsPromise = DeepTypeUtils.isPromise(b);
+    // 俩个Promise对象
     if (aIsPromise && bIsPromise) {
         return a === b;
     }
@@ -160,93 +162,25 @@ function eq(a, b, aStack, bStack) {
 
     // 都是数组
     if (aClassName == '[object Array]') {
-        const aLength = a.length;
-        const bLength = b.length;
-        if (aLength !== bLength) {
-            // 数组长度不同，不是同一个对象
-            return false;
-            }
-        for (let i = 0; i < aLength || i < bLength; i++) {
-            // 递归每一个元素是否相同
-            result = eq(i < aLength ? a[i] : void 0, i < bLength ? b[i] : void 0, aStack, bStack) && result;
-        }
-        if (!result) {
-            return false;
-        }
-    } else if (DeepTypeUtils.isMap(a) && DeepTypeUtils.isMap(b)) {
-        if (a.size != b.size) {
-            return false;
-        }
-        const keysA = [];
-        const keysB = [];
-        a.forEach(function(valueA, keyA) {
-            keysA.push(keyA);
-        });
-        b.forEach(function(valueB, keyB) {
-            keysB.push(keyB);
-        });
-        const mapKeys = [keysA, keysB];
-        const cmpKeys = [keysB, keysA];
-        for (let i = 0; result && i < mapKeys.length; i++) {
-            const mapIter = mapKeys[i];
-            const cmpIter = cmpKeys[i];
+        result = isEqualArray(a, b, aStack, bStack)
+        return result;
+    }
 
-            for (let j = 0; result && j < mapIter.length; j++) {
-                const mapKey = mapIter[j];
-                const cmpKey = cmpIter[j];
-                const mapValueA = a.get(mapKey);
-                let mapValueB;
-                if (eq(mapKey, cmpKey)) {
-                    mapValueB = b.get(cmpKey);
-                } else {
-                    mapValueB = b.get(mapKey);
-                }
-                result = eq(mapValueA, mapValueB, aStack, bStack);
-            }
-        }
-        if (!result) {
-            return false;
-        }
-    } else if (DeepTypeUtils.isSet(a) && DeepTypeUtils.isSet(b)) {
-        if (a.size != b.size) {
-            return false;
-        }
-        const valuesA = [];
-        a.forEach(function(valueA) {
-            valuesA.push(valueA);
-        });
-        const valuesB = [];
-        b.forEach(function(valueB) {
-            valuesB.push(valueB);
-        });
-        const setPairs = [[valuesA, valuesB], [valuesB, valuesA]];
-       const stackPairs = [[aStack, bStack], [bStack, aStack]];
-        for (let i = 0; result && i < setPairs.length; i++) {
-            const baseValues = setPairs[i][0];
-            const otherValues = setPairs[i][1];
-            const baseStack = stackPairs[i][0];
-            const otherStack = stackPairs[i][1];
-            for (const baseValue of baseValues) {
-                let found = false;
-                for (let j = 0; !found && j < otherValues.length; j++) {
-                    const otherValue = otherValues[j];
-                    const prevStackSize = baseStack.length;
-                    // 深度比较对象
-                    found = eq(baseValue, otherValue, baseStack, otherStack);
-                    if (!found && prevStackSize !== baseStack.length) {
-                        baseStack.splice(prevStackSize);
-                        otherStack.splice(prevStackSize);
-                    }
-                }
-                result = result && found;
-            }
-        }
-        if (!result) {
-            return false;
-        }
-    } else {
-        const aCtor = a.constructor,
-            bCtor = b.constructor;
+    // 都是Map
+    if (DeepTypeUtils.isMap(a) && DeepTypeUtils.isMap(b)) {
+        result = isEqualMap(a, b, aStack, bStack);
+        return result;
+    }
+
+    // 都是Set
+    if (DeepTypeUtils.isSet(a) && DeepTypeUtils.isSet(b)) {
+        result = isEqualSet(a, b, aStack, bStack);
+        return result;
+    }
+
+    // 俩个函数对象
+    const aCtor = a.constructor,
+        bCtor = b.constructor;
         if (
         aCtor !== bCtor &&
         DeepTypeUtils.isFunction(aCtor) &&
@@ -257,7 +191,7 @@ function eq(a, b, aStack, bStack) {
         ) {
             return false;
         }
-    }
+
 
     // 获取对象所有的属性集合
     const aKeys = DeepTypeUtils.keys(a, aClassName == '[object Array]');
@@ -285,6 +219,94 @@ function eq(a, b, aStack, bStack) {
     aStack.pop();
     bStack.pop();
     return result;
+}
+
+function isEqualArray(a, b, aStack, bStack) {
+    let equalArray = true;
+    const aLength = a.length;
+    const bLength = b.length;
+    if (aLength !== bLength) {
+        // 数组长度不同，不是同一个对象
+        return false;
+    }
+    for (let i = 0; i < aLength || i < bLength; i++) {
+        // 递归每一个元素是否相同
+        equalArray = eq(i < aLength ? a[i] : void 0, i < bLength ? b[i] : void 0, aStack, bStack) && equalArray;
+    }
+    return equalArray;
+}
+
+function isEqualMap(a, b, aStack, bStack) {
+    let equalMap = true;
+    if (a.size != b.size) {
+        return false;
+    }
+    const keysA = [];
+    const keysB = [];
+    a.forEach(function(valueA, keyA) {
+        keysA.push(keyA);
+    });
+    b.forEach(function(valueB, keyB) {
+        keysB.push(keyB);
+    });
+    const mapKeys = [keysA, keysB];
+    const cmpKeys = [keysB, keysA];
+    for (let i = 0; equalMap && i < mapKeys.length; i++) {
+        const mapIter = mapKeys[i];
+        const cmpIter = cmpKeys[i];
+
+        for (let j = 0; equalMap && j < mapIter.length; j++) {
+            const mapKey = mapIter[j];
+            const cmpKey = cmpIter[j];
+            const mapValueA = a.get(mapKey);
+            let mapValueB;
+            if (eq(mapKey, cmpKey)) {
+                mapValueB = b.get(cmpKey);
+            } else {
+                mapValueB = b.get(mapKey);
+            }
+            equalMap = eq(mapValueA, mapValueB, aStack, bStack);
+        }
+    }
+    return equalMap;
+}
+
+function isEqualSet(a, b, aStack, bStack) {
+    let equalSet = true;
+    if (a.size != b.size) {
+        return false;
+    }
+    const valuesA = [];
+    a.forEach(function(valueA) {
+        valuesA.push(valueA);
+    });
+    const valuesB = [];
+    b.forEach(function(valueB) {
+        valuesB.push(valueB);
+    });
+    const setPairs = [[valuesA, valuesB], [valuesB, valuesA]];
+    const stackPairs = [[aStack, bStack], [bStack, aStack]];
+    for (let i = 0; equalSet && i < setPairs.length; i++) {
+        const baseValues = setPairs[i][0];
+        const otherValues = setPairs[i][1];
+        const baseStack = stackPairs[i][0];
+        const otherStack = stackPairs[i][1];
+        for (const baseValue of baseValues) {
+            let found = false;
+            for (let j = 0; !found && j < otherValues.length; j++) {
+                const otherValue = otherValues[j];
+                const prevStackSize = baseStack.length;
+                // 深度比较对象
+                found = eq(baseValue, otherValue, baseStack, otherStack);
+                if (!found && prevStackSize !== baseStack.length) {
+                    baseStack.splice(prevStackSize);
+                    otherStack.splice(prevStackSize);
+                }
+            }
+            equalSet = equalSet && found;
+        }
+    }
+    return equalSet;
 }
 
 export default assertDeepEquals;
