@@ -45,6 +45,10 @@ function logMsg(actualValue, expected) {
         actualMsg = JSON.stringify(actualValue.source.replace('\\',''));
     } else if (aClassName == '[object BigInt]') {
         actualMsg = actualValue;
+    } else if (aClassName == '[object Error]') {
+        actualMsg = actualValue.message;
+    } else if (aClassName == '[object ArrayBuffer]') {
+        actualMsg = actualValue.byteLength;
     }
     else {
         actualMsg = JSON.stringify(actualValue);
@@ -59,6 +63,10 @@ function logMsg(actualValue, expected) {
         expectMsg = JSON.stringify(expected.source.replace('\\',''));
     } else if (bClassName == '[object BigInt]') {
         expectMsg = expected;
+    } else if (bClassName == '[object Error]') {
+        expectMsg = expected.message;
+    } else if (bClassName == '[object ArrayBuffer]') {
+        expectMsg = expected.byteLength;
     }
     else {
         expectMsg = JSON.stringify(expected);
@@ -68,10 +76,6 @@ function logMsg(actualValue, expected) {
 
 function eq(a, b, aStack, bStack) {
     let result = true;
-     const asymmetricResult = asymmetricMatch(a, b);
-    if (!DeepTypeUtils.isUndefined(asymmetricResult)) {
-        return asymmetricResult;
-    }
 
     if (a instanceof Error && b instanceof Error) {
         result = a.message == b.message;
@@ -192,11 +196,7 @@ function eq(a, b, aStack, bStack) {
                 const cmpKey = cmpIter[j];
                 const mapValueA = a.get(mapKey);
                 let mapValueB;
-                if (
-                DeepTypeUtils.isAsymmetricEqualityTester(mapKey) ||
-                (DeepTypeUtils.isAsymmetricEqualityTester(cmpKey) &&
-                eq(mapKey, cmpKey))
-                ) {
+                if (eq(mapKey, cmpKey)) {
                     mapValueB = b.get(cmpKey);
                 } else {
                     mapValueB = b.get(mapKey);
@@ -285,27 +285,6 @@ function eq(a, b, aStack, bStack) {
     aStack.pop();
     bStack.pop();
     return result;
-}
-
-function asymmetricMatch(a, b) {
-    const asymmetricA = DeepTypeUtils.isAsymmetricEqualityTester(a);
-    const asymmetricB = DeepTypeUtils.isAsymmetricEqualityTester(b);
-
-    if (asymmetricA === asymmetricB) {
-        return undefined;
-    }
-
-}
-
-/**
- * 获取对象的自有属性
- *
- * @param obj 对象
- * @param isArray 是否是一个数组
- */
-function keys(obj, isArray) {
-    const keys = [];
-
 }
 
 export default assertDeepEquals;
