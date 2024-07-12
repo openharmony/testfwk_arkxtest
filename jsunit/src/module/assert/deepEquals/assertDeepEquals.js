@@ -191,11 +191,21 @@ function eq(a, b, aStack, bStack) {
         ) {
             return false;
         }
+    result = isEqualObj(a, b, aStack, bStack);
+    if (!result) {
+        return false;
+    }
+    aStack.pop();
+    bStack.pop();
+    return result;
+}
 
-
-    // 获取对象所有的属性集合
+function isEqualObj(a, b, aStack, bStack) {
+    let equalObj = true;
+    const aClassName = Object.prototype.toString.call(a);
+    const bClassName = Object.prototype.toString.call(b);
     const aKeys = DeepTypeUtils.keys(a, aClassName == '[object Array]');
-    size = aKeys.length;
+    let size = aKeys.length;
 
     // 俩个对象属性长度不一致， 俩对象不相同
     if (DeepTypeUtils.keys(b, bClassName == '[object Array]').length !== size) {
@@ -206,19 +216,14 @@ function eq(a, b, aStack, bStack) {
     for (const key of aKeys) {
         // b 没有 key 属性
         if(!DeepTypeUtils.has(b, key)) {
-            result = false;
+            equalObj = false;
             continue;
         }
         if (!eq(a[key], b[key], aStack, bStack)) {
-            result = false;
+            equalObj = false;
         }
     }
-    if (!result) {
-        return false;
-    }
-    aStack.pop();
-    bStack.pop();
-    return result;
+    return equalObj;
 }
 
 function isEqualArray(a, b, aStack, bStack) {
