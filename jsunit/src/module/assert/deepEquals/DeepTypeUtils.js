@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,22 +14,22 @@
  */
 
 class DeepTypeUtils {
-    static getType_(value) {
+    static getType(value) {
        return Object.prototype.toString.apply(value);
    }
-    static isA_(typeName, value) {
-        return this.getType_(value) === '[object ' + typeName + ']';
+    static isA(typeName, value) {
+        return this.getType(value) === '[object ' + typeName + ']';
     }
-    static isAsymmetricEqualityTester_(obj) {
-        return obj ? this.isA_('Function', obj.asymmetricMatch) : false;
+    static isAsymmetricEqualityTester(obj) {
+        return obj ? this.isA('Function', obj.asymmetricMatch) : false;
     }
 
     /**
      * 是否是function
      * @param value
      */
-    static isFunction_(value) {
-        return this.isA_('Function', value);
+    static isFunction(value) {
+        return this.isA('Function', value);
     }
 
     /**
@@ -55,7 +55,7 @@ class DeepTypeUtils {
      * 是否是promise对象
      * @param obj
      */
-    static isPromise (obj) {
+    static isPromise(obj) {
         return !!obj && obj.constructor === Promise;
   };
     /**
@@ -99,7 +99,7 @@ class DeepTypeUtils {
     static keys(obj, isArray) {
      const extraKeys = [];
         // 获取对象所有属性
-     const  allKeys = this.getAllKeys(obj);
+     const allKeys = this.getAllKeys(obj);
         if (!isArray) {
             return allKeys;
         }
@@ -121,13 +121,14 @@ class DeepTypeUtils {
     static getAllKeys(obj) {
         const keys = [];
         for (let key in obj) {
-            if(this.has(obj, key)) {
+            if (this.has(obj, key)) {
                 keys.push(key);
             }
         }
         const symbols = Object.getOwnPropertySymbols(obj);
         for (const sym of symbols) {
-            if (obj.propertyIsEnumerable(sym)) {
+            // obj.propertyIsEnumerable(sym)
+            if (Object.prototype.propertyIsEnumerable.call(obj, sym)) {
                 keys.push(sym);
             }
         }

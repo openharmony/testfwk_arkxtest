@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,13 +14,13 @@
  */
 
 class ArgumentMatchers {
-    ANY = "<any>";
-    ANY_STRING = "<any String>";
-    ANY_BOOLEAN = "<any Boolean>";
-    ANY_NUMBER = "<any Number>";
-    ANY_OBJECT = "<any Object>";
-    ANY_FUNCTION = "<any Function>";
-    MATCH_REGEXS = "<match regexs>";
+    ANY = '<any>';
+    ANY_STRING = '<any String>';
+    ANY_BOOLEAN = '<any Boolean>';
+    ANY_NUMBER = '<any Number>';
+    ANY_OBJECT = '<any Object>';
+    ANY_FUNCTION = '<any Function>';
+    MATCH_REGEXS = '<match regexs>';
 
     static any() {
     }
@@ -45,11 +45,11 @@ class ArgumentMatchers {
         if (ArgumentMatchers.isRegExp(regex)) {
             return regex;
         }
-        throw Error("not a regex");
+        throw Error('not a regex');
     }
 
     static isRegExp(value) {
-        return Object.prototype.toString.call(value) === "[object RegExp]";
+        return Object.prototype.toString.call(value) === '[object RegExp]';
     }
 
     matcheReturnKey() {
@@ -61,27 +61,27 @@ class ArgumentMatchers {
             return this.ANY;
         }
 
-        if (typeof arg === "string" && !regex) {
+        if (typeof arg === 'string' && !regex) {
             return this.ANY_STRING;
         }
 
-        if (typeof arg === "boolean" && !regex) {
+        if (typeof arg === 'boolean' && !regex) {
             return this.ANY_BOOLEAN;
         }
 
-        if (typeof arg === "number" && !regex) {
+        if (typeof arg === 'number' && !regex) {
             return this.ANY_NUMBER;
         }
 
-        if (typeof arg === "object" && !regex) {
+        if (typeof arg === 'object' && !regex) {
             return this.ANY_OBJECT;
         }
 
-        if (typeof arg === "function" && !regex) {
+        if (typeof arg === 'function' && !regex) {
             return this.ANY_FUNCTION;
         }
 
-        if (typeof arg === "string" && regex) {
+        if (typeof arg === 'string' && regex) {
             return regex.test(arg);
         }
 
