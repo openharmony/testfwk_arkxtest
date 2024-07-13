@@ -104,8 +104,8 @@ function eq(a, b) {
         return false;
     }
 
-    if (DeepTypeUtils.isDomNode(a) || DeepTypeUtils.isPromise(a)) {
-        result = isEqualNodeOrPromise(a, b);
+    if (DeepTypeUtils.isDomNode(a) || DeepTypeUtils.isPromise(a) || DeepTypeUtils.isFunction(a)) {
+        result = isEqualNodeOrPromiseOrFunction(a, b);
         return result;
     }
 
@@ -114,27 +114,22 @@ function eq(a, b) {
         return result;
     }
 
-    if (DeepTypeUtils.isFunction(a) && DeepTypeUtils.isFunction(b)) {
-        result = isEqualFunction(a, b);
-        return result;
-    }
-
     result = isEqualObj(a, b);
     return result;
 }
 
-function isEqualNodeOrPromise(a, b) {
-    let equalNodeOrPromise = true;
+function isEqualNodeOrPromiseOrFunction(a, b) {
+    let equalNodeOrPromiseOrFunction = true;
     if (DeepTypeUtils.isDomNode(a) && DeepTypeUtils.isDomNode(b)) {
         const aIsDomNode = DeepTypeUtils.isDomNode(a);
         const bIsDomNode = DeepTypeUtils.isDomNode(b);
         if (aIsDomNode && bIsDomNode) {
             // At first try to use DOM3 method isEqualNode
-            equalNodeOrPromise = a.isEqualNode(b);
-            return equalNodeOrPromise;
+            equalNodeOrPromiseOrFunction = a.isEqualNode(b);
+            return equalNodeOrPromiseOrFunction;
         }
         if (aIsDomNode || bIsDomNode) {
-            equalNodeOrPromise = false;
+            equalNodeOrPromiseOrFunction = false;
             return false;
         }
     }
@@ -144,11 +139,27 @@ function isEqualNodeOrPromise(a, b) {
         const bIsPromise = DeepTypeUtils.isPromise(b);
         // 俩个Promise对象
         if (aIsPromise && bIsPromise) {
-            equalNodeOrPromise = a === b;
+            equalNodeOrPromiseOrFunction = a === b;
             return a === b;
         }
     }
-    return equalNodeOrPromise;
+    if (DeepTypeUtils.isFunction(a) && DeepTypeUtils.isFunction(b)) {
+        // 俩个函数对象
+        const aCtor = a.constructor,
+            bCtor = b.constructor;
+        if (
+            aCtor !== bCtor &&
+            DeepTypeUtils.isFunction(aCtor) &&
+            DeepTypeUtils.isFunction(bCtor) &&
+                a instanceof aCtor &&
+                b instanceof bCtor &&
+                !(aCtor instanceof aCtor && bCtor instanceof bCtor)
+        ) {
+            equalNodeOrPromiseOrFunction = false;
+            return false;
+        }
+    }
+    return equalNodeOrPromiseOrFunction;
 }
 
 function isEqualCollection(a, b) {
@@ -215,7 +226,7 @@ function isEqualSampleObj(a, b) {
     }
 
     if (a instanceof Error && b instanceof Error) {
-        equalSampleObj = a.message == b.message;
+        equalSampleObj = a.message === b.message;
         return equalSampleObj;
     }
 
