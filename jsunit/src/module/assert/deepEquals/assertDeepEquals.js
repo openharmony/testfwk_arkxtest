@@ -97,14 +97,14 @@ function eq(a, b) {
     if (aClassName !== bClassName) {
         return false;
     }
-    if (aClassName === '[object String]' || aClassName === '[object Number]' || aClassName === '[object Date]'
-        || aClassName === '[object Boolean]' || aClassName === '[object ArrayBuffer]'
-        || aClassName === '[object RegExp]') {
+    if (aClassName === '[object String]' || aClassName === '[object Number]' || aClassName === '[object Date]' ||
+        aClassName === '[object Boolean]' || aClassName === '[object ArrayBuffer]' ||
+        aClassName === '[object RegExp]') {
         result = isEqualSampleObj(a, b);
         return result;
     }
 
-    if (typeof a != 'object' || typeof b != 'object') {
+    if (typeof a !== 'object' || typeof b !== 'object') {
         return false;
     }
 
@@ -117,7 +117,7 @@ function eq(a, b) {
         return result;
     }
 
-    if (aClassName == '[object Array]' || aClassName == '[object Map]' || aClassName == '[object Set]') {
+    if (aClassName === '[object Array]' || aClassName === '[object Map]' || aClassName === '[object Set]') {
         result = isEqualCollection(a, b);
         return result;
     }
@@ -162,8 +162,8 @@ function isEqualCollection(a, b) {
     const aClassName = Object.prototype.toString.call(a);
     const bClassName = Object.prototype.toString.call(b);
     // 都是数组
-    if (aClassName == '[object Array]') {
-        equalCollection = isEqualArray(a, b)
+    if (aClassName === '[object Array]') {
+        equalCollection = isEqualArray(a, b);
         return equalCollection;
     }
 
@@ -211,10 +211,10 @@ function isEqualSampleObj(a, b) {
     // 正则表达式
     if (aClassName === '[object RegExp]') {
         return (
-            a.source == b.source &&
-                a.global == b.global &&
-                a.multiline == b.multiline &&
-                a.ignoreCase == b.ignoreCase
+            a.source === b.source &&
+                a.global === b.global &&
+                a.multiline === b.multiline &&
+                a.ignoreCase === b.ignoreCase
         );
     }
 
