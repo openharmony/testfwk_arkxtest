@@ -16,7 +16,7 @@
 import DeepTypeUtils from './DeepTypeUtils';
 function assertDeepEquals(actualValue, expected) {
     console.log('actualValue:' + actualValue + ',expected:' + expected[0]);
-    let result = eq(actualValue, expected[0], [], [])
+    let result = eq(actualValue, expected[0])
     let msg = logMsg(actualValue, expected[0]);
     return {
         pass: result,
@@ -74,9 +74,8 @@ function logMsg(actualValue, expected) {
     return actualMsg + ' is not deep equal ' + expectMsg;
 }
 
-function eq(a, b, aStack, bStack) {
+function eq(a, b) {
     let result = true;
-
     if (a instanceof Error && b instanceof Error) {
         result = a.message == b.message;
         return result;
@@ -98,117 +97,158 @@ function eq(a, b, aStack, bStack) {
     if (aClassName !== bClassName) {
         return false;
     }
-    // 俩个string对象
-    if (aClassName === '[object String]') {
-        result = a == String(b);
+    if (aClassName === '[object String]' || aClassName === '[object Number]' || aClassName === '[object Date]'
+        || aClassName === '[object Boolean]' || aClassName === '[object ArrayBuffer]'
+        || aClassName === '[object RegExp]') {
+        result = isEqualSampleObj(a, b);
         return result;
-    }
-    // 俩个Number对象
-    if (aClassName === '[object Number]') {
-        result = a != +a ? b != +b : a === 0 && b === 0 ? 1 / a == 1 / b : a == +b;
-        return result;
-    }
-
-    // 俩个Date对象/ boolean对象
-    if (aClassName === '[object Date]' || aClassName === '[object Boolean]') {
-        result = +a == +b;
-        return result;
-    }
-
-    // 俩个ArrayBuffer
-    if (aClassName === '[object ArrayBuffer]') {
-        return eq(new Uint8Array(a), new Uint8Array(b), aStack, bStack);
-    }
-
-    // 正则表达式
-    if (aClassName === '[object RegExp]') {
-        return (
-            a.source == b.source &&
-            a.global == b.global &&
-            a.multiline == b.multiline &&
-            a.ignoreCase == b.ignoreCase
-        );
     }
 
     if (typeof a != 'object' || typeof b != 'object') {
         return false;
     }
 
-    const aIsDomNode = DeepTypeUtils.isDomNode(a);
-    const bIsDomNode = DeepTypeUtils.isDomNode(b);
-    if (aIsDomNode && bIsDomNode) {
-        // At first try to use DOM3 method isEqualNode
-        result = a.isEqualNode(b);
+    if (DeepTypeUtils.isDomNode(a) && DeepTypeUtils.isDomNode(b)) {
+        result = isEqualNode(a, b);
         return result;
     }
-    if (aIsDomNode || bIsDomNode) {
-        return false;
+    if (DeepTypeUtils.isPromise(a) && DeepTypeUtils.isPromise(b)) {
+        result = isEqualPromise(a, b);
+        return result;
     }
+
+    if (aClassName == '[object Array]' || aClassName == '[object Map]' || aClassName == '[object Set]') {
+        result = isEqualCollection(a, b);
+        return result;
+    }
+
+    if (DeepTypeUtils.isFunction(a) && DeepTypeUtils.isFunction(b)) {
+        result = isEqualFunction(a, b);
+        return result;
+    }
+
+    result = isEqualObj(a, b);
+    return result;
+}
+
+function isEqualPromise(a, b) {
     const aIsPromise = DeepTypeUtils.isPromise(a);
     const bIsPromise = DeepTypeUtils.isPromise(b);
     // 俩个Promise对象
     if (aIsPromise && bIsPromise) {
         return a === b;
     }
-    let length = aStack.length;
-    while (length--) {
-        if (aStack[length] == a) {
-            return bStack[length] == b;
-        }
+    return true;
+}
+function isEqualNode(a, b) {
+    let equalNode = true;
+    const aIsDomNode = DeepTypeUtils.isDomNode(a);
+    const bIsDomNode = DeepTypeUtils.isDomNode(b);
+    if (aIsDomNode && bIsDomNode) {
+        // At first try to use DOM3 method isEqualNode
+        equalNode = a.isEqualNode(b);
+        return equalNode;
     }
-    aStack.push(a);
-    bStack.push(b);
-    let size = 0;
+    if (aIsDomNode || bIsDomNode) {
+        equalNode = false;
+        return false;
+    }
+    return equalNode;
+}
 
+function isEqualCollection(a, b) {
+    let equalCollection = true;
+    // 获取a的对象名称
+    const aClassName = Object.prototype.toString.call(a);
+    const bClassName = Object.prototype.toString.call(b);
     // 都是数组
     if (aClassName == '[object Array]') {
-        result = isEqualArray(a, b, aStack, bStack)
-        return result;
+        equalCollection = isEqualArray(a, b)
+        return equalCollection;
     }
 
     // 都是Map
     if (DeepTypeUtils.isMap(a) && DeepTypeUtils.isMap(b)) {
-        result = isEqualMap(a, b, aStack, bStack);
-        return result;
+        equalCollection = isEqualMap(a, b);
+        return equalCollection;
     }
 
     // 都是Set
     if (DeepTypeUtils.isSet(a) && DeepTypeUtils.isSet(b)) {
-        result = isEqualSet(a, b, aStack, bStack);
-        return result;
+        equalCollection = isEqualSet(a, b);
+        return equalCollection;
     }
 
+    return true;
+}
+
+function isEqualSampleObj(a, b) {
+    let equalSampleObj = true;
+    const aClassName = Object.prototype.toString.call(a);
+    const bClassName = Object.prototype.toString.call(b);
+    // 俩个string对象
+    if (aClassName === '[object String]') {
+        equalSampleObj = a == String(b);
+        return equalSampleObj;
+    }
+    // 俩个Number对象
+    if (aClassName === '[object Number]') {
+        equalSampleObj = a != +a ? b != +b : a === 0 && b === 0 ? 1 / a == 1 / b : a == +b;
+        return equalSampleObj;
+    }
+
+    // 俩个Date对象/ boolean对象
+    if (aClassName === '[object Date]' || aClassName === '[object Boolean]') {
+        equalSampleObj = +a == +b;
+        return equalSampleObj;
+    }
+
+    // 俩个ArrayBuffer
+    if (aClassName === '[object ArrayBuffer]') {
+        return eq(new Uint8Array(a), new Uint8Array(b));
+    }
+
+    // 正则表达式
+    if (aClassName === '[object RegExp]') {
+        return (
+            a.source == b.source &&
+                a.global == b.global &&
+                a.multiline == b.multiline &&
+                a.ignoreCase == b.ignoreCase
+        );
+    }
+
+    return equalSampleObj;
+}
+
+function isEqualFunction(a, b) {
+    let equalFunction = true;
     // 俩个函数对象
     const aCtor = a.constructor,
         bCtor = b.constructor;
-        if (
+    if (
         aCtor !== bCtor &&
         DeepTypeUtils.isFunction(aCtor) &&
         DeepTypeUtils.isFunction(bCtor) &&
-        a instanceof aCtor &&
-        b instanceof bCtor &&
-        !(aCtor instanceof aCtor && bCtor instanceof bCtor)
-        ) {
-            return false;
-        }
-    result = isEqualObj(a, b, aStack, bStack);
-    if (!result) {
-        return false;
+            a instanceof aCtor &&
+            b instanceof bCtor &&
+            !(aCtor instanceof aCtor && bCtor instanceof bCtor)
+    ) {
+        equalFunction = false;
     }
-    aStack.pop();
-    bStack.pop();
-    return result;
+    return equalFunction;
 }
 
-function isEqualObj(a, b, aStack, bStack) {
+
+function isEqualObj(a, b) {
     let equalObj = true;
     const aClassName = Object.prototype.toString.call(a);
     const bClassName = Object.prototype.toString.call(b);
-    const aKeys = DeepTypeUtils.keys(a, aClassName == '[object Array]');
+    const aKeys = DeepTypeUtils.keys(a, aClassName === '[object Array]');
     let size = aKeys.length;
 
     // 俩个对象属性长度不一致， 俩对象不相同
-    if (DeepTypeUtils.keys(b, bClassName == '[object Array]').length !== size) {
+    if (DeepTypeUtils.keys(b, bClassName === '[object Array]').length !== size) {
         return false;
     }
 
@@ -219,14 +259,14 @@ function isEqualObj(a, b, aStack, bStack) {
             equalObj = false;
             continue;
         }
-        if (!eq(a[key], b[key], aStack, bStack)) {
+        if (!eq(a[key], b[key])) {
             equalObj = false;
         }
     }
     return equalObj;
 }
 
-function isEqualArray(a, b, aStack, bStack) {
+function isEqualArray(a, b) {
     let equalArray = true;
     const aLength = a.length;
     const bLength = b.length;
@@ -236,14 +276,14 @@ function isEqualArray(a, b, aStack, bStack) {
     }
     for (let i = 0; i < aLength || i < bLength; i++) {
         // 递归每一个元素是否相同
-        equalArray = eq(i < aLength ? a[i] : void 0, i < bLength ? b[i] : void 0, aStack, bStack) && equalArray;
+        equalArray = eq(i < aLength ? a[i] : void 0, i < bLength ? b[i] : void 0) && equalArray;
     }
     return equalArray;
 }
 
-function isEqualMap(a, b, aStack, bStack) {
+function isEqualMap(a, b) {
     let equalMap = true;
-    if (a.size != b.size) {
+    if (a.size !== b.size) {
         return false;
     }
     const keysA = [];
@@ -270,15 +310,15 @@ function isEqualMap(a, b, aStack, bStack) {
             } else {
                 mapValueB = b.get(mapKey);
             }
-            equalMap = eq(mapValueA, mapValueB, aStack, bStack);
+            equalMap = eq(mapValueA, mapValueB);
         }
     }
     return equalMap;
 }
 
-function isEqualSet(a, b, aStack, bStack) {
+function isEqualSet(a, b) {
     let equalSet = true;
-    if (a.size != b.size) {
+    if (a.size !== b.size) {
         return false;
     }
     const valuesA = [];
@@ -290,23 +330,15 @@ function isEqualSet(a, b, aStack, bStack) {
         valuesB.push(valueB);
     });
     const setPairs = [[valuesA, valuesB], [valuesB, valuesA]];
-    const stackPairs = [[aStack, bStack], [bStack, aStack]];
     for (let i = 0; equalSet && i < setPairs.length; i++) {
         const baseValues = setPairs[i][0];
         const otherValues = setPairs[i][1];
-        const baseStack = stackPairs[i][0];
-        const otherStack = stackPairs[i][1];
         for (const baseValue of baseValues) {
             let found = false;
             for (let j = 0; !found && j < otherValues.length; j++) {
                 const otherValue = otherValues[j];
-                const prevStackSize = baseStack.length;
                 // 深度比较对象
-                found = eq(baseValue, otherValue, baseStack, otherStack);
-                if (!found && prevStackSize !== baseStack.length) {
-                    baseStack.splice(prevStackSize);
-                    otherStack.splice(prevStackSize);
-                }
+                found = eq(baseValue, otherValue);
             }
             equalSet = equalSet && found;
         }
