@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { LEVEL, SIZE, TESTTYPE } from "../../Constant";
+import { LEVEL, SIZE, TESTTYPE } from '../../Constant';
 
 class ClassFilter {
     constructor(suiteName, itName, params) {
@@ -82,12 +82,12 @@ class TestTypesFilter {
 
 class NestFilter {
     filterNestName(targetSuiteArray, targetSpecArray, suiteStack, desc) {
-        let targetSuiteName = "";
+        let targetSuiteName = '';
         for (let key in suiteStack) {
-            targetSuiteName = targetSuiteName + "." + suiteStack[key].description;
+            targetSuiteName = targetSuiteName + '.' + suiteStack[key].description;
         }
         targetSuiteName = targetSuiteName.substring(2);
-        const targetSpecName = targetSuiteName + "#" + desc;
+        const targetSpecName = targetSuiteName + '#' + desc;
         let isFilter = true;
         if (targetSpecArray.includes(targetSpecName)) {
             return false;
@@ -103,13 +103,13 @@ class NestFilter {
     filterNotClass(notClass, suiteStack, desc) {
         let isFilterNotClass = false;
         if (notClass != null) {
-            let notClassArray = notClass.split(",");
-            let targetSuiteName = "";
+            let notClassArray = notClass.split(',');
+            let targetSuiteName = '';
             for (let key in suiteStack) {
-                targetSuiteName = targetSuiteName + "." + suiteStack[key].description;
+                targetSuiteName = targetSuiteName + '.' + suiteStack[key].description;
             }
             targetSuiteName = targetSuiteName.substring(2);
-            const targetSpecName = targetSuiteName + "#" + desc;
+            const targetSpecName = targetSuiteName + '#' + desc;
             if (notClassArray.includes(targetSpecName) || notClassArray.some(key => targetSpecName.startsWith(key))) {
                 isFilterNotClass = true;
             }

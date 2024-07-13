@@ -13,15 +13,15 @@
  * limitations under the License.
  */
 
-import SysTestKit from "./module/kit/SysTestKit";
+import SysTestKit from './module/kit/SysTestKit';
 import { TAG } from './Constant';
-import LogExpectError from './module/report/LogExpectError'
-import { NestFilter } from "./module/config/Filter";
+import LogExpectError from './module/report/LogExpectError';
+import { NestFilter } from './module/config/Filter';
 
 class AssertException extends Error {
     constructor(message) {
         super();
-        this.name = "AssertException";
+        this.name = 'AssertException';
         this.message = message;
     }
 }
@@ -50,7 +50,7 @@ function getFuncWithArgsOne(func, timeout, isStressTest) {
         if (!isStressTest) {
             timer = setTimeout(() => {
                 reject(new Error('execute timeout ' + timeout + 'ms'));
-            }, timeout);;
+            }, timeout);
         }
 
         function done() {
@@ -195,7 +195,7 @@ class SuiteService {
                 let finalDesc = '';
                 this.suitesStack.map(suite => {
                     finalDesc = finalDesc + '.' + suite.description;
-                })
+                });
                 finalDesc = (finalDesc + '.' + desc).substring(2);
                 console.info(`${TAG} finalDesc ${finalDesc}`);
                 if (configService.checkIfSuiteInSkipRun(finalDesc)) {
@@ -262,11 +262,11 @@ class SuiteService {
             suite.childSuites.forEach(it => {
                 let temp = prefix;
                 if (it.description != null || it.description !== '') {
-                    temp = prefix === '' ? it.description : prefix + "." + it.description;
+                    temp = prefix === '' ? it.description : prefix + '.' + it.description;
                 }
                 this.setCurrentRunningSuiteDesc(it, currentSuite, temp);
             }
-            )
+            );
         }
     }
     analyzeConfigServiceClass(configServiceClass, desc) {
@@ -275,12 +275,12 @@ class SuiteService {
             return false;
         }
         if (this.targetSuiteArray.length === 0) {
-            const targetArray = configServiceClass.split(",")
+            const targetArray = configServiceClass.split(',');
             for (let index in targetArray) {
-                if (targetArray[index].includes("#")) {
-                    this.targetSpecArray.push(targetArray[index])
+                if (targetArray[index].includes('#')) {
+                    this.targetSpecArray.push(targetArray[index]);
                 } else {
-                    this.targetSuiteArray.push(targetArray[index])
+                    this.targetSuiteArray.push(targetArray[index]);
                 }
             }
 
@@ -410,9 +410,9 @@ class SuiteService {
         const configService = this.coreContext.getDefaultService('config');
         let result;
         if (configService.skipMessage) {
-            result = { "suites": suiteArray, "skipSuites": skipSuiteArray };
+            result = { 'suites': suiteArray, 'skipSuites': skipSuiteArray };
         } else {
-            result = { "suites": suiteArray };
+            result = { 'suites': suiteArray };
         }
         let strJson = JSON.stringify(result);
         let strLen = strJson.length;
@@ -441,9 +441,9 @@ class SuiteService {
                 let skipTemp = {};
                 skipTemp[prefix] = [];
                 suite.specs.map(spec => {
-                    let it = { 'itName': spec.description }
+                    let it = { 'itName': spec.description };
                     spec.isSkip ? skipTemp[prefix].push(it) : temp[prefix].push(it);
-                })
+                });
                 suiteArray.push(temp);
                 skipSuiteArray.push(skipTemp);
             }
@@ -457,7 +457,7 @@ class SuiteService {
             suite.specs.forEach(spec => specArray.push(spec));
         }
         if (suite.childSuites != null) {
-            suite.childSuites.forEach(it => this.getAllChildSuiteNum(it, specArray))
+            suite.childSuites.forEach(it => this.getAllChildSuiteNum(it, specArray));
         }
     }
 
@@ -618,7 +618,7 @@ SuiteService.Suite = class {
             // 遇错即停模式,发现用例有问题，直接返回，不在执行后面的it
             let isBreakOnError = this.isRun(coreContext);
             if (isBreakOnError) {
-                console.log("break description :" + this.description);
+                console.log('break description :' + this.description);
                 break;
             }
             await coreContext.fireEvents('spec', 'specStart', specItem);
@@ -840,8 +840,8 @@ class SpecService {
                 let finalDesc = '';
                 suiteService.suitesStack.map(suite => {
                     finalDesc = finalDesc + '.' + suite.description;
-                })
-                finalDesc = (finalDesc + "#" + desc).substring(2);
+                });
+                finalDesc = (finalDesc + '#' + desc).substring(2);
                 if (configService.checkIfSpecInSkipRun(finalDesc)) {
                     console.log(`${TAG} runSkipped spec: ${desc}`);
                 } else {
@@ -1005,7 +1005,7 @@ class ExpectService {
                 if (actualValue == args[0]) { // 数值相同,提示数据类型
                     const aClassName = Object.prototype.toString.call(actualValue);
                     const bClassName = Object.prototype.toString.call(args[0]);
-                    msg = 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName + "strict mode inspect type";
+                    msg = 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName + 'strict mode inspect type';
                 }
                 return {
                     pass: (actualValue) === args[0],

@@ -256,7 +256,7 @@ class ConfigService {
         let targetParams = {};
         for (const key in parameters) {
             if (keySet.has(key)) {
-                var newKey = key.replace("-s ", "");
+                var newKey = key.replace('-s ', '');
                 targetParams[newKey] = parameters[key];
             }
         }
@@ -277,17 +277,17 @@ class ConfigService {
     }
 
     checkIfSuiteInSkipRun(desc) {
-        return this.runSkipped.split(",").some(item => {
+        return this.runSkipped.split(',').some(item => {
             return item === desc || item.startsWith(desc + '.') || item.startsWith(desc + '#') || desc.startsWith(item + '.') || this.runSkipped === 'skipped';
         });
     }
 
     checkIfSpecInSkipRun(desc) {
-        return this.runSkipped.split(",").some(item => {
-            if (item.includes("#")) {
+        return this.runSkipped.split(',').some(item => {
+            if (item.includes('#')) {
                 return item === desc;
             } else {
-                return desc.startsWith(item + ".") || desc.startsWith(item + "#") || this.runSkipped === 'skipped';
+                return desc.startsWith(item + '.') || desc.startsWith(item + '#') || this.runSkipped === 'skipped';
             }
         }
         );
