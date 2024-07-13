@@ -76,10 +76,6 @@ function logMsg(actualValue, expected) {
 
 function eq(a, b) {
     let result = true;
-    if (a instanceof Error && b instanceof Error) {
-        result = a.message == b.message;
-        return result;
-    }
 
     if (a === b) {
         result = a !== 0 || 1 / a == 1 / b;
@@ -99,7 +95,7 @@ function eq(a, b) {
     }
     if (aClassName === '[object String]' || aClassName === '[object Number]' || aClassName === '[object Date]' ||
         aClassName === '[object Boolean]' || aClassName === '[object ArrayBuffer]' ||
-        aClassName === '[object RegExp]') {
+        aClassName === '[object RegExp]' || aClassName === '[object Error]') {
         result = isEqualSampleObj(a, b);
         return result;
     }
@@ -108,12 +104,8 @@ function eq(a, b) {
         return false;
     }
 
-    if (DeepTypeUtils.isDomNode(a) && DeepTypeUtils.isDomNode(b)) {
-        result = isEqualNode(a, b);
-        return result;
-    }
-    if (DeepTypeUtils.isPromise(a) && DeepTypeUtils.isPromise(b)) {
-        result = isEqualPromise(a, b);
+    if (DeepTypeUtils.isDomNode(a) || DeepTypeUtils.isPromise(a)) {
+        result = isEqualNodeOrPromise(a, b);
         return result;
     }
 
@@ -131,29 +123,32 @@ function eq(a, b) {
     return result;
 }
 
-function isEqualPromise(a, b) {
-    const aIsPromise = DeepTypeUtils.isPromise(a);
-    const bIsPromise = DeepTypeUtils.isPromise(b);
-    // 俩个Promise对象
-    if (aIsPromise && bIsPromise) {
-        return a === b;
+function isEqualNodeOrPromise(a, b) {
+    let equalNodeOrPromise = true;
+    if (DeepTypeUtils.isDomNode(a) && DeepTypeUtils.isDomNode(b)) {
+        const aIsDomNode = DeepTypeUtils.isDomNode(a);
+        const bIsDomNode = DeepTypeUtils.isDomNode(b);
+        if (aIsDomNode && bIsDomNode) {
+            // At first try to use DOM3 method isEqualNode
+            equalNodeOrPromise = a.isEqualNode(b);
+            return equalNodeOrPromise;
+        }
+        if (aIsDomNode || bIsDomNode) {
+            equalNodeOrPromise = false;
+            return false;
+        }
     }
-    return true;
-}
-function isEqualNode(a, b) {
-    let equalNode = true;
-    const aIsDomNode = DeepTypeUtils.isDomNode(a);
-    const bIsDomNode = DeepTypeUtils.isDomNode(b);
-    if (aIsDomNode && bIsDomNode) {
-        // At first try to use DOM3 method isEqualNode
-        equalNode = a.isEqualNode(b);
-        return equalNode;
+
+    if (DeepTypeUtils.isPromise(a) && DeepTypeUtils.isPromise(b)) {
+        const aIsPromise = DeepTypeUtils.isPromise(a);
+        const bIsPromise = DeepTypeUtils.isPromise(b);
+        // 俩个Promise对象
+        if (aIsPromise && bIsPromise) {
+            equalNodeOrPromise = a === b;
+            return a === b;
+        }
     }
-    if (aIsDomNode || bIsDomNode) {
-        equalNode = false;
-        return false;
-    }
-    return equalNode;
+    return equalNodeOrPromise;
 }
 
 function isEqualCollection(a, b) {
@@ -199,13 +194,14 @@ function isEqualSampleObj(a, b) {
 
     // 俩个Date对象/ boolean对象
     if (aClassName === '[object Date]' || aClassName === '[object Boolean]') {
-        equalSampleObj = +a == +b;
+        equalSampleObj = +a === +b;
         return equalSampleObj;
     }
 
     // 俩个ArrayBuffer
     if (aClassName === '[object ArrayBuffer]') {
-        return eq(new Uint8Array(a), new Uint8Array(b));
+        equalSampleObj = eq(new Uint8Array(a), new Uint8Array(b));
+        return equalSampleObj;
     }
 
     // 正则表达式
@@ -216,6 +212,11 @@ function isEqualSampleObj(a, b) {
                 a.multiline === b.multiline &&
                 a.ignoreCase === b.ignoreCase
         );
+    }
+
+    if (a instanceof Error && b instanceof Error) {
+        equalSampleObj = a.message == b.message;
+        return equalSampleObj;
     }
 
     return equalSampleObj;
@@ -255,7 +256,7 @@ function isEqualObj(a, b) {
     // 俩对象属性数量相同， 递归比较每个属性值得值
     for (const key of aKeys) {
         // b 没有 key 属性
-        if(!DeepTypeUtils.has(b, key)) {
+        if (!DeepTypeUtils.has(b, key)) {
             equalObj = false;
             continue;
         }
