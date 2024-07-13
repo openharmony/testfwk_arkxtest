@@ -199,7 +199,7 @@ function isEqualSampleObj(a, b) {
     }
     // 俩个Number对象
     if (aClassName === '[object Number]') {
-        equalSampleObj = a != +a ? b != +b : a === 0 && b === 0 ? 1 / a == 1 / b : a == +b;
+        equalSampleObj = a !== +a ? b !== +b : a === 0 && b === 0 ? 1 / a === 1 / b : a === +b;
         return equalSampleObj;
     }
 
@@ -232,25 +232,6 @@ function isEqualSampleObj(a, b) {
 
     return equalSampleObj;
 }
-
-function isEqualFunction(a, b) {
-    let equalFunction = true;
-    // 俩个函数对象
-    const aCtor = a.constructor,
-        bCtor = b.constructor;
-    if (
-        aCtor !== bCtor &&
-        DeepTypeUtils.isFunction(aCtor) &&
-        DeepTypeUtils.isFunction(bCtor) &&
-            a instanceof aCtor &&
-            b instanceof bCtor &&
-            !(aCtor instanceof aCtor && bCtor instanceof bCtor)
-    ) {
-        equalFunction = false;
-    }
-    return equalFunction;
-}
-
 
 function isEqualObj(a, b) {
     let equalObj = true;
