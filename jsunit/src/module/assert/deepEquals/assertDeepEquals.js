@@ -78,7 +78,7 @@ function eq(a, b) {
     let result = true;
 
     if (a === b) {
-        result = a !== 0 || 1 / a == 1 / b;
+        result = a !== 0 || 1 / a === 1 / b;
         return result;
     }
 
@@ -194,7 +194,7 @@ function isEqualSampleObj(a, b) {
     const bClassName = Object.prototype.toString.call(b);
     // 俩个string对象
     if (aClassName === '[object String]') {
-        equalSampleObj = a == String(b);
+        equalSampleObj = a === String(b);
         return equalSampleObj;
     }
     // 俩个Number对象
