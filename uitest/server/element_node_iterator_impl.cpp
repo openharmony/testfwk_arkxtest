@@ -262,6 +262,12 @@ namespace OHOS::uitest {
         widget.SetAttr(UiAttr::CHECKABLE, element.IsCheckable() ? "true" : "false");
         widget.SetAttr(UiAttr::CHECKED, element.IsChecked() ? "true" : "false");
         widget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(element.GetWindowId()));
+        widget.SetAttr(UiAttr::ZINDEX, std::to_string(element.GetZIndex()));
+        widget.SetAttr(UiAttr::OPACITY, std::to_string(element.GetOpacity()));
+        widget.SetAttr(UiAttr::BACKGROUNDCOLOR, element.GetBackgroundColor());
+        widget.SetAttr(UiAttr::BACKGROUNDIMAGE, element.GetBackgroundImage());
+        widget.SetAttr(UiAttr::BLUR, element.GetBlur());
+        widget.SetAttr(UiAttr::HITTESTBEHAVIOR, element.GetHitTestBehavior());
         stringstream boundStream;
         boundStream << "[" << visibleRect.left_ << "," << visibleRect.top_ << "][" << visibleRect.right_ << ","
                     << visibleRect.bottom_ << "]";
