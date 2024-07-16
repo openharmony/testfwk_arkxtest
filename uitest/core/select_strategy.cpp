@@ -15,6 +15,7 @@
 
 #include "select_strategy.h"
 namespace OHOS::uitest {
+    constexpr int32_t MAX_TRAVEL_TIMES = 2000;
     void SelectStrategy::RegisterAnchorMatch(const WidgetMatchModel &matchModel)
     {
         anchorMatch_.emplace_back(matchModel);
@@ -433,7 +434,13 @@ namespace OHOS::uitest {
         {
             elementNodeRef.ClearDFSNext();
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
+            int32_t time = 0;
             while (true) {
+                time++;
+                if (time > MAX_TRAVEL_TIMES) {
+                    LOG_E("Over visits");
+                    break;
+                }
                 Widget myselfWidget{"myselfWidget"};
                 if (!elementNodeRef.DFSNext(myselfWidget, window.id_)) {
                     return;
@@ -488,7 +495,13 @@ namespace OHOS::uitest {
             elementNodeRef.ClearDFSNext();
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
             std::vector<int> fakeTargetWidgets;
+            int32_t time = 0;
             while (true) {
+                time++;
+                if (time > MAX_TRAVEL_TIMES) {
+                    LOG_E("Over visits");
+                    break;
+                }
                 Widget myselfWidget{"myselfWidget"};
                 if (!elementNodeRef.DFSNext(myselfWidget, window.id_)) {
                     break;
