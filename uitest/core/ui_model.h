@@ -48,6 +48,12 @@ namespace OHOS::uitest {
         CHECKED,
         HOST_WINDOW_ID,
         ORIGBOUNDS,
+        ZINDEX,
+        OPACITY,
+        BACKGROUNDCOLOR,
+        BACKGROUNDIMAGE,
+        BLUR,
+        HITTESTBEHAVIOR,
         // inner used attributes
         HIERARCHY,
         HASHCODE,
@@ -80,6 +86,12 @@ namespace OHOS::uitest {
         "checked",       // CHECKED
         "hostWindowId",  // HOST_WINDOW_ID
         "origBounds",    // ORIGBOUNDS
+        "zIndex",        // ZINDEX
+        "opacity",       //OPACITY
+        "backgroundColor",   // BACKGROUNDCOLOR
+        "backgroundImage",   // BACKGROUNDIMAGE
+        "blur",          //BLUR
+        "hitTestBehavior",   // HITTESTBEHAVIOR
         "hierarchy",     // HIERARCHY
         "hashcode",      // HASHCODE
         "boundsCenter",  // BOUNDSCENTER
