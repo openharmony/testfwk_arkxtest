@@ -25,7 +25,7 @@ class VerificationMode {
     }
 
     never() {
-        console.log(this.doTimes);
+        console.info(this.doTimes);
         expect(0).assertEqual(this.doTimes);
     }
 
