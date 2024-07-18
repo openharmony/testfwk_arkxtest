@@ -193,6 +193,10 @@ namespace OHOS::cjuitest {
                 return ret;
             }
             auto result = CJTransact(callInfo_);
+            if (callInfo_.fdParamIndex_ >= 0) {
+                auto fd = callInfo_.paramList_.at(INDEX_ZERO).get<int>();
+                (void) close(fd);
+            }
             if (result.exception_.code_ != uitest::ErrCode::NO_ERROR) {
                 ret.code = result.exception_.code_;
                 ret.data = MallocCString(result.exception_.message_);
