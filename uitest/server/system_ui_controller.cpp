@@ -39,6 +39,7 @@
 #include "wm_common.h"
 #include "element_node_iterator_impl.h"
 #include "system_ui_controller.h"
+#include "test_server_client.h"
 
 using namespace std;
 using namespace chrono;
@@ -600,10 +601,7 @@ namespace OHOS::uitest {
 
     void SysUiController::PutTextToClipboard(string_view text) const
     {
-        auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
-        pasteBoardMgr->Clear();
-        auto pasteData = pasteBoardMgr->CreatePlainTextData(string(text));
-        pasteBoardMgr->SetPasteData(*pasteData);
+        OHOS::testserver::TestServerClient::GetInstance().SetPasteData(string(text));
     }
 
     bool SysUiController::IsWorkable() const

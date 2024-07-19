@@ -138,4 +138,15 @@ namespace OHOS::testserver {
         return iTestServerInterface;
     }
 
+    int32_t TestServerClient::SetPasteData(std::string text)
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        auto iTestServerInterface = LoadTestServer();
+        if (iTestServerInterface == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        return iTestServerInterface->SetPasteData(text);
+    }
+
 } // namespace OHOS::testserver

@@ -23,6 +23,7 @@
 #include "mock_permission.h"
 #include "start_test_server.h"
 #include "test_server_error_code.h"
+#include "pasteboard_client.h"
 
 using namespace std;
 using namespace testing::ext;
@@ -152,6 +153,24 @@ HWTEST_F(ServiceTest, testDestorySessionWithoutCaller, TestSize.Level1)
     testServerServiceMock_->DestorySession();
     this_thread::sleep_for(chrono::milliseconds(UNLOAD_SYSTEMABILITY_WAITTIME));
     EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
+}
+
+HWTEST_F(ServiceTest, testSetPasteData, TestSize.Level1)
+{
+    auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
+    pasteBoardMgr->Clear();
+    EXPECT_FALSE(pasteBoardMgr->HasPasteData());
+    string text = "中文文本";
+    int32_t resCode1 = testServerServiceMock_->SetPasteData(text);
+    EXPECT_EQ(resCode1, 0);
+    EXPECT_TRUE(pasteBoardMgr->HasPasteData());
+    OHOS::MiscServices::PasteData pasteData;
+    int32_t resCode2 = pasteBoardMgr->GetPasteData(pasteData);
+    uint32_t successErrCode = 77987840;
+    EXPECT_EQ(resCode2, successErrCode);
+    auto primaryText = pasteData.GetPrimaryText();
+    ASSERT_TRUE(primaryText != nullptr);
+    ASSERT_TRUE(*primaryText == text);
 }
 
 class CallerDetectTimerTest : public testing::Test {

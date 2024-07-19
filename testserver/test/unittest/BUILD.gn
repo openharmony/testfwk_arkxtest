@@ -35,6 +35,7 @@ ohos_unittest("testserver_unittest") {
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "pasteboard:pasteboard_client",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
