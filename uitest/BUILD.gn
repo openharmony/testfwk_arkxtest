@@ -177,6 +177,7 @@ ohos_executable("uitest_server") {
     ":uitest_input",
     ":uitest_ipc",
     ":uitest_record",
+    "${source_root}/../testserver/src:test_server_client",
   ]
 
   #dependencies for screencap
@@ -252,6 +253,7 @@ ohos_shared_library("uitest_client") {
     ":uitest_exporter_abc",
     ":uitest_exporter_js",
     ":uitest_ipc",
+    "${source_root}/../testserver/src:test_server_client",
   ]
   subsystem_name = "testfwk"
   part_name = "arkxtest"
