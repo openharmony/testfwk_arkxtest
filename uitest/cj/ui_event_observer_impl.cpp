@@ -51,6 +51,10 @@ void UiEventObserverImpl::PreprocessCallOnce(ApiCallInfo &call, int64_t callback
     }
     auto func = reinterpret_cast<void (*)(CUIElementInfo)>(callbackId);
     auto sp = make_shared<function<void(CUIElementInfo)>>(CJLambda::Create(func));
+    if (sp == nullptr) {
+        err = ApiCallErr(INTERNAL_ERROR, "UIEventObserver memory error.");
+        return;
+    }
     auto key = string("cj_callback#") + to_string(++g_incCbId);
     LOG_I("CbId = %{public}s, CbRef = %{public}p", key.c_str(), sp.get());
     LOG_D("Hold reference of %{public}s", key.c_str());
@@ -107,23 +111,23 @@ static void DestructElementInfo(CUIElementInfo &info)
 static CUIElementInfo CreateElementInfo(string str)
 {
     int status = 0;
-    CUIElementInfo result;
+    CUIElementInfo result{};
     auto json = nlohmann::json::parse(str);
     string bundleName = json["bundleName"];
     string type = json["type"];
     string text = json["text"];
-    result.bundleName = (char *)malloc(bundleName.size() + 1);
+    result.bundleName = static_cast<char *>(malloc(bundleName.size() + 1));
     if (result.bundleName == nullptr) {
         LOG_E("[UiEventObserverImpl] memory error.");
         return result;
     }
-    result.componentType = (char *)malloc(type.size() + 1);
+    result.componentType = static_cast<char *>(malloc(type.size() + 1));
     if (result.componentType == nullptr) {
         LOG_E("[UiEventObserverImpl] memory error.");
         DestructElementInfo(result);
         return result;
     }
-    result.text = (char *)malloc(text.size() + 1);
+    result.text = static_cast<char *>(malloc(text.size() + 1));
     if (result.text == nullptr) {
         LOG_E("[UiEventObserverImpl] memory error.");
         DestructElementInfo(result);
@@ -147,7 +151,11 @@ static CUIElementInfo CreateElementInfo(string str)
 
 void UiEventObserverImpl::HandleEventCallback(const ApiCallInfo &in, ApiReplyInfo &out)
 {
-    auto context = new EventCallbackContext();
+    auto context = new (std::nothrow) EventCallbackContext();
+    if (context == nullptr) {
+        out.exception_ = ApiCallErr(INTERNAL_ERROR, "UIEventObserver memory error.");
+        return;
+    }
     InitCallbackContext(in, out, *context);
     if (out.exception_.code_ != NO_ERROR) {
         delete context;
