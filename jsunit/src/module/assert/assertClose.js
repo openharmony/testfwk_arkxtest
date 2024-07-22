@@ -14,7 +14,6 @@
  */
 
 function assertClose(actualValue, expected) {
-    console.info('expected:' + expected[0] + ',precision:' + expected[1]);
     if (actualValue === null && expected[0] === null) {
         throw new Error('actualValue and expected can not be both null!!!');
     }
