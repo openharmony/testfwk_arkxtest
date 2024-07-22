@@ -199,13 +199,13 @@ class SuiteService {
                 finalDesc = (finalDesc + '.' + desc).substring(2);
                 console.info(`${TAG} finalDesc ${finalDesc}`);
                 if (configService.checkIfSuiteInSkipRun(finalDesc)) {
-                    console.log(`${TAG} runSkipped suite: ${desc}`);
+                    console.info(`${TAG} runSkipped suite: ${desc}`);
                 } else {
-                    console.log(reason == null ? `${TAG} skip suite: ${desc}` : `${TAG} skip suite: ${desc}, and the reason is ${reason}`);
+                    console.info(reason == null ? `${TAG} skip suite: ${desc}` : `${TAG} skip suite: ${desc}, and the reason is ${reason}`);
                     return;
                 }
             } else {
-                console.log(reason == null ? `${TAG} skip suite: ${desc}` : `${TAG} skip suite: ${desc}, and the reason is ${reason}`);
+                console.info(reason == null ? `${TAG} skip suite: ${desc}` : `${TAG} skip suite: ${desc}, and the reason is ${reason}`);
                 return;
             }
         }
@@ -401,7 +401,7 @@ class SuiteService {
     }
 
     async dryRun(abilityDelegator) {
-        console.log(`${TAG} rootSuite : ` + JSON.stringify(this.rootSuite));
+        console.info(`${TAG} rootSuite : ` + JSON.stringify(this.rootSuite));
         let obj = this.rootSuite;
         let prefixStack = [];
         let suiteArray = [];
@@ -618,7 +618,7 @@ SuiteService.Suite = class {
             // 遇错即停模式,发现用例有问题，直接返回，不在执行后面的it
             let isBreakOnError = this.isRun(coreContext);
             if (isBreakOnError) {
-                console.log('break description :' + this.description);
+                console.info('break description :' + this.description);
                 break;
             }
             await coreContext.fireEvents('spec', 'specStart', specItem);
@@ -661,7 +661,7 @@ SuiteService.Suite = class {
             // 遇错即停模式, 发现用例有问题，直接返回，不在执行后面的description
             let isBreakOnError = this.isRun(coreContext);
             if (isBreakOnError) {
-                console.log(`${TAG}break description : ${this.description}`);
+                console.info(`${TAG}break description : ${this.description}`);
                 break;
             }
             await this.childSuites[i].asyncRun(coreContext);
@@ -843,13 +843,13 @@ class SpecService {
                 });
                 finalDesc = (finalDesc + '#' + desc).substring(2);
                 if (configService.checkIfSpecInSkipRun(finalDesc)) {
-                    console.log(`${TAG} runSkipped spec: ${desc}`);
+                    console.info(`${TAG} runSkipped spec: ${desc}`);
                 } else {
-                    console.log(reason == null ? `${TAG} skip spec: ${desc}` : `${TAG} skip spec: ${desc}, and the reason is ${reason}`);
+                    console.info(reason == null ? `${TAG} skip spec: ${desc}` : `${TAG} skip spec: ${desc}, and the reason is ${reason}`);
                     return;
                 }
             } else {
-                console.log(reason == null ? `${TAG} skip spec: ${desc}` : `${TAG} skip spec: ${desc}, and the reason is ${reason}`);
+                console.info(reason == null ? `${TAG} skip spec: ${desc}` : `${TAG} skip spec: ${desc}, and the reason is ${reason}`);
                 return;
             }
         }

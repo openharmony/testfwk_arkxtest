@@ -69,7 +69,7 @@ export default class SysTestKit {
   }
   static async print(message) {
     if ('printSync' in SysTestKit.delegator) {
-      console.debug(`${TAG}printSync called ...`);
+      console.info(`${TAG}printSync called ...`);
       SysTestKit.delegator.printSync(message);
     } else {
       await SysTestKit.delegator.print(message);

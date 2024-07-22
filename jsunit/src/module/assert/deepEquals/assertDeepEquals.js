@@ -15,7 +15,6 @@
 
 import DeepTypeUtils from './DeepTypeUtils';
 function assertDeepEquals(actualValue, expected) {
-    console.log('actualValue:' + actualValue + ',expected:' + expected[0]);
     let result = eq(actualValue, expected[0])
     let msg = logMsg(actualValue, expected[0]);
     return {
