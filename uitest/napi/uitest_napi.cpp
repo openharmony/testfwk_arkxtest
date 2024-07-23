@@ -26,6 +26,7 @@
 #include "frontend_api_defines.h"
 #include "ipc_transactor.h"
 #include "ui_event_observer_napi.h"
+#include "test_server_client.h"
 
 namespace OHOS::uitest {
     using namespace nlohmann;
@@ -337,10 +338,7 @@ namespace OHOS::uitest {
 
     static void SetPasteBoardData(string_view text)
     {
-        auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
-        pasteBoardMgr->Clear();
-        auto pasteData = MiscServices::PasteboardClient::GetInstance()->CreatePlainTextData(string(text));
-        pasteBoardMgr->SetPasteData(*pasteData);
+        OHOS::testserver::TestServerClient::GetInstance().SetPasteData(string(text));
     }
 
     static void PreprocessTransaction(napi_env env, TransactionContext &ctx, napi_value &error)

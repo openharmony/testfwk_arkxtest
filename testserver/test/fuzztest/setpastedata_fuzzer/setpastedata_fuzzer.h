@@ -13,17 +13,16 @@
  * limitations under the License.
  */
 
-#ifndef TEST_SERVER_ERROR_CODE_H
-#define TEST_SERVER_ERROR_CODE_H
+#ifndef SET_PASTE_DATA_FUZZER_H
+#define SET_PASTE_DATA_FUZZER_H
 
-namespace OHOS::testserver {
-    enum {
-        TEST_SERVER_OK = 0,
-        TEST_SERVER_GET_INTERFACE_FAILED = -1,
-        TEST_SERVER_ADD_DEATH_RECIPIENT_FAILED = 19000001,
-        TEST_SERVER_CREATE_PASTE_DATA_FAILED = 19000002,
-        TEST_SERVER_SET_PASTE_DATA_FAILED = 19000003,
-    };
-} //OHOS::testserver
+#include <cstdint>
+#include <unistd.h>
+#include <climits>
+#include <cstdio>
+#include <cstdlib>
+#include <fcntl.h>
 
-#endif // TEST_SERVER_ERROR_CODE_H
+#define FUZZ_PROJECT_NAME "setpastedata_fuzzer"
+
+#endif

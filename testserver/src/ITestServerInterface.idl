@@ -16,4 +16,5 @@
 sequenceable SessionToken..OHOS.testserver.SessionToken;
 interface OHOS.testserver.ITestServerInterface {
     void CreateSession([in] SessionToken sessionToken);
+    void SetPasteData([in] String text);
 }

@@ -37,6 +37,7 @@ namespace OHOS::testserver {
         ErrCode CreateSession(const SessionToken &sessionToken) override;
 
         // Declare the logical interfaces here
+        ErrCode SetPasteData(const std::string& text) override;
 
     protected:
         void OnStart() override;

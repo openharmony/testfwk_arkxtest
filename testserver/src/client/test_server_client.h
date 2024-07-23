@@ -25,6 +25,7 @@ namespace OHOS::testserver {
     public:
         static TestServerClient &GetInstance();
         sptr<ITestServerInterface> LoadTestServer();
+        int32_t SetPasteData(std::string text);
 
     private:
         TestServerClient() = default;
