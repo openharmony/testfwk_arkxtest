@@ -54,6 +54,7 @@ ohos_shared_library("test_server_service") {
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "pasteboard:pasteboard_client",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

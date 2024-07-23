@@ -21,6 +21,7 @@
 #include "parameters.h"
 #include "iservice_registry.h"
 #include "test_server_error_code.h"
+#include "pasteboard_client.h"
 
 namespace OHOS::testserver {
     // TEST_SERVER_SA_ID
@@ -103,6 +104,20 @@ namespace OHOS::testserver {
         HiLog::Info(LABEL_SERVICE, "%{public}s. Create session SUCCESS. callerCount=%{public}d",
             __func__, GetCallerCount());
         return TEST_SERVER_OK;
+    }
+
+    ErrCode TestServerService::SetPasteData(const std::string& text)
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
+        pasteBoardMgr->Clear();
+        auto pasteData = pasteBoardMgr->CreatePlainTextData(text);
+        if (pasteData == nullptr) {
+            return TEST_SERVER_CREATE_PASTE_DATA_FAILED;
+        }
+        int32_t ret = pasteBoardMgr->SetPasteData(*pasteData);
+        uint32_t successErrCode = 77987840;
+        return ret == successErrCode ? TEST_SERVER_OK : TEST_SERVER_SET_PASTE_DATA_FAILED;
     }
 
     void TestServerService::AddCaller()
