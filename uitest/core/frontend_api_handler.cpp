@@ -1191,7 +1191,7 @@ static void RegisterExtensionHandler()
         auto &image = GetBackendObject<Widget>(in.callerObjRef_);
         auto &driver = GetBoundUiDriver(in.callerObjRef_);
         auto snapshot = driver.RetrieveWidget(image, out.exception_);
-        if (out.exception_.code_ != NO_ERROR) {
+        if (out.exception_.code_ != NO_ERROR || snapshot == nullptr) {
             out.resultValue_ = nullptr; // exception, return null
             return;
         }
