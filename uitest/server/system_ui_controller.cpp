@@ -451,6 +451,10 @@ namespace OHOS::uitest {
         vector<pair<bool, Point>> fingerStatus(events.GetFingers(), make_pair(false, Point(0,0)));
         for (uint32_t step = 0; step < events.GetSteps(); step++) {
             auto pointerEvent = PointerEvent::Create();
+            if (pointerEvent == nullptr) {
+                LOG_E("Creat PointerEvent failed.");
+                return;
+            }
             for (uint32_t finger = 0; finger < events.GetFingers(); finger++) {
                 bool isPressed = events.At(finger, step).stage_ != ActionStage::UP;
                 fingerStatus[finger] = make_pair(isPressed, events.At(finger, step).point_);
@@ -494,6 +498,9 @@ namespace OHOS::uitest {
     void SysUiController::InjectMouseEvent(const MouseEvent &event) const
     {
         auto pointerEvent = PointerEvent::Create();
+        if (pointerEvent == nullptr) {
+            return;
+        }
         PointerEvent::PointerItem item;
         pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
         pointerEvent->SetPointerId(0);
@@ -561,6 +568,11 @@ namespace OHOS::uitest {
             if (event.code_ == KEYCODE_NONE) {
                 continue;
             }
+            auto keyEvent = OHOS::MMI::KeyEvent::Create();
+            if (keyEvent == nullptr) {
+                LOG_E("Creat KeyEvent failed.");
+                return;
+            }
             if (event.stage_ == ActionStage::UP) {
                 auto iter = std::find(downKeys.begin(), downKeys.end(), event.code_);
                 if (iter == downKeys.end()) {
@@ -568,7 +580,6 @@ namespace OHOS::uitest {
                     continue;
                 }
                 downKeys.erase(iter);
-                auto keyEvent = OHOS::MMI::KeyEvent::Create();
                 keyEvent->SetKeyCode(event.code_);
                 keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_UP);
                 OHOS::MMI::KeyEvent::KeyItem keyItem;
@@ -578,7 +589,6 @@ namespace OHOS::uitest {
                 InputManager::GetInstance()->SimulateInputEvent(keyEvent);
             } else {
                 downKeys.push_back(event.code_);
-                auto keyEvent = OHOS::MMI::KeyEvent::Create();
                 for (auto downKey : downKeys) {
                     keyEvent->SetKeyCode(downKey);
                     keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_DOWN);
