@@ -499,7 +499,6 @@ namespace OHOS::uitest {
     {
         auto pointerEvent = PointerEvent::Create();
         if (pointerEvent == nullptr) {
-            LOG_E("Creat PointerEvent failed.");
             return;
         }
         PointerEvent::PointerItem item;
