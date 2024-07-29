@@ -138,8 +138,8 @@ namespace OHOS::uitest {
 
     std::string ElementNodeIteratorImpl::GenerateNodeHashCode(const AccessibilityElementInfo &element)
     {
-        int winId = element.GetWindowId();
-        int accessId = element.GetAccessibilityId();
+        int32_t winId = element.GetWindowId();
+        int64_t accessId = element.GetAccessibilityId();
         std::stringstream hashcodeStr;
         hashcodeStr << winId;
         hashcodeStr << ":";
