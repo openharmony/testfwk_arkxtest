@@ -164,6 +164,7 @@ void UiEventObserverImpl::HandleEventCallback(const ApiCallInfo &in, ApiReplyInf
     }
     auto info = CreateElementInfo(context->elmentInfo.dump().c_str());
     if (info.bundleName == nullptr || info.componentType == nullptr || info.text == nullptr) {
+        delete context;
         LOG_W("[UiEventObserverImpl]CreateUIElementInfo failed.");
         out.exception_ = ApiCallErr(INTERNAL_ERROR, "UIEventObserver memory error.");
         return;
