@@ -34,10 +34,10 @@ class ReportExtend {
             suiteReport.tests++;
             let caseReport = {
                 tag: 'testcase',
-                name: testcase['description'],
+                name: testcase.description,
                 status: 'run',
                 time: '0.0',
-                classname: testsuite['description']
+                classname: testsuite.description
             };
             if (testcase.error) {
                 caseReport.result = false;

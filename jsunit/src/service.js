@@ -18,7 +18,7 @@ import { TAG } from './Constant';
 import LogExpectError from './module/report/LogExpectError';
 import { NestFilter } from './module/config/Filter';
 
-function assertTrueFun (actualValue) {
+function assertTrueFun(actualValue) {
     let result = {
         pass: (actualValue) === true,
         message: 'expect true, actualValue is ' + actualValue
@@ -26,7 +26,7 @@ function assertTrueFun (actualValue) {
     return result;
 }
 
-function assertEqualFun (actualValue, args) {
+function assertEqualFun(actualValue, args) {
     let msg = 'expect ' + actualValue + ' equals ' + args[0];
     if (actualValue === args[0]) { // 数值相同,提示数据类型
         const aClassName = Object.prototype.toString.call(actualValue);
@@ -525,7 +525,7 @@ class SuiteService {
         }
         if (configService.isRandom() && this.rootSuite.childSuites.length > 0) {
             this.rootSuite.childSuites.sort(function () {
-                return Math.random().toFixed(1) > 0.5 ? -1 : 1;
+                return +('0.' + (+ new Date() + '').split('').reverse().join('')) > 0.5 ? -1 : 1;
             });
             this.currentRunningSuite = this.rootSuite.childSuites[0];
         }
@@ -628,7 +628,7 @@ SuiteService.Suite = class {
             const configService = coreContext.getDefaultService('config');
             if (configService.isRandom()) {
                 this.specs.sort(function () {
-                    return Math.random().toFixed(1) > 0.5 ? -1 : 1;
+                    return +('0.' + (+ new Date() + '').split('').reverse().join('')) > 0.5 ? -1 : 1;
                 });
             }
             for (let spec in this.specs) {
@@ -681,7 +681,7 @@ SuiteService.Suite = class {
         const configService = coreContext.getDefaultService('config');
         if (configService.isRandom()) {
             this.specs.sort(function () {
-                return Math.random().toFixed(1) > 0.5 ? -1 : 1;
+                return +('0.' + (+ new Date() + '').split('').reverse().join('')) > 0.5 ? -1 : 1;
             });
         }
         const specService = coreContext.getDefaultService('spec');
@@ -1079,33 +1079,11 @@ class ExpectService {
 
     }
 
-    addAssert(wrappedMatchers, matcherName, actualValue) {
-        const _this = this;
-        const specService = _this.coreContext.getDefaultService('spec');
-        const currentRunningSpec = specService.getCurrentRunningSpec();
-        const currentRunningSuite = _this.coreContext.getDefaultService('suite').getCurrentRunningSuite();
-        if (matcherName.search('assertPromise') === 0) {
-            wrappedMatchers[matcherName] = async function () {
-                await _this.matchers[matcherName](actualValue, arguments).then(function (result) {
-                    if (wrappedMatchers.isNot) {
-                        result.pass = !result.pass;
-                    }
-                    result.actualValue = actualValue;
-                    result.checkFunc = matcherName;
-                    if (!result.pass) {
-                        const assertError = new AssertException(result.message);
-                        currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
-                        throw assertError;
-                    }
-                });
-            };
-        } else {
-            wrappedMatchers[matcherName] = function () {
-                const result = _this.customMatchers.includes(matcherName)
-                    ? _this.matchers[matcherName](actualValue, arguments[0]) : _this.matchers[matcherName](actualValue, arguments);
+    handleWithAssertPromise(_this, wrappedMatchers, matcherName, actualValue, currentRunningSpec, currentRunningSuite) {
+        wrappedMatchers[matcherName] = async function (...args) {
+            await _this.matchers[matcherName](actualValue, ...args).then(function (result) {
                 if (wrappedMatchers.isNot) {
                     result.pass = !result.pass;
-                    result.message = LogExpectError.getErrorMsg(matcherName, actualValue, arguments[0], result.message);
                 }
                 result.actualValue = actualValue;
                 result.checkFunc = matcherName;
@@ -1114,7 +1092,37 @@ class ExpectService {
                     currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
                     throw assertError;
                 }
-            };
+            });
+        };
+    }
+
+    handleWithoutAssertPromise(_this, wrappedMatchers, matcherName, actualValue, currentRunningSpec, currentRunningSuite) {
+        wrappedMatchers[matcherName] = function (...args) {
+            const result = _this.customMatchers.includes(matcherName)
+                ? _this.matchers[matcherName](actualValue, args[0]) : _this.matchers[matcherName](actualValue, ...args);
+            if (wrappedMatchers.isNot) {
+                result.pass = !result.pass;
+                result.message = LogExpectError.getErrorMsg(matcherName, actualValue, args[0], result.message);
+            }
+            result.actualValue = actualValue;
+            result.checkFunc = matcherName;
+            if (!result.pass) {
+                const assertError = new AssertException(result.message);
+                currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
+                throw assertError;
+            }
+        };
+    }
+
+    addAssert(wrappedMatchers, matcherName, actualValue) {
+        const _this = this;
+        const specService = _this.coreContext.getDefaultService('spec');
+        const currentRunningSpec = specService.getCurrentRunningSpec();
+        const currentRunningSuite = _this.coreContext.getDefaultService('suite').getCurrentRunningSuite();
+        if (matcherName.search('assertPromise') === 0) {
+            this.handleWithAssertPromise(_this, wrappedMatchers, matcherName, actualValue, currentRunningSpec, currentRunningSuite);
+        } else {
+            this.handleWithoutAssertPromise(_this, wrappedMatchers, matcherName, actualValue, currentRunningSpec, currentRunningSuite);
         }
     }
 
