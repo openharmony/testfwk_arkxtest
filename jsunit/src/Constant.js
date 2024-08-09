@@ -44,13 +44,13 @@ export class TestType {
     static STANDARD = 0B1 << 8;
     static SAFETY = 0B1 << 9;
     static RESILIENCE = 0B1 << 10;
-}
+};
 
 export class Size {
     static SMALLTEST = 0B1 << 16;
     static MEDIUMTEST = 0B1 << 17;
     static LARGETEST = 0B1 << 18;
-}
+};
 
 export class Level {
     static LEVEL0 = 0B1 << 24;
@@ -58,7 +58,7 @@ export class Level {
     static LEVEL2 = 0B1 << 26;
     static LEVEL3 = 0B1 << 27;
     static LEVEL4 = 0B1 << 28;
-}
+};
 
 export const TESTTYPE = {
     'function': 1,
@@ -72,7 +72,7 @@ export const TESTTYPE = {
     'standard': 1 << 8,
     'safety': 1 << 9,
     'resilience': 1 << 10,
-}
+};
 
 export const LEVEL = {
     '0': 1 << 24,
@@ -80,13 +80,13 @@ export const LEVEL = {
     '2': 1 << 26,
     '3': 1 << 27,
     '4': 1 << 28,
-}
+};
 
 export const SIZE = {
     'small': 1 << 16,
     'medium': 1 << 17,
     'large': 1 << 18,
-}
+};
 
 export const KEYSET = [
     '-s class', '-s notClass', '-s suite', '-s itName',
@@ -96,4 +96,4 @@ export const KEYSET = [
     'class', 'notClass', 'suite', 'itName',
     'level', 'testType', 'size', 'timeout', 'dryRun', 'random',
     'breakOnError', 'stress', 'coverage', 'skipMessage', 'runSkipped'
-]
+];

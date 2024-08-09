@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,12 +23,12 @@ import assertUndefined from './assertUndefined';
 import assertFalse from './assertFalse';
 import assertInstanceOf from './assertInstanceOf';
 import assertThrowError from './assertThrowError';
-import assertLargerOrEqual from './assertLargerOrEqual'
-import assertLessOrEqual from './assertLessOrEqual'
-import assertNaN from './assertNaN'
-import assertNegUnlimited from './assertNegUnlimited'
-import assertPosUnlimited from './assertPosUnlimited'
-import assertDeepEquals from './deepEquals/assertDeepEquals'
+import assertLargerOrEqual from './assertLargerOrEqual';
+import assertLessOrEqual from './assertLessOrEqual';
+import assertNaN from './assertNaN';
+import assertNegUnlimited from './assertNegUnlimited';
+import assertPosUnlimited from './assertPosUnlimited';
+import assertDeepEquals from './deepEquals/assertDeepEquals';
 import assertPromiseIsPending from './assertPromiseIsPending';
 import assertPromiseIsRejected from './assertPromiseIsRejected';
 import assertPromiseIsRejectedWith from './assertPromiseIsRejectedWith';

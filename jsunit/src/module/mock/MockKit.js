@@ -258,9 +258,10 @@ function ifMockedFunction(f) {
 }
 
 function when(f) {
-    if (ifMockedFunction(f)) {
-        return f.stub.bind(f);
+    if (!ifMockedFunction(f)) {
+        throw Error('not a mock function');
     }
+    return f.stub.bind(f);
 }
 
 export {MockKit, when};
