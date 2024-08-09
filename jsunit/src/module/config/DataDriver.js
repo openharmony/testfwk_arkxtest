@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,6 +48,20 @@ class DataDriver {
         this.specService = this.coreContext.getDefaultService('spec');
     }
 
+    getSpecParamsValue(specs) {
+        let specParams = [];
+        let specDesc = this.specService.getCurrentRunningSpec().description;
+        if (specs === null || specs === undefined) {
+            return specParams;
+        }
+        for (const specItem of specs) {
+            if (ObjectUtils.has(specItem, IT_KEY) && ObjectUtils.get(specItem, IT_KEY) === specDesc) {
+                return ObjectUtils.get(specItem, PARAMS_KEY, specParams);
+            }
+        }
+        return specParams;
+    }
+
     getSpecParams() {
         let specParams = [];
         let suiteDesc = this.suiteService.getCurrentRunningSuite().description;
@@ -57,11 +71,7 @@ class DataDriver {
             let describeValue = ObjectUtils.get(suiteItem, DESCRIBE_KEY, '');
             if (ObjectUtils.has(suiteItem, DESCRIBE_KEY) && (typeof describeValue === 'object') && describeValue.constructor === Array && describeValue.includes(suiteDesc)) {
                 let specs = ObjectUtils.get(suiteItem, SPECS_KEY, []);
-                for (const specItem of specs) {
-                    if (ObjectUtils.has(specItem, IT_KEY) && ObjectUtils.get(specItem, IT_KEY) === specDesc) {
-                        return ObjectUtils.get(specItem, PARAMS_KEY, specParams);
-                    }
-                }
+                return this.getSpecParamsValue(specs);
             }
         }
         return specParams;
@@ -80,6 +90,20 @@ class DataDriver {
         return suiteParams;
     }
 
+    getStressNum(specs, specDesc) {
+        let stress = 1;
+        if (specs === null || specs === undefined) {
+            return stress;
+        }
+        for (const specItem of specs) {
+            if (ObjectUtils.has(specItem, IT_KEY) && ObjectUtils.get(specItem, IT_KEY) === specDesc) {
+                let tempStress = ObjectUtils.get(specItem, STRESS_KEY, stress);
+                return (Number.isInteger(tempStress) && tempStress >= 1) ? tempStress : stress;
+            }
+        }
+        return stress;
+    }
+
     getSpecStress(specDesc) {
         let stress = 1;
         let suiteDesc = this.suiteService.getCurrentRunningSuite().description;
@@ -88,12 +112,7 @@ class DataDriver {
             let describeValue = ObjectUtils.get(suiteItem, DESCRIBE_KEY, '');
             if (ObjectUtils.has(suiteItem, DESCRIBE_KEY) && (typeof describeValue === 'object') && describeValue.constructor === Array && describeValue.includes(suiteDesc)) {
                 let specs = ObjectUtils.get(suiteItem, SPECS_KEY, []);
-                for (const specItem of specs) {
-                    if (ObjectUtils.has(specItem, IT_KEY) && ObjectUtils.get(specItem, IT_KEY) === specDesc) {
-                        let tempStress = ObjectUtils.get(specItem, STRESS_KEY, stress);
-                        return (Number.isInteger(tempStress) && tempStress >= 1) ? tempStress : stress;
-                    }
-                }
+                return this.getStressNum(specs, specDesc);
             }
         }
         return stress;
