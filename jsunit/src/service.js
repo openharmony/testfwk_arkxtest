@@ -18,6 +18,55 @@ import { TAG } from './Constant';
 import LogExpectError from './module/report/LogExpectError';
 import { NestFilter } from './module/config/Filter';
 
+function assertTrueFun (actualValue) {
+    let result = {
+        pass: (actualValue) === true,
+        message: 'expect true, actualValue is ' + actualValue
+    };
+    return result;
+}
+
+function assertEqualFun (actualValue, args) {
+    let msg = 'expect ' + actualValue + ' equals ' + args[0];
+    if (actualValue === args[0]) { // 数值相同,提示数据类型
+        const aClassName = Object.prototype.toString.call(actualValue);
+        const bClassName = Object.prototype.toString.call(args[0]);
+        msg = 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName + 'strict mode inspect type';
+    }
+    let result = {
+        pass: (actualValue) === args[0],
+        expectValue: args[0],
+        message: msg
+    };
+    return result;
+}
+
+function assertThrowFun(actual, args) {
+    const result = {
+        pass: false
+    };
+    if (typeof actual !== 'function') {
+        result.message = 'toThrow\'s Actual should be a Function';
+    } else {
+        let hasThrow = false;
+        let throwError;
+        try {
+            actual();
+        } catch (e) {
+            hasThrow = true;
+            throwError = e;
+        }
+        if (!hasThrow) {
+            result.message = 'function did not throw an exception';
+        } else if (throwError && throwError.message === args[0]) {
+            result.pass = true;
+        } else {
+            result.message = `expect to throw ${args[0]} , actual throw ${throwError.message}`;
+        }
+    }
+    return result;
+}
+
 class AssertException extends Error {
     constructor(message) {
         super();
@@ -135,6 +184,8 @@ function processFunc(coreContext, func) {
 function secureRandomNumber() {
     return crypto.randomBytes(8).readUInt32LE() / 0xffffffff;
 }
+
+
 
 class SuiteService {
     constructor(attr) {
@@ -271,7 +322,7 @@ class SuiteService {
     }
     analyzeConfigServiceClass(configServiceClass, desc) {
         if (configServiceClass == null || configServiceClass === '') {
-            this.fullRun = true
+            this.fullRun = true;
             return false;
         }
         if (this.targetSuiteArray.length === 0) {
@@ -290,7 +341,7 @@ class SuiteService {
     }
     traversalResults(suite, obj, breakOnError) {
         if (suite.childSuites.length === 0 && suite.specs.length === 0) {
-            return obj;
+            return;
         }
         if (suite.specs.length > 0) {
             for (const itItem of suite.specs) {
@@ -327,11 +378,12 @@ class SuiteService {
                 this.traversalResults(suiteItem, obj, breakOnError);
             }
         }
+
     }
 
     async setSuiteResults(suite, error, coreContext) {
         if (suite.childSuites.length === 0 && suite.specs.length === 0) {
-            return obj;
+            return;
         }
         if (suite.specs.length > 0) {
             const specService = coreContext.getDefaultService('spec');
@@ -605,6 +657,26 @@ SuiteService.Suite = class {
         }
     }
 
+    async runBeforeItSpecified(beforeItSpecified, specItem) {
+        for (const [itNames, hookFunc] of beforeItSpecified) {
+            if ((Object.prototype.toString.call(itNames) === '[object Array]' && itNames.includes(specItem.description)) ||
+                (Object.prototype.toString.call(itNames) === '[object String]' && itNames === specItem.description)) {
+                await Reflect.apply(hookFunc, null, []);
+            }
+            break;
+        }
+    }
+
+    async runAfterItSpecified(beforeItSpecified, specItem) {
+        for (const [itNames, hookFunc] of beforeItSpecified) {
+            if ((Object.prototype.toString.call(itNames) === '[object Array]' && itNames.includes(specItem.description)) ||
+                (Object.prototype.toString.call(itNames) === '[object String]' && itNames === specItem.description)) {
+                await Reflect.apply(hookFunc, null, []);
+            }
+            break;
+        }
+    }
+
     async asyncRunSpecs(coreContext) {
         const configService = coreContext.getDefaultService('config');
         if (configService.isRandom()) {
@@ -623,22 +695,10 @@ SuiteService.Suite = class {
             }
             await coreContext.fireEvents('spec', 'specStart', specItem);
             try {
-                for (const [itNames, hookFunc] of this.beforeItSpecified) {
-                    if ((Object.prototype.toString.call(itNames) === '[object Array]' && itNames.includes(specItem.description)) ||
-                        (Object.prototype.toString.call(itNames) === '[object String]' && itNames === specItem.description)) {
-                        await Reflect.apply(hookFunc, null, []);
-                    }
-                    break;
-                }
+                await this.runBeforeItSpecified(this.beforeItSpecified, specItem);
                 await this.runAsyncHookFunc('beforeEach');
                 await specItem.asyncRun(coreContext);
-                for (const [itNames, hookFunc] of this.afterItSpecified) {
-                    if ((Object.prototype.toString.call(itNames) === '[object Array]' && itNames.includes(specItem.description)) ||
-                        (Object.prototype.toString.call(itNames) === '[object String]' && itNames === specItem.description)) {
-                        await Reflect.apply(hookFunc, null, []);
-                    }
-                    break;
-                }
+                await this.runAfterItSpecified(this.afterItSpecified, specItem);
                 await this.runAsyncHookFunc('afterEach');
             } catch (e) {
                 console.error(`${TAG}stack:${e?.stack}`);
@@ -983,61 +1043,21 @@ class ExpectService {
     removeMatchers(customAssertionName) {
         if (customAssertionName === 'all') {
             for (const matcherName in this.matchers) {
-                this.matchers[matcherName] = this.customMatchers.includes(matcherName) ? (() => {throw new Error(`${matcherName} is unregistered`)}) : undefined;
+                this.matchers[matcherName] = this.customMatchers.includes(matcherName)
+                    ? (() => {throw new Error(`${matcherName} is unregistered`)}) : undefined;
             }
-        }else {
+        } else {
             this.matchers[customAssertionName] = () => {
-                throw new Error(`${customAssertionName} is unregistered`)
+                throw new Error(`${customAssertionName} is unregistered`);
             };
         }
     }
 
     basicMatchers() {
         return {
-            assertTrue: function (actualValue) {
-                return {
-                    pass: (actualValue) === true,
-                    message: 'expect true, actualValue is ' + actualValue
-                };
-            },
-            assertEqual: function (actualValue, args) {
-                let msg = 'expect ' + actualValue + ' equals ' + args[0];
-                if (actualValue == args[0]) { // 数值相同,提示数据类型
-                    const aClassName = Object.prototype.toString.call(actualValue);
-                    const bClassName = Object.prototype.toString.call(args[0]);
-                    msg = 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName + 'strict mode inspect type';
-                }
-                return {
-                    pass: (actualValue) === args[0],
-                    expectValue: args[0],
-                    message: msg
-                };
-            },
-            assertThrow: function (actual, args) {
-                const result = {
-                    pass: false
-                };
-                if (typeof actual !== 'function') {
-                    result.message = 'toThrow\'s Actual should be a Function';
-                } else {
-                    let hasThrow = false;
-                    let throwError;
-                    try {
-                        actual();
-                    } catch (e) {
-                        hasThrow = true;
-                        throwError = e;
-                    }
-                    if (!hasThrow) {
-                        result.message = 'function did not throw an exception';
-                    } else if (throwError && throwError.message === args[0]) {
-                        result.pass = true;
-                    } else {
-                        result.message = `expect to throw ${args[0]} , actual throw ${throwError.message}`;
-                    }
-                }
-                return result;
-            }
+            assertTrue: assertTrueFun,
+            assertEqual: assertEqualFun,
+            assertThrow: assertThrowFun
         };
     }
 
@@ -1058,6 +1078,46 @@ class ExpectService {
         };
 
     }
+
+    addAssert(wrappedMatchers, matcherName, actualValue) {
+        const _this = this;
+        const specService = _this.coreContext.getDefaultService('spec');
+        const currentRunningSpec = specService.getCurrentRunningSpec();
+        const currentRunningSuite = _this.coreContext.getDefaultService('suite').getCurrentRunningSuite();
+        if (matcherName.search('assertPromise') === 0) {
+            wrappedMatchers[matcherName] = async function () {
+                await _this.matchers[matcherName](actualValue, arguments).then(function (result) {
+                    if (wrappedMatchers.isNot) {
+                        result.pass = !result.pass;
+                    }
+                    result.actualValue = actualValue;
+                    result.checkFunc = matcherName;
+                    if (!result.pass) {
+                        const assertError = new AssertException(result.message);
+                        currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
+                        throw assertError;
+                    }
+                });
+            };
+        } else {
+            wrappedMatchers[matcherName] = function () {
+                const result = _this.customMatchers.includes(matcherName)
+                    ? _this.matchers[matcherName](actualValue, arguments[0]) : _this.matchers[matcherName](actualValue, arguments);
+                if (wrappedMatchers.isNot) {
+                    result.pass = !result.pass;
+                    result.message = LogExpectError.getErrorMsg(matcherName, actualValue, arguments[0], result.message);
+                }
+                result.actualValue = actualValue;
+                result.checkFunc = matcherName;
+                if (!result.pass) {
+                    const assertError = new AssertException(result.message);
+                    currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
+                    throw assertError;
+                }
+            };
+        }
+    }
+
     wrapMatchers(actualValue) {
         const _this = this;
         const specService = _this.coreContext.getDefaultService('spec');
@@ -1069,37 +1129,7 @@ class ExpectService {
             if (!result) {
                 continue;
             }
-            if (matcherName.search('assertPromise') == 0) {
-                wrappedMatchers[matcherName] = async function () {
-                    await _this.matchers[matcherName](actualValue, arguments).then(function (result) {
-                        if (wrappedMatchers.isNot) {
-                            result.pass = !result.pass;
-                        }
-                        result.actualValue = actualValue;
-                        result.checkFunc = matcherName;
-                        if (!result.pass) {
-                            const assertError = new AssertException(result.message);
-                            currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
-                            throw assertError;
-                        }
-                    });
-                };
-            } else {
-                wrappedMatchers[matcherName] = function () {
-                    const result = _this.customMatchers.includes(matcherName) ? _this.matchers[matcherName](actualValue, arguments[0]) : _this.matchers[matcherName](actualValue, arguments);
-                    if (wrappedMatchers.isNot) {
-                        result.pass = !result.pass;
-                        result.message = LogExpectError.getErrorMsg(matcherName, actualValue, arguments[0], result.message);
-                    }
-                    result.actualValue = actualValue;
-                    result.checkFunc = matcherName;
-                    if (!result.pass) {
-                        const assertError = new AssertException(result.message);
-                        currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
-                        throw assertError;
-                    }
-                };
-            }
+            this.addAssert(wrappedMatchers, matcherName, actualValue);
         }
         return wrappedMatchers;
     }
@@ -1186,7 +1216,7 @@ class ReportService {
         if (this.coreContext.getDefaultService('config').filterXdescribe.length !== 0) {
             this.coreContext.getDefaultService('config').filterXdescribe.forEach(function (item) {
                 console.info(`${TAG}xdescribe: ${item} should not contain it`);
-            })
+            });
         }
     }
 

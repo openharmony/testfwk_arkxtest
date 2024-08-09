@@ -229,9 +229,10 @@ function ifMockedFunction(f) {
     return true;
 }
 function when(f) {
-    if (ifMockedFunction(f)) {
-        return f.stub.bind(f);
+    if (!ifMockedFunction(f)) {
+        throw Error('not a mock function');
     }
+        return f.stub.bind(f);
 }
 function MockSetup(target, propertyName, descriptor) {
     const aboutToAppearOrigin = target.aboutToAppear;

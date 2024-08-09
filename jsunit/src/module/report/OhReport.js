@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import SysTestKit from "../kit/SysTestKit";
+import SysTestKit from '../kit/SysTestKit';
 import { collectCoverageData } from '../coverage/coverageCollect';
 import { TAG, PrintTag } from '../../Constant';
 

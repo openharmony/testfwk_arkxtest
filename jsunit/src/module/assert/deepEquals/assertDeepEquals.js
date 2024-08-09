@@ -15,7 +15,7 @@
 
 import DeepTypeUtils from './DeepTypeUtils';
 function assertDeepEquals(actualValue, expected) {
-    let result = eq(actualValue, expected[0])
+    let result = eq(actualValue, expected[0]);
     let msg = logMsg(actualValue, expected[0]);
     return {
         pass: result,
@@ -41,7 +41,7 @@ function logMsg(actualValue, expected) {
     } else if (aClassName == '[object Set]' || aClassName == '[object Map]') {
         actualMsg = JSON.stringify(Array.from(actualValue));
     } else if (aClassName == '[object RegExp]') {
-        actualMsg = JSON.stringify(actualValue.source.replace('\\',''));
+        actualMsg = JSON.stringify(actualValue.source.replace('\\', ''));
     } else if (aClassName == '[object BigInt]') {
         actualMsg = actualValue;
     } else if (aClassName == '[object Error]') {
@@ -59,7 +59,7 @@ function logMsg(actualValue, expected) {
     } else if (bClassName == '[object Set]' || bClassName == '[object Map]') {
         expectMsg = JSON.stringify(Array.from(expected));
     } else if (bClassName == '[object RegExp]') {
-        expectMsg = JSON.stringify(expected.source.replace('\\',''));
+        expectMsg = JSON.stringify(expected.source.replace('\\', ''));
     } else if (bClassName == '[object BigInt]') {
         expectMsg = expected;
     } else if (bClassName == '[object Error]') {
