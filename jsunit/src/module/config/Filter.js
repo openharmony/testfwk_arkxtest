@@ -101,7 +101,7 @@ class NestFilter {
     }
 
     filterNotClass(notClass, suiteStack, desc) {
-        let isFilterNotClass = false;
+        let filterNotClass = false;
         if (notClass != null) {
             let notClassArray = notClass.split(',');
             let targetSuiteName = '';
@@ -111,10 +111,10 @@ class NestFilter {
             targetSuiteName = targetSuiteName.substring(2);
             const targetSpecName = targetSuiteName + '#' + desc;
             if (notClassArray.includes(targetSpecName) || notClassArray.some(key => targetSpecName.startsWith(key))) {
-                isFilterNotClass = true;
+                filterNotClass = true;
             }
         }
-        return isFilterNotClass;
+        return filterNotClass;
     }
 
     filterLevelOrSizeOrTestType(level, size, testType, filter) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,6 +28,46 @@ class ReportExtend {
 
     }
 
+    handleSpecs(specs, report, suiteReport, testsuite) {
+        for (let testcase of specs) {
+            report.tests++;
+            suiteReport.tests++;
+            let caseReport = {
+                tag: 'testcase',
+                name: testcase['description'],
+                status: 'run',
+                time: '0.0',
+                classname: testsuite['description']
+            };
+            if (testcase.error) {
+                caseReport.result = false;
+                caseReport.children = [{
+                    tag: 'error',
+                    type: '',
+                    message: testcase.error.message
+                }];
+                report.errors++;
+                suiteReport.errors++;
+            } else if (testcase.result.failExpects.length > 0) {
+                caseReport.result = false;
+                let message = '';
+                testcase.result.failExpects.forEach(failExpect => {
+                    message += failExpect.message || ('expect ' + failExpect.actualValue + ' ' + failExpect.checkFunc + ' ' + (failExpect.expectValue || '')) + ';';
+                });
+                caseReport.children = [{
+                    tag: 'failure',
+                    type: '',
+                    message: message
+                }];
+                report.failures++;
+                suiteReport.failures++;
+            } else {
+                caseReport.result = true;
+            }
+            suiteReport.children.push(caseReport);
+        }
+    }
+
     taskDone() {
         const report = {
             tag: 'testsuites',
@@ -52,61 +92,38 @@ class ReportExtend {
                     children: []
                 };
                 let specs = testsuite['specs'];
-                for (let testcase of specs) {
-                    report.tests++;
-                    suiteReport.tests++;
-                    let caseReport = {
-                        tag: 'testcase',
-                        name: testcase['description'],
-                        status: 'run',
-                        time: '0.0',
-                        classname: testsuite['description']
-                    };
-                    if (testcase.error) {
-                        caseReport['result'] = false;
-                        caseReport['children'] = [{
-                            tag: 'error',
-                            type: '',
-                            message: testcase.error.message
-                        }];
-                        report.errors++;
-                        suiteReport.errors++;
-                    } else if (testcase.result.failExpects.length > 0) {
-                        caseReport['result'] = false;
-                        let message = '';
-                        testcase.result.failExpects.forEach(failExpect => {
-                            message += failExpect.message || ('expect ' + failExpect.actualValue + ' ' + failExpect.checkFunc + ' ' + (failExpect.expectValue || '')) + ';';
-                        });
-                        caseReport['children'] = [{
-                            tag: 'failure',
-                            type: '',
-                            message: message
-                        }];
-                        report.failures++;
-                        suiteReport.failures++;
-                    } else {
-                        caseReport['result'] = true;
-                    }
-                    suiteReport.children.push(caseReport);
-                }
+                this.handleSpecs(specs, report, suiteReport, testsuite);
                 report.children.push(suiteReport);
             }
         }
 
-        let reportXml = '<?xml version="1.0" encoding="UTF-8"?>\n' + json2xml(report);
-        this.fileModule.writeText({
-            uri: 'internal://app/report.xml',
-            text: reportXml,
-            success: function () {
-                console.info('call success callback success');
-            },
-            fail: function (data, code) {
-                console.info('call fail callback success:');
-            },
-            complete: function () {
-                console.info('call complete callback success');
-            }
-        });
+        writeXmlReport(report);
+    }
+}
+
+function writeXmlReport(report) {
+    let reportXml = '<?xml version="1.0" encoding="UTF-8"?>\n' + json2xml(report);
+    this.fileModule.writeText({
+        uri: 'internal://app/report.xml',
+        text: reportXml,
+        success: function () {
+            console.info('call success callback success');
+        },
+        fail: function (data, code) {
+            console.info('call fail callback success:');
+        },
+        complete: function () {
+            console.info('call complete callback success');
+        }
+    });
+}
+
+function handleChild(json, key, hasChildren, childrenStr) {
+    if (json[key].length > 0) {
+        hasChildren = true;
+        for (let child of json[key]) {
+            childrenStr += json2xml(child);
+        }
     }
 }
 
@@ -119,12 +136,7 @@ function json2xml(json) {
         if (key === 'tag') {
             tagName = json[key];
         } else if (key === 'children') {
-            if (json[key].length > 0) {
-                hasChildren = true;
-                for (let child of json[key]) {
-                    childrenStr += json2xml(child);
-                }
-            }
+            handleChild(json, key, hasChildren, childrenStr);
         } else {
             attrStr += ` ${key}="${json[key]}"`;
         }

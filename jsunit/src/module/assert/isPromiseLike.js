@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,18 +14,18 @@
  */
 
 function isPromiseLike(obj) {
-    return !!obj && isFunction_(obj.then);
+    return !!obj && isFunction(obj.then);
 }
 
-function isFunction_(value) {
-    return isA_('Function', value);
+function isFunction(value) {
+    return isA('Function', value);
 }
 
-function isA_(typeName, value) {
-    return getType_(value) === '[object ' + typeName + ']';
+function isA(typeName, value) {
+    return getType(value) === '[object ' + typeName + ']';
 }
 
-function getType_(value) {
+function getType(value) {
     return Object.prototype.toString.apply(value);
 }
 
