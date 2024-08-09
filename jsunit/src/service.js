@@ -1081,7 +1081,7 @@ class ExpectService {
 
     handleWithAssertPromise(_this, wrappedMatchers, matcherName, actualValue, currentRunningSpec, currentRunningSuite) {
         wrappedMatchers[matcherName] = async function (...args) {
-            await _this.matchers[matcherName](actualValue, ...args).then(function (result) {
+            await _this.matchers[matcherName](actualValue, args).then(function (result) {
                 if (wrappedMatchers.isNot) {
                     result.pass = !result.pass;
                 }
@@ -1099,7 +1099,7 @@ class ExpectService {
     handleWithoutAssertPromise(_this, wrappedMatchers, matcherName, actualValue, currentRunningSpec, currentRunningSuite) {
         wrappedMatchers[matcherName] = function (...args) {
             const result = _this.customMatchers.includes(matcherName)
-                ? _this.matchers[matcherName](actualValue, args[0]) : _this.matchers[matcherName](actualValue, ...args);
+                ? _this.matchers[matcherName](actualValue, args[0]) : _this.matchers[matcherName](actualValue, args);
             if (wrappedMatchers.isNot) {
                 result.pass = !result.pass;
                 result.message = LogExpectError.getErrorMsg(matcherName, actualValue, args[0], result.message);
