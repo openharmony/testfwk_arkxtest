@@ -267,10 +267,10 @@ namespace OHOS::uitest {
                 recv.push_back(KeyEvent {ActionStage::DOWN, kCtrlCode,  0});
             }
             recv.push_back(KeyEvent {ActionStage::DOWN, kCode, opt.keyHoldMs_});
-            recv.push_back(KeyEvent {ActionStage::UP, kCode, 0});
             if (kCtrlCode != KEYCODE_NONE) {
                 recv.push_back(KeyEvent {ActionStage::UP, kCtrlCode, 0});
             }
+            recv.push_back(KeyEvent {ActionStage::UP, kCode, 0});
         }
     };
 
@@ -304,11 +304,11 @@ namespace OHOS::uitest {
             } else {
                 recv.at(INDEX_ONE).holdMs_ = opt.keyHoldMs_;
             }
+            recv.push_back(KeyEvent {ActionStage::UP, codeZero_, 0});
+            recv.push_back(KeyEvent {ActionStage::UP, codeOne_, 0});
             if (codeTwo_ != KEYCODE_NONE) {
                 recv.push_back(KeyEvent {ActionStage::UP, codeTwo_, 0});
             }
-            recv.push_back(KeyEvent {ActionStage::UP, codeOne_, 0});
-            recv.push_back(KeyEvent {ActionStage::UP, codeZero_, 0});
         }
 
     private:
