@@ -26,6 +26,7 @@
 #include <iservice_registry.h>
 #include <system_ability_load_callback_stub.h>
 #include "idump_broker.h"
+#include "dump_broker_proxy.h"
 #include "system_ability_definition.h"
 #endif
 #include "pasteboard_client.h"
@@ -910,6 +911,9 @@ namespace OHOS::uitest {
     {
 #ifdef HIDUMPER_ENABLED
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+        // wati SA start
+        constexpr auto delayMs = 2000;
+        this_thread::sleep_for(chrono::milliseconds(delayMs));
         if (sam == nullptr) {
             LOG_E("Get samgr failed");
             return;
@@ -919,8 +923,7 @@ namespace OHOS::uitest {
             mutex lock;
             lock.lock();
             sptr<OnSaLoadCallback> loadCallback = new OnSaLoadCallback(lock);
-            int32_t result = sam->LoadSystemAbility(OHOS::DFX_HI_DUMPER_SERVICE_ABILITY_ID, loadCallback);
-            if (result != ERR_OK) {
+            if (sam->LoadSystemAbility(OHOS::DFX_HI_DUMPER_SERVICE_ABILITY_ID, loadCallback) != ERR_OK) {
                 LOG_E("Schedule LoadSystemAbility failed");
                 lock.unlock();
                 return;
@@ -936,6 +939,10 @@ namespace OHOS::uitest {
         }
         // run dump command
         sptr<IDumpBroker> client = iface_cast<IDumpBroker>(remoteObject);
+        if (client == nullptr) {
+            LOG_E("IDumpBroker converts failed");
+            return;
+        }
         auto fd = memfd_create("dummy_file", 2);
         ftruncate(fd, 0);
         vector<u16string> args;
