@@ -76,7 +76,7 @@ namespace OHOS::uitest {
             for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
                 TimeStamp lastTime = it->second->GetVelocityTracker().GetLastTimePoint();
                 double  duration = (thisTime - lastTime).count();
-                if (duration > ERROR_POINTER) {
+                if (duration > ERROR_POINTER && it->second != nullptr) {
                     flag = true;
                     if (it->seconde != nullptr) {
                         delete it->second;
