@@ -160,15 +160,9 @@ function processFunc(coreContext, func) {
             break;
         }
         case 1: {
-            if (argNames[0] === 'data') {
-                processedFunc = function (paramItem) {
-                    func(paramItem);
-                };
-            } else {
-                processedFunc = function () {
-                    return getFuncWithArgsOne(func, timeout, isStressTest);
-                };
-            }
+            processedFunc = function () {
+                return getFuncWithArgsOne(func, timeout, isStressTest);
+            };
             break;
         }
         default: {
