@@ -76,7 +76,7 @@ namespace OHOS::uitest {
             for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
                 TimeStamp lastTime = it->second->GetVelocityTracker().GetLastTimePoint();
                 double  duration = (thisTime - lastTime).count();
-                if (duration > ERROR_POINTER) {
+                if (duration > ERROR_POINTER && it->second != nullptr) {
                     flag = true;
                     delete it->second;
                     it = fingerTrackers.erase(it);
@@ -94,10 +94,13 @@ namespace OHOS::uitest {
             InitJudgeChain();
         }
         FingerTracker* fTracker = new FingerTracker();
-        fTracker->HandleDownEvent(event);
-        fingerTrackers.insert({event.downTime, fTracker});
-        
-        currentFingerNum++;
+        if (fTracker == nullptr) {
+            LOG_E("Failedf to new FingerTracker");
+        } else {
+            fTracker->HandleDownEvent(event);
+            fingerTrackers.insert({event.downTime, fTracker});
+            currentFingerNum++;
+        }
     }
 
     void PointerTracker::HandleMoveEvent(TouchEventInfo& event)
@@ -166,7 +169,9 @@ namespace OHOS::uitest {
     void PointerTracker::ClearFingerTrackersValues()
     {
         for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
-            delete it->second;
+            if (it->second != nullptr) {
+                delete it->second;
+            }
         }
         fingerTrackers.clear();
     }
