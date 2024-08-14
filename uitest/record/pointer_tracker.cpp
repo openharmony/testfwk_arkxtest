@@ -169,7 +169,9 @@ namespace OHOS::uitest {
     void PointerTracker::ClearFingerTrackersValues()
     {
         for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
-            delete it->second;
+            if (it->second != nullptr) {
+                delete it->second;
+            }
         }
         fingerTrackers.clear();
     }
