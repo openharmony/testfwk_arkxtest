@@ -129,6 +129,10 @@ namespace OHOS::uitest {
         Point from;
         Point to;
         if (opt == "dircFling" && CheckParams(argc, INDEX_FOUR)) {
+            auto directionValue = atoi(argv[THREE]);
+            if (directionValue < Direction::TO_LEFT || directionValue > Direction::TO_DOWN) {
+                return EXIT_FAILURE;
+            }
             direction = (Direction)atoi(argv[THREE]);
             screenSize = driver.GetDisplaySize(exception_);
             if (!CreateFlingPoint(to, from, screenSize, direction)) {
