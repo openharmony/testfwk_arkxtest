@@ -76,11 +76,9 @@ namespace OHOS::uitest {
             for (auto it = fingerTrackers.begin(); it != fingerTrackers.end(); it++) {
                 TimeStamp lastTime = it->second->GetVelocityTracker().GetLastTimePoint();
                 double  duration = (thisTime - lastTime).count();
-                if (duration > ERROR_POINTER) {
+                if (duration > ERROR_POINTER && it->second != nullptr) {
                     flag = true;
-                    if (it->seconde != nullptr) {
-                        delete it->second;
-                    }
+                    delete it->second;
                     it = fingerTrackers.erase(it);
                     LOG_E("获取回调信息存在异常,请重新录制");
                     std::cout << "获取回调信息存在异常,请重新录制" << std::endl;
