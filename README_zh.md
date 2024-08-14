@@ -924,25 +924,29 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
    value: string
  }
 ```
->说明 : 若要使用数据驱动功能，测试用例it的第三个参数func的入参必须传入两个：done定义在前面，data定义在后面；若不使用数据驱动功能，func的入参可以为零个或传入done
+>说明 : 若要使用数据驱动传入参数功能，测试用例it的func必须传入两个参数：done定义在前面，data定义在后面；若不使用数据驱动传入参数功能，func可以不传参或传入done
 
+正确示例：
 ```javascript
-    //使用数据驱动
-    it('testcase', 0, async (done: Function, data: ParmObj) => {
+    it('testcase01', 0, async (done: Function, data: ParmObj) => {
       ...
       done();
+    });
+    it('testcase02', 0, async (done: Function) => {
+      ...
+      done();
+    });
+    it('testcase03', 0, () => {
+      ...
     });
 ```
-
+错误示例：
 ```javascript
-    //不使用数据驱动
-    //案例一
-    it('testcase01', 0, async (done: Function) => {
+    it('testcase01', 0, async (data: ParmObj, done: Function) => {
       ...
       done();
     });
-    //案例二
-    it('testcase02', 0, () => {
+    it('testcase02', 0, async (data: ParmObj) => {
       ...
     });
 ```
