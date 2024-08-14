@@ -78,7 +78,9 @@ namespace OHOS::uitest {
                 double  duration = (thisTime - lastTime).count();
                 if (duration > ERROR_POINTER) {
                     flag = true;
-                    delete it->second;
+                    if (it->seconde != nullptr) {
+                        delete it->second;
+                    }
                     it = fingerTrackers.erase(it);
                     LOG_E("获取回调信息存在异常,请重新录制");
                     std::cout << "获取回调信息存在异常,请重新录制" << std::endl;
@@ -94,10 +96,13 @@ namespace OHOS::uitest {
             InitJudgeChain();
         }
         FingerTracker* fTracker = new FingerTracker();
-        fTracker->HandleDownEvent(event);
-        fingerTrackers.insert({event.downTime, fTracker});
-        
-        currentFingerNum++;
+        if (fTracker == nullptr) {
+            LOG_E("Failedf to new FingerTracker");
+        } else {
+            fTracker->HandleDownEvent(event);
+            fingerTrackers.insert({event.downTime, fTracker});
+            currentFingerNum++;
+        }
     }
 
     void PointerTracker::HandleMoveEvent(TouchEventInfo& event)
