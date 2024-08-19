@@ -243,13 +243,14 @@ namespace OHOS::uitest {
             return nullptr;
         }
         const auto timeout = chrono::milliseconds(WAIT_CONN_TIMEOUT_MS);
-        if (condition.wait_for(lock, timeout) == cv_status::timeout) {
+        auto ret = condition.wait_for(lock, timeout);
+        CommonEventManager::UnSubscribeCommonEvent(subscriber);
+        subscriber->UpdateHandler(nullptr); // unset handler
+        if (ret == cv_status::timeout) {
             LOG_E("Wait for ApiCaller publish by server timeout");
         } else if (remoteObject == nullptr) {
             LOG_E("Published ApiCaller object is null");
         }
-        subscriber->UpdateHandler(nullptr); // unset handler
-        CommonEventManager::UnSubscribeCommonEvent(subscriber);
         return remoteObject;
     }
 
