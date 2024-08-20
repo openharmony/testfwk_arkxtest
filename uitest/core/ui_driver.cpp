@@ -514,10 +514,10 @@ namespace OHOS::uitest {
                     events.emplace_back(KeyEvent {ActionStage::DOWN, pair.second, 0});
                 }
                 events.emplace_back(KeyEvent {ActionStage::DOWN, pair.first, typeCharTimeMs});
-                events.emplace_back(KeyEvent {ActionStage::UP, pair.first, 0});
                 if (pair.second != KEYCODE_NONE) {
                     events.emplace_back(KeyEvent {ActionStage::UP, pair.second, 0});
                 }
+                events.emplace_back(KeyEvent {ActionStage::UP, pair.first, 0});
             }
         }
         return true;
