@@ -472,9 +472,9 @@ TEST_F(UiActionTest, computePasteAction)
     ASSERT_EQ(KEYCODE_V, event2.code_);
     ASSERT_EQ(ActionStage::DOWN, event2.stage_);
 
-    ASSERT_EQ(KEYCODE_V, event3.code_);
+    ASSERT_EQ(KEYCODE_CTRL, event3.code_);
     ASSERT_EQ(ActionStage::UP, event3.stage_);
-    ASSERT_EQ(KEYCODE_CTRL, event4.code_);
+    ASSERT_EQ(KEYCODE_V, event4.code_);
     ASSERT_EQ(ActionStage::UP, event4.stage_);
 }
 
