@@ -113,7 +113,6 @@ ohos_static_library("uitest_ipc") {
     "common_event_service:cesfwk_innerkits",
     "ipc:ipc_core",
   ]
-
   external_deps += common_external_deps
 
   subsystem_name = "testfwk"
@@ -142,7 +141,6 @@ ohos_static_library("uitest_addon") {
   external_deps = [
     "image_framework:image_native",
     "input:libmmi-client",
-    "json:nlohmann_json_static",
     "window_manager:libdm",
     "window_manager:libwm",
   ]
@@ -316,11 +314,7 @@ ohos_unittest("uitest_ipc_unittest") {
     "//third_party/json/single_include/nlohmann",
     "//third_party/json/single_include",
   ]
-  external_deps = [
-    "ability_base:base",
-    "ability_base:want",
-    "hilog:libhilog",
-  ]
+  external_deps = [ "hilog:libhilog" ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   module_out_path = "uitestkit/unittest"
