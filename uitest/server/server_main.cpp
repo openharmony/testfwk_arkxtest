@@ -204,7 +204,8 @@ namespace OHOS::uitest {
         ApiTransactor::SetBroadcastCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
             DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, false, err);
         });
-        if (token == "singleness") {
+        std::string_view singlenessToken = "singleness";
+        if (token == singlenessToken) {
             ExecuteExtension(VERSION, argc, argv);
             LOG_I("Server exit");
             ApiTransactor::UnsetBroadcastCommandHandler();
