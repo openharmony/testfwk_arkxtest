@@ -143,7 +143,8 @@ namespace OHOS::uitest {
 
     static std::string GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
     {
-        for (unsigned long index = 0; index < sizeof(WATCHED_EVENTS) / sizeof(EventSpec); index++) {
+        auto eventCounts = sizeof(WATCHED_EVENTS) / sizeof(EventSpec);
+        for (unsigned long index = 0; index < eventCounts; index++) {
             if (WATCHED_EVENTS[index].componentTyep == eventInfo.GetComponentType() &&
                 WATCHED_EVENTS[index].eventType == eventInfo.GetWindowContentChangeTypes()) {
                 LOG_W("Capture event: %{public}s", WATCHED_EVENTS[index].event.data());
@@ -842,6 +843,7 @@ namespace OHOS::uitest {
         }
         auto width = display->GetWidth();
         auto height = display->GetHeight();
+        LOG_D("GetDisplaysize, width: %{public}d, height: %{public}d", width, height);
         Point result(width, height);
         return result;
     }
