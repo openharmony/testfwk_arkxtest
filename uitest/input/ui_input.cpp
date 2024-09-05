@@ -244,7 +244,7 @@ namespace OHOS::uitest {
         driver.PerformTouch(touch, uiOpArgs, exception_);
         static constexpr uint32_t focusTimeMs = 500;
         driver.DelayMs(focusTimeMs);
-        driver.InputText(text, point, exception_);
+        driver.InputText(text, exception_);
         std::cout << exception_.message_ << std::endl;
         return EXIT_SUCCESS;
     }

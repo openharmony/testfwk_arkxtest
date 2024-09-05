@@ -852,7 +852,7 @@ namespace OHOS::uitest {
             driver.PerformTouch(touch, uiOpArgs, out.exception_);
             static constexpr uint32_t focusTimeMs = 500;
             driver.DelayMs(focusTimeMs);
-            driver.InputText(text, point, out.exception_);
+            driver.InputText(text, out.exception_);
         };
         server.AddHandler("Driver.inputText", inputText);
     }
