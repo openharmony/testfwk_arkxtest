@@ -198,13 +198,7 @@ namespace OHOS::uitest {
         auto keyActionForDelete = KeysForwarder(events);
         driver_.TriggerKey(keyActionForDelete, options_, error);
         driver_.DelayMs(focusTimeMs);
-        auto retrievedAfterClear = driver_.RetrieveWidget(widget_, error);
-        if (retrievedAfterClear == nullptr || error.code_ != NO_ERROR) {
-            return;
-        }
-        const auto centerAfterClear = Point(retrievedAfterClear->GetBounds().GetCenterX(),
-                                            retrievedAfterClear->GetBounds().GetCenterY());
-        driver_.InputText(text, centerAfterClear, error);
+        driver_.InputText(text, error);
     }
 
     unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const
