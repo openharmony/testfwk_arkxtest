@@ -523,7 +523,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void UiDriver::InputText(string_view text, Point point, ApiCallErr &error)
+    void UiDriver::InputText(string_view text, ApiCallErr &error)
     {
         vector<KeyEvent> events;
         UiOpArgs uiOpArgs;
