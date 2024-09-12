@@ -29,7 +29,6 @@
 #include "dump_broker_proxy.h"
 #include "system_ability_definition.h"
 #endif
-#include "pasteboard_client.h"
 #include "accessibility_event_info.h"
 #include "accessibility_ui_test_ability.h"
 #include "ability_manager_client.h"

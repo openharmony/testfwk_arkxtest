@@ -193,7 +193,6 @@ ohos_executable("uitest_server") {
     "accessibility:accessibleability",
     "image_framework:image_native",
     "input:libmmi-client",
-    "pasteboard:pasteboard_client",
     "window_manager:libdm",
     "window_manager:libwm",
   ]
@@ -262,9 +261,9 @@ ohos_shared_library("uitest_client") {
   output_name = "uitest"
   external_deps = common_external_deps
   external_deps += [
+    "ability_base:want",
     "image_framework:image_native",
     "napi:ace_napi",
-    "pasteboard:pasteboard_client",
   ]
   relative_install_dir = "module"
   defines = [
@@ -403,15 +402,18 @@ ohos_shared_library("cj_ui_test_ffi") {
     sources = [ "${source_root}/cj/uitest_mock.cpp" ]
   }
 
-  deps = [ ":uitest_ipc" ]
+  deps = [
+    ":uitest_ipc",
+    "${source_root}/../testserver/src:test_server_client",
+  ]
 
   external_deps = common_external_deps
   external_deps += [
+    "ability_base:want",
     "image_framework:image_native",
     "json:nlohmann_json_static",
     "napi:cj_bind_ffi",
     "napi:cj_bind_native",
-    "pasteboard:pasteboard_client",
   ]
 
   relative_install_dir = "platformsdk"
