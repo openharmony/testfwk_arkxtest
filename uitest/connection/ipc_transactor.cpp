@@ -187,6 +187,7 @@ namespace OHOS::uitest {
     constexpr string_view PUBLISH_EVENT_PREFIX = "uitest.api.caller.publish#";
     constexpr uint32_t PUBLISH_MAX_RETIES = 10;
     constexpr uint32_t WAIT_CONN_TIMEOUT_MS = 5000;
+    constexpr uint32_t WAIT_DUMP_TIMEOUT_MS = 30000;
 
     static sptr<IRemoteObject> PublishCallerAndWaitForBackcaller(const sptr<ApiCaller> &caller, string_view token)
     {
@@ -392,7 +393,7 @@ namespace OHOS::uitest {
         if (!CommonEventManager::SubscribeCommonEvent(broadcastReplySubscriber)) {
             err = ApiCallErr(INTERNAL_ERROR, "Fail to subscribe uitest.broadcast.command.reply");
         }
-        const auto timeout = chrono::milliseconds(WAIT_CONN_TIMEOUT_MS << 1);
+        const auto timeout = chrono::milliseconds(WAIT_DUMP_TIMEOUT_MS);
         if (condition.wait_for(lock, timeout) == cv_status::timeout) {
             err = ApiCallErr(INTERNAL_ERROR, "Wait for subscribe uitest.broadcast.command.reply timeout");
         }

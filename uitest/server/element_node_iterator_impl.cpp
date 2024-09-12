@@ -258,7 +258,7 @@ namespace OHOS::uitest {
         widget.SetAttr(UiAttr::SELECTED, element.IsSelected() ? "true" : "false");
         widget.SetAttr(UiAttr::CLICKABLE, "false");
         widget.SetAttr(UiAttr::LONG_CLICKABLE, "false");
-        widget.SetAttr(UiAttr::SCROLLABLE, "false");
+        widget.SetAttr(UiAttr::SCROLLABLE, element.IsScrollable() ? "true" : "false");
         widget.SetAttr(UiAttr::CHECKABLE, element.IsCheckable() ? "true" : "false");
         widget.SetAttr(UiAttr::CHECKED, element.IsChecked() ? "true" : "false");
         widget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(element.GetWindowId()));
@@ -293,10 +293,6 @@ namespace OHOS::uitest {
                     break;
                 case ACCESSIBILITY_ACTION_LONG_CLICK:
                     widget.SetAttr(UiAttr::LONG_CLICKABLE, "true");
-                    break;
-                case ACCESSIBILITY_ACTION_SCROLL_FORWARD:
-                case ACCESSIBILITY_ACTION_SCROLL_BACKWARD:
-                    widget.SetAttr(UiAttr::SCROLLABLE, "true");
                     break;
                 default:
                     break;

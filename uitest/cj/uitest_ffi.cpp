@@ -28,13 +28,13 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <uv.h>
 #include "json.hpp"
-#include "pasteboard_client.h"
+#include "fcntl.h"
 #include "common_utilities_hpp.h"
 #include "frontend_api_defines.h"
 #include "ipc_transactor.h"
 #include "ui_event_observer_impl.h"
+#include "test_server_client.h"
 
 namespace OHOS::cjuitest {
     using namespace nlohmann;
@@ -73,10 +73,7 @@ namespace OHOS::cjuitest {
 
     static void SetPasteBoardData(string_view text)
     {
-        auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
-        pasteBoardMgr->Clear();
-        auto pasteData = MiscServices::PasteboardClient::GetInstance()->CreatePlainTextData(string(text));
-        pasteBoardMgr->SetPasteData(*pasteData);
+        OHOS::testserver::TestServerClient::GetInstance().SetPasteData(string(text));
     }
 
     void PreprocessTransaction(ApiCallInfo &callInfo, ApiCallErr &error)
