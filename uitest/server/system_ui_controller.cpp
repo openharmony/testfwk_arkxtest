@@ -429,7 +429,7 @@ namespace OHOS::uitest {
         pinterItem1.SetDisplayY(fingerStatus[currentFinger].second.py_);
         pinterItem1.SetPressed(fingerStatus[currentFinger].first);
         event.UpdatePointerItem(currentFinger, pinterItem1);
-        LOG_D("Inject touchEvent, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
+        LOG_D("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
             currentFinger, fingerStatus[currentFinger].first, fingerStatus[currentFinger].second.px_,
             fingerStatus[currentFinger].second.py_);
         // update pinterItem of other fingers which in pressed state.
@@ -445,7 +445,7 @@ namespace OHOS::uitest {
                 pinterItem.SetDisplayY(fingerStatus[index].second.py_);
                 pinterItem.SetPressed(true);
                 event.UpdatePointerItem(index, pinterItem);
-                LOG_D("Inject touchEvent, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
+                LOG_D("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
                     index, fingerStatus[index].first, fingerStatus[index].second.px_,
                     fingerStatus[index].second.py_);
             }
@@ -484,6 +484,7 @@ namespace OHOS::uitest {
                 DisplayManager &displayMgr = DisplayManager::GetInstance();
                 pointerEvent->SetTargetDisplayId(displayMgr.GetDefaultDisplayId());
                 InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
+                LOG_D("Inject touchEvent");
                 if (events.At(finger, step).holdMs_ > 0) {
                     this_thread::sleep_for(chrono::milliseconds(events.At(finger, step).holdMs_));
                 }
