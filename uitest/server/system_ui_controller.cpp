@@ -29,7 +29,6 @@
 #include "dump_broker_proxy.h"
 #include "system_ability_definition.h"
 #endif
-#include "pasteboard_client.h"
 #include "accessibility_event_info.h"
 #include "accessibility_ui_test_ability.h"
 #include "ability_manager_client.h"
@@ -430,6 +429,9 @@ namespace OHOS::uitest {
         pinterItem1.SetDisplayY(fingerStatus[currentFinger].second.py_);
         pinterItem1.SetPressed(fingerStatus[currentFinger].first);
         event.UpdatePointerItem(currentFinger, pinterItem1);
+        LOG_D("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
+            currentFinger, fingerStatus[currentFinger].first, fingerStatus[currentFinger].second.px_,
+            fingerStatus[currentFinger].second.py_);
         // update pinterItem of other fingers which in pressed state.
         for (uint32_t index = 0; index < fingerStatus.size(); index++) {
             if (index == currentFinger) {
@@ -443,6 +445,9 @@ namespace OHOS::uitest {
                 pinterItem.SetDisplayY(fingerStatus[index].second.py_);
                 pinterItem.SetPressed(true);
                 event.UpdatePointerItem(index, pinterItem);
+                LOG_D("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
+                    index, fingerStatus[index].first, fingerStatus[index].second.px_,
+                    fingerStatus[index].second.py_);
             }
         }
     }
@@ -479,6 +484,7 @@ namespace OHOS::uitest {
                 DisplayManager &displayMgr = DisplayManager::GetInstance();
                 pointerEvent->SetTargetDisplayId(displayMgr.GetDefaultDisplayId());
                 InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
+                LOG_D("Inject touchEvent");
                 if (events.At(finger, step).holdMs_ > 0) {
                     this_thread::sleep_for(chrono::milliseconds(events.At(finger, step).holdMs_));
                 }
@@ -495,6 +501,8 @@ namespace OHOS::uitest {
         item.SetDisplayY(event.point_.py_);
         item.SetPressed(false);
         item.SetDownTime(0);
+        LOG_D("Inject mouseEvent, pressed:%{public}d, location:%{public}d, %{public}d",
+            event.stage_ == ActionStage::DOWN, event.point_.px_, event.point_.py_);
     }
 
     void SysUiController::InjectMouseEvent(const MouseEvent &event) const
@@ -589,6 +597,7 @@ namespace OHOS::uitest {
                 keyItem.SetPressed(true);
                 keyEvent->AddKeyItem(keyItem);
                 InputManager::GetInstance()->SimulateInputEvent(keyEvent);
+                LOG_D("Inject keyEvent up, keycode:%{public}d", event.code_);
             } else {
                 downKeys.push_back(event.code_);
                 for (auto downKey : downKeys) {
@@ -600,6 +609,7 @@ namespace OHOS::uitest {
                     keyEvent->AddKeyItem(keyItem);
                 }
                 InputManager::GetInstance()->SimulateInputEvent(keyEvent);
+                LOG_D("Inject keyEvent down, keycode:%{public}d", event.code_);
                 if (event.holdMs_ > 0) {
                     this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
                 }
