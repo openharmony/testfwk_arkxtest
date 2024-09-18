@@ -47,7 +47,6 @@ namespace OHOS::uitest {
         "fling <from_x> <from_y> <to_x> <to_y> [velocity]           velocity ranges from 200 to 40000, default 600\n"
         "keyEvent <keyID/Back/Home/Power>                                                          inject keyEvent\n"
         "keyEvent <keyID_0> <keyID_1> [keyID_2]                                           keyID_2 default to None \n"
-        "inputText <x> <y> <text>                                         inputText at the target coordinate point\n"
         "inputText <x> <y> <text>                                         inputText at the target coordinate point\n";
         std::cout << usage << std::endl;
     }
