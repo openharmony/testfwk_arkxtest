@@ -52,7 +52,6 @@ namespace OHOS::uitest {
     };
 
     inline const std::string InputEventCallback::DEFAULT_DIR = "/data/local/tmp";
-    std::string EventData::defaultDir = InputEventCallback::DEFAULT_DIR;
 
     bool SpecialKeyMapExistKey(int32_t keyCode, TouchOpt &touchop)
     {
@@ -102,7 +101,7 @@ namespace OHOS::uitest {
 
     void EventData::ReadEventLine()
     {
-        std::ifstream inFile(defaultDir + "/" + "record.csv");
+        std::ifstream inFile(InputEventCallback::DEFAULT_DIR + "/" + "record.csv");
         std::string line;
         if (inFile.is_open()) {
             while (std::getline(inFile, line)) {
