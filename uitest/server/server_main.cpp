@@ -71,7 +71,6 @@ namespace OHOS::uitest {
     "  keyEvent <keyID/Back/Home/Power>                                                          inject keyEvent\n"
     "  keyEvent <keyID_0> <keyID_1> [keyID_2]                                           keyID_2 default to None \n"
     "  inputText <x> <y> <text>                                         inputText at the target coordinate point\n"
-    "  inputText <x> <y> <text>                                         inputText at the target coordinate point\n"
     "--version                                                                        print current tool version\n";
 
     const std::string VERSION = "5.0.1.1";
