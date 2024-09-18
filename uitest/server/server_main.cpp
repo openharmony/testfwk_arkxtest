@@ -50,13 +50,29 @@ using namespace std::chrono;
 
 namespace OHOS::uitest {
     const std::string HELP_MSG =
-    "   help,                                            print help messages\n"
-    "   screenCap,                                                          \n"
-    "   dumpLayout,                                                         \n"
-    "   uiRecord record,     wirte location coordinates of events into files\n"
-    "   uiRecord read,                     print file content to the console\n"
-    "   uiInput,                                                            \n"
-    "   --version,                                print current tool version\n";
+    "usage: uitest <command> [options]                                                                          \n"
+    "help                                                                                    print help messages\n"
+    "screenCap                                                                        capture the current screen\n"
+    "  -p                                                                                               savepath\n"
+    "dumpLayout                                                               get the current layout information\n"
+    "  -p                                                                                               savepath\n"
+    "  -i                                                                     not merge windows and filter nodes\n"
+    "  -a                                                                                include font attributes\n"
+    "start-daemon <token>                                                                 start the test process\n"
+    "uiRecord                                                                                                   \n"
+    "  record                                                    wirte location coordinates of events into files\n"
+    "  read                                                                    print file content to the console\n"
+    "uiInput                                                                                                    \n"
+    "  help                                                                                  print uiInput usage\n"
+    "  dircFling [velocity stepLength]                     direction ranges from 0,1,2,3 (left, right, up, down)\n"
+    "  click/doubleClick/longClick <x> <y>                                       click on the target coordinates\n"
+    "  swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity]      velocity ranges from 200 to 40000, default 600\n"
+    "  fling <from_x> <from_y> <to_x> <to_y> [velocity]           velocity ranges from 200 to 40000, default 600\n"
+    "  keyEvent <keyID/Back/Home/Power>                                                          inject keyEvent\n"
+    "  keyEvent <keyID_0> <keyID_1> [keyID_2]                                           keyID_2 default to None \n"
+    "  inputText <x> <y> <text>                                         inputText at the target coordinate point\n"
+    "--version                                                                        print current tool version\n";
+
     const std::string VERSION = "5.0.1.1";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
@@ -288,10 +304,9 @@ namespace OHOS::uitest {
 
     extern "C" int32_t main(int32_t argc, char *argv[])
     {
-        static constexpr string_view usage = "USAGE: uitest <help|screenCap|dumpLayout|uiRecord|uiInput|--version>";
         if ((size_t)argc < INDEX_TWO) {
             PrintToConsole("Missing argument");
-            PrintToConsole(usage);
+            PrintToConsole(HELP_MSG);
             _Exit(EXIT_FAILURE);
         }
         string command(argv[1]);
@@ -314,7 +329,7 @@ namespace OHOS::uitest {
             _Exit(EXIT_SUCCESS);
         } else {
             PrintToConsole("Illegal argument: " + command);
-            PrintToConsole(usage);
+            PrintToConsole(HELP_MSG);
             _Exit(EXIT_FAILURE);
         }
     }
