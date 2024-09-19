@@ -1654,7 +1654,7 @@ hdc shell uitest help
 2、截屏
 
 ```
- hdc shell uitest screenCap
+hdc shell uitest screenCap
 // 默认存储路径：/data/local/tmp，文件名：时间戳 + .png。
 hdc shell uitest screenCap -p /data/local/tmp/1.png
 // 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。
