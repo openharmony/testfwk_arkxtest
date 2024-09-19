@@ -300,6 +300,121 @@ export default function customAssertTest() {
 }
 ```
 
+#### 异步代码测试
+
+ **异步测试错误示例代码：**
+```javascript
+import { describe, it, expect } from '@ohos/hypium';
+
+async function callBack(fn: Function) {
+   setTimeout(fn, 5000, 'done')
+}
+
+export default function callBackErrorTest() {
+  describe('callBackErrorTest', () => {
+    it('callBackErrorTest', 0, () => {
+      callBack((result: string) => {
+        try {
+          // 用例失败
+          expect().assertFail();
+        } catch (e) {
+        } finally {
+        }
+      })
+    })
+  })
+}
+```
+> 上述测试用例中,测试函数结束后, 回调函数才会执行, 导致用例结果错误。
+> 当使用框架测试异步代码时,框架需要明确知道用例结束时机。以确保测试用例结果正常统计,测试框架用以下俩种方式来处理这个问题。
+
+##### Async/Await
+> 使用 Async关键字定义一个异步测试函数,在测试函数中使用await等待测试函数完成。
+
+**Promise示例代码：**
+
+```javascript
+import { describe, it, expect } from '@ohos/hypium';
+
+async function method_1() {
+  return new Promise<string>((res: Function, rej: Function) => {
+    //做一些异步操作
+    setTimeout(() => {
+      console.log('执行');
+      res('method_1_call');
+    }, 5000);
+  });
+}
+
+export default function abilityTest() {
+  describe('ActsAbilityTest', () => {
+    it('assertContain', 0, async () => {
+      let result = await method_1();
+      expect(result).assertEqual('method_1_call');
+    })
+  })
+}
+```
+##### done 函数
+>  - done函数是测试函数的一个可选回调参数,在测试用例中手动调用,测试框架将等待done回调被调用,然后才完成测试。
+>  - 当测试函数中定义done函数参数时,测试用例中必须手动调用done函数,否则会出现超时错误。
+
+
+**Promise回调示例代码：**
+```javascript
+import { describe, it, expect } from '@ohos/hypium';
+async function method_1() {
+  return new Promise<string>((res: Function, rej: Function) => {
+    //做一些异步操作
+    setTimeout(() => {
+      console.log('执行');
+      res('method_1_call');
+    }, 5000);
+  });
+}
+
+export default function abilityTest() {
+  describe('Promise_Done', () => {
+    it('Promise_Done', 0,(done: Function) => {
+      method_1().then((result: string) => {
+        try {
+          expect(result).assertEqual('method_1_call');
+        } catch (e) {
+        } finally {
+          // 调用done函数,用例执行完成,必须手动调用done函数,否则出现超时错误。
+          done()
+        }
+      })
+
+    })
+  })
+}
+```
+
+**回调函数示例代码：**
+```javascript
+import { describe, it, expect } from '@ohos/hypium';
+
+async function callBack(fn: Function) {
+   setTimeout(fn, 5000, 'done')
+}
+
+export default function callBackTestTest() {
+  describe('CallBackTest', () => {
+    it('CallBackTest_001', 0, (done: Function) => {
+      callBack( (result: string) => {
+        try {
+          expect(result).assertEqual('done');
+        } catch (e) {
+        } finally {
+          // 调用done函数,用例执行完成,必须手动调用done函数,否则出现超时错误。
+          done()
+        }
+      })
+    })
+  })
+}
+```
 #### Mock能力
 
 ##### 约束限制
@@ -823,6 +938,43 @@ export default function verifyAtLeastTest() {
       claser.method_1();
       // 6.验证函数method_1且参数为空时，是否至少执行过2次
       mocker.verify('method_1', []).atLeast(2);
+    })
+  })
+}
+```
+
+**示例13：mock静态函数**
+> @since1.0.16 支持
+
+```javascript
+import { describe, it, expect, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
+
+class ClassName {
+  constructor() {
+  }
+
+  static method_1() {
+    return 'ClassName_method_1_call';
+  }
+}
+
+export default function staticTest() {
+  describe('staticTest', () => {
+    it('staticTest_001', 0, () => {
+      let really_result = ClassName.method_1();
+      expect(really_result).assertEqual('ClassName_method_1_call');
+      // 1.创建MockKit对象
+      let mocker: MockKit = new MockKit();
+      // 2.mock  类ClassName对象的某个方法，比如method_1
+      let func_1: Function = mocker.mockFunc(ClassName, ClassName.method_1);
+      // 3.期望被mock后的函数返回结果'mock_data'
+      when(func_1)(ArgumentMatchers.any).afterReturn('mock_data');
+      let mock_result = ClassName.method_1();
+      expect(mock_result).assertEqual('mock_data');
+      // 清除mock能力
+      mocker.clear(ClassName);
+      let really_result1 = ClassName.method_1();
+      expect(really_result1).assertEqual('ClassName_method_1_call');
     })
   })
 }
@@ -1504,8 +1656,8 @@ hdc shell uitest help
 ```
 hdc shell uitest screenCap
 // 默认存储路径：/data/local/tmp，文件名：时间戳 + .png。
-hdc shell uitest screenCap -p /data/local/tmp/1.png
-// 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。
+hdc shell uitest screenCap -p /data/local/1.png
+// 指定存储路径和文件名。
 ```
 
 3、获取设备当前Ui控件树信息
@@ -1513,8 +1665,8 @@ hdc shell uitest screenCap -p /data/local/tmp/1.png
 ```shell
 hdc shell uitest dumpLayout
 // 默认存储路径：/data/local/tmp，文件名：时间戳 + .json。
-hdc shell uitest screenCap -p /data/local/tmp/1.json
-// 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。
+hdc shell uitest screenCap -p /data/local/1.json
+// 指定存储路径和文件名。
 ```
 
 4、录制Ui操作
