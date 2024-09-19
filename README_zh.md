@@ -1600,6 +1600,18 @@ hdc shell uitest uiInput keyEvent Back
 hdc shell uitest uiInput keyEvent 2072 2038
 ```
 
+6、 shell命令方式拉起uitest测试进程
+
+```shell
+hdc shell uitest start-daemon singleness
+```
+
+7、 shell命令方式打印uitest版本信息
+
+```shell
+hdc shell uitest --version
+```
+
 ### 版本信息
 
 | 版本号  | 功能说明                                                     |

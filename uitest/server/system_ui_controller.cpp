@@ -457,12 +457,12 @@ namespace OHOS::uitest {
         // fingerStatus stores the press status and coordinates of each finger.
         vector<pair<bool, Point>> fingerStatus(events.GetFingers(), make_pair(false, Point(0,0)));
         for (uint32_t step = 0; step < events.GetSteps(); step++) {
-            auto pointerEvent = PointerEvent::Create();
-            if (pointerEvent == nullptr) {
-                LOG_E("Creat PointerEvent failed.");
-                return;
-            }
             for (uint32_t finger = 0; finger < events.GetFingers(); finger++) {
+                auto pointerEvent = PointerEvent::Create();
+                if (pointerEvent == nullptr) {
+                    LOG_E("Creat PointerEvent failed.");
+                    return;
+                }
                 bool isPressed = events.At(finger, step).stage_ != ActionStage::UP;
                 fingerStatus[finger] = make_pair(isPressed, events.At(finger, step).point_);
                 pointerEvent->SetPointerId(finger);
