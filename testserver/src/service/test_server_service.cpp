@@ -121,7 +121,7 @@ namespace OHOS::testserver {
             return TEST_SERVER_CREATE_PASTE_DATA_FAILED;
         }
         int32_t ret = pasteBoardMgr->SetPasteData(*pasteData);
-        int32_t successErrCode = 77987840;
+        int32_t successErrCode = 27787264;
         return ret == successErrCode ? TEST_SERVER_OK : TEST_SERVER_SET_PASTE_DATA_FAILED;
     }
 
