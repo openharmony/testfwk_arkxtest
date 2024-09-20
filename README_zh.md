@@ -924,7 +924,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
    value: string
  }
 ```
->专项能力
+#### 专项能力
 
 该项能力需通过在cmd窗口中输入aa test命令执行触发，并通过设置执行参数触发不同功能。另外，测试应用模型与编译方式不同，对应的aa test命令也不同，具体可参考[自动化测试框架使用指导](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/application-test/arkxtest-guidelines.md#cmd%E6%89%A7%E8%A1%8C)
 
