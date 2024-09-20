@@ -924,6 +924,33 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
    value: string
  }
 ```
+>说明 : 若要使用数据驱动传入参数功能，测试用例it的func必须传入两个参数：done定义在前面，data定义在后面；若不使用数据驱动传入参数功能，func可以不传参或传入done
+
+正确示例：
+```javascript
+    it('testcase01', 0, async (done: Function, data: ParmObj) => {
+      ...
+      done();
+    });
+    it('testcase02', 0, async (done: Function) => {
+      ...
+      done();
+    });
+    it('testcase03', 0, () => {
+      ...
+    });
+```
+错误示例：
+```javascript
+    it('testcase01', 0, async (data: ParmObj, done: Function) => {
+      ...
+      done();
+    });
+    it('testcase02', 0, async (data: ParmObj) => {
+      ...
+    });
+```
+
 #### 专项能力
 
 该项能力需通过在cmd窗口中输入aa test命令执行触发，并通过设置执行参数触发不同功能。另外，测试应用模型与编译方式不同，对应的aa test命令也不同，具体可参考[自动化测试框架使用指导](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/application-test/arkxtest-guidelines.md#cmd%E6%89%A7%E8%A1%8C)
@@ -1477,8 +1504,8 @@ hdc shell uitest help
 ```
 hdc shell uitest screenCap
 // 默认存储路径：/data/local/tmp，文件名：时间戳 + .png。
-hdc shell uitest screenCap -p /data/local/1.png
-// 指定存储路径和文件名。
+hdc shell uitest screenCap -p /data/local/tmp/1.png
+// 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。
 ```
 
 3、获取设备当前Ui控件树信息
@@ -1486,8 +1513,8 @@ hdc shell uitest screenCap -p /data/local/1.png
 ```shell
 hdc shell uitest dumpLayout
 // 默认存储路径：/data/local/tmp，文件名：时间戳 + .json。
-hdc shell uitest screenCap -p /data/local/1.json
-// 指定存储路径和文件名。
+hdc shell uitest screenCap -p /data/local/tmp/1.json
+// 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。
 ```
 
 4、录制Ui操作
