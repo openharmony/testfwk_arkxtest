@@ -43,51 +43,46 @@ namespace OHOS::uitest {
         myselfMatch_.clear();
     }
 
-    void SelectStrategy::CalcWidgetVisibleBounds(const Widget &widget,
-                                                 const Rect &containerParentRect,
-                                                 Rect &visibleRect)
+    void SelectStrategy::CalcWidgetVisibleBounds(Widget &widget)
     {
+        const auto noneZone = Rect{0, 0, 0, 0};
         // calc bounds with its window
-        Rect visibleInWindow{0, 0, 0, 0};
-        if (!RectAlgorithm::ComputeIntersection(widget.GetBounds(), windowBounds_, visibleInWindow)) {
+        Rect visibleRect{0, 0, 0, 0};
+        if (!RectAlgorithm::ComputeIntersection(widget.GetBounds(), windowBounds_, visibleRect)) {
             LOG_D("Widget %{public}s bounds is %{public}s, without window bounds %{public}s, widget info is %{public}s",
                   widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data(), widget.GetBounds().Describe().data(),
                   windowBounds_.Describe().data(), widget.ToStr().data());
-            visibleRect = Rect(0, 0, 0, 0);
+            widget.SetBounds(noneZone);
             return;
         }
-        // calc bounds with its container parent
-        Rect visibleInParent{0, 0, 0, 0};
-        if (!RectAlgorithm::ComputeIntersection(visibleInWindow, containerParentRect, visibleInParent)) {
-            LOG_D("Widget %{public}s bounds is %{public}s, without parent bounds %{public}s, widget info is %{public}s",
-                  widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data(), widget.GetBounds().Describe().data(),
-                  containerParentRect.Describe().data(), widget.ToStr().data());
-            visibleRect = Rect(0, 0, 0, 0);
-            return;
-        }
-        if (!RectAlgorithm::CheckEqual(containerParentRect, windowBounds_) ||
-            CONTAINER_TYPE.find(widget.GetAttr(UiAttr::TYPE)) != CONTAINER_TYPE.cend()) {
-            if (widget.IsVisible() && (visibleInParent.GetHeight() == 0 || visibleInParent.GetWidth() == 0)) {
-                LOG_D("Widget %{public}s height or widget is zero, but it is container, keep it visible",
-                      widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
-                visibleRect = visibleInParent;
-                return;
+        widget.SetBounds(visibleRect);
+
+        // calc bounds with its cliper
+        auto hier = widget.GetAttr(UiAttr::HIERARCHY);
+        while (hier != ROOT_HIERARCHY + widget.GetAttr(UiAttr::HOST_WINDOW_ID)) {
+            std::string parentHie = WidgetHierarchyBuilder::GetParentWidgetHierarchy(hier);
+            auto find = clipers_.find(parentHie);
+            if (find != clipers_.end()) {
+                if (!RectAlgorithm::ComputeIntersection(widget.GetBounds(), find->second, visibleRect)) {
+                    widget.SetBounds(noneZone);
+                    return;
+                }
+                widget.SetBounds(visibleRect);
+                break;
             }
+            hier = parentHie;
         }
+
+        // calc bounds with overplay windows
         if (overplayWindowBoundsVec_.size() == 0) {
-            visibleRect = visibleInParent;
             return;
         }
-        // calc bounds with overplay windows
-        Rect visibleBounds{0, 0, 0, 0};
-        auto visible = RectAlgorithm::ComputeMaxVisibleRegion(visibleInParent, overplayWindowBoundsVec_, visibleBounds);
-        if (!visible) {
+        if (!RectAlgorithm::ComputeMaxVisibleRegion(widget.GetBounds(), overplayWindowBoundsVec_, visibleRect)) {
             LOG_D("widget %{public}s is hide by overplays, widget info is %{public}s",
                   widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data(), widget.ToStr().data());
-            visibleRect = Rect{0, 0, 0, 0};
-        } else {
-            visibleRect = visibleBounds;
+            widget.SetBounds(noneZone);
         }
+        widget.SetBounds(visibleRect);
     }
 
     std::string SelectStrategy::Describe() const
@@ -133,36 +128,15 @@ namespace OHOS::uitest {
         return ss.str();
     }
 
-    void SelectStrategy::RefreshWidgetBounds(const Rect &containerParentRect, Widget &widget)
+    void SelectStrategy::RefreshWidgetBounds(Widget &widget)
     {
-        Rect oriBounds = widget.GetBounds();
-        // parent rect is 0, but it has child, keep visible from access not refresh bound
-        if ((oriBounds.GetHeight() == 0 || oriBounds.GetWidth() == 0) &&
-            (oriBounds.left_ >= 0 && oriBounds.top_ >= 0)) {
-            LOG_D("Widget %{public}s height or widget is zero, rect is %{public}s, keep it visible",
-                  widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data(), oriBounds.Describe().data());
-            return;
-        }
-        Rect widgetVisibleBounds = Rect{0, 0, 0, 0};
-        CalcWidgetVisibleBounds(widget, containerParentRect, widgetVisibleBounds);
-
-        widget.SetBounds(widgetVisibleBounds);
-        if (widgetVisibleBounds.GetHeight() <= 0 && widgetVisibleBounds.GetWidth() <= 0) {
-            widget.SetAttr(UiAttr::VISIBLE, "false");
-            return;
-        }
-        if (widget.GetAttr(UiAttr::VISIBLE) == "false") {
-            return;
-        }
+        CalcWidgetVisibleBounds(widget);
+        auto widgetVisibleBounds = widget.GetBounds();
         if (widgetVisibleBounds.GetHeight() <= 0 || widgetVisibleBounds.GetWidth() <= 0) {
-            if (!RectAlgorithm::CheckEqual(containerParentRect, windowBounds_) ||
-                CONTAINER_TYPE.find(widget.GetAttr(UiAttr::TYPE)) != CONTAINER_TYPE.cend()) {
-                widget.SetAttr(UiAttr::VISIBLE, "true");
-            } else {
-                widget.SetAttr(UiAttr::VISIBLE, "false");
-            }
-        } else {
-            widget.SetAttr(UiAttr::VISIBLE, "true");
+            widget.SetAttr(UiAttr::VISIBLE, "false");
+        }
+        if (widget.GetAttr(UiAttr::CLIP) == "true") {
+            clipers_.insert(make_pair(widget.GetAttr(UiAttr::HIERARCHY), widget.GetBounds()));
         }
     }
 
@@ -183,11 +157,8 @@ namespace OHOS::uitest {
                     return;
                 }
                 anchorWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
-                Rect anchorParentInWindow = windowBounds_;
-                elementNodeRef.GetParentContainerBounds(anchorParentInWindow);
-                RefreshWidgetBounds(anchorParentInWindow, anchorWidget);
+                RefreshWidgetBounds(anchorWidget);
                 if (anchorWidget.GetAttr(UiAttr::VISIBLE) == "false") {
-                    elementNodeRef.RemoveInvisibleWidget();
                     LOG_D("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
                 }
@@ -198,7 +169,6 @@ namespace OHOS::uitest {
                     return;
                 }
                 std::reference_wrapper<Widget const> tempAnchorWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isAnchorMatch = true;
                 for (const auto &anchorIt : anchorMatch_) {
                     isAnchorMatch = tempAnchorWidget.get().MatchAttr(anchorIt) && isAnchorMatch;
@@ -224,11 +194,8 @@ namespace OHOS::uitest {
                     return;
                 }
                 myselfWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
-                Rect parentInWindow = windowBounds_;
-                elementNodeRef.GetParentContainerBounds(parentInWindow);
-                RefreshWidgetBounds(parentInWindow, myselfWidget);
+                RefreshWidgetBounds(myselfWidget);
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
-                    elementNodeRef.RemoveInvisibleWidget();
                     LOG_D("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
                 }
@@ -239,7 +206,6 @@ namespace OHOS::uitest {
                     return;
                 }
                 std::reference_wrapper<Widget const> tempWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isMyselfMatch = true;
                 for (const auto &myselfIt : myselfMatch_) {
                     isMyselfMatch = tempWidget.get().MatchAttr(myselfIt) && isMyselfMatch;
@@ -281,11 +247,8 @@ namespace OHOS::uitest {
                     return;
                 }
                 anchorWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
-                Rect parentInWindow = windowBounds_;
-                elementNodeRef.GetParentContainerBounds(parentInWindow);
-                RefreshWidgetBounds(parentInWindow, anchorWidget);
+                RefreshWidgetBounds(anchorWidget);
                 if (anchorWidget.GetAttr(UiAttr::VISIBLE) == "false") {
-                    elementNodeRef.RemoveInvisibleWidget();
                     LOG_D("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
                 }
@@ -296,7 +259,6 @@ namespace OHOS::uitest {
                     return;
                 }
                 std::reference_wrapper<Widget const> tempAnchorWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isAnchorMatch = true;
                 for (const auto &anchorIt : anchorMatch_) {
                     isAnchorMatch = tempAnchorWidget.get().MatchAttr(anchorIt) && isAnchorMatch;
@@ -360,11 +322,8 @@ namespace OHOS::uitest {
                     return;
                 }
                 anchorWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
-                Rect anchorParentInWindow = windowBounds_;
-                elementNodeRef.GetParentContainerBounds(anchorParentInWindow);
-                RefreshWidgetBounds(anchorParentInWindow, anchorWidget);
+                RefreshWidgetBounds(anchorWidget);
                 if (anchorWidget.GetAttr(UiAttr::VISIBLE) == "false") {
-                    elementNodeRef.RemoveInvisibleWidget();
                     LOG_D("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
                 }
@@ -375,7 +334,6 @@ namespace OHOS::uitest {
                     return;
                 }
                 std::reference_wrapper<Widget const> tempAnchorWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isAnchorMatch = true;
                 for (const auto &anchorIt : anchorMatch_) {
                     isAnchorMatch = tempAnchorWidget.get().MatchAttr(anchorIt) && isAnchorMatch;
@@ -406,12 +364,9 @@ namespace OHOS::uitest {
                     break;
                 }
                 myselfWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
-                Rect parentInWindow = windowBounds_;
-                elementNodeRef.GetParentContainerBounds(parentInWindow);
-                RefreshWidgetBounds(parentInWindow, myselfWidget);
+                RefreshWidgetBounds(myselfWidget);
 
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
-                    elementNodeRef.RemoveInvisibleWidget();
                     LOG_D("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
                 }
@@ -422,7 +377,6 @@ namespace OHOS::uitest {
                     return;
                 }
                 std::reference_wrapper<Widget const> tempWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isMyselfMatch = true;
                 for (const auto &myselfIt : myselfMatch_) {
                     isMyselfMatch = tempWidget.get().MatchAttr(myselfIt) && isMyselfMatch;
@@ -466,13 +420,7 @@ namespace OHOS::uitest {
                 }
                 myselfWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
                 if (isRemoveInvisible) {
-                    Rect parentInWindow = windowBounds_;
-                    elementNodeRef.GetParentContainerBounds(parentInWindow);
-                    RefreshWidgetBounds(parentInWindow, myselfWidget);
-                    if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
-                        elementNodeRef.RemoveInvisibleWidget();
-                        continue;
-                    }
+                    RefreshWidgetBounds(myselfWidget);
                 }
                 visitWidgets.emplace_back(move(myselfWidget));
                 if (visitWidgets.size() > MAX_TRAVEL_TIMES) {
@@ -480,8 +428,10 @@ namespace OHOS::uitest {
                     visitWidgets.clear();
                     return;
                 }
+                if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
+                    continue;
+                }
                 std::reference_wrapper<Widget const> tempWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isMyselfMatch = true;
                 for (const auto &myselfIt : myselfMatch_) {
                     isMyselfMatch = tempWidget.get().MatchAttr(myselfIt) && isMyselfMatch;
@@ -497,7 +447,6 @@ namespace OHOS::uitest {
                     return;
                 }
             }
-            //
         }
 
         StrategyEnum GetStrategyType() const override
@@ -525,15 +474,10 @@ namespace OHOS::uitest {
                     break;
                 }
                 myselfWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
-
-                Rect parentInWindow = windowBounds_;
-                elementNodeRef.GetParentContainerBounds(parentInWindow);
-                RefreshWidgetBounds(parentInWindow, myselfWidget);
+                RefreshWidgetBounds(myselfWidget);
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
-                    elementNodeRef.RemoveInvisibleWidget();
                     continue;
                 }
-
                 visitWidgets.emplace_back(move(myselfWidget));
                 if (visitWidgets.size() > MAX_TRAVEL_TIMES) {
                     LOG_E("ElementInfos obtained from AAMS is abnormal, traversal node failed");
@@ -541,7 +485,6 @@ namespace OHOS::uitest {
                     return;
                 }
                 std::reference_wrapper<Widget const> tempWidget = visitWidgets.back();
-                elementNodeRef.CheckAndUpdateContainerRectMap();
                 bool isMyselfMatch = true;
                 for (const auto &myselfIt : myselfMatch_) {
                     isMyselfMatch = tempWidget.get().MatchAttr(myselfIt) && isMyselfMatch;
