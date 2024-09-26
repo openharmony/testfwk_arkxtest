@@ -28,9 +28,6 @@ namespace OHOS::uitest {
         virtual void RestoreNodeIndexByAnchor() = 0;
         virtual void ResetNodeIndexToAnchor() = 0;
         virtual void ClearDFSNext() = 0;
-        virtual void GetParentContainerBounds(Rect &dockerRect) = 0;
-        virtual void CheckAndUpdateContainerRectMap() = 0;
-        virtual void RemoveInvisibleWidget() = 0;
 
         virtual ~ElementNodeIterator() = default;
 

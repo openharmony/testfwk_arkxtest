@@ -20,6 +20,12 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
 
+    struct DumperCache{
+        std::map<std::string, int> visitWidgetMap_;
+        std::map<std::string, int> widgetCountMap_;
+        std::set<std::string> visibleWidgetHies_;
+    };
+
     static string_view GetMiddleStr(string_view str, size_t &index, string_view startStr, string_view endStr)
     {
         size_t ori = index;
@@ -37,8 +43,18 @@ namespace OHOS::uitest {
         return "";
     }
 
+    static bool HasVisibleChild(const std::set<std::string> &visibleWidgetHies, const string &hie)
+    {
+        for (auto visibleHie : visibleWidgetHies) {
+            if (visibleHie.find(hie) != string::npos) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     static void DFSMarshalWidget(std::vector<Widget> &allWidget, int index, nlohmann::json &dom,
-        const std::map<std::string, int> &widgetChildCountMap, std::map<std::string, int> &visitWidgetMap)
+        const DumperCache &cache)
     {
         auto attrData = json();
         allWidget.at(index).WrapperWidgetToJson(attrData);
@@ -47,22 +63,24 @@ namespace OHOS::uitest {
         int childCount = 0;
         int childVisit = 0;
         auto hierarchy = allWidget.at(index).GetHierarchy();
-        if (widgetChildCountMap.find(hierarchy) != widgetChildCountMap.cend()) {
-            childCount = widgetChildCountMap.at(hierarchy);
+        if (cache.widgetCountMap_.find(hierarchy) != cache.widgetCountMap_.cend()) {
+            childCount = cache.widgetCountMap_.at(hierarchy);
         }
         while (childVisit < childCount) {
             auto tempChildHierarchy = WidgetHierarchyBuilder::GetChildHierarchy(hierarchy, childIndex);
             ++childIndex;
-            if (visitWidgetMap.find(tempChildHierarchy) == visitWidgetMap.cend()) {
+            if (cache.visitWidgetMap_.find(tempChildHierarchy) == cache.visitWidgetMap_.cend()) {
                 continue;
             }
-            auto childWidIndex = visitWidgetMap.at(tempChildHierarchy);
+            auto childWidIndex = cache.visitWidgetMap_.at(tempChildHierarchy);
             if (!allWidget.at(childWidIndex).IsVisible()) {
-                ++childVisit;
-                continue;
+                if (!HasVisibleChild(cache.visibleWidgetHies_, tempChildHierarchy)) {
+                    ++childVisit;
+                    continue;
+                }
             }
             auto childData = json();
-            DFSMarshalWidget(allWidget, childWidIndex, childData, widgetChildCountMap, visitWidgetMap);
+            DFSMarshalWidget(allWidget, childWidIndex, childData, cache);
             childrenData.emplace_back(childData);
             ++childVisit;
         }
@@ -112,19 +130,21 @@ namespace OHOS::uitest {
 
     void DumpHandler::DumpWindowInfoToJson(vector<Widget> &allWidget, nlohmann::json &root)
     {
-        std::map<std::string, int> visitWidgetMap;
-        std::map<std::string, int> widgetCountMap;
+        DumperCache cache;
         for (size_t i = 0; i < allWidget.size(); ++i) {
             const Widget &wid = allWidget.at(i);
             std::string hie = wid.GetHierarchy();
-            visitWidgetMap.emplace(hie, i);
+            cache.visitWidgetMap_.emplace(hie, i);
             std::string parentHie = WidgetHierarchyBuilder::GetParentWidgetHierarchy(hie);
-            if (widgetCountMap.find(parentHie) == widgetCountMap.cend()) {
-                widgetCountMap[parentHie] = 1;
+            if (cache.widgetCountMap_.find(parentHie) == cache.widgetCountMap_.cend()) {
+                cache.widgetCountMap_[parentHie] = 1;
             } else {
-                widgetCountMap[parentHie] = widgetCountMap[parentHie] + 1;
+                cache.widgetCountMap_[parentHie] = cache.widgetCountMap_[parentHie] + 1;
+            }
+            if (wid.IsVisible()) {
+                cache.visibleWidgetHies_.insert(hie);
             }
         }
-        DFSMarshalWidget(allWidget, 0, root, widgetCountMap, visitWidgetMap);
+        DFSMarshalWidget(allWidget, 0, root, cache);
     }
 } // namespace OHOS::uitest

@@ -50,13 +50,14 @@ namespace OHOS::uitest {
         virtual ~SelectStrategy();
 
     protected:
-        virtual void RefreshWidgetBounds(const Rect &containerParentRect, Widget &widget);
-        virtual void CalcWidgetVisibleBounds(const Widget &widget, const Rect &containerParentRect, Rect &visibleRect);
+        virtual void RefreshWidgetBounds(Widget &widget);
+        virtual void CalcWidgetVisibleBounds(Widget &widget);
         std::vector<WidgetMatchModel> anchorMatch_;
         std::vector<WidgetMatchModel> myselfMatch_;
         bool wantMulti_ = false;
         Rect windowBounds_{0, 0, 0, 0};
         std::vector<Rect> overplayWindowBoundsVec_;
+        std::map<string, Rect> clipers_;
     };
 } // namespace OHOS::uitest
 
