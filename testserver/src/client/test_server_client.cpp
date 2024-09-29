@@ -149,4 +149,16 @@ namespace OHOS::testserver {
         return iTestServerInterface->SetPasteData(text);
     }
 
+    bool TestServerClient::PublishCommonEvent(const EventFwk::CommonEventData &event)
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        auto iTestServerInterface = LoadTestServer();
+        if (iTestServerInterface == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        bool result = false;
+        iTestServerInterface->PublishCommonEvent(event, result);
+        return result;
+    }
 } // namespace OHOS::testserver

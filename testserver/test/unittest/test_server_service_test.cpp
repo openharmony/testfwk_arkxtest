@@ -173,6 +173,16 @@ HWTEST_F(ServiceTest, testSetPasteData, TestSize.Level1)
     ASSERT_TRUE(*primaryText == text);
 }
 
+HWTEST_F(ServiceTest, testPublishEvent, TestSize.Level1)
+{
+    AAFwk::CommonEventData event;
+    auto want = OHOS::AAFwk::Want();
+    want.SetAction("uitest.broadcast.command");
+    event.SetWant(want);
+    int32_t resCode1 = testServerServiceMock_->PublishCommonEvent(event);
+    EXPECT_EQ(resCode1, 0);
+}
+
 class CallerDetectTimerTest : public testing::Test {
 public:
     ~CallerDetectTimerTest() override = default;
