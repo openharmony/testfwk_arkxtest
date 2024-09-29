@@ -182,7 +182,7 @@ HWTEST_F(ServiceTest, testPublishEvent, TestSize.Level1)
     want.SetAction("uitest.broadcast.command");
     event.SetWant(want);
     bool re = false;
-    int32_t resCode1 = testServerServiceMock_->PublishCommonEvent(event,re);
+    int32_t resCode1 = testServerServiceMock_->PublishCommonEvent(event, re);
     EXPECT_EQ(resCode1, 0);
 }
 
