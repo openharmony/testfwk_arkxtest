@@ -14,7 +14,9 @@
  */
 
 sequenceable SessionToken..OHOS.testserver.SessionToken;
+sequenceable CommonEventData..OHOS.EventFwk.CommonEventData;
 interface OHOS.testserver.ITestServerInterface {
     void CreateSession([in] SessionToken sessionToken);
     void SetPasteData([in] String text);
+    void PublishCommonEvent([in] CommonEventData event, [out] boolean re);
 }

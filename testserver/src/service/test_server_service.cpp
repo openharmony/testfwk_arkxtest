@@ -125,6 +125,17 @@ namespace OHOS::testserver {
         return ret == successErrCode ? TEST_SERVER_OK : TEST_SERVER_SET_PASTE_DATA_FAILED;
     }
 
+    ErrCode TestServerService::PublishCommonEvent(const EventFwk::CommonEventData &event, bool &re)
+    {
+        if (!EventFwk::CommonEventManager::PublishCommonEvent(event)) {
+            HiLog::Info(LABEL_TIMER, "%{public}s Pulbish commonEvent.", __func__);
+            re = false;
+        }
+        re = true;
+        int32_t ret = re ? TEST_SERVER_OK : TEST_SERVER_PUBLISH_EVENT_FAILED;
+        return ret;
+    }
+
     void TestServerService::AddCaller()
     {
         callerCount_++;
