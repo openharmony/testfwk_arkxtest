@@ -128,7 +128,7 @@ namespace OHOS::testserver {
     ErrCode TestServerService::PublishCommonEvent(const EventFwk::CommonEventData &event, bool &re)
     {
         if (!EventFwk::CommonEventManager::PublishCommonEvent(event)) {
-            HiLog::Info(LABEL_TIMER, "%{public}s Pulbish commonEvent.", __func__);
+            HiLog::Info(LABEL_SERVICE, "%{public}s Pulbish commonEvent.", __func__);
             re = false;
         }
         re = true;
