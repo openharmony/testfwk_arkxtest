@@ -359,7 +359,7 @@ namespace OHOS::uitest {
             return;
         }
         vector<AccessibilityWindowInfo> windows;
-        LOG_I("Get Window root info");
+        LOG_D("Get Window root info");
         if (!GetAamsWindowInfos(windows)) {
             return;
         }
@@ -407,7 +407,7 @@ namespace OHOS::uitest {
             LOG_E("GetWindowInfo failed, windowId: %{public}d", winInfo.id_);
             return false;
         }
-        LOG_I("Start Get nodes from window by WindowId %{public}d", winInfo.id_);
+        LOG_D("Start Get nodes from window by WindowId %{public}d", winInfo.id_);
         if (AccessibilityUITestAbility::GetInstance()->GetRootByWindowBatch(window, elementInfos) != RET_OK) {
             LOG_E("GetRootByWindowBatch failed, windowId: %{public}d", winInfo.id_);
             return false;
