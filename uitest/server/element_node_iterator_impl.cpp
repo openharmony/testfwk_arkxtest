@@ -274,7 +274,7 @@ namespace OHOS::uitest {
         widget.SetAttr(UiAttr::ORIGBOUNDS, boundStream.str());
         widget.SetAttr(UiAttr::HASHCODE, ElementNodeIteratorImpl::GenerateNodeHashCode(element));
         if (!element.IsVisible()) {
-            LOG_I("widget %{public}s is not visible", widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
+            LOG_D("widget %{public}s is not visible", widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
         }
         widget.SetAttr(UiAttr::VISIBLE, element.IsVisible() ? "true" : "false");
         const auto app = element.GetBundleName();
