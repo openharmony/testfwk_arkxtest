@@ -1477,8 +1477,8 @@ hdc shell uitest help
 ```
 hdc shell uitest screenCap
 // 默认存储路径：/data/local/tmp，文件名：时间戳 + .png。
-hdc shell uitest screenCap -p /data/local/1.png
-// 指定存储路径和文件名。
+hdc shell uitest screenCap -p /data/local/tmp/1.png
+// 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。
 ```
 
 3、获取设备当前Ui控件树信息
@@ -1486,8 +1486,8 @@ hdc shell uitest screenCap -p /data/local/1.png
 ```shell
 hdc shell uitest dumpLayout
 // 默认存储路径：/data/local/tmp，文件名：时间戳 + .json。
-hdc shell uitest screenCap -p /data/local/1.json
-// 指定存储路径和文件名。
+hdc shell uitest screenCap -p /data/local/tmp/1.json
+// 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。
 ```
 
 4、录制Ui操作
