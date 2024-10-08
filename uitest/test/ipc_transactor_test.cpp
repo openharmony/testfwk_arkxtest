@@ -23,6 +23,7 @@ using namespace std;
 
 using PipeFds = int32_t[2];
 
+#ifndef MFD_ALLOW_SEALING
 static void PrintEnd()
 {
     cout << "...End...";
@@ -302,3 +303,4 @@ TEST(ApiTransactorTest, testServerDetectClientDeath)
     cout << clientOutput << endl;
     ASSERT_TRUE(clientOutput.find(" FAILED ") == string::npos);
 }
+#endif
