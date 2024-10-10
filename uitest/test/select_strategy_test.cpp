@@ -95,7 +95,6 @@ TEST(SelectStrategyTest, refreshWidgetBoundsPartOver)
     Widget widget{"test"};
     Rect widOriBounds{20, 50, 30, 50};
     widget.SetBounds(widOriBounds);
-    widget.SetAttr(UiAttr::VISIBLE, "true");
     plain->RefreshWidgetBounds(widget);
     ASSERT_EQ(widget.GetAttr(UiAttr::VISIBLE), "true");
     auto rect = widget.GetBounds();
