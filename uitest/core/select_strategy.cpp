@@ -59,7 +59,7 @@ namespace OHOS::uitest {
 
         // calc bounds with its cliper
         auto hier = widget.GetAttr(UiAttr::HIERARCHY);
-        while (hier != ROOT_HIERARCHY + widget.GetAttr(UiAttr::HOST_WINDOW_ID)) {
+        while (WidgetHierarchyBuilder::GetParentWidgetHierarchy(hier) != "") {
             std::string parentHie = WidgetHierarchyBuilder::GetParentWidgetHierarchy(hier);
             auto find = clipers_.find(parentHie);
             if (find != clipers_.end()) {
@@ -134,6 +134,8 @@ namespace OHOS::uitest {
         auto widgetVisibleBounds = widget.GetBounds();
         if (widgetVisibleBounds.GetHeight() <= 0 || widgetVisibleBounds.GetWidth() <= 0) {
             widget.SetAttr(UiAttr::VISIBLE, "false");
+        } else {
+            widget.SetAttr(UiAttr::VISIBLE, "true");
         }
         if (widget.GetAttr(UiAttr::CLIP) == "true") {
             clipers_.insert(make_pair(widget.GetAttr(UiAttr::HIERARCHY), widget.GetBounds()));

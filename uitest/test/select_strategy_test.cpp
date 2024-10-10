@@ -46,12 +46,12 @@ TEST(SelectStrategyTest, refreshWidgetBoundsParentAndChild)
     widget.SetAttr(UiAttr::VISIBLE, "true");
     widget.SetAttr(UiAttr::TYPE, "Scroll");
     plain->RefreshWidgetBounds(widget);
-    ASSERT_EQ(widget.GetAttr(UiAttr::VISIBLE), "true");
+    ASSERT_EQ(widget.GetAttr(UiAttr::VISIBLE), "false");
     auto rect = widget.GetBounds();
-    ASSERT_EQ(rect.left_, 30);
-    ASSERT_EQ(rect.right_, 30);
-    ASSERT_EQ(rect.top_, 30);
-    ASSERT_EQ(rect.bottom_, 60);
+    ASSERT_EQ(rect.left_, 0);
+    ASSERT_EQ(rect.right_, 0);
+    ASSERT_EQ(rect.top_, 0);
+    ASSERT_EQ(rect.bottom_, 0);
 }
 
 TEST(SelectStrategyTest, refreshWidgetBoundsOver)
@@ -95,6 +95,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsPartOver)
     Widget widget{"test"};
     Rect widOriBounds{20, 50, 30, 50};
     widget.SetBounds(widOriBounds);
+    widget.SetAttr(UiAttr::VISIBLE, "true");
     plain->RefreshWidgetBounds(widget);
     ASSERT_EQ(widget.GetAttr(UiAttr::VISIBLE), "true");
     auto rect = widget.GetBounds();
