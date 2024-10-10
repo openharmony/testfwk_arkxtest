@@ -19,6 +19,8 @@
 #include "iremote_object.h"
 #include "system_ability_load_callback_stub.h"
 #include "itest_server_interface.h"
+#include <common_event_manager.h>
+#include <common_event_subscribe_info.h>
 
 namespace OHOS::testserver {
     class TestServerClient {
@@ -26,6 +28,7 @@ namespace OHOS::testserver {
         static TestServerClient &GetInstance();
         sptr<ITestServerInterface> LoadTestServer();
         int32_t SetPasteData(std::string text);
+        bool PublishCommonEvent(const EventFwk::CommonEventData &event);
 
     private:
         TestServerClient() = default;
