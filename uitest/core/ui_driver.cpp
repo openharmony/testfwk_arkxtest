@@ -528,7 +528,8 @@ namespace OHOS::uitest {
         vector<KeyEvent> events;
         UiOpArgs uiOpArgs;
         if (!text.empty()) {
-            if (TextToKeyEvents(text, events, error)) {
+            constexpr auto maxKeyEventCounts = 200;
+            if (TextToKeyEvents(text, events, error) && text.length() < maxKeyEventCounts) {
                 LOG_I("inputText by Keycode");
                 auto keyActionForInput = KeysForwarder(events);
                 TriggerKey(keyActionForInput, uiOpArgs, error);

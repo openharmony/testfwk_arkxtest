@@ -20,7 +20,7 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
 
-    struct DumperCache{
+    struct DumperCache {
         std::map<std::string, int> visitWidgetMap_;
         std::map<std::string, int> widgetCountMap_;
         std::set<std::string> visibleWidgetHies_;
