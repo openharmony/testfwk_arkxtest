@@ -1785,3 +1785,5 @@ hdc shell uitest --version
 | 4.1.3.0 | 1、新增命令行功能，uitest dumuLayout -a ,dump信息中包含控件的背景色、字体颜色/大小信息。 |
 | 4.1.4.0 | 1、dump信息中增加hint与description字段。<br />2、优化多指操作。<br />3、优化查找控件的效率。<br />4、uitest uiInput执行效率提升。 |
 | 5.0.1.0 | 1、优化swipe操作。<br />2、inputText输入中文的实现方式改为设置剪贴板数据后，长按控件点击粘贴。 |
+| 5.0.1.1 | 1、节点新增以下属性，背景色：backgroundColor，背景图片：backgroundImage，透明度：opacity，模糊度：blur，事件是否透传：hitTestBehavior 。 |
+| 5.0.1.2 | 1、通过test Sa发布公共事件。<br />2、节点新增clip属性，判断其子节点是否进行切割。<br />3、过滤机制调整，节点只与其clip为true的父节点进行切换计算可见区域，可见区域宽/高小于等于0记为不可见。<br />4、调用inputText时，被输入字符串超过200个字符时，实现方式调整为设置剪贴板数据后，植入ctrl + v。 |

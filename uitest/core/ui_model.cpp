@@ -137,6 +137,10 @@ namespace OHOS::uitest {
             return "";
         }
 
+        if (hierarchy.find(HIERARCHY_SEPARATOR) == std::string::npos) {
+            return "";
+        }
+
         auto findRoot = hierarchy.find(ROOT_HIERARCHY);
         if (findRoot != 0) {
             // invalid hierarchy string

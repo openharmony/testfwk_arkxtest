@@ -54,6 +54,7 @@ namespace OHOS::uitest {
         BACKGROUNDIMAGE,
         BLUR,
         HITTESTBEHAVIOR,
+        CLIP,
         // inner used attributes
         HIERARCHY,
         HASHCODE,
@@ -92,6 +93,7 @@ namespace OHOS::uitest {
         "backgroundImage",   // BACKGROUNDIMAGE
         "blur",          //BLUR
         "hitTestBehavior",   // HITTESTBEHAVIOR
+        "clip", // CLIP
         "hierarchy",     // HIERARCHY
         "hashcode",      // HASHCODE
         "boundsCenter",  // BOUNDSCENTER
@@ -103,9 +105,6 @@ namespace OHOS::uitest {
         "hint", // HINT
     };
 
-    const std::set<std::string> CONTAINER_TYPE = {
-        "List",          "Grid",   "WaterFlow", "GridCol",  "GridRow",    "Scroll",     "Flex",
-        "ListItemGroup", "Swiper", "DecorBar",  "_Common_", "TabContent", "WindowScene"};
     struct Point {
         Point() : px_(0), py_(0){};
         Point(int32_t px, int32_t py) : px_(px), py_(py){};
