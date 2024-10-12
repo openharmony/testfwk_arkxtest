@@ -33,9 +33,6 @@ namespace OHOS::uitest {
         void RestoreNodeIndexByAnchor() override;
         void ResetNodeIndexToAnchor() override;
         void ClearDFSNext() override;
-        void GetParentContainerBounds(Rect &dockerRect) override;
-        void CheckAndUpdateContainerRectMap() override;
-        void RemoveInvisibleWidget() override;
         static std::string GenerateNodeHashCode(const OHOS::Accessibility::AccessibilityElementInfo &element);
 
     protected:

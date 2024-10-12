@@ -198,27 +198,7 @@ namespace OHOS::uitest {
             currentIndex_ = -1;
             topIndex_ = 0;
         }
-        void GetParentContainerBounds(Rect &dockerRect) override
-        {
-            int tempParentIndex = currentIndex_;
-            while (elementToParentIndexMap_.find(tempParentIndex) != elementToParentIndexMap_.cend()) {
-                tempParentIndex = elementToParentIndexMap_.at(tempParentIndex);
-                if (elementIndexToRectMap_.find(tempParentIndex) != elementIndexToRectMap_.cend()) {
-                    dockerRect = elementIndexToRectMap_.at(tempParentIndex);
-                    return;
-                }
-            }
-        }
-        void CheckAndUpdateContainerRectMap() override
-        {
-            if (CONTAINER_TYPE.find(elementInfoLists_[currentIndex_].componentType) != CONTAINER_TYPE.cend()) {
-                elementIndexToRectMap_.emplace(currentIndex_, elementInfoLists_[currentIndex_].rectInScreen);
-            }
-        }
-        void RemoveInvisibleWidget() override
-        {
-            visitAndVisibleIndexSet_.erase(currentIndex_);
-        }
+
         std::vector<MockAccessibilityElementInfo> elementInfoLists_;
 
     protected:

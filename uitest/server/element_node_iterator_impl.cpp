@@ -109,33 +109,6 @@ namespace OHOS::uitest {
         topIndex_ = 0;
     }
 
-    void ElementNodeIteratorImpl::GetParentContainerBounds(Rect &dockerRect)
-    {
-        int tempParentIndex = currentIndex_;
-        while (elementToParentIndexMap_.find(tempParentIndex) != elementToParentIndexMap_.cend()) {
-            tempParentIndex = elementToParentIndexMap_.at(tempParentIndex);
-            if (elementIndexToRectMap_.find(tempParentIndex) != elementIndexToRectMap_.cend()) {
-                dockerRect = elementIndexToRectMap_.at(tempParentIndex);
-                return;
-            }
-        }
-    }
-
-    void ElementNodeIteratorImpl::CheckAndUpdateContainerRectMap()
-    {
-        if (CONTAINER_TYPE.find(elementInfoLists_[currentIndex_].GetComponentType()) != CONTAINER_TYPE.cend()) {
-            Accessibility::Rect nodeOriginRect = elementInfoLists_[currentIndex_].GetRectInScreen();
-            Rect visibleRect{nodeOriginRect.GetLeftTopXScreenPostion(), nodeOriginRect.GetRightBottomXScreenPostion(),
-                             nodeOriginRect.GetLeftTopYScreenPostion(), nodeOriginRect.GetRightBottomYScreenPostion()};
-            elementIndexToRectMap_.emplace(currentIndex_, visibleRect);
-        }
-    }
-
-    void ElementNodeIteratorImpl::RemoveInvisibleWidget()
-    {
-        visitAndVisibleIndexSet_.erase(currentIndex_);
-    }
-
     std::string ElementNodeIteratorImpl::GenerateNodeHashCode(const AccessibilityElementInfo &element)
     {
         int32_t winId = element.GetWindowId();
@@ -268,6 +241,7 @@ namespace OHOS::uitest {
         widget.SetAttr(UiAttr::BACKGROUNDIMAGE, element.GetBackgroundImage());
         widget.SetAttr(UiAttr::BLUR, element.GetBlur());
         widget.SetAttr(UiAttr::HITTESTBEHAVIOR, element.GetHitTestBehavior());
+        widget.SetAttr(UiAttr::CLIP, element.GetClip() ? "true" : "false");
         stringstream boundStream;
         boundStream << "[" << visibleRect.left_ << "," << visibleRect.top_ << "][" << visibleRect.right_ << ","
                     << visibleRect.bottom_ << "]";
