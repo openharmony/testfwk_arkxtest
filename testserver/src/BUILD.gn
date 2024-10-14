@@ -58,6 +58,7 @@ ohos_shared_library("test_server_service") {
     "pasteboard:pasteboard_client",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "soc_perf:socperf_client",
   ]
 
   part_name = "arkxtest"
