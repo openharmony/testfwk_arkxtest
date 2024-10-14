@@ -29,6 +29,7 @@ namespace OHOS::testserver {
         sptr<ITestServerInterface> LoadTestServer();
         int32_t SetPasteData(std::string text);
         bool PublishCommonEvent(const EventFwk::CommonEventData &event);
+        bool FrequencyLock();
 
     private:
         TestServerClient() = default;
