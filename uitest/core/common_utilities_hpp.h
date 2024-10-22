@@ -137,23 +137,10 @@ namespace OHOS::uitest {
 
 #endif
 
-#ifdef NDEBUG
 #define DCHECK(cond) \
 do { \
     if (!(cond)) { \
-        LOG_E("DCHECK FAILED, %{public}s%{public}d: %{public}s", __FILE__ , __LINE__, #cond); \
+        LOG_E("DCHECK FAILED, %{public}s %{public}d: %{public}s", __FILE__ , __LINE__, #cond); \
         _Exit(0); \
     } \
 } while (0)
-
-#else
-
-#define DCHECK(cond) \
-do { \
-    if (!(cond)) { \
-        LOG_E("DCHECK FAILED, %{public}s%{public}d: %{public}s", __FILE__ , __LINE__, #cond); \
-        _Exit(0); \
-    } \
-} while (0)
-
-#endif
