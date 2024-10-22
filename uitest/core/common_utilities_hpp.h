@@ -135,8 +135,6 @@ namespace OHOS::uitest {
 #define LOG_E(FMT, VARS...) LOG(ERROR, FMT, ##VARS)
 }
 
-#endif
-
 #define DCHECK(cond) \
 do { \
     if (!(cond)) { \
@@ -144,3 +142,5 @@ do { \
         _Exit(0); \
     } \
 } while (0)
+
+#endif
