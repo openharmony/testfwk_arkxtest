@@ -109,6 +109,11 @@ namespace OHOS::uitest {
         topIndex_ = 0;
     }
 
+    void ElementNodeIteratorImpl::RemoveInvisibleWidget()
+    {
+        visitAndVisibleIndexSet_.erase(currentIndex_);
+    }
+
     std::string ElementNodeIteratorImpl::GetTextByKey(const std::string key)
     {
         for (auto element : elementInfoLists_) {

@@ -145,7 +145,7 @@ namespace OHOS::uitest {
         auto fdIndex = call.fdParamIndex_;
         if (ret && fdIndex >= 0) {
             DCHECK(static_cast<size_t>(fdIndex) < call.paramList_.size());
-            DCHECK(call.paramList_.at(fdIndex).type() == nlohmann::detail::value_t::number_unsigned);
+            DCHECK(call.paramList_.at(fdIndex).type() == nlohmann::detail::value_t::number_integer);
             if (!data.WriteFileDescriptor(call.paramList_.at(fdIndex).get<uint32_t>())) {
                 ret = false;
                 LOG_E("Failed to write file descriptor param");
