@@ -28,6 +28,7 @@ namespace OHOS::uitest {
         virtual void RestoreNodeIndexByAnchor() = 0;
         virtual void ResetNodeIndexToAnchor() = 0;
         virtual void ClearDFSNext() = 0;
+        virtual void RemoveInvisibleWidget() = 0;
         virtual std::string GetTextByKey(const std::string key) = 0;
 
         virtual ~ElementNodeIterator() = default;

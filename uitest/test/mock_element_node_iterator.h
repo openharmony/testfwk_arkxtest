@@ -199,6 +199,11 @@ namespace OHOS::uitest {
             topIndex_ = 0;
         }
 
+        void RemoveInvisibleWidget() override
+        {
+            visitAndVisibleIndexSet_.erase(currentIndex_);
+        }
+        
         std::string GetTextByKey(const std::string key) override
         {
             return "";
