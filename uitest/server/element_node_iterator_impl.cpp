@@ -112,7 +112,7 @@ namespace OHOS::uitest {
     std::string ElementNodeIteratorImpl::GetTextByKey(const std::string key)
     {
         for (auto element : elementInfoLists_) {
-            if(element.GetInspectorKey() == key) {
+            if (element.GetInspectorKey() == key) {
                 return element.GetContent();
             }
         }

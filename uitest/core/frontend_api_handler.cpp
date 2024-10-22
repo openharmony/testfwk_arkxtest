@@ -755,7 +755,7 @@ namespace OHOS::uitest {
                 }
                 return match;
             };
-            auto window = driver.FindWindow(matcher, out.exception_, filterJson.contains("active"));
+            auto window = driver.FindWindow(matcher, out.exception_, filterJson.contains("title"));
             if (window == nullptr) {
                 LOG_W("There is no match window by %{public}s", filterJson.dump().data());
                 out.resultValue_ = nullptr;
