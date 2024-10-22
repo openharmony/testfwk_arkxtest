@@ -199,11 +199,11 @@ namespace OHOS::uitest {
             topIndex_ = 0;
         }
 
-        void RemoveInvisibleWidget() override
+        std::string GetTextByKey(const std::string key) override
         {
-            visitAndVisibleIndexSet_.erase(currentIndex_);
+            return "";
         }
-        
+
         std::vector<MockAccessibilityElementInfo> elementInfoLists_;
 
     protected:
