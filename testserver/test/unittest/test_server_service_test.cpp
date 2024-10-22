@@ -166,7 +166,7 @@ HWTEST_F(ServiceTest, testSetPasteData, TestSize.Level1)
     EXPECT_TRUE(pasteBoardMgr->HasPasteData());
     OHOS::MiscServices::PasteData pasteData;
     int32_t resCode2 = pasteBoardMgr->GetPasteData(pasteData);
-    uint32_t successErrCode = 77987840;
+    uint32_t successErrCode = 27787264;
     EXPECT_EQ(resCode2, successErrCode);
     auto primaryText = pasteData.GetPrimaryText();
     ASSERT_TRUE(primaryText != nullptr);
