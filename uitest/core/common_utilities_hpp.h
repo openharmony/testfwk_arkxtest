@@ -24,15 +24,6 @@
 #include "hilog/log.h"
 #endif
 
-#ifdef NDEBUG
-#define DCHECK(cond) do { (void)sizeof(cond);} while (0)
-#else
-
-#include <cassert>
-
-#define DCHECK(cond) assert((cond))
-#endif
-
 #define FORCE_INLINE __attribute__((always_inline)) inline
 
 namespace OHOS::uitest {
@@ -143,5 +134,26 @@ namespace OHOS::uitest {
 // print error log
 #define LOG_E(FMT, VARS...) LOG(ERROR, FMT, ##VARS)
 }
+
+#endif
+
+#ifdef NDEBUG
+#define DCHECK(cond) \
+do { \
+    if (!(cond)) { \
+        LOG_E("DCHECK FAILED, %{public}s%{public}d: %{public}s", __FILE__ , __LINE__, #cond); \
+        _Exit(0); \
+    } \
+} while (0)
+
+#else
+
+#define DCHECK(cond) \
+do { \
+    if (!(cond)) { \
+        LOG_E("DCHECK FAILED, %{public}s%{public}d: %{public}s", __FILE__ , __LINE__, #cond); \
+        _Exit(0); \
+    } \
+} while (0)
 
 #endif

@@ -217,7 +217,7 @@ namespace OHOS::uitest {
         if (updateUi) {
             UpdateUIWindows(err);
             if (err.code_ != NO_ERROR) {
-                LOG_I("Retrieve Widget with error %{public}s", err.message_.c_str());
+                LOG_E("Retrieve Widget with error %{public}s", err.message_.c_str());
                 return nullptr;
             }
         } else {
@@ -470,7 +470,7 @@ namespace OHOS::uitest {
         if (uiController_->IsScreenOn()) {
             return;
         } else {
-            LOG_I("screen is off, turn it on");
+            LOG_D("screen is off, turn it on");
             UiOpArgs uiOpArgs;
             this->TriggerKey(Power(), uiOpArgs, error);
         }
@@ -530,12 +530,12 @@ namespace OHOS::uitest {
         if (!text.empty()) {
             constexpr auto maxKeyEventCounts = 200;
             if (text.length() < maxKeyEventCounts && TextToKeyEvents(text, events, error)) {
-                LOG_I("inputText by Keycode");
+                LOG_D("inputText by Keycode");
                 auto keyActionForInput = KeysForwarder(events);
                 TriggerKey(keyActionForInput, uiOpArgs, error);
             } else {
                 uiController_->PutTextToClipboard(text);
-                LOG_I("inputText by pasteBoard");
+                LOG_D("inputText by pasteBoard");
                 auto actionForPatse = CombinedKeys(KEYCODE_CTRL, KEYCODE_V, KEYCODE_NONE);
                 TriggerKey(actionForPatse, uiOpArgs, error);
             }
