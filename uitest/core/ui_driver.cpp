@@ -66,7 +66,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void UiDriver::UpdateUIWindows(ApiCallErr &error)
+    void UiDriver::UpdateUIWindows(ApiCallErr &error, bool updateTitle)
     {
         visitWidgets_.clear();
         targetWidgetsIndex_.clear();
@@ -83,6 +83,12 @@ namespace OHOS::uitest {
 
         for (const auto &win : currentWindowVec) {
             WindowCacheModel cacheModel(win);
+            if (updateTitle && uiController_->GetWidgetsInWindow(cacheModel.window_, cacheModel.widgetIterator_)) {
+                const string titleKey = "enhanceAppLabel";
+                cacheModel.window_.title_ = cacheModel.widgetIterator_->GetTextByKey(titleKey);
+            } else {
+                LOG_E("Get Widget from window[%{public}d] failed, set it's title as null", cacheModel.window_.id_);
+            }
             windowCacheVec_.emplace_back(std::move(cacheModel));
             std::stringstream ss;
             ss << "window rect is ";
@@ -217,7 +223,7 @@ namespace OHOS::uitest {
         if (updateUi) {
             UpdateUIWindows(err);
             if (err.code_ != NO_ERROR) {
-                LOG_I("Retrieve Widget with error %{public}s", err.message_.c_str());
+                LOG_E("Retrieve Widget with error %{public}s", err.message_.c_str());
                 return nullptr;
             }
         } else {
@@ -394,9 +400,9 @@ namespace OHOS::uitest {
         }
     }
 
-    unique_ptr<Window> UiDriver::FindWindow(function<bool(const Window &)> matcher, ApiCallErr &err)
+    unique_ptr<Window> UiDriver::FindWindow(function<bool(const Window &)> matcher, ApiCallErr &err, bool updateTitle)
     {
-        UpdateUIWindows(err);
+        UpdateUIWindows(err, updateTitle);
         if (err.code_ != NO_ERROR) {
             return nullptr;
         }
@@ -410,9 +416,9 @@ namespace OHOS::uitest {
         return nullptr;
     }
 
-    const Window *UiDriver::RetrieveWindow(const Window &window, ApiCallErr &err)
+    const Window *UiDriver::RetrieveWindow(const Window &window, ApiCallErr &err, bool updateTitle)
     {
-        UpdateUIWindows(err);
+        UpdateUIWindows(err, updateTitle);
         if (err.code_ != NO_ERROR) {
             return nullptr;
         }
@@ -470,7 +476,7 @@ namespace OHOS::uitest {
         if (uiController_->IsScreenOn()) {
             return;
         } else {
-            LOG_I("screen is off, turn it on");
+            LOG_D("screen is off, turn it on");
             UiOpArgs uiOpArgs;
             this->TriggerKey(Power(), uiOpArgs, error);
         }
@@ -530,12 +536,12 @@ namespace OHOS::uitest {
         if (!text.empty()) {
             constexpr auto maxKeyEventCounts = 200;
             if (text.length() < maxKeyEventCounts && TextToKeyEvents(text, events, error)) {
-                LOG_I("inputText by Keycode");
+                LOG_D("inputText by Keycode");
                 auto keyActionForInput = KeysForwarder(events);
                 TriggerKey(keyActionForInput, uiOpArgs, error);
             } else {
                 uiController_->PutTextToClipboard(text);
-                LOG_I("inputText by pasteBoard");
+                LOG_D("inputText by pasteBoard");
                 auto actionForPatse = CombinedKeys(KEYCODE_CTRL, KEYCODE_V, KEYCODE_NONE);
                 TriggerKey(actionForPatse, uiOpArgs, error);
             }

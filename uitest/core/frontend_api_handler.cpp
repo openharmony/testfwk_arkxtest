@@ -375,7 +375,7 @@ namespace OHOS::uitest {
 
     void FrontendApiServer::Call(const ApiCallInfo &in, ApiReplyInfo &out) const
     {
-        LOG_I("Begin to invoke api '%{public}s'", in.apiId_.data());
+        LOG_I("Begin to invoke api '%{public}s', '%{public}s'", in.apiId_.data(), in.paramList_.dump().data());
         auto call = in;
         // initialize method signature
         if (sApiArgTypesMap.empty()) {
@@ -415,7 +415,7 @@ namespace OHOS::uitest {
 
     void ApiTransact(const ApiCallInfo &in, ApiReplyInfo &out)
     {
-        LOG_I("Begin to invoke api '%{public}s'", in.apiId_.data());
+        LOG_I("Begin to invoke api '%{public}s', '%{public}s'", in.apiId_.data(), in.paramList_.dump().data());
         FrontendApiServer::Get().Call(in, out);
     }
 
@@ -755,7 +755,7 @@ namespace OHOS::uitest {
                 }
                 return match;
             };
-            auto window = driver.FindWindow(matcher, out.exception_);
+            auto window = driver.FindWindow(matcher, out.exception_, filterJson.contains("title"));
             if (window == nullptr) {
                 LOG_W("There is no match window by %{public}s", filterJson.dump().data());
                 out.resultValue_ = nullptr;
@@ -1314,7 +1314,7 @@ static void RegisterExtensionHandler()
         auto genericGetter = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &window = GetBackendObject<Window>(in.callerObjRef_);
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
-            auto snapshot = driver.RetrieveWindow(window, out.exception_);
+            auto snapshot = driver.RetrieveWindow(window, out.exception_, in.apiId_ == "UiWindow.getTitle");
             if (out.exception_.code_ != NO_ERROR) {
                 out.resultValue_ = nullptr; // exception, return null
                 return;
