@@ -198,12 +198,12 @@ namespace OHOS::uitest {
         LOG_D("OnEvent:0x%{public}x", eventType);
         auto capturedEvent = GetWatchedEvent(eventInfo);
         if (eventType == Accessibility::EventType::TYPE_VIEW_SCROLLED_START) {
-            LOG_D("Capture scroll begin");
+            LOG_I("Capture scroll begin");
             scrollCompelete_.store(false);
             lastScrollBeginEventMillis_.store(GetCurrentMillisecond());
         }
         if (eventType == Accessibility::EventType::TYPE_VIEW_SCROLLED_EVENT) {
-            LOG_D("Capture scroll end");
+            LOG_I("Capture scroll end");
             scrollCompelete_.store(true);
         }
         if (capturedEvent != "undefine") {
@@ -741,7 +741,7 @@ namespace OHOS::uitest {
             }
             return false;
         }
-        const auto timeout = chrono::milliseconds(3000);
+        const auto timeout = chrono::milliseconds(7000);
         if (condition->wait_for(uLock, timeout) == cv_status::timeout) {
             LOG_E("Wait connection to AccessibilityUITestAbility timed out");
             error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS, RET_TIMEOUT");
@@ -797,7 +797,6 @@ namespace OHOS::uitest {
         }
         auto screenId = display->GetScreenId();
         ScreenManager &screenMgr = ScreenManager::GetInstance();
-        DCHECK(screenMgr);
         bool isLocked = false;
         screenMgr.IsScreenRotationLocked(isLocked);
         if (isLocked) {
@@ -840,7 +839,6 @@ namespace OHOS::uitest {
     void SysUiController::SetDisplayRotationEnabled(bool enabled) const
     {
         ScreenManager &screenMgr = ScreenManager::GetInstance();
-        DCHECK(screenMgr);
         screenMgr.SetScreenRotationLocked(!enabled);
     }
 
@@ -874,7 +872,6 @@ namespace OHOS::uitest {
     bool SysUiController::IsScreenOn() const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
-        DCHECK(displayMgr);
         auto displayId = displayMgr.GetDefaultDisplayId();
         auto state = displayMgr.GetDisplayState(displayId);
         return (state != DisplayState::OFF);
