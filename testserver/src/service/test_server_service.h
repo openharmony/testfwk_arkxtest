@@ -24,6 +24,8 @@
 #include "refbase.h"
 #include "system_ability.h"
 #include "session_token.h"
+#include <common_event_manager.h>
+#include <common_event_subscribe_info.h>
 
 namespace OHOS::testserver {
     class TestServerService : public SystemAbility, public TestServerInterfaceStub {
@@ -38,6 +40,8 @@ namespace OHOS::testserver {
 
         // Declare the logical interfaces here
         ErrCode SetPasteData(const std::string& text) override;
+
+        ErrCode PublishCommonEvent(const EventFwk::CommonEventData &event, bool &re) override;
 
     protected:
         void OnStart() override;
