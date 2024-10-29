@@ -66,7 +66,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void UiDriver::UpdateUIWindows(ApiCallErr &error, bool updateTitle)
+    void UiDriver::UpdateUIWindows(ApiCallErr &error)
     {
         visitWidgets_.clear();
         targetWidgetsIndex_.clear();
@@ -83,14 +83,6 @@ namespace OHOS::uitest {
 
         for (const auto &win : currentWindowVec) {
             WindowCacheModel cacheModel(win);
-            if (updateTitle) {
-                if (uiController_->GetWidgetsInWindow(cacheModel.window_, cacheModel.widgetIterator_)) {
-                    const string titleKey = "enhanceAppLabel";
-                    cacheModel.window_.title_ = cacheModel.widgetIterator_->GetTextByKey(titleKey);
-                } else {
-                    LOG_E("Get Widget from window[%{public}d] failed, set it's title as null", cacheModel.window_.id_);
-                }
-            }
             windowCacheVec_.emplace_back(std::move(cacheModel));
             std::stringstream ss;
             ss << "window rect is ";
@@ -402,9 +394,9 @@ namespace OHOS::uitest {
         }
     }
 
-    unique_ptr<Window> UiDriver::FindWindow(function<bool(const Window &)> matcher, ApiCallErr &err, bool updateTitle)
+    unique_ptr<Window> UiDriver::FindWindow(function<bool(const Window &)> matcher, ApiCallErr &err)
     {
-        UpdateUIWindows(err, updateTitle);
+        UpdateUIWindows(err);
         if (err.code_ != NO_ERROR) {
             return nullptr;
         }
@@ -418,9 +410,9 @@ namespace OHOS::uitest {
         return nullptr;
     }
 
-    const Window *UiDriver::RetrieveWindow(const Window &window, ApiCallErr &err, bool updateTitle)
+    const Window *UiDriver::RetrieveWindow(const Window &window, ApiCallErr &err)
     {
-        UpdateUIWindows(err, updateTitle);
+        UpdateUIWindows(err);
         if (err.code_ != NO_ERROR) {
             return nullptr;
         }

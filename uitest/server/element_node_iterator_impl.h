@@ -34,7 +34,6 @@ namespace OHOS::uitest {
         void ResetNodeIndexToAnchor() override;
         void ClearDFSNext() override;
         void RemoveInvisibleWidget() override;
-        std::string GetTextByKey(const std::string key) override;
         static std::string GenerateNodeHashCode(const OHOS::Accessibility::AccessibilityElementInfo &element);
 
     protected:
