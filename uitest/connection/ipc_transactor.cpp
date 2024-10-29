@@ -19,6 +19,7 @@
 #include <future>
 #include <unistd.h>
 #include "common_utilities_hpp.h"
+#include "test_server_client.h"
 #include "json.hpp"
 #include "ipc_transactor.h"
 
@@ -208,7 +209,7 @@ namespace OHOS::uitest {
         uint32_t tries = 0;
         do {
             // publish caller with retries
-            if (!CommonEventManager::PublishCommonEvent(event)) {
+            if (!OHOS::testserver::TestServerClient::GetInstance().PublishCommonEvent(event)) {
                 LOG_E("Pulbish commonEvent failed");
             }
             tries++;
@@ -371,7 +372,7 @@ namespace OHOS::uitest {
         auto want = OHOS::AAFwk::Want(cmd);
         want.SetAction("uitest.broadcast.command");
         event.SetWant(want);
-        if (!CommonEventManager::PublishCommonEvent(event)) {
+        if (!OHOS::testserver::TestServerClient::GetInstance().PublishCommonEvent(event)) {
             err = ApiCallErr(ERR_INTERNAL, "Failed to publish uitest.broadcast.command");
             return;
         }
@@ -434,7 +435,7 @@ namespace OHOS::uitest {
                 replyWant.SetParam("message", err.message_);
                 CommonEventData replyData;
                 replyData.SetWant(replyWant);
-                if (!CommonEventManager::PublishCommonEvent(replyData)) {
+                if (!OHOS::testserver::TestServerClient::GetInstance().PublishCommonEvent(replyData)) {
                     LOG_E("Fail to publish uitest.broadcast.command.reply");
                 }
                 LOG_I("HandleBroadcastCommand end");
