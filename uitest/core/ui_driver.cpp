@@ -83,11 +83,13 @@ namespace OHOS::uitest {
 
         for (const auto &win : currentWindowVec) {
             WindowCacheModel cacheModel(win);
-            if (updateTitle && uiController_->GetWidgetsInWindow(cacheModel.window_, cacheModel.widgetIterator_)) {
-                const string titleKey = "enhanceAppLabel";
-                cacheModel.window_.title_ = cacheModel.widgetIterator_->GetTextByKey(titleKey);
-            } else {
-                LOG_E("Get Widget from window[%{public}d] failed, set it's title as null", cacheModel.window_.id_);
+            if (updateTitle) {
+                if (uiController_->GetWidgetsInWindow(cacheModel.window_, cacheModel.widgetIterator_)) {
+                    const string titleKey = "enhanceAppLabel";
+                    cacheModel.window_.title_ = cacheModel.widgetIterator_->GetTextByKey(titleKey);
+                } else {
+                    LOG_E("Get Widget from window[%{public}d] failed, set it's title as null", cacheModel.window_.id_);
+                }
             }
             windowCacheVec_.emplace_back(std::move(cacheModel));
             std::stringstream ss;
