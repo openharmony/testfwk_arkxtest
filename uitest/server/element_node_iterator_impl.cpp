@@ -114,16 +114,6 @@ namespace OHOS::uitest {
         visitAndVisibleIndexSet_.erase(currentIndex_);
     }
 
-    std::string ElementNodeIteratorImpl::GetTextByKey(const std::string key)
-    {
-        for (auto element : elementInfoLists_) {
-            if (element.GetInspectorKey() == key) {
-                return element.GetContent();
-            }
-        }
-        return "";
-    }
-
     std::string ElementNodeIteratorImpl::GenerateNodeHashCode(const AccessibilityElementInfo &element)
     {
         int32_t winId = element.GetWindowId();

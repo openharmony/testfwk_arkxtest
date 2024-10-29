@@ -41,14 +41,13 @@ namespace OHOS::uitest {
         /**Wait for the matching widget appear in the given timeout.*/
         std::unique_ptr<Widget> WaitForWidget(const WidgetSelector &select, const UiOpArgs &opt, ApiCallErr &err);
         /**Find window matching the given matcher.*/
-        std::unique_ptr<Window> FindWindow(std::function<bool(const Window &)> matcher, ApiCallErr &err,
-            bool updateTitle = false);
+        std::unique_ptr<Window> FindWindow(std::function<bool(const Window &)> matcher, ApiCallErr &err);
 
         /**Retrieve widget from updated UI.*/
         const Widget *RetrieveWidget(const Widget &widget, ApiCallErr &err, bool updateUi = true);
 
         /**Retrieve window from updated UI.*/
-        const Window *RetrieveWindow(const Window &window, ApiCallErr &err, bool updateTitle = false);
+        const Window *RetrieveWindow(const Window &window, ApiCallErr &err);
 
         string GetHostApp(const Widget &widget);
 
@@ -100,7 +99,7 @@ namespace OHOS::uitest {
     private:
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction
-        void UpdateUIWindows(ApiCallErr &error, bool updateTitle = false);
+        void UpdateUIWindows(ApiCallErr &error);
         void DumpWindowsInfo(bool listWindows, Rect& mergeBounds, nlohmann::json& childDom);
         static std::unique_ptr<UiController> uiController_;
         // CacheModel:
