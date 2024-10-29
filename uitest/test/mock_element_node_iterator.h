@@ -204,11 +204,6 @@ namespace OHOS::uitest {
             visitAndVisibleIndexSet_.erase(currentIndex_);
         }
         
-        std::string GetTextByKey(const std::string key) override
-        {
-            return "";
-        }
-
         std::vector<MockAccessibilityElementInfo> elementInfoLists_;
 
     protected:
