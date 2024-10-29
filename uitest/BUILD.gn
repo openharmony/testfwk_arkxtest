@@ -113,6 +113,7 @@ ohos_static_library("uitest_ipc") {
     "ability_base:want",
     "common_event_service:cesfwk_innerkits",
     "ipc:ipc_core",
+    "samgr:samgr_proxy",
   ]
 
   external_deps += common_external_deps
@@ -141,6 +142,7 @@ ohos_static_library("uitest_addon") {
     "//third_party/libjpeg-turbo:turbojpeg_static",
   ]
   external_deps = [
+    "graphic_2d:librender_service_base",
     "image_framework:image_native",
     "input:libmmi-client",
     "json:nlohmann_json_static",
@@ -415,6 +417,7 @@ ohos_shared_library("cj_ui_test_ffi") {
     "json:nlohmann_json_static",
     "napi:cj_bind_ffi",
     "napi:cj_bind_native",
+    "samgr:samgr_proxy",
   ]
 
   relative_install_dir = "platformsdk"
