@@ -108,6 +108,7 @@ ohos_static_library("uitest_ipc") {
   configs = [ ":uitest_common_configs" ]
   sources = [ "${source_root}/connection/ipc_transactor.cpp" ]
   include_dirs = [ "${source_root}/core" ]
+  deps = [ "${source_root}/../testserver/src:test_server_client" ]
   external_deps = [
     "ability_base:want",
     "common_event_service:cesfwk_innerkits",

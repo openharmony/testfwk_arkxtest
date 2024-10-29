@@ -51,6 +51,7 @@ ohos_shared_library("test_server_service") {
 
   external_deps = [
     "c_utils:utils",
+    "common_event_service:cesfwk_innerkits",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
@@ -87,6 +88,7 @@ ohos_shared_library("test_server_client") {
 
   external_deps = [
     "c_utils:utils",
+    "common_event_service:cesfwk_innerkits",
     "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",

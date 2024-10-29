@@ -292,7 +292,7 @@ namespace OHOS::uitest {
             targetWidgetsIndex_.clear();
         }
         for (auto &curWinCache : windowCacheVec_) {
-            LOG_I("Start find in Window, window id is %{public}d", curWinCache.window_.id_);
+            LOG_D("Start find in Window, window id is %{public}d", curWinCache.window_.id_);
             if (curWinCache.widgetIterator_ == nullptr) {
                 std::unique_ptr<ElementNodeIterator> widgetIterator = nullptr;
                 if (!uiController_->GetWidgetsInWindow(curWinCache.window_, curWinCache.widgetIterator_)) {

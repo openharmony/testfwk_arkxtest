@@ -24,6 +24,8 @@
 #include "start_test_server.h"
 #include "test_server_error_code.h"
 #include "pasteboard_client.h"
+#include <common_event_manager.h>
+#include <common_event_subscribe_info.h>
 
 using namespace std;
 using namespace testing::ext;
@@ -171,6 +173,17 @@ HWTEST_F(ServiceTest, testSetPasteData, TestSize.Level1)
     auto primaryText = pasteData.GetPrimaryText();
     ASSERT_TRUE(primaryText != nullptr);
     ASSERT_TRUE(*primaryText == text);
+}
+
+HWTEST_F(ServiceTest, testPublishEvent, TestSize.Level1)
+{
+    OHOS::EventFwk::CommonEventData event;
+    auto want = OHOS::AAFwk::Want();
+    want.SetAction("uitest.broadcast.command");
+    event.SetWant(want);
+    bool re = false;
+    int32_t resCode1 = testServerServiceMock_->PublishCommonEvent(event, re);
+    EXPECT_EQ(resCode1, 0);
 }
 
 class CallerDetectTimerTest : public testing::Test {
