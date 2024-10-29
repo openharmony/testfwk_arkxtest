@@ -755,7 +755,7 @@ namespace OHOS::uitest {
                 }
                 return match;
             };
-            auto window = driver.FindWindow(matcher, out.exception_, filterJson.contains("title"));
+            auto window = driver.FindWindow(matcher, out.exception_);
             if (window == nullptr) {
                 LOG_W("There is no match window by %{public}s", filterJson.dump().data());
                 out.resultValue_ = nullptr;
@@ -1314,7 +1314,7 @@ static void RegisterExtensionHandler()
         auto genericGetter = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &window = GetBackendObject<Window>(in.callerObjRef_);
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
-            auto snapshot = driver.RetrieveWindow(window, out.exception_, in.apiId_ == "UiWindow.getTitle");
+            auto snapshot = driver.RetrieveWindow(window, out.exception_);
             if (out.exception_.code_ != NO_ERROR) {
                 out.resultValue_ = nullptr; // exception, return null
                 return;
