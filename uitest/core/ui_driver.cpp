@@ -291,7 +291,13 @@ namespace OHOS::uitest {
             visitWidgets_.clear();
             targetWidgetsIndex_.clear();
         }
+        auto appLocator = selector.GetAppLocator();
         for (auto &curWinCache : windowCacheVec_) {
+            if (appLocator != "" && curWinCache.window_.bundleName_ != appLocator) {
+                LOG_D("skip window(%{public}s), it is not target window %{public}s",
+                    curWinCache.window_.bundleName_.data(), appLocator.data());
+                continue;
+            }
             LOG_D("Start find in Window, window id is %{public}d", curWinCache.window_.id_);
             if (curWinCache.widgetIterator_ == nullptr) {
                 std::unique_ptr<ElementNodeIterator> widgetIterator = nullptr;

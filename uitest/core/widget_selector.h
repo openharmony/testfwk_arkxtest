@@ -43,6 +43,8 @@ namespace OHOS::uitest {
 
         void AddAppLocator(string appName);
 
+        std::string GetAppLocator() const;
+
         /**Returns a description of this selector.*/
         std::string Describe() const;
 
