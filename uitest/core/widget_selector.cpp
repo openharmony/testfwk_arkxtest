@@ -68,6 +68,11 @@ namespace OHOS::uitest {
         appLocator_ = app;
     }
 
+    std::string WidgetSelector::GetAppLocator() const
+    {
+        return appLocator_;
+    }
+
     string WidgetSelector::Describe() const
     {
         stringstream ss;
@@ -114,11 +119,6 @@ namespace OHOS::uitest {
                                 std::vector<Widget> &visitWidgets,
                                 std::vector<int> &targetWidgets) const
     {
-        if (appLocator_ != "" && window.bundleName_ != appLocator_) {
-            LOG_D("skip window(%{public}s), it is not target window %{public}s", window.bundleName_.data(),
-                  appLocator_.data());
-            return;
-        }
         std::unique_ptr<SelectStrategy> visitStrategy = ConstructSelectStrategy();
         LOG_D("Do Select, select strategy is %{public}d", visitStrategy->GetStrategyType());
         visitStrategy->LocateNode(window, elementNodeRef, visitWidgets, targetWidgets);
