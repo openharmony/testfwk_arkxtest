@@ -1824,7 +1824,7 @@ hdc shell uitest uiInput dircFling 3
 hdc shell uitest uiInput inputText 100 100 hello 
 ```
 
-#### uiInput keyEvent使用示例
+##### uiInput keyEvent使用示例
 
 | 配置参数             | 必填       | 描述 |                
 |------|------|----------|
