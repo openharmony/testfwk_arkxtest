@@ -1724,8 +1724,38 @@ hdc shell uitest uiRecord read
 	 "fingerNumber": "1" //手指数量
  }
  ```
+#### 注入UI模拟操作
 
+| 命令   | 必填 | 描述              | 
+|------|------|-----------------|
+| help   | 是    | uiInput命令相关帮助信息。 |
+| click   | 是    | 模拟单击操作。      | 
+| doubleClick   | 是    | 模拟双击操作。      | 
+| longClick   | 是    | 模拟长按操作。     | 
+| fling   | 是    | 模拟快滑操作。   | 
+| swipe   | 是    | 模拟慢滑操作。     | 
+| drag   | 是    | 模拟拖拽操作。     | 
+| dircFling   | 是    | 模拟指定方向滑动操作。     |
+| inputText   | 是    | 模拟输入框输入文本操作。     |
+| keyEvent   | 是    | 模拟实体按键事件(如：键盘,电源键,返回上一级,返回桌面等)，以及组合按键操作。     | 
 
+##### uiInput click/doubleClick/longClick使用示例
+
+| 配置参数    | 必填 | 描述            |
+|---------|------|-----------------|
+| point_x | 是      | 点击x坐标点。 |
+| point_y | 是       | 点击y坐标点。 |
+
+```shell
+# 执行单击事件。
+hdc shell uitest uiInput click 100 100
+
+# 执行双击事件。
+hdc shell uitest uiInput doubleClick 100 100
+
+# 执行长按事件。
+hdc shell uitest uiInput longClick 100 100
+```
 
 
 ### 命令行使用说明
