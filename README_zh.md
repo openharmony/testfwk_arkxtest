@@ -1757,6 +1757,111 @@ hdc shell uitest uiInput doubleClick 100 100
 hdc shell uitest uiInput longClick 100 100
 ```
 
+##### uiInput fling使用示例
+
+| 配置参数  | 必填             | 描述               |      
+|------|------------------|-----------------|
+| from_x   | 是                | 滑动起点x坐标。 | 
+| from_y   | 是                | 滑动起点y坐标。 | 
+| to_x   | 是                | 滑动终点x坐标。 |
+| to_y   | 是                | 滑动终点y坐标。 |
+| swipeVelocityPps_   | 否      | 滑动速度，单位: (px/s)，取值范围：200-40000。<br> 默认值: 600。 | 
+| stepLength_   | 否 | 滑动步长。默认值: 滑动距离/50。<br>  **为实现更好的模拟效果，推荐参数缺省/使用默认值。**  | 
+
+
+```shell  
+# 执行快滑操作，stepLength_缺省。
+hdc shell uitest uiInput fling 10 10 200 200 500 
+``` 
+
+##### uiInput swipe/drag使用示例
+
+| 配置参数  | 必填             | 描述               |      
+|------|------------------|-----------------|
+| from_x   | 是                | 滑动起点x坐标。 | 
+| from_y   | 是                | 滑动起点y坐标。 | 
+| to_x   | 是                | 滑动终点x坐标。 |
+| to_y   | 是                | 滑动终点y坐标。 |
+| swipeVelocityPps_   | 否      | 滑动速度，单位: (px/s)，取值范围：200-40000。<br> 默认值: 600。 | 
+
+```shell  
+# 执行慢滑操作。
+hdc shell uitest uiInput swipe 10 10 200 200 500
+
+# 执行拖拽操作。 
+hdc shell uitest uiInput drag 10 10 100 100 500 
+```
+
+##### uiInput dircFling使用示例
+
+| 配置参数             | 必填       | 描述 |
+|-------------------|-------------|----------|
+| direction         | 否 | 滑动方向，取值范围：[0,1,2,3]，默认值为0。<br> 0代表向左滑动，1代表向右滑动，2代表向上滑动，3代表向下滑动。    | 
+| swipeVelocityPps_ | 否| 滑动速度，单位: (px/s)，取值范围：200-40000。<br> 默认值: 600。    | 
+| stepLength        | 否        | 滑动步长。<br> 默认值: 滑动距离/50。为更好的模拟效果，推荐参数缺省/使用默认值。 |
+
+```shell  
+# 执行左滑操作
+hdc shell uitest uiInput dircFling 0 500
+# 执行向右滑动操作
+hdc shell uitest uiInput dircFling 1 600
+# 执行向上滑动操作。
+hdc shell uitest uiInput dircFling 2 
+# 执行向下滑动操作。
+hdc shell uitest uiInput dircFling 3
+```
+
+##### uiInput inputText使用示例
+
+| 配置参数             | 必填       | 描述 |       
+|------|------------------|----------|
+| point_x   | 是                | 输入框x坐标点。 | 
+| point_y   | 是                | 输入框y坐标点。 |
+| text   | 是                | 输入文本内容。  |
+
+```shell  
+# 执行输入框输入操作。
+hdc shell uitest uiInput inputText 100 100 hello 
+```
+
+#### uiInput keyEvent使用示例
+
+| 配置参数             | 必填       | 描述 |                
+|------|------|----------|
+| keyID1   | 是    | 实体按键对应ID，取值范围：KeyCode/Back/Home/Power。<br>当取Back/Home/Power时，不支持输入组合键。 | 
+| keyID2    | 否    | 实体按键对应ID。 |
+| keyID3    | 否    | 实体按键对应ID。 |
+
+>**说明**
+>
+> 最多支持传入是三个键值，键值的具体取值请参考[KeyCode](https://gitee.com/openharmony/docs/blob/a0c9d6c92f951a85eff17e6c639d169cb6880b25/zh-cn/application-dev/reference/apis-input-kit/js-apis-keycode.md)。
+
+```shell  
+# 执行执行返回主页操作。
+hdc shell uitest uiInput keyEvent Home
+# 执行返回主页操作。
+hdc shell uitest uiInput keyEvent Back
+# 执行组合键粘贴操作。
+hdc shell uitest uiInput keyEvent 2072 2038
+```
+
+#### 获取版本信息
+
+```bash
+hdc shell uitest --version
+```
+#### 拉起uitest测试进程
+
+```shell  
+hdc shell uitest start-daemon
+```
+
+>**说明**
+>
+> 设备需调成开发者模式。
+> 仅元能力aa test拉起的测试hap才能调用Uitest的能力。
+> 测试hap的[APL等级级别](https://gitee.com/openharmony/docs/blob/a0c9d6c92f951a85eff17e6c639d169cb6880b25/zh-cn/application-dev/security/AccessToken/app-permission-mgmt-overview.md#%E6%9D%83%E9%99%90%E6%9C%BA%E5%88%B6%E4%B8%AD%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5)需为system_basic、normal。
+
 
 ### 命令行使用说明
 
