@@ -1679,51 +1679,16 @@ hdc shell uitest dumpLayout -p /data/local/tmp/1.json
 ```
 
 #### 用户录制操作
-> 录制过程中,需等待当前操作的识别结果在命令行输入后再进行下一步操作。
+>**说明**
+>
+> 录制过程中，需等待当前操作的识别结果在命令行输出后，再进行下一步操作。
 ```bash
 # 将当前界面操作记录到/data/local/tmp/record.csv，结束录制操作使用Ctrl+C结束录制。
 hdc shell uitest uiRecord record
 # 读取并打印录制数据。
 hdc shell uitest uiRecord read
 ```
-以下举例为：record数据中包含的字段及字段含义，仅供参考
- ```
- {
-	 "ABILITY": "com.ohos.launcher.MainAbility", // 前台应用界面
-	 "BUNDLE": "com.ohos.launcher", // 操作应用
-	 "CENTER_X": "", // 预留字段,暂未使用
-	 "CENTER_Y": "", // 预留字段,暂未使用
-	 "EVENT_TYPE": "pointer", //  
-	 "LENGTH": "0", // 总体步长
-	 "OP_TYPE": "click", //事件类型，当前支持点击、双击、长按、拖拽、滑动、抛滑动作录制
-	 "VELO": "0.000000", // 离手速度
-	 "direction.X": "0.000000",// 总体移动X方向
-	 "direction.Y": "0.000000", // 总体移动Y方向
-	 "duration": 33885000.0, // 手势操作持续时间
-	 "fingerList": [{
-		 "LENGTH": "0", // 总体步长
-		 "MAX_VEL": "40000", // 最大速度
-		 "VELO": "0.000000", // 离手速度
-		 "W1_BOUNDS": "{"bottom":361,"left":37,"right":118,"top":280}", // 起点控件bounds
-		 "W1_HIER": "ROOT,3,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0", // 起点控件hierarchy
-		 "W1_ID": "", // 起点控件id
-		 "W1_Text": "", // 起点控件text
-		 "W1_Type": "Image", // 起点控件类型
-		 "W2_BOUNDS": "{"bottom":361,"left":37,"right":118,"top":280}", // 终点控件bounds
-		 "W2_HIER": "ROOT,3,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0", // 终点控件hierarchy
-		 "W2_ID": "", // 终点控件id
-		 "W2_Text": "", // 终点控件text
-		 "W2_Type": "Image", // 终点控件类型
-		 "X2_POSI": "47", // 终点X
-		 "X_POSI": "47", // 起点X
-		 "Y2_POSI": "301", // 终点Y
-		 "Y_POSI": "301", // 起点Y
-		 "direction.X": "0.000000", // x方向移动量
-		 "direction.Y": "0.000000" // Y方向移动量
-	 }],
-	 "fingerNumber": "1" //手指数量
- }
- ```
+
 #### 注入UI模拟操作
 
 | 命令   | 必填 | 描述              | 
@@ -1832,9 +1797,6 @@ hdc shell uitest uiInput inputText 100 100 hello
 | keyID2    | 否    | 实体按键对应ID。 |
 | keyID3    | 否    | 实体按键对应ID。 |
 
->**说明**
->
-> 最多支持传入是三个键值，键值的具体取值请参考[KeyCode](https://gitee.com/openharmony/docs/blob/a0c9d6c92f951a85eff17e6c639d169cb6880b25/zh-cn/application-dev/reference/apis-input-kit/js-apis-keycode.md)。
 
 ```shell  
 # 执行执行返回主页操作。
@@ -1855,12 +1817,6 @@ hdc shell uitest --version
 ```shell  
 hdc shell uitest start-daemon
 ```
-
->**说明**
->
-> 设备需调成开发者模式。
-> 仅元能力aa test拉起的测试hap才能调用Uitest的能力。
-> 测试hap的[APL等级级别](https://gitee.com/openharmony/docs/blob/a0c9d6c92f951a85eff17e6c639d169cb6880b25/zh-cn/application-dev/security/AccessToken/app-permission-mgmt-overview.md#%E6%9D%83%E9%99%90%E6%9C%BA%E5%88%B6%E4%B8%AD%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5)需为system_basic、normal。
 
 ### 版本信息
 
