@@ -15,6 +15,9 @@
 
 #include <sstream>
 #include <unistd.h>
+#include <regex.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "ui_driver.h"
 #include "widget_operator.h"
 #include "window_operator.h"
@@ -615,6 +618,22 @@ namespace OHOS::uitest {
         }
     }
 
+    ApiCallErr CheckRegExp(string regex)
+    {
+        regex_t preg;
+        int rc;
+        char error_buffer[100];
+        ApiCallErr error(NO_ERROR);
+        char *pattern_value = const_cast<char*>(regex.data());
+        if (0 != (rc = regcomp(&preg, pattern_value, REG_EXTENDED))) {
+            regerror(rc, &preg, error_buffer, 100);
+            LOG_E("regcomp error_buffer: %{public}s", error_buffer);
+            error.code_ = ERR_INVALID_INPUT;
+            error.message_ = error_buffer;
+        }
+        return error;
+    }
+
     template <UiAttr kAttr, typename T> static void GenericOnAttrBuilder(const ApiCallInfo &in, ApiReplyInfo &out)
     {
         // always create and return a new selector
@@ -630,7 +649,14 @@ namespace OHOS::uitest {
         } else {
             testValue = to_string(ReadCallArg<T>(in, INDEX_ZERO));
         }
+        out.exception_.code_ = NO_ERROR;
         auto matchPattern = ReadCallArg<uint8_t>(in, INDEX_ONE, ValueMatchPattern::EQ); // match pattern argument
+        if (matchPattern == ValueMatchPattern::REG_EXP || matchPattern == ValueMatchPattern::REG_EXP_ICASE) {
+            out.exception_ = CheckRegExp(testValue);
+        }
+        if (out.exception_.code_ != NO_ERROR) {
+            return;
+        }
         auto matcher = WidgetMatchModel(kAttr, testValue, static_cast<ValueMatchPattern>(matchPattern));
         selector->AddMatcher(matcher);
         out.resultValue_ = StoreBackendObject(move(selector));
@@ -644,6 +670,7 @@ namespace OHOS::uitest {
         server.AddHandler("On.id", GenericOnAttrBuilder<UiAttr::ID, string>);
         server.AddHandler("On.description", GenericOnAttrBuilder<UiAttr::DESCRIPTION, string>);
         server.AddHandler("On.type", GenericOnAttrBuilder<UiAttr::TYPE, string>);
+        server.AddHandler("On.hint", GenericOnAttrBuilder<UiAttr::HINT, string>);
         server.AddHandler("On.enabled", GenericOnAttrBuilder<UiAttr::ENABLED, bool>);
         server.AddHandler("On.focused", GenericOnAttrBuilder<UiAttr::FOCUSED, bool>);
         server.AddHandler("On.selected", GenericOnAttrBuilder<UiAttr::SELECTED, bool>);
@@ -1219,6 +1246,7 @@ static void RegisterExtensionHandler()
         auto &server = FrontendApiServer::Get();
         server.AddHandler("Component.getAccessibilityId", GenericComponentAttrGetter<UiAttr::ACCESSIBILITY_ID>);
         server.AddHandler("Component.getText", GenericComponentAttrGetter<UiAttr::TEXT, true>);
+        server.AddHandler("Component.getHint", GenericComponentAttrGetter<UiAttr::HINT, true>);
         server.AddHandler("Component.getDescription", GenericComponentAttrGetter<UiAttr::DESCRIPTION, true>);
         server.AddHandler("Component.getId", GenericComponentAttrGetter<UiAttr::ID, true>);
         server.AddHandler("Component.getType", GenericComponentAttrGetter<UiAttr::TYPE, true>);
@@ -1265,7 +1293,9 @@ static void RegisterExtensionHandler()
                 wOp.InputText("", out.exception_);
             } else if (in.apiId_ == "Component.scrollSearch") {
                 auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
-                auto res = wOp.ScrollFindWidget(selector, out.exception_);
+                bool vertical = ReadCallArg<bool>(in, INDEX_ONE, true);
+                uiOpArgs.scrollWidgetDeadZone_ = ReadCallArg<int32_t>(in, INDEX_TWO, 80);
+                auto res = wOp.ScrollFindWidget(selector, vertical, out.exception_);
                 if (res != nullptr) {
                     out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
                 }

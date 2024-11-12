@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include "ui_model.h"
+#include <regex.h>
 
 namespace OHOS::uitest {
     using namespace std;
@@ -79,6 +80,28 @@ namespace OHOS::uitest {
         return attributeVec_[attrId];
     }
 
+    bool RegexMatchAttr(std::string_view value, std::string_view attrValue, int flags)
+    {
+        regex_t preg;
+        int rc;
+        char error_buffer[100];
+        char *pattern_value = const_cast<char*>(value.data());
+        char *pattern_regexec = const_cast<char*>(attrValue.data());
+        if (0 != (rc = regcomp(&preg, pattern_value, flags))) {
+            regerror(rc, &preg, error_buffer, 100);
+            LOG_E("Regcomp error: %{public}s", error_buffer);
+            return false;
+        }
+        rc = regexec(&preg, pattern_regexec, (size_t)0, nullptr, 0);
+        if (rc != 0) {
+            regerror(rc, &preg, error_buffer, 100);
+            LOG_E("Regexec error: %{public}s", error_buffer);
+            return false;
+        } else {
+            return rc == 0;
+        }
+    }
+    
     bool Widget::MatchAttr(const WidgetMatchModel& matchModel) const
     {
         UiAttr attr = matchModel.attrName;
@@ -97,6 +120,16 @@ namespace OHOS::uitest {
                     return false;
                 }
                 return attrValue.substr(attrValue.length() - value.length()) == value;
+            case ValueMatchPattern::REG_EXP:
+                {
+                    auto flags = REG_EXTENDED;
+                    return RegexMatchAttr(value, attrValue, flags);
+                }         
+            case ValueMatchPattern::REG_EXP_ICASE:
+                {
+                    auto flags = REG_EXTENDED|REG_ICASE;
+                    return RegexMatchAttr(value, attrValue, flags);  
+                }
             default:
                 break;
         }
