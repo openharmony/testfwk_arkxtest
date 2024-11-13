@@ -24,7 +24,7 @@ static constexpr auto ATTR_ID = "id";
 
 TEST(REGEXPTest, testRegex)
 {
-    // make a widget object 
+    // make a widget object
     Widget widget("hierarchy");
     widget.SetAttr(UiAttr::TEXT, "testButton123");
     widget.SetAttr(UiAttr::ID, "btnTest");
@@ -32,7 +32,8 @@ TEST(REGEXPTest, testRegex)
 
     // use regex to match widget
     string pattern = "REG_EXP";
-    auto matcher_text = WidgetMatchModel(static_cast<UiAttr>('text'), "^testButton\\d{2,4}$", static_cast<ValueMatchPattern>(matchPattern));
+    auto matcher_text = WidgetMatchModel(static_cast<UiAttr>('text'), 
+                                         "^testButton\\d{2,4}$", static_cast<ValueMatchPattern>(matchPattern));
     auto matcher_id = WidgetMatchModel(static_cast<UiAttr>('id'), "btn\\w{2,4}", static_cast<ValueMatchPattern>(matchPattern));
     bool match_result_text = widget.MatchAttr(matcher_text);
     bool match_result_id = widget.MatchAttr(matcher_id);
@@ -41,7 +42,8 @@ TEST(REGEXPTest, testRegex)
     
     // use regex to match widget, use REG_ICASE
     string pattern = "REG_EXP_ICASE";
-    auto matcher_text_i = WidgetMatchModel(static_cast<UiAttr>('text'), "^testbutton\\d{2,4}$", static_cast<ValueMatchPattern>(matchPattern));
+    auto matcher_text_i = WidgetMatchModel(static_cast<UiAttr>('text'), 
+                                           "^testbutton\\d{2,4}$", static_cast<ValueMatchPattern>(matchPattern));
     bool match_result_text_i = widget.MatchAttr(matcher_text_i);
     ASSERT_EQ(true, match_result_text_i);
 }

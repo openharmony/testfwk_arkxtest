@@ -35,12 +35,11 @@ namespace OHOS::uitest {
                 anchorLeafWidget->GetAttr(UiAttr::ACCESSIBILITY_ID)) {
                 if (vertical) {
                     return std::abs(allWidgets.at(index)->GetBounds().top_ - anchorLeafWidget->GetBounds().top_) <
-                        oriDis * SCROLL_MOVE_FACTOR;
+                           oriDis * SCROLL_MOVE_FACTOR;
                 } else {
                     return std::abs(allWidgets.at(index)->GetBounds().left_ - anchorLeafWidget->GetBounds().left_) <
-                        oriDis * SCROLL_MOVE_FACTOR;                    
+                           oriDis * SCROLL_MOVE_FACTOR;                    
                 }
-
             }
         }
         return false;
@@ -208,7 +207,8 @@ namespace OHOS::uitest {
         driver_.InputText(text, error);
     }
 
-    unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, bool vertical, ApiCallErr &error) const
+    unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, 
+                                                        bool vertical, ApiCallErr &error) const
     {
         bool scrollingUp = true;
         int turnDis = -1;

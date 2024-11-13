@@ -16,8 +16,8 @@
 #include <sstream>
 #include <unistd.h>
 #include <regex.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include "ui_driver.h"
 #include "widget_operator.h"
 #include "window_operator.h"
@@ -622,14 +622,15 @@ namespace OHOS::uitest {
     {
         regex_t preg;
         int rc;
-        char error_buffer[100];
+        const int ERROR_LENGTH = 100;
+        char errorBuffer[ERROR_LENGTH];
         ApiCallErr error(NO_ERROR);
         char *pattern_value = const_cast<char*>(regex.data());
-        if (0 != (rc = regcomp(&preg, pattern_value, REG_EXTENDED))) {
-            regerror(rc, &preg, error_buffer, 100);
-            LOG_E("regcomp error_buffer: %{public}s", error_buffer);
+        if ((rc = regcomp(&preg, pattern_value, REG_EXTENDED)) != 0) {
+            regerror(rc, &preg, errorBuffer, ERROR_LENGTH);
+            LOG_E("Regcomp error : %{public}s", errorBuffer);
             error.code_ = ERR_INVALID_INPUT;
-            error.message_ = error_buffer;
+            error.message_ = errorBuffer;
         }
         return error;
     }
