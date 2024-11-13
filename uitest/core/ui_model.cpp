@@ -84,18 +84,19 @@ namespace OHOS::uitest {
     {
         regex_t preg;
         int rc;
-        char error_buffer[100];
+        const int ERROR_LENGTH = 100;
+        char errorBuffer[ERROR_LENGTH];
         char *pattern_value = const_cast<char*>(value.data());
         char *pattern_regexec = const_cast<char*>(attrValue.data());
-        if (0 != (rc = regcomp(&preg, pattern_value, flags))) {
-            regerror(rc, &preg, error_buffer, 100);
-            LOG_E("Regcomp error: %{public}s", error_buffer);
+        if ((rc = regcomp(&preg, pattern_value, flags)) != 0) {
+            regerror(rc, &preg, errorBuffer, ERROR_LENGTH);
+            LOG_E("Regcomp error: %{public}s", errorBuffer);
             return false;
         }
-        rc = regexec(&preg, pattern_regexec, (size_t)0, nullptr, 0);
+        rc = regexec(&preg, pattern_regexec, 0, nullptr, 0);
         if (rc != 0) {
-            regerror(rc, &preg, error_buffer, 100);
-            LOG_E("Regexec error: %{public}s", error_buffer);
+            regerror(rc, &preg, errorBuffer, ERROR_LENGTH);
+            LOG_E("Regexec error: %{public}s", errorBuffer);
             return false;
         } else {
             return rc == 0;
@@ -124,11 +125,11 @@ namespace OHOS::uitest {
                 {
                     auto flags = REG_EXTENDED;
                     return RegexMatchAttr(value, attrValue, flags);
-                }         
+                }
             case ValueMatchPattern::REG_EXP_ICASE:
                 {
-                    auto flags = REG_EXTENDED|REG_ICASE;
-                    return RegexMatchAttr(value, attrValue, flags);  
+                    auto flags = REG_EXTENDED | REG_ICASE;
+                    return RegexMatchAttr(value, attrValue, flags);
                 }
             default:
                 break;
