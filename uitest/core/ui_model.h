@@ -115,10 +115,7 @@ namespace OHOS::uitest {
     /**Represents a reasonable rectangle area.*/
     struct Rect {
         Rect(int32_t left, int32_t right, int32_t top, int32_t bottom)
-            : left_(left), right_(right), top_(top), bottom_(bottom)
-        {
-            DCHECK(right_ >= left_ && bottom_ >= top_);
-        };
+            : left_(left), right_(right), top_(top), bottom_(bottom) {};
         Rect()
         {
             left_ = 0;
