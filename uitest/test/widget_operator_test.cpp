@@ -316,8 +316,3 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckDirection)
         }
     }
 }
-
-TEST_F(WidgetOperatorTest, scrollSearch)
-{
-    
-}
