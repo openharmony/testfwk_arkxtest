@@ -31,7 +31,7 @@ TEST(REGEXPTest, testRegex)
     widget.SetBounds(Rect(1, 2, 3, 4));
 
     // use regex to match widget
-    string pattern = "REG_EXP";
+    string pattern = 4;
     auto matcher_text = WidgetMatchModel(static_cast<UiAttr>('text'), "^testButton\\d{2,4}$",
                                          static_cast<ValueMatchPattern>(matchPattern));
     auto matcher_id = WidgetMatchModel(static_cast<UiAttr>('id'), "btn\\w{2,4}",
@@ -42,7 +42,7 @@ TEST(REGEXPTest, testRegex)
     ASSERT_EQ(true, match_result_id);
     
     // use regex to match widget, use REG_ICASE
-    string pattern = "REG_EXP_ICASE";
+    string pattern = 5;
     auto matcher_text_i = WidgetMatchModel(static_cast<UiAttr>('text'), "^testbutton\\d{2,4}$",
                                            static_cast<ValueMatchPattern>(matchPattern));
     bool match_result_text_i = widget.MatchAttr(matcher_text_i);
