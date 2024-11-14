@@ -1374,8 +1374,12 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
 
 ### 使用方式
 
-单元测试框架以ohpm包形式发布至[服务组件官网](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
-
+单元测试框架以ohpm包形式发布至[服务组件官网](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453),UI测试框架使能需要执行如下命令。
+>**说明**
+> 
+>仅在3.2版本可使用
+> 
+> hdc shell param set persist.ace.testmode.enabled 1。
 ## Ui测试框架功能特性
 
 | No.  | 特性        | 功能说明                                            |
@@ -1628,15 +1632,15 @@ await window.close()
 
 **命令列表**
 
-| 命令            | 配置参数   |描述                              |
-|---------------|---------------------------------|---------------------------------|
-| help          | help|  显示uitest工具能够支持的命令信息。            |
-| screenCap       |[-p] | 截屏。非必填。<br>指定存储路径和文件名, 只支持存放在/data/local/tmp/下。<br>默认存储路径：/data/local/tmp，文件名：时间戳 + .png。 |
-| dumpLayout      |[-p] \<-i \| -a>|支持在daemon运行时执行获取控件树。<br> **-p** ：指定存储路径和文件名, 只支持存放在/data/local/tmp/下。默认存储路径：/data/local/tmp，文件名：时间戳 + .json。<br> **-i** ：不过滤不可见控件,也不做窗口合并。<br> **-a** ：保存 BackgroundColor、 Content、FontColor、FontSize、extraAttrs 属性数据。<br> **默认** ：不保存上述属性数据。<br> **-a和-i** 不可同时使用。 |
-| uiRecord        | uiRecord \<record \| read>|录制Ui操作。  <br> **record** ：开始录制，将当前界面操作记录到/data/local/tmp/record.csv，结束录制操作使用Ctrl+C结束录制。  <br> **read** ：读取并且打印录制数据。<br>各参数代表的含义请参考[用户录制操作](#用户录制操作)。|
-| uiInput       | \<help \| click \| doubleClick \| longClick \| fling \| swipe \| drag \| dircFling \| inputText \| keyEvent>| 注入UI模拟操作。<br>各参数代表的含义请参考[注入ui模拟操作](#注入ui模拟操作)。                       |
-| --version | --version|获取当前工具版本信息。                     |
-| start-daemon|start-daemon| 拉起uitest测试进程。 |
+| 命令            | 配置参数   | 描述                                                                                                                                                                                                                                                                  |
+|---------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| help          | help| 显示uitest工具能够支持的命令信息。                                                                                                                                                                                                                                                |
+| screenCap       |[-p] | 截屏。<br> **-p**：非必填, 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。<br>默认存储路径：/data/local/tmp，文件名：时间戳 + .png 。                                                                                                                                                                 |
+| dumpLayout      |[-p] \<-i \| -a>| 支持在daemon运行时执行获取控件树。<br> **-p** ：指定存储路径和文件名, 只支持存放在/data/local/tmp/下。默认存储路径：/data/local/tmp，文件名：时间戳 + .json。<br> **-i** ：不过滤不可见控件,也不做窗口合并。<br> **-a** ：保存 BackgroundColor、 Content、FontColor、FontSize、extraAttrs 属性数据。<br> **默认** ：不保存上述属性数据。<br> **-a和-i** 不可同时使用。 |
+| uiRecord        | uiRecord \<record \| read>| 录制Ui操作。  <br> **record** ：开始录制，将当前界面操作记录到/data/local/tmp/record.csv，结束录制操作使用Ctrl+C结束录制。  <br> **read** ：读取并且打印录制数据。<br>各参数代表的含义请参考[用户录制操作](#用户录制操作)。                                                                                                                |
+| uiInput       | \<help \| click \| doubleClick \| longClick \| fling \| swipe \| drag \| dircFling \| inputText \| keyEvent>| 注入UI模拟操作。<br>各参数代表的含义请参考[注入ui模拟操作](#注入ui模拟操作)。                                                                                                                                                                                                                      |
+| --version | --version| 获取当前工具版本信息。                                                                                                                                                                                                                                                         |
+| start-daemon|start-daemon| 拉起uitest测试进程。                                                                                                                                                                                                                                                       |
 
 
 #### 截图使用示例
