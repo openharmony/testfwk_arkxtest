@@ -1421,7 +1421,10 @@ export default function findComponentTest() {
 }
 ```
 
-### Driver使用说明
+### 基于ArkTs API的测试
+
+
+#### Driver使用说明
 
 `Driver`类作为UiTest测试框架的总入口，提供查找控件，注入按键，单击坐标，滑动控件，手势操作，截图等能力。
 
@@ -1461,7 +1464,7 @@ export default function assertComponentExistTest() {
 
 `Driver`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md#driver9)。
 
-### On使用说明
+#### On使用说明
 
 Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹配查找要操作或检视的目标控件。`On`提供的API能力具有以下特点：
 
@@ -1489,7 +1492,7 @@ Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹�
 
 `On`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md#on9)。
 
-#### 控件绝对定位
+##### 控件绝对定位
 
 **示例代码1**：查找id是`Id_button`的控件。
 
@@ -1525,7 +1528,7 @@ let switch: Component = await driver.findComponent(ON.id('Id_switch').isAfter(ON
 
 类似的，可以使用`On.isBefore`控件指定位于目标控件后面的特征控件属性，实现相对定位。
 
-### Component使用说明
+#### Component使用说明
 
 `Component`类代表了Ui界面上的一个控件，一般是通过`Driver.findComponent(on)`方法查找到的。通过该类的实例，用户可以获取控件属性，单击控件，滑动查找，注入文本等操作。
 
@@ -1573,7 +1576,7 @@ expect(found).assertTrue()
 let editText: Component = await driver.findComponent(ON.type('InputText'))
 await editText.inputText('user_name')
 ```
-### UiWindow使用说明
+#### UiWindow使用说明
 
 `UiWindow`类代表了Ui界面上的一个窗口，一般是通过`Driver.findWindow(WindowFilter)`方法查找到的。通过该类的实例，用户可以获取窗口属性，并进行窗口拖动、调整窗口大小等操作。
 
@@ -1612,14 +1615,11 @@ let window: UiWindow = await driver.findWindow({actived: true})
 await window.close()
 ```
 
-### 使用方式
+#### 使用方式
 
   开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001267284568)。
-  UI测试框架使能需要执行如下命令。
 
->```shell
-> hdc shell param set persist.ace.testmode.enabled 1
->```
+ 
 ### UI测试框架自构建方式
 
 > Ui测试框架在OpenHarmony-3.1-Release版本中未随版本编译，需手动处理，请参考[3.1-Release版本使用指导](https://gitee.com/openharmony/testfwk_arkxtest/blob/OpenHarmony-3.1-Release/README_zh.md#%E6%8E%A8%E9%80%81ui%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E8%87%B3%E8%AE%BE%E5%A4%87)。
