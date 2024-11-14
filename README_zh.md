@@ -1421,7 +1421,7 @@ export default function findComponentTest() {
 }
 ```
 
-### 基于ArkTs API的测试
+### 基于ArkTS API的测试
 
 
 #### Driver使用说明
