@@ -201,7 +201,7 @@ TEST_F(WidgetOperatorTest, scrollSearchNoTarget)
     auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
     auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text End", EQ);
     targetWidgetSelector.AddMatcher(matcher0);
-    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
+    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, true, error));
 }
 
 TEST_F(WidgetOperatorTest, scrollSearchWithTarget)
@@ -220,7 +220,7 @@ TEST_F(WidgetOperatorTest, scrollSearchWithTarget)
     auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
     auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
     targetWidgetSelector.AddMatcher(matcher0);
-    auto rev = wOp.ScrollFindWidget(targetWidgetSelector, error);
+    auto rev = wOp.ScrollFindWidget(targetWidgetSelector, true, error);
     ASSERT_FALSE(rev == nullptr);
     ASSERT_EQ("5", rev->GetAttr(UiAttr::ACCESSIBILITY_ID));
 }
@@ -243,7 +243,7 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckSubjectWidget)
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
     opt_.scrollWidgetDeadZone_ = 0; // set deadzone to 0 for easy computation
     auto wOp = WidgetOperator(*driver_, *images.at(0), opt_);
-    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
+    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, true, error));
     // check the scroll action events, should be acted on the subject node specified by WidgetMatcher
     ASSERT_TRUE(!MockController::touch_event_records_->Empty());
     auto &firstEvent = MockController::touch_event_records_->At(0, 0);
@@ -292,7 +292,7 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckDirection)
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
     opt_.scrollWidgetDeadZone_ = 0; // set deadzone to 0 for easy computation
     auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
-    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
+    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, true, error));
     // check the scroll action events, should be acted on the specified node
     ASSERT_TRUE(!MockController::touch_event_records_->Empty());
     // should scroll-search upward (cy_from<cy_to) then downward (cy_from>cy_to)

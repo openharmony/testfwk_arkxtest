@@ -434,9 +434,11 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks2)
     auto call1 = ApiCallInfo {.apiId_ = "By.type", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply1 = ApiReplyInfo();
     call1.paramList_.emplace_back("wyz");
-    call1.paramList_.emplace_back("zl");
+    call1.paramList_.emplace_back(1);
+    call1.paramList_.emplace_back(1);
     server.Call(call1, reply1);
     ASSERT_EQ(USAGE_ERROR, reply1.exception_.code_);
+    std::cout<<reply1.exception_.message_<<std::endl;
     ASSERT_TRUE(reply1.exception_.message_.find("Illegal argument count") != string::npos);
     // call with argument of wrong type
     auto call2 = ApiCallInfo {.apiId_ = "By.type", .callerObjRef_ = string(REF_SEED_BY)};
