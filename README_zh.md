@@ -1793,14 +1793,14 @@ hdc shell uitest --version
 hdc shell uitest start-daemon
 ```
 
-#### UI测试框架自构建方式
+### UI测试框架自构建方式
 
-##### 构建命令
+### 构建命令
 
 ```shell
 ./build.sh --product-name rk3568 --build-target uitestkit
 ```
-##### 推送位置
+### 推送位置
 
 ```shell
 hdc target mount
