@@ -1616,7 +1616,8 @@ await window.close()
 
 #### 使用方式
 
-  开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001267284568),UI测试框架使能需要执行如下命令。
+开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001267284568)。
+UI测试框架使能需要执行如下命令。
 >**说明**
 >
 >仅在3.2版本中可使用
