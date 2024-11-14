@@ -85,22 +85,22 @@ namespace OHOS::uitest {
     {
         regex_t preg;
         int rc;
-        const int ERROR_LENGTH = 100;
-        char errorBuffer[ERROR_LENGTH];
-        char *pattern_value = const_cast<char*>(value.data());
-        char *pattern_regexec = const_cast<char*>(attrValue.data());
-        std::cout<<pattern_value<<std::endl;
-        std::cout<<pattern_regexec<<std::endl;
-        if ((rc = regcomp(&preg, pattern_value, flags)) != 0) {
-            regerror(rc, &preg, errorBuffer, ERROR_LENGTH);
+        const int errorLength = 100;
+        char errorBuffer[errorLength];
+        char *patternValue = const_cast<char*>(value.data());
+        char *patternReg = const_cast<char*>(attrValue.data());
+        std::cout<<patternValue<<std::endl;
+        std::cout<<patternReg<<std::endl;
+        if ((rc = regcomp(&preg, patternValue, flags)) != 0) {
+            regerror(rc, &preg, errorBuffer, errorLength);
             LOG_E("Regcomp error: %{public}s", errorBuffer);
             std::cout << 94 << std::endl;
             std::cout << errorBuffer << std::endl;
             return false;
         }
-        rc = regexec(&preg, pattern_regexec, 0, nullptr, 0);
+        rc = regexec(&preg, patternReg, 0, nullptr, 0);
         if (rc != 0) {
-            regerror(rc, &preg, errorBuffer, ERROR_LENGTH);
+            regerror(rc, &preg, errorBuffer, errorLength);
             LOG_E("Regexec error: %{public}s", errorBuffer);
             std::cout << 102 << std::endl;
             std::cout << errorBuffer << std::endl;

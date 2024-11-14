@@ -30,17 +30,17 @@ TEST(REGEXPTest, testRegex)
     widget.SetAttr(UiAttr::ID, "btnTest");
     widget.SetBounds(Rect(1, 2, 3, 4));
     // use regex to match widget
-    auto matcher_text = WidgetMatchModel(UiAttr::TEXT, "checkBox\\w", ValueMatchPattern::REG_EXP);
-    auto matcher_id = WidgetMatchModel(UiAttr::ID, "btn\\w{2,4}", ValueMatchPattern::REG_EXP);
-    bool match_result_id = widget.MatchAttr(matcher_id);
-    bool match_result_text = widget.MatchAttr(matcher_text);
-    ASSERT_EQ(true, match_result_id);
-    ASSERT_EQ(true, match_result_text);
+    auto matcherTxt = WidgetMatchModel(UiAttr::TEXT, "checkBox\\w", ValueMatchPattern::REG_EXP);
+    auto matcherId = WidgetMatchModel(UiAttr::ID, "btn\\w{2,4}", ValueMatchPattern::REG_EXP);
+    bool matchResultId = widget.MatchAttr(matcherId);
+    bool matchResultTxt = widget.MatchAttr(matcherTxt);
+    ASSERT_EQ(true, matchResultId);
+    ASSERT_EQ(true, matchResultTxt);
     
     // use regex to match widget, use ValueMatchPattern::REG_EXP_ICASE
-    auto matcher_text_i = WidgetMatchModel(UiAttr::TEXT, "^testbutton\\w{2,4}$", ValueMatchPattern::REG_EXP_ICASE);
-    bool match_result_text_i = widget.MatchAttr(matcher_text_i);
-    ASSERT_EQ(true, match_result_text_i);
+    auto matcherTxtIcase = WidgetMatchModel(UiAttr::TEXT, "^testbutton\\w{2,4}$", ValueMatchPattern::REG_EXP_ICASE);
+    bool matchResultTxtIcase = widget.MatchAttr(matcherTxtIcase);
+    ASSERT_EQ(true, matchResultTxtIcase);
 }
 
 TEST(RectTest, testRectBase)
