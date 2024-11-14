@@ -650,9 +650,9 @@ namespace OHOS::uitest {
         } else {
             testValue = to_string(ReadCallArg<T>(in, INDEX_ZERO));
         }
-        out.exception_.code_ = NO_ERROR;
         auto matchPattern = ReadCallArg<uint8_t>(in, INDEX_ONE, ValueMatchPattern::EQ); // match pattern argument
         if (matchPattern == ValueMatchPattern::REG_EXP || matchPattern == ValueMatchPattern::REG_EXP_ICASE) {
+            out.exception_.code_ = NO_ERROR;
             out.exception_ = CheckRegExp(testValue);
         }
         if (out.exception_.code_ != NO_ERROR) {

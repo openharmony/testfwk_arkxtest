@@ -16,6 +16,7 @@
 #include <algorithm>
 #include "ui_model.h"
 #include <regex.h>
+#include <iostream>
 
 namespace OHOS::uitest {
     using namespace std;
@@ -88,15 +89,21 @@ namespace OHOS::uitest {
         char errorBuffer[ERROR_LENGTH];
         char *pattern_value = const_cast<char*>(value.data());
         char *pattern_regexec = const_cast<char*>(attrValue.data());
+        std::cout<<pattern_value<<std::endl;
+        std::cout<<pattern_regexec<<std::endl;
         if ((rc = regcomp(&preg, pattern_value, flags)) != 0) {
             regerror(rc, &preg, errorBuffer, ERROR_LENGTH);
             LOG_E("Regcomp error: %{public}s", errorBuffer);
+            std::cout << 94 << std::endl;
+            std::cout << errorBuffer << std::endl;
             return false;
         }
         rc = regexec(&preg, pattern_regexec, 0, nullptr, 0);
         if (rc != 0) {
             regerror(rc, &preg, errorBuffer, ERROR_LENGTH);
             LOG_E("Regexec error: %{public}s", errorBuffer);
+            std::cout << 102 << std::endl;
+            std::cout << errorBuffer << std::endl;
             return false;
         } else {
             return rc == 0;

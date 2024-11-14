@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include "gtest/gtest.h"
-#include "ui_model.h"
+#include "../core/ui_model.h"
 #include <regex.h>
 
 using namespace OHOS::uitest;
@@ -26,25 +26,19 @@ TEST(REGEXPTest, testRegex)
 {
     // make a widget object
     Widget widget("hierarchy");
-    widget.SetAttr(UiAttr::TEXT, "testButton123");
+    widget.SetAttr(UiAttr::TEXT, "checkBox1");
     widget.SetAttr(UiAttr::ID, "btnTest");
     widget.SetBounds(Rect(1, 2, 3, 4));
-
     // use regex to match widget
-    string pattern = 4;
-    auto matcher_text = WidgetMatchModel(static_cast<UiAttr>('text'), "^testButton\\d{2,4}$",
-                                         static_cast<ValueMatchPattern>(matchPattern));
-    auto matcher_id = WidgetMatchModel(static_cast<UiAttr>('id'), "btn\\w{2,4}",
-                                       static_cast<ValueMatchPattern>(matchPattern));
-    bool match_result_text = widget.MatchAttr(matcher_text);
+    auto matcher_text = WidgetMatchModel(UiAttr::TEXT, "checkBox\\w", ValueMatchPattern::REG_EXP);
+    auto matcher_id = WidgetMatchModel(UiAttr::ID, "btn\\w{2,4}", ValueMatchPattern::REG_EXP);
     bool match_result_id = widget.MatchAttr(matcher_id);
-    ASSERT_EQ(true, match_result_text);
+    bool match_result_text = widget.MatchAttr(matcher_text);
     ASSERT_EQ(true, match_result_id);
+    ASSERT_EQ(true, match_result_text);
     
-    // use regex to match widget, use REG_ICASE
-    string pattern = 5;
-    auto matcher_text_i = WidgetMatchModel(static_cast<UiAttr>('text'), "^testbutton\\d{2,4}$",
-                                           static_cast<ValueMatchPattern>(matchPattern));
+    // use regex to match widget, use ValueMatchPattern::REG_EXP_ICASE
+    auto matcher_text_i = WidgetMatchModel(UiAttr::TEXT, "^testbutton\\w{2,4}$", ValueMatchPattern::REG_EXP_ICASE);
     bool match_result_text_i = widget.MatchAttr(matcher_text_i);
     ASSERT_EQ(true, match_result_text_i);
 }
