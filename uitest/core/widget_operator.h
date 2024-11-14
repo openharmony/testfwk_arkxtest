@@ -39,7 +39,7 @@ namespace OHOS::uitest {
         void PinchWidget(float_t scale, ApiCallErr &error) const;
 
         /**Scroll on the widget to find the target widget matching the selector.*/
-        std::unique_ptr<Widget> ScrollFindWidget(const WidgetSelector &selector, 
+        std::unique_ptr<Widget> ScrollFindWidget(const WidgetSelector &selector,
                                                  bool vertical, ApiCallErr &error) const;
 
     private:

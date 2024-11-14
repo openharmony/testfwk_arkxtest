@@ -622,12 +622,12 @@ namespace OHOS::uitest {
     {
         regex_t preg;
         int rc;
-        const int ERROR_LENGTH = 100;
-        char errorBuffer[ERROR_LENGTH];
+        const int errorLength = 100;
+        char errorBuffer[errorLength];
         ApiCallErr error(NO_ERROR);
-        char *pattern_value = const_cast<char*>(regex.data());
-        if ((rc = regcomp(&preg, pattern_value, REG_EXTENDED)) != 0) {
-            regerror(rc, &preg, errorBuffer, ERROR_LENGTH);
+        char *patternValue = const_cast<char*>(regex.data());
+        if ((rc = regcomp(&preg, patternValue, REG_EXTENDED)) != 0) {
+            regerror(rc, &preg, errorBuffer, errorLength);
             LOG_E("Regcomp error : %{public}s", errorBuffer);
             error.code_ = ERR_INVALID_INPUT;
             error.message_ = errorBuffer;

@@ -38,7 +38,7 @@ namespace OHOS::uitest {
                            oriDis * SCROLL_MOVE_FACTOR;
                 } else {
                     return std::abs(allWidgets.at(index)->GetBounds().left_ - anchorLeafWidget->GetBounds().left_) <
-                           oriDis * SCROLL_MOVE_FACTOR;                    
+                           oriDis * SCROLL_MOVE_FACTOR;
                 }
             }
         }
@@ -207,7 +207,7 @@ namespace OHOS::uitest {
         driver_.InputText(text, error);
     }
 
-    unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, 
+    unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector,
                                                         bool vertical, ApiCallErr &error) const
     {
         bool scrollingUp = true;
