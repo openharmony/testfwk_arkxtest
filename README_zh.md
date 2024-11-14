@@ -1377,7 +1377,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
 单元测试框架以ohpm包形式发布至[服务组件官网](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453),UI测试框架使能需要执行如下命令。
 >**说明**
 > 
->仅在3.2版本可使用
+>仅在3.2版本中可使用
 > 
 > hdc shell param set persist.ace.testmode.enabled 1。
 ## Ui测试框架功能特性
