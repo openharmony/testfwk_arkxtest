@@ -1374,12 +1374,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
 
 ### 使用方式
 
-单元测试框架以ohpm包形式发布至[服务组件官网](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453),UI测试框架使能需要执行如下命令。
->**说明**
-> 
->仅在3.2版本中可使用
-> 
-> hdc shell param set persist.ace.testmode.enabled 1。
+单元测试框架以ohpm包形式发布至[服务组件官网](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
 ## Ui测试框架功能特性
 
 | No.  | 特性        | 功能说明                                            |
@@ -1621,7 +1616,12 @@ await window.close()
 
 #### 使用方式
 
-  开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001267284568)。
+  开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001267284568),UI测试框架使能需要执行如下命令。
+>**说明**
+>
+>仅在3.2版本中可使用
+>
+> hdc shell param set persist.ace.testmode.enabled 1。
 
 ### 基于shell命令测试
 > 在开发过程中，若需要快速进行截屏、 录屏、注入UI模拟操作、获取控件树等操作，可以使用shell命令，更方便完成相应测试。
