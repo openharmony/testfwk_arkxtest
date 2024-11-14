@@ -1619,25 +1619,6 @@ await window.close()
 
   开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001267284568)。
 
-
-#### 构建命令
-
-```shell
-./build.sh --product-name rk3568 --build-target uitestkit
-```
-#### 推送位置
-
-```shell
-hdc target mount
-hdc shell mount -o rw,remount /
-hdc file send uitest /system/bin/uitest
-hdc file send libuitest.z.so /system/lib/module/libuitest.z.so
-hdc shell chmod +x /system/bin/uitest
-```
-
-
-
-
 ### 基于shell命令测试
 > 在开发过程中，若需要快速进行截屏、 录屏、注入UI模拟操作、获取控件树等操作，可以使用shell命令，更方便完成相应测试。
 > 
@@ -1810,6 +1791,23 @@ hdc shell uitest --version
 
 ```shell  
 hdc shell uitest start-daemon
+```
+
+#### UI测试框架自构建方式
+
+##### 构建命令
+
+```shell
+./build.sh --product-name rk3568 --build-target uitestkit
+```
+##### 推送位置
+
+```shell
+hdc target mount
+hdc shell mount -o rw,remount /
+hdc file send uitest /system/bin/uitest
+hdc file send libuitest.z.so /system/lib/module/libuitest.z.so
+hdc shell chmod +x /system/bin/uitest
 ```
 
 ### 版本信息
