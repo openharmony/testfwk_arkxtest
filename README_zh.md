@@ -1810,7 +1810,7 @@ hdc file send libuitest.z.so /system/lib/module/libuitest.z.so
 hdc shell chmod +x /system/bin/uitest
 ```
 
-### 版本信息
+## 版本信息
 
 | 版本号  | 功能说明                                                     |
 | :------ | :----------------------------------------------------------- |
