@@ -1492,7 +1492,7 @@ Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹�
 
 `On`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md#on9)。
 
-##### 控件绝对定位
+##### 控件定位
 
 **示例代码1**：查找id是`Id_button`的控件。
 
