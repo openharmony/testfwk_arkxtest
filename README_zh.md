@@ -1516,7 +1516,7 @@ let txt: Component = await driver.findComponent(ON.text('hello', MatchPattern.CO
 
 通过向`On.text()`方法传入第二个参数`MatchPattern.CONTAINS`来指定文本匹配规则；默认规则是`MatchPattern.EQUALS`，即目标控件text属性必须严格等于给定值。
 
-####  控件相对定位
+#####  控件相对定位
 
 **示例代码1**：查找位于文本控件`Item3_3`后面的，id是`Id_switch`的Switch控件。
 
