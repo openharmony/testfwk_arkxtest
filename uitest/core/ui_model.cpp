@@ -102,8 +102,6 @@ namespace OHOS::uitest {
         if (rc != 0) {
             regerror(rc, &preg, errorBuffer, errorLength);
             LOG_E("Regexec error: %{public}s", errorBuffer);
-            std::cout << 102 << std::endl;
-            std::cout << errorBuffer << std::endl;
             return false;
         } else {
             return rc == 0;
