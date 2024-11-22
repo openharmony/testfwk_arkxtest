@@ -144,7 +144,7 @@ namespace OHOS::uitest {
     };
 
     /** MatchPattern enumerator definition.*/
-    constexpr FrontendEnumValueDef patternValueS[] = {
+    constexpr FrontendEnumValueDef PATTERN_VALUES[] = {
         {"EQUALS", "0"},
         {"CONTAINS", "1"},
         {"STARTS_WITH", "2"},
@@ -154,8 +154,8 @@ namespace OHOS::uitest {
     };
     constexpr FrontendEnumeratorDef MATCH_PATTERN_DEF = {
         "MatchPattern",
-        patternValueS,
-        sizeof(patternValueS) / sizeof(FrontendEnumValueDef),
+        PATTERN_VALUES,
+        sizeof(PATTERN_VALUES) / sizeof(FrontendEnumValueDef),
     };
 
     /** Window ResizeDirection enumerator definition.*/
