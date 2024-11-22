@@ -424,30 +424,30 @@ export default function callBackTestTest() {
 > -  不支持mock对象的私有函数。 
 -  **接口列表：**
 
-| No. | API | 功能说明 |
-| --- | --- | --- |
-| 1 | mockFunc(obj: object, f：function()) | mock某个类的对象obj的函数f，那么需要传两个参数：obj和f，支持使用异步函数（说明：对mock而言原函数实现是同步或异步没太多区别，因为mock并不关注原函数的实现）。 |
-| 2 | when(mockedfunc：function) | 对传入后方法做检查，检查是否被mock并标记过，返回的是一个方法声明。 |
-| 3 | afterReturn(x：value) | 设定预期返回一个自定义的值value，比如某个字符串或者一个promise。 |
-| 4 | afterReturnNothing() | 设定预期没有返回值，即 undefined。 |
-| 5 | afterAction(x：action) | 设定预期返回一个函数执行的操作。 |
-| 6 | afterThrow(x：msg) | 设定预期抛出异常，并指定异常msg。 |
-| 7 | clear() | 用例执行完毕后，进行数据mocker对象的还原处理（还原之后对象恢复被mock之前的功能）。 |
-| 8 | any | 设定用户传任何类型参数（undefined和null除外），执行的结果都是预期的值，使用ArgumentMatchers.any方式调用。 |
-| 9 | anyString | 设定用户传任何字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.anyString方式调用。 |
-| 10 | anyBoolean | 设定用户传任何boolean类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyBoolean方式调用。 |
-| 11 | anyFunction | 设定用户传任何function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyFunction方式调用。 |
-| 12 | anyNumber | 设定用户传任何数字类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyNumber方式调用。 |
-| 13 | anyObj | 设定用户传任何对象类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyObj方式调用。 |
-| 14 | matchRegexs(Regex) | 设定用户传任何正则表达式类型参数Regex，执行的结果都是预期的值，使用ArgumentMatchers.matchRegexs(Regex)方式调用。 |
+| No. | API | 功能说明                                                                                                                                            |
+| --- | --- |-------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1 | mockFunc(obj: object, f：function()) | mock某个类的对象obj的函数f，那么需要传两个参数：obj和f，支持使用异步函数（说明：对mock而言原函数实现是同步或异步没太多区别，因为mock并不关注原函数的实现）。                                                        |
+| 2 | when(mockedfunc：function) | 对传入后方法做检查，检查是否被mock并标记过，返回的是一个方法声明。                                                                                                             |
+| 3 | afterReturn(x：value) | 设定预期返回一个自定义的值value，比如某个字符串或者一个promise。                                                                                                          |
+| 4 | afterReturnNothing() | 设定预期没有返回值，即 undefined。                                                                                                                          |
+| 5 | afterAction(x：action) | 设定预期返回一个函数执行的操作。                                                                                                                                |
+| 6 | afterThrow(x：msg) | 设定预期抛出异常，并指定异常msg。                                                                                                                              |
+| 7 | clear(obj: object) | 用例执行完毕后，进行数据mocker对象的还原处理（还原之后对象恢复被mock之前的功能）。                                                                                                  |
+| 8 | any | 设定用户传任何类型参数（undefined和null除外），执行的结果都是预期的值，使用ArgumentMatchers.any方式调用。                                                                           |
+| 9 | anyString | 设定用户传任何字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.anyString方式调用。                                                                                      |
+| 10 | anyBoolean | 设定用户传任何boolean类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyBoolean方式调用。                                                                               |
+| 11 | anyFunction | 设定用户传任何function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyFunction方式调用。                                                                             |
+| 12 | anyNumber | 设定用户传任何数字类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyNumber方式调用。                                                                                     |
+| 13 | anyObj | 设定用户传任何对象类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyObj方式调用。                                                                                        |
+| 14 | matchRegexs(Regex) | 设定用户传任何正则表达式类型参数Regex，执行的结果都是预期的值，使用ArgumentMatchers.matchRegexs(Regex)方式调用。                                                                    |
 | 15 | verify(methodName, argsArray) | 验证methodName（函数名字符串）所对应的函数和其参数列表argsArray的执行行为是否符合预期，返回一个VerificationMode：一个提供验证模式的类，它有times(count)、once()、atLeast(x)、atMost(x)、never()等函数可供选择。 |
-| 16 | times(count) | 验证行为调用过count次。 |
-| 17 | once() | 验证行为调用过一次。 |
-| 18 | atLeast(count) | 验证行为至少调用过count次。 |
-| 19 | atMost(count) | 验证行为至多调用过count次。 |
-| 20 | never | 验证行为从未发生过。 |
-| 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效。 |
-| 22 | clearAll() | 用例执行完毕后，进行数据和内存清理。 |
+| 16 | times(count) | 验证行为调用过count次。                                                                                                                                  |
+| 17 | once() | 验证行为调用过一次。                                                                                                                                      |
+| 18 | atLeast(count) | 验证行为至少调用过count次。                                                                                                                                |
+| 19 | atMost(count) | 验证行为至多调用过count次。                                                                                                                                |
+| 20 | never | 验证行为从未发生过。                                                                                                                                      |
+| 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效。                                                                                                   |
+| 22 | clearAll() | 用例执行完毕后，进行数据和内存清理,不会清除mock的能力。                                                                                                                  |                                                                                                                            |
 
 -  **使用示例：**
 
@@ -1620,7 +1620,7 @@ await window.close()
 UI测试框架使能需要执行如下命令。
 >**说明**
 >
->仅在3.2版本中可使用
+>OpenHarmony 3.2版本需使用此命令，OpenHarmony4.0版本开始无需使用，默认使能。
 >
 > hdc shell param set persist.ace.testmode.enabled 1。
 
