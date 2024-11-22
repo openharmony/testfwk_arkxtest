@@ -447,7 +447,7 @@ export default function callBackTestTest() {
 | 19 | atMost(count) | 验证行为至多调用过count次。                                                                                                                                |
 | 20 | never | 验证行为从未发生过。                                                                                                                                      |
 | 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效。                                                                                                   |
-| 22 | clearAll() | 用例执行完毕后，进行数据和内存清理,不会清除mock的能力。                                                                                                                  |                                                                                                                            |
+| 22 | clearAll() | 用例执行完毕后，进行数据和内存清理,不会还原obj对象中被mock后的函数。                                                                                                                  |                                                                                                                            |
 
 -  **使用示例：**
 
@@ -1781,7 +1781,7 @@ hdc shell uitest uiInput inputText 100 100 hello
 ```shell  
 # 执行执行返回主页操作。
 hdc shell uitest uiInput keyEvent Home
-# 执行返回主页操作。
+# 执行返回操作。
 hdc shell uitest uiInput keyEvent Back
 # 执行组合键粘贴操作。
 hdc shell uitest uiInput keyEvent 2072 2038
