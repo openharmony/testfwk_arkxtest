@@ -89,13 +89,9 @@ namespace OHOS::uitest {
         char errorBuffer[errorLength];
         char *patternValue = const_cast<char*>(value.data());
         char *patternReg = const_cast<char*>(attrValue.data());
-        std::cout<<patternValue<<std::endl;
-        std::cout<<patternReg<<std::endl;
         if ((rc = regcomp(&preg, patternValue, flags)) != 0) {
             regerror(rc, &preg, errorBuffer, errorLength);
             LOG_E("Regcomp error: %{public}s", errorBuffer);
-            std::cout << 94 << std::endl;
-            std::cout << errorBuffer << std::endl;
             return false;
         }
         rc = regexec(&preg, patternReg, 0, nullptr, 0);
