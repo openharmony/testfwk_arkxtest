@@ -1374,8 +1374,14 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
 
 ### 使用方式
 
-单元测试框架以har包形式发布至[服务组件官网](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
+### 使用方式
+
+单元测试框架以har包形式发布至[OpenHarmony组件库](https://ohpm.openharmony.cn/#cn/detail/@ohos%2Fhypium)，开发者下载Deveco Studio后，可在应用项目中配置依赖，以利用框架功能。测试项目构建与测试脚本执行，请参考[集成开发环境(IDE)使用文档](https://developer.harmonyos.com/cn/docs/documenta
 ## Ui测试框架功能特性
+
+| 序号 |性        | 功能描述                                            |
+| ---- |-----------|-------------------------------------------------|
+| 1    | Driver    | 作为Ui测试的起点，提供控件查找、控件性检测及按键模拟功能。                 |
 
 | No.  | 特性        | 功能说明                                            |
 | ---- |-----------|-------------------------------------------------|
