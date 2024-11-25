@@ -1374,7 +1374,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
 
 ### 使用方式
 
-单元测试框架以HAR(Harmony Archive)格式发布至[OpenHarmony组件库](https://ohpm.openharmony.cn/#cn/detail/@ohos%2Fhypium)，开发者安装Deveco Studio后，可在应用中配置依赖，以利用框架功能。测试项目构建与测试脚本执行参考[集成开发环境(IDE)使用指南](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V3/ohos-openharmony-test-framework-0000001263160453)。
+单元测试框架以HAR(Harmony Archive)格式发布至[OpenHarmony组件库](https://ohpm.openharmony.cn/#cn/detail/@ohos%2Fhypium)，开发者安装Deveco Studio后，可在应用中配置依赖，以利用框架功能。测试项目构建与测试脚本执行参考[集成开发环境(IDE)使用指南](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
 ## Ui测试框架功能特性
 
 | No.  | 特性        | 功能说明                                            |
@@ -1616,7 +1616,7 @@ await window.close()
 
 #### 使用方式
 
-开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides-V3/harmonyos_jnit_jsunit-0000001092459608-V3?catalogVersion=V3#section13366184061415)。
+开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001267284568)。
 UI测试框架使能需要执行如下命令。
 >**说明**
 >
