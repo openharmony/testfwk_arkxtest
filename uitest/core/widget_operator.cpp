@@ -255,6 +255,22 @@ namespace OHOS::uitest {
         }
     }
 
+    bool WidgetOperator::CheckDeadZone(bool vertical)
+    {
+        auto bounds = widget_.GetBounds();
+        int maxDeadZone;
+        if (vertical) {
+            maxDeadZone = (bounds.bottom_ -bounds.top_)/2;
+        } else {
+            maxDeadZone = (bounds.right_ -bounds.left_)/2;
+        }
+        if (options_.scrollWidgetDeadZone_ >= maxDeadZone) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     void WidgetOperator::TurnPage(bool toTop, int &oriDistance, bool vertical, ApiCallErr &error) const
     {
         auto bounds = widget_.GetBounds();
