@@ -1292,18 +1292,6 @@ static void RegisterExtensionHandler()
                 wOp.InputText(ReadCallArg<string>(in, INDEX_ZERO), out.exception_);
             } else if (in.apiId_ == "Component.clearText") {
                 wOp.InputText("", out.exception_);
-            } else if (in.apiId_ == "Component.scrollSearch") {
-                auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
-                bool vertical = ReadCallArg<bool>(in, INDEX_ONE, true);
-                uiOpArgs.scrollWidgetDeadZone_ = ReadCallArg<int32_t>(in, INDEX_TWO, 80);
-                if (!wOp.CheckDeadZone(vertical)) {
-                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "The offset is too large and exceeds the widget size.");
-                    return;
-                }
-                auto res = wOp.ScrollFindWidget(selector, vertical, out.exception_);
-                if (res != nullptr) {
-                    out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
-                }
             }
         };
         server.AddHandler("Component.click", genericOperationHandler);
@@ -1314,7 +1302,6 @@ static void RegisterExtensionHandler()
         server.AddHandler("Component.dragTo", genericOperationHandler);
         server.AddHandler("Component.inputText", genericOperationHandler);
         server.AddHandler("Component.clearText", genericOperationHandler);
-        server.AddHandler("Component.scrollSearch", genericOperationHandler);
     }
 
     static void RegisterUiComponentOperators2()
@@ -1337,10 +1324,22 @@ static void RegisterExtensionHandler()
                     out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which ranges from 0 to 1.");
                 }
                 wOp.PinchWidget(pinchScale, out.exception_);
+            } else if (in.apiId_ == "Component.scrollSearch") {
+                auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
+                bool vertical = ReadCallArg<bool>(in, INDEX_ONE, true);
+                uiOpArgs.scrollWidgetDeadZone_ = ReadCallArg<int32_t>(in, INDEX_TWO, 80);
+                if (!wOp.CheckDeadZone(vertical, out.exception_)) {
+                    return;
+                }
+                auto res = wOp.ScrollFindWidget(selector, vertical, out.exception_);
+                if (res != nullptr) {
+                    out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
+                }
             }
         };
         server.AddHandler("Component.pinchOut", genericOperationHandler);
         server.AddHandler("Component.pinchIn", genericOperationHandler);
+        server.AddHandler("Component.scrollSearch", genericOperationHandler);
     }
 
     static void RegisterUiWindowAttrGetters()

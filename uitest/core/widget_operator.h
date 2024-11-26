@@ -42,7 +42,7 @@ namespace OHOS::uitest {
         std::unique_ptr<Widget> ScrollFindWidget(const WidgetSelector &selector,
                                                  bool vertical, ApiCallErr &error) const;
         /**Check dead zone param*/
-        bool CheckDeadZone(bool vertical);
+        bool CheckDeadZone(bool vertical, ApiCallErr &error);
 
     private:
         void TurnPage(bool toTop, int &oriDistance, bool vertical, ApiCallErr &error) const;
