@@ -1296,9 +1296,13 @@ static void RegisterExtensionHandler()
                 auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
                 bool vertical = ReadCallArg<bool>(in, INDEX_ONE, true);
                 uiOpArgs.scrollWidgetDeadZone_ = ReadCallArg<int32_t>(in, INDEX_TWO, 80);
-                auto res = wOp.ScrollFindWidget(selector, vertical, out.exception_);
-                if (res != nullptr) {
-                    out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
+                if (wOp.CheckDeadZone(vertical)) {
+                    auto res = wOp.ScrollFindWidget(selector, vertical, out.exception_);
+                    if (res != nullptr) {
+                        out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
+                    }
+                } else {
+                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "The offset is too large and exceeds the widget size. Scroll cannot be performed.")
                 }
             }
         };
