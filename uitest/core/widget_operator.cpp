@@ -260,9 +260,9 @@ namespace OHOS::uitest {
         auto bounds = widget_.GetBounds();
         int maxDeadZone;
         if (vertical) {
-            maxDeadZone = (bounds.bottom_ -bounds.top_)/2;
+            maxDeadZone = (bounds.bottom_ -bounds.top_) / TWO;
         } else {
-            maxDeadZone = (bounds.right_ -bounds.left_)/2;
+            maxDeadZone = (bounds.right_ -bounds.left_) / TWO;
         }
         if (options_.scrollWidgetDeadZone_ >= maxDeadZone) {
             return false;
