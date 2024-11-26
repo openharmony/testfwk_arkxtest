@@ -255,16 +255,17 @@ namespace OHOS::uitest {
         }
     }
 
-    bool WidgetOperator::CheckDeadZone(bool vertical)
+    bool WidgetOperator::CheckDeadZone(bool vertical, ApiCallErr &error)
     {
         auto bounds = widget_.GetBounds();
         int maxDeadZone;
         if (vertical) {
-            maxDeadZone = (bounds.bottom_ -bounds.top_) / TWO;
+            maxDeadZone = (bounds.bottom_ - bounds.top_) / TWO;
         } else {
-            maxDeadZone = (bounds.right_ -bounds.left_) / TWO;
+            maxDeadZone = (bounds.right_ - bounds.left_) / TWO;
         }
         if (options_.scrollWidgetDeadZone_ >= maxDeadZone) {
+            error = ApiCallErr(ERR_INVALID_INPUT, "The offset is too large and exceeds the widget size.");
             return false;
         } else {
             return true;
