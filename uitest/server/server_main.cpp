@@ -74,7 +74,7 @@ namespace OHOS::uitest {
     "  text <text>                                           input text at the location where is already focused\n"
     "--version                                                                        print current tool version\n";
 
-    const std::string VERSION = "5.0.1.2";
+    const std::string VERSION = "5.1.1.1";
     struct option g_longoptions[] = {
         {"save file in this path", required_argument, nullptr, 'p'},
         {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
