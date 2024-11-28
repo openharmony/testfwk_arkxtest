@@ -28,6 +28,7 @@ TEST(REGEXPTest, testRegex)
     Widget widget("hierarchy");
     widget.SetAttr(UiAttr::TEXT, "checkBox1");
     widget.SetAttr(UiAttr::ID, "btnTest");
+    widget.SetAttr(UiAttr::HINT, "btnTest12345");
     widget.SetBounds(Rect(1, 2, 3, 4));
     // use regex to match widget
     auto matcherTxt = WidgetMatchModel(UiAttr::TEXT, "checkBox\\w", ValueMatchPattern::REG_EXP);
@@ -41,6 +42,14 @@ TEST(REGEXPTest, testRegex)
     auto matcherTxtIcase = WidgetMatchModel(UiAttr::TEXT, "^testbutton\\w{2,4}$", ValueMatchPattern::REG_EXP_ICASE);
     bool matchResultTxtIcase = widget.MatchAttr(matcherTxtIcase);
     ASSERT_EQ(true, matchResultTxtIcase);
+
+    auto matcherTxtIcase = WidgetMatchModel(UiAttr::TEXT, "^testbutton\\w{2,4}$", ValueMatchPattern::REG_EXP);
+    bool matchResultTxtIcase = widget.MatchAttr(matcherTxtIcase);
+    ASSERT_EQ(false, matchResultTxtIcase);
+
+    auto matcherTxtIcase = WidgetMatchModel(UiAttr::HINT, "^btnTest\\w{2,3}$", ValueMatchPattern::REG_EXP);
+    bool matchResultTxtIcase = widget.MatchAttr(matcherTxtIcase);
+    ASSERT_EQ(false, matchResultTxtIcase);
 }
 
 TEST(RectTest, testRectBase)
