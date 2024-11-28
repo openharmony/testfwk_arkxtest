@@ -424,30 +424,30 @@ export default function callBackTestTest() {
 > -  不支持mock对象的私有函数。 
 -  **接口列表：**
 
-| No. | API | 功能说明 |
-| --- | --- | --- |
-| 1 | mockFunc(obj: object, f：function()) | mock某个类的对象obj的函数f，那么需要传两个参数：obj和f，支持使用异步函数（说明：对mock而言原函数实现是同步或异步没太多区别，因为mock并不关注原函数的实现）。 |
-| 2 | when(mockedfunc：function) | 对传入后方法做检查，检查是否被mock并标记过，返回的是一个方法声明。 |
-| 3 | afterReturn(x：value) | 设定预期返回一个自定义的值value，比如某个字符串或者一个promise。 |
-| 4 | afterReturnNothing() | 设定预期没有返回值，即 undefined。 |
-| 5 | afterAction(x：action) | 设定预期返回一个函数执行的操作。 |
-| 6 | afterThrow(x：msg) | 设定预期抛出异常，并指定异常msg。 |
-| 7 | clear() | 用例执行完毕后，进行数据mocker对象的还原处理（还原之后对象恢复被mock之前的功能）。 |
-| 8 | any | 设定用户传任何类型参数（undefined和null除外），执行的结果都是预期的值，使用ArgumentMatchers.any方式调用。 |
-| 9 | anyString | 设定用户传任何字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.anyString方式调用。 |
-| 10 | anyBoolean | 设定用户传任何boolean类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyBoolean方式调用。 |
-| 11 | anyFunction | 设定用户传任何function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyFunction方式调用。 |
-| 12 | anyNumber | 设定用户传任何数字类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyNumber方式调用。 |
-| 13 | anyObj | 设定用户传任何对象类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyObj方式调用。 |
-| 14 | matchRegexs(Regex) | 设定用户传任何正则表达式类型参数Regex，执行的结果都是预期的值，使用ArgumentMatchers.matchRegexs(Regex)方式调用。 |
+| No. | API | 功能说明                                                                                                                                            |
+| --- | --- |-------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1 | mockFunc(obj: object, f：function()) | mock某个类的对象obj的函数f，那么需要传两个参数：obj和f，支持使用异步函数（说明：对mock而言原函数实现是同步或异步没太多区别，因为mock并不关注原函数的实现）。                                                        |
+| 2 | when(mockedfunc：function) | 对传入后方法做检查，检查是否被mock并标记过，返回的是一个方法声明。                                                                                                             |
+| 3 | afterReturn(x：value) | 设定预期返回一个自定义的值value，比如某个字符串或者一个promise。                                                                                                          |
+| 4 | afterReturnNothing() | 设定预期没有返回值，即 undefined。                                                                                                                          |
+| 5 | afterAction(x：action) | 设定预期返回一个函数执行的操作。                                                                                                                                |
+| 6 | afterThrow(x：msg) | 设定预期抛出异常，并指定异常msg。                                                                                                                              |
+| 7 | clear(obj: object) | 用例执行完毕后，进行数据mocker对象的还原处理（还原之后对象恢复被mock之前的功能）。                                                                                                  |
+| 8 | any | 设定用户传任何类型参数（undefined和null除外），执行的结果都是预期的值，使用ArgumentMatchers.any方式调用。                                                                           |
+| 9 | anyString | 设定用户传任何字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.anyString方式调用。                                                                                      |
+| 10 | anyBoolean | 设定用户传任何boolean类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyBoolean方式调用。                                                                               |
+| 11 | anyFunction | 设定用户传任何function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyFunction方式调用。                                                                             |
+| 12 | anyNumber | 设定用户传任何数字类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyNumber方式调用。                                                                                     |
+| 13 | anyObj | 设定用户传任何对象类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyObj方式调用。                                                                                        |
+| 14 | matchRegexs(Regex) | 设定用户传任何正则表达式类型参数Regex，执行的结果都是预期的值，使用ArgumentMatchers.matchRegexs(Regex)方式调用。                                                                    |
 | 15 | verify(methodName, argsArray) | 验证methodName（函数名字符串）所对应的函数和其参数列表argsArray的执行行为是否符合预期，返回一个VerificationMode：一个提供验证模式的类，它有times(count)、once()、atLeast(x)、atMost(x)、never()等函数可供选择。 |
-| 16 | times(count) | 验证行为调用过count次。 |
-| 17 | once() | 验证行为调用过一次。 |
-| 18 | atLeast(count) | 验证行为至少调用过count次。 |
-| 19 | atMost(count) | 验证行为至多调用过count次。 |
-| 20 | never | 验证行为从未发生过。 |
-| 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效。 |
-| 22 | clearAll() | 用例执行完毕后，进行数据和内存清理。 |
+| 16 | times(count) | 验证行为调用过count次。                                                                                                                                  |
+| 17 | once() | 验证行为调用过一次。                                                                                                                                      |
+| 18 | atLeast(count) | 验证行为至少调用过count次。                                                                                                                                |
+| 19 | atMost(count) | 验证行为至多调用过count次。                                                                                                                                |
+| 20 | never | 验证行为从未发生过。                                                                                                                                      |
+| 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效。                                                                                                   |
+| 22 | clearAll() | 用例执行完毕后，进行数据和内存清理,不会还原obj对象中被mock后的函数。                                                                                                                  |                                                                                                                            |
 
 -  **使用示例：**
 
@@ -1375,6 +1375,11 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
 ### 使用方式
 
 单元测试框架以ohpm包形式发布至[服务组件官网](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fhypium)，开发者可以下载Deveco Studio后，在应用工程中配置依赖后使用框架能力，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001263160453)。
+>**说明**
+>
+>1.0.8版本开始单元测试框架以HAR(Harmony Archive)格式发布
+>
+> 
 
 ## Ui测试框架功能特性
 
@@ -1421,7 +1426,10 @@ export default function findComponentTest() {
 }
 ```
 
-### Driver使用说明
+### 基于ArkTS API的测试
+
+
+#### Driver使用说明
 
 `Driver`类作为UiTest测试框架的总入口，提供查找控件，注入按键，单击坐标，滑动控件，手势操作，截图等能力。
 
@@ -1461,7 +1469,7 @@ export default function assertComponentExistTest() {
 
 `Driver`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md#driver9)。
 
-### On使用说明
+#### On使用说明
 
 Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹配查找要操作或检视的目标控件。`On`提供的API能力具有以下特点：
 
@@ -1489,7 +1497,7 @@ Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹�
 
 `On`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md#on9)。
 
-#### 控件绝对定位
+##### 控件定位
 
 **示例代码1**：查找id是`Id_button`的控件。
 
@@ -1513,7 +1521,7 @@ let txt: Component = await driver.findComponent(ON.text('hello', MatchPattern.CO
 
 通过向`On.text()`方法传入第二个参数`MatchPattern.CONTAINS`来指定文本匹配规则；默认规则是`MatchPattern.EQUALS`，即目标控件text属性必须严格等于给定值。
 
-####  控件相对定位
+#####  控件相对定位
 
 **示例代码1**：查找位于文本控件`Item3_3`后面的，id是`Id_switch`的Switch控件。
 
@@ -1525,7 +1533,7 @@ let switch: Component = await driver.findComponent(ON.id('Id_switch').isAfter(ON
 
 类似的，可以使用`On.isBefore`控件指定位于目标控件后面的特征控件属性，实现相对定位。
 
-### Component使用说明
+#### Component使用说明
 
 `Component`类代表了Ui界面上的一个控件，一般是通过`Driver.findComponent(on)`方法查找到的。通过该类的实例，用户可以获取控件属性，单击控件，滑动查找，注入文本等操作。
 
@@ -1573,7 +1581,7 @@ expect(found).assertTrue()
 let editText: Component = await driver.findComponent(ON.type('InputText'))
 await editText.inputText('user_name')
 ```
-### UiWindow使用说明
+#### UiWindow使用说明
 
 `UiWindow`类代表了Ui界面上的一个窗口，一般是通过`Driver.findWindow(WindowFilter)`方法查找到的。通过该类的实例，用户可以获取窗口属性，并进行窗口拖动、调整窗口大小等操作。
 
@@ -1612,19 +1620,191 @@ let window: UiWindow = await driver.findWindow({actived: true})
 await window.close()
 ```
 
-### 使用方式
+#### 使用方式
 
-  开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001267284568)。
-  UI测试框架使能需要执行如下命令。
+开发者可以下载Deveco Studio创建测试工程后，在其中调用框架提供接口进行相关测试操作，测试工程创建及测试脚本执行使用指南请参见[IDE指导文档](https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ohos-openharmony-test-framework-0000001267284568)。
+UI测试框架使能需要执行如下命令。
+>**说明**
+>
+>OpenHarmony 3.2版本需使用此命令，OpenHarmony4.0版本开始无需使用，默认使能。
+>
+> hdc shell param set persist.ace.testmode.enabled 1。
 
->```shell
-> hdc shell param set persist.ace.testmode.enabled 1
->```
+### 基于shell命令测试
+> 在开发过程中，若需要快速进行截屏、 录屏、注入UI模拟操作、获取控件树等操作，可以使用shell命令，更方便完成相应测试。
+> 
+> **说明：**
+> 
+> 使用cmd的方式，需要配置好hdc相关的环境变量。
+
+**命令列表**
+
+| 命令            | 配置参数   | 描述                                                                                                                                                                                                                                                                  |
+|---------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| help          | help| 显示uitest工具能够支持的命令信息。                                                                                                                                                                                                                                                |
+| screenCap       |[-p] | 截屏。<br> **-p**：非必填, 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。<br>默认存储路径：/data/local/tmp，文件名：时间戳 + .png 。                                                                                                                                                                 |
+| dumpLayout      |[-p] \<-i \| -a>| 支持在daemon运行时执行获取控件树。<br> **-p** ：指定存储路径和文件名, 只支持存放在/data/local/tmp/下。默认存储路径：/data/local/tmp，文件名：时间戳 + .json。<br> **-i** ：不过滤不可见控件,也不做窗口合并。<br> **-a** ：保存 BackgroundColor、 Content、FontColor、FontSize、extraAttrs 属性数据。<br> **默认** ：不保存上述属性数据。<br> **-a和-i** 不可同时使用。 |
+| uiRecord        | uiRecord \<record \| read>| 录制Ui操作。  <br> **record** ：开始录制，将当前界面操作记录到/data/local/tmp/record.csv，结束录制操作使用Ctrl+C结束录制。  <br> **read** ：读取并且打印录制数据。<br>各参数代表的含义请参考[用户录制操作](#用户录制操作)。                                                                                                                |
+| uiInput       | \<help \| click \| doubleClick \| longClick \| fling \| swipe \| drag \| dircFling \| inputText \| keyEvent>| 注入UI模拟操作。<br>各参数代表的含义请参考[注入ui模拟操作](#注入ui模拟操作)。                                                                                                                                                                                                                      |
+| --version | --version| 获取当前工具版本信息。                                                                                                                                                                                                                                                         |
+| start-daemon|start-daemon| 拉起uitest测试进程。                                                                                                                                                                                                                                                       |
+
+
+#### 截图使用示例
+
+```bash
+# 存储路径：/data/local/tmp，文件名：时间戳 + .png。
+hdc shell uitest screenCap
+# 指定存储路径和文件名,存放在/data/local/tmp/下。
+hdc shell uitest screenCap -p /data/local/tmp/1.png
+```
+
+#### 获取控件树使用示例
+```bash
+hdc shell uitest dumpLayout -p /data/local/tmp/1.json
+```
+
+#### 用户录制操作
+>**说明**
+>
+> 录制过程中，需等待当前操作的识别结果在命令行输出后，再进行下一步操作。
+```bash
+# 将当前界面操作记录到/data/local/tmp/record.csv，结束录制操作使用Ctrl+C结束录制。
+hdc shell uitest uiRecord record
+# 读取并打印录制数据。
+hdc shell uitest uiRecord read
+```
+
+#### 注入UI模拟操作
+
+| 命令   | 必填 | 描述              | 
+|------|------|-----------------|
+| help   | 是    | uiInput命令相关帮助信息。 |
+| click   | 是    | 模拟单击操作。      | 
+| doubleClick   | 是    | 模拟双击操作。      | 
+| longClick   | 是    | 模拟长按操作。     | 
+| fling   | 是    | 模拟快滑操作。   | 
+| swipe   | 是    | 模拟慢滑操作。     | 
+| drag   | 是    | 模拟拖拽操作。     | 
+| dircFling   | 是    | 模拟指定方向滑动操作。     |
+| inputText   | 是    | 模拟输入框输入文本操作。     |
+| keyEvent   | 是    | 模拟实体按键事件(如：键盘,电源键,返回上一级,返回桌面等)，以及组合按键操作。     | 
+
+##### uiInput click/doubleClick/longClick使用示例
+
+| 配置参数    | 必填 | 描述            |
+|---------|------|-----------------|
+| point_x | 是      | 点击x坐标点。 |
+| point_y | 是       | 点击y坐标点。 |
+
+```shell
+# 执行单击事件。
+hdc shell uitest uiInput click 100 100
+
+# 执行双击事件。
+hdc shell uitest uiInput doubleClick 100 100
+
+# 执行长按事件。
+hdc shell uitest uiInput longClick 100 100
+```
+
+##### uiInput fling使用示例
+
+| 配置参数  | 必填             | 描述               |      
+|------|------------------|-----------------|
+| from_x   | 是                | 滑动起点x坐标。 | 
+| from_y   | 是                | 滑动起点y坐标。 | 
+| to_x   | 是                | 滑动终点x坐标。 |
+| to_y   | 是                | 滑动终点y坐标。 |
+| swipeVelocityPps_   | 否      | 滑动速度，单位: (px/s)，取值范围：200-40000。<br> 默认值: 600。 | 
+| stepLength_   | 否 | 滑动步长。默认值: 滑动距离/50。<br>  **为实现更好的模拟效果，推荐参数缺省/使用默认值。**  | 
+
+
+```shell  
+# 执行快滑操作，stepLength_缺省。
+hdc shell uitest uiInput fling 10 10 200 200 500 
+``` 
+
+##### uiInput swipe/drag使用示例
+
+| 配置参数  | 必填             | 描述               |      
+|------|------------------|-----------------|
+| from_x   | 是                | 滑动起点x坐标。 | 
+| from_y   | 是                | 滑动起点y坐标。 | 
+| to_x   | 是                | 滑动终点x坐标。 |
+| to_y   | 是                | 滑动终点y坐标。 |
+| swipeVelocityPps_   | 否      | 滑动速度，单位: (px/s)，取值范围：200-40000。<br> 默认值: 600。 | 
+
+```shell  
+# 执行慢滑操作。
+hdc shell uitest uiInput swipe 10 10 200 200 500
+
+# 执行拖拽操作。 
+hdc shell uitest uiInput drag 10 10 100 100 500 
+```
+
+##### uiInput dircFling使用示例
+
+| 配置参数             | 必填       | 描述 |
+|-------------------|-------------|----------|
+| direction         | 否 | 滑动方向，取值范围：[0,1,2,3]，默认值为0。<br> 0代表向左滑动，1代表向右滑动，2代表向上滑动，3代表向下滑动。    | 
+| swipeVelocityPps_ | 否| 滑动速度，单位: (px/s)，取值范围：200-40000。<br> 默认值: 600。    | 
+| stepLength        | 否        | 滑动步长。<br> 默认值: 滑动距离/50。为更好的模拟效果，推荐参数缺省/使用默认值。 |
+
+```shell  
+# 执行左滑操作
+hdc shell uitest uiInput dircFling 0 500
+# 执行向右滑动操作
+hdc shell uitest uiInput dircFling 1 600
+# 执行向上滑动操作。
+hdc shell uitest uiInput dircFling 2 
+# 执行向下滑动操作。
+hdc shell uitest uiInput dircFling 3
+```
+
+##### uiInput inputText使用示例
+
+| 配置参数             | 必填       | 描述 |       
+|------|------------------|----------|
+| point_x   | 是                | 输入框x坐标点。 | 
+| point_y   | 是                | 输入框y坐标点。 |
+| text   | 是                | 输入文本内容。  |
+
+```shell  
+# 执行输入框输入操作。
+hdc shell uitest uiInput inputText 100 100 hello 
+```
+
+##### uiInput keyEvent使用示例
+
+| 配置参数             | 必填       | 描述 |                
+|------|------|----------|
+| keyID1   | 是    | 实体按键对应ID，取值范围：KeyCode/Back/Home/Power。<br>当取Back/Home/Power时，不支持输入组合键。 | 
+| keyID2    | 否    | 实体按键对应ID。 |
+| keyID3    | 否    | 实体按键对应ID。 |
+
+
+```shell  
+# 执行执行返回主页操作。
+hdc shell uitest uiInput keyEvent Home
+# 执行返回操作。
+hdc shell uitest uiInput keyEvent Back
+# 执行组合键粘贴操作。
+hdc shell uitest uiInput keyEvent 2072 2038
+```
+
+#### 获取版本信息
+
+```bash
+hdc shell uitest --version
+```
+#### 拉起uitest测试进程
+
+```shell  
+hdc shell uitest start-daemon
+```
+
 ### UI测试框架自构建方式
-
-> Ui测试框架在OpenHarmony-3.1-Release版本中未随版本编译，需手动处理，请参考[3.1-Release版本使用指导](https://gitee.com/openharmony/testfwk_arkxtest/blob/OpenHarmony-3.1-Release/README_zh.md#%E6%8E%A8%E9%80%81ui%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6%E8%87%B3%E8%AE%BE%E5%A4%87)。
-
-开发者如需自行编译Ui测试框架代码验证子修改内容，构建命令和推送位置请参考本章节内容。
 
 #### 构建命令
 
@@ -1641,130 +1821,7 @@ hdc file send libuitest.z.so /system/lib/module/libuitest.z.so
 hdc shell chmod +x /system/bin/uitest
 ```
 
-### 命令行使用说明
-
-  开发者可以输入如下命令来实现对应功能。
-
-1、打印使用帮助
-
-```shell
-hdc shell uitest help
-```
-
-2、截屏
-
-```
-hdc shell uitest screenCap
-// 默认存储路径：/data/local/tmp，文件名：时间戳 + .png。
-hdc shell uitest screenCap -p /data/local/tmp/1.png
-// 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。
-```
-
-3、获取设备当前Ui控件树信息
-
-```shell
-hdc shell uitest dumpLayout
-// 默认存储路径：/data/local/tmp，文件名：时间戳 + .json。
-hdc shell uitest screenCap -p /data/local/tmp/1.json
-// 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。
-```
-
-4、录制Ui操作
-
-```shell
-hdc shell uitest uiRecord record
-// 将当前执行的Ui操作记录到/data/local/tmp/layout/record.csv
-hdc shell uitest uiRecord read
-// 将记录的Ui操作打印出来
-```
-
-5、 shell命令方式注入UI模拟操作
-> 支持操作类型：点击 双击 长按 慢滑 快滑 拖拽 输入文字 KeyEvent。
-
-| 配置参数名       | 配置参数含义                                  | 配置参数取值                                                                                                                                                                                                                | 示例                                                                                  |
-|-------------|-----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| click       | 模拟单击操作                                  | point_x (必选参数,点击x坐标点)<br/> point_y (必选参数,点击y坐标点)                                                                                                                                                                      | hdc shell uitest uiInput click point_x point_y                                      |
-| doubleClick | 模拟双击操作                                  | point_x (必选参数,双击x坐标点)<br/> point_y (必选参数,双击y坐标点)                                                                                                                                                                      | hdc shell uitest uiInput doubleClick point_x point_y                                |
-| longClick   | 模拟长按操作                                  | point_x (必选参数,长按x坐标点)<br/> point_y (必选参数,长按y坐标点)                                                                                                                                                                      | hdc shell uitest uiInput longClick point_x point_y                                  |
-| fling       | 模拟快滑操作                                  | from_x (必选参数,滑动起点x坐标)<br/> from_y(必选参数,滑动起点y坐标)<br/> to_x(必选参数,滑动终点x坐标)<br/> to_y(必选参数,滑动终点y坐标)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600, 单位: px/s)<br/> stepLength(可选参数,滑动步长,默认值:滑动距离/50, 单位: px) | hdc shell uitest uiInput fling from_x from_y to_x to_y swipeVelocityPps_ stepLength |
-| swipe       | 模拟慢滑操作                                  | from_x (必选参数,滑动起点x坐标)<br/> from_y(必选参数,滑动起点y坐标)<br/> to_x(必选参数,滑动终点x坐标)<br/> to_y(必选参数,滑动终点y坐标)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600, 单位: px/s))                                               | hdc shell uitest uiInput swipe from_x from_y to_x to_y swipeVelocityPps_            |
-| drag        | 模拟拖拽操作                                  | from_x (必选参数,拖拽起点x坐标)<br/> from_y(必选参数,拖拽起点y坐标)<br/> to_x(必选参数,拖拽终点x坐标)<br/> to_y(必选参数,拖拽终点y坐标)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600, 单位: px/s))                                               | hdc shell uitest uiInput drag from_x from_y to_x to_y swipeVelocityPps_             |
-| dircFling   | 模拟指定方向滑动操作                              | direction (可选参数,滑动方向,可选值: [0,1,2,3], 滑动方向: [左,右,上,下],默认值: 0)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600, 单位: px/s)<br/> stepLength(可选参数,滑动步长,默认值:滑动距离/50, 单位: px)                                    | hdc shell uitest uiInput dircFling direction swipeVelocityPps_ stepLength                                       |
-| inputText        | 模拟输入框输入文本操作                             | point_x (必选参数,输入框x坐标点)<br/> point_y (必选参数,输入框y坐标点)<br/> input(输入文本)                                                                                                                                                   | hdc shell uitest uiInput inputText  point_x point_y text                                 |
-| keyEvent    | 模拟实体按键事件(如:键盘,电源键,返回上一级,返回桌面等),以及组合按键操作 | keyID (必选参数,实体按键对应ID)<br/> keyID2 (可选参数,实体按键对应ID)                                                                                                                                                                     | hdc shell uitest uiInput keyEvent keyID                                             |
-
-示例代码1：执行点击事件。
-```shell  
- hdc shell uitest uiInput click 100 100
-```
-示例代码2：执行双击事件。
-```shell  
- hdc shell uitest uiInput doubleClick 100 100
-```
-示例代码3：执行长按事件。
-```shell  
- hdc shell uitest uiInput longClick 100 100
-```
-示例代码4：执行快滑操作。
-```shell  
-hdc shell uitest uiInput fling 10 10 200 200 500 
-```
-示例代码5：执行慢滑操作。
-```shell  
-hdc shell uitest uiInput swipe 10 10 200 200 500 
-```
-示例代码6：执行拖拽操作。
-```shell  
-hdc shell uitest uiInput drag 10 10 100 100 500 
-```
-示例代码7：执行向左滑动操作。
-```shell  
-hdc shell uitest uiInput dircFling 0 500
-```
-示例代码8：执行向右滑动操作。
-```shell  
-hdc shell uitest uiInput dircFling 1 600
-```
-示例代码9：执行向上滑动操作。
-```shell  
-hdc shell uitest uiInput dircFling 2 
-```
-示例代码10：执行向下滑动操作。
-```shell  
-hdc shell uitest uiInput dircFling 3
-```
-
-示例代码11：执行输入框输入操作。
-```shell  
-hdc shell uitest uiInput inputText 100 100 hello
-```
-
-示例代码12：执行返回主页操作。
-```shell  
-hdc shell uitest uiInput keyEvent Home
-```
-示例代码13：执行返回上一步操作。
-```shell  
-hdc shell uitest uiInput keyEvent Back
-```
-示例代码14：执行组合键粘贴操作。
-```shell  
-hdc shell uitest uiInput keyEvent 2072 2038
-```
-
-6、 shell命令方式拉起uitest测试进程
-
-```shell
-hdc shell uitest start-daemon singleness
-```
-
-7、 shell命令方式打印uitest版本信息
-
-```shell
-hdc shell uitest --version
-```
-
-### 版本信息
+## 版本信息
 
 | 版本号  | 功能说明                                                     |
 | :------ | :----------------------------------------------------------- |
