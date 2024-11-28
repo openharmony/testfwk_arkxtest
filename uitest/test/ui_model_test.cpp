@@ -39,13 +39,13 @@ TEST(REGEXPTest, testRegex)
     ASSERT_EQ(true, matchResultTxt);
     
     // use regex to match widget, use ValueMatchPattern::REG_EXP_ICASE
-    auto matcherTxtIcase = WidgetMatchModel(UiAttr::TEXT, "^testbutton\\w{2,4}$", ValueMatchPattern::REG_EXP_ICASE);
+    auto matcherTxtIcase = WidgetMatchModel(UiAttr::TEXT, "^Check\\w{2,5}$", ValueMatchPattern::REG_EXP_ICASE);
     bool matchResultTxtIcase = widget.MatchAttr(matcherTxtIcase);
     ASSERT_EQ(true, matchResultTxtIcase);
 
-    auto matcherTxtIcase = WidgetMatchModel(UiAttr::TEXT, "^testbutton\\w{2,4}$", ValueMatchPattern::REG_EXP);
+    auto matcherTxtIcase = WidgetMatchModel(UiAttr::TEXT, "^Check\\w{2,5}$", ValueMatchPattern::REG_EXP);
     bool matchResultTxtIcase = widget.MatchAttr(matcherTxtIcase);
-    ASSERT_EQ(false, matchResultTxtIcase);
+    ASSERT_EQ(false, matchResultTxtFalse);
 
     auto matcherTxtIcase = WidgetMatchModel(UiAttr::HINT, "^btnTest\\w{2,3}$", ValueMatchPattern::REG_EXP);
     bool matchResultTxtIcase = widget.MatchAttr(matcherTxtIcase);
