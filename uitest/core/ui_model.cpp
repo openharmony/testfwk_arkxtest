@@ -90,14 +90,11 @@ namespace OHOS::uitest {
         char *patternValue = const_cast<char*>(value.data());
         char *patternReg = const_cast<char*>(attrValue.data());
         if ((rc = regcomp(&preg, patternValue, flags)) != 0) {
-            regerror(rc, &preg, errorBuffer, errorLength);
-            LOG_E("Regcomp error: %{public}s", errorBuffer);
             return false;
         }
         rc = regexec(&preg, patternReg, 0, nullptr, 0);
         if (rc != 0) {
             regerror(rc, &preg, errorBuffer, errorLength);
-            LOG_E("Regexec error: %{public}s", errorBuffer);
             return false;
         } else {
             return rc == 0;
