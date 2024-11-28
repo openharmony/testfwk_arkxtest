@@ -1691,6 +1691,7 @@ hdc shell uitest uiRecord read
 | drag        | 模拟拖拽操作                                  | from_x (必选参数,拖拽起点x坐标)<br/> from_y(必选参数,拖拽起点y坐标)<br/> to_x(必选参数,拖拽终点x坐标)<br/> to_y(必选参数,拖拽终点y坐标)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600, 单位: px/s))                                               | hdc shell uitest uiInput drag from_x from_y to_x to_y swipeVelocityPps_             |
 | dircFling   | 模拟指定方向滑动操作                              | direction (可选参数,滑动方向,可选值: [0,1,2,3], 滑动方向: [左,右,上,下],默认值: 0)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600, 单位: px/s)<br/> stepLength(可选参数,滑动步长,默认值:滑动距离/50, 单位: px)                                    | hdc shell uitest uiInput dircFling direction swipeVelocityPps_ stepLength                                       |
 | inputText        | 模拟输入框输入文本操作                             | point_x (必选参数,输入框x坐标点)<br/> point_y (必选参数,输入框y坐标点)<br/> input(输入文本)                                                                                                                                                   | hdc shell uitest uiInput inputText  point_x point_y text                                 |
+| text  | 在当前获焦点，模拟输入框输入文本操作                           | input(输入文本)                                                                                                          | hdc shell uitest uiInput text text                                  |
 | keyEvent    | 模拟实体按键事件(如:键盘,电源键,返回上一级,返回桌面等),以及组合按键操作 | keyID (必选参数,实体按键对应ID)<br/> keyID2 (可选参数,实体按键对应ID)                                                                                                                                                                     | hdc shell uitest uiInput keyEvent keyID                                             |
 
 示例代码1：执行点击事件。
@@ -1734,21 +1735,20 @@ hdc shell uitest uiInput dircFling 2
 hdc shell uitest uiInput dircFling 3
 ```
 
-示例代码11：执行输入框输入操作。
-```shell  
-hdc shell uitest uiInput inputText 100 100 hello
-```
+示例代码11：指定坐标点，执行输入框输入操作。
 
-示例代码12：执行返回主页操作。
-```shell  
+hdc shell uitest uiInput inputText 100 100 hello
+示例代码12：不指定坐标点，在当前获焦处执行输入框输入操作。
+
+hdc shell uitest uiInput text text
+示例代码13：执行返回主页操作。
+
 hdc shell uitest uiInput keyEvent Home
-```
-示例代码13：执行返回上一步操作。
-```shell  
+示例代码14：执行返回上一步操作。
+
 hdc shell uitest uiInput keyEvent Back
-```
-示例代码14：执行组合键粘贴操作。
-```shell  
+示例代码15：执行组合键粘贴操作。
+
 hdc shell uitest uiInput keyEvent 2072 2038
 ```
 
@@ -1787,3 +1787,4 @@ hdc shell uitest --version
 | 5.0.1.0 | 1、优化swipe操作。<br />2、inputText输入中文的实现方式改为设置剪贴板数据后，长按控件点击粘贴。 |
 | 5.0.1.1 | 1、节点新增以下属性，背景色：backgroundColor，背景图片：backgroundImage，透明度：opacity，模糊度：blur，事件是否透传：hitTestBehavior 。 |
 | 5.0.1.2 | 1、通过test Sa发布公共事件。<br />2、节点新增clip属性，判断其子节点是否进行切割。<br />3、过滤机制调整，节点只与其clip为true的父节点进行切换计算可见区域，可见区域宽/高小于等于0记为不可见。<br />4、调用inputText时，被输入字符串超过200个字符时，实现方式调整为设置剪贴板数据后，植入ctrl + v。 |
+|5.1.1.1|1、控件支持正则表达式方式进行查找 2、获取控件属性中的提示文本信息 3、支持横向滑动查找操作 4、支持不指定坐标模拟输入文本的shell命令 hdc shell uitest uiInput text "xxxx"|
