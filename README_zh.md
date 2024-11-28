@@ -1643,125 +1643,233 @@ hdc shell chmod +x /system/bin/uitest
 
 ### 命令行使用说明
 
-  开发者可以输入如下命令来实现对应功能。
+在开发过程中，若需要快速进行截屏、 录屏、注入UI模拟操作、获取控件树等操作，可以使用shell命令，更方便完成相应测试。
 
-1、打印使用帮助
+> **说明：**
+>
+> 使用cmd的方式，需要配置好hdc相关的环境变量。
 
-```shell
-hdc shell uitest help
-```
+**命令列表**
+| 命令            | 配置参数   |描述                              |
+|---------------|---------------------------------|---------------------------------|
+| help          | help|  显示uitest工具能够支持的命令信息。            |
+| screenCap       |[-p] | 截屏。非必填。<br>指定存储路径和文件名, 只支持存放在/data/local/tmp/下。<br>默认存储路径：/data/local/tmp，文件名：时间戳 + .png。 |
+| dumpLayout      |[-p] \<-i \| -a>|支持在daemon运行时执行获取控件树。<br> **-p** ：指定存储路径和文件名, 只支持存放在/data/local/tmp/下。默认存储路径：/data/local/tmp，文件名：时间戳 + .json。<br> **-i** ：不过滤不可见控件,也不做窗口合并。<br> **-a** ：保存 BackgroundColor、 Content、FontColor、FontSize、extraAttrs 属性数据。<br> **默认** ：不保存上述属性数据。<br> **-a和-i** 不可同时使用。 |
+| uiRecord        | uiRecord \<record \| read>|录制Ui操作。  <br> **record** ：开始录制，将当前界面操作记录到/data/local/tmp/record.csv，结束录制操作使用Ctrl+C结束录制。  <br> **read** ：读取并且打印录制数据。<br>各参数代表的含义请参考[用户录制操作](#用户录制操作)。|
+| uiInput       | \<help \| click \| doubleClick \| longClick \| fling \| swipe \| drag \| dircFling \| inputText \| text \| keyEvent>| 注入UI模拟操作。<br>各参数代表的含义请参考[注入ui模拟操作](#注入ui模拟操作)。                       |
+| --version | --version|获取当前工具版本信息。                     |
+| start-daemon|start-daemon| 拉起uitest测试进程。 |
 
-2、截屏
+#### 截图使用示例
 
-```
+```bash
+# 存储路径：/data/local/tmp，文件名：时间戳 + .png。
 hdc shell uitest screenCap
-// 默认存储路径：/data/local/tmp，文件名：时间戳 + .png。
+# 指定存储路径和文件名,存放在/data/local/tmp/下。
 hdc shell uitest screenCap -p /data/local/tmp/1.png
-// 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。
 ```
 
-3、获取设备当前Ui控件树信息
+#### 获取控件树使用示例
 
-```shell
-hdc shell uitest dumpLayout
-// 默认存储路径：/data/local/tmp，文件名：时间戳 + .json。
-hdc shell uitest screenCap -p /data/local/tmp/1.json
-// 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。
+```bash
+hdc shell uitest dumpLayout -p /data/local/tmp/1.json
 ```
 
-4、录制Ui操作
+#### 用户录制操作
+>**说明**
+>
+> 录制过程中，需等待当前操作的识别结果在命令行输出后，再进行下一步操作。
 
-```shell
+```bash
+# 将当前界面操作记录到/data/local/tmp/record.csv，结束录制操作使用Ctrl+C结束录制。
 hdc shell uitest uiRecord record
-// 将当前执行的Ui操作记录到/data/local/tmp/layout/record.csv
+# 读取并打印录制数据。
 hdc shell uitest uiRecord read
-// 将记录的Ui操作打印出来
 ```
 
-5、 shell命令方式注入UI模拟操作
-> 支持操作类型：点击 双击 长按 慢滑 快滑 拖拽 输入文字 KeyEvent。
+以下举例为：record数据中包含的字段及字段含义，仅供参考
 
-| 配置参数名       | 配置参数含义                                  | 配置参数取值                                                                                                                                                                                                                | 示例                                                                                  |
-|-------------|-----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| click       | 模拟单击操作                                  | point_x (必选参数,点击x坐标点)<br/> point_y (必选参数,点击y坐标点)                                                                                                                                                                      | hdc shell uitest uiInput click point_x point_y                                      |
-| doubleClick | 模拟双击操作                                  | point_x (必选参数,双击x坐标点)<br/> point_y (必选参数,双击y坐标点)                                                                                                                                                                      | hdc shell uitest uiInput doubleClick point_x point_y                                |
-| longClick   | 模拟长按操作                                  | point_x (必选参数,长按x坐标点)<br/> point_y (必选参数,长按y坐标点)                                                                                                                                                                      | hdc shell uitest uiInput longClick point_x point_y                                  |
-| fling       | 模拟快滑操作                                  | from_x (必选参数,滑动起点x坐标)<br/> from_y(必选参数,滑动起点y坐标)<br/> to_x(必选参数,滑动终点x坐标)<br/> to_y(必选参数,滑动终点y坐标)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600, 单位: px/s)<br/> stepLength(可选参数,滑动步长,默认值:滑动距离/50, 单位: px) | hdc shell uitest uiInput fling from_x from_y to_x to_y swipeVelocityPps_ stepLength |
-| swipe       | 模拟慢滑操作                                  | from_x (必选参数,滑动起点x坐标)<br/> from_y(必选参数,滑动起点y坐标)<br/> to_x(必选参数,滑动终点x坐标)<br/> to_y(必选参数,滑动终点y坐标)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600, 单位: px/s))                                               | hdc shell uitest uiInput swipe from_x from_y to_x to_y swipeVelocityPps_            |
-| drag        | 模拟拖拽操作                                  | from_x (必选参数,拖拽起点x坐标)<br/> from_y(必选参数,拖拽起点y坐标)<br/> to_x(必选参数,拖拽终点x坐标)<br/> to_y(必选参数,拖拽终点y坐标)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600, 单位: px/s))                                               | hdc shell uitest uiInput drag from_x from_y to_x to_y swipeVelocityPps_             |
-| dircFling   | 模拟指定方向滑动操作                              | direction (可选参数,滑动方向,可选值: [0,1,2,3], 滑动方向: [左,右,上,下],默认值: 0)<br/> swipeVelocityPps_ (可选参数,滑动速度,取值范围: 200-40000, 默认值: 600, 单位: px/s)<br/> stepLength(可选参数,滑动步长,默认值:滑动距离/50, 单位: px)                                    | hdc shell uitest uiInput dircFling direction swipeVelocityPps_ stepLength                                       |
-| inputText        | 模拟输入框输入文本操作                             | point_x (必选参数,输入框x坐标点)<br/> point_y (必选参数,输入框y坐标点)<br/> input(输入文本)                                                                                                                                                   | hdc shell uitest uiInput inputText  point_x point_y text                                 |
-| text  | 在当前获焦点，模拟输入框输入文本操作                           | input(输入文本)                                                                                                          | hdc shell uitest uiInput text text                                  |
-| keyEvent    | 模拟实体按键事件(如:键盘,电源键,返回上一级,返回桌面等),以及组合按键操作 | keyID (必选参数,实体按键对应ID)<br/> keyID2 (可选参数,实体按键对应ID)                                                                                                                                                                     | hdc shell uitest uiInput keyEvent keyID                                             |
+ ```
+ {
+	 "ABILITY": "com.ohos.launcher.MainAbility", // 前台应用界面
+	 "BUNDLE": "com.ohos.launcher", // 操作应用
+	 "CENTER_X": "", // 预留字段,暂未使用
+	 "CENTER_Y": "", // 预留字段,暂未使用
+	 "EVENT_TYPE": "pointer", //  
+	 "LENGTH": "0", // 总体步长
+	 "OP_TYPE": "click", //事件类型，当前支持点击、双击、长按、拖拽、滑动、抛滑动作录制
+	 "VELO": "0.000000", // 离手速度
+	 "direction.X": "0.000000",// 总体移动X方向
+	 "direction.Y": "0.000000", // 总体移动Y方向
+	 "duration": 33885000.0, // 手势操作持续时间
+	 "fingerList": [{
+		 "LENGTH": "0", // 总体步长
+		 "MAX_VEL": "40000", // 最大速度
+		 "VELO": "0.000000", // 离手速度
+		 "W1_BOUNDS": "{"bottom":361,"left":37,"right":118,"top":280}", // 起点控件bounds
+		 "W1_HIER": "ROOT,3,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0", // 起点控件hierarchy
+		 "W1_ID": "", // 起点控件id
+		 "W1_Text": "", // 起点控件text
+		 "W1_Type": "Image", // 起点控件类型
+		 "W2_BOUNDS": "{"bottom":361,"left":37,"right":118,"top":280}", // 终点控件bounds
+		 "W2_HIER": "ROOT,3,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0", // 终点控件hierarchy
+		 "W2_ID": "", // 终点控件id
+		 "W2_Text": "", // 终点控件text
+		 "W2_Type": "Image", // 终点控件类型
+		 "X2_POSI": "47", // 终点X
+		 "X_POSI": "47", // 起点X
+		 "Y2_POSI": "301", // 终点Y
+		 "Y_POSI": "301", // 起点Y
+		 "direction.X": "0.000000", // x方向移动量
+		 "direction.Y": "0.000000" // Y方向移动量
+	 }],
+	 "fingerNumber": "1" //手指数量
+ }
+ ```
 
-示例代码1：执行点击事件。
-```shell  
- hdc shell uitest uiInput click 100 100
+#### 注入UI模拟操作
+
+| 命令   | 必填 | 描述              | 
+|------|------|-----------------|
+| help   | 是    | uiInput命令相关帮助信息。 |
+| click   | 是    | 模拟单击操作。      | 
+| doubleClick   | 是    | 模拟双击操作。      | 
+| longClick   | 是    | 模拟长按操作。     | 
+| fling   | 是    | 模拟快滑操作。   | 
+| swipe   | 是    | 模拟慢滑操作。     | 
+| drag   | 是    | 模拟拖拽操作。     | 
+| dircFling   | 是    | 模拟指定方向滑动操作。     |
+| inputText   | 是    | 指定坐标点，模拟输入框输入文本操作。     |
+| text | 是    | 无需指定坐标点，在当前获焦处，模拟输入框输入文本操作。     |
+| keyEvent   | 是    | 模拟实体按键事件(如：键盘,电源键,返回上一级,返回桌面等)，以及组合按键操作。     | 
+
+
+##### uiInput click/doubleClick/longClick使用示例
+
+| 配置参数    | 必填 | 描述            |
+|---------|------|-----------------|
+| point_x | 是      | 点击x坐标点。 |
+| point_y | 是       | 点击y坐标点。 |
+
+```shell
+# 执行单击事件。
+hdc shell uitest uiInput click 100 100
+
+# 执行双击事件。
+hdc shell uitest uiInput doubleClick 100 100
+
+# 执行长按事件。
+hdc shell uitest uiInput longClick 100 100
 ```
-示例代码2：执行双击事件。
+
+##### uiInput fling使用示例
+
+| 配置参数  | 必填             | 描述               |      
+|------|------------------|-----------------|
+| from_x   | 是                | 滑动起点x坐标。 | 
+| from_y   | 是                | 滑动起点y坐标。 | 
+| to_x   | 是                | 滑动终点x坐标。 |
+| to_y   | 是                | 滑动终点y坐标。 |
+| swipeVelocityPps_   | 否      | 滑动速度，单位: (px/s)，取值范围：200-40000。<br> 默认值: 600。 | 
+| stepLength_   | 否 | 滑动步长。默认值: 滑动距离/50。<br>  **为实现更好的模拟效果，推荐参数缺省/使用默认值。**  | 
+
+
 ```shell  
- hdc shell uitest uiInput doubleClick 100 100
-```
-示例代码3：执行长按事件。
-```shell  
- hdc shell uitest uiInput longClick 100 100
-```
-示例代码4：执行快滑操作。
-```shell  
+# 执行快滑操作，stepLength_缺省。
 hdc shell uitest uiInput fling 10 10 200 200 500 
-```
-示例代码5：执行慢滑操作。
+``` 
+
+##### uiInput swipe/drag使用示例
+
+| 配置参数  | 必填             | 描述               |      
+|------|------------------|-----------------|
+| from_x   | 是                | 滑动起点x坐标。 | 
+| from_y   | 是                | 滑动起点y坐标。 | 
+| to_x   | 是                | 滑动终点x坐标。 |
+| to_y   | 是                | 滑动终点y坐标。 |
+| swipeVelocityPps_   | 否      | 滑动速度，单位: (px/s)，取值范围：200-40000。<br> 默认值: 600。 | 
+
 ```shell  
-hdc shell uitest uiInput swipe 10 10 200 200 500 
-```
-示例代码6：执行拖拽操作。
-```shell  
+# 执行慢滑操作。
+hdc shell uitest uiInput swipe 10 10 200 200 500
+
+# 执行拖拽操作。 
 hdc shell uitest uiInput drag 10 10 100 100 500 
 ```
-示例代码7：执行向左滑动操作。
+
+##### uiInput dircFling使用示例
+
+| 配置参数             | 必填       | 描述 |
+|-------------------|-------------|----------|
+| direction         | 否 | 滑动方向，取值范围：[0,1,2,3]，默认值为0。<br> 0代表向左滑动，1代表向右滑动，2代表向上滑动，3代表向下滑动。    | 
+| swipeVelocityPps_ | 否| 滑动速度，单位: (px/s)，取值范围：200-40000。<br> 默认值: 600。    | 
+| stepLength        | 否        | 滑动步长。<br> 默认值: 滑动距离/50。为更好的模拟效果，推荐参数缺省/使用默认值。 |
+
 ```shell  
+# 执行左滑操作
 hdc shell uitest uiInput dircFling 0 500
-```
-示例代码8：执行向右滑动操作。
-```shell  
+# 执行向右滑动操作
 hdc shell uitest uiInput dircFling 1 600
-```
-示例代码9：执行向上滑动操作。
-```shell  
+# 执行向上滑动操作。
 hdc shell uitest uiInput dircFling 2 
-```
-示例代码10：执行向下滑动操作。
-```shell  
+# 执行向下滑动操作。
 hdc shell uitest uiInput dircFling 3
 ```
 
-示例代码11：指定坐标点，执行输入框输入操作。
+##### uiInput inputText使用示例
 
-hdc shell uitest uiInput inputText 100 100 hello
-示例代码12：不指定坐标点，在当前获焦处执行输入框输入操作。
+| 配置参数             | 必填       | 描述 |       
+|------|------------------|----------|
+| point_x   | 是                | 输入框x坐标点。 | 
+| point_y   | 是                | 输入框y坐标点。 |
+| text   | 是                | 输入文本内容。  |
 
-hdc shell uitest uiInput text text
-示例代码13：执行返回主页操作。
+```shell  
+# 执行输入框输入操作。
+hdc shell uitest uiInput inputText 100 100 hello 
+```
 
+##### uiInput text使用示例
+
+| 配置参数             | 必填       | 描述 |       
+|------|------------------|----------|
+| text   | 是                | 输入文本内容。  |
+
+```shell  
+# 无需输入坐标点，在当前获焦处，执行输入框输入操作。若当前获焦处不支持文本输入，则无实际效果。
+hdc shell uitest uiInput text hello
+```
+
+##### uiInput keyEvent使用示例
+
+| 配置参数             | 必填       | 描述 |                
+|------|------|----------|
+| keyID1   | 是    | 实体按键对应ID，取值范围：KeyCode/Back/Home/Power。<br>当取Back/Home/Power时，不支持输入组合键。 | 
+| keyID2    | 否    | 实体按键对应ID。 |
+| keyID3    | 否    | 实体按键对应ID。 |
+
+>**说明**
+>
+> 最多支持传入是三个键值，<!--RP3-->键值的具体取值请参考[KeyCode](../reference/apis-input-kit/js-apis-keycode.md)<!--RP3End-->。
+
+```shell  
+# 返回主页。
 hdc shell uitest uiInput keyEvent Home
-示例代码14：执行返回上一步操作。
-
+# 返回。
 hdc shell uitest uiInput keyEvent Back
-示例代码15：执行组合键粘贴操作。
-
+# 组合键粘贴。
 hdc shell uitest uiInput keyEvent 2072 2038
 ```
 
-6、 shell命令方式拉起uitest测试进程
+##### 获取版本信息
 
-```shell
-hdc shell uitest start-daemon singleness
-```
-
-7、 shell命令方式打印uitest版本信息
-
-```shell
+```bash
 hdc shell uitest --version
+```
+##### 拉起uitest测试进程
+
+```shell  
+hdc shell uitest start-daemon
 ```
 
 ### 版本信息
