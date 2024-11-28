@@ -1466,7 +1466,7 @@ export default function assertComponentExistTest() {
 Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹配查找要操作或检视的目标控件。`On`提供的API能力具有以下特点：
 
 - 支持匹配单属性和匹配多属性组合，例如同时指定目标控件text和id。
-- 控件属性支持多种匹配模式(等于，包含，`STARTS_WITH`，`ENDS_WITH`)。
+- 控件属性支持多种匹配模式(等于，包含，`STARTS_WITH`，`ENDS_WITH`，`REG_EXP`，`REG_EXP_ICASE`)。
 - 支持相对定位控件，可通过`isBefore`和`isAfter`等API限定邻近控件特征进行辅助定位。
 
 | No. | API                                | 功能描述                       |
@@ -1484,8 +1484,12 @@ Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹�
 | 11  | checkable(c:bool):On               | 指定控件可选择状态。                 |
 | 12  | isBefore(b:On):On                  | **相对定位**，限定目标控件位于指定特征控件之前。 |
 | 13  | isAfter(b:On):On                   | **相对定位**，限定目标控件位于指定特征控件之后。 |
+| 14   | id(i:string，p?:MatchPattern:On                    | 指定控件id，可指定匹配模式。                    |
+| 15   | hint(h:string, p?:MatchPattern):On | 指定控件提示文本，可指定匹配模式。            |
+| 16   | type(t:string，p?:MatchPattern):On                 | 指定控件类型，可指定匹配模式。                   |
+| 17   | description(d:string，p?:MatchPattern):On                 | 指定控件描述文本信息，可指定匹配模式。                   |
 
-其中，`text`属性支持{`MatchPattern.EQUALS`，`MatchPattern.CONTAINS`，`MatchPattern.STARTS_WITH`，`MatchPattern.ENDS_WITH`}四种匹配模式，缺省使用`MatchPattern.EQUALS`模式。
+其中，`text`,`id`,`type`,`hint`,`description`属性支持{`MatchPattern.EQUALS`，`MatchPattern.CONTAINS`，`MatchPattern.STARTS_WITH`，`MatchPattern.ENDS_WITH`，`MatchPattern.REG_EXP`，`MatchPattern.REG_EXP_ICASE`}六种匹配模式，缺省使用`MatchPattern.EQUALS`模式。
 
 `On`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md#on9)。
 
@@ -1542,6 +1546,7 @@ let switch: Component = await driver.findComponent(ON.id('Id_switch').isAfter(ON
 | 7   | getId():Promise<number>            | 获取控件id。                    |
 | 8   | getType():Promise<string>          | 获取控件类型。                    |
 | 9   | isEnabled():Promise<bool>          | 获取控件使能状态。                  |
+| 10   | scrollSearch(s:On, vertical:bool, offset?:number):Promise<Component>   | 在该控件上滑动查找目标控件(适用于List等控件),支持横向查找，支持指定空间非活动区域。 |
 
 `Component`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md#component9)。
 
@@ -1861,12 +1866,12 @@ hdc shell uitest uiInput keyEvent Back
 hdc shell uitest uiInput keyEvent 2072 2038
 ```
 
-##### 获取版本信息
+#### 获取版本信息
 
 ```bash
 hdc shell uitest --version
 ```
-##### 拉起uitest测试进程
+#### 拉起uitest测试进程
 
 ```shell  
 hdc shell uitest start-daemon
