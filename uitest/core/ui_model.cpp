@@ -89,10 +89,10 @@ namespace OHOS::uitest {
         if ((regcomp(&preg, patternValue, flags)) != 0) {
             return false;
         }
-        if (regexec(&preg, patternReg, 0, nullptr, 0) == 0) {
-            return true;
+        if (regexec(&preg, patternReg, 0, nullptr, 0) != 0) {
+            return false;
         }
-        return false;
+        return true;
     }
     
     bool Widget::MatchAttr(const WidgetMatchModel& matchModel) const
