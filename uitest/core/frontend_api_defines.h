@@ -433,7 +433,7 @@ namespace OHOS::uitest {
         {"Component.scrollToBottom", "(int?):void", false, false},
         {"Component.inputText", "(string):void", false, false},
         {"Component.clearText", "():void", false, false},
-        {"Component.scrollSearch", "(On, bool?, int?):Component", false, false},
+        {"Component.scrollSearch", "(On):Component", false, false},
         {"Component.dragTo", "(Component):void", false, false},
         {"Component.pinchOut", "(float):void", false, false},
         {"Component.pinchIn", "(float):void", false, false},

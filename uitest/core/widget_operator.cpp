@@ -23,8 +23,7 @@ namespace OHOS::uitest {
 
     static bool IsScrolledToBorder(int oriDis,
                                    const std::vector<unique_ptr<Widget>> &allWidgets,
-                                   const unique_ptr<Widget> &anchorLeafWidget,
-                                   bool vertical)
+                                   const unique_ptr<Widget> &anchorLeafWidget)
     {
         if (oriDis < 0) {
             return false;
@@ -33,13 +32,8 @@ namespace OHOS::uitest {
         for (; index < allWidgets.size(); ++index) {
             if (allWidgets.at(index)->GetAttr(UiAttr::ACCESSIBILITY_ID) ==
                 anchorLeafWidget->GetAttr(UiAttr::ACCESSIBILITY_ID)) {
-                if (vertical) {
-                    return std::abs(allWidgets.at(index)->GetBounds().top_ - anchorLeafWidget->GetBounds().top_) <
-                           oriDis * SCROLL_MOVE_FACTOR;
-                } else {
-                    return std::abs(allWidgets.at(index)->GetBounds().left_ - anchorLeafWidget->GetBounds().left_) <
-                           oriDis * SCROLL_MOVE_FACTOR;
-                }
+                return std::abs(allWidgets.at(index)->GetBounds().top_ - anchorLeafWidget->GetBounds().top_) <
+                       oriDis * SCROLL_MOVE_FACTOR;
             }
         }
         return false;
@@ -122,10 +116,10 @@ namespace OHOS::uitest {
                 LOG_I("There is no child when ScrollToEnd");
                 return;
             }
-            if (toTop && IsScrolledToBorder(turnDis, widgetsInScroll, lastTopLeafWidget, true)) {
+            if (toTop && IsScrolledToBorder(turnDis, widgetsInScroll, lastTopLeafWidget)) {
                 return;
             }
-            if (!toTop && IsScrolledToBorder(turnDis, widgetsInScroll, lastBottomLeafWidget, true)) {
+            if (!toTop && IsScrolledToBorder(turnDis, widgetsInScroll, lastBottomLeafWidget)) {
                 return;
             }
             if (toTop) {
@@ -139,7 +133,7 @@ namespace OHOS::uitest {
             } else {
                 lastBottomLeafWidget = std::move(widgetsInScroll.at(widgetsInScroll.size() - 1));
             }
-            TurnPage(toTop, turnDis, true, error);
+            TurnPage(toTop, turnDis, error);
         }
     }
 
@@ -207,8 +201,7 @@ namespace OHOS::uitest {
         driver_.InputText(text, error);
     }
 
-    unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector,
-                                                        bool vertical, ApiCallErr &error) const
+    unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const
     {
         bool scrollingUp = true;
         int turnDis = -1;
@@ -234,9 +227,9 @@ namespace OHOS::uitest {
                 LOG_I("There is no child when Find Widget's subwidget");
                 return nullptr;
             }
-            if (scrollingUp && IsScrolledToBorder(turnDis, widgetsInScroll, lastTopLeafWidget, vertical)) {
+            if (scrollingUp && IsScrolledToBorder(turnDis, widgetsInScroll, lastTopLeafWidget)) {
                 scrollingUp = false;
-            } else if (IsScrolledToBorder(turnDis, widgetsInScroll, lastBottomLeafWidget, vertical)) {
+            } else if (IsScrolledToBorder(turnDis, widgetsInScroll, lastBottomLeafWidget)) {
                 LOG_W("Scroll search widget failed: %{public}s", selector.Describe().data());
                 return nullptr;
             }
@@ -251,64 +244,32 @@ namespace OHOS::uitest {
             } else {
                 lastBottomLeafWidget = std::move(widgetsInScroll.at(widgetsInScroll.size() - 1));
             }
-            TurnPage(scrollingUp, turnDis, vertical, error);
+            TurnPage(scrollingUp, turnDis, error);
         }
     }
 
-    bool WidgetOperator::CheckDeadZone(bool vertical, ApiCallErr &error)
+    void WidgetOperator::TurnPage(bool toTop, int &oriDistance, ApiCallErr &error) const
     {
         auto bounds = widget_.GetBounds();
-        int maxDeadZone;
-        if (vertical) {
-            maxDeadZone = (bounds.bottom_ - bounds.top_) / TWO;
-        } else {
-            maxDeadZone = (bounds.right_ - bounds.left_) / TWO;
-        }
-        if (options_.scrollWidgetDeadZone_ >= maxDeadZone) {
-            error = ApiCallErr(ERR_INVALID_INPUT, "The offset is too large and exceeds the widget size.");
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    void WidgetOperator::TurnPage(bool toTop, int &oriDistance, bool vertical, ApiCallErr &error) const
-    {
-        auto bounds = widget_.GetBounds();
-        Point topPoint, bottomPoint;
-        if (vertical) {
-            topPoint = Point(bounds.GetCenterX(), bounds.top_);
-            bottomPoint = Point(bounds.GetCenterX(), bounds.bottom_);
-        } else {
-            topPoint = Point(bounds.left_, bounds.GetCenterY());
-            bottomPoint = Point(bounds.right_, bounds.GetCenterY());
-        }
-        if (vertical && options_.scrollWidgetDeadZone_ > 0) {
+        Point topPoint(bounds.GetCenterX(), bounds.top_);
+        Point bottomPoint(bounds.GetCenterX(), bounds.bottom_);
+        if (options_.scrollWidgetDeadZone_ > 0) {
             topPoint.py_ += options_.scrollWidgetDeadZone_;
             bottomPoint.py_ -= options_.scrollWidgetDeadZone_;
-        } else if (!vertical && options_.scrollWidgetDeadZone_ > 0) {
-            topPoint.px_ += options_.scrollWidgetDeadZone_;
-            bottomPoint.px_ -= options_.scrollWidgetDeadZone_;
         }
         auto screenSize = driver_.GetDisplaySize(error);
-        auto gestureZone = (vertical) ? screenSize.py_ / 20 : screenSize.px_ / 20;
-        if (vertical && screenSize.py_ - bounds.bottom_ <= gestureZone) {
+        auto gestureZone = screenSize.py_ / 20;
+        if (screenSize.py_ - bounds.bottom_ <= gestureZone) {
             bottomPoint.py_ = bottomPoint.py_ - gestureZone;
-        } else if (!vertical && screenSize.px_ - bounds.right_ <= gestureZone) {
-            bottomPoint.px_ = bottomPoint.px_ - gestureZone;
         }
         auto touch = (toTop) ? GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint)
                              : GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
         driver_.PerformTouch(touch, options_, error);
-        oriDistance = (vertical) ? std::abs(topPoint.py_ - bottomPoint.py_) : std::abs(topPoint.px_ - bottomPoint.px_);
-        if (vertical && toTop) {
-            LOG_I("turn page vertical from %{public}d to %{public}d", topPoint.py_, bottomPoint.py_);
-        } else if (vertical) {
-            LOG_I("turn page vertical from %{public}d to %{public}d", bottomPoint.py_, topPoint.py_);
-        } else if (toTop) {
-            LOG_I("turn page horizontal from %{public}d to %{public}d", topPoint.px_, bottomPoint.px_);
+        oriDistance = std::abs(topPoint.py_ - bottomPoint.py_);
+        if (toTop) {
+            LOG_I("turn page from %{public}d to %{public}d", topPoint.py_, bottomPoint.py_);
         } else {
-            LOG_I("turn page horizontal from %{public}d to %{public}d", bottomPoint.px_, topPoint.px_);
+            LOG_I("turn page from %{public}d to %{public}d", bottomPoint.py_, topPoint.py_);
         }
     }
 } // namespace OHOS::uitest

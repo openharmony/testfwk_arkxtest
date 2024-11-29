@@ -1554,7 +1554,6 @@ let switch: Component = await driver.findComponent(ON.id('Id_switch').isAfter(ON
 | 7   | getId():Promise<number>            | 获取控件id。                    |
 | 8   | getType():Promise<string>          | 获取控件类型。                    |
 | 9   | isEnabled():Promise<bool>          | 获取控件使能状态。                  |
-| 10   | scrollSearch(s:On, vertical:bool, offset?:number):Promise<Component>   | 在该控件上滑动查找目标控件(适用于List等控件),支持横向查找，支持指定空间非活动区域。 |
 
 `Component`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md#component9)。
 
