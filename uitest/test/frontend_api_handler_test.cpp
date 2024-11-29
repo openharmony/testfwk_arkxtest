@@ -430,12 +430,6 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks2)
     server.Call(call0, reply0);
     ASSERT_EQ(USAGE_ERROR, reply0.exception_.code_);
     ASSERT_TRUE(reply0.exception_.message_.find("Illegal argument count") != string::npos);
-    // call with argument missing
-    auto call0 = ApiCallInfo {.apiId_ = "On.id", .callerObjRef_ = string(REF_SEED_BY)};
-    auto reply0 = ApiReplyInfo();
-    server.Call(call0, reply0);
-    ASSERT_EQ(USAGE_ERROR, reply0.exception_.code_);
-    ASSERT_TRUE(reply0.exception_.message_.find("Illegal argument count") != string::npos);
     // call with argument redundant
     auto call1 = ApiCallInfo {.apiId_ = "By.type", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply1 = ApiReplyInfo();
@@ -501,6 +495,12 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks3)
 TEST_F(FrontendApiHandlerTest, parameterPreChecks4)
 {
     const auto& server =  FrontendApiServer::Get();
+    // call with argument missing
+    auto call0 = ApiCallInfo {.apiId_ = "On.id", .callerObjRef_ = string(REF_SEED_BY)};
+    auto reply0 = ApiReplyInfo();
+    server.Call(call0, reply0);
+    ASSERT_EQ(USAGE_ERROR, reply0.exception_.code_);
+    ASSERT_TRUE(reply0.exception_.message_.find("Illegal argument count") != string::npos);
     // call with argument redundant
     auto call1 = ApiCallInfo {.apiId_ = "On.id", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply1 = ApiReplyInfo();
