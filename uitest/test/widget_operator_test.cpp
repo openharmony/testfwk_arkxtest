@@ -37,133 +37,133 @@ protected:
     void ResetWindowAndNode(Window &w, std::vector<MockAccessibilityElementInfo> &eles)
     {
         std::string domJson = R"(
-        {
-            "attributes":{
-                "windowId":"12",
-                "componentType":"List",
-                "accessibilityId":"1",
-                "content":"Text List",
-                "rectInScreen":"0,1000,0,1200"
-            },
-            "children":[
-                {
-                     "attributes":{
-                        "windowId":"12",
-                        "accessibilityId":"2",
-                        "componentType":"Scroll",
-                        "content":"Text List Scroll",
-                        "rectInScreen":"0,600,0,1000"
-                     },
-                     "children":[
-                        {
-                            "attributes":{
-                                "windowId":"12",
-                                "accessibilityId":"3",
-                                "componentType":"Image",
-                                "content":"Button",
-                                "rectInScreen":"30,40,10,20"
-                            },
-                            "children":[
-                                {
-                                    "attributes":{
-                                        "windowId":"12",
-                                        "accessibilityId":"4",
-                                        "componentType":"Text",
-                                        "content":"Text One",
-                                        "rectInScreen":"30,40,10,20"
-                                    },
-                                    "children":[]
-                                }
-                            ]
+            {
+                "attributes":{
+                    "windowId":"12",
+                    "componentType":"List",
+                    "accessibilityId":"1",
+                    "content":"Text List",
+                    "rectInScreen":"0,1000,0,1200"
+                },
+                "children":[
+                    {
+                        "attributes":{
+                            "windowId":"12",
+                            "accessibilityId":"2",
+                            "componentType":"Scroll",
+                            "content":"Text List Scroll",
+                            "rectInScreen":"0,600,0,1000"
                         },
-                        {
-                            "attributes":{
-                                "windowId":"12",
-                                "componentType":"List",
-                                "accessibilityId":"5",
-                                "content":"Text List12",
-                                "rectInScreen":"40,60,10,20"
-                            },
-                            "children":[
-                                {
-                                    "attributes":{
-                                        "windowId":"12",
-                                        "accessibilityId":"6",
-                                        "componentType":"Text",
-                                        "content":"Text One",
-                                        "rectInScreen":"40,50,10,20"
-                                    },
-                                    "children":[]
+                        "children":[
+                            {
+                                "attributes":{
+                                    "windowId":"12",
+                                    "accessibilityId":"3",
+                                    "componentType":"Image",
+                                    "content":"Button",
+                                    "rectInScreen":"30,40,10,20"
                                 },
-                                {
-                                    "attributes":{
-                                        "windowId":"12",
-                                        "accessibilityId":"8",
-                                        "componentType":"Text",
-                                        "content":"Text Two",
-                                        "rectInScreen":"50,60,10,20"
-                                    },
-                                    "children":[]
-                                }
-                            ]
-                        }
-                     ]
-                },
-                {
-                     "attributes":{
-                        "windowId":"12",
-                        "accessibilityId":"10",
-                        "componentType":"Image",
-                        "content":"Button",
-                        "rectInScreen":"10,20,20,100"
-                     },
-                     "children":[]
-                },
-                {
-                     "attributes":{
-                        "windowId":"12",
-                        "accessibilityId":"11",
-                        "componentType":"List",
-                        "content":"Button",
-                        "rectInScreen":"20,100,20,100"
-                     },
-                     "children":[
-                        {
-                            "attributes":{
-                                "windowId":"12",
-                                "accessibilityId":"12",
-                                "componentType":"Image",
-                                "content":"",
-                                "rectInScreen":"20,100,20,100"
+                                "children":[
+                                    {
+                                        "attributes":{
+                                            "windowId":"12",
+                                            "accessibilityId":"4",
+                                            "componentType":"Text",
+                                            "content":"Text One",
+                                            "rectInScreen":"30,40,10,20"
+                                        },
+                                        "children":[]
+                                    }
+                                ]
                             },
-                            "children":[]
+                            {
+                                "attributes":{
+                                    "windowId":"12",
+                                    "componentType":"List",
+                                    "accessibilityId":"5",
+                                    "content":"Text List12",
+                                    "rectInScreen":"40,60,10,20"
+                                },
+                                "children":[
+                                    {
+                                        "attributes":{
+                                            "windowId":"12",
+                                            "accessibilityId":"6",
+                                            "componentType":"Text",
+                                            "content":"Text One",
+                                            "rectInScreen":"40,50,10,20"
+                                        },
+                                        "children":[]
+                                    },
+                                    {
+                                        "attributes":{
+                                            "windowId":"12",
+                                            "accessibilityId":"8",
+                                            "componentType":"Text",
+                                            "content":"Text Two",
+                                            "rectInScreen":"50,60,10,20"
+                                        },
+                                        "children":[]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "attributes":{
+                            "windowId":"12",
+                            "accessibilityId":"10",
+                            "componentType":"Image",
+                            "content":"Button",
+                            "rectInScreen":"10,20,20,100"
                         },
-                        {
-                            "attributes":{
-                                "windowId":"12",
-                                "accessibilityId":"14",
-                                "componentType":"Button",
-                                "content":"Text End Button",
-                                "rectInScreen":"20,100,20,100"
+                        "children":[]
+                    },
+                    {
+                        "attributes":{
+                            "windowId":"12",
+                            "accessibilityId":"11",
+                            "componentType":"List",
+                            "content":"Button",
+                            "rectInScreen":"20,100,20,100"
+                        },
+                        "children":[
+                            {
+                                "attributes":{
+                                    "windowId":"12",
+                                    "accessibilityId":"12",
+                                    "componentType":"Image",
+                                    "content":"",
+                                    "rectInScreen":"20,100,20,100"
+                                },
+                                "children":[]
                             },
-                            "children":[
-                                {
-                                    "attributes":{
-                                        "windowId":"12",
-                                        "accessibilityId":"15",
-                                        "componentType":"Text",
-                                        "content":"Text End",
-                                        "rectInScreen":"20,100,20,100"
-                                    },
-                                    "children":[]
-                                }
-                            ]
-                        }
-                     ]
-                }
-            ]
-        }
-    )";
+                            {
+                                "attributes":{
+                                    "windowId":"12",
+                                    "accessibilityId":"14",
+                                    "componentType":"Button",
+                                    "content":"Text End Button",
+                                    "rectInScreen":"20,100,20,100"
+                                },
+                                "children":[
+                                    {
+                                        "attributes":{
+                                            "windowId":"12",
+                                            "accessibilityId":"15",
+                                            "componentType":"Text",
+                                            "content":"Text End",
+                                            "rectInScreen":"20,100,20,100"
+                                        },
+                                        "children":[]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        )";
         eles_ = MockElementNodeIterator::ConstructIteratorByJson(domJson)->elementInfoLists_;
         w.windowLayer_ = 2;
         w.bounds_ = Rect{0, 1000, 0, 1200};
@@ -201,7 +201,7 @@ TEST_F(WidgetOperatorTest, scrollSearchNoTarget)
     auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
     auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text End", EQ);
     targetWidgetSelector.AddMatcher(matcher0);
-    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
+    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, true, error));
 }
 
 TEST_F(WidgetOperatorTest, scrollSearchWithTarget)
@@ -220,7 +220,7 @@ TEST_F(WidgetOperatorTest, scrollSearchWithTarget)
     auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
     auto matcher0 = WidgetMatchModel(UiAttr::TEXT, "Text List12", EQ);
     targetWidgetSelector.AddMatcher(matcher0);
-    auto rev = wOp.ScrollFindWidget(targetWidgetSelector, error);
+    auto rev = wOp.ScrollFindWidget(targetWidgetSelector, true, error);
     ASSERT_FALSE(rev == nullptr);
     ASSERT_EQ("5", rev->GetAttr(UiAttr::ACCESSIBILITY_ID));
 }
@@ -243,7 +243,7 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckSubjectWidget)
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
     opt_.scrollWidgetDeadZone_ = 0; // set deadzone to 0 for easy computation
     auto wOp = WidgetOperator(*driver_, *images.at(0), opt_);
-    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
+    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, true, error));
     // check the scroll action events, should be acted on the subject node specified by WidgetMatcher
     ASSERT_TRUE(!MockController::touch_event_records_->Empty());
     auto &firstEvent = MockController::touch_event_records_->At(0, 0);
@@ -292,7 +292,7 @@ TEST_F(WidgetOperatorTest, scrollSearchCheckDirection)
     targetWidgetSelector.AddMatcher(targetWidgetMatcher);
     opt_.scrollWidgetDeadZone_ = 0; // set deadzone to 0 for easy computation
     auto wOp = WidgetOperator(*driver_, *widgets.at(0), opt_);
-    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, error));
+    ASSERT_EQ(nullptr, wOp.ScrollFindWidget(targetWidgetSelector, true, error));
     // check the scroll action events, should be acted on the specified node
     ASSERT_TRUE(!MockController::touch_event_records_->Empty());
     // should scroll-search upward (cy_from<cy_to) then downward (cy_from>cy_to)
