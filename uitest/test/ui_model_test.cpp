@@ -22,7 +22,7 @@ using namespace std;
 static constexpr auto ATTR_TEXT = "text";
 static constexpr auto ATTR_ID = "id";
 
-TEST(REGEXPTest, testRegex)
+TEST(REGEXPTestTrue, testRegex)
 {
     // make a widget object
     Widget widget("hierarchy");
@@ -42,15 +42,26 @@ TEST(REGEXPTest, testRegex)
     auto matcherTxtIcase = WidgetMatchModel(UiAttr::TEXT, "^Check\\w{2,5}$", ValueMatchPattern::REG_EXP_ICASE);
     bool matchResultTxtIcase = widget.MatchAttr(matcherTxtIcase);
     ASSERT_EQ(true, matchResultTxtIcase);
+}
 
+TEST(REGEXPTestFalse, testRegex)
+{
+    // make a widget object
+    Widget widget("hierarchy");
+    widget.SetAttr(UiAttr::TEXT, "checkBox1");
+    widget.SetAttr(UiAttr::ID, "btnTest");
+    widget.SetAttr(UiAttr::HINT, "btnTest12345");
+    widget.SetBounds(Rect(1, 2, 3, 4));
+    // use regex to match widget
     auto matcherTxt1 = WidgetMatchModel(UiAttr::TEXT, "^Check\\w{2,5}$", ValueMatchPattern::REG_EXP);
     bool matchResultTxt1 = widget.MatchAttr(matcherTxt1);
     ASSERT_EQ(false, matchResultTxt1);
 
-    auto matcherTxt2 = WidgetMatchModel(UiAttr::HINT, "^btnTest\\w{2,3}$", ValueMatchPattern::REG_EXP);
+    auto matcherTxt2 = WidgetMatchModel(UiAttr::HINT, "^btn_Test\\w{2,3}$", ValueMatchPattern::REG_EXP_ICASE);
     bool matchResultTxt2 = widget.MatchAttr(matcherTxt2);
     ASSERT_EQ(false, matchResultTxt2);
 }
+
 
 TEST(RectTest, testRectBase)
 {
