@@ -338,9 +338,7 @@ namespace OHOS::uitest {
     /** On class definition(since api 9, outdates By class).*/
     constexpr FrontendMethodDef ON_METHODS[] = {
         {"On.text", "(string,int?):On", false, true}, //  MatchPattern enum as int value
-        {"On.id", "(string):On", false, true},
         {"On.id", "(string,int?):On", false, true},
-        {"On.type", "(string):On", false, true},
         {"On.type", "(string,int?):On", false, true},
         {"On.description", "(string,int?):On", false, true},
         {"On.hint", "(string,int?):On", false, true},
@@ -435,7 +433,6 @@ namespace OHOS::uitest {
         {"Component.scrollToBottom", "(int?):void", false, false},
         {"Component.inputText", "(string):void", false, false},
         {"Component.clearText", "():void", false, false},
-        {"Component.scrollSearch", "(On):Component", false, false},
         {"Component.scrollSearch", "(On, bool?, int?):Component", false, false},
         {"Component.dragTo", "(Component):void", false, false},
         {"Component.pinchOut", "(float):void", false, false},
