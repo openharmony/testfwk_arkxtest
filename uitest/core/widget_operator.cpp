@@ -292,7 +292,7 @@ namespace OHOS::uitest {
         }
         auto screenSize = driver_.GetDisplaySize(error);
         auto gestureZone = (vertical) ? screenSize.py_ / 20 : screenSize.px_ / 20;
-        if (vertical && screenSize.py_ - bounds.bottom_ <= gestureZone) {
+        if (vertical && screenSize.py_ - bottomPoint.py_ <= gestureZone) {
             bottomPoint.py_ = bottomPoint.py_ - gestureZone;
         } else if (!vertical && screenSize.px_ - bounds.right_ <= gestureZone) {
             bottomPoint.px_ = bottomPoint.px_ - gestureZone;
