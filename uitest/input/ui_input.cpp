@@ -47,7 +47,8 @@ namespace OHOS::uitest {
         "fling <from_x> <from_y> <to_x> <to_y> [velocity]           velocity ranges from 200 to 40000, default 600\n"
         "keyEvent <keyID/Back/Home/Power>                                                          inject keyEvent\n"
         "keyEvent <keyID_0> <keyID_1> [keyID_2]                                           keyID_2 default to None \n"
-        "inputText <x> <y> <text>                                         inputText at the target coordinate point\n";
+        "inputText <x> <y> <text>                                         inputText at the target coordinate point\n"
+        "text <text>                                           input text at the location where is already focused\n";
         std::cout << usage << std::endl;
     }
     bool ParameterRedundancy()
@@ -231,6 +232,18 @@ namespace OHOS::uitest {
     }
     int32_t TextActionInput(int32_t argc, char *argv[], UiDriver &driver, UiOpArgs uiOpArgs)
     {
+        if ((size_t)argc != INDEX_FOUR) {
+            std::cout << "The number of parameters is incorrect. \n" << std::endl;
+            PrintInputMessage();
+            return EXIT_FAILURE;
+        }
+        auto text = argv[THREE];
+        driver.InputText(text, exception_);
+        std::cout << exception_.message_ << std::endl;
+        return EXIT_SUCCESS;
+    }
+    int32_t TextActionInputWithPoint(int32_t argc, char *argv[], UiDriver &driver, UiOpArgs uiOpArgs)
+    {
         if ((size_t)argc != INDEX_SIX) {
             std::cout << "The number of parameters is incorrect. \n" << std::endl;
             PrintInputMessage();
@@ -289,6 +302,8 @@ namespace OHOS::uitest {
         } else if (opt == "click" || opt == "longClick" || opt == "doubleClick") {
             return ClickActionInput(argc, argv, driver, uiOpArgs);
         } else if (opt == "inputText") {
+            return TextActionInputWithPoint(argc, argv, driver, uiOpArgs);
+        } else if (opt == "text") {
             return TextActionInput(argc, argv, driver, uiOpArgs);
         } else {
             std::cout << "Invalid parameters. \n" << std::endl;

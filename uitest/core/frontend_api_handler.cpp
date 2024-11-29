@@ -15,6 +15,9 @@
 
 #include <sstream>
 #include <unistd.h>
+#include <regex.h>
+#include <cstdio>
+#include <cstdlib>
 #include "ui_driver.h"
 #include "widget_operator.h"
 #include "window_operator.h"
@@ -615,6 +618,23 @@ namespace OHOS::uitest {
         }
     }
 
+    ApiCallErr CheckRegExp(string regex)
+    {
+        regex_t preg;
+        int rc;
+        const int errorLength = 100;
+        char errorBuffer[errorLength] = "";
+        ApiCallErr error(NO_ERROR);
+        char *patternValue = const_cast<char*>(regex.data());
+        if ((rc = regcomp(&preg, patternValue, REG_EXTENDED)) != 0) {
+            regerror(rc, &preg, errorBuffer, errorLength);
+            LOG_E("Regcomp error : %{public}s", errorBuffer);
+            error.code_ = ERR_INVALID_INPUT;
+            error.message_ = errorBuffer;
+        }
+        return error;
+    }
+
     template <UiAttr kAttr, typename T> static void GenericOnAttrBuilder(const ApiCallInfo &in, ApiReplyInfo &out)
     {
         // always create and return a new selector
@@ -631,6 +651,13 @@ namespace OHOS::uitest {
             testValue = to_string(ReadCallArg<T>(in, INDEX_ZERO));
         }
         auto matchPattern = ReadCallArg<uint8_t>(in, INDEX_ONE, ValueMatchPattern::EQ); // match pattern argument
+        if (matchPattern == ValueMatchPattern::REG_EXP || matchPattern == ValueMatchPattern::REG_EXP_ICASE) {
+            out.exception_.code_ = NO_ERROR;
+            out.exception_ = CheckRegExp(testValue);
+        }
+        if (out.exception_.code_ != NO_ERROR) {
+            return;
+        }
         auto matcher = WidgetMatchModel(kAttr, testValue, static_cast<ValueMatchPattern>(matchPattern));
         selector->AddMatcher(matcher);
         out.resultValue_ = StoreBackendObject(move(selector));
@@ -644,6 +671,7 @@ namespace OHOS::uitest {
         server.AddHandler("On.id", GenericOnAttrBuilder<UiAttr::ID, string>);
         server.AddHandler("On.description", GenericOnAttrBuilder<UiAttr::DESCRIPTION, string>);
         server.AddHandler("On.type", GenericOnAttrBuilder<UiAttr::TYPE, string>);
+        server.AddHandler("On.hint", GenericOnAttrBuilder<UiAttr::HINT, string>);
         server.AddHandler("On.enabled", GenericOnAttrBuilder<UiAttr::ENABLED, bool>);
         server.AddHandler("On.focused", GenericOnAttrBuilder<UiAttr::FOCUSED, bool>);
         server.AddHandler("On.selected", GenericOnAttrBuilder<UiAttr::SELECTED, bool>);
@@ -1219,6 +1247,7 @@ static void RegisterExtensionHandler()
         auto &server = FrontendApiServer::Get();
         server.AddHandler("Component.getAccessibilityId", GenericComponentAttrGetter<UiAttr::ACCESSIBILITY_ID>);
         server.AddHandler("Component.getText", GenericComponentAttrGetter<UiAttr::TEXT, true>);
+        server.AddHandler("Component.getHint", GenericComponentAttrGetter<UiAttr::HINT, true>);
         server.AddHandler("Component.getDescription", GenericComponentAttrGetter<UiAttr::DESCRIPTION, true>);
         server.AddHandler("Component.getId", GenericComponentAttrGetter<UiAttr::ID, true>);
         server.AddHandler("Component.getType", GenericComponentAttrGetter<UiAttr::TYPE, true>);
