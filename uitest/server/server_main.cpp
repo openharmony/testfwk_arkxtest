@@ -147,6 +147,10 @@ namespace OHOS::uitest {
         }
         const bool listWindows = params.find('i') != params.end();
         const bool addExternAttr = params.find('a') != params.end();
+        if (listWindows && addExternAttr) {
+            PrintToConsole("The -a and -i options cannot be used together.");
+            return EXIT_FAILURE;
+        }
         auto err = ApiCallErr(NO_ERROR);
         DumpLayoutImpl(savePath, listWindows, true, addExternAttr, err);
         if (err.code_ == NO_ERROR) {
