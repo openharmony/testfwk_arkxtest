@@ -537,13 +537,29 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
     ASSERT_EQ(ERR_INVALID_INPUT, reply0.exception_.code_);
     ASSERT_TRUE(reply0.exception_.message_.find("Number of illegal fingers") != string::npos);
     // call with argument illegal steps
+    auto call1 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
+    auto reply1 = ApiReplyInfo();
+    call1.paramList_.emplace_back(2);
+    call1.paramList_.emplace_back(1001);
+    server.Call(call1, reply1);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply1.exception_.code_);
+    ASSERT_TRUE(reply1.exception_.message_.find("Number of illegal steps") != string::npos);
+    // call with argument illegal fingers
     auto call2 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
     auto reply2 = ApiReplyInfo();
-    call2.paramList_.emplace_back(2);
-    call2.paramList_.emplace_back(1001);
+    call2.paramList_.emplace_back(0);
+    call2.paramList_.emplace_back(5);
     server.Call(call2, reply2);
     ASSERT_EQ(ERR_INVALID_INPUT, reply2.exception_.code_);
-    ASSERT_TRUE(reply2.exception_.message_.find("Number of illegal steps") != string::npos);
+    ASSERT_TRUE(reply2.exception_.message_.find("Number of illegal fingers") != string::npos);
+    // call with argument illegal fingers
+    auto call3 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
+    auto reply3 = ApiReplyInfo();
+    call3.paramList_.emplace_back(0);
+    call3.paramList_.emplace_back(5);
+    server.Call(call3, reply3);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply3.exception_.code_);
+    ASSERT_TRUE(reply3.exception_.message_.find("Number of illegal fingers") != string::npos);
     // call with argument illegal steps
     auto call4 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
     auto reply4 = ApiReplyInfo();
@@ -552,22 +568,6 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
     server.Call(call4, reply4);
     ASSERT_EQ(ERR_INVALID_INPUT, reply4.exception_.code_);
     ASSERT_TRUE(reply4.exception_.message_.find("Number of illegal steps") != string::npos);
-    // call with argument illegal fingers
-    auto call5 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
-    auto reply5 = ApiReplyInfo();
-    call5.paramList_.emplace_back(0);
-    call5.paramList_.emplace_back(5);
-    server.Call(call5, reply5);
-    ASSERT_EQ(ERR_INVALID_INPUT, reply5.exception_.code_);
-    ASSERT_TRUE(reply5.exception_.message_.find("Number of illegal fingers") != string::npos);
-    // call with argument illegal fingers
-    auto call6 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
-    auto reply6 = ApiReplyInfo();
-    call6.paramList_.emplace_back(0);
-    call6.paramList_.emplace_back(5);
-    server.Call(call6, reply6);
-    ASSERT_EQ(ERR_INVALID_INPUT, reply6.exception_.code_);
-    ASSERT_TRUE(reply6.exception_.message_.find("Number of illegal fingers") != string::npos);
 }
 
 TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecksOne)
