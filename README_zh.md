@@ -1474,7 +1474,7 @@ export default function assertComponentExistTest() {
 Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹配查找要操作或检视的目标控件。`On`提供的API能力具有以下特点：
 
 - 支持匹配单属性和匹配多属性组合，例如同时指定目标控件text和id。
-- 控件属性支持多种匹配模式(等于，包含，`STARTS_WITH`，`ENDS_WITH`，`REG_EXP`，`REG_EXP_ICASE`)。
+- 控件属性支持多种匹配模式(等于，包含，`STARTS_WITH`，`ENDS_WITH`)。
 - 支持相对定位控件，可通过`isBefore`和`isAfter`等API限定邻近控件特征进行辅助定位。
 
 | No. | API                                | 功能描述                       |
@@ -1492,12 +1492,8 @@ Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹�
 | 11  | checkable(c:bool):On               | 指定控件可选择状态。                 |
 | 12  | isBefore(b:On):On                  | **相对定位**，限定目标控件位于指定特征控件之前。 |
 | 13  | isAfter(b:On):On                   | **相对定位**，限定目标控件位于指定特征控件之后。 |
-| 14   | id(i:string，p?:MatchPattern:On                    | 指定控件id，可指定匹配模式。                    |
-| 15   | hint(h:string, p?:MatchPattern):On | 指定控件提示文本，可指定匹配模式。            |
-| 16   | type(t:string，p?:MatchPattern):On                 | 指定控件类型，可指定匹配模式。                   |
-| 17   | description(d:string，p?:MatchPattern):On                 | 指定控件描述文本信息，可指定匹配模式。                   |
 
-其中，`text`,`id`,`type`,`hint`,`description`属性支持{`MatchPattern.EQUALS`，`MatchPattern.CONTAINS`，`MatchPattern.STARTS_WITH`，`MatchPattern.ENDS_WITH`，`MatchPattern.REG_EXP`，`MatchPattern.REG_EXP_ICASE`}六种匹配模式，缺省使用`MatchPattern.EQUALS`模式。
+其中，`text`属性支持{`MatchPattern.EQUALS`，`MatchPattern.CONTAINS`，`MatchPattern.STARTS_WITH`，`MatchPattern.ENDS_WITH`}四种匹配模式，缺省使用`MatchPattern.EQUALS`模式。
 
 `On`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md#on9)。
 
@@ -1554,7 +1550,6 @@ let switch: Component = await driver.findComponent(ON.id('Id_switch').isAfter(ON
 | 7   | getId():Promise<number>            | 获取控件id。                    |
 | 8   | getType():Promise<string>          | 获取控件类型。                    |
 | 9   | isEnabled():Promise<bool>          | 获取控件使能状态。                  |
-| 10   | scrollSearch(s:On, vertical:bool, offset?:number):Promise<Component>   | 在该控件上滑动查找目标控件(适用于List等控件),支持横向查找，支持指定空间非活动区域。 |
 
 `Component`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md#component9)。
 
@@ -1643,15 +1638,17 @@ UI测试框架使能需要执行如下命令。
 > 使用cmd的方式，需要配置好hdc相关的环境变量。
 
 **命令列表**
-| 命令            | 配置参数   |描述                              |
-|---------------|---------------------------------|---------------------------------|
-| help          | help|  显示uitest工具能够支持的命令信息。            |
-| screenCap       |[-p] | 截屏。非必填。<br>指定存储路径和文件名, 只支持存放在/data/local/tmp/下。<br>默认存储路径：/data/local/tmp，文件名：时间戳 + .png。 |
-| dumpLayout      |[-p] \<-i \| -a>|支持在daemon运行时执行获取控件树。<br> **-p** ：指定存储路径和文件名, 只支持存放在/data/local/tmp/下。默认存储路径：/data/local/tmp，文件名：时间戳 + .json。<br> **-i** ：不过滤不可见控件,也不做窗口合并。<br> **-a** ：保存 BackgroundColor、 Content、FontColor、FontSize、extraAttrs 属性数据。<br> **默认** ：不保存上述属性数据。<br> **-a和-i** 不可同时使用。 |
-| uiRecord        | uiRecord \<record \| read>|录制Ui操作。  <br> **record** ：开始录制，将当前界面操作记录到/data/local/tmp/record.csv，结束录制操作使用Ctrl+C结束录制。  <br> **read** ：读取并且打印录制数据。<br>各参数代表的含义请参考[用户录制操作](#用户录制操作)。|
-| uiInput       | \<help \| click \| doubleClick \| longClick \| fling \| swipe \| drag \| dircFling \| inputText \| text \| keyEvent>| 注入UI模拟操作。<br>各参数代表的含义请参考[注入ui模拟操作](#注入ui模拟操作)。                       |
-| --version | --version|获取当前工具版本信息。                     |
-| start-daemon|start-daemon| 拉起uitest测试进程。 |
+
+| 命令            | 配置参数   | 描述                                                                                                                                                                                                                                                                  |
+|---------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| help          | help| 显示uitest工具能够支持的命令信息。                                                                                                                                                                                                                                                |
+| screenCap       |[-p] | 截屏。<br> **-p**：非必填, 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。<br>默认存储路径：/data/local/tmp，文件名：时间戳 + .png 。                                                                                                                                                                 |
+| dumpLayout      |[-p] \<-i \| -a>| 支持在daemon运行时执行获取控件树。<br> **-p** ：指定存储路径和文件名, 只支持存放在/data/local/tmp/下。默认存储路径：/data/local/tmp，文件名：时间戳 + .json。<br> **-i** ：不过滤不可见控件,也不做窗口合并。<br> **-a** ：保存 BackgroundColor、 Content、FontColor、FontSize、extraAttrs 属性数据。<br> **默认** ：不保存上述属性数据。<br> **-a和-i** 不可同时使用。 |
+| uiRecord        | uiRecord \<record \| read>| 录制Ui操作。  <br> **record** ：开始录制，将当前界面操作记录到/data/local/tmp/record.csv，结束录制操作使用Ctrl+C结束录制。  <br> **read** ：读取并且打印录制数据。<br>各参数代表的含义请参考[用户录制操作](#用户录制操作)。                                                                                                                |
+| uiInput       | \<help \| click \| doubleClick \| longClick \| fling \| swipe \| drag \| dircFling \| inputText \| keyEvent>| 注入UI模拟操作。<br>各参数代表的含义请参考[注入ui模拟操作](#注入ui模拟操作)。                                                                                                                                                                                                                      |
+| --version | --version| 获取当前工具版本信息。                                                                                                                                                                                                                                                         |
+| start-daemon|start-daemon| 拉起uitest测试进程。                                                                                                                                                                                                                                                       |
+
 
 #### 截图使用示例
 
@@ -1678,46 +1675,6 @@ hdc shell uitest uiRecord record
 hdc shell uitest uiRecord read
 ```
 
-以下举例为：record数据中包含的字段及字段含义，仅供参考
-
- ```
- {
-	 "ABILITY": "com.ohos.launcher.MainAbility", // 前台应用界面
-	 "BUNDLE": "com.ohos.launcher", // 操作应用
-	 "CENTER_X": "", // 预留字段,暂未使用
-	 "CENTER_Y": "", // 预留字段,暂未使用
-	 "EVENT_TYPE": "pointer", //  
-	 "LENGTH": "0", // 总体步长
-	 "OP_TYPE": "click", //事件类型，当前支持点击、双击、长按、拖拽、滑动、抛滑动作录制
-	 "VELO": "0.000000", // 离手速度
-	 "direction.X": "0.000000",// 总体移动X方向
-	 "direction.Y": "0.000000", // 总体移动Y方向
-	 "duration": 33885000.0, // 手势操作持续时间
-	 "fingerList": [{
-		 "LENGTH": "0", // 总体步长
-		 "MAX_VEL": "40000", // 最大速度
-		 "VELO": "0.000000", // 离手速度
-		 "W1_BOUNDS": "{"bottom":361,"left":37,"right":118,"top":280}", // 起点控件bounds
-		 "W1_HIER": "ROOT,3,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0", // 起点控件hierarchy
-		 "W1_ID": "", // 起点控件id
-		 "W1_Text": "", // 起点控件text
-		 "W1_Type": "Image", // 起点控件类型
-		 "W2_BOUNDS": "{"bottom":361,"left":37,"right":118,"top":280}", // 终点控件bounds
-		 "W2_HIER": "ROOT,3,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0", // 终点控件hierarchy
-		 "W2_ID": "", // 终点控件id
-		 "W2_Text": "", // 终点控件text
-		 "W2_Type": "Image", // 终点控件类型
-		 "X2_POSI": "47", // 终点X
-		 "X_POSI": "47", // 起点X
-		 "Y2_POSI": "301", // 终点Y
-		 "Y_POSI": "301", // 起点Y
-		 "direction.X": "0.000000", // x方向移动量
-		 "direction.Y": "0.000000" // Y方向移动量
-	 }],
-	 "fingerNumber": "1" //手指数量
- }
- ```
-
 #### 注入UI模拟操作
 
 | 命令   | 必填 | 描述              | 
@@ -1730,10 +1687,8 @@ hdc shell uitest uiRecord read
 | swipe   | 是    | 模拟慢滑操作。     | 
 | drag   | 是    | 模拟拖拽操作。     | 
 | dircFling   | 是    | 模拟指定方向滑动操作。     |
-| inputText   | 是    | 指定坐标点，模拟输入框输入文本操作。     |
-| text | 是    | 无需指定坐标点，在当前获焦处，模拟输入框输入文本操作。     |
+| inputText   | 是    | 模拟输入框输入文本操作。     |
 | keyEvent   | 是    | 模拟实体按键事件(如：键盘,电源键,返回上一级,返回桌面等)，以及组合按键操作。     | 
-
 
 ##### uiInput click/doubleClick/longClick使用示例
 
@@ -1820,17 +1775,6 @@ hdc shell uitest uiInput dircFling 3
 hdc shell uitest uiInput inputText 100 100 hello 
 ```
 
-##### uiInput text使用示例
-
-| 配置参数             | 必填       | 描述 |       
-|------|------------------|----------|
-| text   | 是                | 输入文本内容。  |
-
-```shell  
-# 无需输入坐标点，在当前获焦处，执行输入框输入操作。若当前获焦处不支持文本输入，则无实际效果。
-hdc shell uitest uiInput text hello
-```
-
 ##### uiInput keyEvent使用示例
 
 | 配置参数             | 必填       | 描述 |                
@@ -1839,16 +1783,13 @@ hdc shell uitest uiInput text hello
 | keyID2    | 否    | 实体按键对应ID。 |
 | keyID3    | 否    | 实体按键对应ID。 |
 
->**说明**
->
-> 最多支持传入是三个键值，<!--RP3-->键值的具体取值请参考[KeyCode](../reference/apis-input-kit/js-apis-keycode.md)<!--RP3End-->。
 
 ```shell  
-# 返回主页。
+# 执行执行返回主页操作。
 hdc shell uitest uiInput keyEvent Home
-# 返回。
+# 执行返回操作。
 hdc shell uitest uiInput keyEvent Back
-# 组合键粘贴。
+# 执行组合键粘贴操作。
 hdc shell uitest uiInput keyEvent 2072 2038
 ```
 
@@ -1903,4 +1844,3 @@ hdc shell chmod +x /system/bin/uitest
 | 5.0.1.0 | 1、优化swipe操作。<br />2、inputText输入中文的实现方式改为设置剪贴板数据后，长按控件点击粘贴。 |
 | 5.0.1.1 | 1、节点新增以下属性，背景色：backgroundColor，背景图片：backgroundImage，透明度：opacity，模糊度：blur，事件是否透传：hitTestBehavior 。 |
 | 5.0.1.2 | 1、通过test Sa发布公共事件。<br />2、节点新增clip属性，判断其子节点是否进行切割。<br />3、过滤机制调整，节点只与其clip为true的父节点进行切换计算可见区域，可见区域宽/高小于等于0记为不可见。<br />4、调用inputText时，被输入字符串超过200个字符时，实现方式调整为设置剪贴板数据后，植入ctrl + v。 |
-|5.1.1.1|1、控件支持正则表达式方式进行查找 2、获取控件属性中的提示文本信息 3、支持横向滑动查找操作 4、支持不指定坐标模拟输入文本的shell命令 hdc shell uitest uiInput text "xxxx"|
