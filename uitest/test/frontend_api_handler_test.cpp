@@ -430,6 +430,12 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks2)
     server.Call(call0, reply0);
     ASSERT_EQ(USAGE_ERROR, reply0.exception_.code_);
     ASSERT_TRUE(reply0.exception_.message_.find("Illegal argument count") != string::npos);
+    // call with argument missing
+    auto call0 = ApiCallInfo {.apiId_ = "On.id", .callerObjRef_ = string(REF_SEED_BY)};
+    auto reply0 = ApiReplyInfo();
+    server.Call(call0, reply0);
+    ASSERT_EQ(USAGE_ERROR, reply0.exception_.code_);
+    ASSERT_TRUE(reply0.exception_.message_.find("Illegal argument count") != string::npos);
     // call with argument redundant
     auto call1 = ApiCallInfo {.apiId_ = "By.type", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply1 = ApiReplyInfo();
@@ -491,15 +497,10 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks3)
     server.Call(call1, reply1);
     ASSERT_TRUE(reply1.exception_.message_.find("Expect integer which cannot be less than 0") != string::npos);
 }
+
 TEST_F(FrontendApiHandlerTest, parameterPreChecks4)
 {
     const auto& server =  FrontendApiServer::Get();
-    // call with argument missing
-    auto call0 = ApiCallInfo {.apiId_ = "On.id", .callerObjRef_ = string(REF_SEED_BY)};
-    auto reply0 = ApiReplyInfo();
-    server.Call(call0, reply0);
-    ASSERT_EQ(USAGE_ERROR, reply0.exception_.code_);
-    ASSERT_TRUE(reply0.exception_.message_.find("Illegal argument count") != string::npos);
     // call with argument redundant
     auto call1 = ApiCallInfo {.apiId_ = "On.id", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply1 = ApiReplyInfo();
@@ -517,14 +518,15 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks4)
     ASSERT_EQ(USAGE_ERROR, reply2.exception_.code_);
     ASSERT_TRUE(reply2.exception_.message_.find("Expect string") != string::npos);
     // call with argument of wrong type
-    auto call2 = ApiCallInfo {.apiId_ = "On.text", .callerObjRef_ = string(REF_SEED_BY)};
-    auto reply2 = ApiReplyInfo();
-    call2.paramList_.emplace_back("text");
-    call2.paramList_.emplace_back("REG_EXP");
-    server.Call(call2, reply2);
-    ASSERT_EQ(USAGE_ERROR, reply2.exception_.code_);
-    ASSERT_TRUE(reply2.exception_.message_.find("Expect MatchPattern") != string::npos);
+    auto call3 = ApiCallInfo {.apiId_ = "On.text", .callerObjRef_ = string(REF_SEED_BY)};
+    auto reply3 = ApiReplyInfo();
+    call3.paramList_.emplace_back("text");
+    call3.paramList_.emplace_back("REG_EXP");
+    server.Call(call3, reply3);
+    ASSERT_EQ(USAGE_ERROR, reply3.exception_.code_);
+    ASSERT_TRUE(reply3.exception_.message_.find("Expect MatchPattern") != string::npos);
 }
+
 TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
 {
     const auto& server =  FrontendApiServer::Get();
@@ -537,29 +539,13 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
     ASSERT_EQ(ERR_INVALID_INPUT, reply0.exception_.code_);
     ASSERT_TRUE(reply0.exception_.message_.find("Number of illegal fingers") != string::npos);
     // call with argument illegal steps
-    auto call1 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
-    auto reply1 = ApiReplyInfo();
-    call1.paramList_.emplace_back(2);
-    call1.paramList_.emplace_back(1001);
-    server.Call(call1, reply1);
-    ASSERT_EQ(ERR_INVALID_INPUT, reply1.exception_.code_);
-    ASSERT_TRUE(reply1.exception_.message_.find("Number of illegal steps") != string::npos);
-    // call with argument illegal fingers
     auto call2 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
     auto reply2 = ApiReplyInfo();
-    call2.paramList_.emplace_back(0);
-    call2.paramList_.emplace_back(5);
+    call2.paramList_.emplace_back(2);
+    call2.paramList_.emplace_back(1001);
     server.Call(call2, reply2);
     ASSERT_EQ(ERR_INVALID_INPUT, reply2.exception_.code_);
-    ASSERT_TRUE(reply2.exception_.message_.find("Number of illegal fingers") != string::npos);
-    // call with argument illegal fingers
-    auto call3 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
-    auto reply3 = ApiReplyInfo();
-    call3.paramList_.emplace_back(0);
-    call3.paramList_.emplace_back(5);
-    server.Call(call3, reply3);
-    ASSERT_EQ(ERR_INVALID_INPUT, reply3.exception_.code_);
-    ASSERT_TRUE(reply3.exception_.message_.find("Number of illegal fingers") != string::npos);
+    ASSERT_TRUE(reply2.exception_.message_.find("Number of illegal steps") != string::npos);
     // call with argument illegal steps
     auto call4 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
     auto reply4 = ApiReplyInfo();
@@ -568,6 +554,22 @@ TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
     server.Call(call4, reply4);
     ASSERT_EQ(ERR_INVALID_INPUT, reply4.exception_.code_);
     ASSERT_TRUE(reply4.exception_.message_.find("Number of illegal steps") != string::npos);
+    // call with argument illegal fingers
+    auto call5 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
+    auto reply5 = ApiReplyInfo();
+    call5.paramList_.emplace_back(0);
+    call5.paramList_.emplace_back(5);
+    server.Call(call5, reply5);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply5.exception_.code_);
+    ASSERT_TRUE(reply5.exception_.message_.find("Number of illegal fingers") != string::npos);
+    // call with argument illegal fingers
+    auto call6 = ApiCallInfo {.apiId_ = "PointerMatrix.create"};
+    auto reply6 = ApiReplyInfo();
+    call6.paramList_.emplace_back(0);
+    call6.paramList_.emplace_back(5);
+    server.Call(call6, reply6);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply6.exception_.code_);
+    ASSERT_TRUE(reply6.exception_.message_.find("Number of illegal fingers") != string::npos);
 }
 
 TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecksOne)
