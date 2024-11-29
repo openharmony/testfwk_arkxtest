@@ -1802,7 +1802,7 @@ hdc shell uitest uiInput text hello
 
 >**说明**
 >
-> 最多支持传入是三个键值，<!--RP3-->键值的具体取值请参考[KeyCode](../reference/apis-input-kit/js-apis-keycode.md)<!--RP3End-->。
+> 最多支持传入是三个键值，<!--RP3-->键值的具体取值请参考[KeyCode](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-input-kit/js-apis-keycode.md)<!--RP3End-->。
 
 ```shell  
 # 执行执行返回主页操作。
