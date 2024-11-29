@@ -86,7 +86,6 @@ namespace OHOS::uitest {
         regex_t preg;
         int rc;
         const int errorLength = 100;
-        char errorBuffer[errorLength];
         char *patternValue = const_cast<char*>(value.data());
         char *patternReg = const_cast<char*>(attrValue.data());
         if ((rc = regcomp(&preg, patternValue, flags)) != 0) {
@@ -94,7 +93,6 @@ namespace OHOS::uitest {
         }
         rc = regexec(&preg, patternReg, 0, nullptr, 0);
         if (rc != 0) {
-            regerror(rc, &preg, errorBuffer, errorLength);
             return false;
         } else {
             return rc == 0;
