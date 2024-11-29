@@ -89,7 +89,7 @@ namespace OHOS::uitest {
         if ((regcomp(&preg, patternValue, flags)) != 0) {
             return false;
         }
-        if (rc = regexec(&preg, patternReg, 0, nullptr, 0)) {
+        if (regexec(&preg, patternReg, 0, nullptr, 0) == 0) {
             return true;
         }
         return false;
