@@ -84,19 +84,15 @@ namespace OHOS::uitest {
     bool RegexMatchAttr(std::string_view value, std::string_view attrValue, int flags)
     {
         regex_t preg;
-        int rc;
-        const int errorLength = 100;
         char *patternValue = const_cast<char*>(value.data());
         char *patternReg = const_cast<char*>(attrValue.data());
-        if ((rc = regcomp(&preg, patternValue, flags)) != 0) {
+        if ((regcomp(&preg, patternValue, flags)) != 0) {
             return false;
         }
-        rc = regexec(&preg, patternReg, 0, nullptr, 0);
-        if (rc != 0) {
-            return false;
-        } else {
-            return rc == 0;
+        if (rc = regexec(&preg, patternReg, 0, nullptr, 0)) {
+            return true;
         }
+        return false;
     }
     
     bool Widget::MatchAttr(const WidgetMatchModel& matchModel) const
