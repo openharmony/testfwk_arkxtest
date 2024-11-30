@@ -623,7 +623,7 @@ namespace OHOS::uitest {
         regex_t preg;
         int rc;
         const int errorLength = 100;
-        char errorBuffer[errorLength];
+        char errorBuffer[errorLength] = "";
         ApiCallErr error(NO_ERROR);
         char *patternValue = const_cast<char*>(regex.data());
         if ((rc = regcomp(&preg, patternValue, REG_EXTENDED)) != 0) {
