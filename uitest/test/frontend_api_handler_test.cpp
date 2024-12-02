@@ -505,8 +505,7 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks4)
     auto call1 = ApiCallInfo {.apiId_ = "On.id", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply1 = ApiReplyInfo();
     call1.paramList_.emplace_back("wyz");
-    call1.paramList_.emplace_back(1);
-    call1.paramList_.emplace_back(1);
+    call1.paramList_.emplace_back("zl");
     server.Call(call1, reply1);
     ASSERT_EQ(USAGE_ERROR, reply1.exception_.code_);
     ASSERT_TRUE(reply1.exception_.message_.find("Illegal argument count") != string::npos);
