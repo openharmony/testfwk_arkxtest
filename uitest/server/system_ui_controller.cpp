@@ -428,6 +428,8 @@ namespace OHOS::uitest {
         pinterItem1.SetOriginPointerId(currentFinger);
         pinterItem1.SetDisplayX(fingerStatus[currentFinger].second.px_);
         pinterItem1.SetDisplayY(fingerStatus[currentFinger].second.py_);
+        pinterItem1.SetRawDisplayX(fingerStatus[currentFinger].second.px_);
+        pinterItem1.SetRawDisplayY(fingerStatus[currentFinger].second.py_);
         pinterItem1.SetPressed(fingerStatus[currentFinger].first);
         event.UpdatePointerItem(currentFinger, pinterItem1);
         // update pinterItem of other fingers which in pressed state.
@@ -441,6 +443,8 @@ namespace OHOS::uitest {
                 pinterItem.SetOriginPointerId(index);
                 pinterItem.SetDisplayX(fingerStatus[index].second.px_);
                 pinterItem.SetDisplayY(fingerStatus[index].second.py_);
+                pinterItem.SetRawDisplayX(fingerStatus[index].second.px_);
+                pinterItem.SetRawDisplayY(fingerStatus[index].second.py_);
                 pinterItem.SetPressed(true);
                 event.UpdatePointerItem(index, pinterItem);
             }
@@ -493,6 +497,8 @@ namespace OHOS::uitest {
         item.SetToolType(PointerEvent::TOOL_TYPE_MOUSE);
         item.SetDisplayX(event.point_.px_);
         item.SetDisplayY(event.point_.py_);
+        item.SetRawDisplayX(event.point_.px_);
+        item.SetRawDisplayY(event.point_.py_);
         item.SetPressed(false);
         item.SetDownTime(0);
     }
