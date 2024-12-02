@@ -259,7 +259,7 @@ namespace OHOS::uitest {
         }
         auto screenSize = driver_.GetDisplaySize(error);
         auto gestureZone = screenSize.py_ / 20;
-        if (screenSize.py_ - bounds.bottom_ <= gestureZone) {    
+        if (screenSize.py_ - bounds.bottom_ <= gestureZone) {
             bottomPoint.py_ = bottomPoint.py_ - gestureZone;
         }
         auto touch = (toTop) ? GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint)
@@ -269,6 +269,7 @@ namespace OHOS::uitest {
         if (toTop) {
             LOG_I("turn page from %{public}d to %{public}d", topPoint.py_, bottomPoint.py_);
         } else {
-            LOG_I("turn page from %{public}d to %{public}d", bottomPoint.py_, topPoint.py_);        }
+            LOG_I("turn page from %{public}d to %{public}d", bottomPoint.py_, topPoint.py_);
+        }
     }
 } // namespace OHOS::uitest
