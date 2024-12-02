@@ -149,6 +149,8 @@ namespace OHOS::uitest {
         {"CONTAINS", "1"},
         {"STARTS_WITH", "2"},
         {"ENDS_WITH", "3"},
+        {"REG_EXP", "4"},
+        {"REG_EXP_ICASE", "5"},
     };
     constexpr FrontendEnumeratorDef MATCH_PATTERN_DEF = {
         "MatchPattern",
@@ -336,9 +338,10 @@ namespace OHOS::uitest {
     /** On class definition(since api 9, outdates By class).*/
     constexpr FrontendMethodDef ON_METHODS[] = {
         {"On.text", "(string,int?):On", false, true}, //  MatchPattern enum as int value
-        {"On.id", "(string):On", false, true},
-        {"On.type", "(string):On", false, true},
+        {"On.id", "(string,int?):On", false, true},
+        {"On.type", "(string,int?):On", false, true},
         {"On.description", "(string,int?):On", false, true},
+        {"On.hint", "(string,int?):On", false, true},
         {"On.enabled", "(bool?):On", false, true}, // default bool arg: true
         {"On.focused", "(bool?):On", false, true},
         {"On.selected", "(bool?):On", false, true},
@@ -412,6 +415,7 @@ namespace OHOS::uitest {
         {"Component.getId", "():string", false, false},
         {"Component.getType", "():string", false, false},
         {"Component.getDescription", "():string", false, false},
+        {"Component.getHint", "():string", false, false},
         {"Component.isEnabled", "():bool", false, false},
         {"Component.isFocused", "():bool", false, false},
         {"Component.isSelected", "():bool", false, false},
@@ -429,7 +433,7 @@ namespace OHOS::uitest {
         {"Component.scrollToBottom", "(int?):void", false, false},
         {"Component.inputText", "(string):void", false, false},
         {"Component.clearText", "():void", false, false},
-        {"Component.scrollSearch", "(On):Component", false, false},
+        {"Component.scrollSearch", "(On, bool?, int?):Component", false, false},
         {"Component.dragTo", "(Component):void", false, false},
         {"Component.pinchOut", "(float):void", false, false},
         {"Component.pinchIn", "(float):void", false, false},
