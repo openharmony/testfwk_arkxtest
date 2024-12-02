@@ -39,10 +39,13 @@ namespace OHOS::uitest {
         void PinchWidget(float_t scale, ApiCallErr &error) const;
 
         /**Scroll on the widget to find the target widget matching the selector.*/
-        std::unique_ptr<Widget> ScrollFindWidget(const WidgetSelector &selector, ApiCallErr &error) const;
+        std::unique_ptr<Widget> ScrollFindWidget(const WidgetSelector &selector,
+                                                 bool vertical, ApiCallErr &error) const;
+        /**Check dead zone param*/
+        bool CheckDeadZone(bool vertical, ApiCallErr &error);
 
     private:
-        void TurnPage(bool toTop, int &oriDistance, ApiCallErr &error) const;
+        void TurnPage(bool toTop, int &oriDistance, bool vertical, ApiCallErr &error) const;
         UiDriver &driver_;
         const Widget &widget_;
         const UiOpArgs &options_;
