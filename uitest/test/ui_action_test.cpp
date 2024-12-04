@@ -494,3 +494,36 @@ TEST_F(UiActionTest, anonymousSignleKey)
     ASSERT_EQ(keyCode, event2.code_);
     ASSERT_EQ(ActionStage::UP, event2.stage_);
 }
+
+TEST_F(UiActionTest, computeTouchPadAction)
+{
+    UiOpArgs opt {};
+    const int32_t speed = 2000;
+    const int32_t displayWidth = 2000;
+    const int32_t displayHeight = 1000;
+    opt.swipeVelocityPps_ = speed;
+    Point displaySize(displayWidth, displayHeight);
+    const uint32_t fingers = 3;
+    const Direction direction = Direction::TO_UP;
+    const bool stay1 = false;
+    const int32_t vectorSize1 = 51;
+    const int32_t vectorSize2 = 56;
+    TouchPadAction action1(fingers, direction, stay1);
+    vector<TouchPadEvent> events1;
+    action1.Decompose(events1, opt, displaySize);
+    ASSERT_EQ(vectorSize1, events1.size());
+    for (uint32_t eventIndex = 0; eventIndex < events1.size(); eventIndex++) {
+        if (eventIndex == 0) {
+            ASSERT_EQ(ActionStage::DOWN, events1[eventIndex].stage);
+        } else if (eventIndex == events1.size() - 1) {
+            ASSERT_EQ(ActionStage::UP, events1[eventIndex].stage);
+        } else {
+            ASSERT_EQ(ActionStage::MOVE, events1[eventIndex].stage);
+        }
+    }
+    const bool stay2 = true;
+    TouchPadAction action2(fingers, direction, stay2);
+    vector<TouchPadEvent> events2;
+    action2.Decompose(events2, opt, displaySize);
+    ASSERT_EQ(vectorSize2, events2.size());
+}

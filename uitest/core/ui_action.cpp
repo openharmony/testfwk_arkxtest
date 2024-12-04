@@ -195,6 +195,59 @@ namespace OHOS::uitest {
         recv = move(matrix);
     }
 
+    void TouchPadAction::Decompose(vector<TouchPadEvent> &recv, const UiOpArgs &options,
+                                   const Point displaySize) const
+    {
+        int32_t numTwo = 2;
+        int32_t displayCenterX = displaySize.px_ / numTwo;
+        int32_t displayCenterY = displaySize.py_ / numTwo;
+        int32_t pxFrom = displayCenterX;
+        int32_t pyFrom = displayCenterY;
+        int32_t pxTo = displayCenterX;
+        int32_t pyTo = displayCenterY;
+        switch (direction_) {
+            case TO_LEFT:
+                pxFrom += displayCenterX / numTwo;
+                pxTo -= displayCenterX / numTwo;
+                break;
+            case TO_RIGHT:
+                pxFrom -= displayCenterX / numTwo;
+                pxTo += displayCenterX / numTwo;
+                break;
+            case TO_UP:
+                pyFrom += displayCenterY / numTwo;
+                pyTo -= displayCenterY / numTwo;
+                break;
+            case TO_DOWN:
+                pyFrom -= displayCenterY / numTwo;
+                pyTo += displayCenterY / numTwo;
+                break;
+            default:
+                break;
+        }
+        const int32_t distanceX = pxTo - pxFrom;
+        const int32_t distanceY = pyTo - pyFrom;
+        const uint32_t distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+        const uint32_t timeCostMs = (distance * 1000) / options.swipeVelocityPps_;
+        constexpr uint32_t intervalMs = 5;
+        uint32_t steps = timeCostMs / intervalMs;
+        recv.push_back(TouchPadEvent {ActionStage::DOWN, {pxFrom, pyFrom}, fingers_, intervalMs});
+        float stepLengthX = static_cast<double>(distanceX) / static_cast<double>(steps);
+        float stepLengthY = static_cast<double>(distanceY) / static_cast<double>(steps);
+        for (uint32_t step = 1; step < steps; step++) {
+            const int32_t pointX = pxFrom + stepLengthX * step;
+            const int32_t pointY = pyFrom + stepLengthY * step;
+            recv.push_back(TouchPadEvent {ActionStage::MOVE, {pointX, pointY}, fingers_, intervalMs});
+        }
+        if (stay_) {
+            uint32_t stayPointerTimes = 5;
+            for (uint32_t stayPointerTime = 0; stayPointerTime < stayPointerTimes; stayPointerTime++) {
+                recv.push_back(TouchPadEvent {ActionStage::MOVE, {pxTo, pyTo}, fingers_, 200});
+            }
+        }
+        recv.push_back(TouchPadEvent {ActionStage::UP, {pxTo, pyTo}, fingers_, intervalMs});
+    }
+
     PointerMatrix::PointerMatrix() {};
 
     PointerMatrix::PointerMatrix(uint32_t fingersNum, uint32_t stepsNum)
@@ -262,6 +315,40 @@ namespace OHOS::uitest {
     uint32_t PointerMatrix::GetFingers() const
     {
         return this->fingerNum_;
+    }
+
+    void PointerMatrix::SetToolType(const TouchToolType type)
+    {
+        touchToolType_ = type;
+    }
+
+    TouchToolType PointerMatrix::GetToolType() const
+    {
+        return touchToolType_;
+    }
+
+    void PointerMatrix::SetTouchPressure(const float pressure)
+    {
+        touchPressure_ = pressure;
+    }
+
+    float PointerMatrix::GetTouchPressure() const
+    {
+        return touchPressure_;
+    }
+
+    void PointerMatrix::ConvertToPenEvents(PointerMatrix &recv) const
+    {
+        DCHECK(this->fingerNum_ == 1);
+        recv.SetToolType(TouchToolType::PEN);
+        constexpr uint32_t intervalMs = 5;
+        recv.PushAction(TouchEvent { ActionStage::PROXIMITY_IN, this->At(0, 0).point_, 0, intervalMs });
+        for (uint32_t step = 0; step < stepNum_; step++) {
+            auto touchEvent = At(0, step);
+            recv.PushAction(touchEvent);
+        }
+        recv.PushAction(TouchEvent { ActionStage::PROXIMITY_OUT, this->At(0, this->GetSteps() - 1).point_, 0,
+            intervalMs });
     }
 
     void PointerMatrix::ConvertToMouseEvents(vector<MouseEvent> &recv) const
