@@ -557,4 +557,41 @@ namespace OHOS::uitest {
             mergeRect.bottom_ = std::max(winCache.window_.bounds_.bottom_, mergeRect.bottom_);
         }
     }
+
+    void UiDriver::PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error)
+    {
+        if (!CheckStatus(false, error)) {
+            return;
+        }
+        if (!uiController_->IsTouchPadExist()) {
+            error = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This device can not support this action");
+            return;
+        }
+        vector<TouchPadEvent> events;
+        touch.Decompose(events, opt, uiController_->GetDisplaySize());
+        if (events.empty()) {
+            return;
+        }
+        uiController_->InjectTouchPadEventSequence(events);
+    }
+
+    void UiDriver::PerformPenTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err)
+    {
+        if (!CheckStatus(false, err)) {
+            return;
+        }
+        if (opt.touchPressure_ < 0 || opt.touchPressure_ > 1) {
+            err = ApiCallErr(ERR_INVALID_INPUT, "Pressure must ranges form 0 to 1");
+            return;
+        }
+        PointerMatrix events;
+        touch.Decompose(events, opt);
+        PointerMatrix eventsInPen(1, events.GetSteps() + INDEX_TWO);
+        eventsInPen.SetTouchPressure(opt.touchPressure_);
+        events.ConvertToPenEvents(eventsInPen);
+        if (eventsInPen.Empty()) {
+            return;
+        }
+        uiController_->InjectTouchEventSequence(eventsInPen);
+    }
 } // namespace OHOS::uitest

@@ -69,6 +69,13 @@ namespace OHOS::uitest {
 
         virtual void InjectMouseEventSequence(const vector<MouseEvent>& events) const {};
 
+        virtual bool IsTouchPadExist() const
+        {
+            return false;
+        };
+
+        virtual void InjectTouchPadEventSequence(const vector<TouchPadEvent>& events) const {};
+
         virtual void PutTextToClipboard(std::string_view text) const {};
 
         virtual bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, Rect rect) const
