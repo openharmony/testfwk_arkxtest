@@ -268,6 +268,17 @@ namespace OHOS::uitest {
         sizeof(UI_ELEMENT_INFO_PROPERTIES) / sizeof(FrontEndJsonPropDef),
     };
 
+    /** TouchPadSwipeOptions definition.*/
+    constexpr FrontEndJsonPropDef TOUCH_PAD_SWIPE_OPTIONS[] = {
+        {"stay", "bool", false},
+        {"speed", "int", false},
+    };
+    constexpr FrontEndJsonDef TOUCH_PAD_SWIPE_OPTIONS_DEF = {
+        "TouchPadSwipeOptions",
+        TOUCH_PAD_SWIPE_OPTIONS,
+        sizeof(TOUCH_PAD_SWIPE_OPTIONS) / sizeof(FrontEndJsonPropDef),
+    };
+
     /** By class definition. deprecated since api 9*/
     constexpr FrontendMethodDef BY_METHODS[] = {
         {"By.id", "(int):By", false, true},
@@ -399,6 +410,12 @@ namespace OHOS::uitest {
         {"Driver.mouseScroll", "(Point,bool,int,int?,int?,int?):void", false, false},
         {"Driver.createUIEventObserver", "():UIEventObserver", false, false},
         {"Driver.inputText", "(Point,string):void", false, false},
+        {"Driver.touchPadMultiFingerSwipe", "(int,int,TouchPadSwipeOptions?):void", false, false},
+        {"Driver.penClick", "(Point):void", false, false},
+        {"Driver.penLongClick", "(Point,float?):void", false, false},
+        {"Driver.penDoubleClick", "(Point):void", false, false},
+        {"Driver.penSwipe", "(Point,Point,int?,float?):void", false, false},
+        {"Driver.injectPenPointerAction", "(PointerMatrix,int?,float?):void", false, false},
     };
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",
@@ -492,7 +509,8 @@ namespace OHOS::uitest {
                                       &UI_EVENT_OBSERVER_DEF};
     const auto FRONTEND_ENUMERATOR_DEFS = {&MATCH_PATTERN_DEF, &WINDOW_MODE_DEF, &RESIZE_DIRECTION_DEF,
                                            &DISPLAY_ROTATION_DEF, &MOUSE_BUTTON_DEF, &UI_DIRECTION_DEF};
-    const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF, &UI_ELEMENT_INFO_DEF};
+    const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF, &UI_ELEMENT_INFO_DEF,
+                                     &TOUCH_PAD_SWIPE_OPTIONS_DEF};
     /** The allowed in/out data type scope of frontend apis.*/
     const std::initializer_list<std::string_view> DATA_TYPE_SCOPE = {
         "int",
@@ -511,6 +529,7 @@ namespace OHOS::uitest {
         UI_WINDOW_DEF.name_,
         POINTER_MATRIX_DEF.name_,
         UI_EVENT_OBSERVER_DEF.name_,
+        TOUCH_PAD_SWIPE_OPTIONS_DEF.name_,
     };
 } // namespace OHOS::uitest
 

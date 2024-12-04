@@ -96,6 +96,10 @@ namespace OHOS::uitest {
 
         void GetMergeWindowBounds(Rect& mergeRect);
 
+        void PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error);
+
+        void PerformPenTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
+
     private:
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction

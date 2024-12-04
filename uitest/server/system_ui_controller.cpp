@@ -419,8 +419,23 @@ namespace OHOS::uitest {
         return true;
     }
 
-    static void AddPinterItems(PointerEvent &event, const vector<pair<bool, Point>> &fingerStatus,
-        uint32_t currentFinger)
+    static void SetItemByType(PointerEvent::PointerItem &pinterItem, const PointerMatrix &events)
+    {
+        switch (events.GetToolType()) {
+            case PointerEvent::TOOL_TYPE_FINGER:
+                pinterItem.SetToolType(PointerEvent::TOOL_TYPE_FINGER);
+                break;
+            case PointerEvent::TOOL_TYPE_PEN:
+                pinterItem.SetToolType(PointerEvent::TOOL_TYPE_PEN);
+                pinterItem.SetPressure(events.GetTouchPressure());
+                break;
+            default:
+                return;
+        }
+    }
+
+    static void AddPointerItems(PointerEvent &event, const vector<pair<bool, Point>> &fingerStatus,
+        uint32_t currentFinger, const PointerMatrix &events)
     {
         PointerEvent::PointerItem pinterItem1;
         pinterItem1.SetPointerId(currentFinger);
@@ -430,6 +445,7 @@ namespace OHOS::uitest {
         pinterItem1.SetRawDisplayX(fingerStatus[currentFinger].second.px_);
         pinterItem1.SetRawDisplayY(fingerStatus[currentFinger].second.py_);
         pinterItem1.SetPressed(fingerStatus[currentFinger].first);
+        SetItemByType(pinterItem1, events);
         event.UpdatePointerItem(currentFinger, pinterItem1);
         LOG_D("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
             currentFinger, fingerStatus[currentFinger].first, fingerStatus[currentFinger].second.px_,
@@ -448,6 +464,7 @@ namespace OHOS::uitest {
                 pinterItem.SetRawDisplayX(fingerStatus[index].second.px_);
                 pinterItem.SetRawDisplayY(fingerStatus[index].second.py_);
                 pinterItem.SetPressed(true);
+                SetItemByType(pinterItem, events);
                 event.UpdatePointerItem(index, pinterItem);
                 LOG_D("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
                     index, fingerStatus[index].first, fingerStatus[index].second.px_,
@@ -458,6 +475,8 @@ namespace OHOS::uitest {
 
     void SysUiController::InjectTouchEventSequence(const PointerMatrix &events) const
     {
+        DisplayManager &displayMgr = DisplayManager::GetInstance();
+        auto defaultDisplayId = displayMgr.GetDefaultDisplayId();
         // fingerStatus stores the press status and coordinates of each finger.
         vector<pair<bool, Point>> fingerStatus(events.GetFingers(), make_pair(false, Point(0,0)));
         for (uint32_t step = 0; step < events.GetSteps(); step++) {
@@ -467,7 +486,8 @@ namespace OHOS::uitest {
                     LOG_E("Creat PointerEvent failed.");
                     return;
                 }
-                bool isPressed = events.At(finger, step).stage_ != ActionStage::UP;
+                bool isPressed = (events.At(finger, step).stage_ == ActionStage::DOWN) ||
+                                 (events.At(finger, step).stage_ == ActionStage::MOVE);
                 fingerStatus[finger] = make_pair(isPressed, events.At(finger, step).point_);
                 pointerEvent->SetPointerId(finger);
                 switch (events.At(finger, step).stage_) {
@@ -480,13 +500,18 @@ namespace OHOS::uitest {
                     case ActionStage::UP:
                         pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_UP);
                         break;
-                    default:
+                    case ActionStage::PROXIMITY_IN:
+                        pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_PROXIMITY_IN);
                         break;
+                    case ActionStage::PROXIMITY_OUT:
+                        pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_PROXIMITY_OUT);
+                        break;
+                    default:
+                        return;
                 }
-                AddPinterItems(*pointerEvent, fingerStatus, finger);
+                AddPointerItems(*pointerEvent, fingerStatus, finger, events);
                 pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
-                DisplayManager &displayMgr = DisplayManager::GetInstance();
-                pointerEvent->SetTargetDisplayId(displayMgr.GetDefaultDisplayId());
+                pointerEvent->SetTargetDisplayId(defaultDisplayId);
                 InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
                 LOG_D("Inject touchEvent");
                 if (events.At(finger, step).holdMs_ > 0) {
@@ -521,7 +546,6 @@ namespace OHOS::uitest {
         pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
         pointerEvent->SetPointerId(0);
         pointerEvent->SetButtonId(event.button_);
-        SetMousePointerItemAttr(event, item);
         constexpr double axialValue = 15;
         static bool flag = true;
         auto injectAxialValue = axialValue;
@@ -556,8 +580,9 @@ namespace OHOS::uitest {
                 pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, injectAxialValue);
                 break;
             default:
-                break;
+                return;
         }
+        SetMousePointerItemAttr(event, item);
         pointerEvent->AddPointerItem(item);
         InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
         this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
@@ -624,6 +649,73 @@ namespace OHOS::uitest {
         // check not released keys
         for (auto downKey : downKeys) {
             LOG_W("Key event sequence injections done with not-released key: %{public}d", downKey);
+        }
+    }
+
+    bool SysUiController::IsTouchPadExist() const
+    {
+        std::vector<int32_t> inputDeviceIdList;
+        auto getDeviceIdsCallback = [&inputDeviceIdList](std::vector<int32_t>& deviceIds) {
+            inputDeviceIdList = deviceIds;
+        };
+        int32_t ret1 = InputManager::GetInstance()->GetDeviceIds(getDeviceIdsCallback);
+        if (ret1 != RET_OK) {
+            LOG_E("Get device ids failed");
+            return false;
+        }
+        const int32_t touchPadTag = 1 << 3;
+        for (auto inputDeviceId : inputDeviceIdList) {
+            std::shared_ptr<MMI::InputDevice> inputDevice;
+            auto getDeviceCallback = [&inputDevice](std::shared_ptr<MMI::InputDevice> device) {
+                inputDevice = device;
+            };
+            int32_t ret2 = MMI::InputManager::GetInstance()->GetDevice(inputDeviceId, getDeviceCallback);
+            if (ret2 != RET_OK || inputDevice == nullptr) {
+                LOG_E("Get device failed");
+                continue;
+            }
+            if (inputDevice->GetType() & touchPadTag) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void SysUiController::InjectTouchPadEventSequence(const vector<TouchPadEvent>& events) const
+    {
+        vector<pair<bool, Point>> fingerStatus(1, make_pair(false, Point(0, 0)));
+        for (auto &event : events) {
+            auto pointerEvent = PointerEvent::Create();
+            if (pointerEvent == nullptr) {
+                LOG_E("Creat PointerEvent failed.");
+                return;
+            }
+            pointerEvent->SetPointerId(0);
+            switch (event.stage) {
+                case ActionStage::DOWN:
+                    pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_SWIPE_BEGIN);
+                    break;
+                case ActionStage::MOVE:
+                    pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_SWIPE_UPDATE);
+                    break;
+                case ActionStage::UP:
+                    pointerEvent->SetPointerAction(PointerEvent::POINTER_ACTION_SWIPE_END);
+                    break;
+                default:
+                    break;
+            }
+            fingerStatus[0] = make_pair(false, event.point);
+            PointerMatrix pointer;
+            AddPointerItems(*pointerEvent, fingerStatus, 0, pointer);
+            pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHPAD);
+            pointerEvent->SetFingerCount(event.fingerCount);
+            DisplayManager &displayMgr = DisplayManager::GetInstance();
+            pointerEvent->SetTargetDisplayId(displayMgr.GetDefaultDisplayId());
+            InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
+            LOG_D("Inject touchEvent");
+            if (event.holdMs > 0) {
+                this_thread::sleep_for(chrono::milliseconds(event.holdMs));
+            }
         }
     }
 
