@@ -524,7 +524,7 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks4)
     call3.paramList_.emplace_back("REG_EXP");
     server.Call(call3, reply3);
     ASSERT_EQ(ERR_INVALID_INPUT, reply3.exception_.code_);
-    ASSERT_TRUE(reply3.exception_.message_.find("Expect MatchPattern") != string::npos);
+    ASSERT_TRUE(reply3.exception_.message_.find("Expect integer") != string::npos);
 }
 
 TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
