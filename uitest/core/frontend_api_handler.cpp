@@ -1036,19 +1036,28 @@ namespace OHOS::uitest {
         auto multiPointerAction = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto &pointer = GetBackendObject<PointerMatrix>(ReadCallArg<string>(in, INDEX_ZERO));
-            auto flag = CheckMultiPointerOperatorsPoint(pointer);
-            if (!flag) {
+            if (!CheckMultiPointerOperatorsPoint(pointer)) {
                 out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "There is not all coordinate points are set");
                 return;
             }
             UiOpArgs uiOpArgs;
-            uiOpArgs.swipeVelocityPps_  = ReadCallArg<uint32_t>(in, INDEX_ONE, uiOpArgs.swipeVelocityPps_);
-            CheckSwipeVelocityPps(uiOpArgs);
+            uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_ONE, uiOpArgs.swipeVelocityPps_);
             auto touch = MultiPointerAction(pointer);
-            driver.PerformTouch(touch, uiOpArgs, out.exception_);
-            out.resultValue_ = (out.exception_.code_ == NO_ERROR);
+            CheckSwipeVelocityPps(uiOpArgs);
+            if (in.apiId_ == "Driver.injectMultiPointerAction") {
+                driver.PerformTouch(touch, uiOpArgs, out.exception_);
+                out.resultValue_ = (out.exception_.code_ == NO_ERROR);
+            } else if (in.apiId_ == "Driver.injectPenPointerAction") {
+                if (pointer.GetFingers() != 1) {
+                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Finger number must be 1 when injecting pen action");
+                    return;
+                }
+                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_TWO, uiOpArgs.touchPressure_);
+                driver.PerformPenTouch(touch, uiOpArgs, out.exception_);
+            }
         };
         server.AddHandler("Driver.injectMultiPointerAction", multiPointerAction);
+        server.AddHandler("Driver.injectPenPointerAction", multiPointerAction);
     }
 
     static void RegisterUiDriverMouseOperators1()
@@ -1128,6 +1137,91 @@ namespace OHOS::uitest {
             driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.mouseScroll", mouseScroll);
+    }
+
+    static void RegisterUiDriverTouchPadOperators()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto touchPadMultiFingerSwipe = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto fingers = ReadCallArg<int32_t>(in, INDEX_ZERO);
+            if (fingers < 3 || fingers > 4) {
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Number of illegal fingers");
+                return;
+            }
+            auto direction = ReadCallArg<Direction>(in, INDEX_ONE);
+            if (direction < TO_LEFT || direction > TO_DOWN) {
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Illegal direction");
+                return;
+            }
+            auto stay = false;
+            auto speed = uiOpArgs.defaultTouchPadSwipeVelocityPps_;
+            auto touchPadSwipeOptions = ReadCallArg<json>(in, INDEX_TWO, json());
+            if (!touchPadSwipeOptions.empty()) {
+                if (touchPadSwipeOptions.contains("stay") && touchPadSwipeOptions["stay"].is_boolean()) {
+                    stay = touchPadSwipeOptions["stay"];
+                }
+                if (touchPadSwipeOptions.contains("speed") && touchPadSwipeOptions["speed"].is_number()) {
+                    speed = touchPadSwipeOptions["speed"];
+                }
+                if (speed < uiOpArgs.minSwipeVelocityPps_ || speed > uiOpArgs.maxSwipeVelocityPps_) {
+                    LOG_W("The swipe velocity out of range");
+                    speed = uiOpArgs.defaultTouchPadSwipeVelocityPps_;
+                }
+            }
+            uiOpArgs.swipeVelocityPps_ = speed;
+            auto touch = TouchPadAction(fingers, direction, stay);
+            driver.PerformTouchPadAction(touch, uiOpArgs, out.exception_);
+        };
+        server.AddHandler("Driver.touchPadMultiFingerSwipe", touchPadMultiFingerSwipe);
+    }
+
+    static void RegisterUiDriverPenOperators()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto genericPenAction = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto point0Json = ReadCallArg<json>(in, INDEX_ZERO);
+            const auto point0 = Point(point0Json["x"], point0Json["y"]);
+            const auto screenSize = driver.GetDisplaySize(out.exception_);
+            const auto screen = Rect(0, screenSize.px_, 0, screenSize.py_);
+            if (!RectAlgorithm::IsInnerPoint(screen, point0)) {
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "The point is not on the screen");
+                return;
+            }
+            auto point1 = Point(0, 0);
+            auto op = TouchOp::CLICK;
+            if (in.apiId_ == "Driver.penLongClick") {
+                op = TouchOp::LONG_CLICK;
+                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_ONE, uiOpArgs.touchPressure_);
+            } else if (in.apiId_ == "Driver.penDoubleClick") {
+                op = TouchOp::DOUBLE_CLICK_P;
+            } else if (in.apiId_ == "Driver.penSwipe") {
+                op = TouchOp::SWIPE;
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
+                CheckSwipeVelocityPps(uiOpArgs);
+                auto point1Json = ReadCallArg<json>(in, INDEX_ONE);
+                point1 = Point(point1Json["x"], point1Json["y"]);
+                if (!RectAlgorithm::IsInnerPoint(screen, point1)) {
+                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "The point is not on the screen");
+                    return;
+                }
+                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_THREE, uiOpArgs.touchPressure_);
+            }
+            if (op == TouchOp::SWIPE) {
+                auto touch = GenericSwipe(op, point0, point1);
+                driver.PerformPenTouch(touch, uiOpArgs, out.exception_);
+            } else {
+                auto touch = GenericClick(op, point0);
+                driver.PerformPenTouch(touch, uiOpArgs, out.exception_);
+            }
+        };
+        server.AddHandler("Driver.penClick", genericPenAction);
+        server.AddHandler("Driver.penLongClick", genericPenAction);
+        server.AddHandler("Driver.penDoubleClick", genericPenAction);
+        server.AddHandler("Driver.penSwipe", genericPenAction);
     }
 
     static void RegisterUiDriverDisplayOperators()
@@ -1513,5 +1607,7 @@ static void RegisterExtensionHandler()
         RegisterUiDriverMouseOperators2();
         RegisterUiEventObserverMethods();
         RegisterExtensionHandler();
+        RegisterUiDriverTouchPadOperators();
+        RegisterUiDriverPenOperators();
     }
 } // namespace OHOS::uitest
