@@ -106,7 +106,7 @@ declare interface whenResult {
     afterThrow: (e_msg: string) => string
 }
 
-export declare function when(f:Function): (f?: allExpectType | void) => whenResult
+export declare function when(f:Function): (...args: (allExpectType | void)[]) => whenResult
 
 export declare interface VerificationMode {
     times(count: Number): void

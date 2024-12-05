@@ -102,14 +102,19 @@ class MockKit {
             values = new Map();
         }
         let key = params[0];
-        if (typeof key == 'undefined') {
+        if (typeof key === 'undefined') {
             key = 'anonymous-mock-' + f.propName;
-        }
-        let matcher = new ArgumentMatchers();
-        if (matcher.matcheStubKey(key)) {
-            key = matcher.matcheStubKey(key);
-            if (key) {
-                this.currentSetKey.set(f, key);
+        } else {
+            key = [];
+            const matcher = new ArgumentMatchers();
+            for (let i = 0; i < params.length; i++) {
+                const param = params[i];
+                const matchKey = matcher.matcheStubKey(param);
+                if(matchKey) {
+                    key.push(matchKey);
+                } else {
+                    key.push(param);
+                }
             }
         }
         values.set(key, returnInfo);
@@ -121,27 +126,83 @@ class MockKit {
         if (!values) {
             return undefined;
         }
-        let retrunKet = params[0];
-        if (typeof retrunKet == 'undefined') {
-            retrunKet = 'anonymous-mock-' + f.propName;
-        }
-        let stubSetKey = this.currentSetKey.get(f);
-
-        if (stubSetKey && (typeof (retrunKet) !== 'undefined')) {
-            retrunKet = stubSetKey;
-        }
-        let matcher = new ArgumentMatchers();
-        if (matcher.matcheReturnKey(params[0], undefined, stubSetKey) && matcher.matcheReturnKey(params[0], undefined, stubSetKey) !== stubSetKey) {
-            retrunKet = params[0];
+        let returnKet = params[0];
+        const anonymousName = 'anonymous-mock-' + f.propName;
+        if (typeof returnKet === 'undefined') {
+            returnKet = anonymousName
+        } else {
+            returnKet = this.getReturnKet(values, params, returnKet, anonymousName);
         }
 
-        values.forEach(function (value, key, map) {
-            if (ArgumentMatchers.isRegExp(key) && matcher.matcheReturnKey(params[0], key)) {
-                retrunKet = key;
+        return values.get(returnKet);
+    }
+
+    getReturnKet(values, params, defaultValue, anonymousName) {
+        let flag = true;
+        let returnKet = defaultValue;
+        values.forEach((value, paramsKey, map) => {
+            if(flag && paramsKey !== anonymousName && paramsKey.length === params.length && this.checkIsRightValue(paramsKey, params)) {
+                returnKet = paramsKey;
+                flag = false;
             }
         });
+        return returnKet;
+    }
 
-        return values.get(retrunKet);
+    checkIsRightValue(paramsKey, params) {
+        const matcher = new ArgumentMatchers();
+        return paramsKey.every((key, j) => {
+            if(ArgumentMatchers.isRegExp(key) && typeof params[j] === "string") {
+                return key.test(params[j])
+            }
+            const matchKey = matcher.matcheReturnKey(params[j], undefined, key);
+            if(matchKey && matchKey === key) {
+                return true;
+            } else if(this.checkIsEqual(params[j], key)) {
+                return true;
+            }
+            return false;
+        })
+    }
+
+    checkIsEqual(value1, value2) {
+        if(value1 === value2) {
+            return true;
+        }
+        if(typeof value1 !== typeof value2) {
+            return false;
+        }
+        if(Array.isArray(value1) && Array.isArray(value2)) {
+            if(value1.length !== value2.length) {
+                return false;
+            }
+            for(let i = 0; i < value1.length; i++) {
+                if(!this.checkIsEqual(value1[i], value2[i])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if(Object.prototype.toString.call(value1) === "[object Object]" && Object.prototype.toString.call(value2) === "[object Object]") {
+            const keys1 = Object.keys(value1);
+            const keys2 = Object.keys(value2);
+            if(keys1.length !== keys2.length) {
+                return false;
+            }
+            for (let key of keys1) {
+                if(!keys2.includes(key) || !this.checkIsEqual(value1[key], value2[key])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if(Object.prototype.toString.call(value1) === "[object Date]" && Object.prototype.toString.call(value2) === "[object Date]" && value1.getTime() === value2.getTime()) {
+            return true;
+        }
+        if(Object.prototype.toString.call(value1) === "[object RegExp]" && Object.prototype.toString.call(value2) === "[object RegExp]" && value1.toString() === value2.toString()) {
+            return true;
+        }
+        return false;
     }
 
     findName(obj, value) {
