@@ -29,6 +29,7 @@ namespace OHOS::testserver {
         sptr<ITestServerInterface> LoadTestServer();
         int32_t SetPasteData(std::string text);
         bool PublishCommonEvent(const EventFwk::CommonEventData &event);
+        void FrequencyLock()
 
     private:
         TestServerClient() = default;
@@ -43,7 +44,7 @@ namespace OHOS::testserver {
 #ifdef __cplusplus
 extern "C" {
 #endif
-int32_t FrequencyLock();
+void FrequencyLockPlugin();
 #ifdef __cplusplus
 }
 #endif
