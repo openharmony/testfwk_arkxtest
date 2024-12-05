@@ -162,13 +162,19 @@ namespace OHOS::testserver {
         return result;
     }
 
-    bool TestServerClient::FrequencyLock()
+    void TestServerClient::FrequencyLock()
     {
         auto iTestServerInterface = LoadTestServer();
         if (iTestServerInterface == nullptr) {
             HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
-            return TEST_SERVER_GET_INTERFACE_FAILED;
+            return;
         }
-        return iTestServerInterface->FrequencyLock();
+        iTestServerInterface->FrequencyLock();
+        return;
     }
 } // namespace OHOS::testserver
+
+void FrequencyLockPlugin()
+{
+    OHOS::testserver::TestServerClient::GetInstance().FrequencyLock();
+}
