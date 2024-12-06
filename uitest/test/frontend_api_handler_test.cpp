@@ -739,3 +739,31 @@ TEST_F(FrontendApiHandlerTest, onEventCallback)
     monitor.OnEvent("toastShow");
     ASSERT_EQ("capture event: toastShow,dialogShow,", result);
 }
+
+TEST_F(FrontendApiHandlerTest, touchPadMultiFingerSwipeParameterPreChecks)
+{
+    const auto& server =  FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.touchPadMultiFingerSwipe",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    call2.paramList_.emplace_back(2);
+    call2.paramList_.emplace_back(0);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    ASSERT_EQ(USAGE_ERROR, reply2.exception_.code_);
+    ASSERT_TRUE(reply2.exception_.message_.find("Number of illegal fingers") != string::npos);
+
+    auto call3 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply3 = ApiReplyInfo();
+    server.Call(call3, reply3);
+    auto call4 = ApiCallInfo {.apiId_ = "UiDriver.touchPadMultiFingerSwipe",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    call4.paramList_.emplace_back(5);
+    call4.paramList_.emplace_back(0);
+    auto reply4 = ApiReplyInfo();
+    server.Call(call4, reply4);
+    ASSERT_EQ(USAGE_ERROR, reply4.exception_.code_);
+    ASSERT_TRUE(reply4.exception_.message_.find("Number of illegal fingers") != string::npos);
+}
