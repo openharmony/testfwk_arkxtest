@@ -187,37 +187,28 @@ class MockKit {
       }
       return true;
     }
-    if (
-      Object.prototype.toString.call(value1) === '[object Object]' &&
-      Object.prototype.toString.call(value2) === '[object Object]'
-    ) {
+    if (Object.prototype.toString.call(value1) === '[object Object]' &&
+      Object.prototype.toString.call(value2) === '[object Object]') {
       const keys1 = Object.keys(value1);
       const keys2 = Object.keys(value2);
       if (keys1.length !== keys2.length) {
         return false;
       }
       for (let key of keys1) {
-        if (
-          !keys2.includes(key) ||
-          !this.checkIsEqual(value1[key], value2[key])
-        ) {
+        if (!keys2.includes(key) || !this.checkIsEqual(value1[key], value2[key])) {
           return false;
         }
       }
       return true;
     }
-    if (
-      Object.prototype.toString.call(value1) === '[object Date]' &&
+    if (Object.prototype.toString.call(value1) === '[object Date]' &&
       Object.prototype.toString.call(value2) === '[object Date]' &&
-      value1.getTime() === value2.getTime()
-    ) {
+      value1.getTime() === value2.getTime()) {
       return true;
     }
-    if (
-      Object.prototype.toString.call(value1) === '[object RegExp]' &&
+    if (Object.prototype.toString.call(value1) === '[object RegExp]' &&
       Object.prototype.toString.call(value2) === '[object RegExp]' &&
-      value1.toString() === value2.toString()
-    ) {
+      value1.toString() === value2.toString()) {
       return true;
     }
     return false;
