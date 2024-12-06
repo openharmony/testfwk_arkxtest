@@ -600,7 +600,7 @@ namespace OHOS::uitest {
                 keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_UP);
                 OHOS::MMI::KeyEvent::KeyItem keyItem;
                 keyItem.SetKeyCode(event.code_);
-                keyItem.SetPressed(true);
+                keyItem.SetPressed(false);
                 keyEvent->AddKeyItem(keyItem);
                 InputManager::GetInstance()->SimulateInputEvent(keyEvent);
                 LOG_D("Inject keyEvent up, keycode:%{public}d", event.code_);
