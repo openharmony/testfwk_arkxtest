@@ -229,7 +229,7 @@ class SuiteService {
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);
         const res = func.call();
-        if (Object.prototype.toString.call(res) === "[object Promise]") {
+        if (Object.prototype.toString.call(res) === '[object Promise]') {
             suite.isPromiseError = true;
         }
         this.suitesStack.pop();
@@ -322,7 +322,7 @@ class SuiteService {
             this.fullRun = true;
             return false;
         }
-        const targetArray = configServiceClass.split(',').map(item => item.trim()).filter(item => item !== "");
+        const targetArray = configServiceClass.split(',').map(item => item.trim()).filter(item => item !== '');
         if (this.targetSuiteArray.length === 0) {
             for (let index in targetArray) {
                 if (targetArray[index].includes('#')) {
