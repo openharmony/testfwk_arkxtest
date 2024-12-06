@@ -121,12 +121,16 @@ class OhReport {
   async suiteDone() {
     if (this.abilityDelegatorArguments !== null) {
       const currentRunningSuite = this.suiteService.getCurrentRunningSuite();
-      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), this.suiteService.getCurrentRunningSuite(), '');
+      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), currentRunningSuite, '');
       let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
       if (this.suiteService.currentRunningSuite.isSkip && this.suiteService.currentRunningSuite.skipReason !== '') {
         message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.suiteService.currentRunningSuite.skipReason;
       }
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: suiteconsuming=` + this.suiteService.getCurrentRunningSuite().duration;
+      const isPromiseError = currentRunningSuite.isPromiseError;
+      if (isPromiseError) {
+        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: shortMsg=Promise(async, await) in describe is not allowed!`;
+      }
+      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: suiteconsuming=` + currentRunningSuite.duration;
       if (currentRunningSuite.hookError) {
         message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: ${currentRunningSuite.hookError.message}`;
       }
@@ -136,7 +140,7 @@ class OhReport {
       }
       console.info(`${message}`);
       await SysTestKit.print(message);
-      console.info(`${TAG}${this.suiteService.getCurrentRunningSuite().description} suiteDone print success`);
+      console.info(`${TAG}${currentRunningSuite.description} suiteDone print success`);
     }
   }
 
