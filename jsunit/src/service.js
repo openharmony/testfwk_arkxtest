@@ -228,7 +228,10 @@ class SuiteService {
         this.currentRunningSuite.childSuites.push(suite);
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);
-        func.call();
+        const res = func.call();
+        if (Object.prototype.toString.call(res) === '[object Promise]') {
+            suite.isPromiseError = true;
+        }
         this.suitesStack.pop();
         this.currentRunningSuite = this.suitesStack.pop();
         this.suitesStack.push(this.currentRunningSuite);
@@ -319,8 +322,8 @@ class SuiteService {
             this.fullRun = true;
             return false;
         }
+        const targetArray = configServiceClass.split(',').map(item => item.trim()).filter(item => item !== '');
         if (this.targetSuiteArray.length === 0) {
-            const targetArray = configServiceClass.split(',');
             for (let index in targetArray) {
                 if (targetArray[index].includes('#')) {
                     this.targetSpecArray.push(targetArray[index]);
@@ -330,7 +333,7 @@ class SuiteService {
             }
 
         }
-        return !configServiceClass.includes(desc);
+        return targetArray.indexOf(desc) === -1;
 
     }
     traversalResults(suite, obj, breakOnError) {
