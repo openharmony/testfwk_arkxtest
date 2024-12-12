@@ -205,7 +205,6 @@ namespace OHOS::testserver {
         testServerExit_ = true;
     }
 
-
     ErrCode TestServerService::FrequencyLock()
     {
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
