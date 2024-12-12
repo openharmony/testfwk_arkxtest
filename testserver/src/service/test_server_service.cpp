@@ -22,6 +22,7 @@
 #include "iservice_registry.h"
 #include "test_server_error_code.h"
 #include "pasteboard_client.h"
+#include "socperf_client.h"
 
 namespace OHOS::testserver {
     // TEST_SERVER_SA_ID
@@ -202,6 +203,15 @@ namespace OHOS::testserver {
     {
         HiLog::Info(LABEL_TIMER, "%{public}s called.", __func__);
         testServerExit_ = true;
+    }
+
+
+    ErrCode TestServerService::FrequencyLock()
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        int performanceModeId = 9100;
+        OHOS::SOCPERF::SocPerfClient::GetInstance().PerfRequest(performanceModeId, "");
+        return TEST_SERVER_OK;
     }
 
 } // namespace OHOS::testserver
