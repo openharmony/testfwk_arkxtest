@@ -48,27 +48,26 @@ namespace OHOS::uitest {
         {RESIZE, SPLIT_PRIMARY, true, "", ""},
         {RESIZE, SPLIT_SECONDARY, true, "", ""},
         {RESIZE, FLOATING, true, "", ""},
-        {SPLIT, FULLSCREEN, true, "container_modal_split_left_button", ""},
-        {SPLIT, SPLIT_PRIMARY, false, "container_modal_split_left_button", "SPLIT_PRIMARY can not split again"},
-        {SPLIT, SPLIT_SECONDARY, true, "container_modal_split_left_button", ""},
-        {SPLIT, FLOATING, true, "container_modal_split_left_button", ""},
-        {MAXIMIZE, FULLSCREEN, false, "container_modal_maximize_button", "Fullscreen window is already maximized"},
-        {MAXIMIZE, SPLIT_PRIMARY, true, "container_modal_maximize_button", ""},
-        {MAXIMIZE, SPLIT_SECONDARY, true, "container_modal_maximize_button", ""},
-        {MAXIMIZE, FLOATING, true, "container_modal_maximize_button", ""},
-        {RESUME, FULLSCREEN, true, "container_modal_maximize_button", ""},
-        {RESUME, SPLIT_PRIMARY, true, "container_modal_maximize_button", ""},
-        {RESUME, SPLIT_SECONDARY, true, "container_modal_maximize_button", ""},
-        {RESUME, FLOATING, true, "container_modal_maximize_button", ""},
-        {MINIMIZE, FULLSCREEN, true, "container_modal_minimize_button", ""},
-        {MINIMIZE, SPLIT_PRIMARY, true, "container_modal_minimize_button", ""},
-        {MINIMIZE, SPLIT_SECONDARY, true, "container_modal_minimize_button", ""},
-        {MINIMIZE, FLOATING, true, "container_modal_minimize_button", ""},
-        {CLOSE, FULLSCREEN, true, "container_modal_close_button", ""},
-        {CLOSE, SPLIT_PRIMARY, true, "container_modal_close_button", ""},
-        {CLOSE, SPLIT_SECONDARY, true, "container_modal_close_button", ""},
-        {CLOSE, FLOATING, true, "container_modal_close_button", ""}
-    };
+        {SPLIT, FULLSCREEN, true, "", ""},
+        {SPLIT, SPLIT_PRIMARY, false, "", "SPLIT_PRIMARY can not split again"},
+        {SPLIT, SPLIT_SECONDARY, true, "", ""},
+        {SPLIT, FLOATING, true, "", ""},
+        {MAXIMIZE, FULLSCREEN, false, "", "Fullscreen window is already maximized"},
+        {MAXIMIZE, SPLIT_PRIMARY, true, "EnhanceMaximizeBtn", ""},
+        {MAXIMIZE, SPLIT_SECONDARY, true, "EnhanceMaximizeBtn", ""},
+        {MAXIMIZE, FLOATING, true, "EnhanceMaximizeBtn", ""},
+        {RESUME, FULLSCREEN, true, "EnhanceMaximizeBtn", ""},
+        {RESUME, SPLIT_PRIMARY, true, "EnhanceMaximizeBtn", ""},
+        {RESUME, SPLIT_SECONDARY, true, "EnhanceMaximizeBtn", ""},
+        {RESUME, FLOATING, true, "EnhanceMaximizeBtn", ""},
+        {MINIMIZE, FULLSCREEN, true, "EnhanceMinimizeBtn", ""},
+        {MINIMIZE, SPLIT_PRIMARY, true, "EnhanceMinimizeBtn", ""},
+        {MINIMIZE, SPLIT_SECONDARY, true, "EnhanceMinimizeBtn", ""},
+        {MINIMIZE, FLOATING, true, "EnhanceMinimizeBtn", ""},
+        {CLOSE, FULLSCREEN, true, "EnhanceCloseBtn", ""},
+        {CLOSE, SPLIT_PRIMARY, true, "EnhanceCloseBtn", ""},
+        {CLOSE, SPLIT_SECONDARY, true, "EnhanceCloseBtn", ""},
+        {CLOSE, FLOATING, true, "EnhanceCloseBtn", ""}};
 
     static bool CheckOperational(WindowAction action, WindowMode mode, ApiReplyInfo &out, string &buttonId)
     {
@@ -190,107 +189,9 @@ namespace OHOS::uitest {
         if (!CheckOperational(SPLIT, window_.mode_, out, targetBtnId)) {
             return;
         }
-        BarAction(targetBtnId, out);
-        if (out.exception_.code_ == ERR_OPERATION_UNSUPPORTED) {
-            out.exception_ = ApiCallErr(NO_ERROR, "");
-            // call split bar.
-            auto selector = WidgetSelector();
-            auto attrMatcher = WidgetMatchModel(UiAttr::KEY, "EnhanceMaximizeBtn", EQ);
-            auto windowMatcher = WidgetMatchModel(UiAttr::HOST_WINDOW_ID, to_string(window_.id_), EQ);
-            selector.AddMatcher(attrMatcher);
-            selector.AddMatcher(windowMatcher);
-            selector.AddAppLocator(window_.bundleName_);
-            selector.SetWantMulti(false);
-            vector<unique_ptr<Widget>> widgets;
-            driver_.FindWidgets(selector, widgets, out.exception_);
-            if (out.exception_.code_ != NO_ERROR) {
-                return;
-            }
-            if (widgets.empty()) {
-                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
-                return;
-            }
-            auto rect = widgets[0]->GetBounds();
-            Point widgetCenter(rect.GetCenterX(), rect.GetCenterY());
-            auto touch1 = MouseMoveTo(widgetCenter);
-            driver_.PerformMouseAction(touch1, options_, out.exception_);
-            constexpr auto focusTime = 1000;
-            driver_.DelayMs(focusTime);
-            // find split btn and click.
-            auto selector2 = WidgetSelector();
-            auto attrMatcher2 = WidgetMatchModel(UiAttr::KEY, "EnhanceMenuScreenLeftRow", EQ);
-            selector2.AddMatcher(attrMatcher2);
-            selector2.SetWantMulti(false);
-            vector<unique_ptr<Widget>> widgets2;
-            driver_.FindWidgets(selector2, widgets2, out.exception_);
-            if (widgets2.empty()) {
-                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
-                return;
-            }
-            auto rect2 = widgets2[0]->GetBounds();
-            Point widgetCenter2(rect2.GetCenterX(), rect2.GetCenterY());
-            auto touch2 = GenericClick(TouchOp::CLICK, widgetCenter2);
-            driver_.PerformTouch(touch2, options_, out.exception_);
-        }
-    }
-
-    void  WindowOperator::Maximize(ApiReplyInfo &out)
-    {
-        string targetBtnId;
-        if (!CheckOperational(MAXIMIZE, window_.mode_, out, targetBtnId)) {
-            return;
-        }
-        BarAction(targetBtnId, out);
-        if (out.exception_.code_ == ERR_OPERATION_UNSUPPORTED) {
-            out.exception_ = ApiCallErr(NO_ERROR, "");
-            BarAction("EnhanceMaximizeBtn", out);
-        }
-    }
-
-    void WindowOperator::Resume(ApiReplyInfo &out)
-    {
-        string targetBtnId;
-        if (!CheckOperational(RESUME, window_.mode_, out, targetBtnId)) {
-            return;
-        }
-        BarAction(targetBtnId, out);
-        if (out.exception_.code_ == ERR_OPERATION_UNSUPPORTED) {
-            out.exception_ = ApiCallErr(NO_ERROR, "");
-            BarAction("EnhanceMaximizeBtn", out);
-        }
-    }
-
-    void WindowOperator::Minimize(ApiReplyInfo &out)
-    {
-        string targetBtnId;
-        if (!CheckOperational(MINIMIZE, window_.mode_, out, targetBtnId)) {
-            return;
-        }
-        BarAction(targetBtnId, out);
-        if (out.exception_.code_ == ERR_OPERATION_UNSUPPORTED) {
-            out.exception_ = ApiCallErr(NO_ERROR, "");
-            BarAction("EnhanceMinimizeBtn", out);
-        }
-    }
-
-    void WindowOperator::Close(ApiReplyInfo &out)
-    {
-        string targetBtnId;
-        if (!CheckOperational(CLOSE, window_.mode_, out, targetBtnId)) {
-            return;
-        }
-        BarAction(targetBtnId, out);
-        if (out.exception_.code_ == ERR_OPERATION_UNSUPPORTED) {
-            out.exception_ = ApiCallErr(NO_ERROR, "");
-            BarAction("EnhanceCloseBtn", out);
-        }
-    }
-
-    void WindowOperator::BarAction(string_view buttonId, ApiReplyInfo &out)
-    {
-        CallBar(out);
+        // call split bar.
         auto selector = WidgetSelector();
-        auto attrMatcher = WidgetMatchModel(UiAttr::KEY, std::string(buttonId), EQ);
+        auto attrMatcher = WidgetMatchModel(UiAttr::KEY, "EnhanceMaximizeBtn", EQ);
         auto windowMatcher = WidgetMatchModel(UiAttr::HOST_WINDOW_ID, to_string(window_.id_), EQ);
         selector.AddMatcher(attrMatcher);
         selector.AddMatcher(windowMatcher);
@@ -302,6 +203,85 @@ namespace OHOS::uitest {
             return;
         }
         if (widgets.empty()) {
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        auto rect = widgets[0]->GetBounds();
+        Point widgetCenter(rect.GetCenterX(), rect.GetCenterY());
+        auto touch1 = MouseMoveTo(widgetCenter);
+        driver_.PerformMouseAction(touch1, options_, out.exception_);
+        constexpr auto focusTime = 3000;
+        driver_.DelayMs(focusTime);
+        // find split btn and click.
+        auto selector2 = WidgetSelector();
+        auto attrMatcher2 = WidgetMatchModel(UiAttr::KEY, "EnhanceMenuScreenLeftRow", EQ);
+        selector2.AddMatcher(attrMatcher2);
+        selector2.SetWantMulti(false);
+        vector<unique_ptr<Widget>> widgets2;
+        driver_.FindWidgets(selector2, widgets2, out.exception_);
+        if (widgets2.empty()) {
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        auto rect2 = widgets2[0]->GetBounds();
+        Point widgetCenter2(rect2.GetCenterX(), rect2.GetCenterY());
+        auto touch2 = GenericClick(TouchOp::CLICK, widgetCenter2);
+        driver_.PerformTouch(touch2, options_, out.exception_);
+    }
+
+    void  WindowOperator::Maximize(ApiReplyInfo &out)
+    {
+        string targetBtnId;
+        if (!CheckOperational(MAXIMIZE, window_.mode_, out, targetBtnId)) {
+            return;
+        }
+        BarAction(targetBtnId, out);
+    }
+
+    void WindowOperator::Resume(ApiReplyInfo &out)
+    {
+        string targetBtnId;
+        if (!CheckOperational(RESUME, window_.mode_, out, targetBtnId)) {
+            return;
+        }
+        BarAction(targetBtnId, out);
+    }
+
+    void WindowOperator::Minimize(ApiReplyInfo &out)
+    {
+        string targetBtnId;
+        if (!CheckOperational(MINIMIZE, window_.mode_, out, targetBtnId)) {
+            return;
+        }
+        BarAction(targetBtnId, out);
+    }
+
+    void WindowOperator::Close(ApiReplyInfo &out)
+    {
+        string targetBtnId;
+        if (!CheckOperational(CLOSE, window_.mode_, out, targetBtnId)) {
+            return;
+        }
+        BarAction(targetBtnId, out);
+    }
+
+    void WindowOperator::BarAction(string_view buttonId, ApiReplyInfo &out)
+    {
+        Focus(out);
+        auto selector = WidgetSelector();
+        auto attrMatcher = WidgetMatchModel(UiAttr::KEY, std::string(buttonId), EQ);
+        auto windowMatcher = WidgetMatchModel(UiAttr::HOST_WINDOW_ID, to_string(window_.id_), EQ);
+        selector.AddMatcher(attrMatcher);
+        selector.AddMatcher(windowMatcher);
+        selector.AddAppLocator(window_.bundleName_);
+        selector.SetWantMulti(false);
+        vector<unique_ptr<Widget>> widgets;
+        driver_.FindWidgets(selector, widgets, out.exception_);
+        if (widgets.empty()) {
+            CallBar(out);
+            driver_.FindWidgets(selector, widgets, out.exception_);
+        }
+        if (widgets.empty() || out.exception_.code_ != NO_ERROR) {
             out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
             return;
         }
