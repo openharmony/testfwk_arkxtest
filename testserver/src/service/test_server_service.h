@@ -43,6 +43,8 @@ namespace OHOS::testserver {
 
         ErrCode PublishCommonEvent(const EventFwk::CommonEventData &event, bool &re) override;
 
+        ErrCode FrequencyLock() override;
+
     protected:
         void OnStart() override;
         void OnStop() override;
