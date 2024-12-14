@@ -161,4 +161,20 @@ namespace OHOS::testserver {
         iTestServerInterface->PublishCommonEvent(event, result);
         return result;
     }
+
+    void TestServerClient::FrequencyLock()
+    {
+        auto iTestServerInterface = LoadTestServer();
+        if (iTestServerInterface == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return;
+        }
+        iTestServerInterface->FrequencyLock();
+        return;
+    }
 } // namespace OHOS::testserver
+
+void FrequencyLockPlugin()
+{
+    OHOS::testserver::TestServerClient::GetInstance().FrequencyLock();
+}
