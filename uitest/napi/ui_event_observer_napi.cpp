@@ -137,42 +137,39 @@ namespace OHOS::uitest {
             LOG_W("InitCallbackContext failed, cannot perform callback");
             return;
         }
-        uv_loop_s *loop = nullptr;
-        NAPI_CALL_RETURN_VOID(env, napi_get_uv_event_loop(env, &loop));
-        auto work = new uv_work_t;
-        work->data = context;
-        (void)uv_queue_work(loop, work, [](uv_work_t *) {}, [](uv_work_t *work, int status) {
-            auto ctx = reinterpret_cast<EventCallbackContext *>(work->data);
+        auto task = [context]() {
             napi_value global = nullptr;
             napi_value jsonProp = nullptr;
             napi_value parseFunc = nullptr;
-            napi_get_global(ctx->env, &global);
-            napi_get_named_property(ctx->env, global, "JSON", &jsonProp);
-            napi_get_named_property(ctx->env, jsonProp, "parse", &parseFunc);
+            napi_get_global(context->env, &global);
+            napi_get_named_property(context->env, global, "JSON", &jsonProp);
+            napi_get_named_property(context->env, jsonProp, "parse", &parseFunc);
             napi_value argv[1] = { nullptr };
-            napi_create_string_utf8(ctx->env, ctx->elmentInfo.dump().c_str(), NAPI_AUTO_LENGTH, argv);
-            napi_call_function(ctx->env, jsonProp, parseFunc, 1, argv, argv);
+            napi_create_string_utf8(context->env, context->elmentInfo.dump().c_str(), NAPI_AUTO_LENGTH, argv);
+            napi_call_function(context->env, jsonProp, parseFunc, 1, argv, argv);
             napi_value jsCallback = nullptr;
-            napi_get_reference_value(ctx->env, ctx->callbackRef, &jsCallback);
-            napi_call_function(ctx->env, nullptr, jsCallback, 1, argv, argv);
+            napi_get_reference_value(context->env, context->callbackRef, &jsCallback);
+            napi_call_function(context->env, nullptr, jsCallback, 1, argv, argv);
             // accessing callback from js-caller, do check and warn
             auto hasError = false;
-            napi_is_exception_pending(ctx->env, &hasError);
+            napi_is_exception_pending(context->env, &hasError);
             if (hasError) {
                 LOG_W("Exception raised during call js_cb_function!");
             }
-            if (ctx->releaseObserver) {
-                LOG_D("Unref jsObserver: %{public}s", ctx->observerId.c_str());
-                napi_delete_reference(ctx->env, ctx->observerRef);
-                g_jsRefs.erase(ctx->observerId);
+            if (context->releaseObserver) {
+                LOG_D("Unref jsObserver: %{public}s", context->observerId.c_str());
+                napi_delete_reference(context->env, context->observerRef);
+                g_jsRefs.erase(context->observerId);
             }
-            if (ctx->releaseCallback) {
-                LOG_D("Unref jsCallback: %{public}s", ctx->callbackId.c_str());
-                napi_delete_reference(ctx->env, ctx->callbackRef);
-                g_jsRefs.erase(ctx->callbackId);
+            if (context->releaseCallback) {
+                LOG_D("Unref jsCallback: %{public}s", context->callbackId.c_str());
+                napi_delete_reference(context->env, context->callbackRef);
+                g_jsRefs.erase(context->callbackId);
             }
-            delete work;
-            delete ctx;
-        });
+            delete context;
+        };
+        if (napi_send_event(env, task, napi_eprio_immediate) != napi_status::napi_ok) {
+            LOG_E("Exception raised during call js_cb_function!");
+        }
     }
 }
