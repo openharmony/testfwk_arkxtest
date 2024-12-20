@@ -40,6 +40,10 @@ namespace OHOS::uitest {
 
         void InjectKeyEventSequence(const std::vector<KeyEvent> &events) const override;
 
+        bool IsTouchPadExist() const override;
+
+        void InjectTouchPadEventSequence(const vector<TouchPadEvent>& events) const override;
+
         void PutTextToClipboard(std::string_view text) const override;
 
         bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, Rect rect = {0, 0, 0, 0}) const override;
