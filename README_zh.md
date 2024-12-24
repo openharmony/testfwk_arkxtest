@@ -1474,7 +1474,7 @@ export default function assertComponentExistTest() {
 Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹配查找要操作或检视的目标控件。`On`提供的API能力具有以下特点：
 
 - 支持匹配单属性和匹配多属性组合，例如同时指定目标控件text和id。
-- 控件属性支持多种匹配模式(等于，包含，`STARTS_WITH`，`ENDS_WITH`)。
+- 控件属性支持多种匹配模式(等于，包含，`STARTS_WITH`，`ENDS_WITH`，`REG_EXP`，`REG_EXP_ICASE`)。
 
 - 支持相对定位控件，可通过`isBefore`和`isAfter`等API限定邻近控件特征进行辅助定位。
 
@@ -1493,8 +1493,12 @@ Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹�
 | 11  | checkable(c:bool):On               | 指定控件可选择状态。                 |
 | 12  | isBefore(b:On):On                  | **相对定位**，限定目标控件位于指定特征控件之前。 |
 | 13  | isAfter(b:On):On                   | **相对定位**，限定目标控件位于指定特征控件之后。 |
+| 14   | id(i:string，p?:MatchPattern:On                    | 指定控件id，可指定匹配模式。                    |
+| 15   | hint(h:string, p?:MatchPattern):On | 指定控件提示文本，可指定匹配模式。            |
+| 16   | type(t:string，p?:MatchPattern):On                 | 指定控件类型，可指定匹配模式。                   |
+| 17   | description(d:string，p?:MatchPattern):On                 | 指定控件描述文本信息，可指定匹配模式。                   |
 
-其中，`text`属性支持{`MatchPattern.EQUALS`，`MatchPattern.CONTAINS`，`MatchPattern.STARTS_WITH`，`MatchPattern.ENDS_WITH`}四种匹配模式，缺省使用`MatchPattern.EQUALS`模式。
+其中，`text`,`id`,`type`,`hint`,`description`属性支持{`MatchPattern.EQUALS`，`MatchPattern.CONTAINS`，`MatchPattern.STARTS_WITH`，`MatchPattern.ENDS_WITH`，`MatchPattern.REG_EXP`，`MatchPattern.REG_EXP_ICASE`}六种匹配模式，缺省使用`MatchPattern.EQUALS`模式。
 
 `On`完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.UiTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-test-kit/js-apis-uitest.md#on9)。
 
@@ -1646,7 +1650,7 @@ UI测试框架使能需要执行如下命令。
 | screenCap       |[-p] | 截屏。<br> **-p**：非必填, 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。<br>默认存储路径：/data/local/tmp，文件名：时间戳 + .png 。                                                                                                                                                                 |
 | dumpLayout      |[-p] \<-i \| -a>| 支持在daemon运行时执行获取控件树。<br> **-p** ：指定存储路径和文件名, 只支持存放在/data/local/tmp/下。默认存储路径：/data/local/tmp，文件名：时间戳 + .json。<br> **-i** ：不过滤不可见控件,也不做窗口合并。<br> **-a** ：保存 BackgroundColor、 Content、FontColor、FontSize、extraAttrs 属性数据。<br> **默认** ：不保存上述属性数据。<br> **-a和-i** 不可同时使用。 |
 | uiRecord        | uiRecord \<record \| read>| 录制Ui操作。  <br> **record** ：开始录制，将当前界面操作记录到/data/local/tmp/record.csv，结束录制操作使用Ctrl+C结束录制。  <br> **read** ：读取并且打印录制数据。<br>各参数代表的含义请参考[用户录制操作](#用户录制操作)。                                                                                                                |
-| uiInput       | \<help \| click \| doubleClick \| longClick \| fling \| swipe \| drag \| dircFling \| inputText \| keyEvent>| 注入UI模拟操作。<br>各参数代表的含义请参考[注入ui模拟操作](#注入ui模拟操作)。                       |
+| uiInput       | \<help \| click \| doubleClick \| longClick \| fling \| swipe \| drag \| dircFling \| inputText \| text \| keyEvent>| 注入UI模拟操作。<br>各参数代表的含义请参考[注入ui模拟操作](#注入ui模拟操作)。                       |
 | --version | --version| 获取当前工具版本信息。                                                                                                                                                                                                                                                         |
 | start-daemon|start-daemon| 拉起uitest测试进程。                                                                                                                                                                                                                                                       |
 
@@ -1777,6 +1781,16 @@ hdc shell uitest uiInput dircFling 3
 hdc shell uitest uiInput inputText 100 100 hello 
 ```
 
+##### uiInput text使用示例
+| 配置参数             | 必填       | 描述 |       
+|------|------------------|----------|
+| text   | 是                | 输入文本内容。  |
+
+```shell  
+# 无需输入坐标点，在当前获焦处，执行输入框输入操作。若当前获焦处不支持文本输入，则无实际效果。
+hdc shell uitest uiInput text hello
+```
+
 ##### uiInput keyEvent使用示例
 
 | 配置参数             | 必填       | 描述 |                
@@ -1849,3 +1863,4 @@ hdc shell chmod +x /system/bin/uitest
 | 5.0.1.0 | 1、优化swipe操作。<br />2、inputText输入中文的实现方式改为设置剪贴板数据后，长按控件点击粘贴。 |
 | 5.0.1.1 | 1、节点新增以下属性，背景色：backgroundColor，背景图片：backgroundImage，透明度：opacity，模糊度：blur，事件是否透传：hitTestBehavior 。 |
 | 5.0.1.2 | 1、通过test Sa发布公共事件。<br />2、节点新增clip属性，判断其子节点是否进行切割。<br />3、过滤机制调整，节点只与其clip为true的父节点进行切换计算可见区域，可见区域宽/高小于等于0记为不可见。<br />4、调用inputText时，被输入字符串超过200个字符时，实现方式调整为设置剪贴板数据后，植入ctrl + v。 |
+| 5.1.1.1 | 1、控件支持正则表达式方式进行查找 <br />2、获取控件属性中的提示文本信息 <br />3、支持横向滑动查找操作 <br />4、支持不指定坐标模拟输入文本的shell命令 hdc shell uitest uiInput text "xxxx"|
