@@ -27,7 +27,7 @@ namespace OHOS::uitest {
     using namespace nlohmann;
     const std::string ROOT_HIERARCHY = "ROOT";
     /**Enumerates the supported string value match rules.*/
-    enum ValueMatchPattern : uint8_t { EQ, CONTAINS, STARTS_WITH, ENDS_WITH };
+    enum ValueMatchPattern : uint8_t { EQ, CONTAINS, STARTS_WITH, ENDS_WITH, REG_EXP, REG_EXP_ICASE };
 
     /**Enumerates the supported UiComponent attributes.*/
     enum UiAttr : uint8_t {
