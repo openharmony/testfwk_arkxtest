@@ -536,6 +536,20 @@ namespace OHOS::uitest {
             event.stage_ == ActionStage::DOWN, event.point_.px_, event.point_.py_);
     }
 
+    static void SetMousePointerEventAttr(shared_ptr<PointerEvent> pointerEvent, const MouseEvent &event)
+    {
+        pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
+        pointerEvent->SetPointerId(0);
+        if (event.button_ != MouseButton::BUTTON_NONE) {
+            pointerEvent->SetButtonId(event.button_);
+            if ((event.stage_ == ActionStage::DOWN || event.stage_ == ActionStage::MOVE)) {
+                pointerEvent->SetButtonPressed(event.button_);
+            } else if (event.stage_ == ActionStage::UP) {
+                pointerEvent->DeleteReleaseButton(event.button_);
+            }
+        }
+    }
+
     void SysUiController::InjectMouseEvent(const MouseEvent &event) const
     {
         auto pointerEvent = PointerEvent::Create();
@@ -543,17 +557,13 @@ namespace OHOS::uitest {
             return;
         }
         PointerEvent::PointerItem item;
-        pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
-        pointerEvent->SetPointerId(0);
-        pointerEvent->SetButtonId(event.button_);
+        SetMousePointerEventAttr(pointerEvent, event);
         constexpr double axialValue = 15;
         static bool flag = true;
         auto injectAxialValue = axialValue;
         switch (event.stage_) {
             case ActionStage::DOWN:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_DOWN);
-                pointerEvent->SetButtonId(event.button_);
-                pointerEvent->SetButtonPressed(event.button_);
                 item.SetPressed(true);
                 break;
             case ActionStage::MOVE:
@@ -561,8 +571,6 @@ namespace OHOS::uitest {
                 break;
             case ActionStage::UP:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_UP);
-                pointerEvent->SetButtonId(event.button_);
-                pointerEvent->SetButtonPressed(event.button_);
                 break;
             case ActionStage::AXIS_UP:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);

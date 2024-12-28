@@ -376,6 +376,9 @@ namespace OHOS::uitest {
         if (type_ == TouchOp::SWIPE) {
             recv.front().stage_ = ActionStage::MOVE;
             recv.back().stage_ = ActionStage::MOVE;
+            for (size_t index = 0; index < recv.size(); index++) {
+                recv[index].button_ = MouseButton::BUTTON_NONE;
+            }
         }
     }
 
