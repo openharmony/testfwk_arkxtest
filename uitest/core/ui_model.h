@@ -268,7 +268,7 @@ namespace OHOS::uitest {
         std::string GetAttr(UiAttr attrId) const;
 
         bool MatchAttr(const WidgetMatchModel& matchModel) const;
-        
+
         void SetHierarchy(const std::string& hierarch);
 
         void WrapperWidgetToJson(nlohmann::json& out);
@@ -328,6 +328,15 @@ namespace OHOS::uitest {
 
     private:
         static constexpr auto HIERARCHY_SEPARATOR = ",";
+    };
+
+    struct DumpOption {
+        string savePath_ = "";
+        bool listWindows_ = false;
+        bool addExternAttr_ = false;
+        string bundleName_ = "";
+        string windowId_ = "";
+        bool notMergeWindow_ = false;
     };
 } // namespace OHOS::uitest
 

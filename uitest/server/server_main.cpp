@@ -58,6 +58,9 @@ namespace OHOS::uitest {
     "  -p                                                                                               savepath\n"
     "  -i                                                                     not merge windows and filter nodes\n"
     "  -a                                                                                include font attributes\n"
+    "  -b                                                         specifies the buneleName of the target window.\n"
+    "  -w                                                          specifies the window id of the target window.\n"
+    "  -m                                                                                  whether merge windows\n"
     "start-daemon <token>                                                                 start the test process\n"
     "uiRecord                                                                                                   \n"
     "  record                                                    wirte location coordinates of events into files\n"
@@ -74,11 +77,15 @@ namespace OHOS::uitest {
     "  text <text>                                           input text at the location where is already focused\n"
     "--version                                                                        print current tool version\n";
 
-    const std::string VERSION = "5.1.1.1";
+    const std::string VERSION = "5.1.1.2";
     struct option g_longoptions[] = {
-        {"save file in this path", required_argument, nullptr, 'p'},
-        {"dump all UI trees in json array format", no_argument, nullptr, 'I'}
-    };
+        {nullptr, required_argument, nullptr, 'p'},
+        {nullptr, no_argument, nullptr, 'i'},
+        {nullptr, no_argument, nullptr, 'a'},
+        {nullptr, required_argument, nullptr, 'b'},
+        {nullptr, required_argument, nullptr, 'w'},
+        {nullptr, required_argument, nullptr, 'm'},
+        {nullptr, 0, nullptr, 0}};
     /* *Print to the console of this shell process. */
     static inline void PrintToConsole(string_view message)
     {
@@ -100,6 +107,14 @@ namespace OHOS::uitest {
                 case 'a':
                     params.insert(pair<char, string>(opt, "true"));
                     break;
+                case 'm':
+                    if (strcmp(optarg, "true") && strcmp(optarg, "false")) {
+                        PrintToConsole("Invalid params");
+                        PrintToConsole(usage);
+                        return EXIT_FAILURE;
+                    }
+                    params.insert(pair<char, string>(opt, optarg));
+                    break;
                 default:
                     params.insert(pair<char, string>(opt, optarg));
                     break;
@@ -108,13 +123,12 @@ namespace OHOS::uitest {
         return EXIT_SUCCESS;
     }
 
-    static void DumpLayoutImpl(string_view path, bool listWindows, bool initController, bool addExternAttr,
-        ApiCallErr &err)
+    static void DumpLayoutImpl(const DumpOption &option, bool initController, ApiCallErr &err)
     {
         ofstream fout;
-        fout.open(path, ios::out | ios::binary);
+        fout.open(option.savePath_, ios::out | ios::binary);
         if (!fout) {
-            err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(path) + strerror(errno));
+            err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(option.savePath_) + strerror(errno));
             return;
         }
         if (initController) {
@@ -122,7 +136,7 @@ namespace OHOS::uitest {
         }
         auto driver = UiDriver();
         auto data = nlohmann::json();
-        driver.DumpUiHierarchy(data, listWindows, addExternAttr, err);
+        driver.DumpUiHierarchy(data, option, err);
         if (err.code_ != NO_ERROR) {
             fout.close();
             return;
@@ -134,27 +148,31 @@ namespace OHOS::uitest {
 
     static int32_t DumpLayout(int32_t argc, char *argv[])
     {
+        DumpOption option;
         auto ts = to_string(GetCurrentMicroseconds());
         auto savePath = "/data/local/tmp/layout_" + ts + ".json";
         map<char, string> params;
-        static constexpr string_view usage = "USAGE: uitestkit dumpLayout -p <path>";
-        if (GetParam(argc, argv, "p:ia", usage, params) == EXIT_FAILURE) {
+        if (GetParam(argc, argv, "p:w:b:m:ia", HELP_MSG, params) == EXIT_FAILURE) {
             return EXIT_FAILURE;
         }
         auto iter = params.find('p');
-        if (iter != params.end()) {
-            savePath = iter->second;
-        }
-        const bool listWindows = params.find('i') != params.end();
-        const bool addExternAttr = params.find('a') != params.end();
-        if (listWindows && addExternAttr) {
+        option.savePath_ = (iter != params.end()) ? iter->second : savePath;
+        auto iter2 = params.find('w');
+        option.windowId_ = (iter2 != params.end()) ? iter2->second : "";
+        auto iter3 = params.find('b');
+        option.bundleName_ = (iter3 != params.end()) ? iter3->second : "";
+        option.listWindows_ = params.find('i') != params.end();
+        option.addExternAttr_ = params.find('a') != params.end();
+        auto iter4 = params.find('m');
+        option.notMergeWindow_ = (iter4 != params.end()) ? iter4->second == "false" : false;
+        if (option.listWindows_ && option.addExternAttr_) {
             PrintToConsole("The -a and -i options cannot be used together.");
             return EXIT_FAILURE;
         }
         auto err = ApiCallErr(NO_ERROR);
-        DumpLayoutImpl(savePath, listWindows, true, addExternAttr, err);
+        DumpLayoutImpl(option, true, err);
         if (err.code_ == NO_ERROR) {
-            PrintToConsole("DumpLayout saved to:" + savePath);
+            PrintToConsole("DumpLayout saved to:" + option.savePath_);
             return EXIT_SUCCESS;
         } else if (err.code_ != ERR_INITIALIZE_FAILED) {
             PrintToConsole("DumpLayout failed:" + err.message_);
@@ -163,11 +181,15 @@ namespace OHOS::uitest {
         // Cannot connect to AAMS, broadcast request to running uitest-daemon if any
         err = ApiCallErr(NO_ERROR);
         auto cmd = OHOS::AAFwk::Want();
-        cmd.SetParam("savePath", string(savePath));
-        cmd.SetParam("listWindows", listWindows);
+        cmd.SetParam("savePath", string(option.savePath_));
+        cmd.SetParam("listWindows", option.listWindows_);
+        cmd.SetParam("addExternAttr", option.addExternAttr_);
+        cmd.SetParam("bundleName", string(option.bundleName_));
+        cmd.SetParam("windowId", string(option.windowId_));
+        cmd.SetParam("mergeWindow", option.notMergeWindow_);
         ApiTransactor::SendBroadcastCommand(cmd, err);
         if (err.code_ == NO_ERROR) {
-            PrintToConsole("DumpLayout saved to:" + savePath);
+            PrintToConsole("DumpLayout saved to:" + option.savePath_);
             return EXIT_SUCCESS;
         } else {
             PrintToConsole("DumpLayout failed:" + err.message_);
@@ -223,10 +245,12 @@ namespace OHOS::uitest {
         UiDriver::RegisterController(make_unique<SysUiController>());
         // accept remopte dump request during deamon running (initController=false)
         ApiTransactor::SetBroadcastCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
-            DumpLayoutImpl(cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false), false, false, err);
+            DumpOption option {cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false),
+                cmd.GetBoolParam("addExternAttr", false), cmd.GetStringParam("bundleName"),
+                cmd.GetStringParam("windowId"), cmd.GetBoolParam("mergeWindow", true)};
+            DumpLayoutImpl(option, false, err);
         });
-        std::string_view singlenessToken = "singleness";
-        if (token == singlenessToken) {
+        if (token == "singleness") {
             ExecuteExtension(VERSION, argc, argv);
             LOG_I("Server exit");
             ApiTransactor::UnsetBroadcastCommandHandler();

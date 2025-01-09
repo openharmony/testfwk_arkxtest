@@ -1648,7 +1648,7 @@ UI测试框架使能需要执行如下命令。
 |---------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | help          | help| 显示uitest工具能够支持的命令信息。                                                                                                                                                                                                                                                |
 | screenCap       |[-p] | 截屏。<br> **-p**：非必填, 指定存储路径和文件名, 只支持存放在/data/local/tmp/下。<br>默认存储路径：/data/local/tmp，文件名：时间戳 + .png 。                                                                                                                                                                 |
-| dumpLayout      |[-p] \<-i \| -a>| 支持在daemon运行时执行获取控件树。<br> **-p** ：指定存储路径和文件名, 只支持存放在/data/local/tmp/下。默认存储路径：/data/local/tmp，文件名：时间戳 + .json。<br> **-i** ：不过滤不可见控件,也不做窗口合并。<br> **-a** ：保存 BackgroundColor、 Content、FontColor、FontSize、extraAttrs 属性数据。<br> **默认** ：不保存上述属性数据。<br> **-a和-i** 不可同时使用。 |
+| dumpLayout      |[-p \| -w \| -b \| -m] \<-i \| -a>| 支持在daemon运行时执行获取控件树。<br> **-p** ：指定存储路径和文件名, 只支持存放在/data/local/tmp/下。默认存储路径：/data/local/tmp，文件名：时间戳 + .json。<br> **-i** ：不过滤不可见控件,也不做窗口合并。<br> **-a** ：保存 BackgroundColor、 Content、FontColor、FontSize、extraAttrs 属性数据。<br> **默认** ：不保存上述属性数据。<br> **-w** ：仅获取指定window id的应用窗口。<br/> **-b** ：仅获取指定包名的应用窗口。<br/> **-m** ：是否进行窗口合并。<br/> **-a和-i** 不可同时使用。 |
 | uiRecord        | uiRecord \<record \| read>| 录制Ui操作。  <br> **record** ：开始录制，将当前界面操作记录到/data/local/tmp/record.csv，结束录制操作使用Ctrl+C结束录制。  <br> **read** ：读取并且打印录制数据。<br>各参数代表的含义请参考[用户录制操作](#用户录制操作)。                                                                                                                |
 | uiInput       | \<help \| click \| doubleClick \| longClick \| fling \| swipe \| drag \| dircFling \| inputText \| text \| keyEvent>| 注入UI模拟操作。<br>各参数代表的含义请参考[注入ui模拟操作](#注入ui模拟操作)。                       |
 | --version | --version| 获取当前工具版本信息。                                                                                                                                                                                                                                                         |
@@ -1729,7 +1729,7 @@ hdc shell uitest uiInput longClick 100 100
 ```shell  
 # 执行快滑操作，stepLength_缺省。
 hdc shell uitest uiInput fling 10 10 200 200 500 
-``` 
+```
 
 ##### uiInput swipe/drag使用示例
 
@@ -1863,4 +1863,5 @@ hdc shell chmod +x /system/bin/uitest
 | 5.0.1.0 | 1、优化swipe操作。<br />2、inputText输入中文的实现方式改为设置剪贴板数据后，长按控件点击粘贴。 |
 | 5.0.1.1 | 1、节点新增以下属性，背景色：backgroundColor，背景图片：backgroundImage，透明度：opacity，模糊度：blur，事件是否透传：hitTestBehavior 。 |
 | 5.0.1.2 | 1、通过test Sa发布公共事件。<br />2、节点新增clip属性，判断其子节点是否进行切割。<br />3、过滤机制调整，节点只与其clip为true的父节点进行切换计算可见区域，可见区域宽/高小于等于0记为不可见。<br />4、调用inputText时，被输入字符串超过200个字符时，实现方式调整为设置剪贴板数据后，植入ctrl + v。 |
-| 5.1.1.1 | 1、控件支持正则表达式方式进行查找 <br />2、获取控件属性中的提示文本信息 <br />3、支持横向滑动查找操作 <br />4、支持不指定坐标模拟输入文本的shell命令 hdc shell uitest uiInput text "xxxx"|
+| 5.1.1.1 | 1、控件支持正则表达式方式进行查找 <br />2、获取控件属性中的提示文本信息 <br />3、支持横向滑动查找操作 <br />4、支持不指定坐标模拟输入文本的shell命令 hdc shell uitest uiInput text "xxxx" |
+| 5.1.1.2 | uitest dumpLayout 能力增强<br /> -w：仅获取指定window id的应用窗口。<br/> -b ：仅获取指定包名的应用窗口。<br/> -m ：是否进行窗口合并。 |

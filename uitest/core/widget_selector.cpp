@@ -121,7 +121,8 @@ namespace OHOS::uitest {
     {
         std::unique_ptr<SelectStrategy> visitStrategy = ConstructSelectStrategy();
         LOG_D("Do Select, select strategy is %{public}d", visitStrategy->GetStrategyType());
-        visitStrategy->LocateNode(window, elementNodeRef, visitWidgets, targetWidgets);
+        DumpOption option;
+        visitStrategy->LocateNode(window, elementNodeRef, visitWidgets, targetWidgets, option);
     }
 
     std::vector<WidgetMatchModel> WidgetSelector::GetSelfMatchers() const
