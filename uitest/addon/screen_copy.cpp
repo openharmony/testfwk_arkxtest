@@ -183,6 +183,7 @@ void ScreenCopy::PollAndNotifyFrames()
 
 void ScreenCopy::UpdateFrameLocked(shared_ptr<PixelMap> frame, bool &changed, bool &screenOff)
 {
+    DCHECK(sourceScreen_);
     lastFrame_ = newestFrame_;
     newestFrame_ = frame;
     changed = true;
