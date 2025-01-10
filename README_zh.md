@@ -1652,7 +1652,7 @@ UI测试框架使能需要执行如下命令。
 | uiRecord        | \<record/read> | 录制Ui操作。  <br> **record** ：开始录制，将当前界面操作记录到/data/local/tmp/record.csv，结束录制操作使用Ctrl+C结束录制。  <br> **read** ：读取并且打印录制数据。<br>各选项使用说明请参考[用户录制操作](#用户录制操作)。                                                                                                        |
 | uiInput       | \<help / click / doubleClick / longClick / fling / swipe / drag / dircFling / inputText / text  / keyEvent> | 注入UI模拟操作。<br>各选项使用说明请参考[注入ui模拟操作](#注入ui模拟操作)。                   |
 | --version |  | 获取当前工具版本号。                                                                                                                                                                                                                                                        |
-| start-daemon|\<token>| token:测试工程的身份标识。<br/>拉起uitest测试进程，与token指向的测试工程进行连接。                                                                                                                                                                                                            |
+| start-daemon|\<token>| token:测试应用端生产的uitest链接标识。<br/>拉起uitest测试进程，与token指向的测试应用进行连接。<br/>由测试应用注入，不支持用户通过shell命令使用。                                                                                                                                                            |
 
 
 #### 截图使用示例
