@@ -30,7 +30,8 @@ namespace OHOS::uitest {
 
         void GetUiWindows(std::vector<Window> &out) override;
 
-        bool GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator) override;
+        bool GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator,
+            AamsWorkMode mode) override;
 
         bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const override;
 
