@@ -177,6 +177,12 @@ namespace OHOS::uitest {
         paramTypes.push_back("");
         string extension = "Component.getAllProperties";
         sApiArgTypesMap.insert(make_pair(extension, make_pair(paramTypes, 0)));
+
+        auto paramTypes2 = vector<string>();
+        paramTypes2.push_back("int");
+        paramTypes2.push_back("");
+        string extension2 = "Driver.SetAamsWorkMode";
+        sApiArgTypesMap.insert(make_pair(extension2, make_pair(paramTypes2, 0)));
     }
 
     static string GetClassName(const string &apiName, char splitter)
@@ -1333,6 +1339,14 @@ static void RegisterExtensionHandler()
         out.resultValue_ = data;
     };
     server.AddHandler("Component.getAllProperties", genericOperationHandler);
+
+    auto genericSetModeHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+        auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+        auto mode = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+        DCHECK(mode < AamsWorkMode::END);
+        driver.SetAamsWorkMode(static_cast<AamsWorkMode>(mode));
+    };
+    server.AddHandler("Driver.SetAamsWorkMode", genericSetModeHandler);
 }
 
     static void RegisterUiComponentAttrGetters()

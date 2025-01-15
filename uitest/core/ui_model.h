@@ -29,6 +29,8 @@ namespace OHOS::uitest {
     /**Enumerates the supported string value match rules.*/
     enum ValueMatchPattern : uint8_t { EQ, CONTAINS, STARTS_WITH, ENDS_WITH, REG_EXP, REG_EXP_ICASE };
 
+    enum AamsWorkMode : uint8_t { NORMAL, FASTGETNODE, END };
+
     /**Enumerates the supported UiComponent attributes.*/
     enum UiAttr : uint8_t {
         ACCESSIBILITY_ID,

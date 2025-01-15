@@ -108,7 +108,7 @@ namespace OHOS::uitest {
         for (auto &winCache : windowCacheVec_) {
             visitWidgets_.clear();
             targetWidgetsIndex_.clear();
-            if (!uiController_->GetWidgetsInWindow(winCache.window_, winCache.widgetIterator_)) {
+            if (!uiController_->GetWidgetsInWindow(winCache.window_, winCache.widgetIterator_, mode_)) {
                 LOG_W("Get Widget from window[%{public}d] failed, skip the window", winCache.window_.id_);
                 continue;
             }
@@ -233,7 +233,7 @@ namespace OHOS::uitest {
             selectStrategy->SetAndCalcSelectWindowRect(curWinCache.window_.bounds_,
                                                        curWinCache.window_.invisibleBoundsVec_);
             if (curWinCache.widgetIterator_ == nullptr) {
-                if (!uiController_->GetWidgetsInWindow(curWinCache.window_, curWinCache.widgetIterator_)) {
+                if (!uiController_->GetWidgetsInWindow(curWinCache.window_, curWinCache.widgetIterator_, mode_)) {
                     LOG_W("Get Widget from window[%{public}d] failed, skip the window", curWinCache.window_.id_);
                     continue;
                 }
@@ -301,7 +301,7 @@ namespace OHOS::uitest {
             LOG_D("Start find in Window, window id is %{public}d", curWinCache.window_.id_);
             if (curWinCache.widgetIterator_ == nullptr) {
                 std::unique_ptr<ElementNodeIterator> widgetIterator = nullptr;
-                if (!uiController_->GetWidgetsInWindow(curWinCache.window_, curWinCache.widgetIterator_)) {
+                if (!uiController_->GetWidgetsInWindow(curWinCache.window_, curWinCache.widgetIterator_, mode_)) {
                     LOG_W("Get Widget from window[%{public}d] failed, skip the window", curWinCache.window_.id_);
                     continue;
                 }
@@ -593,5 +593,10 @@ namespace OHOS::uitest {
             return;
         }
         uiController_->InjectTouchEventSequence(eventsInPen);
+    }
+
+    void UiDriver::SetAamsWorkMode(const AamsWorkMode mode)
+    {
+        mode_ = mode;
     }
 } // namespace OHOS::uitest
