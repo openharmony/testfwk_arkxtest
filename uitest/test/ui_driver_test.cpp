@@ -454,7 +454,8 @@ TEST_F(UiDriverTest, DumpUI)
     controller_->AddWindowsAndNode(w1, eles);
     auto error = ApiCallErr(NO_ERROR);
     nlohmann::json out;
-    driver_->DumpUiHierarchy(out, false, false, error);
+    DumpOption option;
+    driver_->DumpUiHierarchy(out, option, error);
     ASSERT_EQ(out["children"].size(), 2);
     auto window1Json = out["children"][0];
     ASSERT_EQ(window1Json["attributes"]["accessibilityId"], "1");
@@ -547,7 +548,9 @@ TEST_F(UiDriverTest, DumpUI_I)
     controller_->AddWindowsAndNode(w1, eles);
     auto error = ApiCallErr(NO_ERROR);
     nlohmann::json out;
-    driver_->DumpUiHierarchy(out, true, false, error);
+    DumpOption option;
+    option.listWindows_ = true;
+    driver_->DumpUiHierarchy(out, option, error);
     ASSERT_EQ(out.size(), 2);
     auto window1Json = out[0];
     ASSERT_EQ(window1Json["attributes"]["accessibilityId"], "1");

@@ -149,7 +149,7 @@ namespace OHOS::uitest {
                         ElementNodeIterator &elementNodeRef,
                         std::vector<Widget> &visitWidgets,
                         std::vector<int> &targetWidgets,
-                        bool isRemoveInvisible = true) override
+                        const DumpOption &option) override
         {
             elementNodeRef.ClearDFSNext();
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
@@ -244,7 +244,7 @@ namespace OHOS::uitest {
                         ElementNodeIterator &elementNodeRef,
                         std::vector<Widget> &visitWidgets,
                         std::vector<int> &targetWidgets,
-                        bool isRemoveInvisible = true) override
+                        const DumpOption &option) override
         {
             elementNodeRef.ClearDFSNext();
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
@@ -324,7 +324,7 @@ namespace OHOS::uitest {
                         ElementNodeIterator &elementNodeRef,
                         std::vector<Widget> &visitWidgets,
                         std::vector<int> &targetWidgets,
-                        bool isRemoveInvisible = true) override
+                        const DumpOption &option) override
         {
             elementNodeRef.ClearDFSNext();
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
@@ -426,17 +426,21 @@ namespace OHOS::uitest {
                         ElementNodeIterator &elementNodeRef,
                         std::vector<Widget> &visitWidgets,
                         std::vector<int> &targetWidgets,
-                        bool isRemoveInvisible = true) override
+                        const DumpOption &option) override
         {
             elementNodeRef.ClearDFSNext();
-            SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
+            if (!option.notMergeWindow_) {
+                SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);
+            } else {
+                windowBounds_ = window.bounds_;
+            }
             while (true) {
                 Widget myselfWidget{"myselfWidget"};
                 if (!elementNodeRef.DFSNext(myselfWidget, window.id_)) {
                     return;
                 }
                 myselfWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
-                if (isRemoveInvisible) {
+                if (!option.listWindows_) {
                     if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                         LOG_D("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                         elementNodeRef.RemoveInvisibleWidget();
@@ -485,7 +489,7 @@ namespace OHOS::uitest {
                         ElementNodeIterator &elementNodeRef,
                         std::vector<Widget> &visitWidgets,
                         std::vector<int> &targetWidgets,
-                        bool isRemoveInvisible = true) override
+                        const DumpOption &option) override
         {
             elementNodeRef.ClearDFSNext();
             SetAndCalcSelectWindowRect(window.bounds_, window.invisibleBoundsVec_);

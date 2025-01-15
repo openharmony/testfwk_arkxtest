@@ -65,7 +65,7 @@ namespace OHOS::uitest {
         /**Take screen capture, save to given file path as PNG.*/
         void TakeScreenCap(int32_t fd, ApiCallErr &err, Rect rect);
 
-        void DumpUiHierarchy(nlohmann::json &out, bool listWindows, bool addExternAttr, ApiCallErr &error);
+        void DumpUiHierarchy(nlohmann::json &out, const DumpOption &option, ApiCallErr &error);
 
         const FrontEndClassDef &GetFrontendClassDef() const override
         {
@@ -104,7 +104,7 @@ namespace OHOS::uitest {
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction
         void UpdateUIWindows(ApiCallErr &error);
-        void DumpWindowsInfo(bool listWindows, Rect& mergeBounds, nlohmann::json& childDom);
+        void DumpWindowsInfo(const DumpOption &option, Rect &mergeBounds, nlohmann::json &childDom);
         static std::unique_ptr<UiController> uiController_;
         // CacheModel:
         std::vector<WindowCacheModel> windowCacheVec_;
