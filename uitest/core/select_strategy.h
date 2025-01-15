@@ -46,7 +46,7 @@ namespace OHOS::uitest {
         virtual void SetWantMulti(bool isWantMulti);
         virtual StrategyEnum GetStrategyType() const = 0;
         virtual void LocateNode(const Window &window, ElementNodeIterator &elementNodeRef,
-            vector<Widget> &visitWidgets, vector<int> &targetWidgets, bool isSkipInvisible = true) = 0;
+            vector<Widget> &visitWidgets, vector<int> &targetWidgets, const DumpOption &option) = 0;
         virtual ~SelectStrategy();
 
     protected:

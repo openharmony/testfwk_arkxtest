@@ -203,6 +203,34 @@ do { \
         return RETCODE_SUCCESS;
     }
 
+    static RetCode GetDumpInfo(nlohmann::json &options, nlohmann::json &tree, ApiCallErr &err)
+    {
+        static auto driver = UiDriver();
+        DumpOption dumpOption;
+        if (options.type() == nlohmann::detail::value_t::object && options.contains("bundleName")) {
+            nlohmann::json val = options["bundleName"];
+            EXTENSION_API_CHECK(val.type() == detail::value_t::string, "Illegal bundleName value", ERR_BAD_ARG);
+            dumpOption.bundleName_ = val.get<string>();
+        }
+        if (options.type() == nlohmann::detail::value_t::object && options.contains("windowId")) {
+            nlohmann::json val = options["windowId"];
+            EXTENSION_API_CHECK(val.type() == detail::value_t::string, "Illegal windowId value", ERR_BAD_ARG);
+            auto windowId = val.get<string>();
+            EXTENSION_API_CHECK(atoi(windowId.c_str()) != 0, "Illegal windowId value", ERR_BAD_ARG);
+            dumpOption.windowId_ = windowId;
+        }
+        if (options.type() == nlohmann::detail::value_t::object && options.contains("mergeWindow")) {
+            nlohmann::json val = options["mergeWindow"];
+            EXTENSION_API_CHECK(val.type() == detail::value_t::string, "Illegal mergeWindow value", ERR_BAD_ARG);
+            auto mergeWindow = val.get<string>();
+            if (mergeWindow == "false") {
+                dumpOption.notMergeWindow_ = true;
+            }
+        }
+        driver.DumpUiHierarchy(tree, dumpOption, err);
+        return RETCODE_SUCCESS;
+    }
+
     static RetCode StartCapture(Text name, DataCallback callback, Text optJson)
     {
         static auto driver = UiDriver();
@@ -220,7 +248,7 @@ do { \
         if (strcmp(name.data, "dumpLayout") == 0) {
             nlohmann::json tree;
             ApiCallErr err(NO_ERROR);
-            driver.DumpUiHierarchy(tree, false, false, err);
+            EXTENSION_API_CHECK(GetDumpInfo(options, tree, err) == RETCODE_SUCCESS, "Illegal options", ERR_BAD_ARG);
             g_runningCaptures.erase("dumpLayout"); // dumpLayout is sync&once
             EXTENSION_API_CHECK(err.code_ == NO_ERROR, err.message_, err.code_);
             auto layout = tree.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);

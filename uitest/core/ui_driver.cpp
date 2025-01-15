@@ -99,13 +99,23 @@ namespace OHOS::uitest {
         std::sort(windowCacheVec_.begin(), windowCacheVec_.end(), WindowCacheCompareGreater());
     }
 
-    void UiDriver::DumpWindowsInfo(bool listWindows, Rect& mergeBounds, nlohmann::json& childDom)
+    void UiDriver::DumpWindowsInfo(const DumpOption &option, Rect& mergeBounds, nlohmann::json& childDom)
     {
         std::vector<WidgetMatchModel> emptyMatcher;
         StrategyBuildParam buildParam;
         buildParam.myselfMatcher = emptyMatcher;
         std::unique_ptr<SelectStrategy> selectStrategy = SelectStrategy::BuildSelectStrategy(buildParam, true);
         for (auto &winCache : windowCacheVec_) {
+            if (option.bundleName_ != "" && winCache.window_.bundleName_ != option.bundleName_) {
+                LOG_D("skip window(%{public}s), it is not target window %{public}s",
+                    winCache.window_.bundleName_.data(), option.bundleName_.data());
+                continue;
+            }
+            if (option.windowId_ != "" && winCache.window_.id_ != atoi(option.windowId_.c_str())) {
+                LOG_D("skip window(%{public}d), it is not target window %{public}s",
+                    winCache.window_.id_, option.windowId_.data());
+                continue;
+            }
             visitWidgets_.clear();
             targetWidgetsIndex_.clear();
             if (!uiController_->GetWidgetsInWindow(winCache.window_, winCache.widgetIterator_)) {
@@ -113,7 +123,7 @@ namespace OHOS::uitest {
                 continue;
             }
             selectStrategy->LocateNode(winCache.window_, *winCache.widgetIterator_, visitWidgets_, targetWidgetsIndex_,
-                                       !listWindows);
+                                       option);
             nlohmann::json child = nlohmann::json();
             if (visitWidgets_.empty()) {
                 LOG_E("Window %{public}s has no node, skip it", winCache.window_.bundleName_.data());
@@ -132,7 +142,7 @@ namespace OHOS::uitest {
         }
     }
 
-    void UiDriver::DumpUiHierarchy(nlohmann::json &out, bool listWindows, bool addExternAttr, ApiCallErr &error)
+    void UiDriver::DumpUiHierarchy(nlohmann::json &out, const DumpOption &option, ApiCallErr &error)
     {
         UpdateUIWindows(error);
         if (error.code_ != NO_ERROR) {
@@ -140,8 +150,8 @@ namespace OHOS::uitest {
         }
         nlohmann::json childDom = nlohmann::json::array();
         Rect mergeBounds{0, 0, 0, 0};
-        DumpWindowsInfo(listWindows, mergeBounds, childDom);
-        if (listWindows) {
+        DumpWindowsInfo(option, mergeBounds, childDom);
+        if (option.listWindows_) {
             out = childDom;
         } else {
             nlohmann::json attrData = nlohmann::json();
@@ -157,7 +167,7 @@ namespace OHOS::uitest {
             out["children"] = childDom;
         }
 
-        if (addExternAttr) {
+        if (option.addExternAttr_) {
             map<int32_t, string_view> elementTrees;
             vector<char *> buffers;
             for (auto &winCache : windowCacheVec_) {
@@ -238,8 +248,9 @@ namespace OHOS::uitest {
                     continue;
                 }
             }
+            DumpOption option;
             selectStrategy->LocateNode(curWinCache.window_, *curWinCache.widgetIterator_, visitWidgets_,
-                                       targetWidgetsIndex_);
+                                       targetWidgetsIndex_, option);
             if (!targetWidgetsIndex_.empty()) {
                 break;
             }
