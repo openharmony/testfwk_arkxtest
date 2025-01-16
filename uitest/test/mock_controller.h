@@ -36,7 +36,8 @@ namespace OHOS::uitest {
         }
 
         bool GetWidgetsInWindow(const Window &winInfo,
-                                std::unique_ptr<ElementNodeIterator> &elementNodeIterator) override
+                                std::unique_ptr<ElementNodeIterator> &elementNodeIterator,
+                                AamsWorkMode mode) override
         {
             // copy ele
             auto eleCopy = windowNodeMap.at(winInfo.id_);
