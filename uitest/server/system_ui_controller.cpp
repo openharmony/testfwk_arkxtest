@@ -393,7 +393,8 @@ namespace OHOS::uitest {
         }
     }
 
-    bool SysUiController::GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator)
+    bool SysUiController::GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator,
+        AamsWorkMode mode)
     {
         std::lock_guard<std::mutex> dumpLocker(dumpMtx); // disallow concurrent dumpUi
         if (!connected_) {
@@ -408,7 +409,15 @@ namespace OHOS::uitest {
             return false;
         }
         LOG_D("Start Get nodes from window by WindowId %{public}d", winInfo.id_);
-        if (AccessibilityUITestAbility::GetInstance()->GetRootByWindowBatch(window, elementInfos) != RET_OK) {
+        auto ret = RET_ERR_FAILED;
+        auto ability = AccessibilityUITestAbility::GetInstance();
+        if (mode == AamsWorkMode::FASTGETNODE) {
+            LOG_D("GetRootByWindowBatch in reduced mode");
+            ret = ability->GetRootByWindowBatch(window, elementInfos, false, true);
+        } else {
+            ret = ability->GetRootByWindowBatch(window, elementInfos);
+        }
+        if (ret != RET_OK) {
             LOG_E("GetRootByWindowBatch failed, windowId: %{public}d", winInfo.id_);
             return false;
         } else {

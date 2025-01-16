@@ -173,10 +173,16 @@ namespace OHOS::uitest {
 
     static void ParseExtensionMethodsSignature()
     {
-        auto paramTypes = vector<string>();
-        paramTypes.push_back("");
-        string extension = "Component.getAllProperties";
-        sApiArgTypesMap.insert(make_pair(extension, make_pair(paramTypes, 0)));
+        auto paramTypesForGetAllProperties = vector<string>();
+        paramTypesForGetAllProperties.push_back("");
+        string methodForGetAllProperties = "Component.getAllProperties";
+        sApiArgTypesMap.insert(make_pair(methodForGetAllProperties, make_pair(paramTypesForGetAllProperties, 0)));
+
+        auto paramTypesForAamsWorkMode = vector<string>();
+        paramTypesForAamsWorkMode.push_back("int");
+        paramTypesForAamsWorkMode.push_back("");
+        string methodForAamsWorkMode = "Driver.SetAamsWorkMode";
+        sApiArgTypesMap.insert(make_pair(methodForAamsWorkMode, make_pair(paramTypesForAamsWorkMode, 0)));
     }
 
     static string GetClassName(const string &apiName, char splitter)
@@ -1333,6 +1339,14 @@ static void RegisterExtensionHandler()
         out.resultValue_ = data;
     };
     server.AddHandler("Component.getAllProperties", genericOperationHandler);
+
+    auto genericSetModeHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+        auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+        auto mode = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+        DCHECK(mode < AamsWorkMode::END);
+        driver.SetAamsWorkMode(static_cast<AamsWorkMode>(mode));
+    };
+    server.AddHandler("Driver.SetAamsWorkMode", genericSetModeHandler);
 }
 
     static void RegisterUiComponentAttrGetters()

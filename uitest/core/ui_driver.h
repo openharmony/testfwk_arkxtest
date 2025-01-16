@@ -100,6 +100,8 @@ namespace OHOS::uitest {
 
         void PerformPenTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
 
+        void SetAamsWorkMode(const AamsWorkMode mode);
+
     private:
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction
@@ -111,6 +113,7 @@ namespace OHOS::uitest {
         // unique widget object save
         std::vector<Widget> visitWidgets_;
         std::vector<int> targetWidgetsIndex_;
+        AamsWorkMode mode_ = AamsWorkMode::NORMAL;
     };
 } // namespace OHOS::uitest
 
