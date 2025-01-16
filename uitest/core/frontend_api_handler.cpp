@@ -173,16 +173,16 @@ namespace OHOS::uitest {
 
     static void ParseExtensionMethodsSignature()
     {
-        auto paramTypes = vector<string>();
-        paramTypes.push_back("");
-        string extension = "Component.getAllProperties";
-        sApiArgTypesMap.insert(make_pair(extension, make_pair(paramTypes, 0)));
+        auto paramTypesForGetAllProperties = vector<string>();
+        paramTypesForGetAllProperties.push_back("");
+        string methodForGetAllProperties = "Component.getAllProperties";
+        sApiArgTypesMap.insert(make_pair(methodForGetAllProperties, make_pair(paramTypesForGetAllProperties, 0)));
 
-        auto paramTypes2 = vector<string>();
-        paramTypes2.push_back("int");
-        paramTypes2.push_back("");
-        string extension2 = "Driver.SetAamsWorkMode";
-        sApiArgTypesMap.insert(make_pair(extension2, make_pair(paramTypes2, 0)));
+        auto paramTypesForAamsWorkMode = vector<string>();
+        paramTypesForAamsWorkMode.push_back("int");
+        paramTypesForAamsWorkMode.push_back("");
+        string methodForAamsWorkMode = "Driver.SetAamsWorkMode";
+        sApiArgTypesMap.insert(make_pair(methodForAamsWorkMode, make_pair(paramTypesForAamsWorkMode, 0)));
     }
 
     static string GetClassName(const string &apiName, char splitter)
