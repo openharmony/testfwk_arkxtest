@@ -181,11 +181,13 @@ namespace OHOS::uitest {
     }
 
     // the monitored events
-    static constexpr uint32_t EVENT_MASK = EventType::TYPE_VIEW_TEXT_UPDATE_EVENT |
-                                           EventType::TYPE_PAGE_STATE_UPDATE |
-                                           EventType::TYPE_PAGE_CONTENT_UPDATE |
-                                           EventType::TYPE_VIEW_SCROLLED_EVENT |
-                                           EventType::TYPE_WINDOW_UPDATE;
+    static const std::set<uint32_t> EVENT_MASK = {
+        EventType::TYPE_VIEW_TEXT_UPDATE_EVENT,
+        EventType::TYPE_PAGE_STATE_UPDATE,
+        EventType::TYPE_PAGE_CONTENT_UPDATE,
+        EventType::TYPE_VIEW_SCROLLED_EVENT,
+        EventType::TYPE_WINDOW_UPDATE
+    };
 
     void UiEventMonitor::RegisterUiEventListener(std::shared_ptr<UiEventListener> listerner)
     {
@@ -216,7 +218,7 @@ namespace OHOS::uitest {
                 listener->OnEvent(capturedEvent, uiEventSourceInfo);
             }
         }
-        if ((eventInfo.GetEventType() & EVENT_MASK) > 0) {
+        if (EVENT_MASK.find(eventInfo.GetEventType()) != EVENT_MASK.end()) {
             lastEventMillis_.store(GetCurrentMillisecond());
         }
     }
