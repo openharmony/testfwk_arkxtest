@@ -603,6 +603,12 @@ namespace OHOS::uitest {
         }
         SetMousePointerItemAttr(event, item);
         pointerEvent->AddPointerItem(item);
+        if (!downKeys_.empty()) {
+            for (auto key : downKeys_) {
+                LOG_D("SetPressedKey %{public}d", key);
+            }
+            pointerEvent->SetPressedKeys(downKeys_);
+        }
         InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
         this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
     }
@@ -623,7 +629,6 @@ namespace OHOS::uitest {
 
     void SysUiController::InjectKeyEventSequence(const vector<KeyEvent> &events) const
     {
-        static vector<int32_t> downKeys;
         for (auto &event : events) {
             if (event.code_ == KEYCODE_NONE) {
                 continue;
@@ -634,12 +639,12 @@ namespace OHOS::uitest {
                 return;
             }
             if (event.stage_ == ActionStage::UP) {
-                auto iter = std::find(downKeys.begin(), downKeys.end(), event.code_);
-                if (iter == downKeys.end()) {
+                auto iter = std::find(downKeys_.begin(), downKeys_.end(), event.code_);
+                if (iter == downKeys_.end()) {
                     LOG_W("Cannot release a not-pressed key: %{public}d", event.code_);
                     continue;
                 }
-                downKeys.erase(iter);
+                downKeys_.erase(iter);
                 keyEvent->SetKeyCode(event.code_);
                 keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_UP);
                 OHOS::MMI::KeyEvent::KeyItem keyItem;
@@ -649,8 +654,8 @@ namespace OHOS::uitest {
                 InputManager::GetInstance()->SimulateInputEvent(keyEvent);
                 LOG_D("Inject keyEvent up, keycode:%{public}d", event.code_);
             } else {
-                downKeys.push_back(event.code_);
-                for (auto downKey : downKeys) {
+                downKeys_.push_back(event.code_);
+                for (auto downKey : downKeys_) {
                     keyEvent->SetKeyCode(downKey);
                     keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_DOWN);
                     OHOS::MMI::KeyEvent::KeyItem keyItem;
@@ -666,7 +671,7 @@ namespace OHOS::uitest {
             }
         }
         // check not released keys
-        for (auto downKey : downKeys) {
+        for (auto downKey : downKeys_) {
             LOG_W("Key event sequence injections done with not-released key: %{public}d", downKey);
         }
     }
