@@ -523,7 +523,7 @@ namespace OHOS::uitest {
                 AddPointerItems(*pointerEvent, fingerStatus, finger, events);
                 pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
                 pointerEvent->SetTargetDisplayId(defaultDisplayId);
-                InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
+                InputManager::GetInstance()->SimulateInputEvent(pointerEvent, false);
                 LOG_D("Inject touchEvent");
                 if (events.At(finger, step).holdMs_ > 0) {
                     this_thread::sleep_for(chrono::milliseconds(events.At(finger, step).holdMs_));
@@ -609,7 +609,7 @@ namespace OHOS::uitest {
             }
             pointerEvent->SetPressedKeys(downKeys_);
         }
-        InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
+        InputManager::GetInstance()->SimulateInputEvent(pointerEvent, false);
         this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
     }
 
@@ -735,7 +735,7 @@ namespace OHOS::uitest {
             pointerEvent->SetFingerCount(event.fingerCount);
             DisplayManager &displayMgr = DisplayManager::GetInstance();
             pointerEvent->SetTargetDisplayId(displayMgr.GetDefaultDisplayId());
-            InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
+            InputManager::GetInstance()->SimulateInputEvent(pointerEvent, false);
             LOG_D("Inject touchEvent");
             if (event.holdMs > 0) {
                 this_thread::sleep_for(chrono::milliseconds(event.holdMs));
