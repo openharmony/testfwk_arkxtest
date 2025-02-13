@@ -47,7 +47,8 @@ namespace OHOS::uitest {
 
         void PutTextToClipboard(std::string_view text) const override;
 
-        bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, int32_t displayId, Rect rect = {0, 0, 0, 0}) const override;
+        bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, int32_t displayId, Rect rect = {0, 0, 0, 0})
+            const override;
 
         bool GetCharKeyCode(char ch, int32_t& code, int32_t& ctrlCode) const override;
 

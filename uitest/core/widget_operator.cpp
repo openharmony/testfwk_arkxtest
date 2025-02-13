@@ -198,7 +198,7 @@ namespace OHOS::uitest {
                 events.emplace_back(KeyEvent{ActionStage::UP, KEYCODE_DEL, 0});
             }
         }
-        const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY(), 
+        const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY(),
             retrieved->GetDisplayId());
         auto touch = OHOS::uitest::GenericClick(TouchOp::CLICK, center);
         driver_.PerformTouch(touch, options_, error);

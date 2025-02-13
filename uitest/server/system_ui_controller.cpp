@@ -376,7 +376,7 @@ namespace OHOS::uitest {
             }
             vector<AccessibilityWindowInfo> windows;
             if (!GetAamsWindowInfos(windows, displayId)) {
-              continue;
+                continue;
             }
             auto screenSize = GetDisplaySize(displayId);
             auto screenRect = Rect(0, screenSize.px_, 0, screenSize.py_);

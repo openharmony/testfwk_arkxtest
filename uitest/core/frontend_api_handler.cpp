@@ -941,7 +941,7 @@ namespace OHOS::uitest {
             return;
         }
         if (params.at(1).type() != value_t::object) {
-            if (params.size() == 2) {
+            if (params.size() == TWO) {
                 point0 = Point(ReadCallArg<int32_t>(in, INDEX_ZERO), ReadCallArg<int32_t>(in, INDEX_ONE));
                 return;
             } else {

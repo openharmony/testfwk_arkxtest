@@ -95,8 +95,8 @@ namespace OHOS::uitest {
                     ss << ", ";
                 }
                 ss << "]";
-                LOG_D("window in display %{public}d id is :%{public}d, rect info is %{public}s", 
-                    win.displayId_ ,win.id_, ss.str().data());
+                LOG_D("window in display %{public}d id is :%{public}d, rect info is %{public}s",
+                    win.displayId_, win.id_, ss.str().data());
             }
             // actice or focus window move to top
             std::sort(windowCacheVec.begin(), windowCacheVec.end(), WindowCacheCompareGreater());
