@@ -66,37 +66,42 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void UiDriver::UpdateUIWindows(ApiCallErr &error)
+    void UiDriver::UpdateUIWindows(ApiCallErr &error, int32_t targetDisplay)
     {
         visitWidgets_.clear();
         targetWidgetsIndex_.clear();
-        windowCacheVec_.clear();
+        displayToWindowCacheVec_.clear();
         if (!CheckStatus(true, error)) {
             return;
         }
-        std::vector<Window> currentWindowVec;
-        uiController_->GetUiWindows(currentWindowVec);
-        if (currentWindowVec.empty()) {
+        std::map<int32_t, vector<Window>> currentDisplayAndWindowCacheVec;
+        uiController_->GetUiWindows(currentDisplayAndWindowCacheVec, targetDisplay);
+        if (currentDisplayAndWindowCacheVec.empty()) {
             LOG_E("Get Windows Failed");
             error = ApiCallErr(ERR_INTERNAL, "Get window nodes failed");
         }
-
-        for (const auto &win : currentWindowVec) {
-            WindowCacheModel cacheModel(win);
-            windowCacheVec_.emplace_back(std::move(cacheModel));
-            std::stringstream ss;
-            ss << "window rect is ";
-            ss << win.bounds_.Describe();
-            ss << "overplay window rects are:[";
-            for (const auto& overRect : win.invisibleBoundsVec_) {
-                ss << overRect.Describe();
-                ss << ", ";
+        for (auto dm : currentDisplayAndWindowCacheVec) {
+            auto currentWindowVec = dm.second;
+            std::vector<WindowCacheModel> windowCacheVec;
+            for (const auto &win : currentWindowVec) {
+                WindowCacheModel cacheModel(win);
+                windowCacheVec.emplace_back(std::move(cacheModel));
+                std::stringstream ss;
+                ss << "window rect is ";
+                ss << win.bounds_.Describe();
+                ss << "overplay window rects are:[";
+                for (const auto& overRect : win.invisibleBoundsVec_) {
+                    ss << overRect.Describe();
+                    ss << ", ";
+                }
+                ss << "]";
+                LOG_D("window in display %{public}d id is :%{public}d, rect info is %{public}s", 
+                    win.displayId_ ,win.id_, ss.str().data());
             }
-            ss << "]";
-            LOG_D("window id is %{public}d, rect info is %{public}s", win.id_, ss.str().data());
+            // actice or focus window move to top
+            std::sort(windowCacheVec.begin(), windowCacheVec.end(), WindowCacheCompareGreater());
+            displayToWindowCacheVec_.insert(make_pair(dm.first, move(windowCacheVec)));
         }
-        // actice or focus window move to top
-        std::sort(windowCacheVec_.begin(), windowCacheVec_.end(), WindowCacheCompareGreater());
     }
 
     void UiDriver::DumpWindowsInfo(const DumpOption &option, Rect& mergeBounds, nlohmann::json& childDom)
@@ -105,7 +110,12 @@ namespace OHOS::uitest {
         StrategyBuildParam buildParam;
         buildParam.myselfMatcher = emptyMatcher;
         std::unique_ptr<SelectStrategy> selectStrategy = SelectStrategy::BuildSelectStrategy(buildParam, true);
-        for (auto &winCache : windowCacheVec_) {
+        auto dm = displayToWindowCacheVec_.find(option.displayId_);
+        if (dm == displayToWindowCacheVec_.end()) {
+            return;
+        }
+        auto &windowCacheVec = dm->second;
+        for (auto &winCache : windowCacheVec) {
             if (option.bundleName_ != "" && winCache.window_.bundleName_ != option.bundleName_) {
                 LOG_D("skip window(%{public}s), it is not target window %{public}s",
                     winCache.window_.bundleName_.data(), option.bundleName_.data());
@@ -144,8 +154,14 @@ namespace OHOS::uitest {
 
     void UiDriver::DumpUiHierarchy(nlohmann::json &out, const DumpOption &option, ApiCallErr &error)
     {
-        UpdateUIWindows(error);
+        UpdateUIWindows(error, option.displayId_);
         if (error.code_ != NO_ERROR) {
+            return;
+        }
+        auto dm = displayToWindowCacheVec_.find(option.displayId_);
+        if (dm == displayToWindowCacheVec_.end()) {
+            LOG_E("Get windows id display %{public}d failed, dump error.", option.displayId_);
+            error = ApiCallErr(ERR_INTERNAL, "Get window nodes failed");
             return;
         }
         nlohmann::json childDom = nlohmann::json::array();
@@ -170,7 +186,8 @@ namespace OHOS::uitest {
         if (option.addExternAttr_) {
             map<int32_t, string_view> elementTrees;
             vector<char *> buffers;
-            for (auto &winCache : windowCacheVec_) {
+            auto &windowCacheVec = dm->second;
+            for (auto &winCache : windowCacheVec) {
                 char *buffer = nullptr;
                 size_t len = 0;
                 uiController_->GetHidumperInfo(to_string(winCache.window_.id_), &buffer, len);
@@ -206,11 +223,17 @@ namespace OHOS::uitest {
     string UiDriver::GetHostApp(const Widget &widget)
     {
         auto winId = widget.GetAttr(UiAttr::HOST_WINDOW_ID);
+        auto displayId = widget.GetDisplayId();
         if (winId.length() < 1) {
             winId = "0";
         }
+        auto dm = displayToWindowCacheVec_.find(displayId);
+        if (dm == displayToWindowCacheVec_.end()) {
+            return "";
+        }
+        auto &windowCacheVec = dm->second;
         auto id = atoi(winId.c_str());
-        for (auto &windowCache : windowCacheVec_) {
+        for (auto &windowCache : windowCacheVec) {
             if (id == windowCache.window_.id_) {
                 // If not a actived window, get all.
                 if (windowCache.window_.actived_ == false) {
@@ -225,7 +248,7 @@ namespace OHOS::uitest {
     const Widget *UiDriver::RetrieveWidget(const Widget &widget, ApiCallErr &err, bool updateUi)
     {
         if (updateUi) {
-            UpdateUIWindows(err);
+            UpdateUIWindows(err, widget.GetDisplayId());
             if (err.code_ != NO_ERROR) {
                 LOG_E("Retrieve Widget with error %{public}s", err.message_.c_str());
                 return nullptr;
@@ -236,7 +259,12 @@ namespace OHOS::uitest {
         }
 
         std::unique_ptr<SelectStrategy> selectStrategy = ConstructSelectStrategyByRetrieve(widget);
-        for (auto &curWinCache : windowCacheVec_) {
+        auto dm = displayToWindowCacheVec_.find(widget.GetDisplayId());
+        if (dm == displayToWindowCacheVec_.end()) {
+            return nullptr;
+        }
+        auto &windowCacheVec = dm->second;
+        for (auto &curWinCache : windowCacheVec) {
             if (widget.GetAttr(UiAttr::HOST_WINDOW_ID) != std::to_string(curWinCache.window_.id_)) {
                 continue;
             }
@@ -294,7 +322,7 @@ namespace OHOS::uitest {
         UiOpArgs opt;
         uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
         if (updateUi) {
-            UpdateUIWindows(err);
+            UpdateUIWindows(err, selector.GetDisplayLocator());
             if (err.code_ != NO_ERROR) {
                 return;
             }
@@ -303,29 +331,36 @@ namespace OHOS::uitest {
             targetWidgetsIndex_.clear();
         }
         auto appLocator = selector.GetAppLocator();
-        for (auto &curWinCache : windowCacheVec_) {
-            if (appLocator != "" && curWinCache.window_.bundleName_ != appLocator) {
-                LOG_D("skip window(%{public}s), it is not target window %{public}s",
-                    curWinCache.window_.bundleName_.data(), appLocator.data());
-                continue;
-            }
-            LOG_D("Start find in Window, window id is %{public}d", curWinCache.window_.id_);
-            if (curWinCache.widgetIterator_ == nullptr) {
-                std::unique_ptr<ElementNodeIterator> widgetIterator = nullptr;
-                if (!uiController_->GetWidgetsInWindow(curWinCache.window_, curWinCache.widgetIterator_, mode_)) {
-                    LOG_W("Get Widget from window[%{public}d] failed, skip the window", curWinCache.window_.id_);
+        for (auto &dm : displayToWindowCacheVec_) {
+            auto &windowCacheVec = dm.second;
+            for (auto &curWinCache : windowCacheVec) {
+                if (appLocator != "" && curWinCache.window_.bundleName_ != appLocator) {
+                    LOG_D("skip window(%{public}s), it is not target window %{public}s",
+                        curWinCache.window_.bundleName_.data(), appLocator.data());
                     continue;
                 }
+                LOG_D("Start find in Window, window id is %{public}d", curWinCache.window_.id_);
+                if (curWinCache.widgetIterator_ == nullptr) {
+                    std::unique_ptr<ElementNodeIterator> widgetIterator = nullptr;
+                    if (!uiController_->GetWidgetsInWindow(curWinCache.window_, curWinCache.widgetIterator_, mode_)) {
+                        LOG_W("Get Widget from window[%{public}d] failed, skip the window", curWinCache.window_.id_);
+                        continue;
+                    }
+                }
+                selector.Select(curWinCache.window_, *curWinCache.widgetIterator_, visitWidgets_, targetWidgetsIndex_);
+                if (!selector.IsWantMulti() && !targetWidgetsIndex_.empty()) {
+                    break;
+                }
+                if (!selector.IsWantMulti()) {
+                    visitWidgets_.clear();
+                    targetWidgetsIndex_.clear();
+                }
             }
-            selector.Select(curWinCache.window_, *curWinCache.widgetIterator_, visitWidgets_, targetWidgetsIndex_);
             if (!selector.IsWantMulti() && !targetWidgetsIndex_.empty()) {
                 break;
             }
-            if (!selector.IsWantMulti()) {
-                visitWidgets_.clear();
-                targetWidgetsIndex_.clear();
-            }
         }
+        
         if (targetWidgetsIndex_.empty()) {
             LOG_W("self node not found by %{public}s", selector.Describe().data());
             return;
@@ -391,13 +426,14 @@ namespace OHOS::uitest {
         uiController_->InjectMouseEventSequence(events);
     }
 
-    void UiDriver::TakeScreenCap(int32_t fd, ApiCallErr &err, Rect rect)
+    void UiDriver::TakeScreenCap(int32_t fd, ApiCallErr &err, Rect rect, int32_t displayId)
     {
         if (!CheckStatus(false, err)) {
             return;
         }
         stringstream errorRecv;
-        if (!uiController_->TakeScreenCap(fd, errorRecv, rect)) {
+        if (!uiController_->TakeScreenCap(fd, errorRecv, displayId, rect))
+        {
             string errStr = errorRecv.str();
             LOG_W("ScreenCap failed: %{public}s", errStr.c_str());
             if (errStr.find("File opening failed") == 0) {
@@ -406,7 +442,9 @@ namespace OHOS::uitest {
                 err = ApiCallErr(ERR_INTERNAL, errStr);
             }
             LOG_W("ScreenCap failed: %{public}s", errorRecv.str().c_str());
-        } else {
+        }
+        else
+        {
             LOG_D("ScreenCap successed");
         }
     }
@@ -417,11 +455,14 @@ namespace OHOS::uitest {
         if (err.code_ != NO_ERROR) {
             return nullptr;
         }
-        for (auto &windowCache : windowCacheVec_) {
-            if (matcher(windowCache.window_)) {
-                auto clone = make_unique<Window>(0);
-                *clone = windowCache.window_; // copy construct
-                return clone;
+        for (auto &dm : displayToWindowCacheVec_) {
+            auto &windowCacheVec = dm.second;
+            for (auto &windowCache : windowCacheVec) {
+                if (matcher(windowCache.window_)) {
+                    auto clone = make_unique<Window>(0);
+                    *clone = windowCache.window_; // copy construct
+                    return clone;
+                }
             }
         }
         return nullptr;
@@ -429,17 +470,20 @@ namespace OHOS::uitest {
 
     const Window *UiDriver::RetrieveWindow(const Window &window, ApiCallErr &err)
     {
-        UpdateUIWindows(err);
+        UpdateUIWindows(err, window.displayId_);
         if (err.code_ != NO_ERROR) {
             return nullptr;
         }
-        for (auto &winCache : windowCacheVec_) {
+        auto dm = displayToWindowCacheVec_.find(window.displayId_);
+        auto &windowCacheVec = dm->second;
+        for (auto &winCache : windowCacheVec) {
             if (winCache.window_.id_ != window.id_) {
                 continue;
             }
             return &winCache.window_;
         }
         stringstream msg;
+        msg << "display " << window.displayId_;
         msg << "Window " << window.id_;
         msg << "dose not exist on current UI! Check if the UI has changed after you got the window object";
         err = ApiCallErr(ERR_COMPONENT_LOST, msg.str());
@@ -455,12 +499,12 @@ namespace OHOS::uitest {
         uiController_->SetDisplayRotation(rotation);
     }
 
-    DisplayRotation UiDriver::GetDisplayRotation(ApiCallErr &error)
+    DisplayRotation UiDriver::GetDisplayRotation(ApiCallErr &error, int32_t displayId)
     {
         if (!CheckStatus(false, error)) {
             return ROTATION_0;
         }
-        return uiController_->GetDisplayRotation();
+        return uiController_->GetDisplayRotation(displayId);
     }
 
     void UiDriver::SetDisplayRotationEnabled(bool enabled, ApiCallErr &error)
@@ -493,20 +537,20 @@ namespace OHOS::uitest {
         }
     }
 
-    Point UiDriver::GetDisplaySize(ApiCallErr &error)
+    Point UiDriver::GetDisplaySize(ApiCallErr &error, int32_t displayId)
     {
         if (!CheckStatus(false, error)) {
             return Point(0, 0);
         }
-        return uiController_->GetDisplaySize();
+        return uiController_->GetDisplaySize(displayId);
     }
 
-    Point UiDriver::GetDisplayDensity(ApiCallErr &error)
+    Point UiDriver::GetDisplayDensity(ApiCallErr &error, int32_t displayId)
     {
         if (!CheckStatus(false, error)) {
             return Point(0, 0);
         }
-        return uiController_->GetDisplayDensity();
+        return uiController_->GetDisplayDensity(displayId);
     }
 
     bool UiDriver::TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error)
@@ -559,15 +603,15 @@ namespace OHOS::uitest {
         }
     }
 
-    void UiDriver::GetMergeWindowBounds(Rect &mergeRect)
-    {
-        for (const auto &winCache : windowCacheVec_) {
-            mergeRect.left_ = std::min(winCache.window_.bounds_.left_, mergeRect.left_);
-            mergeRect.top_ = std::min(winCache.window_.bounds_.top_, mergeRect.top_);
-            mergeRect.right_ = std::max(winCache.window_.bounds_.right_, mergeRect.right_);
-            mergeRect.bottom_ = std::max(winCache.window_.bounds_.bottom_, mergeRect.bottom_);
-        }
-    }
+    // void UiDriver::GetMergeWindowBounds(Rect &mergeRect)
+    // {
+    //     for (const auto &winCache : windowCacheVec_) {
+    //         mergeRect.left_ = std::min(winCache.window_.bounds_.left_, mergeRect.left_);
+    //         mergeRect.top_ = std::min(winCache.window_.bounds_.top_, mergeRect.top_);
+    //         mergeRect.right_ = std::max(winCache.window_.bounds_.right_, mergeRect.right_);
+    //         mergeRect.bottom_ = std::max(winCache.window_.bounds_.bottom_, mergeRect.bottom_);
+    //     }
+    // }
 
     void UiDriver::PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error)
     {
@@ -579,7 +623,7 @@ namespace OHOS::uitest {
             return;
         }
         vector<TouchPadEvent> events;
-        touch.Decompose(events, opt, uiController_->GetDisplaySize());
+        touch.Decompose(events, opt, uiController_->GetDisplaySize(0));
         if (events.empty()) {
             return;
         }

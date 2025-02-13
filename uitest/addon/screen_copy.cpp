@@ -54,12 +54,12 @@ class ScreenCopy {
 public:
     explicit ScreenCopy(float scale): scale_(scale) {};
     virtual ~ScreenCopy();
-    bool Run();
+    bool Run(int32_t displayId);
     void Destroy();
     const char* pendingError_ = nullptr;
     const float scale_ = 0.5f;
 private:
-    void PollAndNotifyFrames();
+    void PollAndNotifyFrames(int32_t displayId);
     void WaitAndConsumeFrames();
     void UpdateFrameLocked(shared_ptr<PixelMap> frame, bool &changed, bool &muted);
     shared_ptr<PixelMap> ScaleNewsetFrameLocked();
@@ -77,8 +77,7 @@ sptr<ScreenChangeListener> ScreenCopy::screenChangeListener_ = nullptr;
 static unique_ptr<ScreenCopy> g_screenCopy = nullptr;
 static ScreenCopyHandler g_screenCopyHandler = nullptr;
 
-
-static void AdapteScreenChange()
+static void AdapteScreenChange(int32_t displayId)
 {
     if (g_screenCopy == nullptr) {
         return;
@@ -88,7 +87,7 @@ static void AdapteScreenChange()
     const auto scale = g_screenCopy->scale_;
     g_screenCopy->Destroy();
     g_screenCopy = make_unique<ScreenCopy>(scale);
-    g_screenCopy->Run();
+    g_screenCopy->Run(displayId);
 }
 
 ScreenCopy::~ScreenCopy()
@@ -98,27 +97,26 @@ ScreenCopy::~ScreenCopy()
     }
 }
 
-bool ScreenCopy::Run()
+bool ScreenCopy::Run(int32_t displayId)
 {
     if (scale_ <= 0 || scale_ > 1.0) {
         pendingError_ = "Error: Illegal scale value!";
         return false;
     }
     // get source screen
-    auto id = static_cast<ScreenId>(DisplayManager::GetInstance().GetDefaultDisplayId());
-    sourceScreen_ = ScreenManager::GetInstance().GetScreenById(id);
-    if (id == SCREEN_ID_INVALID || sourceScreen_ == nullptr) {
+    sourceScreen_ = ScreenManager::GetInstance().GetScreenById(displayId);
+    if (displayId == SCREEN_ID_INVALID || sourceScreen_ == nullptr) {
         pendingError_ = "Error: Get main screen failed!";
         return false;
     }
     // listen screen changes for auto-adapting
     if (screenChangeListener_ == nullptr) {
-        screenChangeListener_ = new ScreenChangeListener([]() { AdapteScreenChange(); }, id);
+        screenChangeListener_ = new ScreenChangeListener([displayId]() { AdapteScreenChange(displayId); }, displayId);
         auto ret = ScreenManager::GetInstance().RegisterScreenListener(screenChangeListener_);
         LOG_D("Register ScreenListener, ret=%{public}d", ret);
     }
     // run snapshot thread and encode thread
-    snapshotThread = make_unique<thread>([this]() { this->PollAndNotifyFrames(); });
+    snapshotThread = make_unique<thread>([&]() { this->PollAndNotifyFrames(displayId); });
     encodeThread = make_unique<thread>([this]() { this->WaitAndConsumeFrames(); });
     return true;
 }
@@ -147,11 +145,10 @@ void ScreenCopy::Destroy()
     LOG_D("All threads exited");
 }
 
-void ScreenCopy::PollAndNotifyFrames()
+void ScreenCopy::PollAndNotifyFrames(int32_t displayId)
 {
     constexpr int32_t screenCheckIntervalUs = 50 * 1000;
     auto &dm = DisplayManager::GetInstance();
-    const auto displayId = dm.GetDefaultDisplayId();
     LOG_I("Start PollAndNotifyFrames");
     bool changed = false;
     bool screenOff = false;
@@ -296,7 +293,7 @@ void ScreenCopy::WaitAndConsumeFrames()
     LOG_I("Stop WaitAndConsumeFrames");
 }
 
-bool StartScreenCopy(float scale, ScreenCopyHandler handler)
+bool StartScreenCopy(float scale, int32_t displayId, ScreenCopyHandler handler)
 {
     if (scale <= 0 || scale > 1 || handler == nullptr) {
         LOG_E("Illegal arguments");
@@ -305,7 +302,7 @@ bool StartScreenCopy(float scale, ScreenCopyHandler handler)
     StopScreenCopy();
     g_screenCopyHandler = handler;
     g_screenCopy = make_unique<ScreenCopy>(scale);
-    bool success = g_screenCopy != nullptr && g_screenCopy->Run();
+    bool success = g_screenCopy != nullptr && g_screenCopy->Run(displayId);
     if (!success) {
         constexpr size_t BUF_SIZE = 128;
         auto buf = (uint8_t *)malloc(BUF_SIZE);

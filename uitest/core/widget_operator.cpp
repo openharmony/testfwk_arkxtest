@@ -98,7 +98,8 @@ namespace OHOS::uitest {
         if (error.code_ != NO_ERROR) {
             return;
         }
-        const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY());
+        const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY(),
+            retrieved->GetDisplayId());
         auto touch = OHOS::uitest::GenericClick(op, center);
         driver_.PerformTouch(touch, options_, error);
     }
@@ -155,8 +156,8 @@ namespace OHOS::uitest {
             return;
         }
         auto boundsTo = widgetTo->GetBounds();
-        auto centerFrom = Point(boundsFrom.GetCenterX(), boundsFrom.GetCenterY());
-        auto centerTo = Point(boundsTo.GetCenterX(), boundsTo.GetCenterY());
+        auto centerFrom = Point(boundsFrom.GetCenterX(), boundsFrom.GetCenterY(), widgetFrom->GetDisplayId());
+        auto centerTo = Point(boundsTo.GetCenterX(), boundsTo.GetCenterY(), widgetTo->GetDisplayId());
         auto touch = GenericSwipe(TouchOp::DRAG, centerFrom, centerTo);
         driver_.PerformTouch(touch, options_, error);
     }
@@ -197,7 +198,8 @@ namespace OHOS::uitest {
                 events.emplace_back(KeyEvent{ActionStage::UP, KEYCODE_DEL, 0});
             }
         }
-        const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY());
+        const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY(), 
+            retrieved->GetDisplayId());
         auto touch = OHOS::uitest::GenericClick(TouchOp::CLICK, center);
         driver_.PerformTouch(touch, options_, error);
         driver_.DelayMs(focusTimeMs); // short delay to ensure focus gaining
@@ -289,13 +291,15 @@ namespace OHOS::uitest {
             topPoint.px_ += options_.scrollWidgetDeadZone_;
             bottomPoint.px_ -= options_.scrollWidgetDeadZone_;
         }
-        auto screenSize = driver_.GetDisplaySize(error);
+        auto screenSize = driver_.GetDisplaySize(error, widget_.GetDisplayId());
         auto gestureZone = (vertical) ? screenSize.py_ / 20 : screenSize.px_ / 20;
         if (vertical && screenSize.py_ - bottomPoint.py_ <= gestureZone) {
             bottomPoint.py_ = bottomPoint.py_ - gestureZone;
         } else if (!vertical && screenSize.px_ - bounds.right_ <= gestureZone) {
             bottomPoint.px_ = bottomPoint.px_ - gestureZone;
         }
+        topPoint.displayId_ = widget_.GetDisplayId();
+        bottomPoint.displayId_ = widget_.GetDisplayId();
         auto touch = (toTop) ? GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint)
                              : GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
         driver_.PerformTouch(touch, options_, error);
