@@ -208,14 +208,14 @@ namespace OHOS::uitest {
         auto displayId = 0;
         map<char, string> params;
         static constexpr string_view usage = "USAGE: uitest screenCap -p <path>";
-        if (GetParam(argc, argv, "p:", usage, params) == EXIT_FAILURE) {
+        if (GetParam(argc, argv, "p:d:", usage, params) == EXIT_FAILURE) {
             return EXIT_FAILURE;
         }
         auto iter = params.find('p');
         if (iter != params.end()) {
             savePath = iter->second;
         }
-        auto iter2 = params.find('p');
+        auto iter2 = params.find('d');
         if (iter2 != params.end()) {
             displayId = std::atoi(iter2->second.c_str());
         }

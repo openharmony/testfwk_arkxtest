@@ -230,7 +230,7 @@ do { \
         if (options.type() == nlohmann::detail::value_t::object && options.contains("displayId")) {
             nlohmann::json val = options["displayId"];
             EXTENSION_API_CHECK(val.type() == detail::value_t::number_integer, "Illegal displayId value", ERR_BAD_ARG);
-            dumpOption.windowId_ = val.get<int>();
+            dumpOption.displayId_ = val.get<int>();
         }
         driver.DumpUiHierarchy(tree, dumpOption, err);
         return RETCODE_SUCCESS;
