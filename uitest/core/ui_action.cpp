@@ -139,9 +139,11 @@ namespace OHOS::uitest {
         PointerMatrix pointer1;
         PointerMatrix pointer2;
         if (scale_ > 1) {
-            auto fromPoint0 = Point(rect_.GetCenterX() - options.pinchWidgetDeadZone_, rect_.GetCenterY(), rect_.displayId_);
+            auto fromPoint0 = Point(rect_.GetCenterX() - options.pinchWidgetDeadZone_, rect_.GetCenterY(),
+                rect_.displayId_);
             auto toPoint0 = Point((fromPoint0.px_ - distanceX0), rect_.GetCenterY(), rect_.displayId_);
-            auto fromPoint1 = Point(rect_.GetCenterX() + options.pinchWidgetDeadZone_, rect_.GetCenterY(), rect_.displayId_);
+            auto fromPoint1 = Point(rect_.GetCenterX() + options.pinchWidgetDeadZone_, rect_.GetCenterY(),
+                rect_.displayId_);
             auto toPoint1 = Point((fromPoint1.px_ + distanceX0), rect_.GetCenterY(), rect_.displayId_);
             DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, TouchOp::SWIPE, options);
             DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, TouchOp::SWIPE, options);
@@ -192,7 +194,8 @@ namespace OHOS::uitest {
                     matrix.PushAction(TouchEvent {ActionStage::DOWN, {pxFrom, pyFrom, displayId}, 0, holdMs});
                 } else {
                     timeOffsetMs += intervalMs;
-                    matrix.PushAction(TouchEvent {ActionStage::MOVE, {pxFrom, pyFrom, displayId}, timeOffsetMs, holdMs});
+                    matrix.PushAction(TouchEvent {ActionStage::MOVE, {pxFrom, pyFrom, displayId},
+                        timeOffsetMs, holdMs});
                 }
             }
             auto endPx = (pointers_.At(finger, pointers_.GetSteps() - 1).point_.px_) % flag;
