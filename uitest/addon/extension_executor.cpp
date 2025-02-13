@@ -227,6 +227,11 @@ do { \
                 dumpOption.notMergeWindow_ = true;
             }
         }
+        if (options.type() == nlohmann::detail::value_t::object && options.contains("displayId")) {
+            nlohmann::json val = options["displayId"];
+            EXTENSION_API_CHECK(val.type() == detail::value_t::number_integer, "Illegal displayId value", ERR_BAD_ARG);
+            dumpOption.windowId_ = val.get<int>();
+        }
         driver.DumpUiHierarchy(tree, dumpOption, err);
         return RETCODE_SUCCESS;
     }
@@ -260,7 +265,13 @@ do { \
                 EXTENSION_API_CHECK(val.type() == detail::value_t::number_float, "Illegal scale value", ERR_BAD_ARG);
                 scale = val.get<float>();
             }
-            StartScreenCopy(scale, [callback](uint8_t *data, size_t len) {
+            int32_t displayId = 0;
+            if (options.type() == nlohmann::detail::value_t::object && options.contains("displayId")) {
+                nlohmann::json val = options["displayId"];
+                EXTENSION_API_CHECK(val.type() == detail::value_t::number_float, "Illegal displayId value", ERR_BAD_ARG);
+                displayId = val.get<int>();
+            }
+            StartScreenCopy(scale, displayId, [callback](uint8_t *data, size_t len) {
                 callback(Text{reinterpret_cast<const char *>(data), len});
                 free(data);
             });

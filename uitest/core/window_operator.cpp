@@ -102,6 +102,8 @@ namespace OHOS::uitest {
         static constexpr uint32_t step2 = 40;
         Point from(rect.GetCenterX(), rect.top_ + step1);
         Point to(rect.GetCenterX(), rect.top_ + step2);
+        from.displayId_ = window_.displayId_;
+        to.displayId_ = window_.displayId_;
         auto touch = GenericSwipe(TouchOp::DRAG, from, to);
         driver_.PerformTouch(touch, options_, out.exception_);
         driver_.DelayMs(options_.uiSteadyThresholdMs_);
@@ -114,7 +116,7 @@ namespace OHOS::uitest {
         } else {
             auto rect = window_.visibleBounds_;
             static constexpr uint32_t step = 10;
-            Point focus(rect.GetCenterX(), rect.top_ + step);
+            Point focus(rect.GetCenterX(), rect.top_ + step, window_.displayId_);
             auto touch = GenericClick(TouchOp::CLICK, focus);
             driver_.PerformTouch(touch, options_, out.exception_);
         }
@@ -131,6 +133,8 @@ namespace OHOS::uitest {
         static constexpr uint32_t step = 40;
         Point from(rect.left_ + step, rect.top_ + step);
         Point to(endX + step, endY + step);
+        from.displayId_ = window_.displayId_;
+        to.displayId_ = window_.displayId_;
         auto touch = GenericSwipe(TouchOp::DRAG, from, to);
         driver_.PerformTouch(touch, options_, out.exception_);
     }
@@ -180,6 +184,8 @@ namespace OHOS::uitest {
             default:
                 break;
         }
+        from.displayId_ = window_.displayId_;
+        to.displayId_ = window_.displayId_;
         driver_.PerformTouch(GenericSwipe(TouchOp::DRAG, from, to), options_, out.exception_);
     }
 
@@ -207,7 +213,7 @@ namespace OHOS::uitest {
             return;
         }
         auto rect = widgets[0]->GetBounds();
-        Point widgetCenter(rect.GetCenterX(), rect.GetCenterY());
+        Point widgetCenter(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
         auto touch1 = MouseMoveTo(widgetCenter);
         driver_.PerformMouseAction(touch1, options_, out.exception_);
         constexpr auto focusTime = 3000;
@@ -224,7 +230,7 @@ namespace OHOS::uitest {
             return;
         }
         auto rect2 = widgets2[0]->GetBounds();
-        Point widgetCenter2(rect2.GetCenterX(), rect2.GetCenterY());
+        Point widgetCenter2(rect2.GetCenterX(), rect2.GetCenterY(), window_.displayId_);
         auto touch2 = GenericClick(TouchOp::CLICK, widgetCenter2);
         driver_.PerformTouch(touch2, options_, out.exception_);
     }
@@ -286,7 +292,7 @@ namespace OHOS::uitest {
             return;
         }
         auto rect = widgets[0]->GetBounds();
-        Point widgetCenter(rect.GetCenterX(), rect.GetCenterY());
+        Point widgetCenter(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
         auto touch = GenericClick(TouchOp::CLICK, widgetCenter);
         driver_.PerformTouch(touch, options_, out.exception_);
     }

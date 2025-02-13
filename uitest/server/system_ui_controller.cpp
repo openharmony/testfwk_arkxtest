@@ -338,21 +338,29 @@ namespace OHOS::uitest {
         }
     }
 
-    static bool GetAamsWindowInfos(vector<AccessibilityWindowInfo> &windows)
+    static bool GetAamsWindowInfos(vector<AccessibilityWindowInfo> &windows, int32_t displayId)
     {
+        LOG_D("Get Window root info in display %{public}d", displayId);
         auto ability = AccessibilityUITestAbility::GetInstance();
         g_monitorInstance_->WaitScrollCompelete();
-        if (ability->GetWindows(windows) != RET_OK) {
-            LOG_W("GetWindows from AccessibilityUITestAbility failed");
+        auto ret = ability->GetWindows(displayId, windows);
+        if (ret != RET_OK) {
+            LOG_W("GetWindows in display %{public}d from AccessibilityUITestAbility failed, ret: %{public}d",
+                displayId, ret);
+            return false;
+        }
+        if (windows.empty()) {
+            LOG_E("Get Windows in display %{public}d failed", displayId);
             return false;
         }
         sort(windows.begin(), windows.end(), [](auto &w1, auto &w2) -> bool {
             return w1.GetWindowLayer() > w2.GetWindowLayer();
         });
+        LOG_D("End Get Window root info");
         return true;
     }
 
-    void SysUiController::GetUiWindows(std::vector<Window> &out)
+    void SysUiController::GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay)
     {
         std::lock_guard<std::mutex> dumpLocker(dumpMtx); // disallow concurrent dumpUi
         ApiCallErr error = ApiCallErr(NO_ERROR);
@@ -360,38 +368,47 @@ namespace OHOS::uitest {
             LOG_E("%{public}s", error.message_.c_str());
             return;
         }
-        vector<AccessibilityWindowInfo> windows;
-        LOG_D("Get Window root info");
-        if (!GetAamsWindowInfos(windows)) {
-            return;
-        }
-        LOG_D("End Get Window root info");
-        auto screenSize = GetDisplaySize();
-        auto screenRect = Rect(0, screenSize.px_, 0, screenSize.py_);
-        std::vector<Rect> overplays;
-        // window wrapper
-        for (auto &win : windows) {
-            Rect winRectInScreen = GetVisibleRect(screenRect, win.GetRectInScreen());
-            Rect visibleArea = winRectInScreen;
-            if (!RectAlgorithm::ComputeMaxVisibleRegion(winRectInScreen, overplays, visibleArea)) {
-                LOG_I("window is covered, windowId : %{public}d, layer is %{public}d", win.GetWindowId(),
-                      win.GetWindowLayer());
+        DisplayManager &dpm = DisplayManager::GetInstance();
+        auto displayIds = dpm.GetAllDisplayIds();
+        for (auto displayId : displayIds) {
+            if (targetDisplay != -1 && targetDisplay != static_cast<int32_t>(displayId)) {
                 continue;
             }
-            LOG_I("window is visible, windowId: %{public}d, active: %{public}d, focus: %{public}d, layer: %{public}d",
-                win.GetWindowId(), win.IsActive(), win.IsFocused(), win.GetWindowLayer());
-            Window winWrapper{win.GetWindowId()};
-            InflateWindowInfo(win, winWrapper);
-            winWrapper.bounds_ = winRectInScreen;
-            for (const auto &overWin : overplays) {
-                Rect intersectionRect{0, 0, 0, 0};
-                if (RectAlgorithm::ComputeIntersection(winRectInScreen, overWin, intersectionRect)) {
-                    winWrapper.invisibleBoundsVec_.emplace_back(overWin);
-                }
+            vector<AccessibilityWindowInfo> windows;
+            if (!GetAamsWindowInfos(windows, displayId)) {
+              continue;
             }
-            RectAlgorithm::ComputeMaxVisibleRegion(winWrapper.bounds_, overplays, winWrapper.visibleBounds_);
-            overplays.emplace_back(winRectInScreen);
-            out.emplace_back(std::move(winWrapper));
+            auto screenSize = GetDisplaySize(displayId);
+            auto screenRect = Rect(0, screenSize.px_, 0, screenSize.py_);
+            std::vector<Window> winInfos;
+            std::vector<Rect> overplays;
+            // window wrapper
+            for (auto &win : windows) {
+                Rect winRectInScreen = GetVisibleRect(screenRect, win.GetRectInScreen());
+                Rect visibleArea = winRectInScreen;
+                if (!RectAlgorithm::ComputeMaxVisibleRegion(winRectInScreen, overplays, visibleArea)) {
+                    LOG_I("window is covered, windowId : %{public}d, layer is %{public}d", win.GetWindowId(),
+                          win.GetWindowLayer());
+                    continue;
+                }
+                LOG_I("window is visible, windowId: "
+                    "%{public}d, active: %{public}d, focus: %{public}d, layer: %{public}d",
+                    win.GetWindowId(), win.IsActive(), win.IsFocused(), win.GetWindowLayer());
+                Window winWrapper{win.GetWindowId()};
+                InflateWindowInfo(win, winWrapper);
+                winWrapper.bounds_ = winRectInScreen;
+                winWrapper.displayId_ = displayId;
+                for (const auto &overWin : overplays) {
+                    Rect intersectionRect{0, 0, 0, 0};
+                    if (RectAlgorithm::ComputeIntersection(winRectInScreen, overWin, intersectionRect)) {
+                      winWrapper.invisibleBoundsVec_.emplace_back(overWin);
+                    }
+                }
+                RectAlgorithm::ComputeMaxVisibleRegion(winWrapper.bounds_, overplays, winWrapper.visibleBounds_);
+                overplays.emplace_back(winRectInScreen);
+                winInfos.emplace_back(move(winWrapper));
+            }
+            out.insert(make_pair(displayId, move(winInfos)));
         }
     }
 
@@ -486,8 +503,6 @@ namespace OHOS::uitest {
 
     void SysUiController::InjectTouchEventSequence(const PointerMatrix &events) const
     {
-        DisplayManager &displayMgr = DisplayManager::GetInstance();
-        auto defaultDisplayId = displayMgr.GetDefaultDisplayId();
         // fingerStatus stores the press status and coordinates of each finger.
         vector<pair<bool, Point>> fingerStatus(events.GetFingers(), make_pair(false, Point(0,0)));
         for (uint32_t step = 0; step < events.GetSteps(); step++) {
@@ -522,9 +537,9 @@ namespace OHOS::uitest {
                 }
                 AddPointerItems(*pointerEvent, fingerStatus, finger, events);
                 pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
-                pointerEvent->SetTargetDisplayId(defaultDisplayId);
+                pointerEvent->SetTargetDisplayId(events.At(finger, step).point_.displayId_);
                 InputManager::GetInstance()->SimulateInputEvent(pointerEvent, false);
-                LOG_D("Inject touchEvent");
+                LOG_D("Inject touchEvent to display : %{public}d", events.At(finger, step).point_.displayId_);
                 if (events.At(finger, step).holdMs_ > 0) {
                     this_thread::sleep_for(chrono::milliseconds(events.At(finger, step).holdMs_));
                 }
@@ -603,6 +618,7 @@ namespace OHOS::uitest {
         }
         SetMousePointerItemAttr(event, item);
         pointerEvent->AddPointerItem(item);
+        pointerEvent->SetTargetDisplayId(event.point_.displayId_);
         if (!downKeys_.empty()) {
             for (auto key : downKeys_) {
                 LOG_D("SetPressedKey %{public}d", key);
@@ -610,6 +626,7 @@ namespace OHOS::uitest {
             pointerEvent->SetPressedKeys(downKeys_);
         }
         InputManager::GetInstance()->SimulateInputEvent(pointerEvent, false);
+        LOG_D("Inject mouseEvent to display : %{public}d", event.point_.displayId_);
         this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
     }
 
@@ -733,10 +750,9 @@ namespace OHOS::uitest {
             AddPointerItems(*pointerEvent, fingerStatus, 0, pointer);
             pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHPAD);
             pointerEvent->SetFingerCount(event.fingerCount);
-            DisplayManager &displayMgr = DisplayManager::GetInstance();
-            pointerEvent->SetTargetDisplayId(displayMgr.GetDefaultDisplayId());
+            pointerEvent->SetTargetDisplayId(event.point.displayId_);
             InputManager::GetInstance()->SimulateInputEvent(pointerEvent, false);
-            LOG_D("Inject touchEvent");
+            LOG_D("Inject touchEvent to display %{public}d", event.point.displayId_);
             if (event.holdMs > 0) {
                 this_thread::sleep_for(chrono::milliseconds(event.holdMs));
             }
@@ -774,18 +790,18 @@ namespace OHOS::uitest {
         return true;
     }
 
-    bool SysUiController::TakeScreenCap(int32_t fd, std::stringstream &errReceiver, Rect rect) const
+    bool SysUiController::TakeScreenCap(int32_t fd, std::stringstream &errReceiver, int32_t displayId, Rect rect) const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
         // get PixelMap from DisplayManager API
         shared_ptr<PixelMap> pixelMap;
         if (rect.GetWidth() == 0) {
-            pixelMap = displayMgr.GetScreenshot(displayMgr.GetDefaultDisplayId());
+            pixelMap = displayMgr.GetScreenshot(displayId);
         } else {
             Media::Rect region = {.left = rect.left_, .top = rect.top_,
                 .width = rect.right_ - rect.left_, .height = rect.bottom_ - rect.top_};
             Media::Size size = {.width = rect.right_ - rect.left_, .height = rect.bottom_ - rect.top_};
-            pixelMap = displayMgr.GetScreenshot(displayMgr.GetDefaultDisplayId(), region, size, 0);
+            pixelMap = displayMgr.GetScreenshot(displayId, region, size, 0);
         }
         if (pixelMap == nullptr) {
             errReceiver << "Failed to get display pixelMap";
@@ -947,9 +963,9 @@ namespace OHOS::uitest {
         }
     }
 
-    DisplayRotation SysUiController::GetDisplayRotation() const
+    DisplayRotation SysUiController::GetDisplayRotation(int32_t displayId) const
     {
-        auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        auto display = DisplayManager::GetInstance().GetDisplayById(displayId);
         if (display == nullptr) {
             LOG_E("DisplayManager init fail");
             return DisplayRotation::ROTATION_0;
@@ -964,9 +980,9 @@ namespace OHOS::uitest {
         screenMgr.SetScreenRotationLocked(!enabled);
     }
 
-    Point SysUiController::GetDisplaySize() const
+    Point SysUiController::GetDisplaySize(int32_t displayId) const
     {
-        auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        auto display = DisplayManager::GetInstance().GetDisplayById(displayId);
         if (display == nullptr) {
             LOG_E("DisplayManager init fail");
             return {0, 0};
@@ -974,19 +990,19 @@ namespace OHOS::uitest {
         auto width = display->GetWidth();
         auto height = display->GetHeight();
         LOG_D("GetDisplaysize, width: %{public}d, height: %{public}d", width, height);
-        Point result(width, height);
+        Point result(width, height, displayId);
         return result;
     }
 
-    Point SysUiController::GetDisplayDensity() const
+    Point SysUiController::GetDisplayDensity(int32_t displayId) const
     {
-        auto display = DisplayManager::GetInstance().GetDefaultDisplay();
+        auto display = DisplayManager::GetInstance().GetDisplayById(displayId);
         if (display == nullptr) {
             LOG_E("DisplayManager init fail");
             return {0, 0};
         }
         auto rate = display->GetVirtualPixelRatio();
-        Point displaySize = GetDisplaySize();
+        Point displaySize = GetDisplaySize(displayId);
         Point result(displaySize.px_ * rate, displaySize.py_ * rate);
         return result;
     }
