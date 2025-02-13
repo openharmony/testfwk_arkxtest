@@ -59,7 +59,7 @@ namespace OHOS::uitest {
                                       const UiOpArgs &options)
     {
         if (from.displayId_ != to.displayId_) {
-            LOG_W("Cross-screen operation is not suypport.");
+            LOG_W("Cross-screen operation is not support.");
             return;
         }
         const int32_t distanceX = to.px_ - from.px_;
@@ -89,7 +89,7 @@ namespace OHOS::uitest {
             const int32_t pointY = from.py_ + stepLengthY * step;
             const uint32_t timeOffsetMs = (timeCostMs * step) / steps;
             Point wayPoint(pointX, pointY, from.displayId_);
-            pointer.PushAction(TouchEvent{ActionStage::MOVE, wayPoint, timeOffsetMs, intervalMs});
+            pointer.PushAction(TouchEvent {ActionStage::MOVE, wayPoint, timeOffsetMs, intervalMs});
         }
 
         pointer.PushAction(TouchEvent {ActionStage::UP, to, timeCostMs, intervalMs});

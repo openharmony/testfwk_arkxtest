@@ -107,7 +107,7 @@ namespace OHOS::uitest {
         void DumpWindowsInfo(const DumpOption &option, Rect &mergeBounds, nlohmann::json &childDom);
         static std::unique_ptr<UiController> uiController_;
         // CacheModel:
-        std::map<int32_t, vector<WindowCacheModel>> displayToWindowCacheVec_;
+        std::map<int32_t, vector<WindowCacheModel>> displayToWindowCacheMap_;
         // unique widget object save
         std::vector<Widget> visitWidgets_;
         std::vector<int> targetWidgetsIndex_;

@@ -34,11 +34,11 @@ namespace OHOS::uitest {
             if (allWidgets.at(index)->GetAttr(UiAttr::ACCESSIBILITY_ID) ==
                 anchorLeafWidget->GetAttr(UiAttr::ACCESSIBILITY_ID)) {
                 if (vertical) {
-                return std::abs(allWidgets.at(index)->GetBounds().top_ - anchorLeafWidget->GetBounds().top_) <
-                       oriDis * SCROLL_MOVE_FACTOR;
+                    return std::abs(allWidgets.at(index)->GetBounds().top_ - anchorLeafWidget->GetBounds().top_) <
+                        oriDis * SCROLL_MOVE_FACTOR;
                 } else {
                     return std::abs(allWidgets.at(index)->GetBounds().left_ - anchorLeafWidget->GetBounds().left_) <
-                           oriDis * SCROLL_MOVE_FACTOR;
+                        oriDis * SCROLL_MOVE_FACTOR;
                 }
             }
         }

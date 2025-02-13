@@ -964,7 +964,7 @@ namespace OHOS::uitest {
                 displayId1 = pointJson1["displayId"];
             }
             point1 = Point(pointJson1["x"], pointJson1["y"], displayId1);
-            uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
+            uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
             return;
         }
     }
@@ -1177,11 +1177,11 @@ namespace OHOS::uitest {
             auto pointJson2 = ReadCallArg<json>(in, INDEX_ONE);
             auto displayId1 = 0;
             if (pointJson1.contains("displayId")) {
-              displayId1 = pointJson1["displayId"];
+                displayId1 = pointJson1["displayId"];
             }
             auto displayId2 = 0;
             if (pointJson2.contains("displayId")) {
-              displayId2 = pointJson2["displayId"];
+                displayId2 = pointJson2["displayId"];
             }
             auto from = Point(pointJson1["x"], pointJson1["y"], displayId1);
             auto to = Point(pointJson2["x"], pointJson2["y"], displayId2);
@@ -1204,7 +1204,7 @@ namespace OHOS::uitest {
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
             auto displayId = 0;
             if (pointJson.contains("displayId")) {
-              displayId = pointJson["displayId"];
+                displayId = pointJson["displayId"];
             }
             auto point = Point(pointJson["x"], pointJson["y"], displayId);
             auto scrollValue = ReadCallArg<int32_t>(in, INDEX_TWO);
@@ -1326,7 +1326,7 @@ namespace OHOS::uitest {
                 auto rotation = ReadCallArg<DisplayRotation>(in, INDEX_ZERO);
                 driver.SetDisplayRotation(rotation, out.exception_);
             } else if (in.apiId_ == "Driver.getDisplayRotation") {
-                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO);
+                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, 0);
                 out.resultValue_ = driver.GetDisplayRotation(out.exception_, displayId);
             } else if (in.apiId_ == "Driver.setDisplayRotationEnabled") {
                 auto enabled = ReadCallArg<bool>(in, INDEX_ZERO);
@@ -1338,14 +1338,14 @@ namespace OHOS::uitest {
             } else if (in.apiId_ == "Driver.wakeUpDisplay") {
                 driver.WakeUpDisplay(out.exception_);
             } else if (in.apiId_ == "Driver.getDisplaySize") {
-                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO);
+                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, 0);
                 auto result = driver.GetDisplaySize(out.exception_, displayId);
                 json data;
                 data["x"] = result.px_;
                 data["y"] = result.py_;
                 out.resultValue_ = data;
             } else if (in.apiId_ == "Driver.getDisplayDensity") {
-                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO);
+                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, 0);
                 auto result = driver.GetDisplayDensity(out.exception_, displayId);
                 json data;
                 data["x"] = result.px_;
@@ -1393,7 +1393,7 @@ namespace OHOS::uitest {
             out.resultValue_ = data;
             return;
         }
-        if (attrName == ATTR_NAMES[UiAttr::DISPLAY_ID]) { // getBounds
+        if (attrName == ATTR_NAMES[UiAttr::DISPLAY_ID]) {
             out.resultValue_ = snapshot->GetDisplayId();
             return;
         }
