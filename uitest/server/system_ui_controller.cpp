@@ -315,6 +315,12 @@ namespace OHOS::uitest {
             info.pagePath_ = (app == foreAbility.GetBundleName()) ? element.GetPagePath() : "";
         }
         info.mode_ = WindowMode::UNKNOWN;
+        auto touchAreas = node.GetTouchHotAreas();
+        for (auto area : touchAreas) {
+            Rect rect { area.GetLeftTopXScreenPostion(), area.GetRightBottomXScreenPostion(),
+                        area.GetLeftTopYScreenPostion(), area.GetRightBottomYScreenPostion() };
+            info.touchHotAreas_.push_back(rect);
+        }
         const auto origMode = static_cast<OHOS::Rosen::WindowMode>(node.GetWindowMode());
         switch (origMode) {
             case OHOS::Rosen::WindowMode::WINDOW_MODE_FULLSCREEN:
@@ -352,6 +358,27 @@ namespace OHOS::uitest {
         return true;
     }
 
+    static void UpdateWindowAttrs(Window &win, std::vector<Rect> &overplays)
+    {
+        for (const auto &overWin : overplays) {
+            Rect intersectionRect{0, 0, 0, 0};
+            if (RectAlgorithm::ComputeIntersection(win.bounds_, overWin, intersectionRect)) {
+                win.invisibleBoundsVec_.emplace_back(overWin);
+            }
+        }
+        RectAlgorithm::ComputeMaxVisibleRegion(win.bounds_, overplays, win.visibleBounds_);
+        if (win.touchHotAreas_.empty()) {
+            overplays.emplace_back(win.bounds_);
+        } else {
+            std::string touchAreaInfo;
+            for (auto rect : win.touchHotAreas_) {
+                touchAreaInfo += rect.Describe() + " ";
+                overplays.emplace_back(rect);
+            }
+            LOG_I("window %{public}d touchArea: %{public}s", win.id_, touchAreaInfo.c_str());
+        }
+    }
+
     void SysUiController::GetUiWindows(std::vector<Window> &out)
     {
         std::lock_guard<std::mutex> dumpLocker(dumpMtx); // disallow concurrent dumpUi
@@ -383,14 +410,7 @@ namespace OHOS::uitest {
             Window winWrapper{win.GetWindowId()};
             InflateWindowInfo(win, winWrapper);
             winWrapper.bounds_ = winRectInScreen;
-            for (const auto &overWin : overplays) {
-                Rect intersectionRect{0, 0, 0, 0};
-                if (RectAlgorithm::ComputeIntersection(winRectInScreen, overWin, intersectionRect)) {
-                    winWrapper.invisibleBoundsVec_.emplace_back(overWin);
-                }
-            }
-            RectAlgorithm::ComputeMaxVisibleRegion(winWrapper.bounds_, overplays, winWrapper.visibleBounds_);
-            overplays.emplace_back(winRectInScreen);
+            UpdateWindowAttrs(winWrapper, overplays);
             out.emplace_back(std::move(winWrapper));
         }
     }
