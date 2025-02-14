@@ -312,6 +312,7 @@ namespace OHOS::uitest {
         std::string abilityName_ = "";
         std::string pagePath_ = "";
         WindowMode mode_ = UNKNOWN;
+        std::vector<Rect> touchHotAreas_;
     };
 
     class DumpHandler {
