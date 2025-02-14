@@ -292,9 +292,9 @@ namespace OHOS::uitest {
         auto screenSize = driver_.GetDisplaySize(error);
         auto gestureZone = (vertical) ? screenSize.py_ / 20 : screenSize.px_ / 20;
         if (vertical && screenSize.py_ - bottomPoint.py_ <= gestureZone) {
-            bottomPoint.py_ = bottomPoint.py_ - gestureZone;
+            bottomPoint.py_ = screenSize.py_ - gestureZone;
         } else if (!vertical && screenSize.px_ - bounds.right_ <= gestureZone) {
-            bottomPoint.px_ = bottomPoint.px_ - gestureZone;
+            bottomPoint.px_ = screenSize.px_ - gestureZone;
         }
         auto touch = (toTop) ? GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint)
                              : GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
