@@ -360,6 +360,16 @@ namespace OHOS::uitest {
         return true;
     }
 
+    static void updateWindowinvisibleBounds(Window &win, const std::vector<Rect> overplays)
+    {
+        for (const auto &overWin : overplays) {
+            Rect intersectionRect{0, 0, 0, 0};
+            if (RectAlgorithm::ComputeIntersection(win.bounds_, overWin, intersectionRect)) {
+                win.invisibleBoundsVec_.emplace_back(overWin);
+            }
+        }
+    }
+
     void SysUiController::GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay)
     {
         std::lock_guard<std::mutex> dumpLocker(dumpMtx); // disallow concurrent dumpUi
@@ -398,12 +408,7 @@ namespace OHOS::uitest {
                 InflateWindowInfo(win, winWrapper);
                 winWrapper.bounds_ = winRectInScreen;
                 winWrapper.displayId_ = displayId;
-                for (const auto &overWin : overplays) {
-                    Rect intersectionRect{0, 0, 0, 0};
-                    if (RectAlgorithm::ComputeIntersection(winRectInScreen, overWin, intersectionRect)) {
-                      winWrapper.invisibleBoundsVec_.emplace_back(overWin);
-                    }
-                }
+                updateWindowinvisibleBounds(winWrapper, overplays);
                 RectAlgorithm::ComputeMaxVisibleRegion(winWrapper.bounds_, overplays, winWrapper.visibleBounds_);
                 overplays.emplace_back(winRectInScreen);
                 winInfos.emplace_back(move(winWrapper));
@@ -620,9 +625,6 @@ namespace OHOS::uitest {
         pointerEvent->AddPointerItem(item);
         pointerEvent->SetTargetDisplayId(event.point_.displayId_);
         if (!downKeys_.empty()) {
-            for (auto key : downKeys_) {
-                LOG_D("SetPressedKey %{public}d", key);
-            }
             pointerEvent->SetPressedKeys(downKeys_);
         }
         InputManager::GetInstance()->SimulateInputEvent(pointerEvent, false);

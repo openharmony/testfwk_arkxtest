@@ -257,13 +257,8 @@ namespace OHOS::uitest {
             visitWidgets_.clear();
             targetWidgetsIndex_.clear();
         }
-
         std::unique_ptr<SelectStrategy> selectStrategy = ConstructSelectStrategyByRetrieve(widget);
-        auto dm = displayToWindowCacheMap_.find(widget.GetDisplayId());
-        if (dm == displayToWindowCacheMap_.end()) {
-            return nullptr;
-        }
-        auto &windowCacheVec = dm->second;
+        auto &windowCacheVec = displayToWindowCacheMap_.find(widget.GetDisplayId())->second;
         for (auto &curWinCache : windowCacheVec) {
             if (widget.GetAttr(UiAttr::HOST_WINDOW_ID) != std::to_string(curWinCache.window_.id_)) {
                 continue;
@@ -335,17 +330,11 @@ namespace OHOS::uitest {
             auto &windowCacheVec = dm.second;
             for (auto &curWinCache : windowCacheVec) {
                 if (appLocator != "" && curWinCache.window_.bundleName_ != appLocator) {
-                    LOG_D("skip window(%{public}s), it is not target window %{public}s",
-                        curWinCache.window_.bundleName_.data(), appLocator.data());
                     continue;
                 }
-                LOG_D("Start find in Window, window id is %{public}d", curWinCache.window_.id_);
-                if (curWinCache.widgetIterator_ == nullptr) {
-                    std::unique_ptr<ElementNodeIterator> widgetIterator = nullptr;
-                    if (!uiController_->GetWidgetsInWindow(curWinCache.window_, curWinCache.widgetIterator_, mode_)) {
-                        LOG_W("Get Widget from window[%{public}d] failed, skip the window", curWinCache.window_.id_);
-                        continue;
-                    }
+                if (curWinCache.widgetIterator_ == nullptr &&
+                    !uiController_->GetWidgetsInWindow(curWinCache.window_, curWinCache.widgetIterator_, mode_)) {
+                    continue;
                 }
                 selector.Select(curWinCache.window_, *curWinCache.widgetIterator_, visitWidgets_, targetWidgetsIndex_);
                 if (!selector.IsWantMulti() && !targetWidgetsIndex_.empty()) {
@@ -360,7 +349,6 @@ namespace OHOS::uitest {
                 break;
             }
         }
-        
         if (targetWidgetsIndex_.empty()) {
             LOG_W("self node not found by %{public}s", selector.Describe().data());
             return;
