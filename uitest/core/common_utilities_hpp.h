@@ -19,6 +19,7 @@
 #include <array>
 #include <chrono>
 #include <string_view>
+#include "json.hpp"
 
 #ifdef __OHOS__
 #include "hilog/log.h"
@@ -60,6 +61,15 @@ namespace OHOS::uitest {
     {
         using namespace std::chrono;
         return time_point_cast<microseconds>(steady_clock::now()).time_since_epoch().count();
+    }
+
+    template <typename T> static T ReadArgFromJson(const nlohmann::json &json, const std::string arg, const T defValue)
+    {
+        if (json.type() == nlohmann::detail::value_t::object && json.contains(arg)) {
+            nlohmann::json val = json[arg];
+            return val.get<T>();
+        }
+        return defValue;
     }
 
     // log tag length limit

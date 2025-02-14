@@ -259,19 +259,8 @@ do { \
             auto layout = tree.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
             callback(Text{layout.c_str(), layout.length()});
         } else if (strcmp(name.data, "copyScreen") == 0) {
-            float scale = 1.0f;
-            if (options.type() == nlohmann::detail::value_t::object && options.contains("scale")) {
-                nlohmann::json val = options["scale"];
-                EXTENSION_API_CHECK(val.type() == detail::value_t::number_float, "Illegal scale value", ERR_BAD_ARG);
-                scale = val.get<float>();
-            }
-            int32_t displayId = 0;
-            if (options.type() == nlohmann::detail::value_t::object && options.contains("displayId")) {
-                nlohmann::json val = options["displayId"];
-                EXTENSION_API_CHECK(val.type() == detail::value_t::number_float, "Illegal displayId value",
-                    ERR_BAD_ARG);
-                displayId = val.get<int>();
-            }
+            float scale = ReadArgFromJson<float>(options, "scale", 1.0f);
+            int32_t displayId = ReadArgFromJson<int32_t>(options, "displayId", 0);
             StartScreenCopy(scale, displayId, [callback](uint8_t *data, size_t len) {
                 callback(Text{reinterpret_cast<const char *>(data), len});
                 free(data);

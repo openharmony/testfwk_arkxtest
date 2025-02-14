@@ -194,11 +194,10 @@ namespace OHOS::uitest {
         ApiTransactor::SendBroadcastCommand(cmd, err);
         if (err.code_ == NO_ERROR) {
             PrintToConsole("DumpLayout saved to:" + option.savePath_);
-            return EXIT_SUCCESS;
         } else {
             PrintToConsole("DumpLayout failed:" + err.message_);
-            return EXIT_FAILURE;
         }
+        return err.code_ == NO_ERROR ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
     static int32_t ScreenCap(int32_t argc, char *argv[])
@@ -238,7 +237,20 @@ namespace OHOS::uitest {
         }
         return "default";
     }
-    
+
+    static DumpOption GetOptionForCmd(const OHOS::AAFwk::Want &cmd)
+    {
+        DumpOption option;
+        option.savePath_ = cmd.GetStringParam("savePath");
+        option.listWindows_ = cmd.GetBoolParam("listWindows", false);
+        option.addExternAttr_ = cmd.GetBoolParam("addExternAttr", false);
+        option.bundleName_ = cmd.GetStringParam("bundleName");
+        option.windowId_ = cmd.GetStringParam("windowId");
+        option.notMergeWindow_ = cmd.GetBoolParam("mergeWindow", true);
+        option.displayId_ = atoi(cmd.GetStringParam("displayId").c_str());
+        return option;
+    }
+
     static int32_t StartDaemon(string_view token, int32_t argc, char *argv[])
     {
         if (token.empty()) {
@@ -254,10 +266,7 @@ namespace OHOS::uitest {
         UiDriver::RegisterController(make_unique<SysUiController>());
         // accept remopte dump request during deamon running (initController=false)
         ApiTransactor::SetBroadcastCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
-            DumpOption option {cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false),
-                cmd.GetBoolParam("addExternAttr", false), cmd.GetStringParam("bundleName"),
-                cmd.GetStringParam("windowId"), cmd.GetBoolParam("mergeWindow", true),
-                std::atoi(cmd.GetStringParam("displayId").c_str())};
+            auto option = GetOptionForCmd(cmd);
             DumpLayoutImpl(option, false, err);
         });
         if (token == "singleness") {
