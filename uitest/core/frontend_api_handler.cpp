@@ -924,7 +924,7 @@ namespace OHOS::uitest {
         }
     }
 
-    static void TouchParamsCoverts(const ApiCallInfo &in, Point &point0, Point &point1, UiOpArgs &uiOpArgs)
+    static void TouchParamsConverts(const ApiCallInfo &in, Point &point0, Point &point1, UiOpArgs &uiOpArgs)
     {
         auto params = in.paramList_;
         if (params.size() == 1) {
@@ -964,7 +964,7 @@ namespace OHOS::uitest {
             auto point0 = Point(0, 0);
             auto point1 = Point(0, 0);
             UiOpArgs uiOpArgs;
-            TouchParamsCoverts(in, point0, point1, uiOpArgs);
+            TouchParamsConverts(in, point0, point1, uiOpArgs);
             auto op = TouchOp::CLICK;
             if (in.apiId_ == "Driver.longClick") {
                 op = TouchOp::LONG_CLICK;
