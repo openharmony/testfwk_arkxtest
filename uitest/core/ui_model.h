@@ -330,6 +330,7 @@ namespace OHOS::uitest {
         std::string pagePath_ = "";
         WindowMode mode_ = UNKNOWN;
         int32_t displayId_ = 0;
+        std::vector<Rect> touchHotAreas_;
     };
 
     class DumpHandler {
