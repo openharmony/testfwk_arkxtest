@@ -63,7 +63,7 @@ namespace OHOS::uitest {
         return time_point_cast<microseconds>(steady_clock::now()).time_since_epoch().count();
     }
 
-    template <typename T> static T ReadArgFromJson(const nlohmann::json &json, const std::string arg, const T defValue)
+    template <typename T> T ReadArgFromJson(const nlohmann::json &json, const std::string arg, const T defValue)
     {
         if (json.type() == nlohmann::detail::value_t::object && json.contains(arg)) {
             nlohmann::json val = json[arg];
