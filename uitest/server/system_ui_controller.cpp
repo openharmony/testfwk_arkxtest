@@ -366,7 +366,6 @@ namespace OHOS::uitest {
         return true;
     }
 
-
     static void UpdateWindowAttrs(Window &win, std::vector<Rect> &overplays)
     {
         for (const auto &overWin : overplays) {

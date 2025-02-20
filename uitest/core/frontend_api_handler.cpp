@@ -790,8 +790,8 @@ namespace OHOS::uitest {
                 if (filterJson.contains("active")) {
                     match = match && (filterJson["active"].get<bool>() == window.actived_);
                 }
-                if (filterJson.contains("display")) {
-                    match = match && (filterJson["display"].get<int32_t>() == window.displayId_);
+                if (filterJson.contains("displayId")) {
+                    match = match && (filterJson["displayId"].get<int32_t>() == window.displayId_);
                 }
                 return match;
             };
