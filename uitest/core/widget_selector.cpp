@@ -73,6 +73,16 @@ namespace OHOS::uitest {
         return appLocator_;
     }
 
+    void WidgetSelector::AddDisplayLocator(int32_t displayId)
+    {
+        displayLocator_ = displayId;
+    }
+
+    std::int32_t WidgetSelector::GetDisplayLocator() const
+    {
+        return displayLocator_;
+    }
+
     string WidgetSelector::Describe() const
     {
         stringstream ss;

@@ -25,6 +25,7 @@ namespace OHOS::uitest {
     void Widget::SetBounds(const Rect &bounds)
     {
         bounds_ = bounds;
+        bounds_.displayId_ = displayId_;
     }
 
     string Widget::ToStr() const
@@ -42,6 +43,7 @@ namespace OHOS::uitest {
     {
         auto clone = make_unique<Widget>(hierarchy);
         clone->bounds_ = this->bounds_;
+        clone->displayId_ = this->displayId_;
         clone->attributeVec_ = attributeVec_;
         return clone;
     }
