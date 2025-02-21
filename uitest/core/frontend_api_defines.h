@@ -226,6 +226,7 @@ namespace OHOS::uitest {
         {"top", "int", true},
         {"right", "int", true},
         {"bottom", "int", true},
+        {"displayId", "int", false},
     };
     constexpr FrontEndJsonDef RECT_DEF = {
         "Rect",
@@ -237,6 +238,7 @@ namespace OHOS::uitest {
     constexpr FrontEndJsonPropDef POINT_PROPERTIES[] = {
         {"x", "int", true},
         {"y", "int", true},
+        {"displayId", "int", false},
     };
     constexpr FrontEndJsonDef POINT_DEF = {
         "Point",
@@ -251,6 +253,7 @@ namespace OHOS::uitest {
         {"focused", "bool", false},
         {"actived", "bool", false}, // Deprecated from API 11
         {"active", "bool", false},
+        {"displayId", "int", false},
     };
     constexpr FrontEndJsonDef WINDOW_FILTER_DEF = {
         "WindowFilter",
@@ -365,6 +368,7 @@ namespace OHOS::uitest {
         {"On.isAfter", "(On):On", false, true},
         {"On.within", "(On):On", false, true},
         {"On.inWindow", "(string):On", false, true},
+        {"On.inDisplay", "(int):On", false, true},
     };
 
     constexpr std::string_view REF_SEED_ON = "On#seed";
@@ -383,26 +387,31 @@ namespace OHOS::uitest {
         {"Driver.findComponents", "(On):[Component]", false, false},
         {"Driver.waitForComponent", "(On,int):Component", false, false},
         {"Driver.screenCap", "(int):bool", false, false},            // fliePath as fileDescription.
-        {"Driver.screenCapture", "(int, Rect?):bool", false, false}, // fliePath as fileDescription.
+        {"Driver.screenCapture", "(int, Rect?, int?):bool", false, false}, // fliePath as fileDescription.
         {"Driver.assertComponentExist", "(On):void", false, false},
         {"Driver.pressBack", "():void", false, false},
         {"Driver.triggerKey", "(int):void", false, false},
         {"Driver.triggerCombineKeys", "(int,int,int?):void", false, false},
         {"Driver.click", "(int,int):void", false, false},
+        {"Driver.click", "(Point):void", false, false},
         {"Driver.longClick", "(int,int):void", false, false},
+        {"Driver.longClick", "(Point):void", false, false},
         {"Driver.doubleClick", "(int,int):void", false, false},
+        {"Driver.doubleClick", "(Point):void", false, false},
         {"Driver.swipe", "(int,int,int,int,int?):void", false, false},
+        {"Driver.swipe", "(Point,Point,int?):void", false, false},
         {"Driver.drag", "(int,int,int,int,int?):void", false, false},
+        {"Driver.drag", "(Point,Point,int?):void", false, false},
         {"Driver.setDisplayRotation", "(int):void", false, false},  // DisplayRotation enum as int value
-        {"Driver.getDisplayRotation", "():int", false, false},  // DisplayRotation enum as int value
+        {"Driver.getDisplayRotation", "(int?):int", false, false},     // DisplayRotation enum as int value
         {"Driver.setDisplayRotationEnabled", "(bool):void", false, false},
-        {"Driver.getDisplaySize", "():Point", false, false},
-        {"Driver.getDisplayDensity", "():Point", false, false},
+        {"Driver.getDisplaySize", "(int?):Point", false, false},
+        {"Driver.getDisplayDensity", "(int?):Point", false, false},
         {"Driver.wakeUpDisplay", "():void", false, false},
         {"Driver.pressHome", "():void", false, false},
         {"Driver.waitForIdle", "(int,int):bool", false, false},
         {"Driver.fling", "(Point,Point,int,int):void", false, false},
-        {"Driver.fling", "(int,int):void", false, false},
+        {"Driver.fling", "(int,int,int?):void", false, false},
         {"Driver.injectMultiPointerAction", "(PointerMatrix, int?):bool", false, false},
         {"Driver.mouseClick", "(Point,int,int?,int?):void", false, false},
         {"Driver.mouseDoubleClick", "(Point,int,int?,int?):void", false, false},
@@ -433,6 +442,7 @@ namespace OHOS::uitest {
         {"Component.getType", "():string", false, false},
         {"Component.getDescription", "():string", false, false},
         {"Component.getHint", "():string", false, false},
+        {"Component.getDisplayId", "():int", false, false},
         {"Component.isEnabled", "():bool", false, false},
         {"Component.isFocused", "():bool", false, false},
         {"Component.isSelected", "():bool", false, false},
@@ -467,6 +477,7 @@ namespace OHOS::uitest {
         {"UiWindow.getBounds", "():Rect", false, false},
         {"UiWindow.getTitle", "():string", false, false},
         {"UiWindow.getWindowMode", "():int", false, false}, // WindowMode enum as int value
+        {"UiWindow.getDisplayId", "():int", false, false},
         {"UiWindow.isFocused", "():bool", false, false},
         {"UiWindow.isActived", "():bool", false, false}, // Deprecated from API 11
         {"UiWindow.isActive", "():bool", false, false},

@@ -63,7 +63,7 @@ namespace OHOS::uitest {
         static void DelayMs(uint32_t ms);
 
         /**Take screen capture, save to given file path as PNG.*/
-        void TakeScreenCap(int32_t fd, ApiCallErr &err, Rect rect);
+        void TakeScreenCap(int32_t fd, ApiCallErr &err, Rect rect, int32_t displayId = 0);
 
         void DumpUiHierarchy(nlohmann::json &out, const DumpOption &option, ApiCallErr &error);
 
@@ -74,7 +74,7 @@ namespace OHOS::uitest {
 
         void SetDisplayRotation(DisplayRotation rotation, ApiCallErr &error);
 
-        DisplayRotation GetDisplayRotation(ApiCallErr &error);
+        DisplayRotation GetDisplayRotation(ApiCallErr &error, int32_t displayId = 0);
 
         void SetDisplayRotationEnabled(bool enabled, ApiCallErr &error);
 
@@ -82,9 +82,9 @@ namespace OHOS::uitest {
 
         void WakeUpDisplay(ApiCallErr &error);
 
-        Point GetDisplaySize(ApiCallErr &error);
+        Point GetDisplaySize(ApiCallErr &error, int32_t displayId = 0);
 
-        Point GetDisplayDensity(ApiCallErr &error);
+        Point GetDisplayDensity(ApiCallErr &error, int32_t displayId = 0);
 
         static void RegisterController(std::unique_ptr<UiController> controller);
 
@@ -93,8 +93,6 @@ namespace OHOS::uitest {
         static void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener);
 
         void InputText(string_view text, ApiCallErr &error);
-
-        void GetMergeWindowBounds(Rect& mergeRect);
 
         void PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error);
 
@@ -105,11 +103,11 @@ namespace OHOS::uitest {
     private:
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction
-        void UpdateUIWindows(ApiCallErr &error);
+        void UpdateUIWindows(ApiCallErr &error, int32_t targetDisplay = -1);
         void DumpWindowsInfo(const DumpOption &option, Rect &mergeBounds, nlohmann::json &childDom);
         static std::unique_ptr<UiController> uiController_;
         // CacheModel:
-        std::vector<WindowCacheModel> windowCacheVec_;
+        std::map<int32_t, vector<WindowCacheModel>> displayToWindowCacheMap_;
         // unique widget object save
         std::vector<Widget> visitWidgets_;
         std::vector<int> targetWidgetsIndex_;

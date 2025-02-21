@@ -54,13 +54,15 @@ namespace OHOS::uitest {
     "help                                                                                    print help messages\n"
     "screenCap                                                                        capture the current screen\n"
     "  -p <savePath>                                                                      specifies the savePath\n"
+    "  -d <displayId>                                                                       specifies the screen\n"
     "dumpLayout                                                               get the current layout information\n"
     "  -p <savePath>                                                                      specifies the savePath\n"
     "  -i                                                                     not merge windows and filter nodes\n"
     "  -a                                                                                include font attributes\n"
-    "  -b <bundleName>                                            specifies the bundleName of the target window.\n"
-    "  -w <windowId>                                               specifies the window id of the target window.\n"
+    "  -b <bundleName>                                             specifies the bundleName of the target window\n"
+    "  -w <windowId>                                                specifies the window id of the target window\n"
     "  -m <true/false>          whether merge windows, true means to merge, set it ture when not use this option\n"
+    "  -d <displayId>                                           specifies the locate screen of the target window\n"
     "start-daemon <token>                                                                 start the test process\n"
     "uiRecord                                                                            recording Ui Operations\n"
     "  record                                                    wirte location coordinates of events into files\n"
@@ -80,6 +82,7 @@ namespace OHOS::uitest {
     const std::string VERSION = "5.1.1.2";
     struct option g_longoptions[] = {
         {nullptr, required_argument, nullptr, 'p'},
+        {nullptr, required_argument, nullptr, 'd'},
         {nullptr, no_argument, nullptr, 'i'},
         {nullptr, no_argument, nullptr, 'a'},
         {nullptr, required_argument, nullptr, 'b'},
@@ -152,7 +155,7 @@ namespace OHOS::uitest {
         auto ts = to_string(GetCurrentMicroseconds());
         auto savePath = "/data/local/tmp/layout_" + ts + ".json";
         map<char, string> params;
-        if (GetParam(argc, argv, "p:w:b:m:ia", HELP_MSG, params) == EXIT_FAILURE) {
+        if (GetParam(argc, argv, "p:w:b:m:d:ia", HELP_MSG, params) == EXIT_FAILURE) {
             return EXIT_FAILURE;
         }
         auto iter = params.find('p');
@@ -165,6 +168,8 @@ namespace OHOS::uitest {
         option.addExternAttr_ = params.find('a') != params.end();
         auto iter4 = params.find('m');
         option.notMergeWindow_ = (iter4 != params.end()) ? iter4->second == "false" : false;
+        auto iter5 = params.find('d');
+        option.displayId_ = (iter5 != params.end()) ? std::atoi(iter5->second.c_str()): 0;
         if (option.listWindows_ && option.addExternAttr_) {
             PrintToConsole("The -a and -i options cannot be used together.");
             return EXIT_FAILURE;
@@ -187,33 +192,38 @@ namespace OHOS::uitest {
         cmd.SetParam("bundleName", string(option.bundleName_));
         cmd.SetParam("windowId", string(option.windowId_));
         cmd.SetParam("mergeWindow", option.notMergeWindow_);
+        cmd.SetParam("displayId", to_string(option.displayId_));
         ApiTransactor::SendBroadcastCommand(cmd, err);
         if (err.code_ == NO_ERROR) {
             PrintToConsole("DumpLayout saved to:" + option.savePath_);
-            return EXIT_SUCCESS;
         } else {
             PrintToConsole("DumpLayout failed:" + err.message_);
-            return EXIT_FAILURE;
         }
+        return err.code_ == NO_ERROR ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
     static int32_t ScreenCap(int32_t argc, char *argv[])
     {
         auto ts = to_string(GetCurrentMicroseconds());
         auto savePath = "/data/local/tmp/screenCap_" + ts + ".png";
+        auto displayId = 0;
         map<char, string> params;
         static constexpr string_view usage = "USAGE: uitest screenCap -p <path>";
-        if (GetParam(argc, argv, "p:", usage, params) == EXIT_FAILURE) {
+        if (GetParam(argc, argv, "p:d:", usage, params) == EXIT_FAILURE) {
             return EXIT_FAILURE;
         }
         auto iter = params.find('p');
         if (iter != params.end()) {
             savePath = iter->second;
         }
+        auto iter2 = params.find('d');
+        if (iter2 != params.end()) {
+            displayId = std::atoi(iter2->second.c_str());
+        }
         auto controller = SysUiController();
         stringstream errorRecv;
         auto fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
-        if (!controller.TakeScreenCap(fd, errorRecv)) {
+        if (!controller.TakeScreenCap(fd, errorRecv, displayId)) {
             PrintToConsole("ScreenCap failed: " + errorRecv.str());
             return EXIT_FAILURE;
         }
@@ -229,7 +239,20 @@ namespace OHOS::uitest {
         }
         return "default";
     }
-    
+
+    static DumpOption GetOptionForCmd(const OHOS::AAFwk::Want &cmd)
+    {
+        DumpOption option;
+        option.savePath_ = cmd.GetStringParam("savePath");
+        option.listWindows_ = cmd.GetBoolParam("listWindows", false);
+        option.addExternAttr_ = cmd.GetBoolParam("addExternAttr", false);
+        option.bundleName_ = cmd.GetStringParam("bundleName");
+        option.windowId_ = cmd.GetStringParam("windowId");
+        option.notMergeWindow_ = cmd.GetBoolParam("mergeWindow", true);
+        option.displayId_ = atoi(cmd.GetStringParam("displayId").c_str());
+        return option;
+    }
+
     static int32_t StartDaemon(string_view token, int32_t argc, char *argv[])
     {
         if (token.empty()) {
@@ -245,9 +268,7 @@ namespace OHOS::uitest {
         UiDriver::RegisterController(make_unique<SysUiController>());
         // accept remopte dump request during deamon running (initController=false)
         ApiTransactor::SetBroadcastCommandHandler([] (const OHOS::AAFwk::Want &cmd, ApiCallErr &err) {
-            DumpOption option {cmd.GetStringParam("savePath"), cmd.GetBoolParam("listWindows", false),
-                cmd.GetBoolParam("addExternAttr", false), cmd.GetStringParam("bundleName"),
-                cmd.GetStringParam("windowId"), cmd.GetBoolParam("mergeWindow", true)};
+            auto option = GetOptionForCmd(cmd);
             DumpLayoutImpl(option, false, err);
         });
         if (token == "singleness") {

@@ -28,7 +28,7 @@ namespace OHOS::uitest {
 
         bool Initialize(ApiCallErr &error) override;
 
-        void GetUiWindows(std::vector<Window> &out) override;
+        void GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay = -1) override;
 
         bool GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator,
             AamsWorkMode mode) override;
@@ -47,7 +47,8 @@ namespace OHOS::uitest {
 
         void PutTextToClipboard(std::string_view text) const override;
 
-        bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, Rect rect = {0, 0, 0, 0}) const override;
+        bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, int32_t displayId, Rect rect = {0, 0, 0, 0})
+            const override;
 
         bool GetCharKeyCode(char ch, int32_t& code, int32_t& ctrlCode) const override;
 
@@ -61,13 +62,13 @@ namespace OHOS::uitest {
 
         void SetDisplayRotation(DisplayRotation rotation) const override;
 
-        DisplayRotation GetDisplayRotation() const override;
+        DisplayRotation GetDisplayRotation(int32_t displayId) const override;
 
         void SetDisplayRotationEnabled(bool enabled) const override;
 
-        Point GetDisplaySize() const override;
+        Point GetDisplaySize(int32_t displayId) const override;
 
-        Point GetDisplayDensity() const override;
+        Point GetDisplayDensity(int32_t displayId) const override;
 
         bool IsScreenOn() const override;
 

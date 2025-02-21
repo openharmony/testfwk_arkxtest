@@ -21,7 +21,7 @@
 
 namespace OHOS::uitest {
     using ScreenCopyHandler = std::function<void (uint8_t *, std::size_t)>;
-    bool StartScreenCopy(float scale, ScreenCopyHandler handler);
+    bool StartScreenCopy(float scale, int32_t displayId, ScreenCopyHandler handler);
     void StopScreenCopy();
     void NotifyScreenCopyFrameConsumed();
 }
