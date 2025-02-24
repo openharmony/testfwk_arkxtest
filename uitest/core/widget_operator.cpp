@@ -277,26 +277,33 @@ namespace OHOS::uitest {
     {
         auto bounds = widget_.GetBounds();
         Point topPoint, bottomPoint;
-        if (vertical) {
-            topPoint = Point(bounds.GetCenterX(), bounds.top_);
-            bottomPoint = Point(bounds.GetCenterX(), bounds.bottom_);
-        } else {
-            topPoint = Point(bounds.left_, bounds.GetCenterY());
-            bottomPoint = Point(bounds.right_, bounds.GetCenterY());
-        }
-        if (vertical && options_.scrollWidgetDeadZone_ > 0) {
-            topPoint.py_ += options_.scrollWidgetDeadZone_;
-            bottomPoint.py_ -= options_.scrollWidgetDeadZone_;
-        } else if (!vertical && options_.scrollWidgetDeadZone_ > 0) {
-            topPoint.px_ += options_.scrollWidgetDeadZone_;
-            bottomPoint.px_ -= options_.scrollWidgetDeadZone_;
-        }
         auto screenSize = driver_.GetDisplaySize(error, widget_.GetDisplayId());
         auto gestureZone = (vertical) ? screenSize.py_ / 20 : screenSize.px_ / 20;
-        if (vertical && screenSize.py_ - bottomPoint.py_ <= gestureZone) {
-            bottomPoint.py_ = screenSize.py_ - gestureZone;
-        } else if (!vertical && screenSize.px_ - bounds.right_ <= gestureZone) {
-            bottomPoint.px_ = screenSize.px_ - gestureZone;
+        topPoint = vertical ? Point(bounds.GetCenterX(), bounds.top_) : Point(bounds.left_, bounds.GetCenterY());
+        bottomPoint = vertical ? Point(bounds.GetCenterX(), bounds.bottom_) :
+            Point(bounds.right_, bounds.GetCenterY());
+        if (vertical) {
+            if (options_.scrollWidgetDeadZone_ > 0) {
+                topPoint.py_ += options_.scrollWidgetDeadZone_;
+                bottomPoint.py_ -= options_.scrollWidgetDeadZone_;
+            }
+            if (abs(screenSize.py_ - bottomPoint.py_) <= gestureZone) {
+                bottomPoint.py_ = screenSize.py_ - gestureZone;
+            }
+            if (vertical && topPoint.py_ <= gestureZone) {
+                topPoint.py_ = gestureZone;
+            }
+        } else {
+            if (options_.scrollWidgetDeadZone_ > 0) {
+                topPoint.px_ += options_.scrollWidgetDeadZone_;
+                bottomPoint.px_ -= options_.scrollWidgetDeadZone_;
+            }
+            if (abs(screenSize.px_ - bottomPoint.px_) <= gestureZone) {
+                bottomPoint.px_ = screenSize.px_ - gestureZone;
+            }
+            if (topPoint.px_ <= gestureZone) {
+                topPoint.px_ = gestureZone;
+            }
         }
         topPoint.displayId_ = widget_.GetDisplayId();
         bottomPoint.displayId_ = widget_.GetDisplayId();
