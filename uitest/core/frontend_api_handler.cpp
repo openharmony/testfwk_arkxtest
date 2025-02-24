@@ -1579,12 +1579,16 @@ static void RegisterExtensionHandler()
     {
         auto &server = FrontendApiServer::Get();
         auto genericWinBarOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            auto &window = GetBackendObject<Window>(in.callerObjRef_);
+            auto &image = GetBackendObject<Window>(in.callerObjRef_);
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            auto window = driver.RetrieveWindow(image, out.exception_);
+            if (out.exception_.code_ != NO_ERROR || window == nullptr) {
+                return;
+            }
             UiOpArgs uiOpArgs;
-            auto wOp = WindowOperator(driver, window, uiOpArgs);
+            auto wOp = WindowOperator(driver, *window, uiOpArgs);
             auto action = in.apiId_;
-            if (window.decoratorEnabled_) {
+            if (window->decoratorEnabled_) {
                 if (action == "UiWindow.split") {
                     wOp.Split(out);
                 } else if (action == "UiWindow.maximize") {
