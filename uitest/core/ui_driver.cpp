@@ -598,7 +598,7 @@ namespace OHOS::uitest {
             return;
         }
         vector<TouchPadEvent> events;
-        touch.Decompose(events, opt, uiController_->GetDisplaySize(events.begin()->point.displayId_));
+        touch.Decompose(events, opt, uiController_->GetDisplaySize(0));
         if (events.empty()) {
             return;
         }

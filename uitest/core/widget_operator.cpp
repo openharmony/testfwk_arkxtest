@@ -293,9 +293,9 @@ namespace OHOS::uitest {
         }
         auto screenSize = driver_.GetDisplaySize(error, widget_.GetDisplayId());
         auto gestureZone = (vertical) ? screenSize.py_ / 20 : screenSize.px_ / 20;
-        if (vertical && screenSize.py_ - bottomPoint.py_ <= gestureZone) {
+        if (vertical && abs(screenSize.py_ - bottomPoint.py_) <= gestureZone) {
             bottomPoint.py_ = screenSize.py_ - gestureZone;
-        } else if (!vertical && screenSize.px_ - bounds.right_ <= gestureZone) {
+        } else if (!vertical && abs(screenSize.px_ - bounds.right_) <= gestureZone) {
             bottomPoint.px_ = screenSize.px_ - gestureZone;
         }
         topPoint.displayId_ = widget_.GetDisplayId();
