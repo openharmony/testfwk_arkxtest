@@ -26,7 +26,7 @@
 namespace OHOS::testserver {
     using namespace OHOS::HiviewDFX;
     static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = {LOG_CORE, 0xD003110, "TestServerClient"};
-    static constexpr int32_t TESTSERVER_LOAD_TIMEOUT_MS = 1000; // ms
+    static constexpr int32_t TESTSERVER_LOAD_TIMEOUT_MS = 4000; // ms
 
     TestServerClient &TestServerClient::GetInstance()
     {
