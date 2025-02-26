@@ -292,7 +292,7 @@ namespace OHOS::uitest {
             return;
         }
         auto rect = widgets[0]->GetBounds();
-        Point widgetCenter(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
+        Point widgetCenter(rect.GetCenterX(), rect.GetCenterY(), widgets[0]->GetDisplayId());
         auto touch = GenericClick(TouchOp::CLICK, widgetCenter);
         driver_.PerformTouch(touch, options_, out.exception_);
     }

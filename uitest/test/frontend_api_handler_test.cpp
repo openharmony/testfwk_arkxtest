@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 // For testing private method
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 #define private public
 #include "frontend_api_handler.h"
 #undef private

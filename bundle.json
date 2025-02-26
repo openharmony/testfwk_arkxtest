@@ -43,7 +43,8 @@
           "soc_perf",
           "init",
           "access_token",
-	  "graphic_2d"
+	        "graphic_2d",
+          "libuv"
         ],
         "third_party": [
           "libpng",
