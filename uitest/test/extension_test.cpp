@@ -23,7 +23,7 @@
 #include "common_utilities_hpp.h"
 #include "extension_c_api.h"
 #include "extension_executor.h"
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 
 using namespace OHOS::uitest;
 using namespace std;

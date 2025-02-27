@@ -1552,17 +1552,21 @@ static void RegisterExtensionHandler()
     {
         auto &server = FrontendApiServer::Get();
         auto genericWinOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            auto &window = GetBackendObject<Window>(in.callerObjRef_);
+            auto &image = GetBackendObject<Window>(in.callerObjRef_);
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            auto window = driver.RetrieveWindow(image, out.exception_);
+            if (out.exception_.code_ != NO_ERROR || window == nullptr) {
+                return;
+            }
             UiOpArgs uiOpArgs;
-            auto wOp = WindowOperator(driver, window, uiOpArgs);
+            auto wOp = WindowOperator(driver, *window, uiOpArgs);
             auto action = in.apiId_;
             if (action == "UiWindow.resize") {
                 auto width = ReadCallArg<int32_t>(in, INDEX_ZERO);
                 auto highth = ReadCallArg<int32_t>(in, INDEX_ONE);
                 auto direction = ReadCallArg<ResizeDirection>(in, INDEX_TWO);
-                if ((((direction == LEFT) || (direction == RIGHT)) && highth != window.bounds_.GetHeight()) ||
-                    (((direction == D_UP) || (direction == D_DOWN)) && width != window.bounds_.GetWidth())) {
+                if ((((direction == LEFT) || (direction == RIGHT)) && highth != window->bounds_.GetHeight()) ||
+                    (((direction == D_UP) || (direction == D_DOWN)) && width != window->bounds_.GetWidth())) {
                     out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "Resize cannot be done in this direction");
                     return;
                 }
