@@ -212,6 +212,10 @@ namespace OHOS::uitest {
     unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector,
                                                         bool vertical, ApiCallErr &error) const
     {
+        auto retrieved = driver_.RetrieveWidget(widget_, error);
+        if (retrieved == nullptr || error.code_ != NO_ERROR) {
+            return nullptr;
+        }
         bool scrollingUp = true;
         int turnDis = -1;
         std::unique_ptr<Widget> lastTopLeafWidget = nullptr;

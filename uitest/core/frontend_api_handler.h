@@ -24,7 +24,7 @@
 #include <list>
 #include "common_utilities_hpp.h"
 #include "frontend_api_defines.h"
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 
 namespace OHOS::uitest {
     class BackendClass {

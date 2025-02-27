@@ -19,7 +19,7 @@
 #include <initializer_list>
 #include <string_view>
 #include <map>
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 
 namespace OHOS::uitest {
     enum ErrCode : uint32_t {
