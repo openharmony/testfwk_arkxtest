@@ -994,7 +994,7 @@ namespace OHOS::uitest {
     DisplayRotation SysUiController::GetDisplayRotation(int32_t displayId) const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
-        displayId = (displayId == UNASSIGNED) ? displayMgr.GetDefaultDisplayId() : displayId;
+        displayId = GetValidDisplayId(displayId);
         auto display = displayMgr.GetDisplayById(displayId);
         if (display == nullptr) {
             LOG_E("DisplayManager init fail");
@@ -1013,14 +1013,14 @@ namespace OHOS::uitest {
     Point SysUiController::GetDisplaySize(int32_t displayId) const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
-        displayId = (displayId == UNASSIGNED) ? displayMgr.GetDefaultDisplayId() : displayId;
+        displayId = GetValidDisplayId(displayId);
         auto display = displayMgr.GetDisplayById(displayId);
         if (display == nullptr) {
             LOG_E("DisplayManager init fail");
             return {0, 0};
         }
-        auto width = display->GetPhysicalWidth();
-        auto height = display->GetPhysicalHeight();
+        auto width = display->GetWidth();
+        auto height = display->GetHeight();
         LOG_D("GetDisplaysize, width: %{public}d, height: %{public}d", width, height);
         Point result(width, height, displayId);
         return result;
@@ -1029,7 +1029,7 @@ namespace OHOS::uitest {
     Point SysUiController::GetDisplayDensity(int32_t displayId) const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
-        displayId = (displayId == UNASSIGNED) ? displayMgr.GetDefaultDisplayId() : displayId;
+        displayId = GetValidDisplayId(displayId);
         auto display = displayMgr.GetDisplayById(displayId);
         if (display == nullptr) {
             LOG_E("DisplayManager init fail");
