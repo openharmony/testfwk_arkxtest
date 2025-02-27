@@ -467,6 +467,14 @@ namespace OHOS::uitest {
         return true;
     }
 
+    int32_t SysUiController::GetValidDisplayId(int32_t id) const
+    {
+        if (id == UNASSIGNED) {
+            id = DisplayManager::GetInstance().GetDefaultDisplayId();
+        }
+        return id;
+    }
+
     static void SetItemByType(PointerEvent::PointerItem &pinterItem, const PointerMatrix &events)
     {
         switch (events.GetToolType()) {
@@ -557,9 +565,10 @@ namespace OHOS::uitest {
                 }
                 AddPointerItems(*pointerEvent, fingerStatus, finger, events);
                 pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
-                pointerEvent->SetTargetDisplayId(events.At(finger, step).point_.displayId_);
+                auto displayId = GetValidDisplayId(events.At(finger, step).point_.displayId_);
+                pointerEvent->SetTargetDisplayId(displayId);
                 InputManager::GetInstance()->SimulateInputEvent(pointerEvent, false);
-                LOG_D("Inject touchEvent to display : %{public}d", events.At(finger, step).point_.displayId_);
+                LOG_D("Inject touchEvent to display : %{public}d", displayId);
                 if (events.At(finger, step).holdMs_ > 0) {
                     this_thread::sleep_for(chrono::milliseconds(events.At(finger, step).holdMs_));
                 }
@@ -638,12 +647,13 @@ namespace OHOS::uitest {
         }
         SetMousePointerItemAttr(event, item);
         pointerEvent->AddPointerItem(item);
-        pointerEvent->SetTargetDisplayId(event.point_.displayId_);
+        auto displayId = GetValidDisplayId(event.point_.displayId_);
+        pointerEvent->SetTargetDisplayId(displayId);
         if (!downKeys_.empty()) {
             pointerEvent->SetPressedKeys(downKeys_);
         }
         InputManager::GetInstance()->SimulateInputEvent(pointerEvent, false);
-        LOG_D("Inject mouseEvent to display : %{public}d", event.point_.displayId_);
+        LOG_D("Inject mouseEvent to display : %{public}d", displayId);
         this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
     }
 
@@ -767,9 +777,10 @@ namespace OHOS::uitest {
             AddPointerItems(*pointerEvent, fingerStatus, 0, pointer);
             pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHPAD);
             pointerEvent->SetFingerCount(event.fingerCount);
-            pointerEvent->SetTargetDisplayId(event.point.displayId_);
+            auto displayId = GetValidDisplayId(event.point.displayId_);
+            pointerEvent->SetTargetDisplayId(displayId);
             InputManager::GetInstance()->SimulateInputEvent(pointerEvent, false);
-            LOG_D("Inject touchEvent to display %{public}d", event.point.displayId_);
+            LOG_D("Inject touchEvent to display %{public}d", displayId);
             if (event.holdMs > 0) {
                 this_thread::sleep_for(chrono::milliseconds(event.holdMs));
             }
@@ -810,6 +821,7 @@ namespace OHOS::uitest {
     bool SysUiController::TakeScreenCap(int32_t fd, std::stringstream &errReceiver, int32_t displayId, Rect rect) const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
+        displayId = GetValidDisplayId(displayId);
         // get PixelMap from DisplayManager API
         shared_ptr<PixelMap> pixelMap;
         if (rect.GetWidth() == 0) {
@@ -826,7 +838,6 @@ namespace OHOS::uitest {
         }
         FILE *fp = fdopen(fd, "wb");
         if (fp == nullptr) {
-            perror("File opening failed");
             errReceiver << "File opening failed";
             return false;
         }
@@ -982,7 +993,9 @@ namespace OHOS::uitest {
 
     DisplayRotation SysUiController::GetDisplayRotation(int32_t displayId) const
     {
-        auto display = DisplayManager::GetInstance().GetDisplayById(displayId);
+        DisplayManager &displayMgr = DisplayManager::GetInstance();
+        displayId = (displayId == UNASSIGNED) ? displayMgr.GetDefaultDisplayId() : displayId;
+        auto display = displayMgr.GetDisplayById(displayId);
         if (display == nullptr) {
             LOG_E("DisplayManager init fail");
             return DisplayRotation::ROTATION_0;
@@ -999,13 +1012,15 @@ namespace OHOS::uitest {
 
     Point SysUiController::GetDisplaySize(int32_t displayId) const
     {
-        auto display = DisplayManager::GetInstance().GetDisplayById(displayId);
+        DisplayManager &displayMgr = DisplayManager::GetInstance();
+        displayId = (displayId == UNASSIGNED) ? displayMgr.GetDefaultDisplayId() : displayId;
+        auto display = displayMgr.GetDisplayById(displayId);
         if (display == nullptr) {
             LOG_E("DisplayManager init fail");
             return {0, 0};
         }
-        auto width = display->GetWidth();
-        auto height = display->GetHeight();
+        auto width = display->GetPhysicalWidth();
+        auto height = display->GetPhysicalHeight();
         LOG_D("GetDisplaysize, width: %{public}d, height: %{public}d", width, height);
         Point result(width, height, displayId);
         return result;
@@ -1013,7 +1028,9 @@ namespace OHOS::uitest {
 
     Point SysUiController::GetDisplayDensity(int32_t displayId) const
     {
-        auto display = DisplayManager::GetInstance().GetDisplayById(displayId);
+        DisplayManager &displayMgr = DisplayManager::GetInstance();
+        displayId = (displayId == UNASSIGNED) ? displayMgr.GetDefaultDisplayId() : displayId;
+        auto display = displayMgr.GetDisplayById(displayId);
         if (display == nullptr) {
             LOG_E("DisplayManager init fail");
             return {0, 0};
