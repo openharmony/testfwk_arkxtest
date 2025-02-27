@@ -110,8 +110,8 @@ namespace OHOS::uitest {
     };
 
     struct Point {
-        Point() : px_(0), py_(0), displayId_(0) {};
-        Point(int32_t px, int32_t py, int32_t displayId = 0) : px_(px), py_(py), displayId_(displayId) {};
+        Point() : px_(0), py_(0), displayId_(-1) {};
+        Point(int32_t px, int32_t py, int32_t displayId = -1) : px_(px), py_(py), displayId_(displayId) {};
         int32_t px_;
         int32_t py_;
         int32_t displayId_;
@@ -119,7 +119,7 @@ namespace OHOS::uitest {
 
     /**Represents a reasonable rectangle area.*/
     struct Rect {
-        Rect(int32_t left, int32_t right, int32_t top, int32_t bottom, int32_t displayId = 0)
+        Rect(int32_t left, int32_t right, int32_t top, int32_t bottom, int32_t displayId = -1)
             : left_(left), right_(right), top_(top), bottom_(bottom), displayId_(displayId) {};
         Rect()
         {
@@ -127,7 +127,7 @@ namespace OHOS::uitest {
             right_ = 0;
             top_ = 0;
             bottom_ = 0;
-            displayId_ = 0;
+            displayId_ = -1;
         };
         int32_t left_;
         int32_t right_;
