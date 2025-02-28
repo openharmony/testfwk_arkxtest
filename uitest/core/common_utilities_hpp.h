@@ -48,6 +48,7 @@ namespace OHOS::uitest {
     constexpr int32_t SIX = 6;
     constexpr int32_t SEVEN = 7;
     constexpr int32_t EIGHT = 8;
+    constexpr int32_t UNASSIGNED = -1;
 
     /**Get current time millisecond.*/
     inline uint64_t GetCurrentMillisecond()
