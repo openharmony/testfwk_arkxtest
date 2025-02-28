@@ -839,7 +839,7 @@ namespace OHOS::uitest {
                 rect = Rect(rectJson["left"], rectJson["right"], rectJson["top"], rectJson["bottom"]);
             }
             auto fd = ReadCallArg<uint32_t>(in, INDEX_ZERO);
-            auto displayId = ReadCallArg<uint32_t>(in, INDEX_TWO, 0);
+            auto displayId = ReadCallArg<uint32_t>(in, INDEX_TWO, UNASSIGNED);
             driver.TakeScreenCap(fd, out.exception_, rect, displayId);
             out.resultValue_ = (out.exception_.code_ == NO_ERROR);
             (void) close(fd);
@@ -886,7 +886,7 @@ namespace OHOS::uitest {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", 0);
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
             auto point = Point(pointJson["x"], pointJson["y"], displayId);
             auto text = ReadCallArg<string>(in, INDEX_ONE);
             auto touch = GenericClick(TouchOp::CLICK, point);
@@ -929,7 +929,7 @@ namespace OHOS::uitest {
         auto params = in.paramList_;
         if (params.size() == 1) {
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", 0);
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
             point0 = Point(pointJson["x"], pointJson["y"], displayId);
             return;
         }
@@ -945,11 +945,11 @@ namespace OHOS::uitest {
             }
         } else {
             auto pointJson0 = ReadCallArg<json>(in, INDEX_ZERO);
-            auto displayId0 = ReadArgFromJson<int32_t>(pointJson0, "displayId", 0);
+            auto displayId0 = ReadArgFromJson<int32_t>(pointJson0, "displayId", UNASSIGNED);
             point0 = Point(pointJson0["x"], pointJson0["y"], displayId0);
 
             auto pointJson1 = ReadCallArg<json>(in, INDEX_ONE);
-            auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", 0);
+            auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
             point1 = Point(pointJson1["x"], pointJson1["y"], displayId1);
             uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
             return;
@@ -1039,7 +1039,7 @@ namespace OHOS::uitest {
             Point from;
             Point to;
             if (params.size() != INDEX_FOUR) {
-                auto displayId = ReadCallArg<int32_t>(in, INDEX_TWO, 0);
+                auto displayId = ReadCallArg<int32_t>(in, INDEX_TWO, UNASSIGNED);
                 auto screenSize = driver.GetDisplaySize(out.exception_, displayId);
                 auto direction = ReadCallArg<Direction>(in, INDEX_ZERO);
                 CreateFlingPoint(to, from, screenSize, direction);
@@ -1054,8 +1054,8 @@ namespace OHOS::uitest {
                     out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Point cannot be empty");
                     return;
                 }
-                auto displayId0 = ReadArgFromJson<int32_t>(pointJson0, "displayId", 0);
-                auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", 0);
+                auto displayId0 = ReadArgFromJson<int32_t>(pointJson0, "displayId", UNASSIGNED);
+                auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
                 from = Point(pointJson0["x"], pointJson0["y"], displayId0);
                 to = Point(pointJson1["x"], pointJson1["y"], displayId1);
                 auto stepLength = ReadCallArg<uint32_t>(in, INDEX_TWO);
@@ -1113,7 +1113,7 @@ namespace OHOS::uitest {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", 0);
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
 
             auto point = Point(pointJson["x"], pointJson["y"], displayId);
             auto button = ReadCallArg<MouseButton>(in, INDEX_ONE);
@@ -1135,7 +1135,7 @@ namespace OHOS::uitest {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
             UiOpArgs uiOpArgs;
-            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", 0);
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
             auto point = Point(pointJson["x"], pointJson["y"], displayId);
             auto touch = MouseMoveTo(point);
             driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
@@ -1150,8 +1150,8 @@ namespace OHOS::uitest {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto pointJson1 = ReadCallArg<json>(in, INDEX_ZERO);
             auto pointJson2 = ReadCallArg<json>(in, INDEX_ONE);
-            auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", 0);
-            auto displayId2 = ReadArgFromJson<int32_t>(pointJson2, "displayId", 0);
+            auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
+            auto displayId2 = ReadArgFromJson<int32_t>(pointJson2, "displayId", UNASSIGNED);
             auto from = Point(pointJson1["x"], pointJson1["y"], displayId1);
             auto to = Point(pointJson2["x"], pointJson2["y"], displayId2);
             UiOpArgs uiOpArgs;
@@ -1170,7 +1170,7 @@ namespace OHOS::uitest {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", 0);
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
             auto point = Point(pointJson["x"], pointJson["y"], displayId);
             auto scrollValue = ReadCallArg<int32_t>(in, INDEX_TWO);
             auto adown = ReadCallArg<bool>(in, INDEX_ONE);
@@ -1234,7 +1234,7 @@ namespace OHOS::uitest {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             auto point0Json = ReadCallArg<json>(in, INDEX_ZERO);
-            auto displayId = ReadArgFromJson<int32_t>(point0Json, "displayId", 0);
+            auto displayId = ReadArgFromJson<int32_t>(point0Json, "displayId", UNASSIGNED);
             const auto point0 = Point(point0Json["x"], point0Json["y"], displayId);
             const auto screenSize = driver.GetDisplaySize(out.exception_, displayId);
             const auto screen = Rect(0, screenSize.px_, 0, screenSize.py_);
@@ -1254,7 +1254,7 @@ namespace OHOS::uitest {
                 uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
                 CheckSwipeVelocityPps(uiOpArgs);
                 auto point1Json = ReadCallArg<json>(in, INDEX_ONE);
-                auto displayId1 = ReadArgFromJson<int32_t>(point1Json, "displayId", 0);
+                auto displayId1 = ReadArgFromJson<int32_t>(point1Json, "displayId", UNASSIGNED);
                 point1 = Point(point1Json["x"], point1Json["y"], displayId1);
                 if (!RectAlgorithm::IsInnerPoint(screen, point1)) {
                     out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "The point is not on the screen");
@@ -1285,7 +1285,7 @@ namespace OHOS::uitest {
                 auto rotation = ReadCallArg<DisplayRotation>(in, INDEX_ZERO);
                 driver.SetDisplayRotation(rotation, out.exception_);
             } else if (in.apiId_ == "Driver.getDisplayRotation") {
-                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, 0);
+                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, UNASSIGNED);
                 out.resultValue_ = driver.GetDisplayRotation(out.exception_, displayId);
             } else if (in.apiId_ == "Driver.setDisplayRotationEnabled") {
                 auto enabled = ReadCallArg<bool>(in, INDEX_ZERO);
@@ -1297,14 +1297,14 @@ namespace OHOS::uitest {
             } else if (in.apiId_ == "Driver.wakeUpDisplay") {
                 driver.WakeUpDisplay(out.exception_);
             } else if (in.apiId_ == "Driver.getDisplaySize") {
-                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, 0);
+                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, UNASSIGNED);
                 auto result = driver.GetDisplaySize(out.exception_, displayId);
                 json data;
                 data["x"] = result.px_;
                 data["y"] = result.py_;
                 out.resultValue_ = data;
             } else if (in.apiId_ == "Driver.getDisplayDensity") {
-                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, 0);
+                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, UNASSIGNED);
                 auto result = driver.GetDisplayDensity(out.exception_, displayId);
                 json data;
                 data["x"] = result.px_;
@@ -1656,7 +1656,7 @@ static void RegisterExtensionHandler()
                 out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Point cannot be empty");
                 return;
             }
-            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", 0);
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
             const auto point = Point(pointJson["x"], pointJson["y"], displayId);
             pointer.At(finger, step).point_ = point;
             pointer.At(finger, step).flags_ = 1;

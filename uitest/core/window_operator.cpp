@@ -213,7 +213,7 @@ namespace OHOS::uitest {
             return;
         }
         auto rect = widgets[0]->GetBounds();
-        Point widgetCenter(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
+        Point widgetCenter(rect.GetCenterX(), rect.GetCenterY(), widgets[0]->GetDisplayId());
         auto touch1 = MouseMoveTo(widgetCenter);
         driver_.PerformMouseAction(touch1, options_, out.exception_);
         constexpr auto focusTime = 3000;
@@ -230,7 +230,7 @@ namespace OHOS::uitest {
             return;
         }
         auto rect2 = widgets2[0]->GetBounds();
-        Point widgetCenter2(rect2.GetCenterX(), rect2.GetCenterY(), window_.displayId_);
+        Point widgetCenter2(rect2.GetCenterX(), rect2.GetCenterY(), widgets2[0]->GetDisplayId());
         auto touch2 = GenericClick(TouchOp::CLICK, widgetCenter2);
         driver_.PerformTouch(touch2, options_, out.exception_);
     }
