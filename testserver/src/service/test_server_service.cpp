@@ -23,7 +23,7 @@
 #include "test_server_error_code.h"
 #include "pasteboard_client.h"
 #include "socperf_client.h"
-
+#include <sstream>
 namespace OHOS::testserver {
     // TEST_SERVER_SA_ID
     REGISTER_SYSTEM_ABILITY_BY_ID(TestServerService, TEST_SERVER_SA_ID, false); // SA run on demand
@@ -210,6 +210,47 @@ namespace OHOS::testserver {
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         int performanceModeId = 9100;
         OHOS::SOCPERF::SocPerfClient::GetInstance().PerfRequest(performanceModeId, "");
+        return TEST_SERVER_OK;
+    }
+
+    ErrCode TestServerService::SpDaemonProcess(int daemonCommand)
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called. daemonCommand: %{public}d", __func__, daemonCommand);
+        if (daemonCommand == one) {
+            std::system("./system/bin/SP_daemon &");
+        } else if (daemonCommand == two) {
+            std::string cmd = "ps -ef | grep -v grep | grep SP_daemon";
+            FILE *fd = popen(cmd.c_str(), "r");
+            if (fd == nullptr) {
+                return TEST_SERVER_SPDAEMON_PROCESS_FAILED;
+            }
+            char buf[4096] = {'\0'};
+            std::string line(buf);
+            HiLog::Info(LABEL_SERVICE, "line %s", line.c_str());
+            std::istringstream iss(line);
+            std::string field;
+            std::string pid = "-1";
+            int count = 0;
+            while (iss >> field) {
+                if (count == 1) {
+                    pid = field;
+                    break;
+                }
+                count++;
+            }
+            HiLog::Info(LABEL_SERVICE, "pid %s", pid.c_str());
+            cmd = "kill " + pid;
+            FILE *fpd = popen(cmd.c_str(), "r");
+            if (pclose(fpd) == -1) {
+                HiLog::Info(LABEL_SERVICE, "Error: Failed to close file");
+                return TEST_SERVER_SPDAEMON_PROCESS_FAILED;
+            }
+            
+            if (pclose(fd) == -1) {
+                HiLog::Info(LABEL_SERVICE, "Error: Failed to close file");
+                return TEST_SERVER_SPDAEMON_PROCESS_FAILED;
+            }
+        }
         return TEST_SERVER_OK;
     }
 

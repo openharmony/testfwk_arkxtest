@@ -45,6 +45,8 @@ namespace OHOS::testserver {
 
         ErrCode FrequencyLock() override;
 
+        ErrCode SpDaemonProcess(int daemonCommand) override;
+
     protected:
         void OnStart() override;
         void OnStop() override;
@@ -55,6 +57,8 @@ namespace OHOS::testserver {
         int GetCallerCount();
         void DestorySession();
         bool RemoveTestServer();
+        const int one = 1;
+        const int two = 2;
 
     private:
         std::atomic<int> callerCount_{0};
