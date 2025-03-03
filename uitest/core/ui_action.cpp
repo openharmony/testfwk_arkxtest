@@ -320,9 +320,9 @@ namespace OHOS::uitest {
         recv.insert(recv.begin(), keyDown);
 
         vector<KeyEvent> keyAction2;
-        keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
         keyAction2.push_back(KeyEvent {ActionStage::UP, key1_, opt.keyHoldMs_});
-        auto keyUp = MouseEvent {ActionStage::UP, point_, MouseButton::BUTTON_NONE, keyAction2, 0};
+        keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
+        auto keyUp = MouseEvent {ActionStage::NONE, point_, MouseButton::BUTTON_NONE, keyAction2, 0};
         recv.push_back(keyUp);
     }
 
@@ -345,8 +345,8 @@ namespace OHOS::uitest {
         }
 
         vector<KeyEvent> keyAction2;
-        keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
         keyAction2.push_back(KeyEvent {ActionStage::UP, key1_, opt.keyHoldMs_});
+        keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
         if (steps > 1) {
             recv.push_back(MouseEvent {stage, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
             recv.push_back(MouseEvent {ActionStage::AXIS_STOP, point_, MouseButton::BUTTON_NONE, keyAction2,

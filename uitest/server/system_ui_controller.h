@@ -73,6 +73,7 @@ namespace OHOS::uitest {
         void  InjectMouseEvent(const MouseEvent &event) const;
         bool connected_ = false;
         std::mutex dumpMtx;
+        mutable std::vector<int32_t> downKeys_;
     };
 }
 
