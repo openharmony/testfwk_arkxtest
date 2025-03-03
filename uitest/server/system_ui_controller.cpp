@@ -561,13 +561,10 @@ namespace OHOS::uitest {
         }
         SetMousePointerItemAttr(event, item);
         pointerEvent->AddPointerItem(item);
-        auto displayId = GetValidDisplayId(event.point_.displayId_);
-        pointerEvent->SetTargetDisplayId(displayId);
         if (!downKeys_.empty()) {
             pointerEvent->SetPressedKeys(downKeys_);
         }
-        InputManager::GetInstance()->SimulateInputEvent(pointerEvent, false);
-        LOG_D("Inject mouseEvent to display : %{public}d", displayId);
+        InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
         this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
     }
 
