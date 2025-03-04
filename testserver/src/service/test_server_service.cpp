@@ -216,10 +216,10 @@ namespace OHOS::testserver {
     ErrCode TestServerService::SpDaemonProcess(int daemonCommand)
     {
         HiLog::Info(LABEL_SERVICE, "%{public}s called. daemonCommand: %{public}d", __func__, daemonCommand);
-        if (daemonCommand == start_process) {
+        if (daemonCommand == startProcess) {
             std::system("./system/bin/SP_daemon &");
-        } else if (daemonCommand == kill_process) {
-            std::string spDaemonProcessName = "SP_daemon";
+        } else if (daemonCommand == killProcess) {
+            const std::string spDaemonProcessName = "SP_daemon";
             KillProcess(spDaemonProcessName);
         }
         return TEST_SERVER_OK;
@@ -228,6 +228,9 @@ namespace OHOS::testserver {
     void TestServerService::KillProcess(const std::string& processName)
     {
         std::string cmd = "ps -ef | grep -v grep | grep " + processName;
+        if (cmd.empty()) {
+            return;
+        }
         FILE *fd = popen(cmd.c_str(), "r");
         if (fd == nullptr) {
             return;

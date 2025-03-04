@@ -58,8 +58,8 @@ namespace OHOS::testserver {
         int GetCallerCount();
         void DestorySession();
         bool RemoveTestServer();
-        const int start_process = 1;
-        const int kill_process = 2;
+        const int startProcess = 1;
+        const int killProcess = 2;
 
     private:
         std::atomic<int> callerCount_{0};
