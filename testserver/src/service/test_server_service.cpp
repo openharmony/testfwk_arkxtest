@@ -216,15 +216,24 @@ namespace OHOS::testserver {
     ErrCode TestServerService::SpDaemonProcess(int daemonCommand)
     {
         HiLog::Info(LABEL_SERVICE, "%{public}s called. daemonCommand: %{public}d", __func__, daemonCommand);
-        if (daemonCommand == one) {
+        if (daemonCommand == start_process) {
             std::system("./system/bin/SP_daemon &");
-        } else if (daemonCommand == two) {
-            std::string cmd = "ps -ef | grep -v grep | grep SP_daemon";
-            FILE *fd = popen(cmd.c_str(), "r");
-            if (fd == nullptr) {
-                return TEST_SERVER_SPDAEMON_PROCESS_FAILED;
-            }
-            char buf[4096] = {'\0'};
+        } else if (daemonCommand == kill_process) {
+            std::string SpDaemonProcessName = "SP_daemon";
+            KillProcess(SpDaemonProcessName);
+        }
+        return TEST_SERVER_OK;
+    }
+
+    void TestServerService::KillProcess(const std::string& processName)
+    {
+        std::string cmd = "ps -ef | grep -v grep | grep " + processName;
+        FILE *fd = popen(cmd.c_str(), "r");
+        if (fd == nullptr) {
+            return;
+        }
+        char buf[4096] = {'\0'};
+        while ((fgets(buf, sizeof(buf), fd)) != nullptr) {
             std::string line(buf);
             HiLog::Info(LABEL_SERVICE, "line %s", line.c_str());
             std::istringstream iss(line);
@@ -243,15 +252,13 @@ namespace OHOS::testserver {
             FILE *fpd = popen(cmd.c_str(), "r");
             if (pclose(fpd) == -1) {
                 HiLog::Info(LABEL_SERVICE, "Error: Failed to close file");
-                return TEST_SERVER_SPDAEMON_PROCESS_FAILED;
-            }
-            
-            if (pclose(fd) == -1) {
-                HiLog::Info(LABEL_SERVICE, "Error: Failed to close file");
-                return TEST_SERVER_SPDAEMON_PROCESS_FAILED;
+                return;
             }
         }
-        return TEST_SERVER_OK;
+        if (pclose(fd) == -1) {
+            HiLog::Info(LABEL_SERVICE, "Error: Failed to close file");
+            return;
+        }
     }
 
 } // namespace OHOS::testserver
