@@ -216,9 +216,9 @@ namespace OHOS::testserver {
     ErrCode TestServerService::SpDaemonProcess(int daemonCommand)
     {
         HiLog::Info(LABEL_SERVICE, "%{public}s called. daemonCommand: %{public}d", __func__, daemonCommand);
-        if (daemonCommand == startProcess) {
+        if (daemonCommand == START_SPDAEMON_PROCESS) {
             std::system("./system/bin/SP_daemon &");
-        } else if (daemonCommand == killProcess) {
+        } else if (daemonCommand == KILL_SPDAEMON_PROCESS) {
             const std::string spDaemonProcessName = "SP_daemon";
             KillProcess(spDaemonProcessName);
         }
