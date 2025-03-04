@@ -501,6 +501,22 @@ namespace OHOS::uitest {
         item.SetRawDisplayY(event.point_.py_);
         item.SetPressed(false);
         item.SetDownTime(0);
+        LOG_D("Inject mouseEvent, pressed:%{public}d, location:%{public}d, %{public}d",
+            event.stage_ == ActionStage::DOWN, event.point_.px_, event.point_.py_);
+    }
+
+    static void SetMousePointerEventAttr(shared_ptr<PointerEvent> pointerEvent, const MouseEvent &event)
+    {
+        pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
+        pointerEvent->SetPointerId(0);
+        if (event.button_ != MouseButton::BUTTON_NONE) {
+            pointerEvent->SetButtonId(event.button_);
+            if ((event.stage_ == ActionStage::DOWN || event.stage_ == ActionStage::MOVE)) {
+                pointerEvent->SetButtonPressed(event.button_);
+            } else if (event.stage_ == ActionStage::UP) {
+                pointerEvent->DeleteReleaseButton(event.button_);
+            }
+        }
     }
 
     void SysUiController::InjectMouseEvent(const MouseEvent &event) const
@@ -510,18 +526,13 @@ namespace OHOS::uitest {
             return;
         }
         PointerEvent::PointerItem item;
-        pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_MOUSE);
-        pointerEvent->SetPointerId(0);
-        pointerEvent->SetButtonId(event.button_);
-        SetMousePointerItemAttr(event, item);
+        SetMousePointerEventAttr(pointerEvent, event);
         constexpr double axialValue = 15;
         static bool flag = true;
         auto injectAxialValue = axialValue;
         switch (event.stage_) {
             case ActionStage::DOWN:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_DOWN);
-                pointerEvent->SetButtonId(event.button_);
-                pointerEvent->SetButtonPressed(event.button_);
                 item.SetPressed(true);
                 break;
             case ActionStage::MOVE:
@@ -529,8 +540,6 @@ namespace OHOS::uitest {
                 break;
             case ActionStage::UP:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_UP);
-                pointerEvent->SetButtonId(event.button_);
-                pointerEvent->SetButtonPressed(event.button_);
                 break;
             case ActionStage::AXIS_UP:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
@@ -550,7 +559,11 @@ namespace OHOS::uitest {
             default:
                 break;
         }
+        SetMousePointerItemAttr(event, item);
         pointerEvent->AddPointerItem(item);
+        if (!downKeys_.empty()) {
+            pointerEvent->SetPressedKeys(downKeys_);
+        }
         InputManager::GetInstance()->SimulateInputEvent(pointerEvent);
         this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
     }
@@ -571,7 +584,6 @@ namespace OHOS::uitest {
 
     void SysUiController::InjectKeyEventSequence(const vector<KeyEvent> &events) const
     {
-        static vector<int32_t> downKeys;
         for (auto &event : events) {
             if (event.code_ == KEYCODE_NONE) {
                 continue;
@@ -582,22 +594,23 @@ namespace OHOS::uitest {
                 return;
             }
             if (event.stage_ == ActionStage::UP) {
-                auto iter = std::find(downKeys.begin(), downKeys.end(), event.code_);
-                if (iter == downKeys.end()) {
+                auto iter = std::find(downKeys_.begin(), downKeys_.end(), event.code_);
+                if (iter == downKeys_.end()) {
                     LOG_W("Cannot release a not-pressed key: %{public}d", event.code_);
                     continue;
                 }
-                downKeys.erase(iter);
+                downKeys_.erase(iter);
                 keyEvent->SetKeyCode(event.code_);
                 keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_UP);
                 OHOS::MMI::KeyEvent::KeyItem keyItem;
                 keyItem.SetKeyCode(event.code_);
-                keyItem.SetPressed(true);
+                keyItem.SetPressed(false);
                 keyEvent->AddKeyItem(keyItem);
                 InputManager::GetInstance()->SimulateInputEvent(keyEvent);
+                LOG_D("Inject keyEvent up, keycode:%{public}d", event.code_);
             } else {
-                downKeys.push_back(event.code_);
-                for (auto downKey : downKeys) {
+                downKeys_.push_back(event.code_);
+                for (auto downKey : downKeys_) {
                     keyEvent->SetKeyCode(downKey);
                     keyEvent->SetKeyAction(OHOS::MMI::KeyEvent::KEY_ACTION_DOWN);
                     OHOS::MMI::KeyEvent::KeyItem keyItem;
@@ -606,13 +619,14 @@ namespace OHOS::uitest {
                     keyEvent->AddKeyItem(keyItem);
                 }
                 InputManager::GetInstance()->SimulateInputEvent(keyEvent);
+                LOG_D("Inject keyEvent down, keycode:%{public}d", event.code_);
                 if (event.holdMs_ > 0) {
                     this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
                 }
             }
         }
         // check not released keys
-        for (auto downKey : downKeys) {
+        for (auto downKey : downKeys_) {
             LOG_W("Key event sequence injections done with not-released key: %{public}d", downKey);
         }
     }
