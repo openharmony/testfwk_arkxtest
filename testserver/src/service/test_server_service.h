@@ -58,8 +58,6 @@ namespace OHOS::testserver {
         int GetCallerCount();
         void DestorySession();
         bool RemoveTestServer();
-        const int START_SPDAEMON_PROCESS = 1;
-        const int KILL_SPDAEMON_PROCESS = 2;
 
     private:
         std::atomic<int> callerCount_{0};
