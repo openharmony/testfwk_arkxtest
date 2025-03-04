@@ -219,8 +219,8 @@ namespace OHOS::testserver {
         if (daemonCommand == start_process) {
             std::system("./system/bin/SP_daemon &");
         } else if (daemonCommand == kill_process) {
-            std::string SpDaemonProcessName = "SP_daemon";
-            KillProcess(SpDaemonProcessName);
+            std::string spDaemonProcessName = "SP_daemon";
+            KillProcess(spDaemonProcessName);
         }
         return TEST_SERVER_OK;
     }
