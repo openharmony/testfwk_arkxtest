@@ -33,6 +33,8 @@ namespace OHOS::testserver {
     static constexpr OHOS::HiviewDFX::HiLogLabel LABEL_SERVICE = {LOG_CORE, 0xD003110, "TestServerService"};
     static constexpr OHOS::HiviewDFX::HiLogLabel LABEL_TIMER = {LOG_CORE, 0xD003110, "CallerDetectTimer"};
     static const int CALLER_DETECT_DURING = 10000;
+    static const int START_SPDAEMON_PROCESS = 1;
+    static const int KILL_SPDAEMON_PROCESS = 2;
 
     TestServerService::TestServerService(int32_t saId, bool runOnCreate) : SystemAbility(saId, runOnCreate)
     {
