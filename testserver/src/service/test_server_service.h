@@ -36,6 +36,7 @@ namespace OHOS::testserver {
         ~TestServerService();
 
         void StartCallerDetectTimer();
+        void KillProcess(const std::string& processName);
         ErrCode CreateSession(const SessionToken &sessionToken) override;
 
         // Declare the logical interfaces here
@@ -57,8 +58,8 @@ namespace OHOS::testserver {
         int GetCallerCount();
         void DestorySession();
         bool RemoveTestServer();
-        const int one = 1;
-        const int two = 2;
+        const int start_process = 1;
+        const int kill_process = 2;
 
     private:
         std::atomic<int> callerCount_{0};
