@@ -172,9 +172,26 @@ namespace OHOS::testserver {
         iTestServerInterface->FrequencyLock();
         return;
     }
+
+    void TestServerClient::SpDaemonProcess(int daemonCommand)
+    {
+        auto iTestServerInterface = LoadTestServer();
+        if (iTestServerInterface == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return;
+        }
+        iTestServerInterface->SpDaemonProcess(daemonCommand);
+        return;
+    }
 } // namespace OHOS::testserver
 
 void FrequencyLockPlugin()
 {
     OHOS::testserver::TestServerClient::GetInstance().FrequencyLock();
+}
+
+int32_t SpDaemonProcessPlugin(int32_t daemonCommand)
+{
+    OHOS::testserver::TestServerClient::GetInstance().SpDaemonProcess(daemonCommand);
+    return 0;
 }

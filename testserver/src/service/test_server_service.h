@@ -36,6 +36,7 @@ namespace OHOS::testserver {
         ~TestServerService();
 
         void StartCallerDetectTimer();
+        void KillProcess(const std::string& processName);
         ErrCode CreateSession(const SessionToken &sessionToken) override;
 
         // Declare the logical interfaces here
@@ -44,6 +45,8 @@ namespace OHOS::testserver {
         ErrCode PublishCommonEvent(const EventFwk::CommonEventData &event, bool &re) override;
 
         ErrCode FrequencyLock() override;
+
+        ErrCode SpDaemonProcess(int daemonCommand) override;
 
     protected:
         void OnStart() override;
