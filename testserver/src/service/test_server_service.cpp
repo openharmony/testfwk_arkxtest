@@ -23,7 +23,7 @@
 #include "test_server_error_code.h"
 #include "pasteboard_client.h"
 #include "socperf_client.h"
-
+#include <sstream>
 namespace OHOS::testserver {
     // TEST_SERVER_SA_ID
     REGISTER_SYSTEM_ABILITY_BY_ID(TestServerService, TEST_SERVER_SA_ID, false); // SA run on demand
@@ -33,6 +33,8 @@ namespace OHOS::testserver {
     static constexpr OHOS::HiviewDFX::HiLogLabel LABEL_SERVICE = {LOG_CORE, 0xD003110, "TestServerService"};
     static constexpr OHOS::HiviewDFX::HiLogLabel LABEL_TIMER = {LOG_CORE, 0xD003110, "CallerDetectTimer"};
     static const int CALLER_DETECT_DURING = 10000;
+    static const int START_SPDAEMON_PROCESS = 1;
+    static const int KILL_SPDAEMON_PROCESS = 2;
 
     TestServerService::TestServerService(int32_t saId, bool runOnCreate) : SystemAbility(saId, runOnCreate)
     {
@@ -211,6 +213,57 @@ namespace OHOS::testserver {
         int performanceModeId = 9100;
         OHOS::SOCPERF::SocPerfClient::GetInstance().PerfRequest(performanceModeId, "");
         return TEST_SERVER_OK;
+    }
+
+    ErrCode TestServerService::SpDaemonProcess(int daemonCommand)
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called. daemonCommand: %{public}d", __func__, daemonCommand);
+        if (daemonCommand == START_SPDAEMON_PROCESS) {
+            std::system("./system/bin/SP_daemon &");
+        } else if (daemonCommand == KILL_SPDAEMON_PROCESS) {
+            const std::string spDaemonProcessName = "SP_daemon";
+            KillProcess(spDaemonProcessName);
+        }
+        return TEST_SERVER_OK;
+    }
+
+    void TestServerService::KillProcess(const std::string& processName)
+    {
+        std::string cmd = "ps -ef | grep -v grep | grep " + processName;
+        if (cmd.empty()) {
+            return;
+        }
+        FILE *fd = popen(cmd.c_str(), "r");
+        if (fd == nullptr) {
+            return;
+        }
+        char buf[4096] = {'\0'};
+        while ((fgets(buf, sizeof(buf), fd)) != nullptr) {
+            std::string line(buf);
+            HiLog::Info(LABEL_SERVICE, "line %s", line.c_str());
+            std::istringstream iss(line);
+            std::string field;
+            std::string pid = "-1";
+            int count = 0;
+            while (iss >> field) {
+                if (count == 1) {
+                    pid = field;
+                    break;
+                }
+                count++;
+            }
+            HiLog::Info(LABEL_SERVICE, "pid %s", pid.c_str());
+            cmd = "kill " + pid;
+            FILE *fpd = popen(cmd.c_str(), "r");
+            if (pclose(fpd) == -1) {
+                HiLog::Info(LABEL_SERVICE, "Error: Failed to close file");
+                return;
+            }
+        }
+        if (pclose(fd) == -1) {
+            HiLog::Info(LABEL_SERVICE, "Error: Failed to close file");
+            return;
+        }
     }
 
 } // namespace OHOS::testserver

@@ -30,7 +30,7 @@ namespace OHOS::testserver {
         int32_t SetPasteData(std::string text);
         bool PublishCommonEvent(const EventFwk::CommonEventData &event);
         void FrequencyLock();
-
+        void SpDaemonProcess(int daemonCommand);
     private:
         TestServerClient() = default;
         ~TestServerClient() = default;
@@ -45,6 +45,7 @@ namespace OHOS::testserver {
 extern "C" {
 #endif
 void FrequencyLockPlugin();
+int32_t SpDaemonProcessPlugin(int32_t daemonCommand);
 #ifdef __cplusplus
 }
 #endif
