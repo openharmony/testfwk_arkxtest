@@ -46,7 +46,7 @@ namespace OHOS::testserver {
 
         ErrCode FrequencyLock() override;
 
-        ErrCode SpDaemonProcess(int daemonCommand) override;
+        ErrCode SpDaemonProcess(int daemonCommand, std::string& token) override;
 
     protected:
         void OnStart() override;
