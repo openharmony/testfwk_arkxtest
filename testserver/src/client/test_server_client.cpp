@@ -173,14 +173,14 @@ namespace OHOS::testserver {
         return;
     }
 
-    void TestServerClient::SpDaemonProcess(int daemonCommand)
+    void TestServerClient::SpDaemonProcess(int daemonCommand, std::string token)
     {
         auto iTestServerInterface = LoadTestServer();
         if (iTestServerInterface == nullptr) {
             HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
             return;
         }
-        iTestServerInterface->SpDaemonProcess(daemonCommand);
+        iTestServerInterface->SpDaemonProcess(daemonCommand, token);
         return;
     }
 } // namespace OHOS::testserver
@@ -188,10 +188,4 @@ namespace OHOS::testserver {
 void FrequencyLockPlugin()
 {
     OHOS::testserver::TestServerClient::GetInstance().FrequencyLock();
-}
-
-int32_t SpDaemonProcessPlugin(int32_t daemonCommand)
-{
-    OHOS::testserver::TestServerClient::GetInstance().SpDaemonProcess(daemonCommand);
-    return 0;
 }
