@@ -220,7 +220,8 @@ namespace OHOS::testserver {
         if (token == "") {
             HiLog::Error(LABEL_SERVICE, "%{public}s called. token is empty", __func__);
         }
-        HiLog::Info(LABEL_SERVICE, "%{public}s called. daemonCommand: %{public}d, %{public}s", __func__, daemonCommand, token.c_str());
+        HiLog::Info(LABEL_SERVICE, "%{public}s called. daemonCommand: %{public}d, %{public}s",
+            __func__, daemonCommand, token.c_str());
         if (daemonCommand == START_SPDAEMON_PROCESS) {
             std::string command = std::string("./system/bin/SP_daemon -deviceServer:" + token + " &");
             std::system(command.c_str());
