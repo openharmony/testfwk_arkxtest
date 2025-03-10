@@ -215,14 +215,15 @@ namespace OHOS::testserver {
         return TEST_SERVER_OK;
     }
 
-    ErrCode TestServerService::SpDaemonProcess(int daemonCommand, std::string& token)
+    ErrCode TestServerService::SpDaemonProcess(int daemonCommand, const std::string& token)
     {
         if (token == "") {
             HiLog::Error(LABEL_SERVICE, "%{public}s called. token is empty", __func__);
         }
-        HiLog::Info(LABEL_SERVICE, "%{public}s called. daemonCommand: %{public}d, %{public}s", __func__, daemonCommand, token);
+        HiLog::Info(LABEL_SERVICE, "%{public}s called. daemonCommand: %{public}d, %{public}s", __func__, daemonCommand, token.c_str());
         if (daemonCommand == START_SPDAEMON_PROCESS) {
-            std::system("./system/bin/SP_daemon -deviceServer:" + token + "&");
+            std::string command = std::string("./system/bin/SP_daemon -deviceServer:" + token + " &");
+            std::system(command.c_str());
         } else if (daemonCommand == KILL_SPDAEMON_PROCESS) {
             const std::string spDaemonProcessName = "SP_daemon";
             KillProcess(spDaemonProcessName);
