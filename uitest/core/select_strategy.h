@@ -50,7 +50,7 @@ namespace OHOS::uitest {
         virtual ~SelectStrategy();
 
     protected:
-        virtual void RefreshWidgetBounds(Widget &widget);
+        virtual void RefreshWidgetBounds(Widget &widget, const Window &window);
         virtual void CalcWidgetVisibleBounds(Widget &widget);
         std::vector<WidgetMatchModel> anchorMatch_;
         std::vector<WidgetMatchModel> myselfMatch_;
