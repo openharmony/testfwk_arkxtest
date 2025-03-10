@@ -260,7 +260,7 @@ do { \
             callback(Text{layout.c_str(), layout.length()});
         } else if (strcmp(name.data, "copyScreen") == 0) {
             float scale = ReadArgFromJson<float>(options, "scale", 1.0f);
-            int32_t displayId = ReadArgFromJson<int32_t>(options, "displayId", 0);
+            int32_t displayId = ReadArgFromJson<int32_t>(options, "displayId", UNASSIGNED);
             StartScreenCopy(scale, displayId, [callback](uint8_t *data, size_t len) {
                 callback(Text{reinterpret_cast<const char *>(data), len});
                 free(data);
