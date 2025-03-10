@@ -36,6 +36,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsParentAndChild)
     Rect selectWindow{10, 100, 10, 300};
     Rect layer1{10, 50, 10, 40};
     Rect layer2{10, 20, 50, 100};
+    Window test(0);
     std::vector<Rect> overlay;
     overlay.emplace_back(layer1);
     overlay.emplace_back(layer2);
@@ -45,7 +46,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsParentAndChild)
     widget.SetBounds(widOriBounds);
     widget.SetAttr(UiAttr::VISIBLE, "true");
     widget.SetAttr(UiAttr::TYPE, "Scroll");
-    plain->RefreshWidgetBounds(widget);
+    plain->RefreshWidgetBounds(widget, test);
     ASSERT_EQ(widget.GetAttr(UiAttr::VISIBLE), "false");
     auto rect = widget.GetBounds();
     ASSERT_EQ(rect.left_, 0);
@@ -63,6 +64,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsOver)
     Rect selectWindow{10, 100, 10, 300};
     Rect layer1{10, 50, 10, 40};
     Rect layer2{10, 20, 50, 100};
+    Window test(0);
     std::vector<Rect> overlay;
     overlay.emplace_back(layer1);
     overlay.emplace_back(layer2);
@@ -70,7 +72,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsOver)
     Widget widget{"test"};
     Rect widOriBounds{20, 50, 30, 40};
     widget.SetBounds(widOriBounds);
-    plain->RefreshWidgetBounds(widget);
+    plain->RefreshWidgetBounds(widget, test);
     ASSERT_EQ(widget.GetAttr(UiAttr::VISIBLE), "false");
     auto rect = widget.GetBounds();
     ASSERT_EQ(rect.left_, 0);
@@ -88,6 +90,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsPartOver)
     Rect selectWindow{10, 100, 10, 300};
     Rect layer1{10, 50, 10, 40};
     Rect layer2{10, 20, 50, 100};
+    Window test(0);
     std::vector<Rect> overlay;
     overlay.emplace_back(layer1);
     overlay.emplace_back(layer2);
@@ -95,7 +98,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsPartOver)
     Widget widget{"test"};
     Rect widOriBounds{20, 50, 30, 50};
     widget.SetBounds(widOriBounds);
-    plain->RefreshWidgetBounds(widget);
+    plain->RefreshWidgetBounds(widget, test);
     ASSERT_EQ(widget.GetAttr(UiAttr::VISIBLE), "true");
     auto rect = widget.GetBounds();
     ASSERT_EQ(rect.left_, 20);
