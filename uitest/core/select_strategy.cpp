@@ -128,8 +128,11 @@ namespace OHOS::uitest {
         return ss.str();
     }
 
-    void SelectStrategy::RefreshWidgetBounds(Widget &widget)
+    void SelectStrategy::RefreshWidgetBounds(Widget &widget, const Window &window)
     {
+        auto bounds = widget.GetBounds();
+        widget.SetBounds(Rect{ bounds.left_ + window.offset_.px_, bounds.right_+ window.offset_.px_,
+            bounds.top_ + window.offset_.py_, bounds.bottom_ + window.offset_.py_});
         CalcWidgetVisibleBounds(widget);
         auto widgetVisibleBounds = widget.GetBounds();
         if (widgetVisibleBounds.GetHeight() <= 0 || widgetVisibleBounds.GetWidth() <= 0) {
@@ -165,7 +168,7 @@ namespace OHOS::uitest {
                     elementNodeRef.RemoveInvisibleWidget();
                     continue;
                 }
-                RefreshWidgetBounds(anchorWidget);
+                RefreshWidgetBounds(anchorWidget, window);
                 if (anchorWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     LOG_D("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
@@ -203,7 +206,7 @@ namespace OHOS::uitest {
                 }
                 myselfWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
                 myselfWidget.SetDisplayId(window.displayId_);
-                RefreshWidgetBounds(myselfWidget);
+                RefreshWidgetBounds(myselfWidget, window);
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     LOG_D("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
@@ -262,7 +265,7 @@ namespace OHOS::uitest {
                     elementNodeRef.RemoveInvisibleWidget();
                     continue;
                 }
-                RefreshWidgetBounds(anchorWidget);
+                RefreshWidgetBounds(anchorWidget, window);
                 if (anchorWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     LOG_D("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
@@ -343,7 +346,7 @@ namespace OHOS::uitest {
                     elementNodeRef.RemoveInvisibleWidget();
                     continue;
                 }
-                RefreshWidgetBounds(anchorWidget);
+                RefreshWidgetBounds(anchorWidget, window);
                 if (anchorWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     LOG_D("Widget %{public}s is invisible", anchorWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
@@ -386,7 +389,7 @@ namespace OHOS::uitest {
                 }
                 myselfWidget.SetAttr(UiAttr::HOST_WINDOW_ID, std::to_string(window.id_));
                 myselfWidget.SetDisplayId(window.displayId_);
-                RefreshWidgetBounds(myselfWidget);
+                RefreshWidgetBounds(myselfWidget, window);
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     LOG_D("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
                     continue;
@@ -451,7 +454,7 @@ namespace OHOS::uitest {
                         elementNodeRef.RemoveInvisibleWidget();
                         continue;
                     }
-                    RefreshWidgetBounds(myselfWidget);
+                    RefreshWidgetBounds(myselfWidget, window);
                 }
                 visitWidgets.emplace_back(move(myselfWidget));
                 if (visitWidgets.size() > MAX_TRAVEL_TIMES) {
@@ -511,7 +514,7 @@ namespace OHOS::uitest {
                     elementNodeRef.RemoveInvisibleWidget();
                     continue;
                 }
-                RefreshWidgetBounds(myselfWidget);
+                RefreshWidgetBounds(myselfWidget, window);
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     continue;
                 }
