@@ -116,6 +116,7 @@ class MockKit {
         }
       }
     }
+    this.currentSetKey.set(f, key);
     values.set(key, returnInfo);
     this.stubs.set(f, values);
   }
@@ -129,6 +130,11 @@ class MockKit {
     const anonymousName = 'anonymous-mock-' + f.propName;
     if (typeof returnKet === 'undefined') {
       returnKet = anonymousName;
+      let stubSetKey = this.currentSetKey.get(f);
+
+      if (stubSetKey && (typeof (returnKet) !== 'undefined')) {
+        returnKet = stubSetKey;
+      }
     } else {
       returnKet = this.getReturnKet(values, params, returnKet, anonymousName);
     }
