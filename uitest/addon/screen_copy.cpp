@@ -104,6 +104,9 @@ bool ScreenCopy::Run(int32_t displayId)
         return false;
     }
     // get source screen
+    if (displayId == UNASSIGNED) {
+        displayId = DisplayManager::GetInstance().GetDefaultDisplayId();
+    }
     sourceScreen_ = ScreenManager::GetInstance().GetScreenById(displayId);
     if (displayId == SCREEN_ID_INVALID || sourceScreen_ == nullptr) {
         pendingError_ = "Error: Get main screen failed!";
