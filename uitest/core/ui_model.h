@@ -331,6 +331,7 @@ namespace OHOS::uitest {
         WindowMode mode_ = UNKNOWN;
         int32_t displayId_ = 0;
         std::vector<Rect> touchHotAreas_;
+        Point offset_ = {0, 0};
     };
 
     class DumpHandler {
