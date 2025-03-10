@@ -283,16 +283,38 @@ namespace OHOS::uitest {
         return this->ConnectToSysAbility(error);
     }
 
-    static Rect GetVisibleRect(Rect windowBounds, Accessibility::Rect nodeBounds)
+    static Rect GetFoldArea()
     {
+        auto foldCreaseRegion = DisplayManager::GetInstance().GetCurrentFoldCreaseRegion();
+        auto areas = foldCreaseRegion->GetCreaseRects();
+        if (areas.size() == 1) {
+            auto foldArea = *areas.begin();
+            LOG_D("foldArea, left: %{public}d, top: %{public}d, width: %{public}d, height: %{public}d",
+                  foldArea.posX_, foldArea.posY_, foldArea.width_, foldArea.height_);
+            return Rect(foldArea.posX_, foldArea.posX_ + foldArea.width_,
+                        foldArea.posY_, foldArea.posY_ + foldArea.height_);
+        } else {
+            LOG_E("Invalid display info.");
+            return Rect(0, 0, 0, 0);
+        }
+    }
+
+    static Rect GetVisibleRect(Rect screenBounds, AccessibilityWindowInfo &node)
+    {
+        auto nodeBounds = node.GetRectInScreen();
         auto leftX = nodeBounds.GetLeftTopXScreenPostion();
         auto topY = nodeBounds.GetLeftTopYScreenPostion();
         auto rightX = nodeBounds.GetRightBottomXScreenPostion();
         auto bottomY = nodeBounds.GetRightBottomYScreenPostion();
-        Rect newBounds((leftX < windowBounds.left_) ? windowBounds.left_ : leftX,
-                       (rightX > windowBounds.right_) ? windowBounds.right_ : rightX,
-                       (topY < windowBounds.top_) ? windowBounds.top_ : topY,
-                       (bottomY > windowBounds.bottom_) ? windowBounds.bottom_ : bottomY);
+        if (node.GetDisplayId() == VIRTUAL_DISPLAY_ID) {
+            auto foldArea = GetFoldArea();
+            topY += foldArea.bottom_;
+            bottomY += foldArea.bottom_;
+        }
+        Rect newBounds((leftX < screenBounds.left_) ? screenBounds.left_ : leftX,
+                       (rightX > screenBounds.right_) ? screenBounds.right_ : rightX,
+                       (topY < screenBounds.top_) ? screenBounds.top_ : topY,
+                       (bottomY > screenBounds.bottom_) ? screenBounds.bottom_ : bottomY);
         return newBounds;
     }
 
@@ -355,6 +377,15 @@ namespace OHOS::uitest {
                 displayId, ret);
             return false;
         }
+        auto hasVirtual = DisplayManager::GetInstance().GetDisplayById(VIRTUAL_DISPLAY_ID) != nullptr;
+        if (hasVirtual && displayId == 0) {
+            vector<AccessibilityWindowInfo> windowsInVirtual;
+            auto ret1 = ability->GetWindows(VIRTUAL_DISPLAY_ID, windowsInVirtual);
+            LOG_D("GetWindows in display 999 from AccessibilityUITestAbility, ret: %{public}d", ret1);
+            for (auto &win : windowsInVirtual) {
+                windows.emplace_back(win);
+            }
+        }
         if (windows.empty()) {
             LOG_E("Get Windows in display %{public}d failed", displayId);
             return false;
@@ -385,6 +416,9 @@ namespace OHOS::uitest {
             }
             LOG_I("window %{public}d touchArea: %{public}s", win.id_, touchAreaInfo.c_str());
         }
+        if (win.displayId_ == VIRTUAL_DISPLAY_ID) {
+            win.offset_ = Point(0, GetFoldArea().bottom_);
+        }
     }
 
     void SysUiController::GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay)
@@ -398,7 +432,8 @@ namespace OHOS::uitest {
         DisplayManager &dpm = DisplayManager::GetInstance();
         auto displayIds = dpm.GetAllDisplayIds();
         for (auto displayId : displayIds) {
-            if (targetDisplay != -1 && targetDisplay != static_cast<int32_t>(displayId)) {
+            if ((targetDisplay != -1 && targetDisplay != static_cast<int32_t>(displayId)) ||
+                displayId == VIRTUAL_DISPLAY_ID) {
                 continue;
             }
             vector<AccessibilityWindowInfo> windows;
@@ -411,7 +446,7 @@ namespace OHOS::uitest {
             std::vector<Rect> overplays;
             // window wrapper
             for (auto &win : windows) {
-                Rect winRectInScreen = GetVisibleRect(screenRect, win.GetRectInScreen());
+                Rect winRectInScreen = GetVisibleRect(screenRect, win);
                 Rect visibleArea = winRectInScreen;
                 if (!RectAlgorithm::ComputeMaxVisibleRegion(winRectInScreen, overplays, visibleArea)) {
                     LOG_I("window is covered, windowId : %{public}d, layer is %{public}d", win.GetWindowId(),
@@ -424,8 +459,9 @@ namespace OHOS::uitest {
                 Window winWrapper{win.GetWindowId()};
                 InflateWindowInfo(win, winWrapper);
                 winWrapper.bounds_ = winRectInScreen;
-                winWrapper.displayId_ = displayId;
+                winWrapper.displayId_ = win.GetDisplayId();
                 UpdateWindowAttrs(winWrapper, overplays);
+                winWrapper.displayId_ = displayId;
                 winInfos.emplace_back(move(winWrapper));
             }
             out.insert(make_pair(displayId, move(winInfos)));
@@ -1021,7 +1057,19 @@ namespace OHOS::uitest {
         }
         auto width = display->GetWidth();
         auto height = display->GetHeight();
-        LOG_D("GetDisplaysize, width: %{public}d, height: %{public}d", width, height);
+        LOG_D("GetDisplaysize in display %{public}d, width: %{public}d, height: %{public}d", displayId, width, height);
+        auto virtualDisplay = displayMgr.GetDisplayById(VIRTUAL_DISPLAY_ID);
+        if (displayId == 0 && virtualDisplay != nullptr) {
+            auto virtualwidth = virtualDisplay->GetWidth();
+            auto virtualheight = virtualDisplay->GetHeight();
+            auto foldArea = GetFoldArea();
+            auto foldAreaWidth = foldArea.right_ - foldArea.left_;
+            auto foldAreaHeight = foldArea.bottom_ - foldArea.top_;
+            LOG_D("GetDisplaysize in virtual display, width: %{public}d, height: %{public}d",
+                virtualwidth, virtualheight);
+            LOG_D("GetDisplaysize in foldArea, width: %{public}d, height: %{public}d", foldAreaWidth, foldAreaHeight);
+            height = height + virtualheight + foldAreaHeight;
+        }
         Point result(width, height, displayId);
         return result;
     }
