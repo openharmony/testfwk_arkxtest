@@ -95,7 +95,7 @@ namespace OHOS::uitest {
     {
         DCHECK(op >= TouchOp::CLICK && op <= TouchOp::DOUBLE_CLICK_P);
         auto retrieved = driver_.RetrieveWidget(widget_, error, true);
-        if (error.code_ != NO_ERROR) {
+        if (retrieved == nullptr || error.code_ != NO_ERROR) {
             return;
         }
         const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY(),
@@ -106,13 +106,17 @@ namespace OHOS::uitest {
 
     void WidgetOperator::ScrollToEnd(bool toTop, ApiCallErr &error) const
     {
+        auto retrieved = driver_.RetrieveWidget(widget_, error, true);
+        if (retrieved == nullptr || error.code_ != NO_ERROR) {
+            return;
+        }
         int turnDis = -1;
         std::unique_ptr<Widget> lastTopLeafWidget = nullptr;
         std::unique_ptr<Widget> lastBottomLeafWidget = nullptr;
         while (true) {
-            auto hostApp = driver_.GetHostApp(widget_);
+            auto hostApp = driver_.GetHostApp(*retrieved);
             WidgetSelector selector{};
-            ConstructNoFilterInWidgetSelector(selector, hostApp, widget_.GetAttr(UiAttr::HASHCODE));
+            ConstructNoFilterInWidgetSelector(selector, hostApp, retrieved->GetAttr(UiAttr::HASHCODE));
             std::vector<unique_ptr<Widget>> widgetsInScroll;
             driver_.FindWidgets(selector, widgetsInScroll, error, true);
             if (error.code_ != NO_ERROR) {
@@ -168,7 +172,7 @@ namespace OHOS::uitest {
         if (retrieved == nullptr || error.code_ != NO_ERROR) {
             return;
         }
-        auto rectBound = widget_.GetBounds();
+        auto rectBound = retrieved->GetBounds();
         if (scale < 0) {
             error = ApiCallErr(ERR_INVALID_INPUT, "Please input the correct scale");
             return;
