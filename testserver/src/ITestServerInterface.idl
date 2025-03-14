@@ -20,5 +20,5 @@ interface OHOS.testserver.ITestServerInterface {
     void SetPasteData([in] String text);
     void PublishCommonEvent([in] CommonEventData event, [out] boolean re);
     void FrequencyLock();
-    void SpDaemonProcess([in] int daemonCommand, [in] String token);
+    void SpDaemonProcess([in] String extraInfo);
 }
