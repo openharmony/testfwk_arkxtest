@@ -33,8 +33,8 @@ namespace OHOS::testserver {
     static constexpr OHOS::HiviewDFX::HiLogLabel LABEL_SERVICE = {LOG_CORE, 0xD003110, "TestServerService"};
     static constexpr OHOS::HiviewDFX::HiLogLabel LABEL_TIMER = {LOG_CORE, 0xD003110, "CallerDetectTimer"};
     static const int CALLER_DETECT_DURING = 10000;
-    static const int START_SPDAEMON_PROCESS = 1;
-    static const int KILL_SPDAEMON_PROCESS = 2;
+    static const int START_SPDAEMON_PROCESS = "startCollect";
+    static const int KILL_SPDAEMON_PROCESS = "stopCollect";
 
     TestServerService::TestServerService(int32_t saId, bool runOnCreate) : SystemAbility(saId, runOnCreate)
     {
@@ -215,13 +215,27 @@ namespace OHOS::testserver {
         return TEST_SERVER_OK;
     }
 
-    ErrCode TestServerService::SpDaemonProcess(int daemonCommand, const std::string& token)
+    ErrCode TestServerService::SpDaemonProcess(const std::string& extraInfo)
     {
-        if (token == "") {
-            HiLog::Error(LABEL_SERVICE, "%{public}s called. token is empty", __func__);
+        HiLog::Info(LABEL_SERVICE, "extraInfo %s", extraInfo.c_str());
+        if (extraInfo == "") {
+            HiLog::Error(LABEL_SERVICE, "%{public}s called. extraInfo is empty", __func__);
         }
-        HiLog::Info(LABEL_SERVICE, "%{public}s called. daemonCommand: %{public}d, %{public}s",
-            __func__, daemonCommand, token.c_str());
+        const int commandLen = 11;
+        const int tokenLen = 10;
+        // 提取 command 的值
+        size_t command_start = extraInfo.find("\"command\": \"") + commandLen;  // 长度为 11 的字符串 "\"command\": \""
+        size_t command_end = extraInfo.find("\"", command_start);
+        std::string daemonCommand = extraInfo.substr(command_start, command_end - command_start);
+
+        // 提取 token 的值
+        size_t token_start = extraInfo.find("\"token\": \"") + tokenLen;     // 长度为 10 的字符串 "\"token\": \""
+        size_t token_end = extraInfo.find("\"", token_start);
+        std::string token = extraInfo.substr(token_start, token_end - token_start);
+
+        // 输出结果
+        HiLog::Info(LABEL_SERVICE, "command %s, token: %s", daemonCommand.c_str(), token.c_str());
+
         if (daemonCommand == START_SPDAEMON_PROCESS) {
             std::string command = std::string("./system/bin/SP_daemon -deviceServer:" + token + " &");
             std::system(command.c_str());
