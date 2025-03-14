@@ -189,3 +189,9 @@ void FrequencyLockPlugin()
 {
     OHOS::testserver::TestServerClient::GetInstance().FrequencyLock();
 }
+
+int32_t SpDaemonProcessPlugin(int32_t daemonCommand)
+{
+    OHOS::testserver::TestServerClient::GetInstance().SpDaemonProcess(daemonCommand);
+    return 0;
+}
