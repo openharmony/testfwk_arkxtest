@@ -217,9 +217,9 @@ namespace OHOS::testserver {
 
     ErrCode TestServerService::SpDaemonProcess(const std::string& extraInfo)
     {
-        HiLog::Info(LABEL_SERVICE, "extraInfo %s", extraInfo.c_str());
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         if (extraInfo == "") {
-            HiLog::Error(LABEL_SERVICE, "%{public}s called. extraInfo is empty", __func__);
+            HiLog::Error(LABEL_SERVICE, "%{public}s called. but extraInfo is empty", __func__);
         }
         const int commandLen = 12;
         const int tokenLen = 10;
@@ -234,7 +234,7 @@ namespace OHOS::testserver {
         std::string token = extraInfo.substr(token_start, token_end - token_start);
 
         // 输出结果
-        HiLog::Info(LABEL_SERVICE, "command %s, token: %s", daemonCommand.c_str(), token.c_str());
+        HiLog::Info(LABEL_SERVICE, "%{public}s receive command %{public}s", __func__, daemonCommand.c_str());
 
         if (daemonCommand == START_SPDAEMON_PROCESS) {
             std::string command = std::string("./system/bin/SP_daemon -deviceServer:" + token + " &");
