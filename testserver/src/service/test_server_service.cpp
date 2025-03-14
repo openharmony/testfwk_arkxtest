@@ -221,10 +221,10 @@ namespace OHOS::testserver {
         if (extraInfo == "") {
             HiLog::Error(LABEL_SERVICE, "%{public}s called. extraInfo is empty", __func__);
         }
-        const int commandLen = 11;
+        const int commandLen = 12;
         const int tokenLen = 10;
         // 提取 command 的值
-        size_t command_start = extraInfo.find("\"command\": \"") + commandLen;  // 长度为 11 的字符串 "\"command\": \""
+        size_t command_start = extraInfo.find("\"command\": \"") + commandLen;  // 长度为 12 的字符串 "\"command\": \""
         size_t command_end = extraInfo.find("\"", command_start);
         std::string daemonCommand = extraInfo.substr(command_start, command_end - command_start);
 
