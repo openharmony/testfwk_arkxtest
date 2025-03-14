@@ -224,14 +224,14 @@ namespace OHOS::testserver {
         const int commandLen = 12;
         const int tokenLen = 10;
         // 提取 command 的值
-        size_t command_start = extraInfo.find("\"command\": \"") + commandLen;  // 长度为 12 的字符串 "\"command\": \""
-        size_t command_end = extraInfo.find("\"", command_start);
-        std::string daemonCommand = extraInfo.substr(command_start, command_end - command_start);
+        size_t commandStart = extraInfo.find("\"command\": \"") + commandLen;  // 长度为 12 的字符串 "\"command\": \""
+        size_t commandEnd = extraInfo.find("\"", commandStart);
+        std::string daemonCommand = extraInfo.substr(commandStart, commandEnd - commandStart);
 
         // 提取 token 的值
-        size_t token_start = extraInfo.find("\"token\": \"") + tokenLen;     // 长度为 10 的字符串 "\"token\": \""
-        size_t token_end = extraInfo.find("\"", token_start);
-        std::string token = extraInfo.substr(token_start, token_end - token_start);
+        size_t tokenStart = extraInfo.find("\"token\": \"") + tokenLen;     // 长度为 10 的字符串 "\"token\": \""
+        size_t tokenEnd = extraInfo.find("\"", tokenStart);
+        std::string token = extraInfo.substr(tokenStart, tokenEnd - tokenStart);
 
         // 输出结果
         HiLog::Info(LABEL_SERVICE, "%{public}s receive command %{public}s", __func__, daemonCommand.c_str());
