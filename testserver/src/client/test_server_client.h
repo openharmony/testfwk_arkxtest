@@ -45,7 +45,6 @@ namespace OHOS::testserver {
 extern "C" {
 #endif
 void FrequencyLockPlugin();
-int32_t SpDaemonProcessPlugin(int32_t daemonCommand);
 #ifdef __cplusplus
 }
 #endif
