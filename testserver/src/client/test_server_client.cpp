@@ -173,7 +173,7 @@ namespace OHOS::testserver {
         return;
     }
 
-    int32_t TestServerClient::SpDaemonProcess(std::string extraInfo)
+    int32_t TestServerClient::SpDaemonProcess(int daemonCommand, std::string extraInfo)
     {
         auto iTestServerInterface = LoadTestServer();
         if (iTestServerInterface == nullptr) {
@@ -181,7 +181,7 @@ namespace OHOS::testserver {
             return TEST_SERVER_GET_INTERFACE_FAILED;
         }
 
-        return iTestServerInterface->SpDaemonProcess(extraInfo);
+        return iTestServerInterface->SpDaemonProcess(daemonCommand, extraInfo);
     }
 } // namespace OHOS::testserver
 

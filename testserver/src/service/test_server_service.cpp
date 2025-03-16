@@ -33,8 +33,8 @@ namespace OHOS::testserver {
     static constexpr OHOS::HiviewDFX::HiLogLabel LABEL_SERVICE = {LOG_CORE, 0xD003110, "TestServerService"};
     static constexpr OHOS::HiviewDFX::HiLogLabel LABEL_TIMER = {LOG_CORE, 0xD003110, "CallerDetectTimer"};
     static const int CALLER_DETECT_DURING = 10000;
-    static const std::string START_SPDAEMON_PROCESS = "startCollect";
-    static const std::string KILL_SPDAEMON_PROCESS = "stopCollect";
+    static const int START_SPDAEMON_PROCESS = 1;
+    static const int KILL_SPDAEMON_PROCESS = 2;
 
     TestServerService::TestServerService(int32_t saId, bool runOnCreate) : SystemAbility(saId, runOnCreate)
     {
@@ -215,29 +215,118 @@ namespace OHOS::testserver {
         return TEST_SERVER_OK;
     }
 
-    ErrCode TestServerService::SpDaemonProcess(const std::string& extraInfo)
+    static std::string Trim(const std::string& str) 
+    {
+        // Trim spaces first
+        size_t first = str.find_first_not_of(" \t");
+        if (std::string::npos == first) return "";
+        size_t last = str.find_last_not_of(" \t");
+        std::string trimmed = str.substr(first, (last - first + 1));
+        
+        // Then trim quotes if present
+        if (trimmed.length() >= 2 && trimmed.front() == '"' && trimmed.back() == '"')
+            return trimmed.substr(1, trimmed.length() - 2);
+        
+        return trimmed;
+    }
+
+    static std::map<std::string, std::string> GetJsonKVMap(std::string content)
+    {
+        std::vector<std::string> keyValues;
+        std::stringstream ss(content);
+        std::string kvPair;
+
+        while (std::getline(ss, kvPair, ',')) {
+            keyValues.push_back(kvPair);
+        }
+
+        std::map<std::string, std::string> kvMap;
+        for (const auto& kv : keyValues) {
+            size_t colonPos = kv.find(':');
+            if (colonPos != std::string::npos) {
+                // 去除引号与空格
+                std::string key = Trim(kv.substr(0, colonPos));
+                std::string value = Trim(kv.substr(colonPos + 1));
+                kvMap[key] = value;
+            }
+        }
+
+        return kvMap;
+    }
+
+    static std::vector<int> GetDaemonParaParaIndices(std::map<std::string, std::string> kvMap)
+    {
+        std::vector<int> paraIndices;
+        for (const auto& [key, _] : kvMap) {
+            if (key.compare(0, 4, "para") == 0) {
+                try {
+                    int index = std::stoi(key.substr(4));
+                    paraIndices.push_back(index);
+                } catch (const std::exception&) {
+                    HiLog::Error(LABEL_SERVICE, "Daemon receive a error param: %{public}s", key.c_str());
+                }
+            }
+        }
+        std::sort(paraIndices.begin(), paraIndices.end());
+
+        return paraIndices;
+    }
+
+    static std::string ParseDaemonCommand(const std::string& extraInfo) 
+    {
+        std::string processed;
+        for (char c : extraInfo) {
+            if (!std::isspace(static_cast<unsigned char>(c))) {
+                processed += c;
+            }
+        }
+
+        if (processed.empty() || processed.front() != '{' || processed.back() != '}') {
+            return "";
+        }
+
+        std::string content = processed.substr(1, processed.length() - 2);
+        std::map<std::string, std::string> kvMap = GetJsonKVMap(content);
+        std::ostringstream oss;
+        bool isFirst = true;
+        for (int index : GetDaemonParaParaIndices(kvMap)) {
+            std::string paraKey = "para" + std::to_string(index);
+            std::string valueKey = "value" + std::to_string(index);
+
+            if (kvMap.find(paraKey) != kvMap.end()) {
+                std::string param = kvMap[paraKey];
+                std::string value = "";
+
+                if (kvMap.find(valueKey) != kvMap.end()) {
+                    value = kvMap[valueKey];
+                }
+
+                if (!isFirst) {
+                    oss << " ";
+                }
+                oss << param;
+
+                if (!value.empty()) {
+                    oss << " " << value;
+                }
+
+                isFirst = false;
+            }
+        }
+
+        return oss.str();
+    }
+
+    ErrCode TestServerService::SpDaemonProcess(int daemonCommand, const std::string& extraInfo)
     {
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         if (extraInfo == "") {
             HiLog::Error(LABEL_SERVICE, "%{public}s called. but extraInfo is empty", __func__);
         }
-        const int commandLen = 12;
-        const int tokenLen = 10;
-        // 提取 command 的值
-        size_t commandStart = extraInfo.find("\"command\": \"") + commandLen;  // 长度为 12 的字符串 "\"command\": \""
-        size_t commandEnd = extraInfo.find("\"", commandStart);
-        std::string daemonCommand = extraInfo.substr(commandStart, commandEnd - commandStart);
-
-        // 提取 token 的值
-        size_t tokenStart = extraInfo.find("\"token\": \"") + tokenLen;     // 长度为 10 的字符串 "\"token\": \""
-        size_t tokenEnd = extraInfo.find("\"", tokenStart);
-        std::string token = extraInfo.substr(tokenStart, tokenEnd - tokenStart);
-
-        // 输出结果
-        HiLog::Info(LABEL_SERVICE, "%{public}s receive command %{public}s", __func__, daemonCommand.c_str());
+        std::string params = ParseDaemonCommand(extraInfo);
 
         if (daemonCommand == START_SPDAEMON_PROCESS) {
-            std::string command = std::string("./system/bin/SP_daemon -deviceServer:" + token + " &");
+            std::string command = std::string("./system/bin/SP_daemon " + token + " &");
             std::system(command.c_str());
         } else if (daemonCommand == KILL_SPDAEMON_PROCESS) {
             const std::string spDaemonProcessName = "SP_daemon";
