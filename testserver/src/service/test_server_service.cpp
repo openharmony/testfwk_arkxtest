@@ -216,7 +216,8 @@ namespace OHOS::testserver {
         return TEST_SERVER_OK;
     }
 
-    static std::vector<int> GetDaemonParaIndices(const nlohmann::json& json) {
+    static std::vector<int> GetDaemonParaIndices(const nlohmann::json& json)
+    {
         std::vector<int> paraIndices;
         for (auto it = json.begin(); it != json.end(); ++it) {
             const std::string& key = it.key();
@@ -233,7 +234,8 @@ namespace OHOS::testserver {
         return paraIndices;
     }
     
-    static std::string ParseDaemonCommand(const std::string& extraInfo) {
+    static std::string ParseDaemonCommand(const std::string& extraInfo)
+    {
         try {
             nlohmann::json json = nlohmann::json::parse(extraInfo);
             std::vector<int> paraIndices = GetDaemonParaIndices(json);
