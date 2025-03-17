@@ -23,6 +23,7 @@
 #include "test_server_error_code.h"
 #include "pasteboard_client.h"
 #include "socperf_client.h"
+#include <nlohmann/json.hpp>
 #include <sstream>
 namespace OHOS::testserver {
     // TEST_SERVER_SA_ID
