@@ -114,9 +114,9 @@ namespace OHOS::uitest {
         std::unique_ptr<Widget> lastTopLeafWidget = nullptr;
         std::unique_ptr<Widget> lastBottomLeafWidget = nullptr;
         while (true) {
-            auto hostApp = driver_.GetHostApp(*retrieved);
+            auto hostApp = driver_.GetHostApp(widget_);
             WidgetSelector selector{};
-            ConstructNoFilterInWidgetSelector(selector, hostApp, retrieved->GetAttr(UiAttr::HASHCODE));
+            ConstructNoFilterInWidgetSelector(selector, hostApp, widget_.GetAttr(UiAttr::HASHCODE));
             std::vector<unique_ptr<Widget>> widgetsInScroll;
             driver_.FindWidgets(selector, widgetsInScroll, error, true);
             if (error.code_ != NO_ERROR) {
