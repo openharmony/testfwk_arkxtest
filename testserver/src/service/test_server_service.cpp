@@ -238,32 +238,33 @@ namespace OHOS::testserver {
     {
         try {
             nlohmann::json json = nlohmann::json::parse(extraInfo);
-            std::vector<int> paraIndices = GetDaemonParaIndices(json);
+            std::vector<int> paraIndices;
+            for (auto it = json.begin(); it != json.end(); ++it) {
+                const std::string& key = it.key();
+                if (key.compare(0, 4, "para") == 0) {
+                    try {
+                        int index = std::stoi(key.substr(4));
+                        paraIndices.push_back(index);
+                    } catch (const std::exception&) {
+                        HiLog::Error(LABEL_SERVICE, "Daemon receive an error param: %{public}s", key.c_str());
+                    }
+                }
+            }
+            std::sort(paraIndices.begin(), paraIndices.end());
             std::ostringstream oss;
 
-            bool isFirst = true;
             for (int index : paraIndices) {
                 std::string paraKey = "para" + std::to_string(index);
                 std::string valueKey = "value" + std::to_string(index);
-    
                 if (json.contains(paraKey)) {
-                    // 自动处理类型转换（字符串、数字等）
                     std::string param = json[paraKey].get<std::string>();
                     std::string value = json.contains(valueKey) ? json[valueKey].get<std::string>() : "";
-    
-                    if (!isFirst) {
-                        oss << " ";
-                    }
+                    oss << " ";
                     oss << param;
-    
-                    if (!value.empty()) {
-                        oss << " " << value;
-                    }
-    
+                    oss << " " << value;
                     isFirst = false;
                 }
             }
-    
             return oss.str();
         } catch (const nlohmann::json::exception& e) {
             HiLog::Error(LABEL_SERVICE, "JSON parse error: %{public}s", e.what());
@@ -280,7 +281,7 @@ namespace OHOS::testserver {
         std::string params = ParseDaemonCommand(extraInfo);
 
         if (daemonCommand == START_SPDAEMON_PROCESS) {
-            std::string command = std::string("./system/bin/SP_daemon " + params + " &");
+            std::string command = std::string("./system/bin/SP_daemon " + -deviceServer:${globalContext.deviceToken} -N 5 + " &");
             std::system(command.c_str());
         } else if (daemonCommand == KILL_SPDAEMON_PROCESS) {
             const std::string spDaemonProcessName = "SP_daemon";
