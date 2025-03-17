@@ -326,7 +326,7 @@ namespace OHOS::testserver {
         std::string params = ParseDaemonCommand(extraInfo);
 
         if (daemonCommand == START_SPDAEMON_PROCESS) {
-            std::string command = std::string("./system/bin/SP_daemon " + token + " &");
+            std::string command = std::string("./system/bin/SP_daemon " + params + " &");
             std::system(command.c_str());
         } else if (daemonCommand == KILL_SPDAEMON_PROCESS) {
             const std::string spDaemonProcessName = "SP_daemon";
