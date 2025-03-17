@@ -36,6 +36,8 @@ namespace OHOS::testserver {
     static const int CALLER_DETECT_DURING = 10000;
     static const int START_SPDAEMON_PROCESS = 1;
     static const int KILL_SPDAEMON_PROCESS = 2;
+    static const int PARA_START_POSITION = 0;
+    static const int PARA_END_POSITION = 4;
 
     TestServerService::TestServerService(int32_t saId, bool runOnCreate) : SystemAbility(saId, runOnCreate)
     {
@@ -218,8 +220,6 @@ namespace OHOS::testserver {
     
     static std::string ParseDaemonCommand(const std::string& extraInfo)
     {
-        const int PARA_START_POSITION = 0;
-        const int PARA_END_POSITION = 4;
         try {
             nlohmann::json json = nlohmann::json::parse(extraInfo);
             std::vector<int> paraIndices;
