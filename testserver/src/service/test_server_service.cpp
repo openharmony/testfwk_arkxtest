@@ -216,106 +216,57 @@ namespace OHOS::testserver {
         return TEST_SERVER_OK;
     }
 
-    static std::string Trim(const std::string& str) 
-    {
-        // Trim spaces first
-        size_t first = str.find_first_not_of(" \t");
-        if (std::string::npos == first) return "";
-        size_t last = str.find_last_not_of(" \t");
-        std::string trimmed = str.substr(first, (last - first + 1));
-        
-        // Then trim quotes if present
-        if (trimmed.length() >= 2 && trimmed.front() == '"' && trimmed.back() == '"')
-            return trimmed.substr(1, trimmed.length() - 2);
-        
-        return trimmed;
-    }
-
-    static std::map<std::string, std::string> GetJsonKVMap(std::string content)
-    {
-        std::vector<std::string> keyValues;
-        std::stringstream ss(content);
-        std::string kvPair;
-
-        while (std::getline(ss, kvPair, ',')) {
-            keyValues.push_back(kvPair);
-        }
-
-        std::map<std::string, std::string> kvMap;
-        for (const auto& kv : keyValues) {
-            size_t colonPos = kv.find(':');
-            if (colonPos != std::string::npos) {
-                // 去除引号与空格
-                std::string key = Trim(kv.substr(0, colonPos));
-                std::string value = Trim(kv.substr(colonPos + 1));
-                kvMap[key] = value;
-            }
-        }
-
-        return kvMap;
-    }
-
-    static std::vector<int> GetDaemonParaParaIndices(std::map<std::string, std::string> kvMap)
-    {
+    static std::vector<int> GetDaemonParaIndices(const nlohmann::json& json) {
         std::vector<int> paraIndices;
-        for (const auto& [key, _] : kvMap) {
+        for (auto it = json.begin(); it != json.end(); ++it) {
+            const std::string& key = it.key();
             if (key.compare(0, 4, "para") == 0) {
                 try {
                     int index = std::stoi(key.substr(4));
                     paraIndices.push_back(index);
                 } catch (const std::exception&) {
-                    HiLog::Error(LABEL_SERVICE, "Daemon receive a error param: %{public}s", key.c_str());
+                    HiLog::Error(LABEL_SERVICE, "Daemon receive an error param: %{public}s", key.c_str());
                 }
             }
         }
         std::sort(paraIndices.begin(), paraIndices.end());
-
         return paraIndices;
     }
+    
+    static std::string ParseDaemonCommand(const std::string& extraInfo) {
+        try {
+            nlohmann::json json = nlohmann::json::parse(extraInfo);
+            std::vector<int> paraIndices = GetDaemonParaIndices(json);
+            std::ostringstream oss;
 
-    static std::string ParseDaemonCommand(const std::string& extraInfo) 
-    {
-        std::string processed;
-        for (char c : extraInfo) {
-            if (!std::isspace(static_cast<unsigned char>(c))) {
-                processed += c;
+            bool isFirst = true;
+            for (int index : paraIndices) {
+                std::string paraKey = "para" + std::to_string(index);
+                std::string valueKey = "value" + std::to_string(index);
+    
+                if (json.contains(paraKey)) {
+                    // 自动处理类型转换（字符串、数字等）
+                    std::string param = json[paraKey].get<std::string>();
+                    std::string value = json.contains(valueKey) ? json[valueKey].get<std::string>() : "";
+    
+                    if (!isFirst) {
+                        oss << " ";
+                    }
+                    oss << param;
+    
+                    if (!value.empty()) {
+                        oss << " " << value;
+                    }
+    
+                    isFirst = false;
+                }
             }
-        }
-
-        if (processed.empty() || processed.front() != '{' || processed.back() != '}') {
+    
+            return oss.str();
+        } catch (const nlohmann::json::exception& e) {
+            HiLog::Error(LABEL_SERVICE, "JSON parse error: %{public}s", e.what());
             return "";
         }
-
-        std::string content = processed.substr(1, processed.length() - 2);
-        std::map<std::string, std::string> kvMap = GetJsonKVMap(content);
-        std::ostringstream oss;
-        bool isFirst = true;
-        for (int index : GetDaemonParaParaIndices(kvMap)) {
-            std::string paraKey = "para" + std::to_string(index);
-            std::string valueKey = "value" + std::to_string(index);
-
-            if (kvMap.find(paraKey) != kvMap.end()) {
-                std::string param = kvMap[paraKey];
-                std::string value = "";
-
-                if (kvMap.find(valueKey) != kvMap.end()) {
-                    value = kvMap[valueKey];
-                }
-
-                if (!isFirst) {
-                    oss << " ";
-                }
-                oss << param;
-
-                if (!value.empty()) {
-                    oss << " " << value;
-                }
-
-                isFirst = false;
-            }
-        }
-
-        return oss.str();
     }
 
     ErrCode TestServerService::SpDaemonProcess(int daemonCommand, const std::string& extraInfo)
