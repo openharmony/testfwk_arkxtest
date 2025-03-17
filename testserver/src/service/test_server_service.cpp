@@ -218,18 +218,21 @@ namespace OHOS::testserver {
     
     static std::string ParseDaemonCommand(const std::string& extraInfo)
     {
+        const int PARA_START_POSITION = 0;
+        const int PARA_END_POSITION = 4;
         try {
             nlohmann::json json = nlohmann::json::parse(extraInfo);
             std::vector<int> paraIndices;
             for (auto it = json.begin(); it != json.end(); ++it) {
                 const std::string& key = it.key();
-                if (key.compare(0, 4, "para") == 0) {
-                    try {
-                        int index = std::stoi(key.substr(4));
-                        paraIndices.push_back(index);
-                    } catch (const std::exception&) {
-                        HiLog::Error(LABEL_SERVICE, "Daemon receive an error param: %{public}s", key.c_str());
-                    }
+                if (key.compare(PARA_START_POSITION, PARA_END_POSITION, "para") != 0) {
+                    continue;
+                }
+                try {
+                    int index = std::stoi(key.substr(PARA_END_POSITION));
+                    paraIndices.push_back(index);
+                } catch (const std::exception&) {
+                    HiLog::Error(LABEL_SERVICE, "Daemon receive an error param: %{public}s", key.c_str());
                 }
             }
             std::sort(paraIndices.begin(), paraIndices.end());
