@@ -215,24 +215,6 @@ namespace OHOS::testserver {
         OHOS::SOCPERF::SocPerfClient::GetInstance().PerfRequest(performanceModeId, "");
         return TEST_SERVER_OK;
     }
-
-    static std::vector<int> GetDaemonParaIndices(const nlohmann::json& json)
-    {
-        std::vector<int> paraIndices;
-        for (auto it = json.begin(); it != json.end(); ++it) {
-            const std::string& key = it.key();
-            if (key.compare(0, 4, "para") == 0) {
-                try {
-                    int index = std::stoi(key.substr(4));
-                    paraIndices.push_back(index);
-                } catch (const std::exception&) {
-                    HiLog::Error(LABEL_SERVICE, "Daemon receive an error param: %{public}s", key.c_str());
-                }
-            }
-        }
-        std::sort(paraIndices.begin(), paraIndices.end());
-        return paraIndices;
-    }
     
     static std::string ParseDaemonCommand(const std::string& extraInfo)
     {
@@ -262,7 +244,6 @@ namespace OHOS::testserver {
                     oss << " ";
                     oss << param;
                     oss << " " << value;
-                    isFirst = false;
                 }
             }
             return oss.str();
