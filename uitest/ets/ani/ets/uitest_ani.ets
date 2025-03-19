@@ -309,17 +309,6 @@ export class Component {
       return p;
   }
 
-  getHint():Promise<string> {
-      let p = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():string => this.getHintSync());
-          p1.then((e:NullishType)=>{
-              let value : string = e as string;
-              resolve(value);
-          });
-      });
-      return p;
-  }
-
   getType():Promise<string> {
       let p = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
       let p1 = taskpool.execute(():string => this.getTypeSync());
@@ -343,7 +332,7 @@ export class Component {
   }
 
   isChecked():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
     let p1 = taskpool.execute(():boolean => this.isCheckedSync());
         p1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
@@ -363,7 +352,7 @@ export class Component {
     return p;
   }
   isScrollable():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
     let p1 = taskpool.execute(():boolean => this.isScrollableSync());
         p1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
@@ -373,7 +362,7 @@ export class Component {
     return p;
   }
   isFocused():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
     let p1 = taskpool.execute(():boolean => this.isFocusedSync());
         p1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
@@ -383,7 +372,7 @@ export class Component {
     return p;
   }
   isEnabled():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
     let p1 = taskpool.execute(():boolean => this.isEnabledSync());
         p1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
@@ -393,7 +382,7 @@ export class Component {
     return p;
   }
   isSelected():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
     let p1 = taskpool.execute(():boolean => this.isSelectedSync());
         p1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
@@ -403,7 +392,7 @@ export class Component {
     return p;
   }
   isLongClickable():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
     let p1 = taskpool.execute(():boolean => this.isLongClickableSync());
         p1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
@@ -413,7 +402,7 @@ export class Component {
     return p;
   }
   isClickable():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
     let p1 = taskpool.execute(():boolean => this.isClickableSync());
         p1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
@@ -525,7 +514,7 @@ export class UiWindow {
   }
 
   isFocused():Promise<boolean> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<boolean>) => void, reject: (error: Object) => void) => {
+      let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
       let p1 = taskpool.execute(():boolean => this.isFocusedSync());
           p1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
@@ -536,7 +525,7 @@ export class UiWindow {
   }
 
   isActive():Promise<boolean> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
       let p1 = taskpool.execute(():boolean => this.isActiveSync());
           p1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
