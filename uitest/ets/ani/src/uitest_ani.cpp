@@ -762,7 +762,7 @@ static ani_boolean swipeSync(ani_env *env, ani_object obj, ani_double x1, ani_do
     return true;
 }
 
-static ani_boolean dragSync(ani_env *env, ani_object obj, ani_double x1, ani_double y1, ani_double x2, ani_double y2, ani_double speed)
+static ani_boolean dragSync(ani_env *env, ani_object obj, ani_double x1, ani_double y1, ani_double x2, ani_double y2, ani_object speed)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -845,7 +845,7 @@ static ani_object findWindowSync(ani_env *env, ani_object obj, ani_object filter
     return window_obj;
 }
 
-static ani_boolean injectMultiPointerActionSync(ani_env *env, ani_object obj, ani_object pointers, ani_double speed)
+static ani_boolean injectMultiPointerActionSync(ani_env *env, ani_object obj, ani_object pointers, ani_object speed)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -955,7 +955,7 @@ static ani_object waitForComponentSync(ani_env *env, ani_object obj, ani_object 
     return component_obj;
 }
 
-static ani_boolean triggerCombineKeysSync(ani_env *env, ani_object obj, ani_double key0, ani_double key1, ani_double key2)
+static ani_boolean triggerCombineKeysSync(ani_env *env, ani_object obj, ani_double key0, ani_double key1, ani_object key2)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -1035,7 +1035,7 @@ static ani_boolean setDisplayRotationEnabledSync(ani_env *env, ani_object obj, a
     return true;
 }
 
-static ani_boolean penSwipeSync(ani_env *env, ani_object obj, ani_object f, ani_object t, ani_double speed, ani_double pressure)
+static ani_boolean penSwipeSync(ani_env *env, ani_object obj, ani_object f, ani_object t, ani_object speed, ani_object pressure)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -1109,8 +1109,8 @@ static ani_boolean penLongClickSync(ani_env *env, ani_object obj, ani_object p, 
     return true;
 }
 
-static ani_boolean mouseScrollSync(ani_env *env, ani_object obj, ani_object p, ani_boolean down, ani_double dis, ani_double key1, ani_double key2,
-    ani_int speed)
+static ani_boolean mouseScrollSync(ani_env *env, ani_object obj, ani_object p, ani_boolean down, ani_double dis, ani_object key1, ani_object key2,
+    ani_object speed)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -1142,7 +1142,7 @@ static ani_boolean mouseScrollSync(ani_env *env, ani_object obj, ani_object p, a
     return true;
 }
 
-static ani_boolean mouseMoveWithTrackSync(ani_env *env, ani_object obj, ani_object f, ani_object t, ani_double speed)
+static ani_boolean mouseMoveWithTrackSync(ani_env *env, ani_object obj, ani_object f, ani_object t, ani_object speed)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
