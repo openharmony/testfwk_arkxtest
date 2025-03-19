@@ -1164,7 +1164,7 @@ static ani_boolean mouseMoveWithTrackSync(ani_env *env, ani_object obj, ani_obje
     return true;
 }
 
-static ani_boolean mouseDragkSync(ani_env *env, ani_object obj, ani_object f, ani_object t, ani_double speed)
+static ani_boolean mouseDragkSync(ani_env *env, ani_object obj, ani_object f, ani_object t, ani_object speed)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -1199,7 +1199,7 @@ static ani_boolean mouseMoveToSync(ani_env *env, ani_object obj, ani_object p)
     return true;
 }
 
-static ani_boolean mouseClickSync(ani_env *env, ani_object obj, ani_object p, ani_int btnId, ani_double key1, ani_double key2)
+static ani_boolean mouseClickSync(ani_env *env, ani_object obj, ani_object p, ani_int btnId, ani_object key1, ani_object key2)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -1225,7 +1225,7 @@ static ani_boolean mouseClickSync(ani_env *env, ani_object obj, ani_object p, an
     return true;
 }
 
-static ani_boolean mouseDoubleClickSync(ani_env *env, ani_object obj, ani_object p, ani_int btnId, ani_double key1, ani_double key2)
+static ani_boolean mouseDoubleClickSync(ani_env *env, ani_object obj, ani_object p, ani_int btnId, ani_object key1, ani_object key2)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -1251,7 +1251,7 @@ static ani_boolean mouseDoubleClickSync(ani_env *env, ani_object obj, ani_object
     return true;
 }
 
-static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p, ani_int btnId, ani_double key1, ani_double key2)
+static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p, ani_int btnId, ani_object key1, ani_object key2)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -1276,7 +1276,7 @@ static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p
     return true;
 }
 
-static ani_boolean injectPenPointerActionSync(ani_env *env, ani_object obj, ani_object pointers, ani_double speed, ani_double pressure)
+static ani_boolean injectPenPointerActionSync(ani_env *env, ani_object obj, ani_object pointers, ani_object speed, ani_object pressure)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
