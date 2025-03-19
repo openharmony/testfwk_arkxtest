@@ -78,8 +78,8 @@ interface WindowFilter {
 }
 
 class WindowFilterInner implements WindowFilter {
-  bundleName?: string;
-  title?: string;
+  bundleName?: string = "";
+  title?: string = "";
   focused?: boolean;
   actived?: boolean;
   active?: boolean;
@@ -92,9 +92,9 @@ interface UIElementInfo {
 }
 
 class UIElementInfoInner implements UIElementInfo {
-  bundleName: string;
-  type: string;
-  text: string;
+  bundleName: string = "";
+  type: string = "";
+  text: string = "";
 }
 
 interface TouchPadSwipeOptions {
@@ -180,258 +180,258 @@ export class Component {
   native getBoundsCenterSync(): Point;
 
   click():Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.comClickSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.comClickSync());
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   longClick():Promise<void> {
-    let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.comLongClickSync());
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.comLongClickSync());
+        promise1.then((e:NullishType)=>{
             resolve(Promise.resolve());
         });
     });
-    return p;
+    return promise;
   }
 
   doubleClick():Promise<void> {
-    let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.comDoubleClickSync());
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.comDoubleClickSync());
+        promise1.then((e:NullishType)=>{
             resolve(Promise.resolve());
         });
     });
-    return p;
+    return promise;
   }
   
   scrollSearch(on: On, vertical?: boolean, offset?: number):Promise<Component> {
-    let p = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.scrollSearchSync(on, vertical, offset));
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.scrollSearchSync(on, vertical, offset));
+        promise1.then((e:NullishType)=>{
             let value : Component = e as Component;
             resolve(value);
         });
     });
-    return p;
+    return promise;
   }
 
   pinchIn(scale: number):Promise<void> {
-    let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.pinchInSync(scale));
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.pinchInSync(scale));
+        promise1.then((e:NullishType)=>{
             resolve(Promise.resolve());
         });
     });
-    return p;
+    return promise;
   }  
   pinchOut(scale: number):Promise<void> {
-    let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.pinchOutSync(scale));
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.pinchOutSync(scale));
+        promise1.then((e:NullishType)=>{
             resolve(Promise.resolve());
         });
     });
-    return p;
+    return promise;
   }
   
   scrollToTop(speed?: number):Promise<void> {
-    let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.scrollToTopSync(speed));
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.scrollToTopSync(speed));
+        promise1.then((e:NullishType)=>{
             resolve(Promise.resolve());
         });
     });
-    return p;
+    return promise;
   }
   
   scrollToBottom(speed?: number):Promise<void> {
-    let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.scrollToBottomSync(speed));
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.scrollToBottomSync(speed));
+        promise1.then((e:NullishType)=>{
             resolve(Promise.resolve());
         });
     });
-    return p;
+    return promise;
   }
   
   inputText(text: string):Promise<void> {
-    let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.comInputTextSync(text));
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.comInputTextSync(text));
+        promise1.then((e:NullishType)=>{
             resolve(Promise.resolve());
         });
     });
-    return p;
+    return promise;
   }
   
   dragTo(target: Component):Promise<void> {
-    let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.comDragToSync(target));
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.comDragToSync(target));
+        promise1.then((e:NullishType)=>{
             resolve(Promise.resolve());
         });
     });
-    return p;
+    return promise;
   }
 
   clearText():Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.clearTextSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.clearTextSync());
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   getHint():Promise<string> {
-      let p = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():string => this.getHintSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():string => this.getHintSync());
+          promise1.then((e:NullishType)=>{
               let value : string = e as string;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   getDescription():Promise<string> {
-      let p = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():string => this.getDescriptionSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():string => this.getDescriptionSync());
+          promise1.then((e:NullishType)=>{
               let value : string = e as string;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   getType():Promise<string> {
-      let p = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():string => this.getTypeSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():string => this.getTypeSync());
+          promise1.then((e:NullishType)=>{
               let value : string = e as string;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   getText():Promise<string> {
-      let p = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():string => this.getTextSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():string => this.getTextSync());
+          promise1.then((e:NullishType)=>{
               let value : string = e as string;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   isChecked():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.isCheckedSync());
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.isCheckedSync());
+        promise1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
             resolve(value);
         });
     });
-    return p;
+    return promise;
   }
   isCheckable():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.isCheckableSync());
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.isCheckableSync());
+        promise1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
             resolve(value);
         });
     });
-    return p;
+    return promise;
   }
   isScrollable():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.isScrollableSync());
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.isScrollableSync());
+        promise1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
             resolve(value);
         });
     });
-    return p;
+    return promise;
   }
   isFocused():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.isFocusedSync());
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.isFocusedSync());
+        promise1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
             resolve(value);
         });
     });
-    return p;
+    return promise;
   }
   isEnabled():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.isEnabledSync());
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.isEnabledSync());
+        promise1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
             resolve(value);
         });
     });
-    return p;
+    return promise;
   }
   isSelected():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.isSelectedSync());
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.isSelectedSync());
+        promise1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
             resolve(value);
         });
     });
-    return p;
+    return promise;
   }
   isLongClickable():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.isLongClickableSync());
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.isLongClickableSync());
+        promise1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
             resolve(value);
         });
     });
-    return p;
+    return promise;
   }
   isClickable():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():boolean => this.isClickableSync());
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.isClickableSync());
+        promise1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
             resolve(value);
         });
     });
-    return p;
+    return promise;
   }
   getBounds():Promise<Rect> {
-    let p = new Promise<Rect>((resolve: (value: Rect) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():Rect => this.getBoundsSync());
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<Rect>((resolve: (value: Rect) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():Rect => this.getBoundsSync());
+        promise1.then((e:NullishType)=>{
             let value : Rect = e as Rect;
             resolve(value);
         });
     });
-    return p;
+    return promise;
   }
   getBoundsCenter():Promise<Point> {
-    let p = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Object) => void) => {
-    let p1 = taskpool.execute(():Point => this.getBoundsCenterSync());
-        p1.then((e:NullishType)=>{
+    let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():Point => this.getBoundsCenterSync());
+        promise1.then((e:NullishType)=>{
             let value : Point = e as Point;
             resolve(value);
         });
     });
-    return p;
+    return promise;
   }
 }
 
@@ -456,149 +456,149 @@ export class UiWindow {
   native getBoundsSync(): Rect;
 
   split():Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.splitSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.splitSync());
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   resume():Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.resumeSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.resumeSync());
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   close():Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.closeSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.closeSync());
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   minimize():Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.minimizeSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.minimizeSync());
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   maximize():Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.maximizeSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.maximizeSync());
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   focus():Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.focusSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.focusSync());
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   isFocused():Promise<boolean> {
-      let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.isFocusedSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.isFocusedSync());
+          promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   isActive():Promise<boolean> {
-      let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.isActiveSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.isActiveSync());
+          promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   resize(w:int, h:int, d:ResizeDirection):Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.resizeSync(w, h, d));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.resizeSync(w, h, d));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   moveTo(x:int, y:int):Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.moveToSync(x, y));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.moveToSync(x, y));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   getWindowMode():Promise<int> {
-      let p = new Promise<int>((resolve: (value: PromiseLike<int>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():int => this.getWindowModeSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<int>((resolve: (value: int) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():int => this.getWindowModeSync());
+          promise1.then((e:NullishType)=>{
               let value : int = e as int;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   GetBundleName():Promise<string> {
-      let p = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():string => this.GetBundleNameSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():string => this.GetBundleNameSync());
+          promise1.then((e:NullishType)=>{
               let value : string = e as string;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   getTitile():Promise<string> {
-      let p = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():string => this.getTitileSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():string => this.getTitileSync());
+          promise1.then((e:NullishType)=>{
               let value : string = e as string;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   getBounds():Promise<Rect> {
-      let p = new Promise<Rect>((resolve: (value: Rect) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():Rect => this.getBoundsSync());
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<Rect>((resolve: (value: Rect) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():Rect => this.getBoundsSync());
+          promise1.then((e:NullishType)=>{
               let value : Rect = e as Rect;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 }
 
@@ -608,14 +608,14 @@ export class Driver {
     loadLibrary("uitest.z");
   }  
   private nativeDriver:string = '';
-  public constructor(driver:driver) {
+  public constructor(driver:string) {
     if (this.nativeDriver == '') {
       this.nativeDriver = driver;
     }
   }
   private native comClickSync(x:int, y:int):boolean;
   private native delayMsSync(t:int):boolean;
-  private native findComponentSync(on: On):boolean;
+  private native findComponentSync(on: On):Component;
 
   native static create():Driver;
   native clickSync(x:int, y:int):boolean;
@@ -638,7 +638,7 @@ export class Driver {
   native findComponentsSync(on: On):Array<Component>;
 
   native waitForIdleSync(idleTime: number, timeout: number):boolean;
-  native waitForComponentSync(on: On, time: number):Component;
+  native waitForComponentSync(on: On, time: int):Component;
   native triggerCombineKeysSync(key0: number, key1: number, key2?: number):boolean;
 
   native setDisplayRotationEnabledSync(enable: boolean):boolean;
@@ -664,259 +664,258 @@ export class Driver {
   native touchPadMultiFingerSwipeSync(fingers: number, direction: number, options?: TouchPadSwipeOptions): boolean;
 
   delayMs(t: int): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.delayMsSync(t));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.delayMsSync(t));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   click(x: int, y: int): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.clickSync(x, y));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.clickSync(x, y));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   doubleClick(x: int, y: int): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.doubleClickSync(x, y));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.doubleClickSync(x, y));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   findComponent(on: On): Promise<Component> {
-      let p = new Promise<Component>((resolve: (c: Component) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():Component => this.findComponentSync(on));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<Component>((resolve: (c: Component) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():Component => this.findComponentSync(on));
+          promise1.then((e:NullishType)=>{
               let value : Component = e as Component;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   waitForIdle(idleTime: number, timeout: number): Promise<boolean> {
-      let p = new Promise<boolean>((resolve: (c: boolean) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.waitForIdleSync(idleTime, timeout));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<boolean>((resolve: (c: boolean) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.waitForIdleSync(idleTime, timeout));
+          promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
-  waitForComponent(on: On): Promise<Component> {
-      let p = new Promise<Component>((resolve: (c: Component) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():Component => this.waitForComponentSync(on));
-          p1.then((e:NullishType)=>{
+  waitForComponent(on: On, time: int): Promise<Component> {
+      let promise = new Promise<Component>((resolve: (c: Component) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():Component => this.waitForComponentSync(on, time));
+          promise1.then((e:NullishType)=>{
               let value : Component = e as Component;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   triggerCombineKeys(key0: number, key1: number, key2?: number): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.triggerCombineKeysSync(key0, key1, key2));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.triggerCombineKeysSync(key0, key1, key2));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   setDisplayRotationEnabled(enable: boolean): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.setDisplayRotationEnabledSync(enable));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.setDisplayRotationEnabledSync(enable));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   setDisplayRotation(rotation: DisplayRotation): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.setDisplayRotationSync(rotation));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.setDisplayRotationSync(rotation));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   screenCapture(path: string, rect: Rect): Promise<boolean> {
-      let p = new Promise<boolean>((resolve: (c: boolean) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.screenCaptureSync(path, rect));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<boolean>((resolve: (c: boolean) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.screenCaptureSync(path, rect));
+          promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   screenCap(path: string): Promise<boolean> {
-      let p = new Promise<boolean>((resolve: (c: boolean) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.screenCapSync(path));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<boolean>((resolve: (c: boolean) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.screenCapSync(path));
+          promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   penSwipe(f: Point, t: Point, speed?: number, pressure: number): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.penSwipeSync(f, t, speed, pressure));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.penSwipeSync(f, t, speed, pressure));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   penClick(p: Point): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.penClickSync(p));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.penClickSync(p));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   penDoubleClick(p: Point): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.penDoubleClickSync(p));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.penDoubleClickSync(p));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   penLongClick(p: Point, pressure: number): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.penLongClickSync(p, pressure));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.penLongClickSync(p, pressure));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   mouseScroll(p: Point, down: boolean, d:number, key1?: number, key2?: number, speed?: number): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.mouseScrollSync(p, down, d, key1, key2, speed));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.mouseScrollSync(p, down, d, key1, key2, speed));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   mouseMoveWithTrack(f: Point, t: Point, speed?: number): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.mouseMoveWithTrackSync(f, t, speed));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.mouseMoveWithTrackSync(f, t, speed));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   mouseMoveTo(p: Point): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.mouseMoveToSync(p));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.mouseMoveToSync(p));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   mouseDragk(f: Point, t: Point, speed?: number): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.mouseDragkSync(f, t, speed));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.mouseDragkSync(f, t, speed));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
+  }
+  mouseClick(p: Point, btnId: MouseButton, key1?: number, key2?: number): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.mouseClickSync(p, btnId, key1, key2));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          });
+      });
+      return promise;
   }
 
-  mouseClick(p: Point): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.mouseClickSync(p));
-          p1.then((e:NullishType)=>{
+  mouseDoubleClick(p: Point, btnId: MouseButton, key1?: number, key2: number): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.mouseDoubleClickSync(p, btnId, key1, key2));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
-  mouseDoubleClick(p: Point): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():boolean => this.mouseDoubleClickSync(p));
-          p1.then((e:NullishType)=>{
+  mouseLongClick(p: Point, btnId: MouseButton, key1?: number, key2: number): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():void => this.mouseLongClick(p, btnId, key1, key2));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
-  }
-
-  mouseLongClick(p: Point): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():void => this.mouseLongClick(p));
-          p1.then((e:NullishType)=>{
-              resolve(Promise.resolve());
-          });
-      });
-      return p;
+      return promise;
   }
 
   injectMultiPointerAction(pointers: PointerMatrix, speed?: number): Promise<boolean> {
-      let p = new Promise<boolean>((resolve: (c: boolean) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():void => this.injectMultiPointerActionSync(pointers, speed));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<boolean>((resolve: (c: boolean) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():void => this.injectMultiPointerActionSync(pointers, speed));
+          promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
           });
       });
-      return p;
+      return promise;
   }
 
   injectPenPointerAction(pointers: PointerMatrix, speed?: number, pressure?: number): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():void => this.injectPenPointerActionSync(pointers, speed, pressure));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():void => this.injectPenPointerActionSync(pointers, speed, pressure));
+          promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 
   touchPadMultiFingerSwipe(fingers: number, direction: UiDirection, options?: TouchPadSwipeOptions): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let p1 = taskpool.execute(():void => this.touchPadMultiFingerSwipeSync(fingers, direction, options));
-          p1.then((e:NullishType)=>{
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():void => this.touchPadMultiFingerSwipeSync(fingers, direction, options));
+          promise1.then((e:NullishType)=>{
             resolve(Promise.resolve());
           });
       });
-      return p;
+      return promise;
   }
 }
 
