@@ -13,8 +13,9 @@
 #include "ipc_transactor.h"
 #include "test_server_client.h"
 #include <cstring>
-#include <unistd.h>
+#include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 using namespace OHOS::uitest;
 using namespace nlohmann;
@@ -1215,7 +1216,7 @@ static ani_boolean mouseDoubleClickSync(ani_env *env, ani_object obj, ani_object
     ani_boolean ret = false;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
     if (ret == false) {
-        callInfo_.paramList_.push_back(speed);
+        callInfo_.paramList_.push_back(key1);
         env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret);
         if (ret == false) {
             callInfo_.paramList_.push_back(key2);
@@ -1238,7 +1239,7 @@ static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p
     ani_boolean ret = false;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
     if (ret == false) {
-        callInfo_.paramList_.push_back(speed);
+        callInfo_.paramList_.push_back(key1);
         env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret);
         if (ret == false) {
             callInfo_.paramList_.push_back(key2);
@@ -1549,10 +1550,10 @@ static ani_ref getBoundsCenterSync(ani_env *env, ani_object obj) {
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.apiId_ = "Component.getBoundsCenter";
     Transact(callInfo_, reply_);
-    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"])
+    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
     return p;
 }
-static ani_ref getBoundsSync(ani_env *env, ani_object obj) {
+static ani_ref getBounds(ani_env *env, ani_object obj) {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
@@ -1573,17 +1574,17 @@ static ani_ref performComponentApi(ani_env *env, ani_object obj, string apiId_) 
 }
 
 static ani_boolean comClick(ani_env *env, ani_object obj) {
-    performComponentApi(obj, "Component.click");
+    performComponentApi(env, obj, "Component.click");
     return true;
 }
 
 static ani_boolean comDoubleClick(ani_env *env, ani_object obj) {
-    performComponentApi(obj, "Component.doubleClick");
+    performComponentApi(env, obj, "Component.doubleClick");
     return true;
 }
 
 static ani_boolean comLongClick(ani_env *env, ani_object obj) {
-    performComponentApi(obj, "Component.longClick");
+    performComponentApi(env, obj, "Component.longClick");
     return true;
 }
 
@@ -1592,7 +1593,7 @@ static ani_boolean comDragToSync(ani_env *env, ani_object obj, ani_object target
     ApiReplyInfo reply_;
     callInfo_.apiId_ = "Component.dragTo";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
-    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, target, "nativeComponent")))；
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, target, "nativeComponent")));
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
@@ -1736,7 +1737,7 @@ static ani_boolean BindComponent(ani_env *env) {
         ani_native_function {"comDoubleClickSync", nullptr, reinterpret_cast<void *>(comDoubleClick)},
         ani_native_function {"comDragToSync", nullptr, reinterpret_cast<void *>(comDragToSync)},
         ani_native_function {"getBoundsSync", nullptr, reinterpret_cast<void *>(getBounds)},
-        ani_native_function {"getBoundsCenterSync", nullptr, reinterpret_cast<void *>(getBoundsCenter)},
+        ani_native_function {"getBoundsCenterSync", nullptr, reinterpret_cast<void *>(getBoundsCenterSync)},
         ani_native_function {"getTextSync", nullptr, reinterpret_cast<void *>(getText)},
         ani_native_function {"getTypeSync", nullptr, reinterpret_cast<void *>(getType)},
         ani_native_function {"getIdSync", nullptr, reinterpret_cast<void *>(getId)},
