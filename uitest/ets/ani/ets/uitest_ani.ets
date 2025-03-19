@@ -176,6 +176,8 @@ export class Component {
   native isEnabledSync(): boolean;
   native isCheckedSync(): boolean;
   native isCheckableSync(): boolean;
+  native getBoundsSync(): Rect;
+  native getBoundsCenterSync(): Point;
 
   click():Promise<void> {
       let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
@@ -342,7 +344,7 @@ export class Component {
     return p;
   }
   isCheckable():Promise<boolean> {
-    let p = new Promise<boolean>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let p = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
     let p1 = taskpool.execute(():boolean => this.isCheckableSync());
         p1.then((e:NullishType)=>{
             let value : boolean = e as boolean;
