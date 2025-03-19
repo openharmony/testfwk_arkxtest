@@ -19,6 +19,10 @@ import("//build/config/components/ets_frontend/ets2abc_config.gni")
 source_root = "$base_root/test/testfwk/arkxtest/uitest"
 
 config("uitest_common_configs") {
+  include_dirs = [
+    "//third_party/json/single_include/nlohmann",
+    "$base_root/foundation/mutimodalinput/input/interfaces",
+  ]
   cflags = [
     "-Wfloat-equal",
     "-Wformat=2",
@@ -219,6 +223,8 @@ ohos_executable("uitest_server") {
 
   if (defined(global_parts_info) &&
       defined(global_parts_info.hiviewdfx_hidumper)) {
+    include_dirs +=
+        [ "//base/hiviewdfx/hidumper/interfaces/native/innerkits/include" ]
     external_deps += [
       "hidumper:hidumper_client",
       "samgr:samgr_proxy",
@@ -254,6 +260,7 @@ ohos_shared_library("uitest_client") {
     "${source_root}/js/napi/uitest_napi.cpp",
   ]
   include_dirs = [
+    "//third_party/libuv/include",
     "${source_root}/core",
     "${source_root}/connection",
   ]
@@ -298,11 +305,12 @@ ohos_unittest("uitest_core_unittest") {
     ":uitest_core",
     "//third_party/googletest:gtest_main",
   ]
-  external_deps = [
-    "hilog:libhilog",
-    "json:nlohmann_json_static",
+  include_dirs = [
+    "$base_root/base/hiviewdfx/hilog/interfaces/native/innerkits/include",
+    "//third_party/json/single_include/nlohmann",
+    "${source_root}/core",
   ]
-  include_dirs = [ "${source_root}/core" ]
+  external_deps = [ "hilog:libhilog" ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   use_exceptions = true
@@ -311,7 +319,6 @@ ohos_unittest("uitest_core_unittest") {
   subsystem_name = "testfwk"
   part_name = "arkxtest"
 }
-
 ohos_shared_library("uitest_ani") {
   configs = [":uitest_common_configs"]
   external_deps = common_external_deps
@@ -334,7 +341,6 @@ ohos_shared_library("uitest_ani") {
   part_name = "arkxtest"
   subsystem_name = "testfwk"
 }
-
 generate_static_abc("uitest_abc") {
   base_url = "./ets/ani/ets"
   files = [
@@ -347,7 +353,6 @@ generate_static_abc("uitest_abc") {
   ]
   device_dst_file = "/system/framework/uitest_ani.abc"
 }
-
 ohos_prebuilt_etc("uitest_etc") {
   source = "$target_out_dir/uitest_ani.abc"
   module_install_dir = "framework"
@@ -365,6 +370,8 @@ ohos_unittest("uitest_ipc_unittest") {
   include_dirs = [
     "${source_root}/connection",
     "${source_root}/core",
+    "//third_party/json/single_include/nlohmann",
+    "//third_party/json/single_include",
   ]
   external_deps = [
     "ability_base:base",
@@ -388,6 +395,8 @@ ohos_unittest("uitest_extension_unittest") {
   include_dirs = [
     "${source_root}/addon",
     "${source_root}/core",
+    "//third_party/json/single_include/nlohmann",
+    "//third_party/json/single_include",
   ]
   external_deps = [
     "hilog:libhilog",
