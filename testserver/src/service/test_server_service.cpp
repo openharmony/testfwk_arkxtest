@@ -244,9 +244,7 @@ namespace OHOS::testserver {
                 if (json.contains(paraKey)) {
                     std::string param = json[paraKey].get<std::string>();
                     std::string value = json.contains(valueKey) ? json[valueKey].get<std::string>() : "";
-                    oss << " ";
-                    oss << param;
-                    oss << " " << value;
+                    oss << " " << param " " << value;
                 }
             }
             return oss.str();
@@ -261,6 +259,7 @@ namespace OHOS::testserver {
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         if (extraInfo == "") {
             HiLog::Error(LABEL_SERVICE, "%{public}s called. but extraInfo is empty", __func__);
+            return TEST_SERVER_SPDAEMON_PROCESS_FAILED;
         }
         std::string params = ParseDaemonCommand(extraInfo);
 
