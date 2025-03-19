@@ -14,6 +14,7 @@
 #include "test_server_client.h"
 #include <cstring>
 #include <unistd.h>
+#include <string.h>
 
 using namespace OHOS::uitest;
 using namespace nlohmann;
@@ -884,7 +885,13 @@ static ani_boolean pressHomeSync(ani_env *env, ani_object obj)
 
 static ani_ref getDisplaySizeSync(ani_env *env, ani_object obj)
 {
-    return performDriver(env, obj, "Driver.getDisplaySize");
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.getDisplaySize";
+    Transact(callInfo_, reply_);
+    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
+    return p;
 }
 
 static ani_object getDisplaySizeDensitySync(ani_env *env, ani_object obj)
@@ -900,12 +907,7 @@ static ani_object getDisplaySizeDensitySync(ani_env *env, ani_object obj)
 
 static ani_int getDisplayRotationSync(ani_env *env, ani_object obj)
 {
-    ApiCallInfo callInfo_;
-    ApiReplyInfo reply_;
-    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
-    callInfo_.apiId_ = "Driver.getDisplayRotation";
-    Transact(callInfo_, reply_);
-    return UnmarshalReply(env, callInfo_, reply_);
+    return performDriver(env, obj, "Driver.getDisplayRotation")
 }
 
 static ani_boolean waitForIdleSync(ani_env *env, ani_object obj, ani_int idleTime, ani_int timeout)
@@ -1072,23 +1074,6 @@ static ani_boolean penDoubleClickSync(ani_env *env, ani_object obj, ani_object p
     return true;
 }
 
-static ani_boolean penDoubleClickSync(ani_env *env, ani_object obj, ani_object p, ani_int pressure)
-{
-    ApiCallInfo callInfo_;
-    ApiReplyInfo reply_;
-    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
-    callInfo_.apiId_ = "Driver.penDoubleClick";
-    auto point = getPoint(env, p);
-    callInfo_.paramList_.push_back(point);
-    ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret) != ANI_OK) {
-        callInfo_.paramList_.push_back(pressure);
-    }
-    Transact(callInfo_, reply_);
-    UnmarshalReply(env, callInfo_, reply_);
-    return true;
-}
-
 static ani_boolean mouseScrollSync(ani_env *env, ani_object obj, ani_object p, ani_boolean down, ani_int dis, ani_int key1, ani_int key2,
     ani_int speed)
 {
@@ -1160,7 +1145,7 @@ static ani_boolean mouseMoveToSync(ani_env *env, ani_object obj, ani_object p)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.mouseMoveTo";
-    auto point = getPoint(env, f);
+    auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
@@ -1173,7 +1158,7 @@ static ani_boolean mouseClickSync(ani_env *env, ani_object obj, ani_object p, an
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.mouseClickSync";
-    auto point = getPoint(env, f);
+    auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(btnId);
     ani_boolean ret = false;
@@ -1196,7 +1181,7 @@ static ani_boolean mouseDoubleClickSync(ani_env *env, ani_object obj, ani_object
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.mouseDoubleClick";
-    auto point = getPoint(env, f);
+    auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(btnId);
     ani_boolean ret = false;
@@ -1219,7 +1204,7 @@ static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.mouseLongClick";
-    auto point = getPoint(env, f);
+    auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(btnId);
     ani_boolean ret = false;
@@ -1228,22 +1213,6 @@ static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p
         if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret) != ANI_OK) {
             callInfo_.paramList_.push_back(key2);
         }
-    }
-    Transact(callInfo_, reply_);
-    UnmarshalReply(env, callInfo_, reply_);
-    return true;
-}
-
-static ani_boolean injectMultiPointerActionSync(ani_env *env, ani_object obj, ani_object pointers, ani_int speed)
-{
-    ApiCallInfo callInfo_;
-    ApiReplyInfo reply_;
-    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
-    callInfo_.apiId_ = "Driver.injectMultiPointerAction";
-    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativePointerMatrix")));
-    ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
-        callInfo_.paramList_.push_back(speed);
     }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
