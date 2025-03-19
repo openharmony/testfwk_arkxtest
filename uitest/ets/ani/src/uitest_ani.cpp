@@ -818,6 +818,7 @@ static json getWindowFilter(ani_env *env, ani_object f)
             filter[list[i]] = value;
         }
     }
+    return filter;
 }
 
 static ani_object findWindowSync(ani_env *env, ani_object obj, ani_object filter)
@@ -1274,30 +1275,38 @@ static ani_boolean injectPenPointerActionSync(ani_env *env, ani_object obj, ani_
 
 static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
 {
-    auto filter = json();
-    static const char *className = "Luitest_ani/TouchPadSwipeOptionsInner;";
+    auto options = json();
+    static const char *className = "L@ohos/UiTest/TouchPadSwipeOptionsInner;";
     ani_class cls;
     if (ANI_OK != env->FindClass(className, &cls)) {
-        return filter;
+        std::cerr << "Not found '" << className << "'" << std::endl;
+        return options;
     }
-    
     string list[] = { "stay", "speed" };
-    for (int i = 0; i < 2; i++) {
-        char *cstr = new char[list[i].length() + 1];
-        strcpy(cstr, list[i].c_str());
-        if (i == 1) {
-          ani_int value;
-          if (env->Object_GetPropertyByName_Int(f, cstr, &value) != ANI_OK) {
-              filter[list[i]] = value;
-              continue;
-          }
-        } else {
+    for (int i = 0; i<2; i++) {
+        ani_field field;
+        char* cstr = new char[list[i].length() + 1];
+        strcpy(cstr, list[i].c_str()); 
+        compareAndReport(ANI_OK ,env->Class_FindField(cls, cstr, &field),
+        "Class_FindField Failed '"+std::string(className) +"'", "Find field?:?");
+        ani_ref ref;
+        compareAndReport(ANI_OK ,env->Object_GetField_Ref(f, field, &ref),
+        "Object_GetField_Ref Failed '"+std::string(className) +"'", "get ref");
+        if (i==0) {
             ani_boolean value;
-            if (env->Object_GetPropertyByName_Boolean(f, cstr, &value) == ANI_OK) {
-              filter[list[i]] = value;
-            }
+            compareAndReport(ANI_OK ,env->Object_CallMethodByName_Boolean(static_cast<ani_object>(ref), "unboxed", nullptr ,&value),
+            "Object_CallMethodByName_Boolean Failed '"+std::string(className) +"'", "get boolean value");
+            compareAndReport(1,1,"", std::to_string(value));
+            options[list[i]] = value;
+        } else {
+            ani_double value;
+            compareAndReport(ANI_OK ,env->Object_CallMethodByName_Double(static_cast<ani_object>(ref), "unboxed", nullptr ,&value),
+            "Object_CallMethodByName_Double Failed '"+std::string(className) +"'", "get double value");
+            compareAndReport(1,1,"", std::to_string(value));
+            options[list[i]] = value;
         }
     }
+    return options;
 }
 
 static ani_boolean touchPadMultiFingerSwipeSync(ani_env *env, ani_object obj, ani_int fingers, ani_int direction, ani_object touchPadOpt)
