@@ -1074,6 +1074,23 @@ static ani_boolean penDoubleClickSync(ani_env *env, ani_object obj, ani_object p
     return true;
 }
 
+static ani_boolean penLongClickSync(ani_env *env, ani_object obj, ani_object p, ani_int pressure)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.penLongClick";
+    auto point = getPoint(env, p);
+    callInfo_.paramList_.push_back(point);
+    ani_boolean ret = false;
+    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret) != ANI_OK) {
+        callInfo_.paramList_.push_back(pressure);
+    }
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
 static ani_boolean mouseScrollSync(ani_env *env, ani_object obj, ani_object p, ani_boolean down, ani_int dis, ani_int key1, ani_int key2,
     ani_int speed)
 {
