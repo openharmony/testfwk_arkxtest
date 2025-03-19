@@ -1259,10 +1259,12 @@ static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p
     callInfo_.paramList_.push_back(btnId);
     ani_boolean ret;
     ani_double param;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
     if (ret == ANI_FALSE) {
         env->Object_CallMethodByName_Double(key1, "unboxed", ":D", &param);
         callInfo_.paramList_.push_back(int(param));
     }
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret);
     if (ret == ANI_FALSE) {
         env->Object_CallMethodByName_Double(key2, "unboxed", ":D", &param);
         callInfo_.paramList_.push_back(int(param));
@@ -1281,10 +1283,12 @@ static ani_boolean injectPenPointerActionSync(ani_env *env, ani_object obj, ani_
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativePointerMatrix")));
     ani_boolean ret;
     ani_double param;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
     if (ret == ANI_FALSE) {
         env->Object_CallMethodByName_Double(speed, "unboxed", ":D", &param);
         callInfo_.paramList_.push_back(int(param));
     }
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret);
     if (ret == ANI_FALSE) {
         env->Object_CallMethodByName_Double(pressure, "unboxed", ":D", &param);
         callInfo_.paramList_.push_back(param);
