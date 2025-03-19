@@ -655,9 +655,9 @@ export class Driver {
   native mouseMoveWithTrackSync(f: Point, t: Point, speed?: number): boolean;
   native mouseMoveToSync(p: Point): boolean;
   native mouseDragkSync(f: Point, t: Point, speed?: number): boolean;
-  native mouseClickSync(p: Point, btnId: MouseButton, key1?: number, key2: number):boolean;
-  native mouseDoubleClickSync(p: Point, btnId: MouseButton, key1?: number, key2: number):boolean;
-  native mouseLongClickSync(p: Point, btnId: MouseButton, key1?: number, key2: number):boolean;
+  native mouseClickSync(p: Point, btnId: MouseButton, key1?: number, key2?: number):boolean;
+  native mouseDoubleClickSync(p: Point, btnId: MouseButton, key1?: number, key2?: number):boolean;
+  native mouseLongClickSync(p: Point, btnId: MouseButton, key1?: number, key2?: number):boolean;
 
   native injectMultiPointerActionSync(pointers: PointerMatrix, speed?: number): boolean;
   native injectPenPointerActionSync(pointers: PointerMatrix, speed?: number, pressure?: number): void;
@@ -867,7 +867,7 @@ export class Driver {
       return promise;
   }
 
-  mouseDoubleClick(p: Point, btnId: MouseButton, key1?: number, key2: number): Promise<void> {
+  mouseDoubleClick(p: Point, btnId: MouseButton, key1?: number, key2?: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.mouseDoubleClickSync(p, btnId, key1, key2));
           promise1.then((e:NullishType)=>{
@@ -877,7 +877,7 @@ export class Driver {
       return promise;
   }
 
-  mouseLongClick(p: Point, btnId: MouseButton, key1?: number, key2: number): Promise<void> {
+  mouseLongClick(p: Point, btnId: MouseButton, key1?: number, key2?: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():void => this.mouseLongClick(p, btnId, key1, key2));
           promise1.then((e:NullishType)=>{
