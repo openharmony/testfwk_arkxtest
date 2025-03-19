@@ -311,7 +311,7 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y) {
     for (int i=0; i<2; i++) {
         string tag = direct[i];
         char *method_name = strdup("<set>" + tag).c_str();
-        if (ANI_OK != env->Class_FindMethod(cls, "<set>"+tag, nullptr, &setter)) {
+        if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
             std::cerr << "Find Method <set>tag failed" <<std::endl;
         }
         if (ANI_OK != env->Object_CallMethod_Void(point_obj, setter, ani_int(num[i]))) {
@@ -870,7 +870,7 @@ static ani_boolean triggerKeySync(ani_env *env, ani_object obj, ani_int keyCode)
     return true;
 }
 
-static ani_boolean wakeupDisplaySync(ani_env *env, ani_object obj)
+static ani_boolean wakeUpDisplaySync(ani_env *env, ani_object obj)
 {
     performDriver(env, obj, "Driver.wakeUpDisplay");
     return true;
@@ -882,15 +882,9 @@ static ani_boolean pressHomeSync(ani_env *env, ani_object obj)
     return true;
 }
 
-static ani_object getDisplaySizeSync(ani_env *env, ani_object obj)
+static ani_ref getDisplaySizeSync(ani_env *env, ani_object obj)
 {
-    ApiCallInfo callInfo_;
-    ApiReplyInfo reply_;
-    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
-    callInfo_.apiId_ = "Driver.getDisplaySize";
-    Transact(callInfo_, reply_);
-    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
-    return p;
+    return performDriver(env, obj, "Driver.getDisplaySize");
 }
 
 static ani_object getDisplaySizeDensitySync(ani_env *env, ani_object obj)
@@ -1058,7 +1052,7 @@ static ani_boolean penClickSync(ani_env *env, ani_object obj, ani_object p)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.penClick";
-    auto point = getPoint(env, f);
+    auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
@@ -1071,7 +1065,7 @@ static ani_boolean penDoubleClickSync(ani_env *env, ani_object obj, ani_object p
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.penDoubleClick";
-    auto point = getPoint(env, f);
+    auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
@@ -1084,7 +1078,7 @@ static ani_boolean penDoubleClickSync(ani_env *env, ani_object obj, ani_object p
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.penDoubleClick";
-    auto point = getPoint(env, f);
+    auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     ani_boolean ret = false;
     if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret) != ANI_OK) {
@@ -1151,7 +1145,8 @@ static ani_boolean mouseDragkSync(ani_env *env, ani_object obj, ani_object f, an
     callInfo_.paramList_.push_back(from);
     callInfo_.paramList_.push_back(to);
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
+    if (ret == false) {
         callInfo_.paramList_.push_back(speed);
     }
     Transact(callInfo_, reply_);
@@ -1182,9 +1177,11 @@ static ani_boolean mouseClickSync(ani_env *env, ani_object obj, ani_object p, an
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(btnId);
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret) != ANI_OK) {
-        callInfo_.paramList_.push_back(speed);
-        if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
+    if (ret == false) {
+        callInfo_.paramList_.push_back(key1);
+        env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret);
+        if (ret == false) {
             callInfo_.paramList_.push_back(key2);
         }
     }
@@ -1203,9 +1200,11 @@ static ani_boolean mouseDoubleClickSync(ani_env *env, ani_object obj, ani_object
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(btnId);
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
+    if (ret == false) {
         callInfo_.paramList_.push_back(speed);
-        if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret) != ANI_OK) {
+        env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret);
+        if (ret == false) {
             callInfo_.paramList_.push_back(key2);
         }
     }
@@ -1292,7 +1291,7 @@ static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
           }
         } else {
             ani_boolean value;
-            if (env->Object_GetPropertyByName_Boolen(f, cstr, &value) == ANI_OK) {
+            if (env->Object_GetPropertyByName_Boolean(f, cstr, &value) == ANI_OK) {
               filter[list[i]] = value;
             }
         }
@@ -1382,37 +1381,37 @@ static void performWindow(ani_env *env, ani_object obj, string api)
     UnmarshalReply(env, callInfo_, reply_);
 }
 
-static boolen splitSync(ani_env *env, ani_object obj, string api)
+static Boolean splitSync(ani_env *env, ani_object obj, string api)
 {
     performWindow(env, obj, "UiWindow.split");
     return true;
 }
 
-static boolen resumeSync(ani_env *env, ani_object obj, string api)
+static Boolean resumeSync(ani_env *env, ani_object obj, string api)
 {
     performWindow(env, obj, "UiWindow.resume");
     return true;
 }
 
-static boolen closeSync(ani_env *env, ani_object obj, string api)
+static Boolean closeSync(ani_env *env, ani_object obj, string api)
 {
     performWindow(env, obj, "UiWindow.close");
     return true;
 }
 
-static boolen minimizeSync(ani_env *env, ani_object obj, string api)
+static Boolean minimizeSync(ani_env *env, ani_object obj, string api)
 {
     performWindow(env, obj, "UiWindow.minimize");
     return true;
 }
 
-static boolen maximizeSync(ani_env *env, ani_object obj, string api)
+static Boolean maximizeSync(ani_env *env, ani_object obj, string api)
 {
     performWindow(env, obj, "UiWindow.maximize");
     return true;
 }
 
-static boolen focusSync(ani_env *env, ani_object obj, string api)
+static Boolean focusSync(ani_env *env, ani_object obj, string api)
 {
     performWindow(env, obj, "UiWindow.focus");
     return true;
