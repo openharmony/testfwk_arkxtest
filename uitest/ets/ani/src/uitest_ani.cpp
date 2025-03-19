@@ -1392,37 +1392,37 @@ static void performWindow(ani_env *env, ani_object obj, string api)
     UnmarshalReply(env, callInfo_, reply_);
 }
 
-static Boolean splitSync(ani_env *env, ani_object obj, string api)
+static ani_boolean splitSync(ani_env *env, ani_object obj, string api)
 {
     performWindow(env, obj, "UiWindow.split");
     return true;
 }
 
-static Boolean resumeSync(ani_env *env, ani_object obj, string api)
+static ani_boolean resumeSync(ani_env *env, ani_object obj, string api)
 {
     performWindow(env, obj, "UiWindow.resume");
     return true;
 }
 
-static Boolean closeSync(ani_env *env, ani_object obj, string api)
+static ani_boolean closeSync(ani_env *env, ani_object obj, string api)
 {
     performWindow(env, obj, "UiWindow.close");
     return true;
 }
 
-static Boolean minimizeSync(ani_env *env, ani_object obj, string api)
+static ani_boolean minimizeSync(ani_env *env, ani_object obj, string api)
 {
     performWindow(env, obj, "UiWindow.minimize");
     return true;
 }
 
-static Boolean maximizeSync(ani_env *env, ani_object obj, string api)
+static ani_boolean maximizeSync(ani_env *env, ani_object obj, string api)
 {
     performWindow(env, obj, "UiWindow.maximize");
     return true;
 }
 
-static Boolean focusSync(ani_env *env, ani_object obj, string api)
+static ani_boolean focusSync(ani_env *env, ani_object obj, string api)
 {
     performWindow(env, obj, "UiWindow.focus");
     return true;
