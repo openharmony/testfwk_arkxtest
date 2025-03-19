@@ -58,7 +58,7 @@ static ani_class findCls(ani_env *env, const char *className) {
 }
 
 static ani_method findCtorMethod(ani_env *env, ani_class cls, const char *name) {
-    ani_method ctor;
+    ani_method ctor = nullptr;
     if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", name, &ctor)) {
         std::cerr << "Not found ctor of:" << name << std::endl;
     }
@@ -263,8 +263,8 @@ static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num) {
     ani_object rect_obj = {};
     static const char *className = "Luitest_ani/RectInner;";
     ani_class cls = findCls(env, className);
-    ani_method ctor;
-    if (cls) {
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
         static const char *name = nullptr;
         ctor = findCtorMethod(env, cls, name);
     }
@@ -295,8 +295,8 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y) {
     ani_object point_obj = {};
     static const char *className = "Luitest_ani/PointInner;";
     ani_class cls = findCls(env, className);
-    ani_method ctor;
-    if (cls) {
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
         static const char *name = nullptr;
         ctor = findCtorMethod(env, cls, name);
     }
@@ -347,8 +347,8 @@ static ani_ref createMatrix(ani_env *env, ani_object object) {
     ani_class cls = findCls(env, className);
     ani_ref nullref;
     env->GetNull(&nullref);
-    ani_method ctor;
-    if (cls) {
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
         ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
     } else {
         return nullref;
@@ -398,8 +398,8 @@ static ani_boolean BindPointMatrix(ani_env *env) {
 static ani_ref createOn(ani_env *env, ani_object object, nlohmann::json params, string apiId_) {
     static const char *className = "Luitest_ani/On;";
     ani_class cls = findCls(env, className);
-    ani_method ctor;
-    if (cls) {
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
         ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
     }
     if (ctor == nullptr || cls== nullptr) {
@@ -564,7 +564,7 @@ static ani_ref create([[maybe_unused]] ani_env *env, [[maybe_unused]] ani_class 
     if (ANI_OK != env->FindClass(className, &cls)) {
         return nullref;
     }
-    ani_method ctor;
+    ani_method ctor = nullptr;
     if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", "Lstd/core/String;:v", &ctor)) {
         return nullref;
     }
@@ -603,8 +603,8 @@ static ani_ref findComponentSync(ani_env *env, ani_object obj, ani_object on_obj
     ani_object com_obj;
     static const char *className = "Luitest_ani/Component;";
     ani_class cls = findCls(env, className);
-    ani_method ctor;
-    if (cls) {
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
         ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
     }
     if (cls == nullptr || ctor == nullptr) {
@@ -627,8 +627,8 @@ static ani_object findComponentsSync(ani_env *env, ani_object obj, ani_object on
     ani_object com_obj;
     ani_object com_objs;
     ani_class arrayCls = findCls(env, "Lescompat/Array");
-    ani_method ctor;
-    if (arrayCls) {
+    ani_method ctor = nullptr;
+    if (arrayCls != nullptr) {
         ctor = findCtorMethod(env, arrayCls, "I:V");
     }
     ani_size com_size = reply_.resultValue_.size();
@@ -639,7 +639,7 @@ static ani_object findComponentsSync(ani_env *env, ani_object obj, ani_object on
     static const char *className = "Luitest_ani/Component;";
     ani_class cls = findCls(env, className);
     ani_method com_ctor;
-    if (cls) {
+    if (cls != nullptr) {
         com_ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
     }
     if (cls == nullptr || com_ctor == nullptr) {
@@ -702,13 +702,13 @@ static ani_boolean longClickSync(ani_env *env, ani_object obj, ani_int x, ani_in
     return true;
 }
 
-static void performDriver(ani_env *env, ani_object obj, string api) {
+static ani_ref performDriver(ani_env *env, ani_object obj, string api) {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = api;
     Transact(callInfo_, reply_);
-    UnmarshalReply(env, callInfo_, reply_);
+    return UnmarshalReply(env, callInfo_, reply_);
 }
 
 static ani_boolean pressBackSync(ani_env *env, ani_object obj, ani_int x, ani_int y) {
@@ -832,8 +832,8 @@ static ani_object findWindowSync(ani_env *env, ani_object obj, ani_object filter
     ani_object window_obj;
     static const char *className = "Luitest_ani/UiWindow";
     ani_class cls = findCls(env, className);
-    ani_method ctor;
-    if (cls) {
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
         static const char *name = "Lstd/core/String;:v";
         ctor = findCtorMethod(env, cls, name);
     }
@@ -940,8 +940,8 @@ static ani_object waitForComponentSync(ani_env *env, ani_object obj, ani_object 
     ani_object component_obj;
     static const char *className = "Luitest_ani/Component";
     ani_class cls = findCls(env, className);
-    ani_method ctor;
-    if (cls) {
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
         static const char *name = "Lstd/core/String;:v";
         ctor = findCtorMethod(env, cls, name);
     }
