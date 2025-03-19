@@ -633,17 +633,91 @@ export class Driver {
   private native findComponentSync(on: On):Component;
 
   native static create():Driver;
-  native clickSync(x:number, y:number):boolean;
-  native longClickSync(x:number, y:number):boolean;
-  native doubleClickSync(x:number, y:number):boolean;
-  native flingSync(from:Point, to: Point, stepLen: number, speed: number):boolean;
-  native swipeSync(startx: number, starty: number, endx: number, endy: number, speed?: number):boolean;
-  native dragSync(startx: number, starty: number, endx: number, endy: number, speed?: number):boolean;
-  native pressBackSync():boolean;
-  native assertComponentExistSync(on: On):boolean;
+  private native clickSync(x:number, y:number):boolean;
+  private native longClickSync(x:number, y:number):boolean;
+  private native doubleClickSync(x:number, y:number):boolean;
+  private native flingSync(from:Point, to: Point, stepLen: number, speed: number):boolean;
+  fling(from:Point, to: Point, stepLen: number, speed: number): Promise<void> {
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.flingSync(from, to, stepLen, speed));
+        promise1.then((e:NullishType)=>{
+            resolve(Promise.resolve());
+        });
+    });
+    return promise;
+  }
+  private native swipeSync(startx: number, starty: number, endx: number, endy: number, speed?: number):boolean;
+  native swipe(startx: number, starty: number, endx: number, endy: number, speed?: number): Promise<void> {
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.swipeSync(startx, starty, endx, endy, speed));
+        promise1.then((e:NullishType)=>{
+            resolve(Promise.resolve());
+        });
+    });
+    return promise;
+  }
+  private native dragSync(startx: number, starty: number, endx: number, endy: number, speed?: number):boolean;
+  native drag(startx: number, starty: number, endx: number, endy: number, speed?: number): Promise<void> {
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.dragSync(startx, starty, endx, endy, speed));
+        promise1.then((e:NullishType)=>{
+            resolve(Promise.resolve());
+        });
+    });
+    return promise;
+  }
+  private native pressBackSync():boolean;
+  native pressBack(): Promise<void> {
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():boolean => this.pressBackSYnc());
+        promise1.then((e:NullishType)=>{
+            resolve(Promise.resolve());
+        });
+    });
+    return promise;
+  }
+  private native assertComponentExistSync(on: On):boolean;
+  assertComponentExist(on: On): Promise<Component> {
+    let promise = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():Component => this.assertComponentExistSync(on));
+        promise1.then((e:NullishType)=>{
+            let value : Component = e as Component;
+            resolve(value);
+        });
+    });
+    return promise;
+  }
   native triggerKeySync(keyCode: number):boolean;
+  triggerKey(keyCode: number): Promise<void> {
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():void => this.triggerKeySync(keyCode));
+        promise1.then((e:NullishType)=>{
+            resolve(Promise.resolve());
+        });
+    });
+    return promise;
+  }
   native inputTextSync(p: Point, text: string):boolean;
+  inputText(p: Point, text: string): Promise<void> {
+    let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():void => this.inputTextSync(p, text));
+        promise1.then((e:NullishType)=>{
+            resolve(Promise.resolve());
+        });
+    });
+    return promise;
+  }
   native findWindowSync(filter: WindowFilter):UiWindow;
+  findWindow(filter: WindowFilter: Promise<UiWindow> {
+    let promise = new Promise<UiWindow>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
+    let promise1 = taskpool.execute(():UiWindow => this.findWindowSync(filter));
+    promise1.then((e:NullishType)=>{
+        let value : UiWindow = e as UiWindow;
+        resolve(value);
+        });
+    });
+    return promise;
+  }
   native wakeUpDisplaySync():boolean;
   native pressHomeSync():boolean;
   native getDisplaySizeSync():Point;
@@ -718,7 +792,7 @@ export class Driver {
   }
 
   findComponent(on: On): Promise<Component> {
-      let promise = new Promise<Component>((resolve: (c: Component) => void, reject: (error: Object) => void) => {
+      let promise = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():Component => this.findComponentSync(on));
           promise1.then((e:NullishType)=>{
               let value : Component = e as Component;
@@ -729,7 +803,7 @@ export class Driver {
   }
 
   waitForIdle(idleTime: number, timeout: number): Promise<boolean> {
-      let promise = new Promise<boolean>((resolve: (c: boolean) => void, reject: (error: Object) => void) => {
+      let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.waitForIdleSync(idleTime, timeout));
           promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
@@ -740,7 +814,7 @@ export class Driver {
   }
 
   waitForComponent(on: On, time: number): Promise<Component> {
-      let promise = new Promise<Component>((resolve: (c: Component) => void, reject: (error: Object) => void) => {
+      let promise = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():Component => this.waitForComponentSync(on, time));
           promise1.then((e:NullishType)=>{
               let value : Component = e as Component;
@@ -781,7 +855,7 @@ export class Driver {
   }
 
   screenCapture(path: string, rect: Rect): Promise<boolean> {
-      let promise = new Promise<boolean>((resolve: (c: boolean) => void, reject: (error: Object) => void) => {
+      let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.screenCaptureSync(path, rect));
           promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
@@ -792,7 +866,7 @@ export class Driver {
   }
 
   screenCap(path: string): Promise<boolean> {
-      let promise = new Promise<boolean>((resolve: (c: boolean) => void, reject: (error: Object) => void) => {
+      let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.screenCapSync(path));
           promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
@@ -912,7 +986,7 @@ export class Driver {
   }
 
   injectMultiPointerAction(pointers: PointerMatrix, speed?: number): Promise<boolean> {
-      let promise = new Promise<boolean>((resolve: (c: boolean) => void, reject: (error: Object) => void) => {
+      let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():void => this.injectMultiPointerActionSync(pointers, speed));
           promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
