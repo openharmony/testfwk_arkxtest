@@ -742,7 +742,7 @@ static ani_boolean inputTextSync(ani_env *env, ani_object obj, ani_object p, ani
     return true;
 }
 
-static ani_boolean swipeSync(ani_env *env, ani_object obj, ani_double x1, ani_double y1, ani_double x2, ani_double y2, ani_double speed)
+static ani_boolean swipeSync(ani_env *env, ani_object obj, ani_double x1, ani_double y1, ani_double x2, ani_double y2, ani_object speed)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -754,8 +754,10 @@ static ani_boolean swipeSync(ani_env *env, ani_object obj, ani_double x1, ani_do
     callInfo_.paramList_.push_back(int(y2));
     ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
-    if (ret == false) {
-        callInfo_.paramList_.push_back(speed);
+    if (ret==ANI_FALSE) {
+        ani_double p;
+        env->Object_CallMethodByName_Double(speed, "unboxed", ":D", &p);
+        callInfo_.paramList_.push_back(p);
     }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
@@ -1047,14 +1049,13 @@ static ani_boolean penSwipeSync(ani_env *env, ani_object obj, ani_object f, ani_
     callInfo_.paramList_.push_back(to);
     ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
+    ani_double p;
     if (ret==ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(speed, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(int(p));
     }
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret);
     if (ret==ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(pressure, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(p);
     }
@@ -1121,19 +1122,17 @@ static ani_boolean mouseScrollSync(ani_env *env, ani_object obj, ani_object p, a
     callInfo_.paramList_.push_back(down);
     callInfo_.paramList_.push_back(int(dis));
     ani_boolean ret;
+    ani_double p;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
     if (ret==ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(key1, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(int(p));
     }
     if (ret==ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(key2, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(int(p));
     }
     if (ret==ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(speed, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(int(p));
     }
@@ -1153,9 +1152,9 @@ static ani_boolean mouseMoveWithTrackSync(ani_env *env, ani_object obj, ani_obje
     callInfo_.paramList_.push_back(from);
     callInfo_.paramList_.push_back(to);
     ani_boolean ret;
+    ani_double p;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
     if (ret==ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(speed, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(int(p));
     }
@@ -1209,14 +1208,13 @@ static ani_boolean mouseClickSync(ani_env *env, ani_object obj, ani_object p, an
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(btnId);
     ani_boolean ret;
+    ani_double p;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
     if (ret == ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(key1, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(int(p));
     }
     if (ret == ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(key2, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(int(p));
     }
@@ -1235,14 +1233,13 @@ static ani_boolean mouseDoubleClickSync(ani_env *env, ani_object obj, ani_object
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(btnId);
     ani_boolean ret;
+    ani_double p;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
     if (ret == ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(key1, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(int(p));
     }
     if (ret == ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(key2, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(int(p));
     }
@@ -1261,13 +1258,12 @@ static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(btnId);
     ani_boolean ret;
+    ani_double p;
     if (ret == ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(key1, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(int(p));
     }
     if (ret == ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(key2, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(int(p));
     }
@@ -1284,13 +1280,12 @@ static ani_boolean injectPenPointerActionSync(ani_env *env, ani_object obj, ani_
     callInfo_.apiId_ = "Driver.injectPenPointerAction";
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativePointerMatrix")));
     ani_boolean ret;
+    ani_double p;
     if (ret == ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(speed, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(int(p));
     }
     if (ret == ANI_FALSE) {
-        ani_double p;
         env->Object_CallMethodByName_Double(pressure, "unboxed", ":D", &p);
         callInfo_.paramList_.push_back(p);
     }
