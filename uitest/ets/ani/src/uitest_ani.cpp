@@ -997,7 +997,7 @@ static ani_boolean screenCaptureSync(ani_env *env, ani_object obj, ani_string pa
         return false;
     }
     callInfo_.paramList_.push_back(fd);
-    // 咋取rect
+    callInfo_.paramList_.push_back(getRect(env, rect));
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
@@ -1015,6 +1015,7 @@ static ani_boolean screenCapSync(ani_env *env, ani_object obj, ani_string path, 
         return false;
     }
     callInfo_.paramList_.push_back(fd);
+    callInfo_.paramList_.push_back(getRect(env, rect));
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
@@ -1352,6 +1353,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function {"getDisplaySizeDensitySync", nullptr, reinterpret_cast<void *>(getDisplaySizeDensitySync)},
         ani_native_function {"getDisplayRotationSync", nullptr, reinterpret_cast<void *>(getDisplayRotationSync)},
         ani_native_function {"findComponentsSync", nullptr, reinterpret_cast<void *>(findComponentsSync)},
+        ani_native_function {"findComponentSync", nullptr, reinterpret_cast<void *>(findComponentSync)},
         ani_native_function {"waitForIdleSync", nullptr, reinterpret_cast<void *>(waitForIdleSync)},
         ani_native_function {"waitForComponentSync", nullptr, reinterpret_cast<void *>(waitForComponentSync)},
         ani_native_function {"triggerCombineKeysSync", nullptr, reinterpret_cast<void *>(triggerCombineKeysSync)},
@@ -1372,6 +1374,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function {"mouseLongClickSync", nullptr, reinterpret_cast<void *>(mouseLongClickSync)},
         ani_native_function {"injectMultiPointerActionSync", nullptr, reinterpret_cast<void *>(injectMultiPointerActionSync)},
         ani_native_function {"injectPenPointerActionSync", nullptr, reinterpret_cast<void *>(injectPenPointerActionSync)},
+        ani_native_function {"touchPadMultiFingerSwipeSync", nullptr, reinterpret_cast<void *>(touchPadMultiFingerSwipeSync)},
     };
 
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
@@ -1534,8 +1537,8 @@ static ani_boolean BindWindow(ani_env *env)
         ani_native_function {"resumeSync", nullptr, reinterpret_cast<void *>(resumeSync)},
         ani_native_function {"closeSync", nullptr, reinterpret_cast<void *>(closeSync)},
         ani_native_function {"minimizeSync", nullptr, reinterpret_cast<void *>(minimizeSync)},
-        // ani_native_function {"maximizeSync", nullptr, reinterpret_cast<void *>(maximizeSync)},
-        // ani_native_function {"focusSync", nullptr, reinterpret_cast<void *>(focusSync)},
+        ani_native_function {"maximizeSync", nullptr, reinterpret_cast<void *>(maximizeSync)},
+        ani_native_function {"focusSync", nullptr, reinterpret_cast<void *>(focusSync)},
         ani_native_function {"isFocusedSync", nullptr, reinterpret_cast<void *>(isFocusedSync)},
         ani_native_function {"isActiveSync", nullptr, reinterpret_cast<void *>(isActiveSync)},
         ani_native_function {"resizeSync", nullptr, reinterpret_cast<void *>(resizeSync)},
