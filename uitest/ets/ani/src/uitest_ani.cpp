@@ -62,22 +62,26 @@ static ani_method findCtorMethod(ani_env *env, ani_class cls, const char *name) 
     return ctor;
 }
 
-static ani_object CreateException(ani_env *env, uint32_t code, std::string msg) {
-    ani_object errObj = nullptr;
-    static const char* className = "Lescompat/Error;";
-    ani_class errCls = findCls(env, className);
-    ani_method errCtor = findCtorMethod(env, errCls, "Lstd/core/String;Lescompat/ErrorOptions;:V");
-    ani_string result_string{};
-    env->String_NewUTF8(msg.c_str(), msg.size(), &result_string);
-    if (ANI_OK != env->Object_New(errCls, errCtor, &errObj, result_string)) {
-        std::cerr<<"Create Object Failed" << className << std::endl;
-        return errObj;
-    }
-    return errObj;
-}
+// static ani_object CreateException(ani_env *env, uint32_t code, std::string msg) {
+//     ani_object errObj = nullptr;
+//     static const char* className = "Lescompat/Error;";
+//     ani_class errCls = findCls(env, className);
+//     ani_method errCtor = findCtorMethod(env, errCls, "Lstd/core/String;Lescompat/ErrorOptions;:V");
+//     ani_string result_string{};
+//     env->String_NewUTF8(msg.c_str(), msg.size(), &result_string);
+//     if (ANI_OK != env->Object_New(errCls, errCtor, &errObj, result_string)) {
+//         std::cerr<<"Create Object Failed" << className << std::endl;
+//         return errObj;
+//     }
+//     return errObj;
+// }
 
+static void Transact(ApiCallInfo callInfo_, ApiReplyInfo *reply_) {
+    waitForConnectionIfNeed();
+    g_apiTransactClient.Transact(callInfo_, reply_);
+}
 static ani_ref UnmarshalObject(ani_env *env, nlohmann::json resultValue_) {
-    const auto resultType - resultValue_.type();
+    const auto resultType = resultValue_.type();
     ani_ref result = nullptr;
     if (resultType == nlohmann::detail::value_t::null) {
         return result;
@@ -109,11 +113,11 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
         LOG_E("UItest : ERRORINFO: code='%{public}u', message='%{public}s'", code, message.c_str());
     } else if (reply_.exception_.code_ != NO_ERROR) {
         LOG_E("UItest : ERRORINFO: code='%{public}u', message='%{public}s'", code, message.c_str());
-        ani_object err = CreateException(env, code, message);
-        if (err) {
-            env->ThrowError(err);
-        }
-        return err;
+        // ani_error err = CreateException(env, code, message);
+        // if (err) {
+        //     env->ThrowError(err);
+        // }
+        // return err;
     }
     LOG_D("UITEST: Start to unmarshall return value:%{public}s", reply_.resultValue_.dump().c_str());
     const auto resultType = reply_.resultValue_.type();
@@ -127,7 +131,7 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
         }
         ani_ref undefinedRef = nullptr;
         if (ANI_OK != env->GetUndefined(&undefinedRef)) {
-            std::cer << "GetUndefined Failed" << std::endl;
+            std::cerr << "GetUndefined Failed" << std::endl;
         }
         ani_method arrayCtor = findCtorMethod(env, arrayCls, "I:V");
         ani_object arrayObj;
@@ -164,9 +168,6 @@ static void ScheduleEstablishConnection(ani_env *env, [[maybe_unused]]ani_class 
         LOG_I("End setup transaction connection, result=%{public}d", result);
         std::cout<<"End setup trasaction connection, result" << result << std::endl;
     });
-    if (!OHOS::testserver::TestServerClient::GetInstance().StartUiTestDaemon()) {
-        LOG_E("Start uitest-daemon failed");
-    }
     waitForConnectionIfNeed();
     return;
 }
@@ -188,21 +189,21 @@ static json getPoint(ani_env *env, ani_object p) {
         std::cerr << "Find Method <get>x failed" <<std::endl;
     }
     ani_int x;
-    if (ANI_OK != env->Object_CallMethodByName_Int(p, xGetter, &x)) {
+    if (ANI_OK != env->Object_CallMethod_Double(p, xGetter, &x)) {
         std::cerr << "call xgetter failed" << className << std::endl;
         return point;
     }
-    point["x"] = x;
+    point["x"] = int(x);
     ani_method yGetter;
     if (ANI_OK != env->Class_FindMethod(cls, "<get>y", nullptr, &yGetter)) {
         std::cerr << "Find Method <get>y failed" <<std::endl;
     }
     ani_int y;
-    if (ANI_OK != env->Object_CallMethodByName_Int(p, yGetter, &y)) {
+    if (ANI_OK != env->Object_CallMethod_Double(p, yGetter, &y)) {
         std::cerr << "call ygetter failed" << className << std::endl;
         return point;
     }
-    point["y"] = y;
+    point["y"] = int(y);
     return point;
 }
 
@@ -215,9 +216,9 @@ static json getRect(ani_env *env, ani_object p) {
         std::cerr << "Find Method <get>left failed" <<std::endl;
     }
     ani_double left;
-    if (ANI_OK != env->Object_CallMethodByName_Double(p, leftGetter, &left)) {
+    if (ANI_OK != env->Object_CallMethod_Double(p, leftGetter, &left)) {
         std::cerr << "call leftgetter failed" << className << std::endl;
-        return point;
+        return rect;
     }
     rect["left"] = int(left);
 
@@ -226,7 +227,7 @@ static json getRect(ani_env *env, ani_object p) {
         std::cerr << "Find Method <get>right failed" <<std::endl;
     }
     ani_double right;
-    if (ANI_OK != env->Object_CallMethodByName_Double(p, rightGetter, &right)) {
+    if (ANI_OK != env->Object_CallMethod_Double(p, rightGetter, &right)) {
         std::cerr << "call rightgetter failed" << className << std::endl;
         return rect;
     }
@@ -237,7 +238,7 @@ static json getRect(ani_env *env, ani_object p) {
         std::cerr << "Find Method <get>top failed" <<std::endl;
     }
     ani_double top;
-    if (ANI_OK != env->Object_CallMethodByName_Double(p, topGetter, &top)) {
+    if (ANI_OK != env->Object_CallMethod_Double(p, topGetter, &top)) {
         std::cerr << "call topgetter failed" << className << std::endl;
         return rect;
     }
@@ -248,7 +249,7 @@ static json getRect(ani_env *env, ani_object p) {
         std::cerr << "Find Method <get>bottom failed" <<std::endl;
     }
     ani_double bottom;
-    if (ANI_OK != env->Object_CallMethodByName_Double(p, bottomGetter, &bottom)) {
+    if (ANI_OK != env->Object_CallMethod_Double(p, bottomGetter, &bottom)) {
         std::cerr << "call bottomgetter failed" << className << std::endl;
         return rect;
     }
@@ -276,7 +277,8 @@ static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num) {
     string direct[] = {"left", "top", "right", "bottom" };
     for (int i=0; i<4; i++) {
         string tag = direct[i];
-        if (ANI_OK != env->Class_FindMethod(cls, "<set>"+tag, nullptr, &setter)) {
+        char *method_name = strdup("<set>" + tag).c_str();
+        if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
             std::cerr << "Find Method <set>tag failed" <<std::endl;
         }
         if (ANI_OK != env->Object_CallMethod_Void(rect_obj, setter, ani_double(num[tag]))) {
@@ -291,6 +293,7 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y) {
     ani_object point_obj = {};
     static const char *className = "Luitest_ani/PointInner;";
     ani_class cls = findCls(env, className);
+    ani_method ctor;
     if (cls) {
         static const char *name = nullptr;
         ctor = findCtorMethod(env, cls, name);
@@ -305,13 +308,14 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y) {
     }    
     ani_method setter;
     string direct[] = { "x", "y" };
-    int num = {x, y};
+    int num[2] = {x, y};
     for (int i=0; i<2; i++) {
         string tag = direct[i];
+        char *method_name = strdup("<set>" + tag).c_str();
         if (ANI_OK != env->Class_FindMethod(cls, "<set>"+tag, nullptr, &setter)) {
             std::cerr << "Find Method <set>tag failed" <<std::endl;
         }
-        if (ANI_OK != env->Object_CallMethod_Void(point_obj, setter, ani_int(num[tag]))) {
+        if (ANI_OK != env->Object_CallMethod_Void(point_obj, setter, ani_int(num[i]))) {
             std::cerr << "call setter failed" << className << std::endl;
             return point_obj;
         }
@@ -329,7 +333,7 @@ static ani_boolean BindInterfaces(ani_env *env) {
         ani_native_function {"newPoint", nullptr, reinterpret_cast<void*>(newPoint)},
         ani_native_function {"newRect", nullptr, reinterpret_cast<void*>(newRect)},
         ani_native_function {"ScheduleEstablishConnection", nullptr, reinterpret_cast<void*>(ScheduleEstablishConnection)},
-    }
+    };
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
         std::cerr << "Cannot bind native methods to " << className << sts::endl;
         return false;
@@ -351,7 +355,7 @@ static ani_ref createMatrix(ani_env *env, ani_object object) {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.apiId_ = "PointerMatrix.create";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_ref nativePointerMatrix = UnmarshalReply(env, callInfo_, reply_);
     ani_object pointer_matrix_object;
     if (ANI_OK != env->Object_New(cls, ctor, &pointer_matrix_object, reinterpret_cast<ani_object>(nativePointerMatrix))) {
@@ -368,7 +372,7 @@ static void setPoint(ani_env *env, ani_object object, ani_int finger, ani_int st
     callInfo_.paramList_.push_back(step);
     callInfo_.paramList_.push_back(getPoint(env, point));
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, object, "nativePointerMatrix"));
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -382,7 +386,7 @@ static ani_boolean BindPointMatrix(ani_env *env) {
     std::array methods = {
         ani_native_function {"create", nullptr, reinterpret_cast<void*>(createMatrix)},
         ani_native_function {"setPoint", nullptr, reinterpret_cast<void*>(setPoint)},
-    }
+    };
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
         std::cerr << "Cannot bind native methods to " << className << sts::endl;
         return false;
@@ -410,13 +414,13 @@ static ani_ref createOn(ani_env *env, ani_object object, nlohmann::json params, 
     } else {
         callInfo_.callerObjRef_ = string(REF_SEED_BY);
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_ref nativeOn = UnmarshalReply(env, callInfo_, reply_);
-    ani_object on_obj;
-    if (ANI_OK != env->Object_New(cls, ctor, reinterpret_cast<ani_ref>(nativeOn))) {
+    ani_object on_object;
+    if (ANI_OK != env->Object_New(cls, ctor, &on_object, reinterpret_cast<ani_ref>(nativeOn))) {
         std::cerr<< "New ON failed" <<std::endl;
     }
-    return on_obj;
+    return on_object;
 }
 
 static ani_ref within(ani_env *env, ani_object obj, ani_object on) {
@@ -531,7 +535,7 @@ static ani_boolean BindOn(ani_env *env) {
         ani_native_function {"type", nullptr, reinterpret_cast<void*>(type)},
         ani_native_function {"hint", nullptr, reinterpret_cast<void*>(hint)},
         ani_native_function {"description", nullptr, reinterpret_cast<void*>(description)},
-        ani_native_function {"inwindow", nullptr, reinterpret_cast<void*>(inwindow)},
+        ani_native_function {"inwindow", nullptr, reinterpret_cast<void*>(inWindow)},
         ani_native_function {"enabled", nullptr, reinterpret_cast<void*>(enabled)},
         ani_native_function {"within", nullptr, reinterpret_cast<void*>(within)},
         ani_native_function {"selected", nullptr, reinterpret_cast<void*>(selected)},
@@ -543,7 +547,7 @@ static ani_boolean BindOn(ani_env *env) {
         ani_native_function {"isBefore", nullptr, reinterpret_cast<void*>(isBefore)},
         ani_native_function {"isAfter", nullptr, reinterpret_cast<void*>(isAfter)},
         ani_native_function {"longClickable", nullptr, reinterpret_cast<void*>(longClickable)},
-    }
+    };
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
         std::cerr << "Cannot bind native methods to " << className << sts::endl;
         return false;
@@ -566,7 +570,7 @@ static ani_ref create([[maybe_unused]] ani_env *env, [[maybe_unused]] ani_class 
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.apiId_ = "Driver.Create";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
 
     ani_ref nativeDriver = UnmarshalReply(env, callInfo_, reply_);
     ani_object driver_object;
@@ -582,7 +586,7 @@ static ani_boolean delayMsSync(ani_env *env, ani_object obj, ani_int t) {
     callInfo_.apiId_ = "Driver.Create";
     callInfo_.paramList_.push_back(t);
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -593,7 +597,7 @@ static ani_ref findComponentSync(ani_env *env, ani_object obj, ani_object on_obj
     callInfo_.apiId_ = "Driver.findComponent";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on_obj, "nativeOn")));
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_ref nativeComponent = UnmarshalReply(env, callInfo_, reply_);
     ani_object com_obj;
     static const char *className = "Luitest_ani/Component;";
@@ -617,7 +621,7 @@ static ani_object findComponentsSync(ani_env *env, ani_object obj, ani_object on
     callInfo_.apiId_ = "Driver.findComponent";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on_obj, "nativeOn")));
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_object nativeComponents = reinterpret_cast<ani_object>(UnmarshalReply(env, callInfo_, reply_));
     ani_object com_obj;
     ani_object com_objs;
@@ -659,7 +663,7 @@ static ani_boolean assertComponentExistSync(ani_env *env, ani_object obj, ani_ob
     callInfo_.apiId_ = "Driver.assertComponentExist";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on_obj, "nativeOn")));
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -671,7 +675,7 @@ static void performClick(ani_env *env, ani_object obj, ani_int x, ani_int y, str
     callInfo_.apiId_ = api;
     callInfo_.paramList_.push_back(x);
     callInfo_.paramList_.push_back(y);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
 }
 
@@ -698,7 +702,7 @@ static void performDriver(ani_env *env, ani_object obj, string api) {
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = api;
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
 }
 
@@ -718,7 +722,7 @@ static ani_boolean flingSync(ani_env *env, ani_object obj, ani_object f, ani_obj
     callInfo_.paramList_.push_back(to);
     callInfo_.paramList_.push_back(stepLen);
     callInfo_.paramList_.push_back(speed);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -732,7 +736,7 @@ static ani_boolean inputTextSync(ani_env *env, ani_object obj, ani_object p, ani
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(text);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -751,7 +755,7 @@ static ani_boolean swipeSync(ani_env *env, ani_object obj, ani_int x1, ani_int y
     if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
         callInfo_.paramList_.push_back(speed);
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -770,7 +774,7 @@ static ani_boolean dragSync(ani_env *env, ani_object obj, ani_int x1, ani_int y1
     if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
         callInfo_.paramList_.push_back(speed);
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -812,7 +816,7 @@ static ani_object findWindowSync(ani_env *env, ani_object obj, ani_object filter
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.findWindow";
     callInfo_.paramList_.push_back(getWindowFilter(env, filter));
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_ref nativeWindow = UnmarshalReply(env, callInfo_, reply_);
     ani_object window_obj;
     static const char *className = "Luitest_ani/UiWindow";
@@ -842,7 +846,7 @@ static ani_boolean injectMultiPointerActionSync(ani_env *env, ani_object obj, an
     if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
         callInfo_.paramList_.push_back(speed);
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -854,7 +858,7 @@ static ani_boolean triggerKeySync(ani_env *env, ani_object obj, ani_int keyCode)
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.triggerKey";
     callInfo_.paramList_.push_back(keyCode);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -877,7 +881,7 @@ static ani_object getDisplaySizeSync(ani_env *env, ani_object obj)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.getDisplaySize";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
     return p;
 }
@@ -888,7 +892,7 @@ static ani_object getDisplaySizeDensitySync(ani_env *env, ani_object obj)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.getDisplaySizeDensity";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
     return p;
 }
@@ -899,7 +903,7 @@ static ani_int getDisplayRotationSync(ani_env *env, ani_object obj)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.getDisplayRotation";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     return UnmarshalReply(env, callInfo_, reply_);
 }
 
@@ -911,7 +915,7 @@ static ani_boolean waitForIdleSync(ani_env *env, ani_object obj, ani_int idleTim
     callInfo_.apiId_ = "Driver.waitForIdle";
     callInfo_.paramList_.push_back(idleTime);
     callInfo_.paramList_.push_back(timeout);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -924,7 +928,7 @@ static ani_object waitForComponentSync(ani_env *env, ani_object obj, ani_object 
     callInfo_.apiId_ = "Driver.waitForComponent";
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativeOn")));
     callInfo_.paramList_.push_back(time);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_ref nativeComponent = UnmarshalReply(env, callInfo_, reply_);
     ani_object component_obj;
     static const char *className = "Luitest_ani/Component";
@@ -955,7 +959,7 @@ static ani_boolean triggerCombineKeysSync(ani_env *env, ani_object obj, ani_int 
     if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret) != ANI_OK) {
         callInfo_.paramList_.push_back(key2);
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -967,7 +971,7 @@ static ani_boolean setDisplayRotationSync(ani_env *env, ani_object obj, ani_int 
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.setDisplayRotation";
     callInfo_.paramList_.push_back(rotation);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -985,7 +989,7 @@ static ani_boolean screenCaptureSync(ani_env *env, ani_object obj, ani_string pa
     }
     callInfo_.paramList_.push_back(fd);
     // 咋取rect
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1002,7 +1006,7 @@ static ani_boolean screenCapSync(ani_env *env, ani_object obj, ani_string path, 
         return false;
     }
     callInfo_.paramList_.push_back(fd);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1014,7 +1018,7 @@ static ani_boolean setDisplayRotationEnabledSync(ani_env *env, ani_object obj, a
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.setDisplayRotationEnabled";
     callInfo_.paramList_.push_back(enable);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1036,7 +1040,7 @@ static ani_boolean penSwipeSync(ani_env *env, ani_object obj, ani_object f, ani_
     if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret) != ANI_OK) {
         callInfo_.paramList_.push_back(pressure);
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1049,7 +1053,7 @@ static ani_boolean penClickSync(ani_env *env, ani_object obj, ani_object p)
     callInfo_.apiId_ = "Driver.penClick";
     auto point = getPoint(env, f);
     callInfo_.paramList_.push_back(point);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1062,7 +1066,7 @@ static ani_boolean penDoubleClickSync(ani_env *env, ani_object obj, ani_object p
     callInfo_.apiId_ = "Driver.penDoubleClick";
     auto point = getPoint(env, f);
     callInfo_.paramList_.push_back(point);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1079,7 +1083,7 @@ static ani_boolean penDoubleClickSync(ani_env *env, ani_object obj, ani_object p
     if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret) != ANI_OK) {
         callInfo_.paramList_.push_back(pressure);
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1105,7 +1109,7 @@ static ani_boolean mouseScrollSync(ani_env *env, ani_object obj, ani_object p, a
     if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
         callInfo_.paramList_.push_back(speed);
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1124,7 +1128,7 @@ static ani_boolean mouseMoveWithTrackSync(ani_env *env, ani_object obj, ani_obje
     if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
         callInfo_.paramList_.push_back(speed);
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1143,7 +1147,7 @@ static ani_boolean mouseDragkSync(ani_env *env, ani_object obj, ani_object f, an
     if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
         callInfo_.paramList_.push_back(speed);
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1156,7 +1160,7 @@ static ani_boolean mouseMoveToSync(ani_env *env, ani_object obj, ani_object p)
     callInfo_.apiId_ = "Driver.mouseMoveTo";
     auto point = getPoint(env, f);
     callInfo_.paramList_.push_back(point);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1177,7 +1181,7 @@ static ani_boolean mouseClickSync(ani_env *env, ani_object obj, ani_object p, an
             callInfo_.paramList_.push_back(key2);
         }
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1198,7 +1202,7 @@ static ani_boolean mouseDoubleClickSync(ani_env *env, ani_object obj, ani_object
             callInfo_.paramList_.push_back(key2);
         }
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1219,7 +1223,7 @@ static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p
             callInfo_.paramList_.push_back(key2);
         }
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1235,7 +1239,7 @@ static ani_boolean injectMultiPointerActionSync(ani_env *env, ani_object obj, an
     if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
         callInfo_.paramList_.push_back(speed);
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1254,7 +1258,7 @@ static ani_boolean injectPenPointerActionSync(ani_env *env, ani_object obj, ani_
     if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret) != ANI_OK) {
         callInfo_.paramList_.push_back(pressure);
     }
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1297,7 +1301,7 @@ static ani_boolean touchPadMultiFingerSwipeSync(ani_env *env, ani_object obj, an
     callInfo_.paramList_.push_back(fingers);
     callInfo_.paramList_.push_back(direction);
     callInfo_.paramList_.push_back(getTouchPadSwipeOptions(env, touchPadOpt));
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1351,7 +1355,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function {"mouseLongClickSync", nullptr, reinterpret_cast<void *>(mouseLongClickSync)},
         ani_native_function {"injectMultiPointerActionSync", nullptr, reinterpret_cast<void *>(injectMultiPointerActionSync)},
         ani_native_function {"injectPenPointerActionSync", nullptr, reinterpret_cast<void *>(injectPenPointerActionSync)},
-    }
+    };
 
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
         std::cerr << "Cannot bind native methods to " << className <<" " <<std::endl;
@@ -1367,7 +1371,7 @@ static void performWindow(ani_env *env, ani_object obj, string api)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeWindow"));
     callInfo_.apiId_ = api;
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
 }
 
@@ -1413,7 +1417,7 @@ static ani_ref isFocusedSync(ani_env *env, ani_object obj)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeWindow"));
     callInfo_.apiId_ = "UiWindow.isFocused";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_ref ret =  UnmarshalReply(env, callInfo_, reply_);
     return ret;
 }
@@ -1424,7 +1428,7 @@ static ani_ref isActiveSync(ani_env *env, ani_object obj)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeWindow"));
     callInfo_.apiId_ = "UiWindow.isActive";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_ref ret =  UnmarshalReply(env, callInfo_, reply_);
     return ret;
 }
@@ -1438,7 +1442,7 @@ static ani_boolean resizeSync(ani_env *env, ani_object obj, ani_int w, ani_int h
     callInfo_.paramList_.push_back(w);
     callInfo_.paramList_.push_back(h);
     callInfo_.paramList_.push_back(d);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1451,7 +1455,7 @@ static ani_boolean moveToSync(ani_env *env, ani_object obj, ani_int x, ani_int y
     callInfo_.apiId_ = "UiWindow.moveTo";
     callInfo_.paramList_.push_back(x);
     callInfo_.paramList_.push_back(y);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1462,7 +1466,7 @@ static ani_ref getWindowModeSync(ani_env *env, ani_object obj)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeWindow"));
     callInfo_.apiId_ = "UiWindow.getWindowMode";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_ref ret =  UnmarshalReply(env, callInfo_, reply_);
     return ret;
 }
@@ -1473,7 +1477,7 @@ static ani_ref GetBundleNameSync(ani_env *env, ani_object obj)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeWindow"));
     callInfo_.apiId_ = "UiWindow.GetBundleName";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_ref ret =  UnmarshalReply(env, callInfo_, reply_);
     return ret;
 }
@@ -1484,7 +1488,7 @@ static ani_ref getTitileSync(ani_env *env, ani_object obj)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeWindow"));
     callInfo_.apiId_ = "UiWindow.getTitile";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_ref ret =  UnmarshalReply(env, callInfo_, reply_);
     return ret;
 }
@@ -1495,7 +1499,7 @@ static ani_ref getBoundsSync(ani_env *env, ani_object obj)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeWindow"));
     callInfo_.apiId_ = "UiWindow.getBounds";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_object r = newRect(env, obj, reply_.resultValue_);
     return r;
 }
@@ -1523,7 +1527,7 @@ static ani_boolean BindWindow(ani_env *env)
         ani_native_function {"GetBundleNameSync", nullptr, reinterpret_cast<void *>(GetBundleNameSync)},
         ani_native_function {"getTitileSync", nullptr, reinterpret_cast<void *>(getTitileSync)},
         ani_native_function {"getBoundsSync", nullptr, reinterpret_cast<void *>(getBoundsSync)},
-    }
+    };
 
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
         std::cerr << "Cannot bind native methods to " << className <<" " <<std::endl;
@@ -1537,7 +1541,7 @@ static ani_ref getBoundsCenterSync(ani_env *env, ani_object obj) {
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.apiId_ = "Component.getBoundsCenter";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"])
     return p;
 }
@@ -1546,7 +1550,7 @@ static ani_ref getBoundsSync(ani_env *env, ani_object obj) {
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.apiId_ = "Component.getBounds";
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_object r = newRect(env, obj, reply_.resultValue_);
     return r;
 }
@@ -1556,7 +1560,7 @@ static ani_ref performComponentApi(ani_env *env, ani_object obj, string apiId) {
     ApiReplyInfo reply_;
     callInfo_.apiId = apiId;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     ani_ref result = UnmarshalReply(env, callInfo_, reply_);
     return result;
 }
@@ -1582,7 +1586,7 @@ static ani_boolean comDragToSync(ani_env *env, ani_object obj, ani_object target
     callInfo_.apiId = "Component.dragTo";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, target, "nativeComponent")))；
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1613,7 +1617,7 @@ static ani_boolean comInputText(ani_env *env, ani_object obj, ani_string txt) {
     callInfo_.apiId_ = "Component.inputText";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.paramList_.push_back(aniStringToStdString(env, txt));
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1629,7 +1633,7 @@ static ani_boolean scrollToTop(ani_env *env, ani_object obj, ani_double speed) {
     callInfo_.apiId_ = "Component.scrollToTop";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.paramList_.push_back(speed);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1640,7 +1644,7 @@ static ani_boolean scrollToBottom(ani_env *env, ani_object obj, ani_double speed
     callInfo_.apiId_ = "Component.scrollToBottom";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.paramList_.push_back(speed);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1653,7 +1657,7 @@ static ani_boolean scrollSearch(ani_env *env, ani_object obj, ani_object on, ani
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on, "nativeComponent")));
     callInfo_.paramList_.push_back(reinterpret_cast<bool>(vertical));
     callInfo_.paramList_.push_back(offset);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
@@ -1664,7 +1668,7 @@ static void pinch(ani_env *env, ani_object obj, ani_double scale, string apiId) 
     callInfo_.apiId = apiId;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.paramList_.push_back(scale);
-    g_apiTransactClient.Transact(callInfo_, reply_);
+    Transact(callInfo_, &reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return;
 }
@@ -1746,7 +1750,7 @@ static ani_boolean BindComponent(ani_env *env) {
         ani_native_function {"isEnabledSync", nullptr, reinterpret_cast<void *>(isEnabled)},
         ani_native_function {"isCheckedSync", nullptr, reinterpret_cast<void *>(isChecked)},
         ani_native_function {"isCheckableSync", nullptr, reinterpret_cast<void *>(isCheckable)},
-    }
+    };
 
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
         std::cerr << "Cannot bind native methods to " << className <<" " <<std::endl;
