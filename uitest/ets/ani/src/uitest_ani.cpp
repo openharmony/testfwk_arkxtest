@@ -756,7 +756,8 @@ static ani_boolean swipeSync(ani_env *env, ani_object obj, ani_int x1, ani_int y
     callInfo_.paramList_.push_back(x2);
     callInfo_.paramList_.push_back(y2);
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
+    if (ret == false) {
         callInfo_.paramList_.push_back(speed);
     }
     Transact(callInfo_, reply_);
@@ -775,7 +776,8 @@ static ani_boolean dragSync(ani_env *env, ani_object obj, ani_int x1, ani_int y1
     callInfo_.paramList_.push_back(x2);
     callInfo_.paramList_.push_back(y2);
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
+    if (ret==false) {
         callInfo_.paramList_.push_back(speed);
     }
     Transact(callInfo_, reply_);
@@ -851,7 +853,8 @@ static ani_boolean injectMultiPointerActionSync(ani_env *env, ani_object obj, an
     callInfo_.apiId_ = "Driver.injectMultiPointerAction";
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, pointers, "nativeDriver")));
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
+    if (ret==false) {
         callInfo_.paramList_.push_back(speed);
     }
     Transact(callInfo_, reply_);
@@ -907,7 +910,7 @@ static ani_object getDisplaySizeDensitySync(ani_env *env, ani_object obj)
 
 static ani_int getDisplayRotationSync(ani_env *env, ani_object obj)
 {
-    return performDriver(env, obj, "Driver.getDisplayRotation")
+    return performDriver(env, obj, "Driver.getDisplayRotation");
 }
 
 static ani_boolean waitForIdleSync(ani_env *env, ani_object obj, ani_int idleTime, ani_int timeout)
@@ -959,7 +962,8 @@ static ani_boolean triggerCombineKeysSync(ani_env *env, ani_object obj, ani_int 
     callInfo_.paramList_.push_back(key0);
     callInfo_.paramList_.push_back(key1);
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret); 
+    if (ret==false){
         callInfo_.paramList_.push_back(key2);
     }
     Transact(callInfo_, reply_);
@@ -1037,10 +1041,12 @@ static ani_boolean penSwipeSync(ani_env *env, ani_object obj, ani_object f, ani_
     callInfo_.paramList_.push_back(from);
     callInfo_.paramList_.push_back(to);
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
+    if (ret==false) {
         callInfo_.paramList_.push_back(speed);
     }
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret);
+    if (ret==false){
         callInfo_.paramList_.push_back(pressure);
     }
     Transact(callInfo_, reply_);
@@ -1083,7 +1089,8 @@ static ani_boolean penLongClickSync(ani_env *env, ani_object obj, ani_object p, 
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret);
+    if (ret==false) {
         callInfo_.paramList_.push_back(pressure);
     }
     Transact(callInfo_, reply_);
@@ -1103,13 +1110,16 @@ static ani_boolean mouseScrollSync(ani_env *env, ani_object obj, ani_object p, a
     callInfo_.paramList_.push_back(down);
     callInfo_.paramList_.push_back(dis);
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
+    if (ret==false) {
         callInfo_.paramList_.push_back(key1);
     }
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret);
+    if (ret==false) {
         callInfo_.paramList_.push_back(key2);
     }
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
+    if (ret==false) {
         callInfo_.paramList_.push_back(speed);
     }
     Transact(callInfo_, reply_);
@@ -1128,7 +1138,8 @@ static ani_boolean mouseMoveWithTrackSync(ani_env *env, ani_object obj, ani_obje
     callInfo_.paramList_.push_back(from);
     callInfo_.paramList_.push_back(to);
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
+    if (ret==false) {
         callInfo_.paramList_.push_back(speed);
     }
     Transact(callInfo_, reply_);
@@ -1225,9 +1236,11 @@ static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(btnId);
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret) != ANI_OK) {
-        callInfo_.paramList_.push_back(key1);
-        if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
+    if (ret == false) {
+        callInfo_.paramList_.push_back(speed);
+        env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret);
+        if (ret == false) {
             callInfo_.paramList_.push_back(key2);
         }
     }
@@ -1244,10 +1257,12 @@ static ani_boolean injectPenPointerActionSync(ani_env *env, ani_object obj, ani_
     callInfo_.apiId_ = "Driver.injectPenPointerAction";
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativePointerMatrix")));
     ani_boolean ret = false;
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
+    if (ret == false) {
         callInfo_.paramList_.push_back(speed);
     }
-    if (env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret) != ANI_OK) {
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret);
+    if (ret == false) {
         callInfo_.paramList_.push_back(pressure);
     }
     Transact(callInfo_, reply_);
@@ -1547,10 +1562,10 @@ static ani_ref getBoundsSync(ani_env *env, ani_object obj) {
     return r;
 }
 
-static ani_ref performComponentApi(ani_env *env, ani_object obj, string apiId) {
+static ani_ref performComponentApi(ani_env *env, ani_object obj, string apiId_) {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
-    callInfo_.apiId = apiId;
+    callInfo_.apiId_ = apiId_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     Transact(callInfo_, reply_);
     ani_ref result = UnmarshalReply(env, callInfo_, reply_);
@@ -1575,7 +1590,7 @@ static ani_boolean comLongClick(ani_env *env, ani_object obj) {
 static ani_boolean comDragToSync(ani_env *env, ani_object obj, ani_object target) {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
-    callInfo_.apiId = "Component.dragTo";
+    callInfo_.apiId_ = "Component.dragTo";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, target, "nativeComponent")))；
     Transact(callInfo_, reply_);
@@ -1644,7 +1659,7 @@ static ani_boolean scrollToBottom(ani_env *env, ani_object obj, ani_double speed
 static ani_boolean scrollSearch(ani_env *env, ani_object obj, ani_object on, ani_boolean vertical, ani_double offset) {
     ApiCallInfo callInfo_;
     ApiCallInfo reply_;
-    callInfo_.apiId = "Component.scrollSearch";
+    callInfo_.apiId_ = "Component.scrollSearch";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on, "nativeComponent")));
     callInfo_.paramList_.push_back(reinterpret_cast<bool>(vertical));
@@ -1654,10 +1669,10 @@ static ani_boolean scrollSearch(ani_env *env, ani_object obj, ani_object on, ani
     return true;
 }
 
-static void pinch(ani_env *env, ani_object obj, ani_double scale, string apiId) {
+static void pinch(ani_env *env, ani_object obj, ani_double scale, string apiId_) {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
-    callInfo_.apiId = apiId;
+    callInfo_.apiId_ = apiId_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.paramList_.push_back(scale);
     Transact(callInfo_, reply_);
