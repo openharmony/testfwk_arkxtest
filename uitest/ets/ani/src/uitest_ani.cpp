@@ -752,7 +752,7 @@ static ani_boolean swipeSync(ani_env *env, ani_object obj, ani_double x1, ani_do
     callInfo_.paramList_.push_back(int(y1));
     callInfo_.paramList_.push_back(int(x2));
     callInfo_.paramList_.push_back(int(y2));
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
     if (ret == false) {
         callInfo_.paramList_.push_back(speed);
@@ -772,10 +772,12 @@ static ani_boolean dragSync(ani_env *env, ani_object obj, ani_double x1, ani_dou
     callInfo_.paramList_.push_back(int(y1));
     callInfo_.paramList_.push_back(int(x2));
     callInfo_.paramList_.push_back(int(y2));
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
-    if (ret==false) {
-        callInfo_.paramList_.push_back(speed);
+    if (ret==ANI_FALSE) {
+        ani_double p;
+        env->Object_CallMethodByName_Double(speed, "unboxed", ":D", &p)
+        callInfo_.paramList_.push_back(p);
     }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
@@ -850,10 +852,12 @@ static ani_boolean injectMultiPointerActionSync(ani_env *env, ani_object obj, an
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.injectMultiPointerAction";
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, pointers, "nativeDriver")));
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
-    if (ret==false) {
-        callInfo_.paramList_.push_back(int(speed));
+    if (ret==ANI_FALSE) {
+        ani_double p;
+        env->Object_CallMethodByName_Double(speed, "unboxed", ":D", &p)
+        callInfo_.paramList_.push_back(p);
     }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
@@ -959,9 +963,11 @@ static ani_boolean triggerCombineKeysSync(ani_env *env, ani_object obj, ani_doub
     callInfo_.apiId_ = "Driver.triggerCombineKeys";
     callInfo_.paramList_.push_back(int(key0));
     callInfo_.paramList_.push_back(int(key1));
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret); 
-    if (ret==false){
+    if (ret==ANI_FALSE) {
+        ani_double p;
+        env->Object_CallMethodByName_Double(key2, "unboxed", ":D", &p)
         callInfo_.paramList_.push_back(int(key2));
     }
     Transact(callInfo_, reply_);
@@ -1039,14 +1045,18 @@ static ani_boolean penSwipeSync(ani_env *env, ani_object obj, ani_object f, ani_
     auto to = getPoint(env, t);
     callInfo_.paramList_.push_back(from);
     callInfo_.paramList_.push_back(to);
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
-    if (ret==false) {
-        callInfo_.paramList_.push_back(int(speed));
+    if (ret==ANI_FALSE) {
+        ani_double p;
+        env->Object_CallMethodByName_Double(speed, "unboxed", ":D", &p)
+        callInfo_.paramList_.push_back(int(p));
     }
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret);
-    if (ret==false){
-        callInfo_.paramList_.push_back(int(pressure));
+    if (ret==ANI_FALSE) {
+        ani_double p;
+        env->Object_CallMethodByName_Double(pressure, "unboxed", ":D", &p)
+        callInfo_.paramList_.push_back(p);
     }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
@@ -1079,7 +1089,7 @@ static ani_boolean penDoubleClickSync(ani_env *env, ani_object obj, ani_object p
     return true;
 }
 
-static ani_boolean penLongClickSync(ani_env *env, ani_object obj, ani_object p, ani_double pressure)
+static ani_boolean penLongClickSync(ani_env *env, ani_object obj, ani_object p, ani_object pressure)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -1087,10 +1097,12 @@ static ani_boolean penLongClickSync(ani_env *env, ani_object obj, ani_object p, 
     callInfo_.apiId_ = "Driver.penLongClick";
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret);
-    if (ret==false) {
-        callInfo_.paramList_.push_back(int(pressure));
+    if (ret==ANI_FALSE) {
+        ani_double p;
+        env->Object_CallMethodByName_Double(pressure, "unboxed", ":D", &p)
+        callInfo_.paramList_.push_back(p);
     }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
@@ -1108,17 +1120,21 @@ static ani_boolean mouseScrollSync(ani_env *env, ani_object obj, ani_object p, a
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(down);
     callInfo_.paramList_.push_back(int(dis));
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
-    if (ret==false) {
+    if (ret==ANI_FALSE) {
+        ani_double p;
+        env->Object_CallMethodByName_Double(key1, "unboxed", ":D", &p)
         callInfo_.paramList_.push_back(int(key1));
     }
-    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key2), &ret);
-    if (ret==false) {
+    if (ret==ANI_FALSE) {
+        ani_double p;
+        env->Object_CallMethodByName_Double(key2, "unboxed", ":D", &p)
         callInfo_.paramList_.push_back(int(key2));
     }
-    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
-    if (ret==false) {
+    if (ret==ANI_FALSE) {
+        ani_double p;
+        env->Object_CallMethodByName_Double(speed, "unboxed", ":D", &p)
         callInfo_.paramList_.push_back(int(speed));
     }
     Transact(callInfo_, reply_);
@@ -1136,9 +1152,11 @@ static ani_boolean mouseMoveWithTrackSync(ani_env *env, ani_object obj, ani_obje
     auto to = getPoint(env, t);
     callInfo_.paramList_.push_back(from);
     callInfo_.paramList_.push_back(to);
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
-    if (ret==false) {
+    if (ret==ANI_FALSE) {
+        ani_double p;
+        env->Object_CallMethodByName_Double(speed, "unboxed", ":D", &p)
         callInfo_.paramList_.push_back(int(speed));
     }
     Transact(callInfo_, reply_);
@@ -1156,7 +1174,7 @@ static ani_boolean mouseDragkSync(ani_env *env, ani_object obj, ani_object f, an
     auto to = getPoint(env, t);
     callInfo_.paramList_.push_back(from);
     callInfo_.paramList_.push_back(to);
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
     if (ret == false) {
         callInfo_.paramList_.push_back(int(speed));
@@ -1188,7 +1206,7 @@ static ani_boolean mouseClickSync(ani_env *env, ani_object obj, ani_object p, an
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(btnId);
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
     if (ret == false) {
         callInfo_.paramList_.push_back(int(key1));
@@ -1211,7 +1229,7 @@ static ani_boolean mouseDoubleClickSync(ani_env *env, ani_object obj, ani_object
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(btnId);
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
     if (ret == false) {
         callInfo_.paramList_.push_back(int(key1));
@@ -1234,7 +1252,7 @@ static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(btnId);
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(key1), &ret);
     if (ret == false) {
         callInfo_.paramList_.push_back(int(key1));
@@ -1255,14 +1273,14 @@ static ani_boolean injectPenPointerActionSync(ani_env *env, ani_object obj, ani_
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.injectPenPointerAction";
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativePointerMatrix")));
-    ani_boolean ret = false;
+    ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(speed), &ret);
     if (ret == false) {
         callInfo_.paramList_.push_back(int(speed));
     }
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pressure), &ret);
     if (ret == false) {
-        callInfo_.paramList_.push_back(int(pressure));
+        callInfo_.paramList_.push_back(pressure);
     }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
