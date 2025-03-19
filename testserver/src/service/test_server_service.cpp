@@ -244,7 +244,7 @@ namespace OHOS::testserver {
                 if (json.contains(paraKey)) {
                     std::string param = json[paraKey].get<std::string>();
                     std::string value = json.contains(valueKey) ? json[valueKey].get<std::string>() : "";
-                    oss << " " << param " " << value;
+                    oss << " " << param << " " << value;
                 }
             }
             return oss.str();
