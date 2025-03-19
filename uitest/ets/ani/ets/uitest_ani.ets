@@ -32,7 +32,7 @@ enum DisplayRotation {
   ROTATION_270 = 3,
 }
 
-enum iDirection {
+enum UiDirection {
   LEFT = 0,
   RIGHT = 1,
   UP = 2,
@@ -908,7 +908,7 @@ export class Driver {
   }
 
   touchPadMultiFingerSwipe(fingers: number, direction: UiDirection, options?: TouchPadSwipeOptions): Promise<void> {
-      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void reject: (error: Object) => void) => {
+      let p = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let p1 = taskpool.execute(():void => this.touchPadMultiFingerSwipeSync(fingers, direction, options));
           p1.then((e:NullishType)=>{
             resolve(Promise.resolve());
