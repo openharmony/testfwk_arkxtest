@@ -279,7 +279,7 @@ static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num) {
     string direct[] = {"left", "top", "right", "bottom" };
     for (int i=0; i<4; i++) {
         string tag = direct[i];
-        char *method_name = strdup("<set>" + tag).c_str();
+        char *method_name = strdup(("<set>" + tag).c_str());
         if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
             std::cerr << "Find Method <set>tag failed" <<std::endl;
         }
@@ -312,7 +312,7 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y) {
     int num[2] = {x, y};
     for (int i=0; i<2; i++) {
         string tag = direct[i];
-        char *method_name = strdup("<set>" + tag).c_str();
+        char *method_name = strdup(("<set>" + tag).c_str());
         if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
             std::cerr << "Find Method <set>tag failed" <<std::endl;
         }
@@ -909,7 +909,7 @@ static ani_object getDisplaySizeDensitySync(ani_env *env, ani_object obj)
     return p;
 }
 
-static ani_int getDisplayRotationSync(ani_env *env, ani_object obj)
+static ani_ref getDisplayRotationSync(ani_env *env, ani_object obj)
 {
     return performDriver(env, obj, "Driver.getDisplayRotation");
 }
@@ -1600,23 +1600,23 @@ static ani_boolean comDragToSync(ani_env *env, ani_object obj, ani_object target
 }
 
 static ani_ref getText(ani_env *env, ani_object obj) {
-    return performComponentApi(env, obj, "Component.getText")
+    return performComponentApi(env, obj, "Component.getText");
 }
 
 static ani_ref getType(ani_env *env, ani_object obj) {
-    return performComponentApi(env, obj, "Component.getType")
+    return performComponentApi(env, obj, "Component.getType");
 }
 
 static ani_ref getId(ani_env *env, ani_object obj) {
-    return performComponentApi(env, obj, "Component.getId")
+    return performComponentApi(env, obj, "Component.getId");
 }
 
 static ani_ref getHint(ani_env *env, ani_object obj) {
-    return performComponentApi(env, obj, "Component.getHint")
+    return performComponentApi(env, obj, "Component.getHint");
 }
 
 static ani_ref getDescription(ani_env *env, ani_object obj) {
-    return performComponentApi(env, obj, "Component.getDescription")
+    return performComponentApi(env, obj, "Component.getDescription");
 }
 
 static ani_boolean comInputText(ani_env *env, ani_object obj, ani_string txt) {
@@ -1659,11 +1659,11 @@ static ani_boolean scrollToBottom(ani_env *env, ani_object obj, ani_double speed
 
 static ani_boolean scrollSearch(ani_env *env, ani_object obj, ani_object on, ani_boolean vertical, ani_double offset) {
     ApiCallInfo callInfo_;
-    ApiCallInfo reply_;
+    ApiReplyInfo reply_;
     callInfo_.apiId_ = "Component.scrollSearch";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on, "nativeComponent")));
-    callInfo_.paramList_.push_back(reinterpret_cast<bool>(vertical));
+    callInfo_.paramList_.push_back(static_cast<bool>(vertical));
     callInfo_.paramList_.push_back(offset);
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
