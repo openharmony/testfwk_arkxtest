@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Licensed under the Apache License,Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,software
+ * distributed under the License is distributed on an "ASIS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 enum MatchPattern {
   EQUALS = 0,
   CONTAINS = 1,
@@ -448,9 +463,9 @@ export class UiWindow {
   native focusSync(): boolean;
   native isFocusedSync(): boolean;
   native isActiveSync(): boolean;
-  native resizeSync(w:int, h:int, d:ResizeDirection): boolean;
-  native moveToSync(x:int, y:int): boolean;
-  native getWindowModeSync(): int;
+  native resizeSync(w:number, h:number, d:ResizeDirection): boolean;
+  native moveToSync(x:number, y:number): boolean;
+  native getWindowModeSync(): number;
   native GetBundleNameSync(): string;
   native getTitileSync(): string;
   native getBoundsSync(): Rect;
@@ -537,7 +552,7 @@ export class UiWindow {
       return promise;
   }
 
-  resize(w:int, h:int, d:ResizeDirection):Promise<void> {
+  resize(w:number, h:number, d:ResizeDirection):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.resizeSync(w, h, d));
           promise1.then((e:NullishType)=>{
@@ -547,7 +562,7 @@ export class UiWindow {
       return promise;
   }
 
-  moveTo(x:int, y:int):Promise<void> {
+  moveTo(x:number, y:number):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.moveToSync(x, y));
           promise1.then((e:NullishType)=>{
@@ -558,10 +573,10 @@ export class UiWindow {
   }
 
   getWindowMode():Promise<int> {
-      let promise = new Promise<int>((resolve: (value: int) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():int => this.getWindowModeSync());
+      let promise = new Promise<int>((resolve: (value: number) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():number => this.getWindowModeSync());
           promise1.then((e:NullishType)=>{
-              let value : int = e as int;
+              let value : number = e as int;
               resolve(value);
           });
       });
@@ -613,17 +628,17 @@ export class Driver {
       this.nativeDriver = driver;
     }
   }
-  private native comClickSync(x:int, y:int):boolean;
-  private native delayMsSync(t:int):boolean;
+  private native comClickSync(x:number, y:number):boolean;
+  private native delayMsSync(t:number):boolean;
   private native findComponentSync(on: On):Component;
 
   native static create():Driver;
-  native clickSync(x:int, y:int):boolean;
-  native longClickSync(x:int, y:int):boolean;
-  native doubleClickSync(x:int, y:int):boolean;
-  native flingSync(from:Point, to: Point, stepLen: int, speed: int):boolean;
-  native swipeSync(startx: int, starty: int, endx: int, endy: int, speed?: int):boolean;
-  native dragSync(startx: int, starty: int, endx: int, endy: int, speed?: int):boolean;
+  native clickSync(x:number, y:number):boolean;
+  native longClickSync(x:number, y:number):boolean;
+  native doubleClickSync(x:number, y:number):boolean;
+  native flingSync(from:Point, to: Point, stepLen: number, speed: number):boolean;
+  native swipeSync(startx: number, starty: number, endx: number, endy: number, speed?: number):boolean;
+  native dragSync(startx: number, starty: number, endx: number, endy: number, speed?: number):boolean;
   native pressBackSync():boolean;
   native assertComponentExistSync(on: On):boolean;
   native triggerKeySync(keyCode: number):boolean;
@@ -633,12 +648,11 @@ export class Driver {
   native pressHomeSync():boolean;
   native getDisplaySizeSync():Point;
   native getDisplaySizeDensitySync():Point;
-  native getDisplayRotationSync():int;
-  // native createUIEventObserverSync():UIEventObserver;
+  native getDisplayRotationSync():DisplayRotation;
   native findComponentsSync(on: On):Array<Component>;
 
   native waitForIdleSync(idleTime: number, timeout: number):boolean;
-  native waitForComponentSync(on: On, time: int):Component;
+  native waitForComponentSync(on: On, time: number):Component;
   native triggerCombineKeysSync(key0: number, key1: number, key2?: number):boolean;
 
   native setDisplayRotationEnabledSync(enable: boolean):boolean;
@@ -663,7 +677,7 @@ export class Driver {
   native injectPenPointerActionSync(pointers: PointerMatrix, speed?: number, pressure?: number): void;
   native touchPadMultiFingerSwipeSync(fingers: number, direction: number, options?: TouchPadSwipeOptions): boolean;
 
-  delayMs(t: int): Promise<void> {
+  delayMs(t: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.delayMsSync(t));
           promise1.then((e:NullishType)=>{
@@ -673,7 +687,7 @@ export class Driver {
       return promise;
   }
 
-  click(x: int, y: int): Promise<void> {
+  click(x: number, y: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.clickSync(x, y));
           promise1.then((e:NullishType)=>{
@@ -683,7 +697,7 @@ export class Driver {
       return promise;
   }
 
-  doubleClick(x: int, y: int): Promise<void> {
+  doubleClick(x: number, y: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.doubleClickSync(x, y));
           promise1.then((e:NullishType)=>{
@@ -715,7 +729,7 @@ export class Driver {
       return promise;
   }
 
-  waitForComponent(on: On, time: int): Promise<Component> {
+  waitForComponent(on: On, time: number): Promise<Component> {
       let promise = new Promise<Component>((resolve: (c: Component) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():Component => this.waitForComponentSync(on, time));
           promise1.then((e:NullishType)=>{
