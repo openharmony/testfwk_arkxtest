@@ -646,7 +646,7 @@ enum MatchPattern {
       });
       return promise;
     }
-    private native flingSyncInDirection(direction:UiDirection, speed?: number):boolean;
+    private native flingSyncDirection(direction:UiDirection, speed?: number):boolean;
     fling(direction:UiDirection, speed?: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.flingSyncDirection(direction, speed));
