@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 #include "ui_model.h"
 
 namespace OHOS::uitest {
