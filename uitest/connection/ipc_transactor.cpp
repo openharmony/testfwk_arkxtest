@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include "common_utilities_hpp.h"
 #include "test_server_client.h"
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 #include "ipc_transactor.h"
 
 namespace OHOS::uitest {

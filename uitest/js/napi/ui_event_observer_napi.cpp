@@ -17,7 +17,7 @@
 #include <string>
 #include <unistd.h>
 #include <uv.h>
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 #include "common_utilities_hpp.h"
 #include "ui_event_observer_napi.h"
 
