@@ -646,10 +646,10 @@ enum MatchPattern {
       });
       return promise;
     }
-    private native flingSync(direction:UiDirection, speed?: number):boolean;
+    private native flingSyncInDirection(direction:UiDirection, speed?: number):boolean;
     fling(direction:UiDirection, speed?: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():boolean => this.flingSync(direction, speed));
+      let promise1 = taskpool.execute(():boolean => this.flingSyncDirection(direction, speed));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           });

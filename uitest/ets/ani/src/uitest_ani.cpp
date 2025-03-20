@@ -739,7 +739,7 @@ static ani_boolean flingSync(ani_env *env, ani_object obj, ani_object f, ani_obj
     return true;
 }
 
-static ani_boolean flingSync(ani_env *env, ani_object obj, ani_int direction, ani_double speed) {
+static ani_boolean flingSyncDirection(ani_env *env, ani_object obj, ani_int direction, ani_double speed) {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
@@ -1285,6 +1285,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function {"longClickSync", nullptr, reinterpret_cast<void *>(longClickSync)},
         ani_native_function {"doubleClickSync", nullptr, reinterpret_cast<void *>(doubleClickSync)},
         ani_native_function {"flingSync", nullptr, reinterpret_cast<void *>(flingSync)},
+        ani_native_function {"flingSyncDirection", nullptr, reinterpret_cast<void *>(flingSyncDirection)},
         ani_native_function {"swipeSync", nullptr, reinterpret_cast<void *>(swipeSync)},
         ani_native_function {"dragSync", nullptr, reinterpret_cast<void *>(dragSync)},
         ani_native_function {"pressBackSync", nullptr, reinterpret_cast<void *>(pressBackSync)},
