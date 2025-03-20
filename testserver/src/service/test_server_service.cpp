@@ -23,6 +23,7 @@
 #include "test_server_error_code.h"
 #include "pasteboard_client.h"
 #include "socperf_client.h"
+#include <nlohmann/json.hpp>
 #include <sstream>
 namespace OHOS::testserver {
     // TEST_SERVER_SA_ID
@@ -35,6 +36,8 @@ namespace OHOS::testserver {
     static const int CALLER_DETECT_DURING = 10000;
     static const int START_SPDAEMON_PROCESS = 1;
     static const int KILL_SPDAEMON_PROCESS = 2;
+    static const int PARA_START_POSITION = 0;
+    static const int PARA_END_POSITION = 4;
 
     TestServerService::TestServerService(int32_t saId, bool runOnCreate) : SystemAbility(saId, runOnCreate)
     {
@@ -214,12 +217,55 @@ namespace OHOS::testserver {
         OHOS::SOCPERF::SocPerfClient::GetInstance().PerfRequest(performanceModeId, "");
         return TEST_SERVER_OK;
     }
-
-    ErrCode TestServerService::SpDaemonProcess(int daemonCommand)
+    
+    static std::string ParseDaemonCommand(const std::string& extraInfo)
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called. daemonCommand: %{public}d", __func__, daemonCommand);
+        try {
+            nlohmann::json json = nlohmann::json::parse(extraInfo);
+            std::vector<int> paraIndices;
+            for (auto it = json.begin(); it != json.end(); ++it) {
+                const std::string& key = it.key();
+                if (key.compare(PARA_START_POSITION, PARA_END_POSITION, "para") != 0) {
+                    continue;
+                }
+                try {
+                    int index = std::stoi(key.substr(PARA_END_POSITION));
+                    paraIndices.push_back(index);
+                } catch (const std::exception&) {
+                    HiLog::Error(LABEL_SERVICE, "Daemon receive an error param: %{public}s", key.c_str());
+                }
+            }
+            std::sort(paraIndices.begin(), paraIndices.end());
+            std::ostringstream oss;
+
+            for (int index : paraIndices) {
+                std::string paraKey = "para" + std::to_string(index);
+                std::string valueKey = "value" + std::to_string(index);
+                if (json.contains(paraKey)) {
+                    std::string param = json[paraKey].get<std::string>();
+                    std::string value = json.contains(valueKey) ? json[valueKey].get<std::string>() : "";
+                    oss << " " << param << " " << value;
+                }
+            }
+            return oss.str();
+        } catch (const nlohmann::json::exception& e) {
+            HiLog::Error(LABEL_SERVICE, "JSON parse error: %{public}s", e.what());
+            return "";
+        }
+    }
+
+    ErrCode TestServerService::SpDaemonProcess(int daemonCommand, const std::string& extraInfo)
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        if (extraInfo == "") {
+            HiLog::Error(LABEL_SERVICE, "%{public}s called. but extraInfo is empty", __func__);
+            return TEST_SERVER_SPDAEMON_PROCESS_FAILED;
+        }
+        std::string params = ParseDaemonCommand(extraInfo);
+
         if (daemonCommand == START_SPDAEMON_PROCESS) {
-            std::system("./system/bin/SP_daemon &");
+            std::string command = std::string("./system/bin/SP_daemon " + params + " &");
+            std::system(command.c_str());
         } else if (daemonCommand == KILL_SPDAEMON_PROCESS) {
             const std::string spDaemonProcessName = "SP_daemon";
             KillProcess(spDaemonProcessName);
