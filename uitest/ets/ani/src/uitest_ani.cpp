@@ -28,8 +28,7 @@
 #include "ipc_transactor.h"
 #include "test_server_client.h"
 #include <cstring>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
 
 using namespace OHOS::uitest;
 using namespace nlohmann;
@@ -735,6 +734,17 @@ static ani_boolean flingSync(ani_env *env, ani_object obj, ani_object f, ani_obj
     callInfo_.paramList_.push_back(to);
     callInfo_.paramList_.push_back(int(stepLen));
     callInfo_.paramList_.push_back(int(speed));
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
+static ani_boolean flingSync(ani_env *env, ani_object obj, ani_int direction, ani_double speed) {
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.fling";
+    callInfo_.paramList_.push_back(speed);
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
@@ -1500,7 +1510,7 @@ static ani_ref getBoundsCenterSync(ani_env *env, ani_object obj) {
     ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
     return p;
 }
-static ani_ref getBounds(ani_env *env, ani_object obj) {
+static ani_ref comGetBounds(ani_env *env, ani_object obj) {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
@@ -1683,7 +1693,7 @@ static ani_boolean BindComponent(ani_env *env) {
         ani_native_function {"comLongClickSync", nullptr, reinterpret_cast<void *>(comLongClick)},
         ani_native_function {"comDoubleClickSync", nullptr, reinterpret_cast<void *>(comDoubleClick)},
         ani_native_function {"comDragToSync", nullptr, reinterpret_cast<void *>(comDragToSync)},
-        ani_native_function {"getBoundsSync", nullptr, reinterpret_cast<void *>(getBounds)},
+        ani_native_function {"getBoundsSync", nullptr, reinterpret_cast<void *>(comGetBounds)},
         ani_native_function {"getBoundsCenterSync", nullptr, reinterpret_cast<void *>(getBoundsCenterSync)},
         ani_native_function {"getTextSync", nullptr, reinterpret_cast<void *>(getText)},
         ani_native_function {"getTypeSync", nullptr, reinterpret_cast<void *>(getType)},
