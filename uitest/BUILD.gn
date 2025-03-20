@@ -12,9 +12,9 @@
 # limitations under the License.
 
 base_root = "../../../.."
+import("//build/config/components/ets_frontend/ets2abc_config.gni")
 import("$base_root/arkcompiler/ets_frontend/es2panda/es2abc_config.gni")
 import("$base_root/build/ohos.gni")
-import("//build/config/components/ets_frontend/ets2abc_config.gni")
 
 source_root = "$base_root/test/testfwk/arkxtest/uitest"
 
@@ -45,10 +45,7 @@ ohos_static_library("uitest_core") {
     "${source_root}/core/widget_selector.cpp",
     "${source_root}/core/window_operator.cpp",
   ]
-  external_deps = [
-    "hilog:libhilog",
-    "json:nlohmann_json_static",
-  ]
+  external_deps = [ "hilog:libhilog" ]
   defines = [
     "__OHOS__=1",
     "LOG_TAG=\"UiTestKit_Base\"",
@@ -68,10 +65,7 @@ ohos_static_library("uitest_input") {
     "LOG_TAG=\"UiTestKit_Input\"",
   ]
   include_dirs = [ "${source_root}/core" ]
-  external_deps = [
-    "hilog:libhilog",
-    "json:nlohmann_json_static",
-  ]
+  external_deps = [ "hilog:libhilog" ]
   subsystem_name = "testfwk"
   part_name = "arkxtest"
 }
@@ -101,7 +95,6 @@ ohos_static_library("uitest_record") {
     "ability_runtime:ability_manager",
     "hilog:libhilog",
     "input:libmmi-client",
-    "ipc:ipc_single",
   ]
 
   subsystem_name = "testfwk"
@@ -121,7 +114,6 @@ ohos_static_library("uitest_ipc") {
     "ability_base:want",
     "common_event_service:cesfwk_innerkits",
     "ipc:ipc_core",
-    "json:nlohmann_json_static",
     "samgr:samgr_proxy",
   ]
 
@@ -154,7 +146,6 @@ ohos_static_library("uitest_addon") {
     "graphic_2d:librender_service_base",
     "image_framework:image_native",
     "input:libmmi-client",
-    "ipc:ipc_single",
     "json:nlohmann_json_static",
     "window_manager:libdm",
     "window_manager:libwm",
@@ -206,7 +197,6 @@ ohos_executable("uitest_server") {
     "accessibility:accessibleability",
     "image_framework:image_native",
     "input:libmmi-client",
-    "ipc:ipc_single",
     "window_manager:libdm",
     "window_manager:libwm",
   ]
@@ -276,10 +266,7 @@ ohos_shared_library("uitest_client") {
   external_deps = common_external_deps
   external_deps += [
     "ability_base:want",
-    "common_event_service:cesfwk_innerkits",
     "image_framework:image_native",
-    "ipc:ipc_single",
-    "libuv:uv",
     "napi:ace_napi",
   ]
   relative_install_dir = "module"
@@ -319,46 +306,45 @@ ohos_unittest("uitest_core_unittest") {
   subsystem_name = "testfwk"
   part_name = "arkxtest"
 }
+
 ohos_shared_library("uitest_ani") {
-  configs = [":uitest_common_configs"]
+  configs = [ ":uitest_common_configs" ]
   external_deps = common_external_deps
   include_dirs = [
+    "$base_root/base/hiviewdfx/hilog/interfaces/native/innerkits/include",
+    "//third_party/json/single_include/nlohmann",
     "${source_root}/core",
     "${source_root}/connection",
   ]
-  sources = [
-    "./ets/ani/src/uitest_ani.cpp"
-  ]
+  sources = [ "./ets/ani/src/uitest_ani.cpp" ]
   deps = [
     ":uitest_ipc",
     "${source_root}/../testserver/src:test_server_client",
   ]
   external_deps += [
+    "common_event_service:cesfwk_innerkits",
     "runtime_core:ani",
     "runtime_core:libarkruntime",
-    "common_event_service:cesfwk_innerkits"
   ]
   part_name = "arkxtest"
   subsystem_name = "testfwk"
 }
+
 generate_static_abc("uitest_abc") {
   base_url = "./ets/ani/ets"
-  files = [
-    "./ets/ani/ets/uitest_ani.ets"
-  ]
+  files = [ "./ets/ani/ets/uitest_ani.ets" ]
   is_boot_abc = "True"
   dst_file = "$target_out_dir/uitest_ani.abc"
-  out_puts = [
-    "$target_out_dir/uitest_ani.abc"
-  ]
+  out_puts = [ "$target_out_dir/uitest_ani.abc" ]
   device_dst_file = "/system/framework/uitest_ani.abc"
 }
+
 ohos_prebuilt_etc("uitest_etc") {
   source = "$target_out_dir/uitest_ani.abc"
   module_install_dir = "framework"
   part_name = "arkxtest"
   subsystem_name = "testfwk"
-  deps = [":uitest_abc"]
+  deps = [ ":uitest_abc" ]
 }
 
 ohos_unittest("uitest_ipc_unittest") {
@@ -398,10 +384,7 @@ ohos_unittest("uitest_extension_unittest") {
     "//third_party/json/single_include/nlohmann",
     "//third_party/json/single_include",
   ]
-  external_deps = [
-    "hilog:libhilog",
-    "json:nlohmann_json_static",
-  ]
+  external_deps = [ "hilog:libhilog" ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   module_out_path = "uitestkit/unittest"
@@ -421,10 +404,10 @@ ohos_shared_library("uitest_dummy_extension") {
 group("uitestkit") {
   deps = [
     ":cj_ui_test_ffi",
-    ":uitest_client",
-    ":uitest_server",
     ":uitest_ani",
-    ":uitest_etc"
+    ":uitest_client",
+    ":uitest_etc",
+    ":uitest_server",
   ]
 }
 
@@ -474,12 +457,10 @@ ohos_shared_library("cj_ui_test_ffi") {
   external_deps += [
     "ability_base:want",
     "image_framework:image_native",
-    "ipc:ipc_single",
     "json:nlohmann_json_static",
     "napi:cj_bind_ffi",
     "napi:cj_bind_native",
     "samgr:samgr_proxy",
-    "common_event_service:cesfwk_innerkits"
   ]
 
   relative_install_dir = "platformsdk"
