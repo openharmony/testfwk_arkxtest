@@ -20,7 +20,7 @@
 #include <sstream>
 #include "common_utilities_hpp.h"
 #include "frontend_api_handler.h"
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 
 namespace OHOS::uitest {
     using namespace std;

@@ -1,3 +1,4 @@
+
 # Copyright (c) 2021 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,10 +20,6 @@ import("$base_root/build/ohos.gni")
 source_root = "$base_root/test/testfwk/arkxtest/uitest"
 
 config("uitest_common_configs") {
-  include_dirs = [
-    "//third_party/json/single_include/nlohmann",
-    "$base_root/foundation/mutimodalinput/input/interfaces",
-  ]
   cflags = [
     "-Wfloat-equal",
     "-Wformat=2",
@@ -45,7 +42,10 @@ ohos_static_library("uitest_core") {
     "${source_root}/core/widget_selector.cpp",
     "${source_root}/core/window_operator.cpp",
   ]
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "hilog:libhilog",
+    "json:nlohmann_json_static",
+  ]
   defines = [
     "__OHOS__=1",
     "LOG_TAG=\"UiTestKit_Base\"",
@@ -65,7 +65,10 @@ ohos_static_library("uitest_input") {
     "LOG_TAG=\"UiTestKit_Input\"",
   ]
   include_dirs = [ "${source_root}/core" ]
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "hilog:libhilog",
+    "json:nlohmann_json_static",
+  ]
   subsystem_name = "testfwk"
   part_name = "arkxtest"
 }
@@ -114,6 +117,7 @@ ohos_static_library("uitest_ipc") {
     "ability_base:want",
     "common_event_service:cesfwk_innerkits",
     "ipc:ipc_core",
+    "json:nlohmann_json_static",
     "samgr:samgr_proxy",
   ]
 
@@ -297,7 +301,10 @@ ohos_unittest("uitest_core_unittest") {
     "//third_party/json/single_include/nlohmann",
     "${source_root}/core",
   ]
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "hilog:libhilog",
+    "json:nlohmann_json_static",
+  ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   use_exceptions = true
@@ -356,8 +363,6 @@ ohos_unittest("uitest_ipc_unittest") {
   include_dirs = [
     "${source_root}/connection",
     "${source_root}/core",
-    "//third_party/json/single_include/nlohmann",
-    "//third_party/json/single_include",
   ]
   external_deps = [
     "ability_base:base",
@@ -381,10 +386,11 @@ ohos_unittest("uitest_extension_unittest") {
   include_dirs = [
     "${source_root}/addon",
     "${source_root}/core",
-    "//third_party/json/single_include/nlohmann",
-    "//third_party/json/single_include",
   ]
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "hilog:libhilog",
+    "json:nlohmann_json_static",
+  ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   module_out_path = "uitestkit/unittest"

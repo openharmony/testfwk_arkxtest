@@ -22,7 +22,7 @@
 #include <memory>
 #include <mutex>
 #include <functional>
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 #include "ui_action.h"
 #include "select_strategy.h"
 
