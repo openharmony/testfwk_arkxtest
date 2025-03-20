@@ -20,7 +20,7 @@
 #include <set>
 #include <string>
 #include <unistd.h>
-#include "nlohmann/json.hpp"
+#include "json.hpp"
 #include "fcntl.h"
 #include "common_utilities_hpp.h"
 #include "frontend_api_defines.h"
