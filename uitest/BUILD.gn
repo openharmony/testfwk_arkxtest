@@ -320,11 +320,11 @@ ohos_shared_library("uitest_ani") {
     "${source_root}/../testserver/src:test_server_client",
   ]
   external_deps += [
-    "json:nlohmann_json_static",
     "common_event_service:cesfwk_innerkits",
+    "hilog:libhilog",
+    "json:nlohmann_json_static",
     "runtime_core:ani",
     "runtime_core:libarkruntime",
-    "hilog:libhilog",
   ]
   part_name = "arkxtest"
   subsystem_name = "testfwk"
