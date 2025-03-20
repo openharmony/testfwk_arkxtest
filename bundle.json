@@ -42,7 +42,10 @@
           "safwk",
           "init",
           "access_token",
-	  "graphic_2d"
+	        "graphic_2d",
+          "runtime_core",
+          "libuv",
+          "soc_perf"
         ],
         "third_party": [
           "libpng",
