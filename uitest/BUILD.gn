@@ -311,7 +311,6 @@ ohos_shared_library("uitest_ani") {
   configs = [ ":uitest_common_configs" ]
   external_deps = common_external_deps
   include_dirs = [
-    "//third_party/json/single_include/nlohmann",
     "${source_root}/core",
     "${source_root}/connection",
   ]
@@ -321,9 +320,11 @@ ohos_shared_library("uitest_ani") {
     "${source_root}/../testserver/src:test_server_client",
   ]
   external_deps += [
+    "json:nlohmann_json_static",
     "common_event_service:cesfwk_innerkits",
     "runtime_core:ani",
     "runtime_core:libarkruntime",
+    "hilog:libhilog",
   ]
   part_name = "arkxtest"
   subsystem_name = "testfwk"
