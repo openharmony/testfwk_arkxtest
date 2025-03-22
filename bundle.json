@@ -44,7 +44,8 @@
           "init",
           "access_token",
 	        "graphic_2d",
-          "libuv"
+          "libuv",
+          "udmf"
         ],
         "third_party": [
           "libpng",
