@@ -854,7 +854,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    bool SysUiController::TakeScreenCap(int32_t fd, std::stringstream &errReceiver, int32_t displayId, Rect rect) const
+    bool SysUiController::TakeScreenCap(FILE *fp, std::stringstream &errReceiver, int32_t displayId, Rect rect) const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
         displayId = GetValidDisplayId(displayId);
@@ -872,7 +872,6 @@ namespace OHOS::uitest {
             errReceiver << "Failed to get display pixelMap";
             return false;
         }
-        FILE *fp = fdopen(fd, "wb");
         if (fp == nullptr) {
             errReceiver << "File opening failed";
             return false;
