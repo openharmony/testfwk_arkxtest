@@ -842,7 +842,6 @@ namespace OHOS::uitest {
             auto displayId = ReadCallArg<uint32_t>(in, INDEX_TWO, UNASSIGNED);
             driver.TakeScreenCap(fd, out.exception_, rect, displayId);
             out.resultValue_ = (out.exception_.code_ == NO_ERROR);
-            (void) close(fd);
         };
         server.AddHandler("Driver.screenCap", screenCap);
         server.AddHandler("Driver.screenCapture", screenCap);
