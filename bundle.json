@@ -76,6 +76,13 @@
                 "session_token.h"
               ]
             }
+          },
+          {
+            "name": "//test/testfwk/arkxtest/uitest:cj_ui_test_ffi",
+            "header": {
+              "header_files": [],
+              "header_base": "//test/testfwk/arkxtest/uitest/cj"
+            }
           }
         ],
     "test": [
