@@ -1,0 +1,11 @@
+{
+  "name": "@ohos/hypium",
+  "version": "1.0.0",
+  "description": "OpenHarmony JSUnit",
+  "main": "index.ets",
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+  }
+}
