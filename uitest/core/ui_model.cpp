@@ -15,6 +15,8 @@
 
 #include <algorithm>
 #include "ui_model.h"
+#include <regex.h>
+#include <iostream>
 
 namespace OHOS::uitest {
     using namespace std;
@@ -23,6 +25,7 @@ namespace OHOS::uitest {
     void Widget::SetBounds(const Rect &bounds)
     {
         bounds_ = bounds;
+        bounds_.displayId_ = displayId_;
     }
 
     string Widget::ToStr() const
@@ -40,6 +43,7 @@ namespace OHOS::uitest {
     {
         auto clone = make_unique<Widget>(hierarchy);
         clone->bounds_ = this->bounds_;
+        clone->displayId_ = this->displayId_;
         clone->attributeVec_ = attributeVec_;
         return clone;
     }
@@ -78,7 +82,20 @@ namespace OHOS::uitest {
         }
         return attributeVec_[attrId];
     }
-
+    bool RegexMatchAttr(std::string_view value, std::string_view attrValue, int flags)
+    {
+        regex_t preg;
+        char *patternValue = const_cast<char*>(value.data());
+        char *patternReg = const_cast<char*>(attrValue.data());
+        if ((regcomp(&preg, patternValue, flags)) != 0) {
+            return false;
+        }
+        if (regexec(&preg, patternReg, 0, nullptr, 0) != 0) {
+            return false;
+        }
+        return true;
+    }
+    
     bool Widget::MatchAttr(const WidgetMatchModel& matchModel) const
     {
         UiAttr attr = matchModel.attrName;
@@ -97,6 +114,16 @@ namespace OHOS::uitest {
                     return false;
                 }
                 return attrValue.substr(attrValue.length() - value.length()) == value;
+            case ValueMatchPattern::REG_EXP:
+                {
+                    auto flags = REG_EXTENDED;
+                    return RegexMatchAttr(value, attrValue, flags);
+                }
+            case ValueMatchPattern::REG_EXP_ICASE:
+                {
+                    auto flags = REG_EXTENDED | REG_ICASE;
+                    return RegexMatchAttr(value, attrValue, flags);
+                }
             default:
                 break;
         }

@@ -36,6 +36,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsParentAndChild)
     Rect selectWindow{10, 100, 10, 300};
     Rect layer1{10, 50, 10, 40};
     Rect layer2{10, 20, 50, 100};
+    Window test(0);
     std::vector<Rect> overlay;
     overlay.emplace_back(layer1);
     overlay.emplace_back(layer2);
@@ -45,7 +46,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsParentAndChild)
     widget.SetBounds(widOriBounds);
     widget.SetAttr(UiAttr::VISIBLE, "true");
     widget.SetAttr(UiAttr::TYPE, "Scroll");
-    plain->RefreshWidgetBounds(widget);
+    plain->RefreshWidgetBounds(widget, test);
     ASSERT_EQ(widget.GetAttr(UiAttr::VISIBLE), "false");
     auto rect = widget.GetBounds();
     ASSERT_EQ(rect.left_, 0);
@@ -63,6 +64,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsOver)
     Rect selectWindow{10, 100, 10, 300};
     Rect layer1{10, 50, 10, 40};
     Rect layer2{10, 20, 50, 100};
+    Window test(0);
     std::vector<Rect> overlay;
     overlay.emplace_back(layer1);
     overlay.emplace_back(layer2);
@@ -70,7 +72,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsOver)
     Widget widget{"test"};
     Rect widOriBounds{20, 50, 30, 40};
     widget.SetBounds(widOriBounds);
-    plain->RefreshWidgetBounds(widget);
+    plain->RefreshWidgetBounds(widget, test);
     ASSERT_EQ(widget.GetAttr(UiAttr::VISIBLE), "false");
     auto rect = widget.GetBounds();
     ASSERT_EQ(rect.left_, 0);
@@ -88,6 +90,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsPartOver)
     Rect selectWindow{10, 100, 10, 300};
     Rect layer1{10, 50, 10, 40};
     Rect layer2{10, 20, 50, 100};
+    Window test(0);
     std::vector<Rect> overlay;
     overlay.emplace_back(layer1);
     overlay.emplace_back(layer2);
@@ -95,7 +98,7 @@ TEST(SelectStrategyTest, refreshWidgetBoundsPartOver)
     Widget widget{"test"};
     Rect widOriBounds{20, 50, 30, 50};
     widget.SetBounds(widOriBounds);
-    plain->RefreshWidgetBounds(widget);
+    plain->RefreshWidgetBounds(widget, test);
     ASSERT_EQ(widget.GetAttr(UiAttr::VISIBLE), "true");
     auto rect = widget.GetBounds();
     ASSERT_EQ(rect.left_, 20);
@@ -249,7 +252,8 @@ TEST(SelectStrategyTest, afterStrategyForAnchorIsBeforeTarget)
     std::unique_ptr<SelectStrategy> afterStrategy = SelectStrategy::BuildSelectStrategy(buildParam, false);
     std::unique_ptr<ElementNodeIterator> iterator = nullptr;
     ConstructIterator(iterator);
-    afterStrategy->LocateNode(w1, *iterator.get(), visits, targets);
+    DumpOption option;
+    afterStrategy->LocateNode(w1, *iterator.get(), visits, targets, option);
     ASSERT_EQ(visits.size(), 12);
     ASSERT_EQ(targets.size(), 0);
 }
@@ -272,7 +276,8 @@ TEST(SelectStrategyTest, afterStrategyForAnchorIsAfterSingleTarget)
     buildParam.myselfMatcher = myselfMatchers;
     buildParam.afterAnchorMatcherVec.emplace_back(anchorMatchers);
     std::unique_ptr<SelectStrategy> afterStrategy2 = SelectStrategy::BuildSelectStrategy(buildParam, false);
-    afterStrategy2->LocateNode(w1, *iterator.get(), visits2, targets2);
+    DumpOption option;
+    afterStrategy2->LocateNode(w1, *iterator.get(), visits2, targets2, option);
     ASSERT_EQ(targets2.size(), 1);
     ASSERT_EQ(visits2[targets2[0]].GetAttr(UiAttr::ACCESSIBILITY_ID), "5");
 }
@@ -296,7 +301,8 @@ TEST(SelectStrategyTest, afterStrategyForAnchorIsAfterMultiTarget)
     buildParam.myselfMatcher = myselfMatchers;
     buildParam.afterAnchorMatcherVec.emplace_back(anchorMatchers);
     std::unique_ptr<SelectStrategy> afterStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, true);
-    afterStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3);
+    DumpOption option;
+    afterStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3, option);
     ASSERT_EQ(visits3.size(), 12);
     ASSERT_EQ(targets3.size(), 2);
     ASSERT_EQ(visits3[targets3[0]].GetAttr(UiAttr::ACCESSIBILITY_ID), "4");
@@ -322,7 +328,8 @@ TEST(SelectStrategyTest, beforeStrategyForAnchorIsAfterTarget)
     buildParam.myselfMatcher = myselfMatchers;
     buildParam.beforeAnchorMatcherVec.emplace_back(anchorMatchers);
     std::unique_ptr<SelectStrategy> beforeStrategy = SelectStrategy::BuildSelectStrategy(buildParam, false);
-    beforeStrategy->LocateNode(w1, *iterator.get(), visits, targets);
+    DumpOption option;
+    beforeStrategy->LocateNode(w1, *iterator.get(), visits, targets, option);
     ASSERT_EQ(visits.size(), 12);
     ASSERT_EQ(targets.size(), 0);
 }
@@ -345,7 +352,8 @@ TEST(SelectStrategyTest, beforeStrategyForAnchorIsBeforeSingleTarget)
     buildParam.myselfMatcher = myselfMatchers;
     buildParam.beforeAnchorMatcherVec.emplace_back(anchorMatchers);
     std::unique_ptr<SelectStrategy> beforeStrategy2 = SelectStrategy::BuildSelectStrategy(buildParam, false);
-    beforeStrategy2->LocateNode(w1, *iterator.get(), visits2, targets2);
+    DumpOption option;
+    beforeStrategy2->LocateNode(w1, *iterator.get(), visits2, targets2, option);
     ASSERT_EQ(targets2.size(), 1);
     ASSERT_EQ(visits2[targets2[0]].GetAttr(UiAttr::ACCESSIBILITY_ID), "7");
 }
@@ -368,7 +376,9 @@ TEST(SelectStrategyTest, beforeStrategyForAnchorIsBeforeMultiTarget)
     buildParam.myselfMatcher = myselfMatchers;
     buildParam.beforeAnchorMatcherVec.emplace_back(anchorMatchers);
     std::unique_ptr<SelectStrategy> beforeStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, true);
-    beforeStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3, false);
+    DumpOption option;
+    option.listWindows_ = false;
+    beforeStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3, option);
     ASSERT_EQ(visits3.size(), 12);
     ASSERT_EQ(targets3.size(), 2);
     ASSERT_EQ(visits3[targets3[0]].GetAttr(UiAttr::ACCESSIBILITY_ID), "4");
@@ -394,7 +404,9 @@ TEST(SelectStrategyTest, beforeStrategyForAnchorIsTargetForMultiTargets)
     buildParam.myselfMatcher = myselfMatchers;
     buildParam.beforeAnchorMatcherVec.emplace_back(anchorMatchers);
     std::unique_ptr<SelectStrategy> beforeStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, true);
-    beforeStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3, false);
+    DumpOption option;
+    option.listWindows_ = false;
+    beforeStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3, option);
     ASSERT_EQ(visits3.size(), 12);
     ASSERT_EQ(targets3.size(), 3);
     ASSERT_EQ(visits3[targets3[0]].GetAttr(UiAttr::TEXT), "Text One");
@@ -421,7 +433,9 @@ TEST(SelectStrategyTest, beforeStrategyForAnchorIsTargetForSingleTarget)
     buildParam.myselfMatcher = myselfMatchers;
     buildParam.beforeAnchorMatcherVec.emplace_back(anchorMatchers);
     std::unique_ptr<SelectStrategy> beforeStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, true);
-    beforeStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3, false);
+    DumpOption option;
+    option.listWindows_ = false;
+    beforeStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3, option);
     ASSERT_EQ(visits3.size(), 12);
     ASSERT_EQ(targets3.size(), 1);
     ASSERT_EQ(visits3[targets3[0]].GetAttr(UiAttr::TEXT), "Button");
@@ -446,8 +460,8 @@ TEST(SelectStrategyTest, withInStrategyForAnchorIsOutTarget)
     buildParam.myselfMatcher = myselfMatchers;
     buildParam.withInAnchorMatcherVec.emplace_back(anchorMatchers);
     std::unique_ptr<SelectStrategy> withInStrategy = SelectStrategy::BuildSelectStrategy(buildParam, false);
-
-    withInStrategy->LocateNode(w1, *iterator.get(), visits, targets);
+    DumpOption option;
+    withInStrategy->LocateNode(w1, *iterator.get(), visits, targets, option);
     ASSERT_EQ(visits.size(), 12);
     ASSERT_EQ(targets.size(), 0);
 }
@@ -470,7 +484,8 @@ TEST(SelectStrategyTest, withInStrategyForOneAnchorIsInTarget)
     buildParam.myselfMatcher = myselfMatchers;
     buildParam.withInAnchorMatcherVec.emplace_back(anchorMatchers);
     std::unique_ptr<SelectStrategy> withInStrategy2 = SelectStrategy::BuildSelectStrategy(buildParam, false);
-    withInStrategy2->LocateNode(w1, *iterator.get(), visits2, targets2);
+    DumpOption option;
+    withInStrategy2->LocateNode(w1, *iterator.get(), visits2, targets2, option);
     ASSERT_EQ(targets2.size(), 1);
     ASSERT_EQ(visits2[targets2[0]].GetAttr(UiAttr::ACCESSIBILITY_ID), "5");
 }
@@ -493,7 +508,8 @@ TEST(SelectStrategyTest, withInStrategyFoTwoAnchorIsInTarget)
     buildParam.myselfMatcher = myselfMatchers;
     buildParam.withInAnchorMatcherVec.emplace_back(anchorMatchers);
     std::unique_ptr<SelectStrategy> withInStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, false);
-    withInStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3);
+    DumpOption option;
+    withInStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3, option);
     ASSERT_EQ(targets3.size(), 1);
     ASSERT_EQ(visits3[targets3[0]].GetAttr(UiAttr::ACCESSIBILITY_ID), "11");
 }
@@ -517,7 +533,8 @@ TEST(SelectStrategyTest, withInStrategyFoTwoAnchorIsInMultiTarget)
     buildParam.myselfMatcher = myselfMatchers;
     buildParam.withInAnchorMatcherVec.emplace_back(anchorMatchers);
     std::unique_ptr<SelectStrategy> withInStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, true);
-    withInStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3);
+    DumpOption option;
+    withInStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3, option);
     ASSERT_EQ(targets3.size(), 3);
     ASSERT_EQ(visits3[targets3[0]].GetAttr(UiAttr::TYPE), "Image");
     ASSERT_EQ(visits3[targets3[1]].GetAttr(UiAttr::TYPE), "Image");
@@ -539,7 +556,8 @@ TEST(SelectStrategyTest, plainStrategyForOnlyOneTarget)
     StrategyBuildParam buildParam;
     buildParam.myselfMatcher = myselfMatchers;
     std::unique_ptr<SelectStrategy> plainStrategy = SelectStrategy::BuildSelectStrategy(buildParam, false);
-    plainStrategy->LocateNode(w1, *iterator.get(), visits, targets);
+    DumpOption option;
+    plainStrategy->LocateNode(w1, *iterator.get(), visits, targets, option);
     ASSERT_EQ(targets.size(), 1);
     ASSERT_EQ(visits[targets[0]].GetAttr(UiAttr::ACCESSIBILITY_ID), "4");
 }
@@ -559,7 +577,8 @@ TEST(SelectStrategyTest, plainStrategyForMultiTarget)
     StrategyBuildParam buildParam;
     buildParam.myselfMatcher = myselfMatchers;
     std::unique_ptr<SelectStrategy> plainStrategy2 = SelectStrategy::BuildSelectStrategy(buildParam, true);
-    plainStrategy2->LocateNode(w1, *iterator.get(), visits2, targets2);
+    DumpOption option;
+    plainStrategy2->LocateNode(w1, *iterator.get(), visits2, targets2, option);
     ASSERT_EQ(targets2.size(), 2);
     ASSERT_EQ(visits2[targets2[0]].GetAttr(UiAttr::ACCESSIBILITY_ID), "4");
     ASSERT_EQ(visits2[targets2[1]].GetAttr(UiAttr::ACCESSIBILITY_ID), "5");
@@ -581,7 +600,8 @@ TEST(SelectStrategyTest, plainStrategyForNoneTarget)
     StrategyBuildParam buildParam;
     buildParam.myselfMatcher = myselfMatchers;
     std::unique_ptr<SelectStrategy> plainStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, false);
-    plainStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3);
+    DumpOption option;
+    plainStrategy3->LocateNode(w1, *iterator.get(), visits3, targets3, option);
     ASSERT_EQ(visits3.size(), 12);
     ASSERT_EQ(targets3.size(), 0);
 }
@@ -611,7 +631,8 @@ TEST(SelectStrategyTest, complexStrategyForAfterAndBeforeNoneTarget)
     buildParam.afterAnchorMatcherVec.emplace_back(afterAnchorMatchers);
     buildParam.beforeAnchorMatcherVec.emplace_back(beforeAnchorMatchers);
     std::unique_ptr<SelectStrategy> plainStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, false);
-    plainStrategy3->LocateNode(w1, *iterator.get(), visits, targets);
+    DumpOption option;
+    plainStrategy3->LocateNode(w1, *iterator.get(), visits, targets, option);
     ASSERT_EQ(targets.size(), 0);
 }
 
@@ -640,7 +661,8 @@ TEST(SelectStrategyTest, complexStrategyForAfterAndBeforeSingleTarget)
     buildParam.afterAnchorMatcherVec.emplace_back(afterAnchorMatchers);
     buildParam.beforeAnchorMatcherVec.emplace_back(beforeAnchorMatchers);
     std::unique_ptr<SelectStrategy> plainStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, false);
-    plainStrategy3->LocateNode(w1, *iterator.get(), visits, targets);
+    DumpOption option;
+    plainStrategy3->LocateNode(w1, *iterator.get(), visits, targets, option);
     ASSERT_EQ(targets.size(), 1);
     ASSERT_EQ(visits.at(targets.at(0)).GetAttr(UiAttr::TYPE), "Image");
 }
@@ -670,7 +692,8 @@ TEST(SelectStrategyTest, complexStrategyForAfterAndBeforeMultiTarget)
     buildParam.afterAnchorMatcherVec.emplace_back(afterAnchorMatchers);
     buildParam.beforeAnchorMatcherVec.emplace_back(beforeAnchorMatchers);
     std::unique_ptr<SelectStrategy> plainStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, true);
-    plainStrategy3->LocateNode(w1, *iterator.get(), visits, targets);
+    DumpOption option;
+    plainStrategy3->LocateNode(w1, *iterator.get(), visits, targets, option);
     ASSERT_EQ(targets.size(), 2);
     ASSERT_EQ(visits.at(targets.at(0)).GetAttr(UiAttr::TYPE), "Image");
     ASSERT_EQ(visits.at(targets.at(1)).GetAttr(UiAttr::TYPE), "Scroll");
@@ -701,7 +724,8 @@ TEST(SelectStrategyTest, complexStrategyForAfterAndWithInNoneTarget)
     buildParam.afterAnchorMatcherVec.emplace_back(afterAnchorMatchers);
     buildParam.withInAnchorMatcherVec.emplace_back(withInAnchorMatchers);
     std::unique_ptr<SelectStrategy> plainStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, false);
-    plainStrategy3->LocateNode(w1, *iterator.get(), visits, targets);
+    DumpOption option;
+    plainStrategy3->LocateNode(w1, *iterator.get(), visits, targets, option);
     ASSERT_EQ(targets.size(), 0);
 }
 
@@ -730,7 +754,8 @@ TEST(SelectStrategyTest, complexStrategyForAfterAndWithInSingleTarget)
     buildParam.afterAnchorMatcherVec.emplace_back(afterAnchorMatchers);
     buildParam.withInAnchorMatcherVec.emplace_back(withInAnchorMatchers);
     std::unique_ptr<SelectStrategy> plainStrategy3 = SelectStrategy::BuildSelectStrategy(buildParam, false);
-    plainStrategy3->LocateNode(w1, *iterator.get(), visits, targets);
+    DumpOption option;
+    plainStrategy3->LocateNode(w1, *iterator.get(), visits, targets, option);
     ASSERT_EQ(targets.size(), 1);
     ASSERT_EQ(visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID), "4");
 }
@@ -760,7 +785,8 @@ TEST(SelectStrategyTest, complexStrategyForAfterAndWithInMultiTarget)
     buildParam.afterAnchorMatcherVec.emplace_back(afterAnchorMatchers);
     buildParam.withInAnchorMatcherVec.emplace_back(withInAnchorMatchers);
     std::unique_ptr<SelectStrategy> complexStrategy = SelectStrategy::BuildSelectStrategy(buildParam, true);
-    complexStrategy->LocateNode(w1, *iterator.get(), visits, targets);
+    DumpOption option;
+    complexStrategy->LocateNode(w1, *iterator.get(), visits, targets, option);
     ASSERT_EQ(targets.size(), 2);
     ASSERT_EQ(visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID), "5");
     ASSERT_EQ(visits.at(targets.at(1)).GetAttr(UiAttr::ACCESSIBILITY_ID), "4");

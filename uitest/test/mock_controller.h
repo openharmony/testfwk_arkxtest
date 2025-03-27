@@ -28,15 +28,18 @@ namespace OHOS::uitest {
 
         ~MockController() = default;
 
-        void GetUiWindows(std::vector<Window> &out) override
+        void GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay) override
         {
+            vector<Window> winInfos;
             for (auto iter = testIn.cbegin(); iter != testIn.cend(); ++iter) {
-                out.emplace_back(iter->second);
+                winInfos.emplace_back(iter->second);
             }
+            out.insert(make_pair(0, move(winInfos)));
         }
 
         bool GetWidgetsInWindow(const Window &winInfo,
-                                std::unique_ptr<ElementNodeIterator> &elementNodeIterator) override
+                                std::unique_ptr<ElementNodeIterator> &elementNodeIterator,
+                                AamsWorkMode mode) override
         {
             // copy ele
             auto eleCopy = windowNodeMap.at(winInfo.id_);
