@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License,Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,6 +12,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
+import hilog from '@ohos.hilog'
+let domain: number = 0x0000;
+let tag: string = 'uitestTag';
+
+export default namespace UiTest {
+  loadLibrary("uitest_ani");
+  export native function ScheduleEstablishConnection(tokken: String): void;
+}
+
+export function loadAndSetupUiTest():void {
+  hilog.info(domain, tag, 'loadAndSetupUiTest');
+  let delegator = abilityDelegatorRegistry.getAbilityDelegator();
+  hilog.info(domain, tag, 'after abilityDelegatorRegistry.getAbilityDelegator();');
+  try{
+    if (delegator!=null) {
+      hilog.info(domain, tag, 'UiTestKit_exporter: Got AbilityDelegator');
+      UiTest.ScheduleEstablishConnection("default");
+      hilog.info(domain, tag, 'UiTestKit_exporter: Begin executing shell command to start server-daemon');
+      delegator.printSync(`uitest start-daemon default`);
+      delegator.executeShellCommand(`uitest start-daemon default`, 3.0).then((value: NullishType) => {
+        hilog.info(domain, tag, `UiTestKit_exporter: Start server-daemon finished!!!!`);
+      }).catch((error:Error) :void=> {
+        hilog.error(domain, tag, "UiTestKit_exporter: Start server-daemon failed:"+error)
+      });
+    } else {
+      hilog.info(domain, tag, 'UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started');
+      UiTest.ScheduleEstablishConnection('default');
+    }
+  } catch(error){
+    hilog.error(domain, tag, "loadAndSetupUiTest failed"+error)
+  }
+}
 
 enum MatchPattern {
     EQUALS = 0,
@@ -60,44 +93,44 @@ enum MatchPattern {
     MOUSE_BUTTON_MIDDLE = 2,
   }
   
-  interface Point {
-    x: number;
-    y: number;
-  }
+native function newPoint(x:int, y:int):Point;
+native function newRect(r: int[]):Rect;
+interface Point {
+ x: number;
+ y: number;
+}
   
-  class PointInner implements Point {
-    x: number = 0;
-    y: number = 0;
-  }
+class PointInner implements Point {
+ x: number = 0;
+ y: number = 0;
+}
   
-  interface Rect {
-    left: number;
-    top: number;
-    right: number;
-    bottom: number;
-  }
+interface Rect {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
   
-  class RectInner implements Rect {
-    left: number;
-    top: number;
-    right: number;
-    bottom: number;
-  }
+class RectInner implements Rect {
+  left: number = 0;
+  top: number = 0;
+  right: number = 0;
+  bottom: number = 0;
+}
   
   interface WindowFilter {
     bundleName?: string;
     title?: string;
     focused?: boolean;
-    actived?: boolean;
     active?: boolean;
   }
   
   class WindowFilterInner implements WindowFilter {
     bundleName?: string = "";
     title?: string = "";
-    focused?: boolean;
-    actived?: boolean;
-    active?: boolean;
+    focused?: boolean = false;
+    active?: boolean = false;
   }
   
   interface UIElementInfo {
@@ -118,49 +151,11 @@ enum MatchPattern {
   }
   
   class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
-    stay?: boolean;
-    speed?: number;
-  }
-  
-  export class On {
-    static{
-      loadLibrary("uitest.z");
-    }
-    private nativeOn:string = '';
-    public constructor(on:string) {
-      this.nativeOn = on;
-    }
-    public constructor() {
-    }
-    static $_instantiate(factory: ()=> On): On {
-      let x = factory()
-      return x
-    }
-    native within(on:On): On;
-    native text(txt: string, pattern?: MatchPattern): On;
-    native id(id: string): On;
-    native type(tp: string): On;
-    native clickable(b?: boolean): On;
-    native longClickable(b?: boolean): On;
-    native scrollable(b?: boolean): On;
-    native enabled(b?: boolean): On;
-    native focused(b?: boolean): On;
-    native selected(b?: boolean): On;
-    native checked(b?: boolean): On;
-    native checkable(b?: boolean): On;
-    native isBefore(on: On): On;
-    native isAfter(on: On): On;
-    native inWindow(bundleName: string): On;
-    native description(val: string, pattern?: MatchPattern): On;
-    native id(id: string, pattern: MatchPattern): On;
-    native type(tp: string, pattern: MatchPattern): On;
-    native hint(val: string, pattern?: MatchPattern): On;
+    stay?: boolean = false;
+    speed?: number = 2000;
   }
   
   export class Component {
-    static{
-      loadLibrary("uitest.z");
-    }
     private nativeComponent:string = '';
     public constructor(Component:string) {
       if (this.nativeComponent == '') {
@@ -191,7 +186,7 @@ enum MatchPattern {
     private native isEnabledSync(): boolean;
     private native isCheckedSync(): boolean;
     private native isCheckableSync(): boolean;
-    private native comGetBounds(): Rect;
+    private native comGetBoundsSync(): Rect;
     private native getBoundsCenterSync(): Point;
   
     click():Promise<void> {
@@ -430,7 +425,7 @@ enum MatchPattern {
     }
     getBounds():Promise<Rect> {
       let promise = new Promise<Rect>((resolve: (value: Rect) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():Rect => this.comGetBounds());
+      let promise1 = taskpool.execute(():Rect => this.comGetBoundsSync());
           promise1.then((e:NullishType)=>{
               let value : Rect = e as Rect;
               resolve(value);
@@ -468,7 +463,7 @@ enum MatchPattern {
     private native getWindowModeSync(): WindowMode;
     private native GetBundleNameSync(): string;
     private native getTitileSync(): string;
-    private native getBoundsSync(): Rect;
+    private native winGetBoundsSync(): Rect;
   
     split():Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
@@ -607,7 +602,7 @@ enum MatchPattern {
   
     getBounds():Promise<Rect> {
         let promise = new Promise<Rect>((resolve: (value: Rect) => void, reject: (error: Object) => void) => {
-        let promise1 = taskpool.execute(():Rect => this.getBoundsSync());
+        let promise1 = taskpool.execute(():Rect => this.winGetBoundsSync());
             promise1.then((e:NullishType)=>{
                 let value : Rect = e as Rect;
                 resolve(value);
@@ -618,20 +613,14 @@ enum MatchPattern {
   }
   
   export class Driver {
-    private native static ScheduleEstablishConnection(tokken: String): void;
-    static{
-      loadLibrary("uitest.z");
-    }  
     private nativeDriver:string = '';
     public constructor(driver:string) {
-      if (this.nativeDriver == '') {
+        
+        hilog.info(domain, tag, 'driver:'+driver);
         this.nativeDriver = driver;
-      }
     }
-    private native comClickSync(x:number, y:number):boolean;
     private native delayMsSync(t:number):boolean;
     private native findComponentSync(on: On):Component;
-  
     native static create():Driver;
     private native clickSync(x:number, y:number):boolean;
     private native longClickSync(x:number, y:number):boolean;
@@ -1094,6 +1083,33 @@ enum MatchPattern {
     native static create(fingers: number, steps: number): PointerMatrix;
     native setPoint(finger: number, step: number, point: Point): void;
   }
+  export class On {
+    private nativeOn:String = '';
+    public constructor(on:string) {
+      hilog.info(domain, tag, "newOnBynative");
+      hilog.info(domain, tag, on);
+      this.nativeOn = on;
+    }
+    public constructor() {
+        hilog.info(domain, tag, "newOn");
+    }
+    native within(on:On): On;
+    native text(txt: string, pattern?: MatchPattern): On;
+    native clickable(b?: boolean): On;
+    native longClickable(b?: boolean): On;
+    native scrollable(b?: boolean): On;
+    native enabled(b?: boolean): On;
+    native focused(b?: boolean): On;
+    native selected(b?: boolean): On;
+    native checked(b?: boolean): On;
+    native checkable(b?: boolean): On;
+    native isBefore(on: On): On;
+    native isAfter(on: On): On;
+    native inWindow(bundleName: string): On;
+    native description(val: string, pattern?: MatchPattern): On;
+    native id(id: string, pattern?: MatchPattern): On;
+    native type(tp: string, pattern?: MatchPattern): On;
+    native hint(val: string, pattern?: MatchPattern): On;
+  }
   
-  const ON: On = new On();
-  
+export const ON: On = new On();

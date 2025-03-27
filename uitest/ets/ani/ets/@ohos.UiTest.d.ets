@@ -19,7 +19,7 @@
  */
 
  import { Callback } from './@ohos.base';
-
+ export function loadAndSetupUiTest(): void{};
  /**
   * Enumerates the string value match pattern.
   *
