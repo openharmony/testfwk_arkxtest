@@ -97,6 +97,7 @@ ohos_static_library("uitest_record") {
     "ability_runtime:ability_manager",
     "hilog:libhilog",
     "input:libmmi-client",
+    "ipc:ipc_single",
   ]
 
   subsystem_name = "testfwk"
@@ -149,6 +150,7 @@ ohos_static_library("uitest_addon") {
     "graphic_2d:librender_service_base",
     "image_framework:image_native",
     "input:libmmi-client",
+    "ipc:ipc_single",
     "json:nlohmann_json_static",
     "window_manager:libdm",
     "window_manager:libwm",
@@ -200,6 +202,7 @@ ohos_executable("uitest_server") {
     "accessibility:accessibleability",
     "image_framework:image_native",
     "input:libmmi-client",
+    "ipc:ipc_single",
     "window_manager:libdm",
     "window_manager:libwm",
   ]
@@ -269,7 +272,10 @@ ohos_shared_library("uitest_client") {
   external_deps = common_external_deps
   external_deps += [
     "ability_base:want",
+    "common_event_service:cesfwk_innerkits",
     "image_framework:image_native",
+    "ipc:ipc_single",
+    "libuv:uv",
     "napi:ace_napi",
   ]
   relative_install_dir = "module"
@@ -461,7 +467,9 @@ ohos_shared_library("cj_ui_test_ffi") {
   external_deps = common_external_deps
   external_deps += [
     "ability_base:want",
+    "common_event_service:cesfwk_innerkits",
     "image_framework:image_native",
+    "ipc:ipc_single",
     "json:nlohmann_json_static",
     "napi:cj_bind_ffi",
     "napi:cj_bind_native",

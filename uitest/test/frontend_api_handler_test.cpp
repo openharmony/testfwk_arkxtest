@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 // For testing private method
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 #define private public
 #include "frontend_api_handler.h"
 #undef private
@@ -434,7 +434,8 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks2)
     auto call1 = ApiCallInfo {.apiId_ = "By.type", .callerObjRef_ = string(REF_SEED_BY)};
     auto reply1 = ApiReplyInfo();
     call1.paramList_.emplace_back("wyz");
-    call1.paramList_.emplace_back("zl");
+    call1.paramList_.emplace_back(1);
+    call1.paramList_.emplace_back(1);
     server.Call(call1, reply1);
     ASSERT_EQ(USAGE_ERROR, reply1.exception_.code_);
     ASSERT_TRUE(reply1.exception_.message_.find("Illegal argument count") != string::npos);
@@ -489,6 +490,41 @@ TEST_F(FrontendApiHandlerTest, parameterPreChecks3)
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
     ASSERT_TRUE(reply1.exception_.message_.find("Expect integer which cannot be less than 0") != string::npos);
+}
+
+TEST_F(FrontendApiHandlerTest, parameterPreChecks4)
+{
+    const auto& server =  FrontendApiServer::Get();
+    // call with argument missing
+    auto call0 = ApiCallInfo {.apiId_ = "On.id", .callerObjRef_ = string(REF_SEED_BY)};
+    auto reply0 = ApiReplyInfo();
+    server.Call(call0, reply0);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply0.exception_.code_);
+    ASSERT_TRUE(reply0.exception_.message_.find("Illegal argument count") != string::npos);
+    // call with argument redundant
+    auto call1 = ApiCallInfo {.apiId_ = "On.id", .callerObjRef_ = string(REF_SEED_BY)};
+    auto reply1 = ApiReplyInfo();
+    call1.paramList_.emplace_back("wyz");
+    call1.paramList_.emplace_back(1);
+    call1.paramList_.emplace_back(1);
+    server.Call(call1, reply1);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply1.exception_.code_);
+    ASSERT_TRUE(reply1.exception_.message_.find("Illegal argument count") != string::npos);
+    // call with argument of wrong type
+    auto call2 = ApiCallInfo {.apiId_ = "On.text", .callerObjRef_ = string(REF_SEED_BY)};
+    auto reply2 = ApiReplyInfo();
+    call2.paramList_.emplace_back(1);
+    server.Call(call2, reply2);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply2.exception_.code_);
+    ASSERT_TRUE(reply2.exception_.message_.find("Expect string") != string::npos);
+    // call with argument of wrong type
+    auto call3 = ApiCallInfo {.apiId_ = "On.text", .callerObjRef_ = string(REF_SEED_BY)};
+    auto reply3 = ApiReplyInfo();
+    call3.paramList_.emplace_back("text");
+    call3.paramList_.emplace_back("REG_EXP");
+    server.Call(call3, reply3);
+    ASSERT_EQ(ERR_INVALID_INPUT, reply3.exception_.code_);
+    ASSERT_TRUE(reply3.exception_.message_.find("Expect integer") != string::npos);
 }
 
 TEST_F(FrontendApiHandlerTest, pointerMatrixparameterPreChecks)
@@ -702,4 +738,32 @@ TEST_F(FrontendApiHandlerTest, onEventCallback)
     // Works once
     monitor.OnEvent("toastShow");
     ASSERT_EQ("capture event: toastShow,dialogShow,", result);
+}
+
+TEST_F(FrontendApiHandlerTest, touchPadMultiFingerSwipeParameterPreChecks)
+{
+    const auto& server =  FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.touchPadMultiFingerSwipe",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    call2.paramList_.emplace_back(2);
+    call2.paramList_.emplace_back(0);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    ASSERT_EQ(USAGE_ERROR, reply2.exception_.code_);
+    ASSERT_TRUE(reply2.exception_.message_.find("Number of illegal fingers") != string::npos);
+
+    auto call3 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply3 = ApiReplyInfo();
+    server.Call(call3, reply3);
+    auto call4 = ApiCallInfo {.apiId_ = "UiDriver.touchPadMultiFingerSwipe",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    call4.paramList_.emplace_back(5);
+    call4.paramList_.emplace_back(0);
+    auto reply4 = ApiReplyInfo();
+    server.Call(call4, reply4);
+    ASSERT_EQ(USAGE_ERROR, reply4.exception_.code_);
+    ASSERT_TRUE(reply4.exception_.message_.find("Number of illegal fingers") != string::npos);
 }

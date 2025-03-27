@@ -27,7 +27,9 @@ namespace OHOS::uitest {
     using namespace nlohmann;
     const std::string ROOT_HIERARCHY = "ROOT";
     /**Enumerates the supported string value match rules.*/
-    enum ValueMatchPattern : uint8_t { EQ, CONTAINS, STARTS_WITH, ENDS_WITH };
+    enum ValueMatchPattern : uint8_t { EQ, CONTAINS, STARTS_WITH, ENDS_WITH, REG_EXP, REG_EXP_ICASE };
+
+    enum AamsWorkMode : uint8_t { NORMAL, FASTGETNODE, END };
 
     /**Enumerates the supported UiComponent attributes.*/
     enum UiAttr : uint8_t {
@@ -47,6 +49,7 @@ namespace OHOS::uitest {
         CHECKABLE,
         CHECKED,
         HOST_WINDOW_ID,
+        DISPLAY_ID,
         ORIGBOUNDS,
         ZINDEX,
         OPACITY,
@@ -86,6 +89,7 @@ namespace OHOS::uitest {
         "checkable",     // CHECKABLE
         "checked",       // CHECKED
         "hostWindowId",  // HOST_WINDOW_ID
+        "displayId",     // DISPLAY_ID
         "origBounds",    // ORIGBOUNDS
         "zIndex",        // ZINDEX
         "opacity",       //OPACITY
@@ -106,30 +110,30 @@ namespace OHOS::uitest {
     };
 
     struct Point {
-        Point() : px_(0), py_(0){};
-        Point(int32_t px, int32_t py) : px_(px), py_(py){};
+        Point() : px_(0), py_(0), displayId_(-1) {};
+        Point(int32_t px, int32_t py, int32_t displayId = -1) : px_(px), py_(py), displayId_(displayId) {};
         int32_t px_;
         int32_t py_;
+        int32_t displayId_;
     };
 
     /**Represents a reasonable rectangle area.*/
     struct Rect {
-        Rect(int32_t left, int32_t right, int32_t top, int32_t bottom)
-            : left_(left), right_(right), top_(top), bottom_(bottom)
-        {
-            DCHECK(right_ >= left_ && bottom_ >= top_);
-        };
+        Rect(int32_t left, int32_t right, int32_t top, int32_t bottom, int32_t displayId = -1)
+            : left_(left), right_(right), top_(top), bottom_(bottom), displayId_(displayId) {};
         Rect()
         {
             left_ = 0;
             right_ = 0;
             top_ = 0;
             bottom_ = 0;
+            displayId_ = -1;
         };
         int32_t left_;
         int32_t right_;
         int32_t top_;
         int32_t bottom_;
+        int32_t displayId_;
 
         FORCE_INLINE int32_t GetCenterX() const
         {
@@ -253,6 +257,17 @@ namespace OHOS::uitest {
             return hierarchy_;
         }
 
+        int32_t GetDisplayId() const
+        {
+            return displayId_;
+        }
+
+        void SetDisplayId(const int32_t id)
+        {
+            displayId_ = id;
+            attributeVec_[UiAttr::DISPLAY_ID] = to_string(id);
+        }
+
         void SetBounds(const Rect &bounds);
 
         std::string ToStr() const;
@@ -279,6 +294,7 @@ namespace OHOS::uitest {
         std::string hierarchy_;
         std::vector<string> attributeVec_ = std::vector<string>(UiAttr::MAX + 1);
         Rect bounds_ = {0, 0, 0, 0};
+        std::int32_t displayId_ = 0;
     };
 
     // ensure Widget is movable, since we need to move a constructed Widget object into WidgetTree
@@ -313,6 +329,9 @@ namespace OHOS::uitest {
         std::string abilityName_ = "";
         std::string pagePath_ = "";
         WindowMode mode_ = UNKNOWN;
+        int32_t displayId_ = 0;
+        std::vector<Rect> touchHotAreas_;
+        Point offset_ = {0, 0};
     };
 
     class DumpHandler {
@@ -331,6 +350,16 @@ namespace OHOS::uitest {
 
     private:
         static constexpr auto HIERARCHY_SEPARATOR = ",";
+    };
+
+    struct DumpOption {
+        string savePath_ = "";
+        bool listWindows_ = false;
+        bool addExternAttr_ = false;
+        string bundleName_ = "";
+        string windowId_ = "";
+        bool notMergeWindow_ = false;
+        int32_t displayId_ = 0;
     };
 } // namespace OHOS::uitest
 

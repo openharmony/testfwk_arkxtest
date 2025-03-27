@@ -46,11 +46,11 @@ namespace OHOS::uitest {
         virtual void SetWantMulti(bool isWantMulti);
         virtual StrategyEnum GetStrategyType() const = 0;
         virtual void LocateNode(const Window &window, ElementNodeIterator &elementNodeRef,
-            vector<Widget> &visitWidgets, vector<int> &targetWidgets, bool isSkipInvisible = true) = 0;
+            vector<Widget> &visitWidgets, vector<int> &targetWidgets, const DumpOption &option) = 0;
         virtual ~SelectStrategy();
 
     protected:
-        virtual void RefreshWidgetBounds(Widget &widget);
+        virtual void RefreshWidgetBounds(Widget &widget, const Window &window);
         virtual void CalcWidgetVisibleBounds(Widget &widget);
         std::vector<WidgetMatchModel> anchorMatch_;
         std::vector<WidgetMatchModel> myselfMatch_;

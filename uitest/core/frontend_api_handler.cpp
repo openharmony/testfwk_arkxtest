@@ -15,6 +15,9 @@
 
 #include <sstream>
 #include <unistd.h>
+#include <regex.h>
+#include <cstdio>
+#include <cstdlib>
 #include "ui_driver.h"
 #include "widget_operator.h"
 #include "window_operator.h"
@@ -170,10 +173,16 @@ namespace OHOS::uitest {
 
     static void ParseExtensionMethodsSignature()
     {
-        auto paramTypes = vector<string>();
-        paramTypes.push_back("");
-        string extension = "Component.getAllProperties";
-        sApiArgTypesMap.insert(make_pair(extension, make_pair(paramTypes, 0)));
+        auto paramTypesForGetAllProperties = vector<string>();
+        paramTypesForGetAllProperties.push_back("");
+        string methodForGetAllProperties = "Component.getAllProperties";
+        sApiArgTypesMap.insert(make_pair(methodForGetAllProperties, make_pair(paramTypesForGetAllProperties, 0)));
+
+        auto paramTypesForAamsWorkMode = vector<string>();
+        paramTypesForAamsWorkMode.push_back("int");
+        paramTypesForAamsWorkMode.push_back("");
+        string methodForAamsWorkMode = "Driver.SetAamsWorkMode";
+        sApiArgTypesMap.insert(make_pair(methodForAamsWorkMode, make_pair(paramTypesForAamsWorkMode, 0)));
     }
 
     static string GetClassName(const string &apiName, char splitter)
@@ -615,6 +624,22 @@ namespace OHOS::uitest {
         }
     }
 
+    ApiCallErr CheckRegExp(string regex)
+    {
+        regex_t preg;
+        int rc;
+        const int errorLength = 100;
+        char errorBuffer[errorLength] = "";
+        ApiCallErr error(NO_ERROR);
+        char *patternValue = const_cast<char*>(regex.data());
+        if ((rc = regcomp(&preg, patternValue, REG_EXTENDED)) != 0) {
+            regerror(rc, &preg, errorBuffer, errorLength);
+            LOG_E("Regcomp error : %{public}s", errorBuffer);
+            error.code_ = ERR_INVALID_INPUT;
+            error.message_ = errorBuffer;
+        }
+        return error;
+    }
     template <UiAttr kAttr, typename T> static void GenericOnAttrBuilder(const ApiCallInfo &in, ApiReplyInfo &out)
     {
         // always create and return a new selector
@@ -631,6 +656,13 @@ namespace OHOS::uitest {
             testValue = to_string(ReadCallArg<T>(in, INDEX_ZERO));
         }
         auto matchPattern = ReadCallArg<uint8_t>(in, INDEX_ONE, ValueMatchPattern::EQ); // match pattern argument
+        if (matchPattern == ValueMatchPattern::REG_EXP || matchPattern == ValueMatchPattern::REG_EXP_ICASE) {
+            out.exception_.code_ = NO_ERROR;
+            out.exception_ = CheckRegExp(testValue);
+        }
+        if (out.exception_.code_ != NO_ERROR) {
+            return;
+        }
         auto matcher = WidgetMatchModel(kAttr, testValue, static_cast<ValueMatchPattern>(matchPattern));
         selector->AddMatcher(matcher);
         out.resultValue_ = StoreBackendObject(move(selector));
@@ -644,6 +676,7 @@ namespace OHOS::uitest {
         server.AddHandler("On.id", GenericOnAttrBuilder<UiAttr::ID, string>);
         server.AddHandler("On.description", GenericOnAttrBuilder<UiAttr::DESCRIPTION, string>);
         server.AddHandler("On.type", GenericOnAttrBuilder<UiAttr::TYPE, string>);
+        server.AddHandler("On.hint", GenericOnAttrBuilder<UiAttr::HINT, string>);
         server.AddHandler("On.enabled", GenericOnAttrBuilder<UiAttr::ENABLED, bool>);
         server.AddHandler("On.focused", GenericOnAttrBuilder<UiAttr::FOCUSED, bool>);
         server.AddHandler("On.selected", GenericOnAttrBuilder<UiAttr::SELECTED, bool>);
@@ -672,6 +705,9 @@ namespace OHOS::uitest {
             } else if (attrName == "inWindow") {
                 auto hostApp = ReadCallArg<string>(in, INDEX_ZERO);
                 selector->AddAppLocator(hostApp);
+            } else if (attrName == "inDisplay") {
+                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO);
+                selector->AddDisplayLocator(displayId);
             }
             out.resultValue_ = StoreBackendObject(move(selector));
         };
@@ -679,6 +715,7 @@ namespace OHOS::uitest {
         server.AddHandler("On.isAfter", genericRelativeBuilder);
         server.AddHandler("On.within", genericRelativeBuilder);
         server.AddHandler("On.inWindow", genericRelativeBuilder);
+        server.AddHandler("On.inDisplay", genericRelativeBuilder);
     }
 
     static void RegisterUiDriverComponentFinders()
@@ -753,6 +790,9 @@ namespace OHOS::uitest {
                 if (filterJson.contains("active")) {
                     match = match && (filterJson["active"].get<bool>() == window.actived_);
                 }
+                if (filterJson.contains("displayId")) {
+                    match = match && (filterJson["displayId"].get<int32_t>() == window.displayId_);
+                }
                 return match;
             };
             auto window = driver.FindWindow(matcher, out.exception_);
@@ -799,9 +839,9 @@ namespace OHOS::uitest {
                 rect = Rect(rectJson["left"], rectJson["right"], rectJson["top"], rectJson["bottom"]);
             }
             auto fd = ReadCallArg<uint32_t>(in, INDEX_ZERO);
-            driver.TakeScreenCap(fd, out.exception_, rect);
+            auto displayId = ReadCallArg<uint32_t>(in, INDEX_TWO, UNASSIGNED);
+            driver.TakeScreenCap(fd, out.exception_, rect, displayId);
             out.resultValue_ = (out.exception_.code_ == NO_ERROR);
-            (void) close(fd);
         };
         server.AddHandler("Driver.screenCap", screenCap);
         server.AddHandler("Driver.screenCapture", screenCap);
@@ -841,12 +881,12 @@ namespace OHOS::uitest {
             driver.TriggerKey(keyAction, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.triggerCombineKeys", triggerCombineKeys);
-
         auto inputText = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto point = Point(pointJson["x"], pointJson["y"]);
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
+            auto point = Point(pointJson["x"], pointJson["y"], displayId);
             auto text = ReadCallArg<string>(in, INDEX_ONE);
             auto touch = GenericClick(TouchOp::CLICK, point);
             driver.PerformTouch(touch, uiOpArgs, out.exception_);
@@ -883,14 +923,47 @@ namespace OHOS::uitest {
         }
     }
 
+    static void TouchParamsConverts(const ApiCallInfo &in, Point &point0, Point &point1, UiOpArgs &uiOpArgs)
+    {
+        auto params = in.paramList_;
+        if (params.size() == 1) {
+            auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
+            point0 = Point(pointJson["x"], pointJson["y"], displayId);
+            return;
+        }
+        if (params.at(1).type() != value_t::object) {
+            if (params.size() == TWO) {
+                point0 = Point(ReadCallArg<int32_t>(in, INDEX_ZERO), ReadCallArg<int32_t>(in, INDEX_ONE));
+                return;
+            } else {
+                point0 = Point(ReadCallArg<int32_t>(in, INDEX_ZERO), ReadCallArg<int32_t>(in, INDEX_ONE));
+                point1 = Point(ReadCallArg<int32_t>(in, INDEX_TWO), ReadCallArg<int32_t>(in, INDEX_THREE));
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
+                return;
+            }
+        } else {
+            auto pointJson0 = ReadCallArg<json>(in, INDEX_ZERO);
+            auto displayId0 = ReadArgFromJson<int32_t>(pointJson0, "displayId", UNASSIGNED);
+            point0 = Point(pointJson0["x"], pointJson0["y"], displayId0);
+
+            auto pointJson1 = ReadCallArg<json>(in, INDEX_ONE);
+            auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
+            point1 = Point(pointJson1["x"], pointJson1["y"], displayId1);
+            uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
+            return;
+        }
+    }
+
     static void RegisterUiDriverTouchOperators()
     {
         auto &server = FrontendApiServer::Get();
         auto genericClick = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
-            const auto point0 = Point(ReadCallArg<int32_t>(in, INDEX_ZERO), ReadCallArg<int32_t>(in, INDEX_ONE));
+            auto point0 = Point(0, 0);
             auto point1 = Point(0, 0);
             UiOpArgs uiOpArgs;
+            TouchParamsConverts(in, point0, point1, uiOpArgs);
             auto op = TouchOp::CLICK;
             if (in.apiId_ == "Driver.longClick") {
                 op = TouchOp::LONG_CLICK;
@@ -898,15 +971,10 @@ namespace OHOS::uitest {
                 op = TouchOp::DOUBLE_CLICK_P;
             } else if (in.apiId_ == "Driver.swipe") {
                 op = TouchOp::SWIPE;
-                uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
-                CheckSwipeVelocityPps(uiOpArgs);
-                point1 = Point(ReadCallArg<int32_t>(in, INDEX_TWO), ReadCallArg<int32_t>(in, INDEX_THREE));
             } else if (in.apiId_ == "Driver.drag") {
                 op = TouchOp::DRAG;
-                uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
-                CheckSwipeVelocityPps(uiOpArgs);
-                point1 = Point(ReadCallArg<int32_t>(in, INDEX_TWO), ReadCallArg<int32_t>(in, INDEX_THREE));
             }
+            CheckSwipeVelocityPps(uiOpArgs);
             if (op == TouchOp::SWIPE || op == TouchOp::DRAG) {
                 auto touch = GenericSwipe(op, point0, point1);
                 driver.PerformTouch(touch, uiOpArgs, out.exception_);
@@ -969,10 +1037,13 @@ namespace OHOS::uitest {
             auto params = in.paramList_;
             Point from;
             Point to;
-            if (params.size() == INDEX_TWO) {
-                auto screenSize = driver.GetDisplaySize(out.exception_);
+            if (params.size() != INDEX_FOUR) {
+                auto displayId = ReadCallArg<int32_t>(in, INDEX_TWO, UNASSIGNED);
+                auto screenSize = driver.GetDisplaySize(out.exception_, displayId);
                 auto direction = ReadCallArg<Direction>(in, INDEX_ZERO);
                 CreateFlingPoint(to, from, screenSize, direction);
+                to.displayId_ = displayId;
+                from.displayId_ = displayId;
                 uiOpArgs.swipeStepsCounts_ = INDEX_TWO;
                 uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_ONE);
             } else {
@@ -982,8 +1053,10 @@ namespace OHOS::uitest {
                     out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Point cannot be empty");
                     return;
                 }
-                from = Point(pointJson0["x"], pointJson0["y"]);
-                to = Point(pointJson1["x"], pointJson1["y"]);
+                auto displayId0 = ReadArgFromJson<int32_t>(pointJson0, "displayId", UNASSIGNED);
+                auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
+                from = Point(pointJson0["x"], pointJson0["y"], displayId0);
+                to = Point(pointJson1["x"], pointJson1["y"], displayId1);
                 auto stepLength = ReadCallArg<uint32_t>(in, INDEX_TWO);
                 uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_THREE);
                 const int32_t distanceX = to.px_ - from.px_;
@@ -1008,19 +1081,28 @@ namespace OHOS::uitest {
         auto multiPointerAction = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto &pointer = GetBackendObject<PointerMatrix>(ReadCallArg<string>(in, INDEX_ZERO));
-            auto flag = CheckMultiPointerOperatorsPoint(pointer);
-            if (!flag) {
+            if (!CheckMultiPointerOperatorsPoint(pointer)) {
                 out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "There is not all coordinate points are set");
                 return;
             }
             UiOpArgs uiOpArgs;
-            uiOpArgs.swipeVelocityPps_  = ReadCallArg<uint32_t>(in, INDEX_ONE, uiOpArgs.swipeVelocityPps_);
-            CheckSwipeVelocityPps(uiOpArgs);
+            uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_ONE, uiOpArgs.swipeVelocityPps_);
             auto touch = MultiPointerAction(pointer);
-            driver.PerformTouch(touch, uiOpArgs, out.exception_);
-            out.resultValue_ = (out.exception_.code_ == NO_ERROR);
+            CheckSwipeVelocityPps(uiOpArgs);
+            if (in.apiId_ == "Driver.injectMultiPointerAction") {
+                driver.PerformTouch(touch, uiOpArgs, out.exception_);
+                out.resultValue_ = (out.exception_.code_ == NO_ERROR);
+            } else if (in.apiId_ == "Driver.injectPenPointerAction") {
+                if (pointer.GetFingers() != 1) {
+                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Finger number must be 1 when injecting pen action");
+                    return;
+                }
+                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_TWO, uiOpArgs.touchPressure_);
+                driver.PerformPenTouch(touch, uiOpArgs, out.exception_);
+            }
         };
         server.AddHandler("Driver.injectMultiPointerAction", multiPointerAction);
+        server.AddHandler("Driver.injectPenPointerAction", multiPointerAction);
     }
 
     static void RegisterUiDriverMouseOperators1()
@@ -1030,7 +1112,9 @@ namespace OHOS::uitest {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto point = Point(pointJson["x"], pointJson["y"]);
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
+
+            auto point = Point(pointJson["x"], pointJson["y"], displayId);
             auto button = ReadCallArg<MouseButton>(in, INDEX_ONE);
             auto key1 = ReadCallArg<int32_t>(in, INDEX_TWO, KEYCODE_NONE);
             auto key2 = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
@@ -1046,27 +1130,29 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.mouseClick", mouseClick);
         server.AddHandler("Driver.mouseDoubleClick", mouseClick);
         server.AddHandler("Driver.mouseLongClick", mouseClick);
+        auto mouseMoveTo = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
+            UiOpArgs uiOpArgs;
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
+            auto point = Point(pointJson["x"], pointJson["y"], displayId);
+            auto touch = MouseMoveTo(point);
+            driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
+        };
+        server.AddHandler("Driver.mouseMoveTo", mouseMoveTo);
     }
 
     static void RegisterUiDriverMouseOperators2()
     {
         auto &server = FrontendApiServer::Get();
-        auto mouseMoveTo = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
-            UiOpArgs uiOpArgs;
-            auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto point = Point(pointJson["x"], pointJson["y"]);
-            auto touch = MouseMoveTo(point);
-            driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
-        };
-        server.AddHandler("Driver.mouseMoveTo", mouseMoveTo);
-
         auto mouseSwipe = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto pointJson1 = ReadCallArg<json>(in, INDEX_ZERO);
             auto pointJson2 = ReadCallArg<json>(in, INDEX_ONE);
-            auto from = Point(pointJson1["x"], pointJson1["y"]);
-            auto to = Point(pointJson2["x"], pointJson2["y"]);
+            auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
+            auto displayId2 = ReadArgFromJson<int32_t>(pointJson2, "displayId", UNASSIGNED);
+            auto from = Point(pointJson1["x"], pointJson1["y"], displayId1);
+            auto to = Point(pointJson2["x"], pointJson2["y"], displayId2);
             UiOpArgs uiOpArgs;
             uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
             CheckSwipeVelocityPps(uiOpArgs);
@@ -1079,12 +1165,12 @@ namespace OHOS::uitest {
         };
         server.AddHandler("Driver.mouseMoveWithTrack", mouseSwipe);
         server.AddHandler("Driver.mouseDrag", mouseSwipe);
-
         auto mouseScroll = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto point = Point(pointJson["x"], pointJson["y"]);
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
+            auto point = Point(pointJson["x"], pointJson["y"], displayId);
             auto scrollValue = ReadCallArg<int32_t>(in, INDEX_TWO);
             auto adown = ReadCallArg<bool>(in, INDEX_ONE);
             scrollValue = adown ? scrollValue : -scrollValue;
@@ -1102,6 +1188,93 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.mouseScroll", mouseScroll);
     }
 
+    static void RegisterUiDriverTouchPadOperators()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto touchPadMultiFingerSwipe = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto fingers = ReadCallArg<int32_t>(in, INDEX_ZERO);
+            if (fingers < 3 || fingers > 4) {
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Number of illegal fingers");
+                return;
+            }
+            auto direction = ReadCallArg<Direction>(in, INDEX_ONE);
+            if (direction < TO_LEFT || direction > TO_DOWN) {
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Illegal direction");
+                return;
+            }
+            auto stay = false;
+            auto speed = uiOpArgs.defaultTouchPadSwipeVelocityPps_;
+            auto touchPadSwipeOptions = ReadCallArg<json>(in, INDEX_TWO, json());
+            if (!touchPadSwipeOptions.empty()) {
+                if (touchPadSwipeOptions.contains("stay") && touchPadSwipeOptions["stay"].is_boolean()) {
+                    stay = touchPadSwipeOptions["stay"];
+                }
+                if (touchPadSwipeOptions.contains("speed") && touchPadSwipeOptions["speed"].is_number()) {
+                    speed = touchPadSwipeOptions["speed"];
+                }
+                if (speed < uiOpArgs.minSwipeVelocityPps_ || speed > uiOpArgs.maxSwipeVelocityPps_) {
+                    LOG_W("The swipe velocity out of range");
+                    speed = uiOpArgs.defaultTouchPadSwipeVelocityPps_;
+                }
+            }
+            uiOpArgs.swipeVelocityPps_ = speed;
+            auto touch = TouchPadAction(fingers, direction, stay);
+            driver.PerformTouchPadAction(touch, uiOpArgs, out.exception_);
+        };
+        server.AddHandler("Driver.touchPadMultiFingerSwipe", touchPadMultiFingerSwipe);
+    }
+
+    static void RegisterUiDriverPenOperators()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto genericPenAction = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto point0Json = ReadCallArg<json>(in, INDEX_ZERO);
+            auto displayId = ReadArgFromJson<int32_t>(point0Json, "displayId", UNASSIGNED);
+            const auto point0 = Point(point0Json["x"], point0Json["y"], displayId);
+            const auto screenSize = driver.GetDisplaySize(out.exception_, displayId);
+            const auto screen = Rect(0, screenSize.px_, 0, screenSize.py_);
+            if (!RectAlgorithm::IsInnerPoint(screen, point0)) {
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "The point is not on the screen");
+                return;
+            }
+            auto point1 = Point(0, 0);
+            auto op = TouchOp::CLICK;
+            if (in.apiId_ == "Driver.penLongClick") {
+                op = TouchOp::LONG_CLICK;
+                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_ONE, uiOpArgs.touchPressure_);
+            } else if (in.apiId_ == "Driver.penDoubleClick") {
+                op = TouchOp::DOUBLE_CLICK_P;
+            } else if (in.apiId_ == "Driver.penSwipe") {
+                op = TouchOp::SWIPE;
+                uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
+                CheckSwipeVelocityPps(uiOpArgs);
+                auto point1Json = ReadCallArg<json>(in, INDEX_ONE);
+                auto displayId1 = ReadArgFromJson<int32_t>(point1Json, "displayId", UNASSIGNED);
+                point1 = Point(point1Json["x"], point1Json["y"], displayId1);
+                if (!RectAlgorithm::IsInnerPoint(screen, point1)) {
+                    out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "The point is not on the screen");
+                    return;
+                }
+                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_THREE, uiOpArgs.touchPressure_);
+            }
+            if (op == TouchOp::SWIPE) {
+                auto touch = GenericSwipe(op, point0, point1);
+                driver.PerformPenTouch(touch, uiOpArgs, out.exception_);
+            } else {
+                auto touch = GenericClick(op, point0);
+                driver.PerformPenTouch(touch, uiOpArgs, out.exception_);
+            }
+        };
+        server.AddHandler("Driver.penClick", genericPenAction);
+        server.AddHandler("Driver.penLongClick", genericPenAction);
+        server.AddHandler("Driver.penDoubleClick", genericPenAction);
+        server.AddHandler("Driver.penSwipe", genericPenAction);
+    }
+
     static void RegisterUiDriverDisplayOperators()
     {
         auto &server = FrontendApiServer::Get();
@@ -1111,7 +1284,8 @@ namespace OHOS::uitest {
                 auto rotation = ReadCallArg<DisplayRotation>(in, INDEX_ZERO);
                 driver.SetDisplayRotation(rotation, out.exception_);
             } else if (in.apiId_ == "Driver.getDisplayRotation") {
-                out.resultValue_ = driver.GetDisplayRotation(out.exception_);
+                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, UNASSIGNED);
+                out.resultValue_ = driver.GetDisplayRotation(out.exception_, displayId);
             } else if (in.apiId_ == "Driver.setDisplayRotationEnabled") {
                 auto enabled = ReadCallArg<bool>(in, INDEX_ZERO);
                 driver.SetDisplayRotationEnabled(enabled, out.exception_);
@@ -1122,13 +1296,15 @@ namespace OHOS::uitest {
             } else if (in.apiId_ == "Driver.wakeUpDisplay") {
                 driver.WakeUpDisplay(out.exception_);
             } else if (in.apiId_ == "Driver.getDisplaySize") {
-                auto result = driver.GetDisplaySize(out.exception_);
+                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, UNASSIGNED);
+                auto result = driver.GetDisplaySize(out.exception_, displayId);
                 json data;
                 data["x"] = result.px_;
                 data["y"] = result.py_;
                 out.resultValue_ = data;
             } else if (in.apiId_ == "Driver.getDisplayDensity") {
-                auto result = driver.GetDisplayDensity(out.exception_);
+                auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, UNASSIGNED);
+                auto result = driver.GetDisplayDensity(out.exception_, displayId);
                 json data;
                 data["x"] = result.px_;
                 data["y"] = result.py_;
@@ -1160,6 +1336,7 @@ namespace OHOS::uitest {
             json data;
             data["x"] = bounds.GetCenterX();
             data["y"] = bounds.GetCenterY();
+            data["displayId"] = snapshot->GetDisplayId();
             out.resultValue_ = data;
             return;
         }
@@ -1170,7 +1347,12 @@ namespace OHOS::uitest {
             data["top"] = bounds.top_;
             data["right"] = bounds.right_;
             data["bottom"] = bounds.bottom_;
+            data["displayId"] = snapshot->GetDisplayId();
             out.resultValue_ = data;
+            return;
+        }
+        if (attrName == ATTR_NAMES[UiAttr::DISPLAY_ID]) {
+            out.resultValue_ = snapshot->GetDisplayId();
             return;
         }
         // convert value-string to json value of target type
@@ -1212,6 +1394,14 @@ static void RegisterExtensionHandler()
         out.resultValue_ = data;
     };
     server.AddHandler("Component.getAllProperties", genericOperationHandler);
+
+    auto genericSetModeHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+        auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+        auto mode = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+        DCHECK(mode < AamsWorkMode::END);
+        driver.SetAamsWorkMode(static_cast<AamsWorkMode>(mode));
+    };
+    server.AddHandler("Driver.SetAamsWorkMode", genericSetModeHandler);
 }
 
     static void RegisterUiComponentAttrGetters()
@@ -1219,6 +1409,7 @@ static void RegisterExtensionHandler()
         auto &server = FrontendApiServer::Get();
         server.AddHandler("Component.getAccessibilityId", GenericComponentAttrGetter<UiAttr::ACCESSIBILITY_ID>);
         server.AddHandler("Component.getText", GenericComponentAttrGetter<UiAttr::TEXT, true>);
+        server.AddHandler("Component.getHint", GenericComponentAttrGetter<UiAttr::HINT, true>);
         server.AddHandler("Component.getDescription", GenericComponentAttrGetter<UiAttr::DESCRIPTION, true>);
         server.AddHandler("Component.getId", GenericComponentAttrGetter<UiAttr::ID, true>);
         server.AddHandler("Component.getType", GenericComponentAttrGetter<UiAttr::TYPE, true>);
@@ -1232,6 +1423,7 @@ static void RegisterExtensionHandler()
         server.AddHandler("Component.isChecked", GenericComponentAttrGetter<UiAttr::CHECKED>);
         server.AddHandler("Component.getBounds", GenericComponentAttrGetter<UiAttr::BOUNDS>);
         server.AddHandler("Component.getBoundsCenter", GenericComponentAttrGetter<UiAttr::BOUNDSCENTER>);
+        server.AddHandler("Component.getDisplayId", GenericComponentAttrGetter<UiAttr::DISPLAY_ID>);
     }
 
     static void RegisterUiComponentOperators1()
@@ -1263,12 +1455,6 @@ static void RegisterExtensionHandler()
                 wOp.InputText(ReadCallArg<string>(in, INDEX_ZERO), out.exception_);
             } else if (in.apiId_ == "Component.clearText") {
                 wOp.InputText("", out.exception_);
-            } else if (in.apiId_ == "Component.scrollSearch") {
-                auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
-                auto res = wOp.ScrollFindWidget(selector, out.exception_);
-                if (res != nullptr) {
-                    out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
-                }
             }
         };
         server.AddHandler("Component.click", genericOperationHandler);
@@ -1279,7 +1465,6 @@ static void RegisterExtensionHandler()
         server.AddHandler("Component.dragTo", genericOperationHandler);
         server.AddHandler("Component.inputText", genericOperationHandler);
         server.AddHandler("Component.clearText", genericOperationHandler);
-        server.AddHandler("Component.scrollSearch", genericOperationHandler);
     }
 
     static void RegisterUiComponentOperators2()
@@ -1302,10 +1487,22 @@ static void RegisterExtensionHandler()
                     out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which ranges from 0 to 1.");
                 }
                 wOp.PinchWidget(pinchScale, out.exception_);
+            } else if (in.apiId_ == "Component.scrollSearch") {
+                auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
+                bool vertical = ReadCallArg<bool>(in, INDEX_ONE, true);
+                uiOpArgs.scrollWidgetDeadZone_ = ReadCallArg<int32_t>(in, INDEX_TWO, 80);
+                if (!wOp.CheckDeadZone(vertical, out.exception_)) {
+                    return;
+                }
+                auto res = wOp.ScrollFindWidget(selector, vertical, out.exception_);
+                if (res != nullptr) {
+                    out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
+                }
             }
         };
         server.AddHandler("Component.pinchOut", genericOperationHandler);
         server.AddHandler("Component.pinchIn", genericOperationHandler);
+        server.AddHandler("Component.scrollSearch", genericOperationHandler);
     }
 
     static void RegisterUiWindowAttrGetters()
@@ -1327,6 +1524,7 @@ static void RegisterExtensionHandler()
                 data["top"] = snapshot->bounds_.top_;
                 data["right"] = snapshot->bounds_.right_;
                 data["bottom"] = snapshot->bounds_.bottom_;
+                data["displayId"] = snapshot->displayId_;
                 out.resultValue_ = data;
             } else if (in.apiId_ == "UiWindow.getTitle") {
                 out.resultValue_ = snapshot->title_;
@@ -1336,6 +1534,8 @@ static void RegisterExtensionHandler()
                 out.resultValue_ = snapshot->focused_;
             } else if (in.apiId_ == "UiWindow.isActive") {
                 out.resultValue_ = snapshot->actived_;
+            } else if (in.apiId_ == "UiWindow.getDisplayId") {
+                out.resultValue_ = snapshot->displayId_;
             }
         };
         server.AddHandler("UiWindow.getBundleName", genericGetter);
@@ -1344,23 +1544,28 @@ static void RegisterExtensionHandler()
         server.AddHandler("UiWindow.getWindowMode", genericGetter);
         server.AddHandler("UiWindow.isFocused", genericGetter);
         server.AddHandler("UiWindow.isActive", genericGetter);
+        server.AddHandler("UiWindow.getDisplayId", genericGetter);
     }
 
     static void RegisterUiWindowOperators()
     {
         auto &server = FrontendApiServer::Get();
         auto genericWinOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            auto &window = GetBackendObject<Window>(in.callerObjRef_);
+            auto &image = GetBackendObject<Window>(in.callerObjRef_);
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            auto window = driver.RetrieveWindow(image, out.exception_);
+            if (out.exception_.code_ != NO_ERROR || window == nullptr) {
+                return;
+            }
             UiOpArgs uiOpArgs;
-            auto wOp = WindowOperator(driver, window, uiOpArgs);
+            auto wOp = WindowOperator(driver, *window, uiOpArgs);
             auto action = in.apiId_;
             if (action == "UiWindow.resize") {
                 auto width = ReadCallArg<int32_t>(in, INDEX_ZERO);
                 auto highth = ReadCallArg<int32_t>(in, INDEX_ONE);
                 auto direction = ReadCallArg<ResizeDirection>(in, INDEX_TWO);
-                if ((((direction == LEFT) || (direction == RIGHT)) && highth != window.bounds_.GetHeight()) ||
-                    (((direction == D_UP) || (direction == D_DOWN)) && width != window.bounds_.GetWidth())) {
+                if ((((direction == LEFT) || (direction == RIGHT)) && highth != window->bounds_.GetHeight()) ||
+                    (((direction == D_UP) || (direction == D_DOWN)) && width != window->bounds_.GetWidth())) {
                     out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "Resize cannot be done in this direction");
                     return;
                 }
@@ -1377,12 +1582,16 @@ static void RegisterExtensionHandler()
     {
         auto &server = FrontendApiServer::Get();
         auto genericWinBarOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            auto &window = GetBackendObject<Window>(in.callerObjRef_);
+            auto &image = GetBackendObject<Window>(in.callerObjRef_);
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            auto window = driver.RetrieveWindow(image, out.exception_);
+            if (out.exception_.code_ != NO_ERROR || window == nullptr) {
+                return;
+            }
             UiOpArgs uiOpArgs;
-            auto wOp = WindowOperator(driver, window, uiOpArgs);
+            auto wOp = WindowOperator(driver, *window, uiOpArgs);
             auto action = in.apiId_;
-            if (window.decoratorEnabled_) {
+            if (window->decoratorEnabled_) {
                 if (action == "UiWindow.split") {
                     wOp.Split(out);
                 } else if (action == "UiWindow.maximize") {
@@ -1446,7 +1655,8 @@ static void RegisterExtensionHandler()
                 out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Point cannot be empty");
                 return;
             }
-            const auto point = Point(pointJson["x"], pointJson["y"]);
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
+            const auto point = Point(pointJson["x"], pointJson["y"], displayId);
             pointer.At(finger, step).point_ = point;
             pointer.At(finger, step).flags_ = 1;
         };
@@ -1479,5 +1689,7 @@ static void RegisterExtensionHandler()
         RegisterUiDriverMouseOperators2();
         RegisterUiEventObserverMethods();
         RegisterExtensionHandler();
+        RegisterUiDriverTouchPadOperators();
+        RegisterUiDriverPenOperators();
     }
 } // namespace OHOS::uitest
