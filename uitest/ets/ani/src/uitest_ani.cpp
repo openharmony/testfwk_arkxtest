@@ -607,7 +607,7 @@ static ani_ref create([[maybe_unused]] ani_env *env, [[maybe_unused]] ani_class 
 static ani_boolean delayMsSync(ani_env *env, ani_object obj, ani_double t) {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
-    callInfo_.apiId_ = "Driver.Create";
+    callInfo_.apiId_ = "Driver.delayMs";
     callInfo_.paramList_.push_back(t);
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     Transact(callInfo_, reply_);
@@ -642,7 +642,7 @@ static ani_ref findComponentSync(ani_env *env, ani_object obj, ani_object on_obj
 static ani_object findComponentsSync(ani_env *env, ani_object obj, ani_object on_obj) {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
-    callInfo_.apiId_ = "Driver.findComponent";
+    callInfo_.apiId_ = "Driver.findComponents";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on_obj, "nativeOn")));
     Transact(callInfo_, reply_);
