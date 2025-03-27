@@ -219,6 +219,8 @@ ohos_executable("uitest_server") {
 
   if (defined(global_parts_info) &&
       defined(global_parts_info.hiviewdfx_hidumper)) {
+    include_dirs +=
+        [ "//base/hiviewdfx/hidumper/interfaces/native/innerkits/include" ]
     external_deps += [
       "hidumper:hidumper_client",
       "samgr:samgr_proxy",
@@ -299,11 +301,15 @@ ohos_unittest("uitest_core_unittest") {
     ":uitest_core",
     "//third_party/googletest:gtest_main",
   ]
+  include_dirs = [
+    "$base_root/base/hiviewdfx/hilog/interfaces/native/innerkits/include",
+    "//third_party/json/single_include/nlohmann",
+    "${source_root}/core",
+  ]
   external_deps = [
     "hilog:libhilog",
     "json:nlohmann_json_static",
   ]
-  include_dirs = [ "${source_root}/core" ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   use_exceptions = true
