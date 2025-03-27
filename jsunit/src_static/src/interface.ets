@@ -173,7 +173,7 @@ export interface ApiIF {
   afterEach?: (func: (() => void) | (() => Promise<void>)) => void;
   it?: (desc: string, filter: int, func: ItfnType) => void;
   xit?: (desc: string, filter: int, func: ItfnType, reason: string) => void;
-  expect?: (actualValue: AnyType) => AssertMatcher;
+  expect?: (actualValue?: AnyType) => AssertMatcher;
 }
 
 export interface DryrunResultIF {
