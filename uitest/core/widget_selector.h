@@ -43,6 +43,12 @@ namespace OHOS::uitest {
 
         void AddAppLocator(string appName);
 
+        std::string GetAppLocator() const;
+
+        void AddDisplayLocator(int32_t displayId);
+
+        std::int32_t GetDisplayLocator() const;
+
         /**Returns a description of this selector.*/
         std::string Describe() const;
 
@@ -69,6 +75,7 @@ namespace OHOS::uitest {
         std::vector<WidgetSelector> parentLocators_;
         string appLocator_ = "";
         bool wantMulti_ = false;
+        int32_t displayLocator_ = -1;
     };
 } // namespace OHOS::uitest
 

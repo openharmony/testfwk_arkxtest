@@ -51,9 +51,10 @@ namespace OHOS::uitest {
             return true;
         };
 
-        virtual void GetUiWindows(std::vector<Window> &out){};
+        virtual void GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay = -1){};
 
-        virtual bool GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator)
+        virtual bool GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator,
+            AamsWorkMode mode)
         {
             return false;
         };
@@ -69,9 +70,16 @@ namespace OHOS::uitest {
 
         virtual void InjectMouseEventSequence(const vector<MouseEvent>& events) const {};
 
+        virtual bool IsTouchPadExist() const
+        {
+            return false;
+        };
+
+        virtual void InjectTouchPadEventSequence(const vector<TouchPadEvent>& events) const {};
+
         virtual void PutTextToClipboard(std::string_view text) const {};
 
-        virtual bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, Rect rect) const
+        virtual bool TakeScreenCap(FILE *fp, std::stringstream &errReceiver, int32_t displayId, Rect rect) const
         {
             return false;
         };
@@ -83,19 +91,19 @@ namespace OHOS::uitest {
 
         virtual void SetDisplayRotation(DisplayRotation rotation) const {};
 
-        virtual DisplayRotation GetDisplayRotation() const
+        virtual DisplayRotation GetDisplayRotation(int32_t displayId) const
         {
             return ROTATION_0;
         };
 
         virtual void SetDisplayRotationEnabled(bool enabled) const {};
 
-        virtual Point GetDisplaySize() const
+        virtual Point GetDisplaySize(int32_t displayId) const
         {
             return Point(0, 0);
         };
 
-        virtual Point GetDisplayDensity() const
+        virtual Point GetDisplayDensity(int32_t displayId) const
         {
             return Point(0, 0);
         };
