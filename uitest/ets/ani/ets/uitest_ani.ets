@@ -95,29 +95,29 @@ enum MatchPattern {
   
 native function newPoint(x:int, y:int):Point;
 native function newRect(r: int[]):Rect;
-  interface Point {
-    x: number;
-    y: number;
-  }
+interface Point {
+ x: number;
+ y: number;
+}
   
-  class PointInner implements Point {
-    x: number = 0;
-    y: number = 0;
-  }
+class PointInner implements Point {
+ x: number = 0;
+ y: number = 0;
+}
   
-  interface Rect {
-    left: number;
-    top: number;
-    right: number;
-    bottom: number;
-  }
+interface Rect {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
   
-  class RectInner implements Rect {
+class RectInner implements Rect {
   left: number = 0;
   top: number = 0;
   right: number = 0;
   bottom: number = 0;
-  }
+}
   
   interface WindowFilter {
     bundleName?: string;
@@ -152,7 +152,7 @@ native function newRect(r: int[]):Rect;
   
   class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
     stay?: boolean = false;
-    speed?: number;
+    speed?: number = 2000;
   }
   
   export class Component {
