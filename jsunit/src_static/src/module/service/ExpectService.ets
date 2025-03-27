@@ -22,7 +22,7 @@ class ExpectService {
     this.coreContext = null;
   }
 
-  expect(actualValue: AnyType): AssertMatcher {
+  expect(actualValue?: AnyType): AssertMatcher {
     const core = this.coreContext;
     let currentRunningSpec = new StaticSpec({ description: '' });
     let currentRunningSuite = new StaticSuite({ description: '' });
@@ -57,7 +57,7 @@ class ExpectService {
     const _this = this;
     return {
       name: 'ExpectService',
-      expect: (actualValue: AnyType) => {
+      expect: (actualValue?: AnyType) => {
         return _this.expect(actualValue);
       },
     };
