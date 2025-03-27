@@ -241,7 +241,8 @@ namespace OHOS::uitest {
             std::this_thread::sleep_for(std::chrono::milliseconds(VelocityTracker::TIME_INDEX)); // 确保界面已更新
             ApiCallErr err(NO_ERROR);
             auto layout = nlohmann::json();
-            driver.DumpUiHierarchy(layout, false, false, err);
+            DumpOption option;
+            driver.DumpUiHierarchy(layout, option, err);
             selector.SetWantMulti(true);
             driver.FindWidgets(selector, rev, err, true);
             PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();

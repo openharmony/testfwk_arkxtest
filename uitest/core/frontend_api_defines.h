@@ -149,6 +149,8 @@ namespace OHOS::uitest {
         {"CONTAINS", "1"},
         {"STARTS_WITH", "2"},
         {"ENDS_WITH", "3"},
+        {"REG_EXP", "4"},
+        {"REG_EXP_ICASE", "5"},
     };
     constexpr FrontendEnumeratorDef MATCH_PATTERN_DEF = {
         "MatchPattern",
@@ -224,6 +226,7 @@ namespace OHOS::uitest {
         {"top", "int", true},
         {"right", "int", true},
         {"bottom", "int", true},
+        {"displayId", "int", false},
     };
     constexpr FrontEndJsonDef RECT_DEF = {
         "Rect",
@@ -235,6 +238,7 @@ namespace OHOS::uitest {
     constexpr FrontEndJsonPropDef POINT_PROPERTIES[] = {
         {"x", "int", true},
         {"y", "int", true},
+        {"displayId", "int", false},
     };
     constexpr FrontEndJsonDef POINT_DEF = {
         "Point",
@@ -249,6 +253,7 @@ namespace OHOS::uitest {
         {"focused", "bool", false},
         {"actived", "bool", false}, // Deprecated from API 11
         {"active", "bool", false},
+        {"displayId", "int", false},
     };
     constexpr FrontEndJsonDef WINDOW_FILTER_DEF = {
         "WindowFilter",
@@ -266,6 +271,17 @@ namespace OHOS::uitest {
         "UIElementInfo",
         UI_ELEMENT_INFO_PROPERTIES,
         sizeof(UI_ELEMENT_INFO_PROPERTIES) / sizeof(FrontEndJsonPropDef),
+    };
+
+    /** TouchPadSwipeOptions definition.*/
+    constexpr FrontEndJsonPropDef TOUCH_PAD_SWIPE_OPTIONS[] = {
+        {"stay", "bool", false},
+        {"speed", "int", false},
+    };
+    constexpr FrontEndJsonDef TOUCH_PAD_SWIPE_OPTIONS_DEF = {
+        "TouchPadSwipeOptions",
+        TOUCH_PAD_SWIPE_OPTIONS,
+        sizeof(TOUCH_PAD_SWIPE_OPTIONS) / sizeof(FrontEndJsonPropDef),
     };
 
     /** By class definition. deprecated since api 9*/
@@ -336,9 +352,10 @@ namespace OHOS::uitest {
     /** On class definition(since api 9, outdates By class).*/
     constexpr FrontendMethodDef ON_METHODS[] = {
         {"On.text", "(string,int?):On", false, true}, //  MatchPattern enum as int value
-        {"On.id", "(string):On", false, true},
-        {"On.type", "(string):On", false, true},
+        {"On.id", "(string,int?):On", false, true},
+        {"On.type", "(string,int?):On", false, true},
         {"On.description", "(string,int?):On", false, true},
+        {"On.hint", "(string,int?):On", false, true},
         {"On.enabled", "(bool?):On", false, true}, // default bool arg: true
         {"On.focused", "(bool?):On", false, true},
         {"On.selected", "(bool?):On", false, true},
@@ -351,6 +368,7 @@ namespace OHOS::uitest {
         {"On.isAfter", "(On):On", false, true},
         {"On.within", "(On):On", false, true},
         {"On.inWindow", "(string):On", false, true},
+        {"On.inDisplay", "(int):On", false, true},
     };
 
     constexpr std::string_view REF_SEED_ON = "On#seed";
@@ -369,26 +387,31 @@ namespace OHOS::uitest {
         {"Driver.findComponents", "(On):[Component]", false, false},
         {"Driver.waitForComponent", "(On,int):Component", false, false},
         {"Driver.screenCap", "(int):bool", false, false},            // fliePath as fileDescription.
-        {"Driver.screenCapture", "(int, Rect?):bool", false, false}, // fliePath as fileDescription.
+        {"Driver.screenCapture", "(int, Rect?, int?):bool", false, false}, // fliePath as fileDescription.
         {"Driver.assertComponentExist", "(On):void", false, false},
         {"Driver.pressBack", "():void", false, false},
         {"Driver.triggerKey", "(int):void", false, false},
         {"Driver.triggerCombineKeys", "(int,int,int?):void", false, false},
         {"Driver.click", "(int,int):void", false, false},
+        {"Driver.click", "(Point):void", false, false},
         {"Driver.longClick", "(int,int):void", false, false},
+        {"Driver.longClick", "(Point):void", false, false},
         {"Driver.doubleClick", "(int,int):void", false, false},
+        {"Driver.doubleClick", "(Point):void", false, false},
         {"Driver.swipe", "(int,int,int,int,int?):void", false, false},
+        {"Driver.swipe", "(Point,Point,int?):void", false, false},
         {"Driver.drag", "(int,int,int,int,int?):void", false, false},
+        {"Driver.drag", "(Point,Point,int?):void", false, false},
         {"Driver.setDisplayRotation", "(int):void", false, false},  // DisplayRotation enum as int value
-        {"Driver.getDisplayRotation", "():int", false, false},  // DisplayRotation enum as int value
+        {"Driver.getDisplayRotation", "(int?):int", false, false},     // DisplayRotation enum as int value
         {"Driver.setDisplayRotationEnabled", "(bool):void", false, false},
-        {"Driver.getDisplaySize", "():Point", false, false},
-        {"Driver.getDisplayDensity", "():Point", false, false},
+        {"Driver.getDisplaySize", "(int?):Point", false, false},
+        {"Driver.getDisplayDensity", "(int?):Point", false, false},
         {"Driver.wakeUpDisplay", "():void", false, false},
         {"Driver.pressHome", "():void", false, false},
         {"Driver.waitForIdle", "(int,int):bool", false, false},
         {"Driver.fling", "(Point,Point,int,int):void", false, false},
-        {"Driver.fling", "(int,int):void", false, false},
+        {"Driver.fling", "(int,int,int?):void", false, false},
         {"Driver.injectMultiPointerAction", "(PointerMatrix, int?):bool", false, false},
         {"Driver.mouseClick", "(Point,int,int?,int?):void", false, false},
         {"Driver.mouseDoubleClick", "(Point,int,int?,int?):void", false, false},
@@ -399,6 +422,12 @@ namespace OHOS::uitest {
         {"Driver.mouseScroll", "(Point,bool,int,int?,int?,int?):void", false, false},
         {"Driver.createUIEventObserver", "():UIEventObserver", false, false},
         {"Driver.inputText", "(Point,string):void", false, false},
+        {"Driver.touchPadMultiFingerSwipe", "(int,int,TouchPadSwipeOptions?):void", false, false},
+        {"Driver.penClick", "(Point):void", false, false},
+        {"Driver.penLongClick", "(Point,float?):void", false, false},
+        {"Driver.penDoubleClick", "(Point):void", false, false},
+        {"Driver.penSwipe", "(Point,Point,int?,float?):void", false, false},
+        {"Driver.injectPenPointerAction", "(PointerMatrix,int?,float?):void", false, false},
     };
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",
@@ -412,6 +441,8 @@ namespace OHOS::uitest {
         {"Component.getId", "():string", false, false},
         {"Component.getType", "():string", false, false},
         {"Component.getDescription", "():string", false, false},
+        {"Component.getHint", "():string", false, false},
+        {"Component.getDisplayId", "():int", false, false},
         {"Component.isEnabled", "():bool", false, false},
         {"Component.isFocused", "():bool", false, false},
         {"Component.isSelected", "():bool", false, false},
@@ -429,7 +460,7 @@ namespace OHOS::uitest {
         {"Component.scrollToBottom", "(int?):void", false, false},
         {"Component.inputText", "(string):void", false, false},
         {"Component.clearText", "():void", false, false},
-        {"Component.scrollSearch", "(On):Component", false, false},
+        {"Component.scrollSearch", "(On, bool?, int?):Component", false, false},
         {"Component.dragTo", "(Component):void", false, false},
         {"Component.pinchOut", "(float):void", false, false},
         {"Component.pinchIn", "(float):void", false, false},
@@ -446,6 +477,7 @@ namespace OHOS::uitest {
         {"UiWindow.getBounds", "():Rect", false, false},
         {"UiWindow.getTitle", "():string", false, false},
         {"UiWindow.getWindowMode", "():int", false, false}, // WindowMode enum as int value
+        {"UiWindow.getDisplayId", "():int", false, false},
         {"UiWindow.isFocused", "():bool", false, false},
         {"UiWindow.isActived", "():bool", false, false}, // Deprecated from API 11
         {"UiWindow.isActive", "():bool", false, false},
@@ -492,7 +524,8 @@ namespace OHOS::uitest {
                                       &UI_EVENT_OBSERVER_DEF};
     const auto FRONTEND_ENUMERATOR_DEFS = {&MATCH_PATTERN_DEF, &WINDOW_MODE_DEF, &RESIZE_DIRECTION_DEF,
                                            &DISPLAY_ROTATION_DEF, &MOUSE_BUTTON_DEF, &UI_DIRECTION_DEF};
-    const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF, &UI_ELEMENT_INFO_DEF};
+    const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF, &UI_ELEMENT_INFO_DEF,
+                                     &TOUCH_PAD_SWIPE_OPTIONS_DEF};
     /** The allowed in/out data type scope of frontend apis.*/
     const std::initializer_list<std::string_view> DATA_TYPE_SCOPE = {
         "int",
@@ -511,6 +544,7 @@ namespace OHOS::uitest {
         UI_WINDOW_DEF.name_,
         POINTER_MATRIX_DEF.name_,
         UI_EVENT_OBSERVER_DEF.name_,
+        TOUCH_PAD_SWIPE_OPTIONS_DEF.name_,
     };
 } // namespace OHOS::uitest
 

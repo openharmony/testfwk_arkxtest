@@ -19,6 +19,7 @@
 #include <array>
 #include <chrono>
 #include <string_view>
+#include "nlohmann/json.hpp"
 
 #ifdef __OHOS__
 #include "hilog/log.h"
@@ -47,6 +48,8 @@ namespace OHOS::uitest {
     constexpr int32_t SIX = 6;
     constexpr int32_t SEVEN = 7;
     constexpr int32_t EIGHT = 8;
+    constexpr int32_t UNASSIGNED = -1;
+    constexpr int32_t VIRTUAL_DISPLAY_ID = 999;
 
     /**Get current time millisecond.*/
     inline uint64_t GetCurrentMillisecond()
@@ -60,6 +63,15 @@ namespace OHOS::uitest {
     {
         using namespace std::chrono;
         return time_point_cast<microseconds>(steady_clock::now()).time_since_epoch().count();
+    }
+
+    template <typename T> T ReadArgFromJson(const nlohmann::json &json, const std::string arg, const T defValue)
+    {
+        if (json.type() == nlohmann::detail::value_t::object && json.contains(arg)) {
+            nlohmann::json val = json[arg];
+            return val.get<T>();
+        }
+        return defValue;
     }
 
     // log tag length limit

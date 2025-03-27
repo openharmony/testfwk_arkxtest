@@ -28,9 +28,10 @@ namespace OHOS::uitest {
 
         bool Initialize(ApiCallErr &error) override;
 
-        void GetUiWindows(std::vector<Window> &out) override;
+        void GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay = -1) override;
 
-        bool GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator) override;
+        bool GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator,
+            AamsWorkMode mode) override;
 
         bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutMs) const override;
 
@@ -40,9 +41,14 @@ namespace OHOS::uitest {
 
         void InjectKeyEventSequence(const std::vector<KeyEvent> &events) const override;
 
+        bool IsTouchPadExist() const override;
+
+        void InjectTouchPadEventSequence(const vector<TouchPadEvent>& events) const override;
+
         void PutTextToClipboard(std::string_view text) const override;
 
-        bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, Rect rect = {0, 0, 0, 0}) const override;
+        bool TakeScreenCap(FILE *fp, std::stringstream &errReceiver, int32_t displayId, Rect rect = {0, 0, 0, 0})
+            const override;
 
         bool GetCharKeyCode(char ch, int32_t& code, int32_t& ctrlCode) const override;
 
@@ -56,13 +62,13 @@ namespace OHOS::uitest {
 
         void SetDisplayRotation(DisplayRotation rotation) const override;
 
-        DisplayRotation GetDisplayRotation() const override;
+        DisplayRotation GetDisplayRotation(int32_t displayId) const override;
 
         void SetDisplayRotationEnabled(bool enabled) const override;
 
-        Point GetDisplaySize() const override;
+        Point GetDisplaySize(int32_t displayId) const override;
 
-        Point GetDisplayDensity() const override;
+        Point GetDisplayDensity(int32_t displayId) const override;
 
         bool IsScreenOn() const override;
 
@@ -71,8 +77,10 @@ namespace OHOS::uitest {
         void GetHidumperInfo(std::string windowId, char **buf, size_t &len) override;
     private:
         void  InjectMouseEvent(const MouseEvent &event) const;
+        int32_t GetValidDisplayId(int32_t id) const;
         bool connected_ = false;
         std::mutex dumpMtx;
+        mutable std::vector<int32_t> downKeys_;
     };
 }
 

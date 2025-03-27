@@ -38,8 +38,18 @@ namespace OHOS::uitest {
     enum UiKey : uint8_t { BACK, GENERIC };
 
     enum ActionStage : uint8_t {
-        NONE = 0, DOWN = 1, MOVE = 2, UP = 3, AXIS_UP = 4, AXIS_DOWN = 5, AXIS_STOP = 6
+        NONE = 0,
+        DOWN = 1,
+        MOVE = 2,
+        UP = 3,
+        AXIS_UP = 4,
+        AXIS_DOWN = 5,
+        AXIS_STOP = 6,
+        PROXIMITY_IN = 7,
+        PROXIMITY_OUT = 8
     };
+
+    enum TouchToolType : uint8_t { FINGER = 0, PEN = 1 };
 
     enum ResizeDirection : uint8_t {
         LEFT,
@@ -95,6 +105,13 @@ namespace OHOS::uitest {
         uint32_t holdMs_;
     };
 
+    struct TouchPadEvent {
+        ActionStage stage;
+        Point point;
+        uint32_t fingerCount;
+        uint32_t holdMs;
+    };
+
     class PointerMatrix : public BackendClass {
     public:
         PointerMatrix();
@@ -126,13 +143,25 @@ namespace OHOS::uitest {
 
         uint32_t GetFingers() const;
 
+        void SetToolType(const TouchToolType type);
+
+        TouchToolType GetToolType() const;
+
+        void SetTouchPressure(const float pressure);
+
+        float GetTouchPressure() const;
+
         void ConvertToMouseEvents(vector<MouseEvent> &recv) const;
+
+        void ConvertToPenEvents(PointerMatrix &recv) const;
     private:
         std::unique_ptr<TouchEvent[]> data_ = nullptr;
         uint32_t capacity_ = 0;
         uint32_t stepNum_ = 0;
         uint32_t fingerNum_ = 0;
         uint32_t size_ = 0;
+        TouchToolType touchToolType_ = TouchToolType::FINGER;
+        float touchPressure_ = 1.0;
     };
 
     /**
@@ -145,6 +174,7 @@ namespace OHOS::uitest {
         const uint32_t defaultSwipeVelocityPps_ = 600;
         const uint32_t maxMultiTouchFingers = 10;
         const uint32_t maxMultiTouchSteps = 1000;
+        const uint32_t defaultTouchPadSwipeVelocityPps_ = 2000;
         uint32_t clickHoldMs_ = 100;
         uint32_t longClickHoldMs_ = 1500;
         uint32_t doubleClickIntervalMs_ = 200;
@@ -156,6 +186,7 @@ namespace OHOS::uitest {
         int32_t scrollWidgetDeadZone_ = 80; // make sure the scrollWidget does not slide more than one page.
         int32_t pinchWidgetDeadZone_ = 40;  // pinching at the edges of the widget has no effect.
         uint16_t swipeStepsCounts_ = 50;
+        float touchPressure_ = 1.0;
     };
 
     class TouchAction {
@@ -229,6 +260,24 @@ namespace OHOS::uitest {
 
     private:
         const PointerMatrix& pointers_;
+    };
+
+    /**
+     * Base type of touchpad gesture actions.
+     **/
+    class TouchPadAction {
+    public:
+        explicit TouchPadAction(const int32_t fingers, const Direction direction, const bool stay)
+            : fingers_(fingers), direction_(direction), stay_(stay) {};
+
+        void Decompose(std::vector<TouchPadEvent> &recv, const UiOpArgs &options, const Point displaySize) const;
+
+        ~TouchPadAction() = default;
+
+    private:
+        const int32_t fingers_;
+        const Direction direction_;
+        const bool stay_;
     };
 
     /**

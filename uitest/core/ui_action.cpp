@@ -58,6 +58,10 @@ namespace OHOS::uitest {
     static void DecomposeComputeSwipe(PointerMatrix &recv, const Point &from, const Point &to, TouchOp type,
                                       const UiOpArgs &options)
     {
+        if (from.displayId_ != to.displayId_) {
+            LOG_W("Cross-screen operation is not support.");
+            return;
+        }
         const int32_t distanceX = to.px_ - from.px_;
         const int32_t distanceY = to.py_ - from.py_;
         const uint32_t distance = sqrt(distanceX * distanceX + distanceY * distanceY);
@@ -76,7 +80,7 @@ namespace OHOS::uitest {
         }
         PointerMatrix pointer(fingers, steps + 1);
 
-        pointer.PushAction(TouchEvent {ActionStage::DOWN, {from.px_, from.py_}, 0, intervalMs});
+        pointer.PushAction(TouchEvent {ActionStage::DOWN, from, 0, intervalMs});
         float stepLengthX = static_cast<double>(distanceX) / static_cast<double>(steps);
         float stepLengthY = static_cast<double>(distanceY) / static_cast<double>(steps);
 
@@ -84,10 +88,11 @@ namespace OHOS::uitest {
             const int32_t pointX = from.px_ + stepLengthX * step;
             const int32_t pointY = from.py_ + stepLengthY * step;
             const uint32_t timeOffsetMs = (timeCostMs * step) / steps;
-            pointer.PushAction(TouchEvent {ActionStage::MOVE, {pointX, pointY}, timeOffsetMs, intervalMs});
+            Point wayPoint(pointX, pointY, from.displayId_);
+            pointer.PushAction(TouchEvent {ActionStage::MOVE, wayPoint, timeOffsetMs, intervalMs});
         }
 
-        pointer.PushAction(TouchEvent {ActionStage::UP, {to.px_, to.py_}, timeCostMs, intervalMs});
+        pointer.PushAction(TouchEvent {ActionStage::UP, to, timeCostMs, intervalMs});
         if (type == TouchOp::DRAG) {
             // drag needs longPressDown firstly
             pointer.At(fingers - 1, 0).holdMs_ += options.longClickHoldMs_;
@@ -134,17 +139,19 @@ namespace OHOS::uitest {
         PointerMatrix pointer1;
         PointerMatrix pointer2;
         if (scale_ > 1) {
-            auto fromPoint0 = Point(rect_.GetCenterX() - options.pinchWidgetDeadZone_, rect_.GetCenterY());
-            auto toPoint0 = Point((fromPoint0.px_ - distanceX0), rect_.GetCenterY());
-            auto fromPoint1 = Point(rect_.GetCenterX() + options.pinchWidgetDeadZone_, rect_.GetCenterY());
-            auto toPoint1 = Point((fromPoint1.px_ + distanceX0), rect_.GetCenterY());
+            auto fromPoint0 = Point(rect_.GetCenterX() - options.pinchWidgetDeadZone_, rect_.GetCenterY(),
+                rect_.displayId_);
+            auto toPoint0 = Point((fromPoint0.px_ - distanceX0), rect_.GetCenterY(), rect_.displayId_);
+            auto fromPoint1 = Point(rect_.GetCenterX() + options.pinchWidgetDeadZone_, rect_.GetCenterY(),
+                rect_.displayId_);
+            auto toPoint1 = Point((fromPoint1.px_ + distanceX0), rect_.GetCenterY(), rect_.displayId_);
             DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, TouchOp::SWIPE, options);
             DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, TouchOp::SWIPE, options);
         } else if (scale_ < 1) {
-            auto fromPoint0 = Point(rect_.left_ + options.pinchWidgetDeadZone_, rect_.GetCenterY());
-            auto toPoint0 = Point((fromPoint0.px_ + distanceX0), rect_.GetCenterY());
-            auto fromPoint1 = Point(rect_.right_ - options.pinchWidgetDeadZone_, rect_.GetCenterY());
-            auto toPoint1 = Point((fromPoint1.px_- distanceX0), rect_.GetCenterY());
+            auto fromPoint0 = Point(rect_.left_ + options.pinchWidgetDeadZone_, rect_.GetCenterY(), rect_.displayId_);
+            auto toPoint0 = Point((fromPoint0.px_ + distanceX0), rect_.GetCenterY(), rect_.displayId_);
+            auto fromPoint1 = Point(rect_.right_ - options.pinchWidgetDeadZone_, rect_.GetCenterY(), rect_.displayId_);
+            auto toPoint1 = Point((fromPoint1.px_ - distanceX0), rect_.GetCenterY(), rect_.displayId_);
             DecomposeComputeSwipe(pointer1, fromPoint0, toPoint0, TouchOp::SWIPE, options);
             DecomposeComputeSwipe(pointer2, fromPoint1, toPoint1, TouchOp::SWIPE, options);
         }
@@ -168,6 +175,11 @@ namespace OHOS::uitest {
             uint32_t intervalMs = 0;
             constexpr uint32_t unitConversionConstant = 1000;
             for (uint32_t step = 0; step < pointers_.GetSteps() - 1; step++) {
+                if (pointers_.At(finger, step + 1).point_.displayId_ != pointers_.At(finger, step).point_.displayId_) {
+                    LOG_W("Cross-screen operation is not suypport.");
+                    return;
+                }
+                auto displayId = pointers_.At(finger, step).point_.displayId_;
                 const int32_t pxTo = (pointers_.At(finger, step + 1).point_.px_) % flag;
                 const int32_t pxFrom = (pointers_.At(finger, step).point_.px_) % flag;
                 const int32_t distanceX = pxTo - pxFrom;
@@ -179,20 +191,75 @@ namespace OHOS::uitest {
                 intervalMs = (distance * unitConversionConstant) / options.swipeVelocityPps_;
                 auto holdMs = (stayMs == 0) ? intervalMs : stayMs;
                 if (step == 0) {
-                    matrix.PushAction(TouchEvent {ActionStage::DOWN, {pxFrom, pyFrom}, 0, holdMs});
+                    matrix.PushAction(TouchEvent {ActionStage::DOWN, {pxFrom, pyFrom, displayId}, 0, holdMs});
                 } else {
                     timeOffsetMs += intervalMs;
-                    matrix.PushAction(TouchEvent {ActionStage::MOVE, {pxFrom, pyFrom}, timeOffsetMs, holdMs});
+                    matrix.PushAction(TouchEvent {ActionStage::MOVE, {pxFrom, pyFrom, displayId},
+                        timeOffsetMs, holdMs});
                 }
             }
             auto endPx = (pointers_.At(finger, pointers_.GetSteps() - 1).point_.px_) % flag;
             auto endPy = pointers_.At(finger, pointers_.GetSteps() - 1).point_.py_;
+            auto displayId = pointers_.At(finger, pointers_.GetSteps() - 1).point_.displayId_;
             auto endTime = (pointers_.At(finger, pointers_.GetSteps() - 1).point_.px_) / flag;
             auto endStayTime = (endTime == 0) ? intervalMs : endTime;
-            matrix.PushAction(TouchEvent {ActionStage::MOVE, {endPx, endPy}, timeOffsetMs, endStayTime});
-            matrix.PushAction(TouchEvent {ActionStage::UP, {endPx, endPy}, timeOffsetMs, intervalMs});
+            matrix.PushAction(TouchEvent {ActionStage::MOVE, {endPx, endPy, displayId}, timeOffsetMs, endStayTime});
+            matrix.PushAction(TouchEvent {ActionStage::UP, {endPx, endPy, displayId}, timeOffsetMs, intervalMs});
         }
         recv = move(matrix);
+    }
+
+    void TouchPadAction::Decompose(vector<TouchPadEvent> &recv, const UiOpArgs &options,
+                                   const Point displaySize) const
+    {
+        int32_t numTwo = 2;
+        int32_t displayCenterX = displaySize.px_ / numTwo;
+        int32_t displayCenterY = displaySize.py_ / numTwo;
+        int32_t pxFrom = displayCenterX;
+        int32_t pyFrom = displayCenterY;
+        int32_t pxTo = displayCenterX;
+        int32_t pyTo = displayCenterY;
+        switch (direction_) {
+            case TO_LEFT:
+                pxFrom += displayCenterX / numTwo;
+                pxTo -= displayCenterX / numTwo;
+                break;
+            case TO_RIGHT:
+                pxFrom -= displayCenterX / numTwo;
+                pxTo += displayCenterX / numTwo;
+                break;
+            case TO_UP:
+                pyFrom += displayCenterY / numTwo;
+                pyTo -= displayCenterY / numTwo;
+                break;
+            case TO_DOWN:
+                pyFrom -= displayCenterY / numTwo;
+                pyTo += displayCenterY / numTwo;
+                break;
+            default:
+                break;
+        }
+        const int32_t distanceX = pxTo - pxFrom;
+        const int32_t distanceY = pyTo - pyFrom;
+        const uint32_t distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+        const uint32_t timeCostMs = (distance * 1000) / options.swipeVelocityPps_;
+        constexpr uint32_t intervalMs = 5;
+        uint32_t steps = timeCostMs / intervalMs;
+        recv.push_back(TouchPadEvent {ActionStage::DOWN, {pxFrom, pyFrom}, fingers_, intervalMs});
+        float stepLengthX = static_cast<double>(distanceX) / static_cast<double>(steps);
+        float stepLengthY = static_cast<double>(distanceY) / static_cast<double>(steps);
+        for (uint32_t step = 1; step < steps; step++) {
+            const int32_t pointX = pxFrom + stepLengthX * step;
+            const int32_t pointY = pyFrom + stepLengthY * step;
+            recv.push_back(TouchPadEvent {ActionStage::MOVE, {pointX, pointY}, fingers_, intervalMs});
+        }
+        if (stay_) {
+            uint32_t stayPointerTimes = 5;
+            for (uint32_t stayPointerTime = 0; stayPointerTime < stayPointerTimes; stayPointerTime++) {
+                recv.push_back(TouchPadEvent {ActionStage::MOVE, {pxTo, pyTo}, fingers_, 200});
+            }
+        }
+        recv.push_back(TouchPadEvent {ActionStage::UP, {pxTo, pyTo}, fingers_, intervalMs});
     }
 
     PointerMatrix::PointerMatrix() {};
@@ -264,6 +331,40 @@ namespace OHOS::uitest {
         return this->fingerNum_;
     }
 
+    void PointerMatrix::SetToolType(const TouchToolType type)
+    {
+        touchToolType_ = type;
+    }
+
+    TouchToolType PointerMatrix::GetToolType() const
+    {
+        return touchToolType_;
+    }
+
+    void PointerMatrix::SetTouchPressure(const float pressure)
+    {
+        touchPressure_ = pressure;
+    }
+
+    float PointerMatrix::GetTouchPressure() const
+    {
+        return touchPressure_;
+    }
+
+    void PointerMatrix::ConvertToPenEvents(PointerMatrix &recv) const
+    {
+        DCHECK(this->fingerNum_ == 1);
+        recv.SetToolType(TouchToolType::PEN);
+        constexpr uint32_t intervalMs = 5;
+        recv.PushAction(TouchEvent { ActionStage::PROXIMITY_IN, this->At(0, 0).point_, 0, intervalMs });
+        for (uint32_t step = 0; step < stepNum_; step++) {
+            auto touchEvent = At(0, step);
+            recv.PushAction(touchEvent);
+        }
+        recv.PushAction(TouchEvent { ActionStage::PROXIMITY_OUT, this->At(0, this->GetSteps() - 1).point_, 0,
+            intervalMs });
+    }
+
     void PointerMatrix::ConvertToMouseEvents(vector<MouseEvent> &recv) const
     {
         for (uint32_t finger = 0; finger < fingerNum_; finger++) {
@@ -289,6 +390,9 @@ namespace OHOS::uitest {
         if (type_ == TouchOp::SWIPE) {
             recv.front().stage_ = ActionStage::MOVE;
             recv.back().stage_ = ActionStage::MOVE;
+            for (size_t index = 0; index < recv.size(); index++) {
+                recv[index].button_ = MouseButton::BUTTON_NONE;
+            }
         }
     }
 
@@ -320,9 +424,9 @@ namespace OHOS::uitest {
         recv.insert(recv.begin(), keyDown);
 
         vector<KeyEvent> keyAction2;
-        keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
         keyAction2.push_back(KeyEvent {ActionStage::UP, key1_, opt.keyHoldMs_});
-        auto keyUp = MouseEvent {ActionStage::UP, point_, MouseButton::BUTTON_NONE, keyAction2, 0};
+        keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
+        auto keyUp = MouseEvent {ActionStage::NONE, point_, MouseButton::BUTTON_NONE, keyAction2, 0};
         recv.push_back(keyUp);
     }
 
@@ -345,8 +449,8 @@ namespace OHOS::uitest {
         }
 
         vector<KeyEvent> keyAction2;
-        keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
         keyAction2.push_back(KeyEvent {ActionStage::UP, key1_, opt.keyHoldMs_});
+        keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
         if (steps > 1) {
             recv.push_back(MouseEvent {stage, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
             recv.push_back(MouseEvent {ActionStage::AXIS_STOP, point_, MouseButton::BUTTON_NONE, keyAction2,
