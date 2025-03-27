@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {abilityDelegatorRegistry} from '@ohos.app.ability.abilityDelegatorRegistry';
-import { hilog } from '@ohos.hilog'
+import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
+import hilog from '@ohos.hilog'
 let domain: number = 0x0000;
 let tag: string = 'uitestTag';
 
