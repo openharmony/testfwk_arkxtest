@@ -720,7 +720,7 @@ class RectInner implements Rect {
     private native createUIEventObserverSync():UIEventObserver;
     createUIEventObserver(): Promise<UIEventObserver> {
       let promise = new Promise<UIEventObserver>((resolve: (value: UIEventObserver) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():UiWindow => this.createUIEventObserverSync());
+      let promise1 = taskpool.execute(():UIEventObserver => this.createUIEventObserverSync());
       promise1.then((e:NullishType)=>{
           let value : UIEventObserver = e as UIEventObserver;
           resolve(value);
