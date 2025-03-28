@@ -38,6 +38,7 @@ namespace OHOS::uitest {
                 LOG_E("Invalid env");
                 return ANI_INVALID_ARGS;
             }
+            ani_class cls;
             if (ANI_OK != env->FindClass(className, &cls)) {
                 LOG_E("Not found class BusinessError");
                 return ANI_ERROR;
@@ -64,7 +65,7 @@ namespace OHOS::uitest {
             }
             return env->ThrowError(static_cast<ani_error>(obj));
         }
-    }
+    };
 }
 
 #endif
