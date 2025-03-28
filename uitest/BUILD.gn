@@ -347,7 +347,7 @@ ohos_shared_library("uitest_ani") {
 
 generate_static_abc("uitest_abc") {
   base_url = "./ets/ani/ets"
-  files = [ "./ets/ani/ets/uitest_ani.ets" ]
+  files = [ "./ets/ani/ets/@ohos.UiTest.ets" ]
   is_boot_abc = "True"
   dst_file = "$target_out_dir/uitest_ani.abc"
   out_puts = [ "$target_out_dir/uitest_ani.abc" ]
