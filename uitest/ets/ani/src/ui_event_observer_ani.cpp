@@ -157,7 +157,6 @@ namespace OHOS::uitest {
             vm->DetachCurrentThread();
             return;
         }
-
         static const char *className = "Luitest_ani/UIElementInforInner;";
         ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
@@ -197,7 +196,7 @@ namespace OHOS::uitest {
         std::vector<ani_ref> tmp = {argvRef};
         ani_ref result;
         if (ANI_OK != env->FunctionalObject_Call(reinterpret_cast<ani_fn_object>(context->callbackRef), tmp.size(),
-                                                tmp.data(), &result)) {
+            tmp.data(), &result)) {
             LOG_E("HandleEventCallback fail");
             vm->DetachCurrentThread();
             return;

@@ -1365,7 +1365,8 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function {"triggerKeySync", nullptr, reinterpret_cast<void *>(triggerKeySync)},
         ani_native_function {"inputTextSync", nullptr, reinterpret_cast<void *>(inputTextSync)},
         ani_native_function {"findWindowSync", nullptr, reinterpret_cast<void *>(findWindowSync)},
-        ani_native_function {"createUIElementObserverSync", nullptr, reinterpret_cast<void *>(createUIElementObserverSync)},
+        ani_native_function {"createUIElementObserverSync", nullptr,
+            reinterpret_cast<void *>(createUIElementObserverSync)},
         ani_native_function {"wakeUpDisplaySync", nullptr, reinterpret_cast<void *>(wakeUpDisplaySync)},
         ani_native_function {"pressHomeSync", nullptr, reinterpret_cast<void *>(pressHomeSync)},
         ani_native_function {"getDisplaySizeSync", nullptr, reinterpret_cast<void *>(getDisplaySizeSync)},
@@ -1812,9 +1813,10 @@ static void noFun(ani_env *env, ani_object obj)
 {
     return;
 }
-static ani_boolean BindBusinessError(ani_env *env) {
+static ani_boolean BindBusinessError(ani_env *env)
+{
     static const char *className = "Luitest_ani/BusinessError;";
-   ani_class cls;
+    ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
         return false;
     }
@@ -1840,9 +1842,10 @@ static void onceSync(ani_env *env, ani_object obj, ani_string type, ani_object c
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
 }
-static ani_boolean BindUiEventObserver(ani_env *env) {
+static ani_boolean BindUiEventObserver(ani_env *env)
+{
     static const char *className = "Luitest_ani/UiEventObserver;";
-   ani_class cls;
+    ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
         return false;
     }

@@ -27,16 +27,17 @@ namespace OHOS::uitest {
     constexpr const char* BUSINESS_ERROR_CLASS = "Luitest_ani/BusinessError;"
     class ErrorHandler {
     public:
-        static ani_status Throw(ani_env *env, int32_t code, const string &errMsg) {
+        static ani_status Throw(ani_env *env, int32_t code, const string &errMsg)
+        {
             return Throw(env, BUSINESS_ERROR_CLASS, code, errMsg);
-        }      
+        }
     }
     private:
         static ani_status Throw(ani_env *env, const char *className, int32_t code, const string &errMsg)
         {
             if (env == nullptr) {
-               LOG_E("Invalid env");
-               return ANI_INVALID_ARGS;
+                LOG_E("Invalid env");
+                return ANI_INVALID_ARGS;
             }
             if (ANI_OK != env->FindClass(className, &cls)) {
                 LOG_E("Not found class BusinessError");
