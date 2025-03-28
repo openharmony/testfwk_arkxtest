@@ -24,14 +24,13 @@ namespace OHOS::uitest {
     using namespace nlohmann;
     using namespace std;
 
-    constexpr const char* BUSINESS_ERROR_CLASS = "Luitest_ani/BusinessError;"
+    constexpr const char* BUSINESS_ERROR_CLASS = "Luitest_ani/BusinessError;";
     class ErrorHandler {
     public:
         static ani_status Throw(ani_env *env, int32_t code, const string &errMsg)
         {
             return Throw(env, BUSINESS_ERROR_CLASS, code, errMsg);
         }
-    }
     private:
         static ani_status Throw(ani_env *env, const char *className, int32_t code, const string &errMsg)
         {
@@ -65,6 +64,7 @@ namespace OHOS::uitest {
             }
             return env->ThrowError(static_cast<ani_error>(obj));
         }
+    }
 }
 
 #endif
