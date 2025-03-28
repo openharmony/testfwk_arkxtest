@@ -14,6 +14,7 @@
  */
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 import hilog from '@ohos.hilog'
+import { Callback } from './@ohos.base';
 let domain: number = 0x0000;
 let tag: string = 'uitestTag';
 
@@ -716,6 +717,17 @@ class RectInner implements Rect {
       });
       return promise;
     }
+    private native createUIEventObserverSync():UIEventObserver;
+    createUIEventObserver(): Promise<UIEventObserver> {
+      let promise = new Promise<UIEventObserver>((resolve: (value: UIEventObserver) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():UiWindow => this.createUIEventObserverSync());
+      promise1.then((e:NullishType)=>{
+          let value : UIEventObserver = e as UIEventObserver;
+          resolve(value);
+          });
+      });
+      return promise;
+    }
     private native wakeUpDisplaySync():boolean;
      wakeUpDisplay(): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
@@ -1111,5 +1123,36 @@ class RectInner implements Rect {
     native type(tp: string, pattern?: MatchPattern): On;
     native hint(val: string, pattern?: MatchPattern): On;
   }
+
+  export class UIEventObserver {
+    private nativeUIEventObserver:string = '';
+    public constructor(UIEventObserver:string) {
+      if (this.nativeUIEventObserver == '') {
+        this.nativeUIEventObserver = UIEventObserver;
+      }
+    }
+    private native onceSync(type: String, callback: Callback<UIElementInfo>): void;
+    once(type: String, callback: Callback<UIElementInfo>): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+      let promise1 = taskpool.execute(():void => this.onceSync(type, callback));
+      promise1.then((e:NullishType)=>{
+            resolve(Promise.resolve());
+          });
+      });
+      return promise;
+    }
+  }
+
+  export class BusinessError {
+    name: string;
+    message: string;
+    code: int;
+    constructor(code: int, message:string) {
+      this.name = "BusinessError";
+      this.message = message;
+      this.code = code;      
+    }
+    native noFun():void;
+  }  
   
 export const ON: On = new On();

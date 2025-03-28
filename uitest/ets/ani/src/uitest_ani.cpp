@@ -27,6 +27,7 @@
 #include "frontend_api_handler.h"
 #include "ipc_transactor.h"
 #include "test_server_client.h"
+#include "error_handler.h"
 #include <cstring>
 #include <cstdio>
 
@@ -143,6 +144,7 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
         LOG_E("UItest : ERRORINFO: code='%{public}u', message='%{public}s'", code, message.c_str());
     } else if (reply_.exception_.code_ != NO_ERROR) {
         LOG_E("UItest : ERRORINFO: code='%{public}u', message='%{public}s'", code, message.c_str());
+        ErrorHandler::Throw(env, code, message);
     }
     LOG_D("UITEST: Start to unmarshall return value:%{public}s", reply_.resultValue_.dump().c_str());
     const auto resultType = reply_.resultValue_.type();
@@ -180,10 +182,16 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
 
 static void ScheduleEstablishConnection(ani_env *env, ani_string connToken) {
     auto token = aniStringToStdString(env, connToken);
-    LOG_I("ScheduleEstablishConnection token");
-    g_establishConnectionFuture = async(launch::async, [env, token]() {
+    ani_vm *vm = nullptr;
+    auto vmWorkable = env->GetVM(&vm);
+    if (vmWorkable != env->GetVM(&vm)) {
+        LOG_E("GetVM fali");
+    }
+    g_establishConnectionFuture = async(launch::async, [vm, token]() {
         using namespace std::placeholders;
-        auto result = g_apiTransactClient.InitAndConnectPeer(token, nullptr);
+        auto &instance = UiEventObserverAni::Get();
+        auto callbackHandler = std::bind(&UiEventObserverAni::HandleEventCallback, &instance, vm, _1, _2);
+        auto result = g_apiTransactClient.InitAndConnectPeer(token, callbackHandler);
         LOG_I("End setup transaction connection, result=%{public}d", result);
         std::cout<<"End setup transaction connection, result"<<result<<std::endl;
     });
@@ -878,6 +886,31 @@ static ani_object findWindowSync(ani_env *env, ani_object obj, ani_object filter
     return window_obj;
 }
 
+static ani_object createUIElementObserverSync(ani_env *env, ani_object obj)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.createUIElementObserver";
+    Transact(callInfo_, reply_);
+    ani_ref nativeUIElementObserver = UnmarshalReply(env, callInfo_, reply_);
+    ani_object observer_obj;
+    static const char *className = "Luitest_ani/UIElementObserver";
+    ani_class cls = findCls(env, className);
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
+        static const char *name = "Lstd/core/String;:v";
+        ctor = findCtorMethod(env, cls, name);
+    }
+    if (cls == nullptr || ctor == nullptr) {
+        return nullptr;
+    }
+    if (ANI_OK != env->Object_New(cls, ctor, &observer_obj, reinterpret_cast<ani_object>(nativeUIElementObserver))) {
+        std::cerr << "New UiWindow fail" << std::endl;
+    }
+    return observer_obj;
+}
+
 static ani_boolean injectMultiPointerActionSync(ani_env *env, ani_object obj, ani_object pointers, ani_object speed)
 {
     ApiCallInfo callInfo_;
@@ -1332,6 +1365,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function {"triggerKeySync", nullptr, reinterpret_cast<void *>(triggerKeySync)},
         ani_native_function {"inputTextSync", nullptr, reinterpret_cast<void *>(inputTextSync)},
         ani_native_function {"findWindowSync", nullptr, reinterpret_cast<void *>(findWindowSync)},
+        ani_native_function {"createUIElementObserverSync", nullptr, reinterpret_cast<void *>(createUIElementObserverSync)},
         ani_native_function {"wakeUpDisplaySync", nullptr, reinterpret_cast<void *>(wakeUpDisplaySync)},
         ani_native_function {"pressHomeSync", nullptr, reinterpret_cast<void *>(pressHomeSync)},
         ani_native_function {"getDisplaySizeSync", nullptr, reinterpret_cast<void *>(getDisplaySizeSync)},
@@ -1773,6 +1807,55 @@ static ani_boolean BindComponent(ani_env *env) {
     }
     return true;
 }
+
+static void noFun(ani_env *env, ani_object obj)
+{
+    return;
+}
+static ani_boolean BindBusinessError(ani_env *env) {
+    static const char *className = "Luitest_ani/BusinessError;";
+   ani_class cls;
+        if (ANI_OK != env->FindClass(className, &cls)) {
+        return false;
+    }
+    std::array methods = {
+        ani_native_function {"noFun", nullptr, reinterpret_cast<void *>(noFun)},
+    };
+
+    if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
+        std::cerr << "Cannot bind native methods to " << className <<" " <<std::endl;
+        return false;
+    }
+    return true;
+}
+
+static void onceSync(ani_env *env, ani_object obj, ani_string type, ani_object callback)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeUiEventObserver"));
+    callInfo_.apiId_ = "UiEventObserver.once";
+    callInfo_.paramList_.push_back(aniStringToStdString(env, type));
+    UiEventObserverAni::Get().PreprocessCallOnce(env, callInfo_, obj, callback, reply_);
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+}
+static ani_boolean BindUiEventObserver(ani_env *env) {
+    static const char *className = "Luitest_ani/UiEventObserver;";
+   ani_class cls;
+        if (ANI_OK != env->FindClass(className, &cls)) {
+        return false;
+    }
+    std::array methods = {
+        ani_native_function {"onceSync", nullptr, reinterpret_cast<void *>(onceSync)},
+    };
+
+    if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
+        std::cerr << "Cannot bind native methods to " << className <<" " <<std::endl;
+        return false;
+    }
+    return true;
+}
 void StsUiTestInit(ani_env *env)
 {
     LOG_D( "StsUiTestInit call");
@@ -1818,6 +1901,8 @@ ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result) {
     status &= BindWindow(env);
     status &= BindInterfaces(env);
     status &= BindPointMatrix(env);
+    status &= BindBusinessError(env);
+    status &= BindUiEventObserver(env);
     if (!status) {
         std::cout<<"ani_error"<<std::endl;
         return ANI_ERROR;
