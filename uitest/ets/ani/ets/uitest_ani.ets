@@ -14,7 +14,7 @@
  */
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 import hilog from '@ohos.hilog'
-import { Callback } from './@ohos.base';
+import { Callback } from '@ohos.base';
 let domain: number = 0x0000;
 let tag: string = 'uitestTag';
 
