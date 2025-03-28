@@ -28,6 +28,7 @@
 #include "ipc_transactor.h"
 #include "test_server_client.h"
 #include "error_handler.h"
+#include "ui_event_observer_ani.h"
 #include <cstring>
 #include <cstdio>
 
