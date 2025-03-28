@@ -141,9 +141,9 @@ namespace OHOS::uitest {
             vm->DetachCurrentThread();
             return;
         }
-        auto bundleName = context->elementInfo["bundleName"].dump();
-        auto cType = context->elementInfo["type"].dump();
-        auto text = context->elementInfo["text"].dump();
+        auto bundleName = context->elmentInfo["bundleName"].dump();
+        auto cType = context->elmentInfo["type"].dump();
+        auto text = context->elmentInfo["text"].dump();
         ani_string strBundleName;
         ani_string strType;
         ani_string strText;
