@@ -341,6 +341,7 @@ ohos_shared_library("uitest_ani") {
     "runtime_core:ani",
     "runtime_core:libarkruntime",
   ]
+  output_extension = "so"
   part_name = "arkxtest"
   subsystem_name = "testfwk"
 }
