@@ -326,7 +326,10 @@ ohos_shared_library("uitest_ani") {
     "${source_root}/core",
     "${source_root}/connection",
   ]
-  sources = [ "./ets/ani/src/uitest_ani.cpp" ]
+  sources = [
+    "./ets/ani/src/ui_event_observer_ani.cpp",
+    "./ets/ani/src/uitest_ani.cpp",
+  ]
   deps = [
     ":uitest_ipc",
     "${source_root}/../testserver/src:test_server_client",
