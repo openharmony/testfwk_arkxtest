@@ -156,7 +156,7 @@ namespace OHOS::uitest {
             vm->DetachCurrentThread();
             return;
         }
-        static const char *className = "Luitest_ani/UIElementInforInner;";
+        static const char *className = "L@ohos/UiTest/UIElementInforInner;";
         ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
             LOG_E("Not found class UIElementInforInner");
