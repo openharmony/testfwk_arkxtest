@@ -469,4 +469,10 @@ namespace OHOS::uitest {
         pointer.PushAction(TouchEvent {stage_, point_, 0, 0, 0});
         recv = move(pointer);
     }
+
+    void GenericAtomicMouseAction::Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &options) const
+    {
+        DCHECK(stage_ >= ActionStage::DOWN && stage_ <= ActionStage::AXIS_STOP);
+        recv.push_back(MouseEvent {stage_, point_, btn_, {}, 0});
+    }
 }

@@ -455,6 +455,24 @@ namespace OHOS::uitest {
         const ActionStage stage_;
         const Point point_;
     };
+
+    /**
+     * Base type of all atomic mouse actions.
+     * */
+    class GenericAtomicMouseAction : public MouseAction {
+    public:
+        explicit GenericAtomicMouseAction(const ActionStage stage, const Point point, const MouseButton btn) :
+            stage_(stage), point_(point), btn_(btn) {};
+
+        void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &options) const override;
+
+        ~GenericAtomicMouseAction() = default;
+
+    private:
+        const ActionStage stage_;
+        const Point point_;
+        const MouseButton btn_;
+    };
 }
 
 #endif
