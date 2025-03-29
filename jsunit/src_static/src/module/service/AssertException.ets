@@ -1,10 +1,10 @@
 class AssertException extends Error {
-  private name: string;
-  private message: string;
+  public name_: string;
+  public message_: string;
   constructor(message: string) {
     super();
-    this.name = 'AssertException';
-    this.message = message;
+    this.name_ = 'AssertException';
+    this.message_ = message;
   }
 }
 
