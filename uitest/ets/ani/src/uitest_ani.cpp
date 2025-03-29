@@ -209,7 +209,7 @@ static ani_string unwrapp(ani_env *env, ani_object object, const char *name) {
 
 static json getPoint(ani_env *env, ani_object p) {
     auto point = json();
-    static const char *className = "Luitest_ani/PointInner;";
+    static const char *className = "L@ohos/UiTest/PointInner;";
     ani_class cls = findCls(env, className);
     ani_method xGetter;
     if (ANI_OK != env->Class_FindMethod(cls, "<get>x", nullptr, &xGetter)) {
@@ -236,7 +236,7 @@ static json getPoint(ani_env *env, ani_object p) {
 
 static json getRect(ani_env *env, ani_object p) {
     auto rect = json();
-    static const char *className = "Luitest_ani/PointInner;";
+    static const char *className = "L@ohos/UiTest/PointInner;";
     ani_class cls = findCls(env, className);
     ani_method leftGetter;
     if (ANI_OK != env->Class_FindMethod(cls, "<get>left", nullptr, &leftGetter)) {
@@ -286,7 +286,7 @@ static json getRect(ani_env *env, ani_object p) {
 
 static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num) {
     ani_object rect_obj = {};
-    static const char *className = "Luitest_ani/RectInner;";
+    static const char *className = "L@ohos/UiTest/RectInner;";
     ani_class cls = findCls(env, className);
     ani_method ctor = nullptr;
     if (cls != nullptr) {
@@ -318,7 +318,7 @@ static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num) {
 
 static ani_object newPoint(ani_env *env, ani_object obj, int x, int y) {
     ani_object point_obj = {};
-    static const char *className = "Luitest_ani/PointInner;";
+    static const char *className = "L@ohos/UiTest/PointInner;";
     ani_class cls = findCls(env, className);
     ani_method ctor = nullptr;
     if (cls != nullptr) {
@@ -350,7 +350,7 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y) {
 }
 
 static ani_boolean BindInterfaces(ani_env *env) {
-    static const char *className = "Luitest_ani/ETSGLOBAL;";
+    static const char *className = "L@ohos/UiTest/ETSGLOBAL;";
     ani_class cls = findCls(env, className);
     if (cls == nullptr) {
         return false;
@@ -367,7 +367,7 @@ static ani_boolean BindInterfaces(ani_env *env) {
 }
 
 static ani_ref createMatrix(ani_env *env, ani_object object) {
-    static const char *className = "Luitest_ani/PointerMatrix;";
+    static const char *className = "L@ohos/UiTest/PointerMatrix;";
     ani_class cls = findCls(env, className);
     ani_ref nullref;
     env->GetNull(&nullref);
@@ -403,7 +403,7 @@ static void setPoint(ani_env *env, ani_object object, ani_double finger, ani_dou
 }
 
 static ani_boolean BindPointMatrix(ani_env *env) {
-    static const char *className = "Luitest_ani/PointerMatrix;";
+    static const char *className = "L@ohos/UiTest/PointerMatrix;";
     ani_class cls = findCls(env, className);
     if (cls == nullptr) {
         return false;
@@ -420,7 +420,7 @@ static ani_boolean BindPointMatrix(ani_env *env) {
 }
 
 static ani_ref createOn(ani_env *env, ani_object object, nlohmann::json params, string apiId_) {
-    static const char *className = "Luitest_ani/On;";
+    static const char *className = "L@ohos/UiTest/On;";
     ani_class cls = findCls(env, className);
     ani_method ctor = nullptr;
     if (cls != nullptr) {
@@ -555,7 +555,7 @@ static ani_ref scrollable(ani_env *env, ani_object obj, ani_boolean b) {
 }
 
 static ani_boolean BindOn(ani_env *env) {
-    static const char *className = "Luitest_ani/On;";
+    static const char *className = "L@ohos/UiTest/On;";
     ani_class cls = findCls(env, className);
     if (cls == nullptr) {
         return false;
@@ -587,7 +587,7 @@ static ani_boolean BindOn(ani_env *env) {
 }
 
 static ani_ref create([[maybe_unused]] ani_env *env, [[maybe_unused]] ani_class clazz) {
-    static const char *className = "Luitest_ani/Driver;";
+    static const char *className = "L@ohos/UiTest/Driver;";
     ani_class cls;
     ani_ref nullref;
     env->GetNull(&nullref);
@@ -633,7 +633,7 @@ static ani_ref findComponentSync(ani_env *env, ani_object obj, ani_object on_obj
     Transact(callInfo_, reply_);
     ani_ref nativeComponent = UnmarshalReply(env, callInfo_, reply_);
     ani_object com_obj;
-    static const char *className = "Luitest_ani/Component;";
+    static const char *className = "L@ohos/UiTest/Component;";
     ani_class cls = findCls(env, className);
     ani_method ctor = nullptr;
     if (cls != nullptr) {
@@ -668,7 +668,7 @@ static ani_object findComponentsSync(ani_env *env, ani_object obj, ani_object on
         std::cout<<"Object_New array failed" << std::endl;
         return com_objs;
     }
-    static const char *className = "Luitest_ani/Component;";
+    static const char *className = "L@ohos/UiTest/Component;";
     ani_class cls = findCls(env, className);
     ani_method com_ctor;
     if (cls != nullptr) {
@@ -827,7 +827,7 @@ static ani_boolean dragSync(ani_env *env, ani_object obj, ani_double x1, ani_dou
 static json getWindowFilter(ani_env *env, ani_object f)
 {
     auto filter = json();
-    static const char *className = "Luitest_ani/WindowFilterInner;";
+    static const char *className = "L@ohos/UiTest/WindowFilterInner;";
     ani_class cls;
     if (ANI_OK != env->FindClass(className, &cls)) {
         
@@ -871,7 +871,7 @@ static ani_object findWindowSync(ani_env *env, ani_object obj, ani_object filter
     Transact(callInfo_, reply_);
     ani_ref nativeWindow = UnmarshalReply(env, callInfo_, reply_);
     ani_object window_obj;
-    static const char *className = "Luitest_ani/UiWindow;";
+    static const char *className = "L@ohos/UiTest/UiWindow;";
     ani_class cls = findCls(env, className);
     ani_method ctor = nullptr;
     if (cls != nullptr) {
@@ -896,7 +896,7 @@ static ani_object createUIElementObserverSync(ani_env *env, ani_object obj)
     Transact(callInfo_, reply_);
     ani_ref nativeUIElementObserver = UnmarshalReply(env, callInfo_, reply_);
     ani_object observer_obj;
-    static const char *className = "Luitest_ani/UIElementObserver";
+    static const char *className = "L@ohos/UiTest/UIElementObserver";
     ani_class cls = findCls(env, className);
     ani_method ctor = nullptr;
     if (cls != nullptr) {
@@ -975,7 +975,7 @@ static ani_object getDisplayRotationSync(ani_env *env, ani_object obj)
 {
     auto ret = performDriver(env, obj, "Driver.getDisplayRotation");
     ani_enum enumType;
-    if(ANI_OK != env->FindEnum("Luitest_ani/WindowMode;", &enumType)) {
+    if(ANI_OK != env->FindEnum("L@ohos/UiTest/WindowMode;", &enumType)) {
         std::cerr << "Find Enum Faild" << std::endl;
     }
     ani_enum_item enumItem;
@@ -1007,7 +1007,7 @@ static ani_object waitForComponentSync(ani_env *env, ani_object obj, ani_object 
     Transact(callInfo_, reply_);
     ani_ref nativeComponent = UnmarshalReply(env, callInfo_, reply_);
     ani_object component_obj;
-    static const char *className = "Luitest_ani/Component;";
+    static const char *className = "L@ohos/UiTest/Component;";
     ani_class cls = findCls(env, className);
     ani_method ctor = nullptr;
     if (cls != nullptr) {
@@ -1292,7 +1292,7 @@ static ani_boolean injectPenPointerActionSync(ani_env *env, ani_object obj, ani_
 static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
 {
     auto options = json();
-    static const char *className = "Luitest_ani/TouchPadSwipeOptionsInner;";
+    static const char *className = "L@ohos/UiTest/TouchPadSwipeOptionsInner;";
     ani_class cls;
     if (ANI_OK != env->FindClass(className, &cls)) {
         std::cerr << "Not found '" << className << "'" << std::endl;
@@ -1342,7 +1342,7 @@ static ani_boolean touchPadMultiFingerSwipeSync(ani_env *env, ani_object obj, an
 }
 static ani_boolean BindDriver(ani_env *env)
 {
-    static const char *className = "Luitest_ani/Driver;";
+    static const char *className = "L@ohos/UiTest/Driver;";
     ani_class cls;
     if (ANI_OK != env->FindClass(className, &cls)) {
         
@@ -1352,7 +1352,7 @@ static ani_boolean BindDriver(ani_env *env)
     std::cout << "found '" << className << "'" << std::endl;
 
     std::array methods = {
-        ani_native_function {"create", ":Luitest_ani/Driver;", reinterpret_cast<void *>(create)},
+        ani_native_function {"create", ":L@ohos/UiTest/Driver;", reinterpret_cast<void *>(create)},
         ani_native_function {"delayMsSync", nullptr, reinterpret_cast<void *>(delayMsSync)},
         ani_native_function {"clickSync", nullptr, reinterpret_cast<void *>(clickSync)},
         ani_native_function {"longClickSync", nullptr, reinterpret_cast<void *>(longClickSync)},
@@ -1512,7 +1512,7 @@ static ani_ref getWindowModeSync(ani_env *env, ani_object obj)
     Transact(callInfo_, reply_);
     ani_ref ret =  UnmarshalReply(env, callInfo_, reply_);
     ani_enum enumType;
-    if(ANI_OK != env->FindEnum("Luitest_ani/WindowMode;", &enumType)) {
+    if(ANI_OK != env->FindEnum("L@ohos/UiTest/WindowMode;", &enumType)) {
         std::cerr << "Find Enum Faild" << std::endl;
     }
     ani_enum_item enumItem;
@@ -1555,7 +1555,7 @@ static ani_ref getBoundsSync(ani_env *env, ani_object obj)
 
 static ani_boolean BindWindow(ani_env *env)
 {
-    static const char *className = "Luitest_ani/UiWindow;";
+    static const char *className = "L@ohos/UiTest/UiWindow;";
     ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
         std::cerr << "Not found className:" << className << std::endl;
@@ -1768,7 +1768,7 @@ static ani_boolean isCheckable(ani_env *env, ani_object obj) {
     return true;
 }
 static ani_boolean BindComponent(ani_env *env) {
-    static const char *className = "Luitest_ani/Component;";
+    static const char *className = "L@ohos/UiTest/Component;";
    ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
         std::cerr << "Not found className:" << className << std::endl;
@@ -1816,7 +1816,7 @@ static void noFun(ani_env *env, ani_object obj)
 }
 static ani_boolean BindBusinessError(ani_env *env)
 {
-    static const char *className = "Luitest_ani/BusinessError;";
+    static const char *className = "L@ohos/UiTest/BusinessError;";
     ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
         return false;
@@ -1845,7 +1845,7 @@ static void onceSync(ani_env *env, ani_object obj, ani_string type, ani_object c
 }
 static ani_boolean BindUiEventObserver(ani_env *env)
 {
-    static const char *className = "Luitest_ani/UiEventObserver;";
+    static const char *className = "L@ohos/UiTest/UiEventObserver;";
     ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
         return false;
@@ -1869,7 +1869,7 @@ void StsUiTestInit(ani_env *env)
         std::cout<<"ResetError failed"<<endl;
     }
     ani_namespace ns;
-    status = env->FindNamespace("Luitest_ani/UiTest;", &ns);
+    status = env->FindNamespace("L@ohos/UiTest/UiTest;", &ns);
     if (status != ANI_OK) {
         LOG_E("FindNamespace UiTest failed status : %{public}d", status);
         

@@ -350,13 +350,13 @@ generate_static_abc("uitest_abc") {
   base_url = "./ets/ani/ets"
   files = [ "./ets/ani/ets/@ohos.UiTest.ets" ]
   is_boot_abc = "True"
-  dst_file = "$target_out_dir/uitest_ani.abc"
-  out_puts = [ "$target_out_dir/uitest_ani.abc" ]
-  device_dst_file = "/system/framework/uitest_ani.abc"
+  dst_file = "$target_out_dir/@ohos.UiTest.abc"
+  out_puts = [ "$target_out_dir/@ohos.UiTest.abc" ]
+  device_dst_file = "/system/framework/@ohos.UiTest.abc"
 }
 
 ohos_prebuilt_etc("uitest_etc") {
-  source = "$target_out_dir/uitest_ani.abc"
+  source = "$target_out_dir/@ohos.UiTest.abc"
   module_install_dir = "framework"
   part_name = "arkxtest"
   subsystem_name = "testfwk"
