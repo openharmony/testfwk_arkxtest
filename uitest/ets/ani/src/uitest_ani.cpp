@@ -887,20 +887,20 @@ static ani_object findWindowSync(ani_env *env, ani_object obj, ani_object filter
     return window_obj;
 }
 
-static ani_object createUIElementObserverSync(ani_env *env, ani_object obj)
+static ani_object createUIEventObserverSync(ani_env *env, ani_object obj)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
-    callInfo_.apiId_ = "Driver.createUIElementObserver";
+    callInfo_.apiId_ = "Driver.createUIEventObserver";
     Transact(callInfo_, reply_);
     ani_ref nativeUIElementObserver = UnmarshalReply(env, callInfo_, reply_);
     ani_object observer_obj;
-    static const char *className = "L@ohos/UiTest/UIElementObserver";
+    static const char *className = "L@ohos/UiTest/UIEventObserver";
     ani_class cls = findCls(env, className);
     ani_method ctor = nullptr;
     if (cls != nullptr) {
-        static const char *name = "Lstd/core/String;:v";
+        static const char *name = "Lstd/core/String;:V";
         ctor = findCtorMethod(env, cls, name);
     }
     if (cls == nullptr || ctor == nullptr) {
@@ -1366,8 +1366,8 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function {"triggerKeySync", nullptr, reinterpret_cast<void *>(triggerKeySync)},
         ani_native_function {"inputTextSync", nullptr, reinterpret_cast<void *>(inputTextSync)},
         ani_native_function {"findWindowSync", nullptr, reinterpret_cast<void *>(findWindowSync)},
-        ani_native_function {"createUIElementObserverSync", nullptr,
-            reinterpret_cast<void *>(createUIElementObserverSync)},
+        ani_native_function {"createUIEventObserver", nullptr,
+            reinterpret_cast<void *>(createUIEventObserverSync)},
         ani_native_function {"wakeUpDisplaySync", nullptr, reinterpret_cast<void *>(wakeUpDisplaySync)},
         ani_native_function {"pressHomeSync", nullptr, reinterpret_cast<void *>(pressHomeSync)},
         ani_native_function {"getDisplaySizeSync", nullptr, reinterpret_cast<void *>(getDisplaySizeSync)},
@@ -1837,7 +1837,7 @@ static void onceSync(ani_env *env, ani_object obj, ani_string type, ani_object c
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeUiEventObserver"));
-    callInfo_.apiId_ = "UiEventObserver.once";
+    callInfo_.apiId_ = "UIEventObserver.once";
     callInfo_.paramList_.push_back(aniStringToStdString(env, type));
     UiEventObserverAni::Get().PreprocessCallOnce(env, callInfo_, obj, callback, reply_);
     Transact(callInfo_, reply_);
@@ -1845,7 +1845,7 @@ static void onceSync(ani_env *env, ani_object obj, ani_string type, ani_object c
 }
 static ani_boolean BindUiEventObserver(ani_env *env)
 {
-    static const char *className = "L@ohos/UiTest/UiEventObserver;";
+    static const char *className = "L@ohos/UiTest/UIEventObserver;";
     ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
         return false;
