@@ -50,7 +50,7 @@ ohos_unittest("testserver_unittest") {
   cflags = [ "--coverage" ]
   cflags_cc = [ "--coverage" ]
   use_exceptions = true
-  module_out_path = "testserver/unittest"
+  module_out_path = "arkxtest/testserver"
   testonly = true
   subsystem_name = "testfwk"
   part_name = "arkxtest"
