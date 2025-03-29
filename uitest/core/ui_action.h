@@ -461,8 +461,8 @@ namespace OHOS::uitest {
      * */
     class GenericAtomicMouseAction : public MouseAction {
     public:
-        explicit GenericAtomicMouseAction(const ActionStage stage, const Point point, const MouseButton btn) :
-            stage_(stage), point_(point), btn_(btn) {};
+        explicit GenericAtomicMouseAction(const ActionStage stage, const Point point, const MouseButton btn)
+            : stage_(stage), point_(point), btn_(btn) {};
 
         void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &options) const override;
 
