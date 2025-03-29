@@ -24,7 +24,7 @@ namespace OHOS::uitest {
     using namespace nlohmann;
     using namespace std;
 
-    constexpr const char* BUSINESS_ERROR_CLASS = "Luitest_ani/BusinessError;";
+    constexpr const char* BUSINESS_ERROR_CLASS = "L@ohos/UiTest/BusinessError;";
     class ErrorHandler {
     public:
         static ani_status Throw(ani_env *env, int32_t code, const string &errMsg)
