@@ -5,7 +5,7 @@ import { TAG } from '../../Constant';
 import { Core } from '../../core';
 import { AssertException } from './AssertException';
 import { LogExpectError } from '../report/LogExpectError';
-import { AnyType } from '../types/common';
+import { AnyType, NumberType } from '../types/common';
 import { AssertResult } from '../modal/assertModel';
 import { SpecService } from './SpecService';
 import { SuiteService } from './SuiteService';
@@ -69,7 +69,7 @@ export class AssertMatcher {
   public isNot: Boolean;
   public currentRunningSuite: StaticSuite;
   public currentRunningSpec: StaticSpec;
-  public assertClose: (expectValue: number, precision: number) => void;
+  public assertClose: (expectValue: NumberType, precision: NumberType) => void;
   public assertContain: (expectValue: AnyType) => void;
   public assertFail: () => void;
   public assertTrue: () => void;
@@ -104,7 +104,7 @@ export class AssertMatcher {
     this.currentRunningSpec = currentRunningSpec;
     this.currentRunningSuite = currentRunningSuite;
     this.actualValue = actualValue;
-    this.assertClose = (expectValue: number, precision: number) => {};
+    this.assertClose = (expectValue: NumberType, precision: NumberType) => {};
     this.assertContain = (expectValue: AnyType) => {};
     this.assertFail = () => {};
     this.assertTrue = () => {};
@@ -158,8 +158,8 @@ export class AssertMatcher {
 
   addCloseAssert(matchers: AssertMatcherIF) {
     const numFn = (matcherName: string, assertFn: (actualValue: number, expected: number[]) => AssertResult) => {
-      return (arg1: number, arg2: number) => {
-        const result = assertFn(this.actualValue as number, [arg1, arg2]);
+      return (arg1: NumberType, arg2: NumberType) => {
+        const result = assertFn(this.actualValue as number, [arg1 as number, arg2 as number]);
         if (this.isNot) {
           result.pass = !result.pass;
           result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg1, result.message);
