@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
-import { TestRunner } from '@kit.TestKit';
+import TestRunner from '@ohos.application.testRunner';
 
 import hilog from '@ohos.hilog';
 
-import { Hypium } from '../index';
+import { Hypium } from '../../index';
 import testsuite from '../test/List.test';
 let abilityDelegator: abilityDelegatorRegistry.AbilityDelegator;
 let abilityDelegatorArguments: abilityDelegatorRegistry.AbilityDelegatorArgs;

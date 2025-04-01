@@ -20,7 +20,7 @@ import { ExpectService, AssertMatcher } from './module/service/ExpectService';
 import { ReportService } from './module/service/ReportService';
 import { OhReport } from './module/report/OhReport';
 import { ExpectExtend } from './module/assert/ExpectExtend';
-import { AnyType, ItfnType } from './module/types/common';
+import { AnyType, ItfnType, NumberType } from './module/types/common';
 
 import { SpecEvent, TaskEvent, SuiteEvent } from './module/service/event';
 import { Core } from './core';
@@ -173,7 +173,7 @@ export interface ApiIF {
   afterEach?: (func: (() => void) | (() => Promise<void>)) => void;
   it?: (desc: string, filter: int, func: ItfnType) => void;
   xit?: (desc: string, filter: int, func: ItfnType, reason: string) => void;
-  expect?: (actualValue: AnyType) => AssertMatcher;
+  expect?: (actualValue?: AnyType) => AssertMatcher;
 }
 
 export interface DryrunResultIF {

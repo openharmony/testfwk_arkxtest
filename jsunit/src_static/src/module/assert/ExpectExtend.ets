@@ -98,7 +98,7 @@ class ExpectExtend {
   apis(): ApiIF {
     return {
       name: 'ExpoctExtend',
-      expect: (actualValue: AnyType) => {
+      expect: (actualValue?: AnyType) => {
         const core = this.coreContext;
         if (core) {
           const coreContext = core as Core;

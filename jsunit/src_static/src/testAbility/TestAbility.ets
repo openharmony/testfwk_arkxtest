@@ -1,7 +1,7 @@
 import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 
-import { Hypium } from '../index';
+import { Hypium } from '../../index';
 
 import testsuite from '../test/List.test';
 const ON_DESTROY_ERROR = -2;
