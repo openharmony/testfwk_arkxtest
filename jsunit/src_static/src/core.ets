@@ -230,7 +230,7 @@ class Core {
     }
     const expect = apis.expect;
     if (expect) {
-      this.expect = expect as (actualValue: AnyType) => AssertMatcher;
+      this.expect = expect as (actualValue?: AnyType) => AssertMatcher;
     }
   }
 
