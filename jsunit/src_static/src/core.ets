@@ -50,7 +50,7 @@ class Core {
   public afterEach: (func: (() => void) | (() => Promise<void>)) => void;
   public it: (desc: string, filter: int, func: ItfnType) => void;
   public xit: (desc: string, filter: int, func: ItfnType, reason: string) => void;
-  public expect: ((actualValue: AnyType) => AssertMatcher) | null;
+  public expect: ((actualValue?: AnyType) => AssertMatcher) | null;
   public specEvent: SpecEvent;
   public suiteEvent: SuiteEvent;
   public taskEvent: TaskEvent;
@@ -230,7 +230,7 @@ class Core {
     }
     const expect = apis.expect;
     if (expect) {
-      this.expect = expect as (actualValue: AnyType) => AssertMatcher;
+      this.expect = expect as (actualValue?: AnyType) => AssertMatcher;
     }
   }
 

@@ -59,7 +59,7 @@ const hypiumAfterAll = (func: (() => void) | (() => Promise<void>)) => {
     return (core as Core).afterAll(func);
   }
 };
-const hypiumExpect = (actualValue: AnyType) => {
+const hypiumExpect = (actualValue?: AnyType) => {
   if (core) {
     const expect = (core as Core).expect;
     if (expect) {
