@@ -14,8 +14,9 @@
  */
 
 import { AssertResult } from '../modal/assertModel';
+import { AnyType } from '../types/common';
 
-export function assertNull(actualValue: object): AssertResult {
+export function assertNull(actualValue: AnyType): AssertResult {
   return {
     pass: actualValue === null,
     message: 'expect null, actualValue is ' + actualValue,
