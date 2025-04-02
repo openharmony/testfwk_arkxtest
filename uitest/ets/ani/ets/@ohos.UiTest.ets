@@ -20,30 +20,35 @@ let tag: string = 'uitestTag';
 
 export default namespace UiTest {
   loadLibrary("uitest_ani");
-  export native function ScheduleEstablishConnection(tokken: String): void;
+  export native function ScheduleEstablishConnection(tokken: String): boolean;
+  export native function GetConnectionStat(): int;
 }
 
 export function loadAndSetupUiTest():void {
-  hilog.info(domain, tag, 'loadAndSetupUiTest');
+  hilog.error(domain, tag, 'loadAndSetupUiTest');
   let delegator = abilityDelegatorRegistry.getAbilityDelegator();
-  hilog.info(domain, tag, 'after abilityDelegatorRegistry.getAbilityDelegator();');
+  hilog.error(domain, tag, 'after abilityDelegatorRegistry.getAbilityDelegator();');
   try{
     if (delegator!=null) {
-      hilog.info(domain, tag, 'UiTestKit_exporter: Got AbilityDelegator');
-      UiTest.ScheduleEstablishConnection("default");
-      hilog.info(domain, tag, 'UiTestKit_exporter: Begin executing shell command to start server-daemon');
-      delegator.printSync(`uitest start-daemon default`);
+      hilog.error(domain, tag, 'UiTestKit_exporter: Got AbilityDelegator');
+      let result = UiTest.ScheduleEstablishConnection("default");
+      hilog.error(domain, tag, "Uitest.ScheduleEstablishConnection(): "+result )
+      hilog.error(domain, tag, "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat())
+      hilog.error(domain, tag, 'UiTestKit_exporter: Begin executing shell command to start server-daemon');
       delegator.executeShellCommand(`uitest start-daemon default`, 3.0).then((value: NullishType) => {
-        hilog.info(domain, tag, `UiTestKit_exporter: Start server-daemon finished!!!!`);
+        hilog.error(domain, tag, `UiTestKit_exporter: Start server-daemon finished!!!!`);
       }).catch((error:Error) :void=> {
         hilog.error(domain, tag, "UiTestKit_exporter: Start server-daemon failed:"+error)
       });
+      hilog.error(domain, tag, "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat())
     } else {
-      hilog.info(domain, tag, 'UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started');
+      hilog.error(domain, tag, 'UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started');
       UiTest.ScheduleEstablishConnection('default');
     }
-  } catch(error){
-    hilog.error(domain, tag, "loadAndSetupUiTest failed"+error)
+  } catch(error: Error){
+    hilog.error(domain, tag, "loadAndSetupUiTest failed" + error)
+    hilog.error(domain, tag, "loadAndSetupUiTest failed" + error.stack)
+    hilog.error(domain, tag, "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat())
   }
 }
 
@@ -94,75 +99,73 @@ enum MatchPattern {
     MOUSE_BUTTON_MIDDLE = 2,
   }
   
-native function newPoint(x:int, y:int):Point;
-native function newRect(r: int[]):Rect;
 interface Point {
- x: number;
- y: number;
+ x: int;
+ y: int;
 }
   
 class PointInner implements Point {
- x: number = 0;
- y: number = 0;
+ x: int = 0;
+ y: int = 0;
 }
   
 interface Rect {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
+  left: int;
+  top: int;
+  right: int;
+  bottom: int;
 }
   
 class RectInner implements Rect {
-  left: number = 0;
-  top: number = 0;
-  right: number = 0;
-  bottom: number = 0;
+  left: int = 0;
+  top: int = 0;
+  right: int = 0;
+  bottom: int = 0;
 }
   
-  interface WindowFilter {
-    bundleName?: string;
-    title?: string;
-    focused?: boolean;
-    active?: boolean;
-  }
-  
-  class WindowFilterInner implements WindowFilter {
-    bundleName?: string = "";
-    title?: string = "";
-    focused?: boolean = false;
-    active?: boolean = false;
-  }
-  
-  interface UIElementInfo {
-    bundleName: string;
-    type: string;
-    text: string;
-  }
-  
-  class UIElementInfoInner implements UIElementInfo {
-    bundleName: string = "";
-    type: string = "";
-    text: string = "";
-  }
-  
-  interface TouchPadSwipeOptions {
-    stay?: boolean;
-    speed?: number;
-  }
-  
-  class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
-    stay?: boolean = false;
-    speed?: number = 2000;
-  }
-  
-  export class Component {
-    private nativeComponent:string = '';
-    public constructor(Component:string) {
-      if (this.nativeComponent == '') {
-        this.nativeComponent = Component;
-      }
+interface WindowFilter {
+  bundleName?: string;
+  title?: string;
+  focused?: boolean;
+  active?: boolean;
+}
+
+class WindowFilterInner implements WindowFilter {
+  bundleName?: string = "";
+  title?: string = "";
+  focused?: boolean = false;
+  active?: boolean = false;
+}
+
+interface UIElementInfo {
+  bundleName: string;
+  type: string;
+  text: string;
+}
+
+class UIElementInfoInner implements UIElementInfo {
+  bundleName: string = "";
+  type: string = "";
+  text: string = "";
+}
+
+interface TouchPadSwipeOptions {
+  stay?: boolean;
+  speed?: number;
+}
+
+class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
+  stay?: boolean = false;
+  speed?: number = 2000;
+}
+
+export class Component {
+  private nativeComponent:string = '';
+  public constructor(Component:string) {
+    if (this.nativeComponent == '') {
+      this.nativeComponent = Component;
     }
+  }
     private native comClickSync(): boolean;
     private native comLongClickSync(): boolean;
     private native comDoubleClickSync(): boolean;
@@ -344,6 +347,17 @@ class RectInner implements Rect {
         return promise;
     }
   
+    getId():Promise<string> {
+        let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
+        let promise1 = taskpool.execute(():string => this.getIdSync());
+            promise1.then((e:NullishType)=>{
+                let value : string = e as string;
+                resolve(value);
+            });
+        });
+        return promise;
+    }
+
     isChecked():Promise<boolean> {
       let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.isCheckedSync());
@@ -617,7 +631,7 @@ class RectInner implements Rect {
     private nativeDriver:string = '';
     public constructor(driver:string) {
         
-        hilog.info(domain, tag, 'driver:'+driver);
+        hilog.error(domain, tag, 'driver:'+driver);
         this.nativeDriver = driver;
     }
     private native delayMsSync(t:number):boolean;
@@ -1089,15 +1103,14 @@ class RectInner implements Rect {
   export class On {
     private nativeOn:String = '';
     public constructor(on:string) {
-      hilog.info(domain, tag, "newOnBynative");
-      hilog.info(domain, tag, on);
+      hilog.error(domain, tag, "newOnBynative");
+      hilog.error(domain, tag, on);
       this.nativeOn = on;
     }
     public constructor() {
-        hilog.info(domain, tag, "newOn");
+        hilog.error(domain, tag, "newOn");
     }
     native within(on:On): On;
-    native text(txt: string, pattern?: MatchPattern): On;
     native clickable(b?: boolean): On;
     native longClickable(b?: boolean): On;
     native scrollable(b?: boolean): On;
@@ -1109,10 +1122,27 @@ class RectInner implements Rect {
     native isBefore(on: On): On;
     native isAfter(on: On): On;
     native inWindow(bundleName: string): On;
+    native text(txt: string, pattern?: MatchPattern): On;
     native description(val: string, pattern?: MatchPattern): On;
     native id(id: string, pattern?: MatchPattern): On;
     native type(tp: string, pattern?: MatchPattern): On;
     native hint(val: string, pattern?: MatchPattern): On;
+    
+    text(txt: string): On {
+        return this.text(txt, MatchPattern.EQUALS);
+    }
+    description(val: string): On {
+        return this.description(val, MatchPattern.EQUALS);
+    }
+    id(id: string): On {
+        return this.id(id, MatchPattern.EQUALS);
+    }
+    type(tp: string): On {
+        return this.type(tp, MatchPattern.EQUALS);
+    }
+    hint(val: string): On {
+        return this.hint(val, MatchPattern.EQUALS);
+    }
   }
 
   export class UIEventObserver {
