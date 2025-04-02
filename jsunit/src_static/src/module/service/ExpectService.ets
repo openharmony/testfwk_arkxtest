@@ -77,7 +77,7 @@ export class AssertMatcher {
   public assertInstanceOf: (expectValue: string) => void;
   public assertLarger: (expectValue: NumberType) => void;
   public assertLess: (expectValue: NumberType) => void;
-  public assertNull: (actualValue: object) => void;
+  public assertNull: () => void;
   public assertThrow: (expectValue: string) => void;
   public assertThrowError: (expectValue: string, expect?: string) => void;
   public assertUndefined: () => void;
@@ -114,7 +114,7 @@ export class AssertMatcher {
     this.assertLargerOrEqual = (expectValue: NumberType) => {};
     this.assertLessOrEqual = (expectValue: NumberType) => {};
     this.assertUndefined = () => {};
-    this.assertNull = (actualValue: object) => {};
+    this.assertNull = () => {};
     this.assertThrow = (expectValue: string) => {};
     this.assertThrowError = (expectValue: string, expect?: string) => {};
     this.assertNaN = () => {};
@@ -176,7 +176,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -215,7 +215,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -268,7 +268,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -306,7 +306,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -353,7 +353,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -399,7 +399,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -452,7 +452,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -467,6 +467,11 @@ export class AssertMatcher {
     if (assertUndefined) {
       this.assertUndefined = undefinedFn('assertUndefined', assertUndefined);
     }
+    const assertNull = matchers.assertNull;
+    if (assertNull) {
+      this.assertNull = undefinedFn('assertNull', assertNull);
+    }
+    
   }
 
   addThrowAssert(matchers: AssertMatcherIF) {
@@ -493,7 +498,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -507,6 +512,10 @@ export class AssertMatcher {
     const assertThrowError = matchers.assertThrowError;
     if (assertThrowError) {
       this.assertThrowError = throwFn('assertThrowError', assertThrowError);
+    }
+    const assertThrow = matchers.assertThrow;
+    if (assertThrow) {
+      this.assertThrow = throwFn('assertThrow', assertThrow);
     }
   }
 
@@ -530,7 +539,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -578,7 +587,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -626,7 +635,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {

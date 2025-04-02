@@ -129,7 +129,7 @@ export interface AssertMatcherIF {
   assertInstanceOf: (actualValue: AnyType, expected: string[]) => AssertResult;
   assertLarger: (actualValue: number, expected: number[]) => AssertResult;
   assertLess: (actualValue: number, expected: number[]) => AssertResult;
-  assertNull: (actualValue: object) => AssertResult;
+  assertNull: (actualValue: AnyType) => AssertResult;
   assertThrow: (actualValue: () => void, args: string[]) => AssertResult;
   assertThrowError: (actualValue: () => void, args: string[]) => AssertResult;
   assertUndefined: (actualValue: AnyType) => AssertResult;
@@ -232,4 +232,20 @@ export interface ExtendAssert {
   message: string;
   actualValue: AnyType;
   checkFunc: string;
+}
+
+export interface DataDriverSuite {
+  describe?: string[];
+  stress?: NumberType;
+  it?: string;
+  params: Map<string, string>
+  items?: DataDriverSuite[];
+}
+
+export interface DataDriverData {
+  suites?: DataDriverSuite[];
+}
+
+export interface DataDriverAttr {
+  data: DataDriverData;
 }
