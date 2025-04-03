@@ -176,7 +176,7 @@ do { \
         static auto driver = UiDriver();
         EXTENSION_API_CHECK(stage >= ActionStage::DOWN && stage <= ActionStage::AXIS_STOP,
                             "Illegal stage", ERR_BAD_ARG);
-        EXTENSION_API_CHECK(btn >= MouseButton::BUTTON_LEFT && btn <= MouseButton::BUTTON_MIDDLE,
+        EXTENSION_API_CHECK(btn >= MouseButton::BUTTON_NONE && btn <= MouseButton::BUTTON_MIDDLE,
                             "Illegal btn", ERR_BAD_ARG);
         auto touch = GenericAtomicMouseAction(static_cast<ActionStage>(stage), Point(px, py),
                                               static_cast<MouseButton>(btn));
