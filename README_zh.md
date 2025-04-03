@@ -1865,3 +1865,5 @@ hdc shell chmod +x /system/bin/uitest
 | 5.0.1.2 | 1、通过test Sa发布公共事件。<br />2、节点新增clip属性，判断其子节点是否进行切割。<br />3、过滤机制调整，节点只与其clip为true的父节点进行切换计算可见区域，可见区域宽/高小于等于0记为不可见。<br />4、调用inputText时，被输入字符串超过200个字符时，实现方式调整为设置剪贴板数据后，植入ctrl + v。 |
 | 5.1.1.1 | 1、控件支持正则表达式方式进行查找 <br />2、获取控件属性中的提示文本信息 <br />3、支持横向滑动查找操作 <br />4、支持不指定坐标模拟输入文本的shell命令 hdc shell uitest uiInput text "xxxx" |
 | 5.1.1.2 | uitest dumpLayout 能力增强<br /> -w：仅获取指定window id的应用窗口。<br/> -b ：仅获取指定bundleName的应用窗口。<br/> -m ：是否进行窗口合并。不使用该选项时默认进行窗口合并。 |
+| 5.1.1.3 | 1、开放鼠标原子事件。                                        |
+
