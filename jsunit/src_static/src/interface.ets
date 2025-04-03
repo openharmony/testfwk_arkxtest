@@ -121,7 +121,7 @@ export interface ReportAttrIF {
 }
 
 export interface AssertMatcherIF {
-  assertClose: (actualValue: number, expected: number[]) => AssertResult;
+  assertClose: (actualValue: AnyType, expected: number[]) => AssertResult;
   assertContain: (actualValue: AnyType, expect: AnyType[]) => AssertResult;
   assertFail: () => AssertResult;
   assertTrue: (actualValue: boolean) => AssertResult;
