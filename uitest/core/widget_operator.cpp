@@ -284,7 +284,8 @@ namespace OHOS::uitest {
     void WidgetOperator::TurnPage(bool toTop, int &oriDistance, bool vertical, ApiCallErr &error) const
     {
         auto bounds = widget_.GetBounds();
-        Point topPoint, bottomPoint;
+        Point topPoint;
+        Point bottomPoint;
         auto screenSize = driver_.GetDisplaySize(error, widget_.GetDisplayId());
         auto gestureZone = (vertical) ? screenSize.py_ / 20 : screenSize.px_ / 20;
         topPoint = vertical ? Point(bounds.GetCenterX(), bounds.top_) : Point(bounds.left_, bounds.GetCenterY());
