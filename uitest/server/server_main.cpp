@@ -34,6 +34,7 @@
 #include <vector>
 #include <cmath>
 #include <fcntl.h>
+#include <cstdio>
 #include "ipc_transactor.h"
 #include "system_ui_controller.h"
 #include "input_manager.h"
@@ -222,13 +223,16 @@ namespace OHOS::uitest {
         }
         auto controller = SysUiController();
         stringstream errorRecv;
-        auto fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
-        if (!controller.TakeScreenCap(fd, errorRecv, displayId)) {
+        FILE* file = fopen(savePath.c_str(), "wb");
+        if (file == nullptr) {
+            PrintToConsole("Create png file failed");
+            return EXIT_FAILURE;
+        }
+        if (!controller.TakeScreenCap(file, errorRecv, displayId)) {
             PrintToConsole("ScreenCap failed: " + errorRecv.str());
             return EXIT_FAILURE;
         }
         PrintToConsole("ScreenCap saved to " + savePath);
-        (void) close(fd);
         return EXIT_SUCCESS;
     }
 
