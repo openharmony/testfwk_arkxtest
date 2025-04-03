@@ -4,7 +4,7 @@ import { StaticSuite } from './StaticSuite';
 import { StaticSpec } from './StaticSpec';
 import { TAG } from '../../Constant';
 import { Core } from '../../core';
-import { processFunc } from '../../util';
+import { processFunc, checkIsAsyncFunction } from '../../util';
 import { SysTestKit } from '../kit/SysTestKit';
 import { AssertException } from './AssertException';
 import { ConfigService } from '../config/configService';
@@ -81,8 +81,13 @@ class SuiteService {
         this.currentRunningSuite.childSuites.push(suite);
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);
-
-        await (func as () => Promise<void>)();
+        const funcStr = (func as object).toString();
+        const isAsyncFunc = checkIsAsyncFunction(funcStr);
+        if (isAsyncFunc) {
+          await (func as () => Promise<void>)();
+        } else {
+          (func as () => void)();
+        }
         this.suitesStack.pop();
 
         const staticService = this.suitesStack.pop();
