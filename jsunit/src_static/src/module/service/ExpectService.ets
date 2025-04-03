@@ -160,7 +160,7 @@ export class AssertMatcher {
     const numFn = (matcherName: string, assertFn: (actualValue: number, expected: number[]) => AssertResult) => {
       return (arg1: NumberType, arg2: NumberType) => {
         try {
-          const result = assertFn(this.actualValue as number, [arg1 as number, arg2 as number]);
+          const result = assertFn(this.actualValue, [arg1, arg2]);
           if (this.isNot) {
             result.pass = !result.pass;
             result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg1, result.message);
