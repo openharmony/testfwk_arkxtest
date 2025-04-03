@@ -119,7 +119,7 @@ bool ScreenCopy::Run(int32_t displayId)
         LOG_D("Register ScreenListener, ret=%{public}d", ret);
     }
     // run snapshot thread and encode thread
-    snapshotThread = make_unique<thread>([&]() { this->PollAndNotifyFrames(displayId); });
+    snapshotThread = make_unique<thread>([this, displayId]() { this->PollAndNotifyFrames(displayId); });
     encodeThread = make_unique<thread>([this]() { this->WaitAndConsumeFrames(); });
     return true;
 }
