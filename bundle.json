@@ -43,8 +43,10 @@
           "soc_perf",
           "init",
           "access_token",
-	        "graphic_2d",
-          "libuv"
+	  "graphic_2d",
+          "runtime_core",
+          "libuv",
+          "udmf"
         ],
         "third_party": [
           "libpng",
@@ -74,6 +76,13 @@
                 "test_server_client.h",
                 "session_token.h"
               ]
+            }
+          },
+          {
+            "name": "//test/testfwk/arkxtest/uitest:cj_ui_test_ffi",
+            "header": {
+              "header_files": [],
+              "header_base": "//test/testfwk/arkxtest/uitest/cj"
             }
           }
         ],
