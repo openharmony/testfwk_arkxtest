@@ -165,8 +165,8 @@ export interface ApiIF {
   name: string;
   describe?: (desc: string, func: (() => void) | (() => Promise<void>)) => Promise<undefined>;
   xdescribe?: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => Promise<void>;
-  beforeItSpecified?: (itDescs: string, func: (() => void) | (() => Promise<void>)) => void;
-  afterItSpecified?: (itDescs: string, func: (() => void) | (() => Promise<void>)) => void;
+  beforeItSpecified?: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => void;
+  afterItSpecified?: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => void;
   beforeAll?: (func: (() => void) | (() => Promise<void>)) => void;
   beforeEach?: (func: (() => void) | (() => Promise<void>)) => void;
   afterAll?: (func: (() => void) | (() => Promise<void>)) => void;

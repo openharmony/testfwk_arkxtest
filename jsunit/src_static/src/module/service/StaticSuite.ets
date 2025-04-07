@@ -12,8 +12,8 @@ class StaticSuite {
   public description: string;
   public specs: Array<StaticSpec>;
   public childSuites: Array<StaticSuite>;
-  public beforeItSpecified: Map<string | Array<string>, (() => void) | (() => Promise<void>)>;
-  public afterItSpecified: Map<string | Array<string>, (() => void) | (() => Promise<void>)>;
+  public beforeItSpecified: Map<string | string[], (() => void) | (() => Promise<void>)>;
+  public afterItSpecified: Map<string | string[], (() => void) | (() => Promise<void>)>;
   public duration: int;
   public beforeAll: Set<(() => void) | (() => Promise<void>)>;
   public afterAll: Set<(() => void) | (() => Promise<void>)>;
@@ -31,8 +31,8 @@ class StaticSuite {
     this.afterAll = new Set<(() => void) | (() => Promise<void>)>();
     this.beforeEach = new Set<(() => void) | (() => Promise<void>)>();
     this.afterEach = new Set<(() => void) | (() => Promise<void>)>();
-    this.beforeItSpecified = new Map<string | Array<string>, (() => void) | (() => Promise<void>)>();
-    this.afterItSpecified = new Map<string | Array<string>, (() => void) | (() => Promise<void>)>();
+    this.beforeItSpecified = new Map<string | string[], (() => void) | (() => Promise<void>)>();
+    this.afterItSpecified = new Map<string | string[], (() => void) | (() => Promise<void>)>();
     this.duration = 0;
     this.hookError = null;
     this.isSkip = false;
@@ -150,14 +150,23 @@ class StaticSuite {
   }
 
   runBeforeItSpecified(
-    beforeItSpecified: Map<string | Array<string>, (() => void) | (() => Promise<void>)>,
+    beforeItSpecified: Map<string | string[], (() => void) | (() => Promise<void>)>,
     specItem: StaticSpec
   ) {
     for (const itNames of beforeItSpecified.keys()) {
-      if (
-        (Array.isArray(itNames) && (itNames as Array<string>).includes(specItem.description)) ||
-        (typeof itNames === 'string' && (itNames as string) === specItem.description)
-      ) {
+      let flag = false;
+      if (typeof itNames === 'string' && (itNames as string) === specItem.description) {
+        flag = true;
+      } else if (Array.isArray(itNames)) {
+        const itNamesArr = itNames as string[];
+        for (const name of itNamesArr) {
+          if (name === specItem.description) {
+            flag = true;
+            break;
+          }
+        }
+      }
+      if (flag) {
         const hookFunc = beforeItSpecified.get(itNames);
         if (hookFunc) {
           (hookFunc as () => Promise<void>)();
@@ -172,10 +181,19 @@ class StaticSuite {
     specItem: StaticSpec
   ) {
     for (const itNames of afterItSpecified.keys()) {
-      if (
-        (Array.isArray(itNames) && (itNames as Array<string>).includes(specItem.description)) ||
-        (typeof itNames === 'string' && (itNames as string) === specItem.description)
-      ) {
+      let flag = false;
+      if (typeof itNames === 'string' && (itNames as string) === specItem.description) {
+        flag = true;
+      } else if (Array.isArray(itNames)) {
+        const itNamesArr = itNames as string[];
+        for (const name of itNamesArr) {
+          if (name === specItem.description) {
+            flag = true;
+            break;
+          }
+        }
+      }
+      if (flag) {
         const hookFunc = afterItSpecified.get(itNames);
         if (hookFunc) {
           (hookFunc as () => Promise<void>)();
