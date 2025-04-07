@@ -153,14 +153,14 @@ class SuiteService {
     }
   }
 
-  beforeItSpecified(itDescs: string, func: (() => void) | (() => Promise<void>)) {
+  beforeItSpecified(itDescs: string | string[], func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
       this.currentRunningSuite.beforeItSpecified.set(itDescs, processFunc(core as Core, func));
     }
   }
 
-  afterItSpecified(itDescs: string, func: (() => void) | (() => Promise<void>)) {
+  afterItSpecified(itDescs: string | string[], func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
       this.currentRunningSuite.afterItSpecified.set(itDescs, processFunc(core as Core, func));
