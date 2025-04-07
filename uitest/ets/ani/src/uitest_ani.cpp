@@ -56,11 +56,13 @@
      ani_boolean ret;
      env->Reference_IsUndefined(reinterpret_cast<ani_ref>(input), &ret);
      if (ret==ANI_FALSE) {
-         ani_double param;
-         env->Object_CallMethodByName_Double(input, "unboxed", ":D", &param);
          if (isInt) {
+             ani_int param;
+             env->Object_CallMethodByName_Int(input, "unboxed", nullptr, &param);
              callInfo_.paramList_.push_back(int(param));
          } else {
+             ani_double param;
+             env->Object_CallMethodByName_Double(input, "unboxed", ":D", &param);
              callInfo_.paramList_.push_back(param);
          }
      }
@@ -278,7 +280,7 @@
      }
      rect["top"] = int(top);
  
-     ani_method bottomGetter;
+         ani_method bottomGetter;
      if (ANI_OK != env->Class_FindMethod(cls, "<get>bottom", nullptr, &bottomGetter)) {
          HiLog::Error(LABEL, "%{public}s Find Method <get>bottom failed", __func__);
      }
@@ -379,7 +381,7 @@
      return pointer_matrix_object;
  }
  
- static void setPoint(ani_env *env, ani_object object, ani_double finger, ani_double step, ani_object point) {
+ static void setPoint(ani_env *env, ani_object object, ani_int finger, ani_int step, ani_object point) {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
      callInfo_.apiId_="PointerMatrix.setPoint";
@@ -605,7 +607,7 @@
      return driver_object;
  }
  
- static ani_boolean delayMsSync(ani_env *env, ani_object obj, ani_double t) {
+ static ani_boolean delayMsSync(ani_env *env, ani_object obj, ani_int t) {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
      callInfo_.apiId_ = "Driver.delayMs";
@@ -697,7 +699,7 @@
      return true;
  }
  
- static void performClick(ani_env *env, ani_object obj, ani_double x, ani_double y, string api) {
+ static void performClick(ani_env *env, ani_object obj, ani_int x, ani_int y, string api) {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
      callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
@@ -708,19 +710,19 @@
      UnmarshalReply(env, callInfo_, reply_);
  }
  
- static ani_boolean clickSync(ani_env *env, ani_object obj, ani_double x, ani_double y) {
+ static ani_boolean clickSync(ani_env *env, ani_object obj, ani_int x, ani_int y) {
      string api_name = "Driver.click";
      performClick(env, obj, x, y, api_name);
      return true;
  }
  
- static ani_boolean doubleClickSync(ani_env *env, ani_object obj, ani_double x, ani_double y) {
+ static ani_boolean doubleClickSync(ani_env *env, ani_object obj, ani_int x, ani_int y) {
      string api_name = "Driver.doubleClick";
      performClick(env, obj, x, y, api_name);
      return true;
  }
  
- static ani_boolean longClickSync(ani_env *env, ani_object obj, ani_double x, ani_double y) {
+ static ani_boolean longClickSync(ani_env *env, ani_object obj, ani_int x, ani_int y) {
      string api_name = "Driver.longClick";
      performClick(env, obj, x, y, api_name);
      return true;
@@ -740,7 +742,7 @@
      return true;
  }
  
- static ani_boolean flingSync(ani_env *env, ani_object obj, ani_object f, ani_object t, ani_double stepLen, ani_double speed) {
+ static ani_boolean flingSync(ani_env *env, ani_object obj, ani_object f, ani_object t, ani_int stepLen, ani_int speed) {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
      callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
@@ -756,7 +758,7 @@
      return true;
  }
  
- static ani_boolean flingSyncDirection(ani_env *env, ani_object obj, ani_enum_item direction, ani_double speed) {
+ static ani_boolean flingSyncDirection(ani_env *env, ani_object obj, ani_enum_item direction, ani_int speed) {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
      callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
@@ -784,7 +786,7 @@
      return true;
  }
  
- static ani_boolean swipeSync(ani_env *env, ani_object obj, ani_double x1, ani_double y1, ani_double x2, ani_double y2, ani_object speed)
+ static ani_boolean swipeSync(ani_env *env, ani_object obj, ani_int x1, ani_int y1, ani_int x2, ani_int y2, ani_object speed)
  {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
@@ -800,7 +802,7 @@
      return true;
  }
   
- static ani_boolean dragSync(ani_env *env, ani_object obj, ani_double x1, ani_double y1, ani_double x2, ani_double y2, ani_object speed)
+ static ani_boolean dragSync(ani_env *env, ani_object obj, ani_int x1, ani_int y1, ani_int x2, ani_int y2, ani_object speed)
  {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
@@ -917,7 +919,7 @@
      return true;
  }
  
- static ani_boolean triggerKeySync(ani_env *env, ani_object obj, ani_double keyCode)
+ static ani_boolean triggerKeySync(ani_env *env, ani_object obj, ani_int keyCode)
  {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
@@ -965,17 +967,24 @@
  
  static ani_object getDisplayRotationSync(ani_env *env, ani_object obj)
  {
-     auto ret = performDriver(env, obj, "Driver.getDisplayRotation");
+     ApiCallInfo callInfo_;
+     ApiReplyInfo reply_;
+     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+     callInfo_.apiId_ = "Driver.getDisplayRotation";
+     Transact(callInfo_, reply_);
      ani_enum enumType;
-     if(ANI_OK != env->FindEnum("L@ohos/UiTest/WindowMode;", &enumType)) {
+     if(ANI_OK != env->FindEnum("L@ohos/UiTest/DisplayRotation;", &enumType)) {
          std::cerr << "Find Enum Faild" << std::endl;
      }
      ani_enum_item enumItem;
-     env->Enum_GetEnumItemByIndex(enumType, reinterpret_cast<ani_size>(ret) + 1, &enumItem);
+     auto index = static_cast<uint8_t>(reply_.resultValue_.get<int>());
+     env->Enum_GetEnumItemByIndex(enumType, index, &enumItem);
+     HiLog::Info(LABEL, " DisplayRotation:  %{public}d ", index);
+ 
      return enumItem;
  }
   
- static ani_boolean waitForIdleSync(ani_env *env, ani_object obj, ani_double idleTime, ani_double timeout)
+ static ani_boolean waitForIdleSync(ani_env *env, ani_object obj, ani_int idleTime, ani_int timeout)
  {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
@@ -988,7 +997,7 @@
      return true;
  }
   
- static ani_object waitForComponentSync(ani_env *env, ani_object obj, ani_object on_obj, ani_double time)
+ static ani_object waitForComponentSync(ani_env *env, ani_object obj, ani_object on_obj, ani_int time)
  {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
@@ -1015,7 +1024,7 @@
      return component_obj;
   }
   
-  static ani_boolean triggerCombineKeysSync(ani_env *env, ani_object obj, ani_double key0, ani_double key1, ani_object key2)
+  static ani_boolean triggerCombineKeysSync(ani_env *env, ani_object obj, ani_int key0, ani_int key1, ani_object key2)
  {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
@@ -1148,7 +1157,7 @@
      return true;
   }
   
-  static ani_boolean mouseScrollSync(ani_env *env, ani_object obj, ani_object p, ani_boolean down, ani_double dis, ani_object key1, ani_object key2,
+  static ani_boolean mouseScrollSync(ani_env *env, ani_object obj, ani_object p, ani_boolean down, ani_int dis, ani_object key1, ani_object key2,
       ani_object speed)
   {
      ApiCallInfo callInfo_;
@@ -1307,9 +1316,9 @@
              compareAndReport(1,1,"", std::to_string(value));
              options[list[index]] = value;
          } else {
-             ani_double value;
-             compareAndReport(ANI_OK ,env->Object_CallMethodByName_Double(static_cast<ani_object>(ref), "unboxed", nullptr ,&value),
-             "Object_CallMethodByName_Double Failed '"+std::string(className) +"'", "get double value");
+             ani_int value;
+             compareAndReport(ANI_OK ,env->Object_CallMethodByName_Int(static_cast<ani_object>(ref), "unboxed", nullptr ,&value),
+             "Object_CallMethodByName_Int Failed '"+std::string(className) +"'", "get Int value");
              compareAndReport(1,1,"", std::to_string(value));
              options[list[index]] = value;
          }
@@ -1317,7 +1326,7 @@
      return options;
   }
   
-  static ani_boolean touchPadMultiFingerSwipeSync(ani_env *env, ani_object obj, ani_double fingers, ani_enum_item direction, ani_object touchPadOpt)
+  static ani_boolean touchPadMultiFingerSwipeSync(ani_env *env, ani_object obj, ani_int fingers, ani_enum_item direction, ani_object touchPadOpt)
   {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
@@ -1464,7 +1473,7 @@
      return ret;
   }
   
-  static ani_boolean resizeSync(ani_env *env, ani_object obj, ani_double w, ani_double h, ani_enum_item d)
+  static ani_boolean resizeSync(ani_env *env, ani_object obj, ani_int w, ani_int h, ani_enum_item d)
   {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
@@ -1480,7 +1489,7 @@
      return true;
   }
   
-  static ani_boolean moveToSync(ani_env *env, ani_object obj, ani_double x, ani_double y)
+  static ani_boolean moveToSync(ani_env *env, ani_object obj, ani_int x, ani_int y)
   {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
@@ -1500,13 +1509,14 @@
      callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeWindow"));
      callInfo_.apiId_ = "UiWindow.getWindowMode";
      Transact(callInfo_, reply_);
-     ani_ref ret =  UnmarshalReply(env, callInfo_, reply_);
      ani_enum enumType;
      if(ANI_OK != env->FindEnum("L@ohos/UiTest/WindowMode;", &enumType)) {
          std::cerr << "Find Enum Faild" << std::endl;
      }
      ani_enum_item enumItem;
-     env->Enum_GetEnumItemByIndex(enumType, reinterpret_cast<ani_size>(ret) + 1, &enumItem);
+     auto index = static_cast<uint8_t>(reply_.resultValue_.get<int>());
+     env->Enum_GetEnumItemByIndex(enumType, index, &enumItem);
+     HiLog::Info(LABEL, " getWindowMode:  %{public}d ", index);
      return enumItem;
   }
   
@@ -1669,7 +1679,7 @@
      return true;
  }
  
- static ani_boolean scrollToTop(ani_env *env, ani_object obj, ani_double speed) {
+ static ani_boolean scrollToTop(ani_env *env, ani_object obj, ani_int speed) {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
      callInfo_.apiId_ = "Component.scrollToTop";
@@ -1680,7 +1690,7 @@
      return true;
  }
  
- static ani_boolean scrollToBottom(ani_env *env, ani_object obj, ani_double speed) {
+ static ani_boolean scrollToBottom(ani_env *env, ani_object obj, ani_int speed) {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
      callInfo_.apiId_ = "Component.scrollToBottom";
@@ -1691,7 +1701,7 @@
      return true;
  }
  
- static ani_boolean scrollSearch(ani_env *env, ani_object obj, ani_object on, ani_boolean vertical, ani_double offset) {
+ static ani_boolean scrollSearch(ani_env *env, ani_object obj, ani_object on, ani_boolean vertical, ani_int offset) {
      ApiCallInfo callInfo_;
      ApiReplyInfo reply_;
      callInfo_.apiId_ = "Component.scrollSearch";
@@ -1709,7 +1719,7 @@
      ApiReplyInfo reply_;
      callInfo_.apiId_ = apiId_;
      callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
-     callInfo_.paramList_.push_back(int(scale));
+     callInfo_.paramList_.push_back(scale);
      Transact(callInfo_, reply_);
      UnmarshalReply(env, callInfo_, reply_);
      return;
