@@ -666,8 +666,8 @@ export class Component {
       });
       return promise;
     }
-    private native flingSyncDirection(direction:UiDirection, speed?: int):boolean;
-    fling(direction:UiDirection, speed?: int): Promise<void> {
+    private native flingSyncDirection(direction:UiDirection, speed: int):boolean;
+    fling(direction:UiDirection, speed: int): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.flingSyncDirection(direction, speed));
           promise1.then((e:NullishType)=>{
@@ -780,10 +780,10 @@ export class Component {
       });
       return promise;
     }
-    private native getDisplaySizeDensitySync():Point;
-    getDisplaySizeDensity(): Promise<Point> {
+    private native getDisplayDensity():Point;
+    getDisplayDensity(): Promise<Point> {
       let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():Point => this.getDisplaySizeDensitySync());
+      let promise1 = taskpool.execute(():Point => this.getDisplayDensity());
       promise1.then((e:NullishType)=>{
           let value : Point = e as Point;
           resolve(value);
@@ -837,7 +837,7 @@ export class Component {
   
     private native injectMultiPointerActionSync(pointers: PointerMatrix, speed?: int): boolean;
     private native injectPenPointerActionSync(pointers: PointerMatrix, speed?: int, pressure?: double): boolean;
-    private native touchPadMultiFingerSwipeSync(fingers: int, direction: int, options?: TouchPadSwipeOptions): boolean;
+    private native touchPadMultiFingerSwipeSync(fingers: int, direction: UiDirection, options?: TouchPadSwipeOptions): boolean;
   
     delayMs(t: int): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
