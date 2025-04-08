@@ -13,500 +13,500 @@
  * limitations under the License.
  */
 
- #include "ani.h"
- #include "hilog/log.h"
- #include <array>
- #include <iostream>
- #include <unistd.h>
- #include <future>
- #include <queue>
- #include <set>
- #include <string>
- #include "nlohmann/json.hpp"
- #include "fcntl.h"
- #include "common_utilities_hpp.h"
- #include "frontend_api_handler.h"
- #include "ipc_transactor.h"
- #include "test_server_client.h"
- #include "error_handler.h"
- #include "ui_event_observer_ani.h"
- #include <cstring>
- #include <cstdio>
+#include "ani.h"
+#include "hilog/log.h"
+#include <array>
+#include <iostream>
+#include <unistd.h>
+#include <future>
+#include <queue>
+#include <set>
+#include <string>
+#include "nlohmann/json.hpp"
+#include "fcntl.h"
+#include "common_utilities_hpp.h"
+#include "frontend_api_handler.h"
+#include "ipc_transactor.h"
+#include "test_server_client.h"
+#include "error_handler.h"
+#include "ui_event_observer_ani.h"
+#include <cstring>
+#include <cstdio>
+
+using namespace OHOS::uitest;
+using namespace nlohmann;
+using namespace std;
+static ApiTransactor g_apiTransactClient(false);
+static future<void> g_establishConnectionFuture;
+using namespace OHOS::HiviewDFX;
+constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LogType::LOG_CORE, 0xD003100, "UiTestKit"};
  
- using namespace OHOS::uitest;
- using namespace nlohmann;
- using namespace std;
- static ApiTransactor g_apiTransactClient(false);
- static future<void> g_establishConnectionFuture;
- using namespace OHOS::HiviewDFX;
- constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LogType::LOG_CORE, 0xD003100, "UiTestKit"};
+template<typename T>
+void compareAndReport(const T& param1, const T& param2, const std::string& errorMessage, const std::string& message) {
+    if (param1 != param2) {
+        std::cerr << errorMessage << std::endl;
+        return;
+    } else {
+        std::cerr << message << std::endl;
+        return;
+    }
+}
  
- template<typename T>
- void compareAndReport(const T& param1, const T& param2, const std::string& errorMessage, const std::string& message) {
-     if (param1 != param2) {
-         std::cerr << errorMessage << std::endl;
-         return;
-     } else {
-         std::cerr << message << std::endl;
-         return;
-     }
- }
+static void pushParam(ani_env *env, ani_object input, ApiCallInfo &callInfo_, bool isInt) {    
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(input), &ret);
+    if (ret==ANI_FALSE) {
+        if (isInt) {
+            ani_int param;
+            env->Object_CallMethodByName_Int(input, "unboxed", nullptr, &param);
+            callInfo_.paramList_.push_back(int(param));
+        } else {
+            ani_double param;
+            env->Object_CallMethodByName_Double(input, "unboxed", ":D", &param);
+            callInfo_.paramList_.push_back(param);
+        }
+    }
+}
+
+static string aniStringToStdString([[maybe_unused]] ani_env *env, ani_string string_object) {
+    ani_size strSize;
+    env->String_GetUTF8Size(string_object, &strSize);
+    std::vector<char> buffer(strSize + 1);
+    char* utf8_buffer = buffer.data();
+    ani_size bytes_written = 0;
+    env->String_GetUTF8(string_object, utf8_buffer, strSize + 1, &bytes_written);
+    utf8_buffer[bytes_written]='\0';
+    std::string s = std::string(utf8_buffer);
+    std::cout<<s<<std::endl;
+    return s;
+} 
+
+static ani_class findCls(ani_env *env, const char *className) {
+    ani_class cls;
+    ani_ref nullref;
+    env->GetNull(&nullref);
+    if (ANI_OK != env->FindClass(className, &cls)) {
+        std::cerr << "Not found className:" << className << std::endl;
+    }
+    return cls;
+}
+
+static ani_method findCtorMethod(ani_env *env, ani_class cls, const char *name) {
+    ani_method ctor = nullptr;
+    if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", name, &ctor)) {
+        std::cerr << "Not found ctor of:" << name << std::endl;
+    }
+    return ctor;
+}
  
- static void pushParam(ani_env *env, ani_object input, ApiCallInfo &callInfo_, bool isInt) {    
-     ani_boolean ret;
-     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(input), &ret);
-     if (ret==ANI_FALSE) {
-         if (isInt) {
-             ani_int param;
-             env->Object_CallMethodByName_Int(input, "unboxed", nullptr, &param);
-             callInfo_.paramList_.push_back(int(param));
-         } else {
-             ani_double param;
-             env->Object_CallMethodByName_Double(input, "unboxed", ":D", &param);
-             callInfo_.paramList_.push_back(param);
-         }
-     }
- }
- 
- static string aniStringToStdString([[maybe_unused]] ani_env *env, ani_string string_object) {
-     ani_size strSize;
-     env->String_GetUTF8Size(string_object, &strSize);
-     std::vector<char> buffer(strSize + 1);
-     char* utf8_buffer = buffer.data();
-     ani_size bytes_written = 0;
-     env->String_GetUTF8(string_object, utf8_buffer, strSize + 1, &bytes_written);
-     utf8_buffer[bytes_written]='\0';
-     std::string s = std::string(utf8_buffer);
-     std::cout<<s<<std::endl;
-     return s;
- } 
+static void waitForConnectionIfNeed() {
+    if (g_establishConnectionFuture.valid()) {
+        HiLog::Error(LABEL, "%{public}s. Begin Wait for Connection", __func__);
+        g_establishConnectionFuture.get();
+    }
+}
+
+static void Transact(ApiCallInfo callInfo_, ApiReplyInfo &reply_) {
+    waitForConnectionIfNeed();
+    g_apiTransactClient.Transact(callInfo_, reply_);
+}
+static ani_ref UnmarshalObject(ani_env *env, nlohmann::json resultValue_) {
+    const auto resultType = resultValue_.type();
+    ani_ref result = nullptr;
+    if (resultType == nlohmann::detail::value_t::null) {
+        return result;
+    } else if (resultType!=nlohmann::detail::value_t::string) {
+        ani_string str;
+        env->String_NewUTF8(resultValue_.dump().c_str(), resultValue_.dump().size(), &str);
+        result = reinterpret_cast<ani_ref>(str);
+        return result;
+    }
+    const auto cppString = resultValue_.get<string>();
+    string frontendTypeName;
+    bool bindJsThis = false;
+    for (const auto &classDef : FRONTEND_CLASS_DEFS) {
+        const auto objRefFormat = string(classDef->name_) + "#";
+        if (cppString.find(objRefFormat) == 0) {
+            frontendTypeName = string(classDef->name_);
+            bindJsThis = classDef->bindUiDriver_;
+            break;
+        }
+    }
+    ani_string str;
+    env->String_NewUTF8(cppString.c_str(), cppString.length(), &str);
+    result = reinterpret_cast<ani_ref>(str);
+    ani_size size;
+    env->String_GetUTF16Size(str, &size);
+    return result;    
+}
   
- static ani_class findCls(ani_env *env, const char *className) {
-     ani_class cls;
-     ani_ref nullref;
-     env->GetNull(&nullref);
-     if (ANI_OK != env->FindClass(className, &cls)) {
-         std::cerr << "Not found className:" << className << std::endl;
-     }
-     return cls;
- }
- 
- static ani_method findCtorMethod(ani_env *env, ani_class cls, const char *name) {
-     ani_method ctor = nullptr;
-     if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", name, &ctor)) {
-         std::cerr << "Not found ctor of:" << name << std::endl;
-     }
-     return ctor;
- }
- 
- static void waitForConnectionIfNeed() {
- if (g_establishConnectionFuture.valid()) {
-     HiLog::Error(LABEL, "%{public}s. Begin Wait for Connection", __func__);
-     g_establishConnectionFuture.get();
- }
- }
- 
- static void Transact(ApiCallInfo callInfo_, ApiReplyInfo &reply_) {
-     waitForConnectionIfNeed();
-     g_apiTransactClient.Transact(callInfo_, reply_);
- }
- static ani_ref UnmarshalObject(ani_env *env, nlohmann::json resultValue_) {
-     const auto resultType = resultValue_.type();
-     ani_ref result = nullptr;
-     if (resultType == nlohmann::detail::value_t::null) {
-         return result;
-     } else if (resultType!=nlohmann::detail::value_t::string) {
-         ani_string str;
-         env->String_NewUTF8(resultValue_.dump().c_str(), resultValue_.dump().size(), &str);
-         result = reinterpret_cast<ani_ref>(str);
-         return result;
-     }
-     const auto cppString = resultValue_.get<string>();
-     string frontendTypeName;
-     bool bindJsThis = false;
-     for (const auto &classDef : FRONTEND_CLASS_DEFS) {
-         const auto objRefFormat = string(classDef->name_) + "#";
-         if (cppString.find(objRefFormat) == 0) {
-             frontendTypeName = string(classDef->name_);
-             bindJsThis = classDef->bindUiDriver_;
-             break;
-         }
-     }
-     ani_string str;
-     env->String_NewUTF8(cppString.c_str(), cppString.length(), &str);
-     result = reinterpret_cast<ani_ref>(str);
-     ani_size size;
-     env->String_GetUTF16Size(str, &size);
-     return result;    
- }
+static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const ApiReplyInfo &reply_) {
+    if (callInfo_.fdParamIndex_ >= 0) {
+        auto fd = callInfo_.paramList_.at(INDEX_ZERO).get<int>();
+        (void) close(fd);
+    }     
+    HiLog::Info(LABEL, "%{public}s.Start to UnmarshalReply", __func__);
+    const auto &message = reply_.exception_.message_;
+    ErrCode code = reply_.exception_.code_;
+    if (code == INTERNAL_ERROR || code == ERR_INTERNAL) {
+        HiLog::Error(LABEL, "UItest : ERRORINFO: code='%{public}u', message='%{public}s'", code, message.c_str());
+    } else if (reply_.exception_.code_ != NO_ERROR) {
+        HiLog::Error(LABEL, "UItest : ERRORINFO: code='%{public}u', message='%{public}s'", code, message.c_str());
+        ErrorHandler::Throw(env, code, message);
+    }
+    HiLog::Info(LABEL, "UITEST: Start to unmarshall return value:%{public}s", reply_.resultValue_.dump().c_str());
+    const auto resultType = reply_.resultValue_.type();
+    ani_ref result = nullptr;
+    if (resultType == nlohmann::detail::value_t::null) {
+        return result;
+    } else if (resultType == nlohmann::detail::value_t::array) {
+        ani_class arrayCls = nullptr;
+        if (ANI_OK!=env->FindClass("Lescompat/Array;", &arrayCls)) {
+            HiLog::Error(LABEL, "%{public}s FindClass Array Failed", __func__);
+        }
+        ani_ref undefinedRef = nullptr;
+        if (ANI_OK != env->GetUndefined(&undefinedRef)) {
+            HiLog::Error(LABEL, "%{public}s GetUndefined Failed", __func__);
+        }
+        ani_method arrayCtor = findCtorMethod(env, arrayCls, "I:V");
+        ani_object arrayObj;
+        ani_size com_size = reply_.resultValue_.size();
+        if (ANI_OK != env->Object_New(arrayCls, arrayCtor, &arrayObj, com_size)) {
+            HiLog::Error(LABEL, "%{public}s Object New Array Failed", __func__);
+            return reinterpret_cast<ani_ref>(arrayObj);
+        }
+        for (ani_size index = 0; index < reply_.resultValue_.size(); index++) {
+            ani_ref item = UnmarshalObject(env, reply_.resultValue_.at(index));
+            if (ANI_OK != env->Object_CallMethodByName_Void(arrayObj, "$_set", "ILstd/core/Object;:V", index, item)) {
+                HiLog::Error(LABEL, "%{public}s Object_CallMethodByName_Void set Failed", __func__);
+                break;
+            }
+        }
+        return reinterpret_cast<ani_ref>(arrayObj);
+    } else {
+        return UnmarshalObject(env, reply_.resultValue_);
+    }
+}
   
- static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const ApiReplyInfo &reply_) {
-     if (callInfo_.fdParamIndex_ >= 0) {
-         auto fd = callInfo_.paramList_.at(INDEX_ZERO).get<int>();
-         (void) close(fd);
-     }     
-     HiLog::Info(LABEL, "%{public}s.Start to UnmarshalReply", __func__);
-     const auto &message = reply_.exception_.message_;
-     ErrCode code = reply_.exception_.code_;
-     if (code == INTERNAL_ERROR || code == ERR_INTERNAL) {
-         HiLog::Error(LABEL, "UItest : ERRORINFO: code='%{public}u', message='%{public}s'", code, message.c_str());
-     } else if (reply_.exception_.code_ != NO_ERROR) {
-         HiLog::Error(LABEL, "UItest : ERRORINFO: code='%{public}u', message='%{public}s'", code, message.c_str());
-         ErrorHandler::Throw(env, code, message);
-     }
-     HiLog::Info(LABEL, "UITEST: Start to unmarshall return value:%{public}s", reply_.resultValue_.dump().c_str());
-     const auto resultType = reply_.resultValue_.type();
-     ani_ref result = nullptr;
-     if (resultType == nlohmann::detail::value_t::null) {
-         return result;
-     } else if (resultType == nlohmann::detail::value_t::array) {
-         ani_class arrayCls = nullptr;
-         if (ANI_OK!=env->FindClass("Lescompat/Array;", &arrayCls)) {
-             HiLog::Error(LABEL, "%{public}s FindClass Array Failed", __func__);
-         }
-         ani_ref undefinedRef = nullptr;
-         if (ANI_OK != env->GetUndefined(&undefinedRef)) {
-             HiLog::Error(LABEL, "%{public}s GetUndefined Failed", __func__);
-         }
-         ani_method arrayCtor = findCtorMethod(env, arrayCls, "I:V");
-         ani_object arrayObj;
-         ani_size com_size = reply_.resultValue_.size();
-         if (ANI_OK != env->Object_New(arrayCls, arrayCtor, &arrayObj, com_size)) {
-             HiLog::Error(LABEL, "%{public}s Object New Array Failed", __func__);
-             return reinterpret_cast<ani_ref>(arrayObj);
-         }
-         for (ani_size index = 0; index < reply_.resultValue_.size(); index++) {
-             ani_ref item = UnmarshalObject(env, reply_.resultValue_.at(index));
-             if (ANI_OK != env->Object_CallMethodByName_Void(arrayObj, "$_set", "ILstd/core/Object;:V", index, item)) {
-                 HiLog::Error(LABEL, "%{public}s Object_CallMethodByName_Void set Failed", __func__);
-                 break;
-             }
-         }
-         return reinterpret_cast<ani_ref>(arrayObj);
-     } else {
-         return UnmarshalObject(env, reply_.resultValue_);
-     }
- }
-  
- static ani_boolean ScheduleEstablishConnection(ani_env *env, ani_string connToken) {
-     auto token = aniStringToStdString(env, connToken);
-     ani_vm *vm = nullptr;
-     auto vmWorkable = env->GetVM(&vm);
-     if (vmWorkable != env->GetVM(&vm)) {
-         HiLog::Error(LABEL, "%{public}s GetVM failed", __func__);
-     }
-     bool result = false;
-     g_establishConnectionFuture = async(launch::async, [vm, token, &result]() {
-         using namespace std::placeholders;
-         auto &instance = UiEventObserverAni::Get();
-         auto callbackHandler = std::bind(&UiEventObserverAni::HandleEventCallback, &instance, vm, _1, _2);
-         result = g_apiTransactClient.InitAndConnectPeer(token, callbackHandler);
-         HiLog::Error(LABEL, "End setup transaction connection, result=%{public}d", result);
-     });
-     return result;
- }
- 
- static ani_int GetConnectionStat(ani_env *env) {
-     return g_apiTransactClient.GetConnectionStat();
- }
- 
- static ani_string unwrapp(ani_env *env, ani_object object, const char *name) {
-     ani_ref it;
-     if (ANI_OK!= env->Object_GetFieldByName_Ref(object, name, &it)) {
-         return nullptr;
-     }
-     return reinterpret_cast<ani_string>(it);
- }
-  
- static json getPoint(ani_env *env, ani_object p) {
-     auto point = json();
-     static const char *className = "L@ohos/UiTest/PointInner;";
-     ani_class cls = findCls(env, className);
-     ani_method xGetter;
-     if (ANI_OK != env->Class_FindMethod(cls, "<get>x", nullptr, &xGetter)) {
-         HiLog::Error(LABEL, "%{public}s Find Method <get>x failed", __func__);
-     }
-     ani_int x;
-     if (ANI_OK != env->Object_CallMethod_Int(p, xGetter, &x)) {
-         HiLog::Error(LABEL, "%{public}s call xgetter failed", __func__);
-         return point;
-     }
-     point["x"] = int(x);
-     ani_method yGetter;
-     if (ANI_OK != env->Class_FindMethod(cls, "<get>y", nullptr, &yGetter)) {
-         HiLog::Error(LABEL, "%{public}s Find Method <get>y failed", __func__);
-     }
-     ani_int y;
-     if (ANI_OK != env->Object_CallMethod_Int(p, yGetter, &y)) {
-         HiLog::Error(LABEL, "%{public}s call ygetter failed", __func__);
-         return point;
-     }
-     point["y"] = int(y);
-     return point;
- }
-  
- static json getRect(ani_env *env, ani_object p) {
-     auto rect = json();
-     static const char *className = "L@ohos/UiTest/RectInner;";
-     ani_class cls = findCls(env, className);
-     ani_method leftGetter;
-     if (ANI_OK != env->Class_FindMethod(cls, "<get>left", nullptr, &leftGetter)) {
-         std::cerr << "Find Method <get>left failed" <<std::endl;
-         HiLog::Error(LABEL, "%{public}s Find Method <get>left failed", __func__);
-     }
-     ani_int left;
-     if (ANI_OK != env->Object_CallMethod_Int(p, leftGetter, &left)) {
-         HiLog::Error(LABEL, "%{public}s call leftgetter failed", __func__);
-         return rect;
-     }
-     rect["left"] = int(left);
-     ani_method rightGetter;
-     if (ANI_OK != env->Class_FindMethod(cls, "<get>right", nullptr, &rightGetter)) {
-         HiLog::Error(LABEL, "%{public}s Find Method <get>right failed", __func__);
-     }
-     ani_int right;
-     if (ANI_OK != env->Object_CallMethod_Int(p, rightGetter, &right)) {
-         HiLog::Error(LABEL, "%{public}s call rightgetter failed", __func__);
-         return rect;
-     }
-     rect["right"] = int(right);
-     ani_method topGetter;
-     if (ANI_OK != env->Class_FindMethod(cls, "<get>top", nullptr, &topGetter)) {
-         HiLog::Error(LABEL, "%{public}s call rightgetter failed", __func__);
-     }
-     ani_int top;
-     if (ANI_OK != env->Object_CallMethod_Int(p, topGetter, &top)) {
-         return rect;
-     }
-     rect["top"] = int(top);
- 
-         ani_method bottomGetter;
-     if (ANI_OK != env->Class_FindMethod(cls, "<get>bottom", nullptr, &bottomGetter)) {
-         HiLog::Error(LABEL, "%{public}s Find Method <get>bottom failed", __func__);
-     }
-     ani_int bottom;
-     if (ANI_OK != env->Object_CallMethod_Int(p, bottomGetter, &bottom)) {
-         HiLog::Error(LABEL, "%{public}s call bottomGetter failed", __func__);
-         return rect;
-     }
-     rect["bottom"] = int(bottom);
-     return rect;
- }
- 
- static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num) {
-     ani_object rect_obj = {};
-     static const char *className = "L@ohos/UiTest/RectInner;";
-     ani_class cls = findCls(env, className);
-     ani_method ctor = nullptr;
-     if (cls != nullptr) {
-         static const char *name = nullptr;
-         ctor = findCtorMethod(env, cls, name);
-     }
-     if (cls == nullptr || ctor == nullptr) {
-         return nullptr;
-     }
-     if (ANI_OK != env->Object_New(cls, ctor, &rect_obj)) {
-         std::cerr<< "Create Rect object failed "<< std::endl;
-         return rect_obj;
-     }
-     ani_method setter;
-     string direct[] = {"left", "top", "right", "bottom" };
-     for (int index=0; index<4; index++) {
-         string tag = direct[index];
-         char *method_name = strdup(("<set>" + tag).c_str());
-         if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
-             std::cerr << "Find Method <set>tag failed" <<std::endl;
-         }
-         if (ANI_OK != env->Object_CallMethod_Void(rect_obj, setter, ani_int(num[tag]))) {
-             std::cerr << "call setter failed" << className << std::endl;
-             return rect_obj;
-         }
-     }
-     return rect_obj;
- }
-  
- static ani_object newPoint(ani_env *env, ani_object obj, int x, int y) {
-     ani_object point_obj = {};
-     static const char *className = "L@ohos/UiTest/PointInner;";
-     ani_class cls = findCls(env, className);
-     ani_method ctor = nullptr;
-     if (cls != nullptr) {
-         static const char *name = nullptr;
-         ctor = findCtorMethod(env, cls, name);
-     }
-     if (cls == nullptr || ctor == nullptr) {
-         return nullptr;
-     }
-     if (ANI_OK != env->Object_New(cls, ctor, &point_obj)) {
-         std::cerr<<"Create point object failed" << std::endl;
-         return point_obj;
-     }    
-     ani_method setter;
-     string direct[] = { "x", "y" };
-     int num[2] = { x, y };
-     for (int index = 0; index < 2; index ++) {
-         string tag = direct[index];
-         char *method_name = strdup(("<set>" + tag).c_str());
-         if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
-             std::cerr << "Find Method <set>tag failed" <<std::endl;
-         }
-         if (ANI_OK != env->Object_CallMethod_Void(point_obj, setter, ani_int(num[index]))) {
-             std::cerr << "call setter failed" << className << std::endl;
-             return point_obj;
-         }
-     }
-     return point_obj;
- }
-  
- static ani_ref createMatrix(ani_env *env, ani_object object) {
-     static const char *className = "L@ohos/UiTest/PointerMatrix;";
-     ani_class cls = findCls(env, className);
-     ani_ref nullref;
-     env->GetNull(&nullref);
-     ani_method ctor = nullptr;
-     if (cls != nullptr) {
-         ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
-     } else {
-         return nullref;
-     }
-     ApiCallInfo callInfo_;
-     ApiReplyInfo reply_;
-     callInfo_.apiId_ = "PointerMatrix.create";
-     Transact(callInfo_, reply_);
-     ani_ref nativePointerMatrix = UnmarshalReply(env, callInfo_, reply_);
-     ani_object pointer_matrix_object;
-     if (ANI_OK != env->Object_New(cls, ctor, &pointer_matrix_object, reinterpret_cast<ani_object>(nativePointerMatrix))) {
-         std::cerr<<"New PointerMatrix Failed"<<std::endl;
-     }
-     return pointer_matrix_object;
- }
- 
- static void setPoint(ani_env *env, ani_object object, ani_int finger, ani_int step, ani_object point) {
-     ApiCallInfo callInfo_;
-     ApiReplyInfo reply_;
-     callInfo_.apiId_="PointerMatrix.setPoint";
-     callInfo_.paramList_.push_back(int(finger));
-     callInfo_.paramList_.push_back(int(step));
-     callInfo_.paramList_.push_back(getPoint(env, point));
-     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, object, "nativePointerMatrix"));
-     Transact(callInfo_, reply_);
-     UnmarshalReply(env, callInfo_, reply_);
-     return;
- }
-  
- static ani_boolean BindPointMatrix(ani_env *env) {
-     static const char *className = "L@ohos/UiTest/PointerMatrix;";
-     ani_class cls = findCls(env, className);
-     if (cls == nullptr) {
-         HiLog::Error(LABEL, "%{public}s Not found className !!!", __func__);
-         return false;
-     }
-     std::array methods = {
-         ani_native_function {"create", nullptr, reinterpret_cast<void*>(createMatrix)},
-         ani_native_function {"setPoint", nullptr, reinterpret_cast<void*>(setPoint)},
-     };
-     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
-         HiLog::Error(LABEL, "%{public}s Cannot bind native methods to !!!", __func__);
-         return false;
-     }
-     return true;
- }
-  
- static ani_ref createOn(ani_env *env, ani_object object, nlohmann::json params, string apiId_) {
-     static const char *className = "L@ohos/UiTest/On;";
-     ani_class cls = findCls(env, className);
-     ani_method ctor = nullptr;
-     if (cls != nullptr) {
-         ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
-     }
-     if (ctor == nullptr || cls== nullptr) {
-         return nullptr;
-     }
-     ApiCallInfo callInfo_;
-     ApiReplyInfo reply_;
-     callInfo_.apiId_ = apiId_;
-     callInfo_.paramList_ = params;
-     string on_obj = aniStringToStdString(env, unwrapp(env, object, "nativeOn"));
-     if (on_obj != "") {
-         callInfo_.callerObjRef_ = on_obj;
-     } else {
-         callInfo_.callerObjRef_ = string(REF_SEED_ON);
-     }
-     Transact(callInfo_, reply_);
-     ani_ref nativeOn = UnmarshalReply(env, callInfo_, reply_);
-     ani_object on_object;
-     if (ANI_OK != env->Object_New(cls, ctor, &on_object, reinterpret_cast<ani_ref>(nativeOn))) {
-         std::cerr<< "New ON failed" <<std::endl;
-     }
-     return on_object;
- }
- 
- static ani_ref within(ani_env *env, ani_object obj, ani_object on) {
-     nlohmann::json params = nlohmann::json::array();
-     string p = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
-     params.push_back(p);
-     return createOn(env, obj, params, "On.within");
- }
- 
- static ani_ref isBefore(ani_env *env, ani_object obj, ani_object on) {
-     nlohmann::json params = nlohmann::json::array();
-     string p = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
-     params.push_back(p);
-     return createOn(env, obj, params, "On.isBefore");
- }
- 
- static ani_ref isAfter(ani_env *env, ani_object obj, ani_object on) {
-     nlohmann::json params = nlohmann::json::array();
-     string p = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
-     params.push_back(p);
-     return createOn(env, obj, params, "On.isAfter");
- }
- static ani_ref id(ani_env *env, ani_object obj, ani_string id, ani_enum_item pattern) {
-     nlohmann::json params = nlohmann::json::array();
-     params.push_back(aniStringToStdString(env, id));
-     ani_int enumValue;
-     env->EnumItem_GetValue_Int(pattern, &enumValue);
-     params.push_back(enumValue);
-     return createOn(env, obj, params, "On.id");
- }
- static ani_ref text(ani_env *env, ani_object obj, ani_string text, ani_enum_item pattern) {
-     nlohmann::json params = nlohmann::json::array();
-     params.push_back(aniStringToStdString(env, text));
-     ani_int enumValue;
-     env->EnumItem_GetValue_Int(pattern, &enumValue);
-     params.push_back(enumValue);    
-     return createOn(env, obj, params, "On.text");
- }
- static ani_ref type(ani_env *env, ani_object obj, ani_string type, ani_enum_item pattern) {
-     nlohmann::json params = nlohmann::json::array();
-     params.push_back(aniStringToStdString(env, type));
-     ani_int enumValue;
-     env->EnumItem_GetValue_Int(pattern, &enumValue);
-     params.push_back(enumValue);    
-     return createOn(env, obj, params, "On.type");
- }
- static ani_ref hint(ani_env *env, ani_object obj, ani_string text, ani_enum_item pattern) {
-     nlohmann::json params = nlohmann::json::array();
-     params.push_back(aniStringToStdString(env, text));
-     ani_int enumValue;
-     env->EnumItem_GetValue_Int(pattern, &enumValue);
-     params.push_back(enumValue);    
-     return createOn(env, obj, params, "On.hint");
- }
- static ani_ref description(ani_env *env, ani_object obj, ani_string text, ani_enum_item pattern) {
-     nlohmann::json params = nlohmann::json::array();
-     params.push_back(aniStringToStdString(env, text));
-     ani_int enumValue;
-     env->EnumItem_GetValue_Int(pattern, &enumValue);
-     params.push_back(enumValue);    
-     return createOn(env, obj, params, "On.description");
- }
- static ani_ref inWindow(ani_env *env, ani_object obj, ani_string bundleName) {
-     nlohmann::json params = nlohmann::json::array();
-     params.push_back(aniStringToStdString(env, bundleName));
-     return createOn(env, obj, params, "On.inWindow");
- }
- static void pushBool(ani_env *env, ani_object input, nlohmann::json &params) {
+static ani_boolean ScheduleEstablishConnection(ani_env *env, ani_string connToken) {
+    auto token = aniStringToStdString(env, connToken);
+    ani_vm *vm = nullptr;
+    auto vmWorkable = env->GetVM(&vm);
+    if (vmWorkable != env->GetVM(&vm)) {
+        HiLog::Error(LABEL, "%{public}s GetVM failed", __func__);
+    }
+    bool result = false;
+    g_establishConnectionFuture = async(launch::async, [vm, token, &result]() {
+        using namespace std::placeholders;
+        auto &instance = UiEventObserverAni::Get();
+        auto callbackHandler = std::bind(&UiEventObserverAni::HandleEventCallback, &instance, vm, _1, _2);
+        result = g_apiTransactClient.InitAndConnectPeer(token, callbackHandler);
+        HiLog::Error(LABEL, "End setup transaction connection, result=%{public}d", result);
+    });
+    return result;
+}
+
+static ani_int GetConnectionStat(ani_env *env) {
+    return g_apiTransactClient.GetConnectionStat();
+}
+
+static ani_string unwrapp(ani_env *env, ani_object object, const char *name) {
+    ani_ref it;
+    if (ANI_OK!= env->Object_GetFieldByName_Ref(object, name, &it)) {
+        return nullptr;
+    }
+    return reinterpret_cast<ani_string>(it);
+}
+
+static json getPoint(ani_env *env, ani_object p) {
+    auto point = json();
+    static const char *className = "L@ohos/UiTest/PointInner;";
+    ani_class cls = findCls(env, className);
+    ani_method xGetter;
+    if (ANI_OK != env->Class_FindMethod(cls, "<get>x", nullptr, &xGetter)) {
+        HiLog::Error(LABEL, "%{public}s Find Method <get>x failed", __func__);
+    }
+    ani_int x;
+    if (ANI_OK != env->Object_CallMethod_Int(p, xGetter, &x)) {
+        HiLog::Error(LABEL, "%{public}s call xgetter failed", __func__);
+        return point;
+    }
+    point["x"] = int(x);
+    ani_method yGetter;
+    if (ANI_OK != env->Class_FindMethod(cls, "<get>y", nullptr, &yGetter)) {
+        HiLog::Error(LABEL, "%{public}s Find Method <get>y failed", __func__);
+    }
+    ani_int y;
+    if (ANI_OK != env->Object_CallMethod_Int(p, yGetter, &y)) {
+        HiLog::Error(LABEL, "%{public}s call ygetter failed", __func__);
+        return point;
+    }
+    point["y"] = int(y);
+    return point;
+}
+
+static json getRect(ani_env *env, ani_object p) {
+    auto rect = json();
+    static const char *className = "L@ohos/UiTest/RectInner;";
+    ani_class cls = findCls(env, className);
+    ani_method leftGetter;
+    if (ANI_OK != env->Class_FindMethod(cls, "<get>left", nullptr, &leftGetter)) {
+        std::cerr << "Find Method <get>left failed" <<std::endl;
+        HiLog::Error(LABEL, "%{public}s Find Method <get>left failed", __func__);
+    }
+    ani_int left;
+    if (ANI_OK != env->Object_CallMethod_Int(p, leftGetter, &left)) {
+        HiLog::Error(LABEL, "%{public}s call leftgetter failed", __func__);
+        return rect;
+    }
+    rect["left"] = int(left);
+    ani_method rightGetter;
+    if (ANI_OK != env->Class_FindMethod(cls, "<get>right", nullptr, &rightGetter)) {
+        HiLog::Error(LABEL, "%{public}s Find Method <get>right failed", __func__);
+    }
+    ani_int right;
+    if (ANI_OK != env->Object_CallMethod_Int(p, rightGetter, &right)) {
+        HiLog::Error(LABEL, "%{public}s call rightgetter failed", __func__);
+        return rect;
+    }
+    rect["right"] = int(right);
+    ani_method topGetter;
+    if (ANI_OK != env->Class_FindMethod(cls, "<get>top", nullptr, &topGetter)) {
+        HiLog::Error(LABEL, "%{public}s call rightgetter failed", __func__);
+    }
+    ani_int top;
+    if (ANI_OK != env->Object_CallMethod_Int(p, topGetter, &top)) {
+        return rect;
+    }
+    rect["top"] = int(top);
+
+        ani_method bottomGetter;
+    if (ANI_OK != env->Class_FindMethod(cls, "<get>bottom", nullptr, &bottomGetter)) {
+        HiLog::Error(LABEL, "%{public}s Find Method <get>bottom failed", __func__);
+    }
+    ani_int bottom;
+    if (ANI_OK != env->Object_CallMethod_Int(p, bottomGetter, &bottom)) {
+        HiLog::Error(LABEL, "%{public}s call bottomGetter failed", __func__);
+        return rect;
+    }
+    rect["bottom"] = int(bottom);
+    return rect;
+}
+
+static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num) {
+    ani_object rect_obj = {};
+    static const char *className = "L@ohos/UiTest/RectInner;";
+    ani_class cls = findCls(env, className);
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
+        static const char *name = nullptr;
+        ctor = findCtorMethod(env, cls, name);
+    }
+    if (cls == nullptr || ctor == nullptr) {
+        return nullptr;
+    }
+    if (ANI_OK != env->Object_New(cls, ctor, &rect_obj)) {
+        std::cerr<< "Create Rect object failed "<< std::endl;
+        return rect_obj;
+    }
+    ani_method setter;
+    string direct[] = {"left", "top", "right", "bottom" };
+    for (int index=0; index<4; index++) {
+        string tag = direct[index];
+        char *method_name = strdup(("<set>" + tag).c_str());
+        if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
+            std::cerr << "Find Method <set>tag failed" <<std::endl;
+        }
+        if (ANI_OK != env->Object_CallMethod_Void(rect_obj, setter, ani_int(num[tag]))) {
+            std::cerr << "call setter failed" << className << std::endl;
+            return rect_obj;
+        }
+    }
+    return rect_obj;
+}
+
+static ani_object newPoint(ani_env *env, ani_object obj, int x, int y) {
+    ani_object point_obj = {};
+    static const char *className = "L@ohos/UiTest/PointInner;";
+    ani_class cls = findCls(env, className);
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
+        static const char *name = nullptr;
+        ctor = findCtorMethod(env, cls, name);
+    }
+    if (cls == nullptr || ctor == nullptr) {
+        return nullptr;
+    }
+    if (ANI_OK != env->Object_New(cls, ctor, &point_obj)) {
+        std::cerr<<"Create point object failed" << std::endl;
+        return point_obj;
+    }    
+    ani_method setter;
+    string direct[] = { "x", "y" };
+    int num[2] = { x, y };
+    for (int index = 0; index < 2; index ++) {
+        string tag = direct[index];
+        char *method_name = strdup(("<set>" + tag).c_str());
+        if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
+            std::cerr << "Find Method <set>tag failed" <<std::endl;
+        }
+        if (ANI_OK != env->Object_CallMethod_Void(point_obj, setter, ani_int(num[index]))) {
+            std::cerr << "call setter failed" << className << std::endl;
+            return point_obj;
+        }
+    }
+    return point_obj;
+}
+
+static ani_ref createMatrix(ani_env *env, ani_object object) {
+    static const char *className = "L@ohos/UiTest/PointerMatrix;";
+    ani_class cls = findCls(env, className);
+    ani_ref nullref;
+    env->GetNull(&nullref);
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
+        ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
+    } else {
+        return nullref;
+    }
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.apiId_ = "PointerMatrix.create";
+    Transact(callInfo_, reply_);
+    ani_ref nativePointerMatrix = UnmarshalReply(env, callInfo_, reply_);
+    ani_object pointer_matrix_object;
+    if (ANI_OK != env->Object_New(cls, ctor, &pointer_matrix_object, reinterpret_cast<ani_object>(nativePointerMatrix))) {
+        std::cerr<<"New PointerMatrix Failed"<<std::endl;
+    }
+    return pointer_matrix_object;
+}
+
+static void setPoint(ani_env *env, ani_object object, ani_int finger, ani_int step, ani_object point) {
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.apiId_="PointerMatrix.setPoint";
+    callInfo_.paramList_.push_back(int(finger));
+    callInfo_.paramList_.push_back(int(step));
+    callInfo_.paramList_.push_back(getPoint(env, point));
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, object, "nativePointerMatrix"));
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return;
+}
+
+static ani_boolean BindPointMatrix(ani_env *env) {
+    static const char *className = "L@ohos/UiTest/PointerMatrix;";
+    ani_class cls = findCls(env, className);
+    if (cls == nullptr) {
+        HiLog::Error(LABEL, "%{public}s Not found className !!!", __func__);
+        return false;
+    }
+    std::array methods = {
+        ani_native_function {"create", nullptr, reinterpret_cast<void*>(createMatrix)},
+        ani_native_function {"setPoint", nullptr, reinterpret_cast<void*>(setPoint)},
+    };
+    if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
+        HiLog::Error(LABEL, "%{public}s Cannot bind native methods to !!!", __func__);
+        return false;
+    }
+    return true;
+}
+
+static ani_ref createOn(ani_env *env, ani_object object, nlohmann::json params, string apiId_) {
+    static const char *className = "L@ohos/UiTest/On;";
+    ani_class cls = findCls(env, className);
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
+        ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
+    }
+    if (ctor == nullptr || cls== nullptr) {
+        return nullptr;
+    }
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.apiId_ = apiId_;
+    callInfo_.paramList_ = params;
+    string on_obj = aniStringToStdString(env, unwrapp(env, object, "nativeOn"));
+    if (on_obj != "") {
+        callInfo_.callerObjRef_ = on_obj;
+    } else {
+        callInfo_.callerObjRef_ = string(REF_SEED_ON);
+    }
+    Transact(callInfo_, reply_);
+    ani_ref nativeOn = UnmarshalReply(env, callInfo_, reply_);
+    ani_object on_object;
+    if (ANI_OK != env->Object_New(cls, ctor, &on_object, reinterpret_cast<ani_ref>(nativeOn))) {
+        std::cerr<< "New ON failed" <<std::endl;
+    }
+    return on_object;
+}
+
+static ani_ref within(ani_env *env, ani_object obj, ani_object on) {
+    nlohmann::json params = nlohmann::json::array();
+    string p = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
+    params.push_back(p);
+    return createOn(env, obj, params, "On.within");
+}
+
+static ani_ref isBefore(ani_env *env, ani_object obj, ani_object on) {
+    nlohmann::json params = nlohmann::json::array();
+    string p = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
+    params.push_back(p);
+    return createOn(env, obj, params, "On.isBefore");
+}
+
+static ani_ref isAfter(ani_env *env, ani_object obj, ani_object on) {
+    nlohmann::json params = nlohmann::json::array();
+    string p = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
+    params.push_back(p);
+    return createOn(env, obj, params, "On.isAfter");
+}
+static ani_ref id(ani_env *env, ani_object obj, ani_string id, ani_enum_item pattern) {
+    nlohmann::json params = nlohmann::json::array();
+    params.push_back(aniStringToStdString(env, id));
+    ani_int enumValue;
+    env->EnumItem_GetValue_Int(pattern, &enumValue);
+    params.push_back(enumValue);
+    return createOn(env, obj, params, "On.id");
+}
+static ani_ref text(ani_env *env, ani_object obj, ani_string text, ani_enum_item pattern) {
+    nlohmann::json params = nlohmann::json::array();
+    params.push_back(aniStringToStdString(env, text));
+    ani_int enumValue;
+    env->EnumItem_GetValue_Int(pattern, &enumValue);
+    params.push_back(enumValue);    
+    return createOn(env, obj, params, "On.text");
+}
+static ani_ref type(ani_env *env, ani_object obj, ani_string type, ani_enum_item pattern) {
+    nlohmann::json params = nlohmann::json::array();
+    params.push_back(aniStringToStdString(env, type));
+    ani_int enumValue;
+    env->EnumItem_GetValue_Int(pattern, &enumValue);
+    params.push_back(enumValue);    
+    return createOn(env, obj, params, "On.type");
+}
+static ani_ref hint(ani_env *env, ani_object obj, ani_string text, ani_enum_item pattern) {
+    nlohmann::json params = nlohmann::json::array();
+    params.push_back(aniStringToStdString(env, text));
+    ani_int enumValue;
+    env->EnumItem_GetValue_Int(pattern, &enumValue);
+    params.push_back(enumValue);    
+    return createOn(env, obj, params, "On.hint");
+}
+static ani_ref description(ani_env *env, ani_object obj, ani_string text, ani_enum_item pattern) {
+    nlohmann::json params = nlohmann::json::array();
+    params.push_back(aniStringToStdString(env, text));
+    ani_int enumValue;
+    env->EnumItem_GetValue_Int(pattern, &enumValue);
+    params.push_back(enumValue);    
+    return createOn(env, obj, params, "On.description");
+}
+static ani_ref inWindow(ani_env *env, ani_object obj, ani_string bundleName) {
+    nlohmann::json params = nlohmann::json::array();
+    params.push_back(aniStringToStdString(env, bundleName));
+    return createOn(env, obj, params, "On.inWindow");
+}
+static void pushBool(ani_env *env, ani_object input, nlohmann::json &params) {
     ani_boolean ret;
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(input), &ret);
     if (ret==ANI_FALSE) {
