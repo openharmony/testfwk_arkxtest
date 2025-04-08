@@ -32,12 +32,13 @@ namespace OHOS::testserver {
         void FrequencyLock();
         int32_t SpDaemonProcess(int daemonCommand, std::string extraInfo);
     private:
-        TestServerClient() = default;
+        TestServerClient();
         ~TestServerClient() = default;
         void InitLoadState();
         bool WaitLoadStateChange(int32_t systemAbilityId);
 
         sptr<IRemoteObject> remoteObject_ = nullptr;
+        sptr<ITestServerInterface> iTestServerInterface_ = nullptr;
     };
 } // namespace OHOS::testserver
 
