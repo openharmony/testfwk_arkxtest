@@ -1384,7 +1384,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function {"wakeUpDisplaySync", nullptr, reinterpret_cast<void *>(wakeUpDisplaySync)},
         ani_native_function {"pressHomeSync", nullptr, reinterpret_cast<void *>(pressHomeSync)},
         ani_native_function {"getDisplaySizeSync", nullptr, reinterpret_cast<void *>(getDisplaySizeSync)},
-        ani_native_function {"getDisplaySizeDensitySync", nullptr, reinterpret_cast<void *>(getDisplaySizeDensitySync)},
+        ani_native_function {"getDisplayDensity", nullptr, reinterpret_cast<void *>(getDisplayDensitySync)},
         ani_native_function {"getDisplayRotationSync", nullptr, reinterpret_cast<void *>(getDisplayRotationSync)},
         ani_native_function {"findComponentsSync", nullptr, reinterpret_cast<void *>(findComponentsSync)},
         ani_native_function {"findComponentSync", nullptr, reinterpret_cast<void *>(findComponentSync)},
