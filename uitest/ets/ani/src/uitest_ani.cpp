@@ -57,8 +57,8 @@ static void pushParam(ani_env *env, ani_object input, ApiCallInfo &callInfo_, bo
     env->Reference_IsUndefined(reinterpret_cast<ani_ref>(input), &ret);
     if (ret==ANI_FALSE) {
         if (isInt) {
-            ani_int param;
-            env->Object_CallMethodByName_Int(input, "unboxed", nullptr, &param);
+            ani_double param;
+            env->Object_CallMethodByName_Double(input, "unboxed", nullptr, &param);
             callInfo_.paramList_.push_back(int(param));
         } else {
             ani_double param;
@@ -1330,11 +1330,11 @@ static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
             compareAndReport(1,1,"", std::to_string(value));
             options[list[index]] = value;
         } else {
-            ani_int value;
-            compareAndReport(ANI_OK ,env->Object_CallMethodByName_Int(static_cast<ani_object>(ref), "unboxed", nullptr ,&value),
-            "Object_CallMethodByName_Int Failed '"+std::string(className) +"'", "get Int value");
+            ani_double value;
+            compareAndReport(ANI_OK ,env->Object_CallMethodByName_Double(static_cast<ani_object>(ref), "unboxed", nullptr ,&value),
+            "Object_CallMethodByName_Double Failed '"+std::string(className) +"'", "get Int value");
             compareAndReport(1,1,"", std::to_string(value));
-            options[list[index]] = value;
+            options[list[index]] = int(value);
         }
     }
     return options;
