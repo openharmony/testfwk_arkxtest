@@ -835,33 +835,40 @@ static ani_boolean dragSync(ani_env *env, ani_object obj, ani_double x1, ani_dou
 static json getWindowFilter(ani_env *env, ani_object f)
 {
     auto filter = json();
-    static const char *className = "Luitest_ani/WindowFilterInner;";
+    static const char *className = "L@ohos/UiTest/WindowFilterInner;";
     ani_class cls;
     if (ANI_OK != env->FindClass(className, &cls)) {
+        
+        std::cerr << "Not found className:" << className << std::endl;
         return filter;
     }
     
     string list[] = { "bundleName", "title", "focused", "active" };
-    for (int i = 0; i < 4; i++) {
-        char *cstr = new char[list[i].length() + 1];
-        strcpy(cstr, list[i].c_str());
-        if (i < 2) {
-          ani_ref value;
-          if (env->Object_GetPropertyByName_Ref(f, cstr, &value) != ANI_OK) {
-              continue;
-          }
-          if (env->Reference_IsUndefined(value, &ret) != ANI_OK) {
-              filter[list[i]] = aniStringToStdString(env, reinterpret_cast<ain_string>(value));
-          }
+    for (int index = 0; index<4; index++) {
+        ani_field field;
+        char* cstr = new char[list[index].length() + 1];
+        strcpy(cstr, list[index].c_str()); 
+        compareAndReport(ANI_OK ,env->Class_FindField(cls, "bundleName", &field),
+        "Class_FindField Failed '"+std::string(className) +"'", "Find field?:?");
+        ani_ref ref;
+        compareAndReport(ANI_OK ,env->Object_GetField_Ref(f, field, &ref), "Object_GetField_Ref Failed '"+std::string(className) +"'", "get ref");
+        if (index==0 || index==1) {
+            ani_char value;
+            compareAndReport(ANI_OK ,env->Object_CallMethodByName_Char(static_cast<ani_object>(ref), "unboxed", nullptr ,&value),
+            "Object_CallMethodByName_Char Failed '"+std::string(className) +"'", "get string value");
+            compareAndReport(1,1,"", std::to_string(value));
+            filter[list[index]] = std::to_string(value);
         } else {
-            ani_boolen value;
-            if (env->Object_GetPropertyByName_Boolen(f, cstr, &value) == ANI_OK) {
-              filter[list[i]] = value;
-            }
+            ani_boolean value;
+            compareAndReport(ANI_OK ,env->Object_CallMethodByName_Boolean(static_cast<ani_object>(ref), "unboxed", nullptr ,&value),
+            "Object_CallMethodByName_Boolean Failed '"+std::string(className) +"'", "get boolean value");
+            compareAndReport(1,1,"", std::to_string(value));
+            filter[list[index]] = value;
         }
     }
+    return filter;
 }
-
+ 
 static ani_object findWindowSync(ani_env *env, ani_object obj, ani_object filter)
 {
     ApiCallInfo callInfo_;
