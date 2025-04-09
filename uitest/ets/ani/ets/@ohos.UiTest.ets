@@ -822,7 +822,7 @@ export class Component {
     private native screenCaptureSync(savepath: string, rect?: Rect):boolean;
     private native screenCapSync(savepath: string):boolean;
   
-    private native penSwipeSync(f: Point, t: Point, speed?: number, pressure: number): boolean;
+    private native penSwipeSync(f: Point, t: Point, speed?: number, pressure?: number): boolean;
     private native penClickSync(p: Point):boolean;
     private native penDoubleClickSync(p: Point):boolean;
     private native penLongClickSync(p: Point, pressure?: number):boolean;
@@ -964,7 +964,7 @@ export class Component {
         return promise;
     }
   
-    penSwipe(f: Point, t: Point, speed?: number, pressure: number): Promise<void> {
+    penSwipe(f: Point, t: Point, speed?: number, pressure?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.penSwipeSync(f, t, speed, pressure));
             promise1.then((e:NullishType)=>{
@@ -994,7 +994,7 @@ export class Component {
         return promise;
     }
   
-    penLongClick(p: Point, pressure: number): Promise<void> {
+    penLongClick(p: Point, pressure?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.penLongClickSync(p, pressure));
             promise1.then((e:NullishType)=>{
