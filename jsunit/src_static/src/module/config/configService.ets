@@ -84,7 +84,7 @@ class ConfigService {
     if (this.stress === undefined || this.stress === '' || this.stress === null) {
       return 1;
     }
-    if (!this.stress.match(STRESS_RULE)) {
+    if (!STRESS_RULE.test(this.stress)) {
       return 1;
     } else {
       return Number.parseInt(this.stress);
@@ -161,7 +161,7 @@ class ConfigService {
       }
     }
     if (params.stress) {
-      if (!(params.stress as string).match(STRESS_RULE)) {
+      if (!STRESS_RULE.test(params.stress as string)) {
         this.filterValid.push('stress:' + params.stress);
       }
     }
