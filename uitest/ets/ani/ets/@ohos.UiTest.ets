@@ -666,8 +666,8 @@ export class Component {
       });
       return promise;
     }
-    private native flingSyncDirection(direction:UiDirection, speed?: int):boolean;
-    fling(direction:UiDirection, speed?: int): Promise<void> {
+    private native flingSyncDirection(direction:UiDirection, speed: int):boolean;
+    fling(direction:UiDirection, speed: int): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.flingSyncDirection(direction, speed));
           promise1.then((e:NullishType)=>{
@@ -780,10 +780,10 @@ export class Component {
       });
       return promise;
     }
-    private native getDisplaySizeDensitySync():Point;
-    getDisplaySizeDensity(): Promise<Point> {
+    private native getDisplayDensitySync():Point;
+    getDisplayDensity(): Promise<Point> {
       let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():Point => this.getDisplaySizeDensitySync());
+      let promise1 = taskpool.execute(():Point => this.getDisplayDensitySync());
       promise1.then((e:NullishType)=>{
           let value : Point = e as Point;
           resolve(value);
@@ -822,7 +822,7 @@ export class Component {
     private native screenCaptureSync(savepath: string, rect?: Rect):boolean;
     private native screenCapSync(savepath: string):boolean;
   
-    private native penSwipeSync(f: Point, t: Point, speed?: int, pressure: double): boolean;
+    private native penSwipeSync(f: Point, t: Point, speed?: int, pressure?: double): boolean;
     private native penClickSync(p: Point):boolean;
     private native penDoubleClickSync(p: Point):boolean;
     private native penLongClickSync(p: Point, pressure?: double):boolean;
@@ -837,7 +837,7 @@ export class Component {
   
     private native injectMultiPointerActionSync(pointers: PointerMatrix, speed?: int): boolean;
     private native injectPenPointerActionSync(pointers: PointerMatrix, speed?: int, pressure?: double): boolean;
-    private native touchPadMultiFingerSwipeSync(fingers: int, direction: int, options?: TouchPadSwipeOptions): boolean;
+    private native touchPadMultiFingerSwipeSync(fingers: int, direction: UiDirection, options?: TouchPadSwipeOptions): boolean;
   
     delayMs(t: int): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
@@ -964,7 +964,7 @@ export class Component {
         return promise;
     }
   
-    penSwipe(f: Point, t: Point, speed?: int, pressure: double): Promise<void> {
+    penSwipe(f: Point, t: Point, speed?: int, pressure?: double): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.penSwipeSync(f, t, speed, pressure));
             promise1.then((e:NullishType)=>{
@@ -994,7 +994,7 @@ export class Component {
         return promise;
     }
   
-    penLongClick(p: Point, pressure: double): Promise<void> {
+    penLongClick(p: Point, pressure?: double): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.penLongClickSync(p, pressure));
             promise1.then((e:NullishType)=>{
