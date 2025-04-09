@@ -24,7 +24,7 @@ namespace OHOS::uitest {
     using namespace nlohmann;
     using namespace std;
 
-    constexpr const char* BUSINESS_ERROR_CLASS = "L@ohos/UiTest/BusinessError;";
+    constexpr const char* BUSINESS_ERROR_CLASS = "L@ohos/base/BusinessError;";
     class ErrorHandler {
     public:
         static ani_status Throw(ani_env *env, int32_t code, const string &errMsg)
@@ -32,6 +32,40 @@ namespace OHOS::uitest {
             return Throw(env, BUSINESS_ERROR_CLASS, code, errMsg);
         }
     private:
+        static ani_object WrapError(ani_env *env, const std::string &msg)
+        {
+            if (env == nullptr) {
+                return nullptr;
+            }
+            ani_class cls = nullptr;
+            ani_method method = nullptr;
+            ani_object obj = nullptr;
+            ani_string aniMsg = nullptr;
+            if (env->String_NewUTF8(msg.c_str(), msg.size(), &aniMsg) != ANI_OK) {
+                LOG_E("StringToAniStr failed");
+                return nullptr;
+            }
+            ani_ref undefRef;
+            env->GetUndefined(&undefRef);
+            ani_status status = env->FindClass("Lescompat/Error;", &cls);
+            if (status != ANI_OK) {
+                LOG_E("FindClass : %{public}d", status);
+                return nullptr;
+            }
+            status = env->Class_FindMethod(cls, "<ctor>", "Lstd/core/String;Lescompat/ErrorOptions;:V", &method);
+            if (status != ANI_OK) {
+                LOG_E("Class_FindMethod : %{public}d", status);
+                return nullptr;
+            }
+            status = env->Object_New(cls, method, &obj, aniMsg, undefRef);
+            if (status != ANI_OK) {
+                LOG_E("Object_New : %{public}d", status);
+                return nullptr;
+            }
+            return obj;
+
+        }
+
         static ani_status Throw(ani_env *env, const char *className, int32_t code, const string &errMsg)
         {
             if (env == nullptr) {
@@ -44,23 +78,19 @@ namespace OHOS::uitest {
                 return ANI_ERROR;
             }
             ani_method method;
-            if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", ":V", &method)) {
+            if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", "DLescompat/Error;:V", &method)) {
                 LOG_E("Not found method of BusinessError");
                 return ANI_ERROR;
             }
+            ani_object error = WrapError(env, errMsg);
+            if (error == nullptr) {
+                LOG_E("WrapError failed");
+                return ANI_ERROR;
+            }
             ani_object obj;
-            if (ANI_OK != env->Object_New(cls, method, &obj)) {
-                LOG_E("Object_New BusinessError fail");
-                return ANI_ERROR;
-            }
-            if (env->Object_SetFieldByName_Int(obj, "code", code) != ANI_OK) {
-                LOG_E("Object_SetFieldByName_Int code fail");
-                return ANI_ERROR;
-            }
-            ani_string msg;
-            env->String_NewUTF8(errMsg.c_str(), errMsg.size(), &msg);
-            if (env->Object_SetFieldByName_Ref(obj, "message", msg) != ANI_OK) {
-                LOG_E("Object_SetFieldByName_Ref message fail");
+            ani_double dCode(code);
+            if (env->Object_New(cls, method, &obj, dCode, error) != ANI_OK) {
+                LOG_E("Object_New error fail");
                 return ANI_ERROR;
             }
             return env->ThrowError(static_cast<ani_error>(obj));

@@ -15,6 +15,7 @@
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 import hilog from '@ohos.hilog'
 import { Callback } from '@ohos.base';
+import { BusinessError } from '@ohos.base';
 let domain: int = 0x0000;
 let tag: string = 'uitestTag';
 
@@ -51,17 +52,6 @@ export function loadAndSetupUiTest():void {
     hilog.error(domain, tag, "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat())
   }
 }
-class BusinessError {
-    name: string;
-    message: string;
-    code: int;
-    constructor(code: int, message:string) {
-      this.name = "BusinessError";
-      this.message = message;
-      this.code = code;      
-    }
-    native noFun():void;
-}  
 enum MatchPattern {
     EQUALS = 0,
     CONTAINS = 1,
@@ -209,21 +199,24 @@ export class Component {
             promise1.then((e:NullishType) => {
                 resolve(Promise.resolve());
             }, (err: Object): void => {
-              let br = err as BusinessError;
-              reject(br);
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
     }
   
     longClick():Promise<void> {
-      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():boolean => this.comLongClickSync());
-          promise1.then((e:NullishType)=>{
-              resolve(Promise.resolve());
-          });
-      });
-      return promise;
+        let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+        let promise1 = taskpool.execute(():boolean => this.comLongClickSync());
+            promise1.then((e:NullishType)=>{
+                resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
     }
   
     doubleClick():Promise<void> {
@@ -231,6 +224,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.comDoubleClickSync());
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -242,6 +238,9 @@ export class Component {
           promise1.then((e:NullishType)=>{
               let value : Component = e as Component;
               resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -252,6 +251,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.pinchInSync(scale));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -261,6 +263,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.pinchOutSync(scale));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -271,6 +276,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.scrollToTopSync(speed));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -281,6 +289,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.scrollToBottomSync(speed));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -291,6 +302,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.comInputTextSync(text));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -301,6 +315,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.comDragToSync(target));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -311,6 +328,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.clearTextSync());
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -322,6 +342,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : string = e as string;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -333,6 +356,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : string = e as string;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -344,6 +370,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : string = e as string;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -355,6 +384,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : string = e as string;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -366,6 +398,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : string = e as string;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -377,6 +412,9 @@ export class Component {
           promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -387,6 +425,9 @@ export class Component {
           promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -397,6 +438,9 @@ export class Component {
           promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -407,6 +451,9 @@ export class Component {
           promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -417,6 +464,9 @@ export class Component {
           promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -427,6 +477,9 @@ export class Component {
           promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -437,6 +490,9 @@ export class Component {
           promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -447,6 +503,9 @@ export class Component {
           promise1.then((e:NullishType)=>{
               let value : boolean = e as boolean;
               resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -457,6 +516,9 @@ export class Component {
           promise1.then((e:NullishType)=>{
               let value : Rect = e as Rect;
               resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -467,6 +529,9 @@ export class Component {
           promise1.then((e:NullishType)=>{
               let value : Point = e as Point;
               resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -498,8 +563,8 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.splitSync());
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
-            }, (err: BusinessError): void => {
-              let br = err as BusinessError;
+            }, (err: Object): void => {
+              let br = err as BusinessError<void>;
               reject(br);
             });
         });
@@ -511,6 +576,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.resumeSync());
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
             });
         });
         return promise;
@@ -521,6 +589,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.closeSync());
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
             });
         });
         return promise;
@@ -531,6 +602,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.minimizeSync());
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -541,6 +615,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.maximizeSync());
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -551,6 +628,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.focusSync());
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -562,6 +642,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : boolean = e as boolean;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -573,6 +656,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : boolean = e as boolean;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -583,6 +669,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.resizeSync(w, h, d));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -593,6 +682,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.moveToSync(x, y));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -604,6 +696,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : WindowMode = e as WindowMode;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -615,6 +710,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : string = e as string;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -626,6 +724,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : string = e as string;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -637,6 +738,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : Rect = e as Rect;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -662,6 +766,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.flingSync(from, to, stepLen, speed));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
           });
       });
       return promise;
@@ -672,6 +779,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.flingSyncDirection(direction, speed));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
           });
       });
       return promise;
@@ -682,6 +792,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.swipeSync(startx, starty, endx, endy, speed));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
           });
       });
       return promise;
@@ -692,6 +805,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.dragSync(startx, starty, endx, endy, speed));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
           });
       });
       return promise;
@@ -702,7 +818,10 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.pressBackSync());
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
-          });
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+            });
       });
       return promise;
     }
@@ -712,6 +831,9 @@ export class Component {
           let promise1 = taskpool.execute(():boolean => this.assertComponentExistSync(on));
               promise1.then((e:NullishType)=>{
                   resolve(Promise.resolve());
+              }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
               });
           });
           return promise;
@@ -732,6 +854,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.inputTextSync(p, text));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -743,6 +868,9 @@ export class Component {
       promise1.then((e:NullishType)=>{
           let value : UiWindow = e as UiWindow;
           resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -755,6 +883,9 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.wakeUpDisplaySync());
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -772,10 +903,13 @@ export class Component {
     private native getDisplaySizeSync():Point;
      getDisplaySize(): Promise<Point> {
       let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():Point => this.getDisplaySizeSync());
-      promise1.then((e:NullishType)=>{
-          let value : Point = e as Point;
-          resolve(value);
+          let promise1 = taskpool.execute(():Point => this.getDisplaySizeSync());
+          promise1.then((e:NullishType)=>{
+              let value : Point = e as Point;
+              resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -787,7 +921,10 @@ export class Component {
       promise1.then((e:NullishType)=>{
           let value : Point = e as Point;
           resolve(value);
-          });
+        }, (err: Object): void => {
+            let br = err as BusinessError<void>;
+            reject(br);
+        });
       });
       return promise;
     }
@@ -798,7 +935,10 @@ export class Component {
       promise1.then((e:NullishType)=>{
           let value : DisplayRotation = e as DisplayRotation;
           resolve(value);
-          });
+        }, (err: Object): void => {
+            let br = err as BusinessError<void>;
+            reject(br);
+        });
       });
       return promise;
     }
@@ -809,6 +949,9 @@ export class Component {
           promise1.then((e:NullishType)=>{
               let value : Array<Component> = e as Array<Component>;
               resolve(value);
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -844,6 +987,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.delayMsSync(t));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -854,6 +1000,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.clickSync(x, y));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -864,6 +1013,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.doubleClickSync(x, y));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -874,7 +1026,10 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.longClickSync(x, y));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
-          });
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
       });
       return promise;
     }
@@ -885,6 +1040,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : Component = e as Component;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -896,6 +1054,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : boolean = e as boolean;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -907,19 +1068,38 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : Component = e as Component;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
     }
   
     triggerCombineKeys(key0: int, key1: int, key2?: int): Promise<void> {
-        let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-        let promise1 = taskpool.execute(():boolean => this.triggerCombineKeysSync(key0, key1, key2));
-            promise1.then((e:NullishType)=>{
-                resolve(Promise.resolve());
+        if (key2 == null) {
+            let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+            let promise1 = taskpool.execute(():boolean => this.triggerCombineKeysSync(key0, key1, 0));
+                promise1.then((e:NullishType)=>{
+                    resolve(Promise.resolve());
+                }, (err: Object): void => {
+                    let br = err as BusinessError<void>;
+                    reject(br);
+                });
             });
-        });
-        return promise;
+            return promise;
+        } else {
+            let promise1 = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+                let promise1 = taskpool.execute(():boolean => this.triggerCombineKeysSync(key0, key1, key2));
+                    promise1.then((e:NullishType)=>{
+                        resolve(Promise.resolve());
+                    }, (err: Object): void => {
+                        let br = err as BusinessError<void>;
+                        reject(br);
+                    });
+                });
+                return promise1;
+        }
     }
   
     setDisplayRotationEnabled(enable: boolean): Promise<void> {
@@ -927,6 +1107,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.setDisplayRotationEnabledSync(enable));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -937,6 +1120,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.setDisplayRotationSync(rotation));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -948,6 +1134,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : boolean = e as boolean;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -959,6 +1148,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : boolean = e as boolean;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -969,6 +1161,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.penSwipeSync(f, t, speed, pressure));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -979,6 +1174,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.penClickSync(p));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -989,6 +1187,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.penDoubleClickSync(p));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -999,6 +1200,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.penLongClickSync(p, pressure));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -1009,6 +1213,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.mouseScrollSync(p, down, d, key1, key2, speed));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -1019,6 +1226,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.mouseMoveWithTrackSync(f, t, speed));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -1029,6 +1239,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.mouseMoveToSync(p));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -1039,6 +1252,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.mouseDragkSync(f, t, speed));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -1048,6 +1264,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.mouseClickSync(p, btnId, key1, key2));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -1058,6 +1277,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.mouseDoubleClickSync(p, btnId, key1, key2));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -1068,6 +1290,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.mouseLongClickSync(p, btnId, key1, key2));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -1079,6 +1304,9 @@ export class Component {
             promise1.then((e:NullishType)=>{
                 let value : boolean = e as boolean;
                 resolve(value);
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -1089,6 +1317,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.injectPenPointerActionSync(pointers, speed, pressure));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -1099,6 +1330,9 @@ export class Component {
         let promise1 = taskpool.execute(():boolean => this.touchPadMultiFingerSwipeSync(fingers, direction, options));
             promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
             });
         });
         return promise;
@@ -1171,9 +1405,12 @@ export class Component {
     private native onceSync(type: String, callback: Callback<UIElementInfo>): void;
     once(type: String, callback: Callback<UIElementInfo>): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():void => this.onceSync(type, callback));
-      promise1.then((e:NullishType)=>{
-            resolve(Promise.resolve());
+          let promise1 = taskpool.execute(():void => this.onceSync(type, callback));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
