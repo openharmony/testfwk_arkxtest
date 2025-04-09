@@ -780,10 +780,10 @@ export class Component {
       });
       return promise;
     }
-    private native getDisplayDensity():Point;
+    private native getDisplayDensitySync():Point;
     getDisplayDensity(): Promise<Point> {
       let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():Point => this.getDisplayDensity());
+      let promise1 = taskpool.execute(():Point => this.getDisplayDensitySync());
       promise1.then((e:NullishType)=>{
           let value : Point = e as Point;
           resolve(value);
