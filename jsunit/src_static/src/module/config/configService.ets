@@ -18,7 +18,7 @@ import { ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter, Nes
 import { TAG, TESTTYPE, LEVEL, SIZE, KEYSET } from '../../Constant';
 import { ConfigIf, ServiceAttrIF, FilterParamIF } from '../../interface';
 import { SuiteService } from '../service/SuiteService';
-const STRESS_RULE = new RegExp('/^[1-9]\\d*$/');
+const STRESS_RULE = new RegExp('^[1-9]\\d*$');
 
 class ConfigService {
   public id: string;
