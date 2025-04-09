@@ -843,6 +843,7 @@ static json getWindowFilter(ani_env *env, ani_object f)
     }
     
     string list[] = { "bundleName", "title", "focused", "active" };
+
     for (int i = 0; i < 4; i++) {
         char *cstr = new char[list[i].length() + 1];
         strcpy(cstr, list[i].c_str());
@@ -861,6 +862,7 @@ static json getWindowFilter(ani_env *env, ani_object f)
             if (env->Object_GetPropertyByName_Boolean(f, cstr, &value) == ANI_OK) {
                 filter[list[i]] = value;
             }
+
         }
     }
     return filter;
@@ -1827,6 +1829,7 @@ static ani_boolean BindComponent(ani_env *env) {
     }
     return true;
 }
+
 
 static void onceSync(ani_env *env, ani_object obj, ani_string type, ani_object callback)
 {
