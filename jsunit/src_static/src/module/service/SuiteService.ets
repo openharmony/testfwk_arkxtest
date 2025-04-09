@@ -479,10 +479,10 @@ class SuiteService {
       xdescribe: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => {
         return _this.xdescribe(desc, func, reason);
       },
-      beforeItSpecified: (itDescs: string, func: (() => void) | (() => Promise<void>)) => {
+      beforeItSpecified: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {
         return _this.beforeItSpecified(itDescs, func);
       },
-      afterItSpecified: (itDescs: string, func: (() => void) | (() => Promise<void>)) => {
+      afterItSpecified: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {
         return _this.afterItSpecified(itDescs, func);
       },
       beforeAll: (func: (() => void) | (() => Promise<void>)) => {

@@ -177,7 +177,7 @@ class StaticSuite {
   }
 
   runAfterItSpecified(
-    afterItSpecified: Map<string | Array<string>, (() => void) | (() => Promise<void>)>,
+    afterItSpecified: Map<string | string[], (() => void) | (() => Promise<void>)>,
     specItem: StaticSpec
   ) {
     for (const itNames of afterItSpecified.keys()) {
