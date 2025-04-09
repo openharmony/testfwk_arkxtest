@@ -838,36 +838,34 @@ static json getWindowFilter(ani_env *env, ani_object f)
     static const char *className = "L@ohos/UiTest/WindowFilterInner;";
     ani_class cls;
     if (ANI_OK != env->FindClass(className, &cls)) {
-        
-        std::cerr << "Not found className:" << className << std::endl;
+        HiLog::Error(LABEL, "Not found className: %{public}s", className);
         return filter;
     }
     
     string list[] = { "bundleName", "title", "focused", "active" };
-    for (int index = 0; index<4; index++) {
-        ani_field field;
-        char* cstr = new char[list[index].length() + 1];
-        strcpy(cstr, list[index].c_str()); 
-        compareAndReport(ANI_OK ,env->Class_FindField(cls, "bundleName", &field),
-        "Class_FindField Failed '"+std::string(className) +"'", "Find field?:?");
-        ani_ref ref;
-        compareAndReport(ANI_OK ,env->Object_GetField_Ref(f, field, &ref), "Object_GetField_Ref Failed '"+std::string(className) +"'", "get ref");
-        if (index==0 || index==1) {
-            ani_char value;
-            compareAndReport(ANI_OK ,env->Object_CallMethodByName_Char(static_cast<ani_object>(ref), "unboxed", nullptr ,&value),
-            "Object_CallMethodByName_Char Failed '"+std::string(className) +"'", "get string value");
-            compareAndReport(1,1,"", std::to_string(value));
-            filter[list[index]] = std::to_string(value);
+    for (int i = 0; i < 4; i++) {
+        char *cstr = new char[list[i].length() + 1];
+        strcpy(cstr, list[i].c_str());
+        if (i < 2) {
+          ani_ref value;
+          if (env->Object_GetPropertyByName_Ref(f, cstr, &value) != ANI_OK) {
+              HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
+              continue;
+          }
+          ani_boolean ret = false;
+          if (env->Reference_IsUndefined(value, &ret) == ANI_OK) {
+              filter[list[i]] = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
+          }
         } else {
             ani_boolean value;
-            compareAndReport(ANI_OK ,env->Object_CallMethodByName_Boolean(static_cast<ani_object>(ref), "unboxed", nullptr ,&value),
-            "Object_CallMethodByName_Boolean Failed '"+std::string(className) +"'", "get boolean value");
-            compareAndReport(1,1,"", std::to_string(value));
-            filter[list[index]] = value;
+            if (env->Object_GetPropertyByName_Boolean(f, cstr, &value) == ANI_OK) {
+              filter[list[i]] = value;
+            }
         }
     }
     return filter;
 }
+
  
 static ani_object findWindowSync(ani_env *env, ani_object obj, ani_object filter)
 {
@@ -1338,8 +1336,8 @@ static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
         }
     }
     return options;
-}
-
+ }
+ 
 static ani_boolean touchPadMultiFingerSwipeSync(ani_env *env, ani_object obj, ani_double fingers, ani_enum_item direction, ani_object touchPadOpt)
 {
     ApiCallInfo callInfo_;
@@ -1830,30 +1828,6 @@ static ani_boolean BindComponent(ani_env *env) {
     }
     return true;
 }
-
-static void noFun(ani_env *env, ani_object obj)
-{
-    return;
-}
-static ani_boolean BindBusinessError(ani_env *env)
-{
-    static const char *className = "L@ohos/UiTest/BusinessError;";
-    ani_class cls;
-    if (ANI_OK != env->FindClass(className, &cls)) {
-        HiLog::Error(LABEL, "%{public}s Not found className !!!", __func__);
-        return false;
-    }
-    std::array methods = {
-        ani_native_function {"noFun", nullptr, reinterpret_cast<void *>(noFun)},
-    };
-
-    if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {         
-        HiLog::Error(LABEL, "%{public}s Cannot bind native methods to !!!", __func__);
-        return false;
-    }
-    return true;
-}
-
 static void onceSync(ani_env *env, ani_object obj, ani_string type, ani_object callback)
 {
     ApiCallInfo callInfo_;
@@ -1922,7 +1896,6 @@ ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result) {
     status &= BindComponent(env);
     status &= BindWindow(env);
     status &= BindPointMatrix(env);
-    status &= BindBusinessError(env);
     status &= BindUiEventObserver(env);
     if (!status) {
         HiLog::Error(LABEL, "%{public}s ani_error", __func__);
