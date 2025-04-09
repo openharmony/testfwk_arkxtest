@@ -830,7 +830,6 @@ static json getWindowFilter(ani_env *env, ani_object f)
     
     string list[] = { "bundleName", "title", "focused", "active" };
     for (int i = 0; i < 4; i++) {
-        HiLog::Error(LABEL, " zzzzz getWindowFilter %{public}d", i);
         char *cstr = new char[list[i].length() + 1];
         strcpy(cstr, list[i].c_str());
         if (i < 2) {
