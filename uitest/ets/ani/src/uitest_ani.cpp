@@ -226,8 +226,8 @@ static json getPoint(ani_env *env, ani_object p) {
     if (ANI_OK != env->Class_FindMethod(cls, "<get>x", nullptr, &xGetter)) {
         HiLog::Error(LABEL, "%{public}s Find Method <get>x failed", __func__);
     }
-    ani_int x;
-    if (ANI_OK != env->Object_CallMethod_Int(p, xGetter, &x)) {
+    ani_double x;
+    if (ANI_OK != env->Object_CallMethod_Double(p, xGetter, &x)) {
         HiLog::Error(LABEL, "%{public}s call xgetter failed", __func__);
         return point;
     }
@@ -236,8 +236,8 @@ static json getPoint(ani_env *env, ani_object p) {
     if (ANI_OK != env->Class_FindMethod(cls, "<get>y", nullptr, &yGetter)) {
         HiLog::Error(LABEL, "%{public}s Find Method <get>y failed", __func__);
     }
-    ani_int y;
-    if (ANI_OK != env->Object_CallMethod_Int(p, yGetter, &y)) {
+    ani_double y;
+    if (ANI_OK != env->Object_CallMethod_Double(p, yGetter, &y)) {
         HiLog::Error(LABEL, "%{public}s call ygetter failed", __func__);
         return point;
     }
@@ -254,8 +254,8 @@ static json getRect(ani_env *env, ani_object p) {
         std::cerr << "Find Method <get>left failed" <<std::endl;
         HiLog::Error(LABEL, "%{public}s Find Method <get>left failed", __func__);
     }
-    ani_int left;
-    if (ANI_OK != env->Object_CallMethod_Int(p, leftGetter, &left)) {
+    ani_double left;
+    if (ANI_OK != env->Object_CallMethod_Double(p, leftGetter, &left)) {
         HiLog::Error(LABEL, "%{public}s call leftgetter failed", __func__);
         return rect;
     }
@@ -264,8 +264,8 @@ static json getRect(ani_env *env, ani_object p) {
     if (ANI_OK != env->Class_FindMethod(cls, "<get>right", nullptr, &rightGetter)) {
         HiLog::Error(LABEL, "%{public}s Find Method <get>right failed", __func__);
     }
-    ani_int right;
-    if (ANI_OK != env->Object_CallMethod_Int(p, rightGetter, &right)) {
+    ani_double right;
+    if (ANI_OK != env->Object_CallMethod_Double(p, rightGetter, &right)) {
         HiLog::Error(LABEL, "%{public}s call rightgetter failed", __func__);
         return rect;
     }
@@ -274,8 +274,8 @@ static json getRect(ani_env *env, ani_object p) {
     if (ANI_OK != env->Class_FindMethod(cls, "<get>top", nullptr, &topGetter)) {
         HiLog::Error(LABEL, "%{public}s call rightgetter failed", __func__);
     }
-    ani_int top;
-    if (ANI_OK != env->Object_CallMethod_Int(p, topGetter, &top)) {
+    ani_double top;
+    if (ANI_OK != env->Object_CallMethod_Double(p, topGetter, &top)) {
         return rect;
     }
     rect["top"] = int(top);
@@ -284,8 +284,8 @@ static json getRect(ani_env *env, ani_object p) {
     if (ANI_OK != env->Class_FindMethod(cls, "<get>bottom", nullptr, &bottomGetter)) {
         HiLog::Error(LABEL, "%{public}s Find Method <get>bottom failed", __func__);
     }
-    ani_int bottom;
-    if (ANI_OK != env->Object_CallMethod_Int(p, bottomGetter, &bottom)) {
+    ani_double bottom;
+    if (ANI_OK != env->Object_CallMethod_Double(p, bottomGetter, &bottom)) {
         HiLog::Error(LABEL, "%{public}s call bottomGetter failed", __func__);
         return rect;
     }
