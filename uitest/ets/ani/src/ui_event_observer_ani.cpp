@@ -156,23 +156,23 @@ namespace OHOS::uitest {
             vm->DetachCurrentThread();
             return;
         }
-        static const char *className = "L@ohos/UiTest/UIElementInforInner;";
+        static const char *className = "L@ohos/UiTest/UIElementInfoInner;";
         ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
-            LOG_E("Not found class UIElementInforInner");
-            out.exception_ = ApiCallErr(ERR_INTERNAL, "FindClass UIElementInforInner fail");
+            LOG_E("Not found class UIElementInfoInner");
+            out.exception_ = ApiCallErr(ERR_INTERNAL, "FindClass UIElementInfoInner fail");
             vm->DetachCurrentThread();
             return;
         }
         ani_method method;
         if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", ":V", &method)) {
-            LOG_E("Not found method of UIElementInforInner");
+            LOG_E("Not found method of UIElementInfoInner");
             vm->DetachCurrentThread();
             return;
         }
         ani_object obj;
         if (ANI_OK != env->Object_New(cls, method, &obj)) {
-            LOG_E("Object_New UIElementInforInner fail");
+            LOG_E("Object_New UIElementInfoInner fail");
             vm->DetachCurrentThread();
             return;
         }
