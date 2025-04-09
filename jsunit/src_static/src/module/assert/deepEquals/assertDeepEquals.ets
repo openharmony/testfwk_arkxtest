@@ -164,7 +164,18 @@ function eqOfObj(a: object, b: object): boolean {
   if (aKeys.length !== bKeys.length) {
     return false;
   }
-  for (const key of aKeys) {
+  for (const entries of Object.entries(a)) {
+    if(!entries) {
+      continue
+    }
+    const aKey = entries[0]
+    const aValue = entries[1]
+    if(!bKeys.includes(aKey)) {
+      return false
+    }
+    if(!eq(aValue, Reflect.get(b, aKey))) {
+      return false
+    }
   }
   return true;
 }
