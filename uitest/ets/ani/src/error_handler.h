@@ -66,7 +66,6 @@ namespace OHOS::uitest {
 
         }
 
-
         static ani_status Throw(ani_env *env, const char *className, int32_t code, const string &errMsg)
         {
             if (env == nullptr) {
