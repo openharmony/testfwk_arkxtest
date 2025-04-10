@@ -14,15 +14,14 @@
  */
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 import hilog from '@ohos.hilog'
-import { Callback } from '@ohos.base';
-import { BusinessError } from '@ohos.base';
-let domain: int = 0x0000;
+import { Callback, BusinessError } from '@ohos.base';
+let domain: number = 0x0000;
 let tag: string = 'uitestTag';
 
 export default namespace UiTest {
   loadLibrary("uitest_ani");
   export native function ScheduleEstablishConnection(tokken: String): boolean;
-  export native function GetConnectionStat(): int;
+  export native function GetConnectionStat(): number;
 }
 
 export function loadAndSetupUiTest():void {
@@ -100,27 +99,27 @@ enum MouseButton {
 }
   
 interface Point {
- x: int;
- y: int;
+ x: number;
+ y: number;
 }
   
 class PointInner implements Point {
- x: int = 0;
- y: int = 0;
+ x: number = 0;
+ y: number = 0;
 }
   
 interface Rect {
-  left: int;
-  top: int;
-  right: int;
-  bottom: int;
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
 }
   
 class RectInner implements Rect {
-  left: int = 0;
-  top: int = 0;
-  right: int = 0;
-  bottom: int = 0;
+  left: number = 0;
+  top: number = 0;
+  right: number = 0;
+  bottom: number = 0;
 }
   
 interface WindowFilter {
@@ -151,12 +150,12 @@ class UIElementInfoInner implements UIElementInfo {
 
 interface TouchPadSwipeOptions {
   stay?: boolean;
-  speed?: int;
+  speed?: number;
 }
 
 class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
   stay?: boolean = false;
-  speed?: int = 2000;
+  speed?: number = 2000;
 }
 
 export class Component {
@@ -177,11 +176,11 @@ export class Component {
     private native getDescriptionSync(): string;
     private native comInputTextSync(text: string): boolean;
     private native clearTextSync(): boolean;
-    private native scrollToTopSync(speed?: int): boolean;
-    private native scrollToBottomSync(speed?: int): boolean;
-    private native scrollSearchSync(on: On, vertical?: boolean, offset?: int): boolean;
-    private native pinchInSync(scale: double): boolean;
-    private native pinchOutSync(scale: double): boolean;
+    private native scrollToTopSync(speed?: number): boolean;
+    private native scrollToBottomSync(speed?: number): boolean;
+    private native scrollSearchSync(on: On, vertical?: boolean, offset?: number): boolean;
+    private native pinchInSync(scale: number): boolean;
+    private native pinchOutSync(scale: number): boolean;
     private native isScrollableSync(): boolean;
     private native isSelectedSync(): boolean;
     private native isLongClickableSync(): boolean;
@@ -232,7 +231,7 @@ export class Component {
       return promise;
     }
     
-    scrollSearch(on: On, vertical?: boolean, offset?: int):Promise<Component> {
+    scrollSearch(on: On, vertical?: boolean, offset?: number):Promise<Component> {
       let promise = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.scrollSearchSync(on, vertical, offset));
           promise1.then((e:NullishType)=>{
@@ -246,7 +245,7 @@ export class Component {
       return promise;
     }
   
-    pinchIn(scale: double):Promise<void> {
+    pinchIn(scale: number):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.pinchInSync(scale));
           promise1.then((e:NullishType)=>{
@@ -258,7 +257,7 @@ export class Component {
       });
       return promise;
     }  
-    pinchOut(scale: double):Promise<void> {
+    pinchOut(scale: number):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.pinchOutSync(scale));
           promise1.then((e:NullishType)=>{
@@ -271,7 +270,7 @@ export class Component {
       return promise;
     }
     
-    scrollToTop(speed?: int):Promise<void> {
+    scrollToTop(speed?: number):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.scrollToTopSync(speed));
           promise1.then((e:NullishType)=>{
@@ -284,7 +283,7 @@ export class Component {
       return promise;
     }
     
-    scrollToBottom(speed?: int):Promise<void> {
+    scrollToBottom(speed?: number):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.scrollToBottomSync(speed));
           promise1.then((e:NullishType)=>{
@@ -551,10 +550,10 @@ export class Component {
     private native focusSync(): boolean;
     private native isFocusedSync(): boolean;
     private native isActiveSync(): boolean;
-    private native resizeSync(w:int, h:int, d:ResizeDirection): boolean;
-    private native moveToSync(x:int, y:int): boolean;
+    private native resizeSync(w:number, h:number, d:ResizeDirection): boolean;
+    private native moveToSync(x:number, y:number): boolean;
     private native getWindowModeSync(): WindowMode;
-    private native GetBundleNameSync(): string;
+    private native getBundleNameSync(): string;
     private native getTitileSync(): string;
     private native winGetBoundsSync(): Rect;
   
@@ -664,7 +663,7 @@ export class Component {
         return promise;
     }
   
-    resize(w:int, h:int, d:ResizeDirection):Promise<void> {
+    resize(w:number, h:number, d:ResizeDirection):Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.resizeSync(w, h, d));
             promise1.then((e:NullishType)=>{
@@ -677,7 +676,7 @@ export class Component {
         return promise;
     }
   
-    moveTo(x:int, y:int):Promise<void> {
+    moveTo(x:number, y:number):Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.moveToSync(x, y));
             promise1.then((e:NullishType)=>{
@@ -704,9 +703,9 @@ export class Component {
         return promise;
     }
   
-    GetBundleName():Promise<string> {
+    getBundleName():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
-        let promise1 = taskpool.execute(():string => this.GetBundleNameSync());
+        let promise1 = taskpool.execute(():string => this.getBundleNameSync());
             promise1.then((e:NullishType)=>{
                 let value : string = e as string;
                 resolve(value);
@@ -750,18 +749,17 @@ export class Component {
   export class Driver {
     private nativeDriver:string = '';
     public constructor(driver:string) {
-        
         hilog.error(domain, tag, 'driver:'+driver);
         this.nativeDriver = driver;
     }
-    private native delayMsSync(t:int):boolean;
+    private native delayMsSync(t:number):boolean;
     private native findComponentSync(on: On):Component;
     native static create():Driver;
-    private native clickSync(x:int, y:int):boolean;
-    private native longClickSync(x:int, y:int):boolean;
-    private native doubleClickSync(x:int, y:int):boolean;
-    private native flingSync(from:Point, to: Point, stepLen: int, speed: int):boolean;
-    fling(from:Point, to: Point, stepLen: int, speed: int): Promise<void> {
+    private native clickSync(x:number, y:number):boolean;
+    private native longClickSync(x:number, y:number):boolean;
+    private native doubleClickSync(x:number, y:number):boolean;
+    private native flingSync(from:Point, to: Point, stepLen: number, speed: number):boolean;
+    fling(from:Point, to: Point, stepLen: number, speed: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.flingSync(from, to, stepLen, speed));
           promise1.then((e:NullishType)=>{
@@ -773,8 +771,8 @@ export class Component {
       });
       return promise;
     }
-    private native flingSyncDirection(direction:UiDirection, speed: int):boolean;
-    fling(direction:UiDirection, speed: int): Promise<void> {
+    private native flingSyncDirection(direction:UiDirection, speed: number):boolean;
+    fling(direction:UiDirection, speed: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.flingSyncDirection(direction, speed));
           promise1.then((e:NullishType)=>{
@@ -786,8 +784,8 @@ export class Component {
       });
       return promise;
     }
-    private native swipeSync(startx: int, starty: int, endx: int, endy: int, speed?: int):boolean;
-    swipe(startx: int, starty: int, endx: int, endy: int, speed?: int): Promise<void> {
+    private native swipeSync(startx: number, starty: number, endx: number, endy: number, speed?: number):boolean;
+    swipe(startx: number, starty: number, endx: number, endy: number, speed?: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.swipeSync(startx, starty, endx, endy, speed));
           promise1.then((e:NullishType)=>{
@@ -799,8 +797,8 @@ export class Component {
       });
       return promise;
     }
-    private native dragSync(startx: int, starty: int, endx: int, endy: int, speed?: int):boolean;
-    drag(startx: int, starty: int, endx: int, endy: int, speed?: int): Promise<void> {
+    private native dragSync(startx: number, starty: number, endx: number, endy: number, speed?: number):boolean;
+    drag(startx: number, starty: number, endx: number, endy: number, speed?: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.dragSync(startx, starty, endx, endy, speed));
           promise1.then((e:NullishType)=>{
@@ -838,8 +836,8 @@ export class Component {
           });
           return promise;
     }
-    private native triggerKeySync(keyCode: int):boolean;
-    triggerKey(keyCode: int): Promise<void> {
+    private native triggerKeySync(keyCode: number):boolean;
+    triggerKey(keyCode: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.triggerKeySync(keyCode));
           promise1.then((e:NullishType)=>{
@@ -864,10 +862,10 @@ export class Component {
     private native findWindowSync(filter: WindowFilter):UiWindow;
     findWindow(filter: WindowFilter): Promise<UiWindow> {
       let promise = new Promise<UiWindow>((resolve: (value: UiWindow) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():UiWindow => this.findWindowSync(filter));
-      promise1.then((e:NullishType)=>{
-          let value : UiWindow = e as UiWindow;
-          resolve(value);
+          let promise1 = taskpool.execute(():UiWindow => this.findWindowSync(filter));
+          promise1.then((e:NullishType)=>{
+              let value : UiWindow = e as UiWindow;
+              resolve(value);
           }, (err: Object): void => {
               let br = err as BusinessError<void>;
               reject(br);
@@ -917,14 +915,14 @@ export class Component {
     private native getDisplayDensitySync():Point;
     getDisplayDensity(): Promise<Point> {
       let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():Point => this.getDisplayDensitySync());
-      promise1.then((e:NullishType)=>{
-          let value : Point = e as Point;
-          resolve(value);
+    let promise1 = taskpool.execute(():Point => this.getDisplayDensitySync());
+        promise1.then((e:NullishType)=>{
+            let value : Point = e as Point;
+            resolve(value);
         }, (err: Object): void => {
             let br = err as BusinessError<void>;
             reject(br);
-        });
+    });
       });
       return promise;
     }
@@ -956,33 +954,33 @@ export class Component {
       });
       return promise;
     }
-    private native waitForIdleSync(idleTime: int, timeout: int):boolean;
-    private native waitForComponentSync(on: On, time: int):Component;
-    private native triggerCombineKeysSync(key0: int, key1: int, key2?: int):boolean;
+    private native waitForIdleSync(idleTime: number, timeout: number):boolean;
+    private native waitForComponentSync(on: On, time: number):Component;
+    private native triggerCombineKeysSync(key0: number, key1: number, key2?: number):boolean;
   
     private native setDisplayRotationEnabledSync(enable: boolean):boolean;
     private native setDisplayRotationSync(rotation: DisplayRotation):boolean;
     private native screenCaptureSync(savepath: string, rect?: Rect):boolean;
     private native screenCapSync(savepath: string):boolean;
   
-    private native penSwipeSync(f: Point, t: Point, speed?: int, pressure?: double): boolean;
+    private native penSwipeSync(f: Point, t: Point, speed?: number, pressure?: number): boolean;
     private native penClickSync(p: Point):boolean;
     private native penDoubleClickSync(p: Point):boolean;
-    private native penLongClickSync(p: Point, pressure?: double):boolean;
+    private native penLongClickSync(p: Point, pressure?: number):boolean;
   
-    private native mouseScrollSync(p: Point, down: boolean, d:int, key1?: int, key2?: int, speed?: int): boolean;
-    private native mouseMoveWithTrackSync(f: Point, t: Point, speed?: int): boolean;
+    private native mouseScrollSync(p: Point, down: boolean, d:number, key1?: number, key2?: number, speed?: number): boolean;
+    private native mouseMoveWithTrackSync(f: Point, t: Point, speed?: number): boolean;
     private native mouseMoveToSync(p: Point): boolean;
-    private native mouseDragkSync(f: Point, t: Point, speed?: int): boolean;
-    private native mouseClickSync(p: Point, btnId: MouseButton, key1?: int, key2?: int):boolean;
-    private native mouseDoubleClickSync(p: Point, btnId: MouseButton, key1?: int, key2?: int):boolean;
-    private native mouseLongClickSync(p: Point, btnId: MouseButton, key1?: int, key2?: int):boolean;
+    private native mouseDragkSync(f: Point, t: Point, speed?: number): boolean;
+    private native mouseClickSync(p: Point, btnId: MouseButton, key1?: number, key2?: number):boolean;
+    private native mouseDoubleClickSync(p: Point, btnId: MouseButton, key1?: number, key2?: number):boolean;
+    private native mouseLongClickSync(p: Point, btnId: MouseButton, key1?: number, key2?: number):boolean;
   
-    private native injectMultiPointerActionSync(pointers: PointerMatrix, speed?: int): boolean;
-    private native injectPenPointerActionSync(pointers: PointerMatrix, speed?: int, pressure?: double): boolean;
-    private native touchPadMultiFingerSwipeSync(fingers: int, direction: UiDirection, options?: TouchPadSwipeOptions): boolean;
+    private native injectMultiPointerActionSync(pointers: PointerMatrix, speed?: number): boolean;
+    private native injectPenPointerActionSync(pointers: PointerMatrix, speed?: number, pressure?: number): boolean;
+    private native touchPadMultiFingerSwipeSync(fingers: number, direction: UiDirection, options?: TouchPadSwipeOptions): boolean;
   
-    delayMs(t: int): Promise<void> {
+    delayMs(t: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.delayMsSync(t));
             promise1.then((e:NullishType)=>{
@@ -995,7 +993,7 @@ export class Component {
         return promise;
     }
   
-    click(x: int, y: int): Promise<void> {
+    click(x: number, y: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.clickSync(x, y));
             promise1.then((e:NullishType)=>{
@@ -1008,7 +1006,7 @@ export class Component {
         return promise;
     }
   
-    doubleClick(x: int, y: int): Promise<void> {
+    doubleClick(x: number, y: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.doubleClickSync(x, y));
             promise1.then((e:NullishType)=>{
@@ -1021,7 +1019,7 @@ export class Component {
         return promise;
     }
   
-    longClick(x: int, y: int): Promise<void> {
+    longClick(x: number, y: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.longClickSync(x, y));
           promise1.then((e:NullishType)=>{
@@ -1048,7 +1046,7 @@ export class Component {
         return promise;
     }
   
-    waitForIdle(idleTime: int, timeout: int): Promise<boolean> {
+    waitForIdle(idleTime: number, timeout: number): Promise<boolean> {
         let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.waitForIdleSync(idleTime, timeout));
             promise1.then((e:NullishType)=>{
@@ -1062,7 +1060,7 @@ export class Component {
         return promise;
     }
   
-    waitForComponent(on: On, time: int): Promise<Component> {
+    waitForComponent(on: On, time: number): Promise<Component> {
         let promise = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():Component => this.waitForComponentSync(on, time));
             promise1.then((e:NullishType)=>{
@@ -1076,7 +1074,7 @@ export class Component {
         return promise;
     }
   
-    triggerCombineKeys(key0: int, key1: int, key2?: int): Promise<void> {
+    triggerCombineKeys(key0: number, key1: number, key2?: number): Promise<void> {
         if (key2 == null) {
             let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
             let promise1 = taskpool.execute(():boolean => this.triggerCombineKeysSync(key0, key1, 0));
@@ -1156,7 +1154,7 @@ export class Component {
         return promise;
     }
   
-    penSwipe(f: Point, t: Point, speed?: int, pressure?: double): Promise<void> {
+    penSwipe(f: Point, t: Point, speed?: number, pressure?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.penSwipeSync(f, t, speed, pressure));
             promise1.then((e:NullishType)=>{
@@ -1195,7 +1193,7 @@ export class Component {
         return promise;
     }
   
-    penLongClick(p: Point, pressure?: double): Promise<void> {
+    penLongClick(p: Point, pressure?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.penLongClickSync(p, pressure));
             promise1.then((e:NullishType)=>{
@@ -1208,7 +1206,7 @@ export class Component {
         return promise;
     }
   
-    mouseScroll(p: Point, down: boolean, d:int, key1?: int, key2?: int, speed?: int): Promise<void> {
+    mouseScroll(p: Point, down: boolean, d:number, key1?: number, key2?: number, speed?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.mouseScrollSync(p, down, d, key1, key2, speed));
             promise1.then((e:NullishType)=>{
@@ -1221,7 +1219,7 @@ export class Component {
         return promise;
     }
   
-    mouseMoveWithTrack(f: Point, t: Point, speed?: int): Promise<void> {
+    mouseMoveWithTrack(f: Point, t: Point, speed?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.mouseMoveWithTrackSync(f, t, speed));
             promise1.then((e:NullishType)=>{
@@ -1247,7 +1245,7 @@ export class Component {
         return promise;
     }
   
-    mouseDrag(f: Point, t: Point, speed?: int): Promise<void> {
+    mouseDrag(f: Point, t: Point, speed?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.mouseDragkSync(f, t, speed));
             promise1.then((e:NullishType)=>{
@@ -1259,7 +1257,7 @@ export class Component {
         });
         return promise;
     }
-    mouseClick(p: Point, btnId: MouseButton, key1?: int, key2?: int): Promise<void> {
+    mouseClick(p: Point, btnId: MouseButton, key1?: number, key2?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.mouseClickSync(p, btnId, key1, key2));
             promise1.then((e:NullishType)=>{
@@ -1272,7 +1270,7 @@ export class Component {
         return promise;
     }
   
-    mouseDoubleClick(p: Point, btnId: MouseButton, key1?: int, key2?: int): Promise<void> {
+    mouseDoubleClick(p: Point, btnId: MouseButton, key1?: number, key2?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.mouseDoubleClickSync(p, btnId, key1, key2));
             promise1.then((e:NullishType)=>{
@@ -1285,7 +1283,7 @@ export class Component {
         return promise;
     }
   
-    mouseLongClick(p: Point, btnId: MouseButton, key1?: int, key2?: int): Promise<void> {
+    mouseLongClick(p: Point, btnId: MouseButton, key1?: number, key2?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.mouseLongClickSync(p, btnId, key1, key2));
             promise1.then((e:NullishType)=>{
@@ -1298,7 +1296,7 @@ export class Component {
         return promise;
     }
   
-    injectMultiPointerAction(pointers: PointerMatrix, speed?: int): Promise<boolean> {
+    injectMultiPointerAction(pointers: PointerMatrix, speed?: number): Promise<boolean> {
         let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.injectMultiPointerActionSync(pointers, speed));
             promise1.then((e:NullishType)=>{
@@ -1312,7 +1310,7 @@ export class Component {
         return promise;
     }
   
-    injectPenPointerAction(pointers: PointerMatrix, speed?: int, pressure?: double): Promise<void> {
+    injectPenPointerAction(pointers: PointerMatrix, speed?: number, pressure?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.injectPenPointerActionSync(pointers, speed, pressure));
             promise1.then((e:NullishType)=>{
@@ -1325,7 +1323,7 @@ export class Component {
         return promise;
     }
   
-    touchPadMultiFingerSwipe(fingers: int, direction: UiDirection, options?: TouchPadSwipeOptions): Promise<void> {
+    touchPadMultiFingerSwipe(fingers: number, direction: UiDirection, options?: TouchPadSwipeOptions): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.touchPadMultiFingerSwipeSync(fingers, direction, options));
             promise1.then((e:NullishType)=>{
@@ -1347,8 +1345,8 @@ export class Component {
       }
     }
   
-    native static create(fingers: int, steps: int): PointerMatrix;
-    native setPoint(finger: int, step: int, point: Point): void;
+    native static create(fingers: number, steps: number): PointerMatrix;
+    native setPoint(finger: number, step: number, point: Point): void;
   }
   export class On {
     private nativeOn:String = '';
@@ -1398,6 +1396,7 @@ export class Component {
   export class UIEventObserver {
     private nativeUIEventObserver:string = '';
     public constructor(UIEventObserver:string) {
+      hilog.info(domain, tag, 'UIEventObserver:'+UIEventObserver);
       if (this.nativeUIEventObserver == '') {
         this.nativeUIEventObserver = UIEventObserver;
       }
