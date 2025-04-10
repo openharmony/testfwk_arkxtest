@@ -955,7 +955,7 @@ export class Component {
       return promise;
     }
     private native waitForIdleSync(idleTime: number, timeout: number):boolean;
-    native waitForComponentSync(on: On, time: number):Component;
+    private native waitForComponentSync(on: On, time: number):Component;
     private native triggerCombineKeysSync(key0: number, key1: number, key2?: number):boolean;
   
     private native setDisplayRotationEnabledSync(enable: boolean):boolean;
@@ -1168,7 +1168,6 @@ export class Component {
     }
   
     penClick(p: Point): Promise<void> {
-        hilog.info(domain, tag, "penClick 1172");
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.penClickSync(p));
             promise1.then((e:NullishType)=>{
@@ -1195,9 +1194,6 @@ export class Component {
     }
   
     penLongClick(p: Point, pressure?: number): Promise<void> {
-        hilog.info(domain, tag, "penClick 1172");
-        hilog.info(domain, tag, "p.x"+p.x);
-        hilog.info(domain, tag, "p.y"+p.y);
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.penLongClickSync(p, pressure));
             promise1.then((e:NullishType)=>{
@@ -1400,19 +1396,23 @@ export class Component {
   export class UIEventObserver {
     private nativeUIEventObserver:string = '';
     public constructor(UIEventObserver:string) {
-      hilog.error(domain, tag, 'UIEventObserver:'+UIEventObserver);
+      hilog.info(domain, tag, 'UIEventObserver:'+UIEventObserver);
       if (this.nativeUIEventObserver == '') {
         this.nativeUIEventObserver = UIEventObserver;
       }
     }
     private native onceSync(type: String, callback: Callback<UIElementInfo>): void;
-    once(type: String, callback: Callback<UIElementInfo>): void {
-      hilog.error(domain, tag, "come into once");
-      this.onceSync(type, callback);
-    }
-
-    once2(type: String): void {
-      hilog.error(domain, tag, "come into once");
+    once(type: String, callback: Callback<UIElementInfo>): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+          let promise1 = taskpool.execute(():void => this.onceSync(type, callback));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Object): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
     }
   }
   
