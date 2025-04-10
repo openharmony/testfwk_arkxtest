@@ -14,8 +14,7 @@
  */
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 import hilog from '@ohos.hilog'
-import { Callback } from '@ohos.base';
-import { BusinessError } from '@ohos.base';
+import { Callback, BusinessError } from '@ohos.base';
 let domain: number = 0x0000;
 let tag: string = 'uitestTag';
 
@@ -554,7 +553,7 @@ export class Component {
     private native resizeSync(w:number, h:number, d:ResizeDirection): boolean;
     private native moveToSync(x:number, y:number): boolean;
     private native getWindowModeSync(): WindowMode;
-    private native GetBundleNameSync(): string;
+    private native getBundleNameSync(): string;
     private native getTitileSync(): string;
     private native winGetBoundsSync(): Rect;
   
@@ -704,9 +703,9 @@ export class Component {
         return promise;
     }
   
-    GetBundleName():Promise<string> {
+    getBundleName():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
-        let promise1 = taskpool.execute(():string => this.GetBundleNameSync());
+        let promise1 = taskpool.execute(():string => this.getBundleNameSync());
             promise1.then((e:NullishType)=>{
                 let value : string = e as string;
                 resolve(value);
@@ -750,7 +749,6 @@ export class Component {
   export class Driver {
     private nativeDriver:string = '';
     public constructor(driver:string) {
-        
         hilog.error(domain, tag, 'driver:'+driver);
         this.nativeDriver = driver;
     }
@@ -864,10 +862,10 @@ export class Component {
     private native findWindowSync(filter: WindowFilter):UiWindow;
     findWindow(filter: WindowFilter): Promise<UiWindow> {
       let promise = new Promise<UiWindow>((resolve: (value: UiWindow) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():UiWindow => this.findWindowSync(filter));
-      promise1.then((e:NullishType)=>{
-          let value : UiWindow = e as UiWindow;
-          resolve(value);
+          let promise1 = taskpool.execute(():UiWindow => this.findWindowSync(filter));
+          promise1.then((e:NullishType)=>{
+              let value : UiWindow = e as UiWindow;
+              resolve(value);
           }, (err: Object): void => {
               let br = err as BusinessError<void>;
               reject(br);
@@ -1398,6 +1396,7 @@ export class Component {
   export class UIEventObserver {
     private nativeUIEventObserver:string = '';
     public constructor(UIEventObserver:string) {
+      hilog.info(domain, tag, 'UIEventObserver:'+UIEventObserver);
       if (this.nativeUIEventObserver == '') {
         this.nativeUIEventObserver = UIEventObserver;
       }
