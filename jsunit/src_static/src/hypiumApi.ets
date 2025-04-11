@@ -28,13 +28,13 @@ const hypiumIt = (desc: string, filter: int, func: ItfnType) => {
     return (core as Core).it(desc, filter, func);
   }
 };
-const hypiumBeforeItSpecified = (itDescs: string, func: (() => void) | (() => Promise<void>)) => {
+const hypiumBeforeItSpecified = (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {
   if (core) {
     return (core as Core).beforeItSpecified(itDescs, func);
   }
 };
 
-const hypiumAfterItSpecified = (itDescs: string, func: (() => void) | (() => Promise<void>)) => {
+const hypiumAfterItSpecified = (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {
   if (core) {
     return (core as Core).afterItSpecified(itDescs, func);
   }
