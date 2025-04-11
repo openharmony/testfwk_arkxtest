@@ -153,15 +153,15 @@ export class DeepTypeUtils {
    * 获取obj对象的所有属性
    * @param obj obj对象
    */
-  static getAllKeys(obj: object): string[] {
+  static getAllKeys(obj: object): Array<string> {
+    const keyList = new Array<string>();
     if (obj === null) {
-      return [];
+      return keyList;
     }
     const keys = Object.keys(obj);
-    const keyList = new Array<string>();
     for (const key of keys) {
       keyList.push(key);
     }
-    return keys;
+    return keyList;
   }
 }
