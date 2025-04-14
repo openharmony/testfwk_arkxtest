@@ -159,7 +159,7 @@ class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
 }
 
 export class Component {
-  private nativeComponent:string = '';
+  nativeComponent:string = '';
   public constructor(Component:string) {
     if (this.nativeComponent == '') {
       this.nativeComponent = Component;
@@ -178,7 +178,7 @@ export class Component {
     private native clearTextSync(): boolean;
     private native scrollToTopSync(speed?: number): boolean;
     private native scrollToBottomSync(speed?: number): boolean;
-    private native scrollSearchSync(on: On, vertical?: boolean, offset?: number): boolean;
+    private native scrollSearchSync(on: On, vertical?: boolean, offset?: number): Component;
     private native pinchInSync(scale: number): boolean;
     private native pinchOutSync(scale: number): boolean;
     private native isScrollableSync(): boolean;
@@ -231,12 +231,16 @@ export class Component {
       return promise;
     }
     
-    scrollSearch(on: On, vertical?: boolean, offset?: number):Promise<Component> {
-      let promise = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():boolean => this.scrollSearchSync(on, vertical, offset));
+    scrollSearch(on: On, vertical?: boolean, offset?: number):Promise<Component|null> {
+      let promise = new Promise<Component|null>((resolve, reject) => {
+      let promise1 = taskpool.execute(():Component|null => this.scrollSearchSync(on, vertical, offset));
           promise1.then((e:NullishType)=>{
-              let value : Component = e as Component;
-              resolve(value);
+            if (e) {
+                let value : Component = e as Component;
+                resolve(value);
+            } else {
+                resolve(null)
+            }
           }, (err: Object): void => {
               let br = err as BusinessError<void>;
               reject(br);
@@ -860,12 +864,16 @@ export class Component {
       return promise;
     }
     private native findWindowSync(filter: WindowFilter):UiWindow;
-    findWindow(filter: WindowFilter): Promise<UiWindow> {
-      let promise = new Promise<UiWindow>((resolve: (value: UiWindow) => void, reject: (error: Object) => void) => {
+    findWindow(filter: WindowFilter): Promise<UiWindow|null> {
+      let promise = new Promise<UiWindow|null>((resolve, reject) => {
           let promise1 = taskpool.execute(():UiWindow => this.findWindowSync(filter));
           promise1.then((e:NullishType)=>{
-              let value : UiWindow = e as UiWindow;
-              resolve(value);
+            if (e) {
+                let value : UiWindow = e as UiWindow;
+                resolve(value);
+            } else {
+                resolve(null)
+            }
           }, (err: Object): void => {
               let br = err as BusinessError<void>;
               reject(br);
@@ -941,12 +949,16 @@ export class Component {
       return promise;
     }
     private native findComponentsSync(on: On):Array<Component>;
-    findComponents(on: On): Promise<Array<Component>> {
-      let promise = new Promise<Array<Component>>((resolve: (value: Array<Component>) => void, reject: (error: Object) => void) => {
+    findComponents(on: On): Promise<Array<Component>|null> {
+      let promise = new Promise<Array<Component>|null>((resolve, reject) => {
       let promise1 = taskpool.execute(():Array<Component> => this.findComponentsSync(on));
           promise1.then((e:NullishType)=>{
-              let value : Array<Component> = e as Array<Component>;
-              resolve(value);
+            if (e){
+                let value : Array<Component> = e as Array<Component>;
+                resolve(value);
+            } else {
+                resolve(null)
+            }
           }, (err: Object): void => {
               let br = err as BusinessError<void>;
               reject(br);
@@ -1032,17 +1044,21 @@ export class Component {
       return promise;
     }
   
-    findComponent(on: On): Promise<Component> {
-        let promise = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
-        let promise1 = taskpool.execute(():Component => this.findComponentSync(on));
-            promise1.then((e:NullishType)=>{
-                let value : Component = e as Component;
-                resolve(value);
-            }, (err: Object): void => {
-                let br = err as BusinessError<void>;
-                reject(br);
+    findComponent(on: On): Promise<Component|null> {
+        let promise = new Promise<Component|null>((resolve, reject) => {
+            let promise1 = taskpool.execute(():Component|null => this.findComponentSync(on));
+                promise1.then((e:NullishType)=>{
+                    if (e) {
+                        let value : Component = e as Component;
+                        resolve(value);
+                    } else {
+                        resolve(null)
+                    }
+                }, (err: Object): void => {
+                    let br = err as BusinessError<void>;
+                    reject(br);
+                });
             });
-        });
         return promise;
     }
   
@@ -1060,12 +1076,16 @@ export class Component {
         return promise;
     }
   
-    waitForComponent(on: On, time: number): Promise<Component> {
-        let promise = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
-        let promise1 = taskpool.execute(():Component => this.waitForComponentSync(on, time));
+    waitForComponent(on: On, time: number): Promise<Component|null> {
+        let promise = new Promise<Component|null>((resolve, reject) => {
+        let promise1 = taskpool.execute(():Component|null => this.waitForComponentSync(on, time));
             promise1.then((e:NullishType)=>{
-                let value : Component = e as Component;
-                resolve(value);
+                if (e) {
+                    let value : Component = e as Component;
+                    resolve(value);
+                } else {
+                    resolve(null)
+                }
             }, (err: Object): void => {
                 let br = err as BusinessError<void>;
                 reject(br);
@@ -1194,6 +1214,8 @@ export class Component {
     }
   
     penLongClick(p: Point, pressure?: number): Promise<void> {
+        hilog.info(domain, tag, "p.x"+p.x);
+        hilog.info(domain, tag, "p.y"+p.y);
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.penLongClickSync(p, pressure));
             promise1.then((e:NullishType)=>{
@@ -1393,27 +1415,27 @@ export class Component {
     }
   }
 
-  export class UIEventObserver {
-    private nativeUIEventObserver:string = '';
-    public constructor(UIEventObserver:string) {
-      hilog.info(domain, tag, 'UIEventObserver:'+UIEventObserver);
-      if (this.nativeUIEventObserver == '') {
-        this.nativeUIEventObserver = UIEventObserver;
-      }
+export class UIEventObserver {
+    private nativeUIEventObserver: string = '';
+    public constructor(UIEventObserver: string) {
+        hilog.error(domain, tag, 'UIEventObserver:' + UIEventObserver);
+        if (this.nativeUIEventObserver == '') {
+            this.nativeUIEventObserver = UIEventObserver;
+        }
     }
     private native onceSync(type: String, callback: Callback<UIElementInfo>): void;
     once(type: String, callback: Callback<UIElementInfo>): Promise<void> {
-      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-          let promise1 = taskpool.execute(():void => this.onceSync(type, callback));
-          promise1.then((e:NullishType)=>{
-              resolve(Promise.resolve());
-          }, (err: Object): void => {
-              let br = err as BusinessError<void>;
-              reject(br);
-          });
-      });
-      return promise;
+        let promise = new Promise < void> ((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
+            let promise1 = taskpool.execute((): void => this.onceSync(type, callback));
+            promise1.then((e: NullishType) => {
+                resolve(Promise.resolve());
+            }, (err: Object): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
     }
-  }
-  
+}
+
 export const ON: On = new On();
