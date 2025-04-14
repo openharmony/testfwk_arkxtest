@@ -377,16 +377,60 @@ export class AssertMatcher {
 
   addAnytypeAssert(matchers: AssertMatcherIF) {
     const equalFn = (matcherName: string, assertFn: (actualValue: AnyType, expected: AnyType[]) => AssertResult) => {
-      return (arg1: AnyType) => {
+      return (arg: AnyType) => {
         try {
-          let arg = arg1;
-          if (matcherName === 'assertInstanceOf') {
-            arg = arg as string;
-          }
           const result = assertFn(this.actualValue, [arg]);
           if (this.isNot) {
             result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg1, result.message);
+            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg, result.message);
+          }
+          if (!result.pass) {
+            const assertError = new AssertException(result.message);
+            const currentRunningSpec = this.currentRunningSpec;
+            const currentRunningSuite = this.currentRunningSuite;
+            if (currentRunningSpec) {
+              currentRunningSpec.fail = assertError;
+            } else {
+              currentRunningSuite.hookError = assertError;
+            }
+            throw assertError;
+          }
+        } catch (error: Error) {
+          const currentRunningSpec = this.currentRunningSpec;
+          const currentRunningSuite = this.currentRunningSuite;
+          if (currentRunningSpec) {
+            currentRunningSpec.fail = error;
+          } else {
+            currentRunningSuite.hookError = error;
+          }
+        }
+      };
+    };
+    const assertDeepEquals = matchers.assertDeepEquals;
+    if (assertDeepEquals) {
+      this.assertDeepEquals = equalFn('assertDeepEquals', assertDeepEquals);
+    }
+
+    const assertContain = matchers.assertContain;
+    if (assertContain) {
+      this.assertContain = equalFn('assertContain', assertContain);
+    }
+
+    const assertEqual = matchers.assertEqual;
+    if (assertEqual) {
+      this.assertEqual = equalFn('assertEqual', assertEqual);
+    }
+
+  }
+
+  addInstanceOfAssert(matchers: AssertMatcherIF) {
+    const equalFn = (matcherName: string, assertFn: (actualValue: AnyType, expected: string[]) => AssertResult) => {
+      return (arg: string) => {
+        try {
+          const result = assertFn(this.actualValue, [arg]);
+          if (this.isNot) {
+            result.pass = !result.pass;
+            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg, result.message);
           }
           if (!result.pass) {
             const assertError = new AssertException(result.message);
@@ -662,6 +706,7 @@ export class AssertMatcher {
     this.addNumWithoutExpectAssert(matchers);
     this.addBooleanAssert(matchers);
     this.addAnytypeAssert(matchers);
+    this.addInstanceOfAssert(matchers)
     this.addThrowAssert(matchers);
     this.addUndefinedAssert(matchers);
     this.addPromiseAssert(matchers);
