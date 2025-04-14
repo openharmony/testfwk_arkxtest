@@ -41,11 +41,11 @@ class ObjectUtils {
 }
 
 class DataDriver {
-    id: string
-    coreContext: Core | null
-    suiteService: SuiteService
-    specService: SpecService
-    data: DataDriverData
+    public id: string
+    public coreContext: Core | null
+    public suiteService: SuiteService
+    public specService: SpecService
+    public data: DataDriverData
     constructor(attr: DataDriverAttr) {
         this.id = 'dataDriver';
         this.data = attr.data;
