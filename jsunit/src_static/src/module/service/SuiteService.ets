@@ -387,7 +387,6 @@ class SuiteService {
   }
 
   async dryRun(abilityDelegator: abilityDelegatorRegistry.AbilityDelegator) {
-    // console.info(`${TAG} rootSuite : ` + JSON.stringify(this.rootSuite));
     const suiteArray = new Array<Map<string, Array<ConfigIf>>>();
     const skipSuiteArray = new Array<Map<string, Array<ConfigIf>>>();
     this.analyzeSuitesArray(new Array<string>(), suiteArray, skipSuiteArray, this.rootSuite);

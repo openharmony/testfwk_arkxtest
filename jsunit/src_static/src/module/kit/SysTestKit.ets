@@ -149,9 +149,10 @@ function executePromise(cmd: string, timeout: number) {
       (error: Error, data: abilityDelegatorRegistry.ShellCmdResult) => {
         if (error) {
           reject(new Error('executeShellCommand Error: ' + error.message));
+        console.info(`${TAG}existKeyword CallBack: err : ${error.message}`);
+
         }
-        // console.info(`${TAG}existKeyword CallBack: err : ${JSON.stringify(error)}`);
-        // console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(data)}`);
+        console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(data)}`);
         resolve(parseInt(data.stdResult) > 3 ? true : false);
       }
     );
