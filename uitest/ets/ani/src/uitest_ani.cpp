@@ -157,7 +157,7 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
     HiLog::Info(LABEL, "UITEST: Start to unmarshall return value:%{public}s", reply_.resultValue_.dump().c_str());
     const auto resultType = reply_.resultValue_.type();
     if (resultType == nlohmann::detail::value_t::null) {
-        return {};
+        return nullptr;
     } else if (resultType == nlohmann::detail::value_t::array) {
         ani_class arrayCls = nullptr;
         if (ANI_OK!=env->FindClass("Lescompat/Array;", &arrayCls)) {
@@ -231,9 +231,11 @@ static json getPoint(ani_env *env, ani_object p) {
         return point;
     }
     point["x"] = int(x);
+    HiLog::Error(LABEL, " <get>x %{public}d", int(x));
     ani_method yGetter;
     if (ANI_OK != env->Class_FindMethod(cls, "<get>y", nullptr, &yGetter)) {
         HiLog::Error(LABEL, "%{public}s Find Method <get>y failed", __func__);
+        return point;
     }
     ani_double y;
     if (ANI_OK != env->Object_CallMethod_Double(p, yGetter, &y)) {
@@ -241,6 +243,8 @@ static json getPoint(ani_env *env, ani_object p) {
         return point;
     }
     point["y"] = int(y);
+    HiLog::Error(LABEL, " <get>y %{public}f", y);
+    HiLog::Error(LABEL, " <get>y %{public}d", int(y));
     return point;
 }
 
@@ -356,7 +360,7 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y) {
     return point_obj;
 }
 
-static ani_ref createMatrix(ani_env *env, ani_object object) {
+static ani_ref createMatrix(ani_env *env, ani_object object, ani_double fingers, ani_double steps) {
     static const char *className = "L@ohos/UiTest/PointerMatrix;";
     ani_class cls = findCls(env, className);
     ani_ref nullref;
@@ -370,6 +374,8 @@ static ani_ref createMatrix(ani_env *env, ani_object object) {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.apiId_ = "PointerMatrix.create";
+    callInfo_.paramList_.push_back(int(fingers));
+    callInfo_.paramList_.push_back(int(steps));
     Transact(callInfo_, reply_);
     ani_ref nativePointerMatrix = UnmarshalReply(env, callInfo_, reply_);
     ani_object pointer_matrix_object;
@@ -513,8 +519,6 @@ static void pushBool(ani_env *env, ani_object input, nlohmann::json &params) {
         env->Object_CallMethodByName_Boolean(input, "unboxed", ":Z", &param);
         HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(param));
         params.push_back(static_cast<bool>(param));
-    } else {
-        params.push_back(true);
     }
 }
 static ani_ref enabled(ani_env *env, ani_object obj, ani_object b) {
@@ -638,6 +642,9 @@ static ani_ref findComponentSync(ani_env *env, ani_object obj, ani_object on_obj
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on_obj, "nativeOn")));
     Transact(callInfo_, reply_);
     ani_ref nativeComponent = UnmarshalReply(env, callInfo_, reply_);
+    if (nativeComponent == nullptr) {
+        return nativeComponent;
+    }
     ani_object com_obj;
     static const char *className = "L@ohos/UiTest/Component;";
     ani_class cls = findCls(env, className);
@@ -669,7 +676,8 @@ static ani_object findComponentsSync(ani_env *env, ani_object obj, ani_object on
     if (arrayCls != nullptr) {
         ctor = findCtorMethod(env, arrayCls, "I:V");
     }
-    ani_size com_size = reply_.resultValue_.size();
+    ani_size com_size = reply_.resultValue_.size();            
+    HiLog::Error(LABEL, "%{public}d ::::: reply_.resultValue_.size() !!!", com_size);
     if (ANI_OK!= env->Object_New(arrayCls, ctor, &com_objs, com_size)) {
         std::cout<<"Object_New array failed" << std::endl;
         return com_objs;
@@ -1087,6 +1095,7 @@ static ani_boolean screenCapSync(ani_env *env, ani_object obj, ani_string path)
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.screenCap";
     string savePath = aniStringToStdString(env, path);
+    HiLog::Info(LABEL, "savePath: %{public}s", savePath.c_str());
     auto fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
     if (fd == -1) {
         return false;
@@ -1393,7 +1402,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function {"penSwipeSync", nullptr, reinterpret_cast<void *>(penSwipeSync)},
         ani_native_function {"penClickSync", nullptr, reinterpret_cast<void *>(penClickSync)},
         ani_native_function {"penDoubleClickSync", nullptr, reinterpret_cast<void *>(penDoubleClickSync)},
-        ani_native_function {"penLongClickSync", nullptr, reinterpret_cast<void *>(penLongClickSync)},
+        ani_native_function {"penLongClickSync", "L@ohos/UiTest/Point;Lstd/core/Double;:Z", reinterpret_cast<void *>(penLongClickSync)},
         ani_native_function {"mouseScrollSync", nullptr, reinterpret_cast<void *>(mouseScrollSync)},
         ani_native_function {"mouseMoveWithTrackSync", nullptr, reinterpret_cast<void *>(mouseMoveWithTrackSync)},
         ani_native_function {"mouseMoveToSync", nullptr, reinterpret_cast<void *>(mouseMoveToSync)},
@@ -1710,7 +1719,7 @@ static ani_boolean scrollToBottom(ani_env *env, ani_object obj, ani_object speed
     return true;
 }
 
-static ani_boolean scrollSearch(ani_env *env, ani_object obj, ani_object on, ani_boolean vertical, ani_double offset) {
+static ani_object scrollSearch(ani_env *env, ani_object obj, ani_object on, ani_boolean vertical, ani_double offset) {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.apiId_ = "Component.scrollSearch";
@@ -1719,8 +1728,21 @@ static ani_boolean scrollSearch(ani_env *env, ani_object obj, ani_object on, ani
     callInfo_.paramList_.push_back(static_cast<bool>(vertical));
     callInfo_.paramList_.push_back(int(offset));
     Transact(callInfo_, reply_);
-    UnmarshalReply(env, callInfo_, reply_);
-    return true;
+    ani_ref nativeComponent = UnmarshalReply(env, callInfo_, reply_);
+    ani_object com_obj;
+    static const char *className = "L@ohos/UiTest/Component;";
+    ani_class cls = findCls(env, className);
+    ani_method ctor = nullptr;
+    if (cls != nullptr) {
+        ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
+    }
+    if (cls == nullptr || ctor == nullptr) {
+        return nullptr;
+    }
+    if (ANI_OK != env->Object_New(cls, ctor, &com_obj, reinterpret_cast<ani_object>(nativeComponent))) {
+        HiLog::Error(LABEL, "%{public}s New Component Failed !!!", __func__);
+    }
+    return com_obj;
 }
 
 static void pinch(ani_env *env, ani_object obj, ani_double scale, string apiId_) {
