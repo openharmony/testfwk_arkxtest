@@ -219,18 +219,13 @@ static ani_string unwrapp(ani_env *env, ani_object object, const char *name) {
 
 static json getPoint(ani_env *env, ani_object p) {
     auto point = json();
-    static const char *className = "L@ohos/UiTest/PointInner;";
-    ani_class cls = findCls(env, className);
     string list[] = { "x", "y" };
     for (int index = 0; index < 2; index++) {
-        ani_field field;
         char* cstr = new char[list[index].length() + 1];
-        strcpy(cstr, list[index].c_str()); 
-        compareAndReport(ANI_OK ,env->Class_FindField(cls, cstr, &field),
-                        "Class_FindField Failed '"+std::string(className) +"'", "Find field?:?");
+        strcpy(cstr, list[index].c_str());
         ani_double value;
-        compareAndReport(ANI_OK ,env->Object_GetField_Double(p, field, &value),
-                        "Object_GetField_Double Failed '"+std::string(className) +"'", "get ref");
+        compareAndReport(ANI_OK ,env->Object_GetPropertyByName_Double(p, cstr, &value),
+                        "Object_GetField_Double Failed '"+std::string(cstr) +"'", "Successful!!get double proprty");
         point[list[index]] = int(value);
     }
     return point;
@@ -238,23 +233,17 @@ static json getPoint(ani_env *env, ani_object p) {
 
 static json getRect(ani_env *env, ani_object p) {
     auto rect = json();
-    static const char *className = "L@ohos/UiTest/RectInner;";
-    ani_class cls = findCls(env, className);
     string list[] = { "left", "right", "top", "bottom" };
     for (int index = 0; index < 4; index++) {
-        ani_field field;
         char* cstr = new char[list[index].length() + 1];
-        strcpy(cstr, list[index].c_str()); 
-        compareAndReport(ANI_OK ,env->Class_FindField(cls, cstr, &field),
-                        "Class_FindField Failed '"+std::string(className) +"'", "Find field?:?");
+        strcpy(cstr, list[index].c_str());
         ani_double value;
-        compareAndReport(ANI_OK ,env->Object_GetField_Double(p, field, &value),
-                        "Object_GetField_Double Failed '"+std::string(className) +"'", "get ref");
+        compareAndReport(ANI_OK ,env->Object_GetPropertyByName_Double(p, cstr, &value),
+                        "Object_GetField_Double Failed '"+std::string(cstr) +"'", "Successful!!get double proprty");
         rect[list[index]] = int(value);
     }
     return rect;
 }
-
 
 static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num) {
     ani_object rect_obj = {};
