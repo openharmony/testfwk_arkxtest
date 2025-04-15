@@ -219,79 +219,29 @@ static ani_string unwrapp(ani_env *env, ani_object object, const char *name) {
 
 static json getPoint(ani_env *env, ani_object p) {
     auto point = json();
-    static const char *className = "L@ohos/UiTest/PointInner;";
-    ani_class cls = findCls(env, className);
-    ani_method xGetter;
-    if (ANI_OK != env->Class_FindMethod(cls, "<get>x", nullptr, &xGetter)) {
-        HiLog::Error(LABEL, "%{public}s Find Method <get>x failed", __func__);
+    string list[] = { "x", "y" };
+    for (int index = 0; index < 2; index++) {
+        char* cstr = new char[list[index].length() + 1];
+        strcpy(cstr, list[index].c_str());
+        ani_double value;
+        compareAndReport(ANI_OK ,env->Object_GetPropertyByName_Double(p, cstr, &value),
+                        "Object_GetField_Double Failed '"+std::string(cstr) +"'", "Successful!!get double proprty");
+        point[list[index]] = int(value);
     }
-    ani_double x;
-    if (ANI_OK != env->Object_CallMethod_Double(p, xGetter, &x)) {
-        HiLog::Error(LABEL, "%{public}s call xgetter failed", __func__);
-        return point;
-    }
-    point["x"] = int(x);
-    HiLog::Error(LABEL, " <get>x %{public}d", int(x));
-    ani_method yGetter;
-    if (ANI_OK != env->Class_FindMethod(cls, "<get>y", nullptr, &yGetter)) {
-        HiLog::Error(LABEL, "%{public}s Find Method <get>y failed", __func__);
-        return point;
-    }
-    ani_double y;
-    if (ANI_OK != env->Object_CallMethod_Double(p, yGetter, &y)) {
-        HiLog::Error(LABEL, "%{public}s call ygetter failed", __func__);
-        return point;
-    }
-    point["y"] = int(y);
-    HiLog::Error(LABEL, " <get>y %{public}f", y);
-    HiLog::Error(LABEL, " <get>y %{public}d", int(y));
     return point;
 }
 
 static json getRect(ani_env *env, ani_object p) {
     auto rect = json();
-    static const char *className = "L@ohos/UiTest/RectInner;";
-    ani_class cls = findCls(env, className);
-    ani_method leftGetter;
-    if (ANI_OK != env->Class_FindMethod(cls, "<get>left", nullptr, &leftGetter)) {
-        HiLog::Error(LABEL, "%{public}s Find Method <get>left failed", __func__);
+    string list[] = { "left", "right", "top", "bottom" };
+    for (int index = 0; index < 4; index++) {
+        char* cstr = new char[list[index].length() + 1];
+        strcpy(cstr, list[index].c_str());
+        ani_double value;
+        compareAndReport(ANI_OK ,env->Object_GetPropertyByName_Double(p, cstr, &value),
+                        "Object_GetField_Double Failed '"+std::string(cstr) +"'", "Successful!!get double proprty");
+        rect[list[index]] = int(value);
     }
-    ani_double left;
-    if (ANI_OK != env->Object_CallMethod_Double(p, leftGetter, &left)) {
-        HiLog::Error(LABEL, "%{public}s call leftgetter failed", __func__);
-        return rect;
-    }
-    rect["left"] = int(left);
-    ani_method rightGetter;
-    if (ANI_OK != env->Class_FindMethod(cls, "<get>right", nullptr, &rightGetter)) {
-        HiLog::Error(LABEL, "%{public}s Find Method <get>right failed", __func__);
-    }
-    ani_double right;
-    if (ANI_OK != env->Object_CallMethod_Double(p, rightGetter, &right)) {
-        HiLog::Error(LABEL, "%{public}s call rightgetter failed", __func__);
-        return rect;
-    }
-    rect["right"] = int(right);
-    ani_method topGetter;
-    if (ANI_OK != env->Class_FindMethod(cls, "<get>top", nullptr, &topGetter)) {
-        HiLog::Error(LABEL, "%{public}s call rightgetter failed", __func__);
-    }
-    ani_double top;
-    if (ANI_OK != env->Object_CallMethod_Double(p, topGetter, &top)) {
-        return rect;
-    }
-    rect["top"] = int(top);
-
-        ani_method bottomGetter;
-    if (ANI_OK != env->Class_FindMethod(cls, "<get>bottom", nullptr, &bottomGetter)) {
-        HiLog::Error(LABEL, "%{public}s Find Method <get>bottom failed", __func__);
-    }
-    ani_double bottom;
-    if (ANI_OK != env->Object_CallMethod_Double(p, bottomGetter, &bottom)) {
-        HiLog::Error(LABEL, "%{public}s call bottomGetter failed", __func__);
-        return rect;
-    }
-    rect["bottom"] = int(bottom);
     return rect;
 }
 
