@@ -129,7 +129,7 @@ export interface AssertMatcherIF {
   assertInstanceOf: (actualValue: AnyType, expected: string[]) => AssertResult;
   assertLarger: (actualValue: number, expected: number[]) => AssertResult;
   assertLess: (actualValue: number, expected: number[]) => AssertResult;
-  assertNull: (actualValue: object) => AssertResult;
+  assertNull: (actualValue: AnyType) => AssertResult;
   assertThrow: (actualValue: () => void, args: string[]) => AssertResult;
   assertThrowError: (actualValue: () => void, args: string[]) => AssertResult;
   assertUndefined: (actualValue: AnyType) => AssertResult;
@@ -165,8 +165,8 @@ export interface ApiIF {
   name: string;
   describe?: (desc: string, func: (() => void) | (() => Promise<void>)) => Promise<undefined>;
   xdescribe?: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => Promise<void>;
-  beforeItSpecified?: (itDescs: string, func: (() => void) | (() => Promise<void>)) => void;
-  afterItSpecified?: (itDescs: string, func: (() => void) | (() => Promise<void>)) => void;
+  beforeItSpecified?: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => void;
+  afterItSpecified?: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => void;
   beforeAll?: (func: (() => void) | (() => Promise<void>)) => void;
   beforeEach?: (func: (() => void) | (() => Promise<void>)) => void;
   afterAll?: (func: (() => void) | (() => Promise<void>)) => void;
@@ -232,4 +232,20 @@ export interface ExtendAssert {
   message: string;
   actualValue: AnyType;
   checkFunc: string;
+}
+
+export interface DataDriverSuite {
+  describe?: string[];
+  stress?: NumberType;
+  it?: string;
+  params: Map<string, string>
+  items?: DataDriverSuite[];
+}
+
+export interface DataDriverData {
+  suites?: DataDriverSuite[];
+}
+
+export interface DataDriverAttr {
+  data: DataDriverData;
 }

@@ -18,7 +18,7 @@ import { ClassFilter, NotClassFilter, SuiteAndItNameFilter, TestTypesFilter, Nes
 import { TAG, TESTTYPE, LEVEL, SIZE, KEYSET } from '../../Constant';
 import { ConfigIf, ServiceAttrIF, FilterParamIF } from '../../interface';
 import { SuiteService } from '../service/SuiteService';
-const STRESS_RULE = new RegExp('/^[1-9]\\d*$/');
+const STRESS_RULE = new RegExp('^[1-9]\\d*$');
 
 class ConfigService {
   public id: string;
@@ -84,7 +84,7 @@ class ConfigService {
     if (this.stress === undefined || this.stress === '' || this.stress === null) {
       return 1;
     }
-    if (!this.stress.match(STRESS_RULE)) {
+    if (!STRESS_RULE.test(this.stress)) {
       return 1;
     } else {
       return Number.parseInt(this.stress);
@@ -161,7 +161,7 @@ class ConfigService {
       }
     }
     if (params.stress) {
-      if (!(params.stress as string).match(STRESS_RULE)) {
+      if (!STRESS_RULE.test(params.stress as string)) {
         this.filterValid.push('stress:' + params.stress);
       }
     }

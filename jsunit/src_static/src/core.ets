@@ -42,8 +42,8 @@ class Core {
   public events: Map<string, Map<string, EventType>>;
   public describe: (desc: string, func: (() => void) | (() => Promise<void>)) => Promise<undefined>;
   public xdescribe: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => Promise<void>;
-  public beforeItSpecified: (itDescs: string, func: (() => void) | (() => Promise<void>)) => void;
-  public afterItSpecified: (itDescs: string, func: (() => void) | (() => Promise<void>)) => void;
+  public beforeItSpecified: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => void;
+  public afterItSpecified: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => void;
   public beforeAll: (func: (() => void) | (() => Promise<void>)) => void;
   public beforeEach: (func: (() => void) | (() => Promise<void>)) => void;
   public afterAll: (func: (() => void) | (() => Promise<void>)) => void;
@@ -64,8 +64,8 @@ class Core {
     this.xdescribe = (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => {
       return Promise.resolve();
     };
-    this.beforeItSpecified = (itDescs: string, func: (() => void) | (() => Promise<void>)) => {};
-    this.afterItSpecified = (itDescs: string, func: (() => void) | (() => Promise<void>)) => {};
+    this.beforeItSpecified = (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {};
+    this.afterItSpecified = (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {};
     this.beforeAll = (func: (() => void) | (() => Promise<void>)) => {};
     this.beforeEach = (func: (() => void) | (() => Promise<void>)) => {};
     this.afterAll = (func: (() => void) | (() => Promise<void>)) => {};

@@ -4,7 +4,7 @@ import { StaticSuite } from './StaticSuite';
 import { StaticSpec } from './StaticSpec';
 import { TAG } from '../../Constant';
 import { Core } from '../../core';
-import { processFunc } from '../../util';
+import { processFunc, checkIsAsyncFunction } from '../../util';
 import { SysTestKit } from '../kit/SysTestKit';
 import { AssertException } from './AssertException';
 import { ConfigService } from '../config/configService';
@@ -81,8 +81,13 @@ class SuiteService {
         this.currentRunningSuite.childSuites.push(suite);
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);
-
-        await (func as () => Promise<void>)();
+        const funcStr = (func as object).toString();
+        const isAsyncFunc = checkIsAsyncFunction(funcStr);
+        if (isAsyncFunc) {
+          await (func as () => Promise<void>)();
+        } else {
+          (func as () => void)();
+        }
         this.suitesStack.pop();
 
         const staticService = this.suitesStack.pop();
@@ -148,14 +153,14 @@ class SuiteService {
     }
   }
 
-  beforeItSpecified(itDescs: string, func: (() => void) | (() => Promise<void>)) {
+  beforeItSpecified(itDescs: string | string[], func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
       this.currentRunningSuite.beforeItSpecified.set(itDescs, processFunc(core as Core, func));
     }
   }
 
-  afterItSpecified(itDescs: string, func: (() => void) | (() => Promise<void>)) {
+  afterItSpecified(itDescs: string | string[], func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
       this.currentRunningSuite.afterItSpecified.set(itDescs, processFunc(core as Core, func));
@@ -335,8 +340,53 @@ class SuiteService {
     this.coreContext = coreContext;
   }
 
+  getDryResultStr(dryrunResult: DryrunResultIF) {
+    let message = '{';
+    for (const suiteEntries of Object.entries(dryrunResult)) {
+      if (!suiteEntries) {
+        continue;
+      }
+      const suiteKey = suiteEntries[0];
+      const suiteValue = suiteEntries[1];
+      if (!suiteValue || !Array.isArray(suiteValue)) {
+        continue;
+      }
+      const suiteValueArray = suiteValue as Array<Map<string, Array<ConfigIf>>>;
+      message += `"${suiteKey}":[`;
+      for (const itMap of suiteValueArray) {
+        message += '{';
+        for (const itMapArray of itMap.entries()) {
+          if (!itMapArray) {
+            continue;
+          }
+          const itKey = itMapArray[0];
+          const itValue = itMapArray[1];
+          if (!itValue || !Array.isArray(itValue)) {
+            continue;
+          }
+          const itValueArray = itValue as Array<ConfigIf>;
+          message += `"${itKey}":[`;
+          for (const configInfo of itValueArray) {
+            if (!configInfo) {
+              continue;
+            }
+            message += JSON.stringify(configInfo) + ',';
+          }
+          message = message.slice(0, -1);
+          message += '],';
+        }
+        message = message.slice(0, -1);
+        message += '},';
+      }
+      message = message.slice(0, -1);
+      message += '],';
+    }
+    message = message.slice(0, -1);
+    message += '}';
+    return message;
+  }
+
   async dryRun(abilityDelegator: abilityDelegatorRegistry.AbilityDelegator) {
-    console.info(`${TAG} rootSuite : ` + JSON.stringify(this.rootSuite));
     const suiteArray = new Array<Map<string, Array<ConfigIf>>>();
     const skipSuiteArray = new Array<Map<string, Array<ConfigIf>>>();
     this.analyzeSuitesArray(new Array<string>(), suiteArray, skipSuiteArray, this.rootSuite);
@@ -355,12 +405,12 @@ class SuiteService {
             suites: suiteArray,
           };
         }
-        const strJson = JSON.stringify(this.dryrunResult);
-        const strLen = strJson.length;
+        const message = this.getDryResultStr(this.dryrunResult);
+        const strLen = message.length;
         const maxLen = 500;
         const maxCount = Math.floor(strLen / maxLen);
         for (let count = 0; count <= maxCount; count++) {
-          await SysTestKit.print(strJson.substring(count * maxLen, (count + 1) * maxLen));
+          await SysTestKit.print(message.substring(count * maxLen, (count + 1) * maxLen));
         }
         console.info(`${TAG}dryRun print success`);
         abilityDelegator.finishTest('dry run finished!!!', 0);
@@ -474,10 +524,10 @@ class SuiteService {
       xdescribe: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => {
         return _this.xdescribe(desc, func, reason);
       },
-      beforeItSpecified: (itDescs: string, func: (() => void) | (() => Promise<void>)) => {
+      beforeItSpecified: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {
         return _this.beforeItSpecified(itDescs, func);
       },
-      afterItSpecified: (itDescs: string, func: (() => void) | (() => Promise<void>)) => {
+      afterItSpecified: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {
         return _this.afterItSpecified(itDescs, func);
       },
       beforeAll: (func: (() => void) | (() => Promise<void>)) => {
