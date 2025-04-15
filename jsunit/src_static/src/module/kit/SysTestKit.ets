@@ -97,13 +97,66 @@ class SysTestKit {
     if (delegator === null) {
       console.info(`delegator is null`);
     } else {
-      delegator.printSync(message)
+      delegator.printSync(message);
     }
   }
 
   static getRealTime(): number {
     return 0;
   }
+
+  static async existKeyword(keyword: string, timeout?: number): Promise<boolean> {
+    let reg = new RegExp('^[a-zA-Z0-9]{1,}$');
+    if (!reg.test(keyword)) {
+      throw new Error('keyword must contain more than one string, and only letters and numbers are supported.');
+    }
+    let time = 4.0;
+    if (timeout !== undefined) {
+      time = timeout;
+    }
+
+    let searchResult = false;
+    let cmd = "hilog -x | grep -i '" + keyword + "' | wc -l";
+    try {
+      await executePromise(cmd, time).then((data) => {
+        searchResult = data;
+      });
+    } catch (err: Error) {
+      throw err;
+    }
+    return searchResult;
+  }
+
+  static async print(message) {
+    if ('printSync' in SysTestKit.delegator) {
+      console.info(`${TAG}printSync called ...`);
+      SysTestKit.delegator.printSync(message);
+    } else {
+      await SysTestKit.delegator.print(message);
+    }
+  }
+}
+
+function executePromise(cmd: string, timeout: number) {
+  return new Promise<boolean>((resolve: (value: boolean) => void, reject: (value: object) => void) => {
+    const delegator = SysTestKit.delegator;
+    if (!delegator) {
+      reject(new Error('delegator is null'));
+    }
+    (delegator as abilityDelegatorRegistry.AbilityDelegator).executeShellCommand(
+      cmd,
+      timeout,
+      (error: Error, data: abilityDelegatorRegistry.ShellCmdResult) => {
+        if (error) {
+          reject(new Error('executeShellCommand Error: ' + error.message));
+        console.info(`${TAG}existKeyword CallBack: err : ${error.message}`);
+
+        }
+        console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(data)}`);
+        resolve(parseInt(data.stdResult) > 3 ? true : false);
+      }
+    );
+  });
 }
 
 export { SysTestKit };

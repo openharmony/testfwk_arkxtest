@@ -10,6 +10,8 @@ import {
   processAsyncFuncWithArgOne,
   processFuncWithArgTwo,
   processAsyncFuncWithArgTwo,
+  getFunctionArgumentsCount,
+  checkIsAsyncFunction
 } from '../../util';
 import { SuiteService } from './SuiteService';
 import { ConfigService } from '../config/configService';
@@ -66,30 +68,6 @@ class SpecService {
     this.specSkipReason = '';
   }
 
-  getFunctionArgumentsCount(funcStr: string): number {
-    const regex = new RegExp('^[0123456789]$', 'g');
-    let count = '';
-    for (let str of funcStr) {
-      if (regex.test(str)) {
-        count = str;
-      }
-    }
-    if (count.length) {
-      return Number(count);
-    }
-    return 0;
-  }
-
-  checkIsAsyncFunction(funcStr: string): boolean {
-    const endIndex = funcStr.lastIndexOf('):');
-    const validStr = funcStr.slice(endIndex);
-    if (validStr.indexOf('Promise') !== -1) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   it(desc: string, filter: int, func: ItfnType): void {
     const coreContext = this.coreContext;
     if (coreContext !== null) {
@@ -115,9 +93,9 @@ class SpecService {
           this.initSpecService();
         } else {
           const funcStr = (func as object).toString();
-          const argsCount = this.getFunctionArgumentsCount(funcStr);
+          const argsCount = getFunctionArgumentsCount(funcStr);
 
-          const isAsync = this.checkIsAsyncFunction(funcStr);
+          const isAsync = checkIsAsyncFunction(funcStr);
           let processedFunc: () => Promise<void> = (): Promise<void> => {
             return Promise.resolve();
           };

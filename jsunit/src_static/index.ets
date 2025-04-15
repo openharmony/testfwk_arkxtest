@@ -166,6 +166,8 @@ export {
   hypiumAfterItSpecified as afterItSpecified,
   hypiumXdescribe as xdescribe,
   hypiumXit as xit,
+  hypiumXdescribeReason as xdescribeReason,
+  hypiumXitReason as xitReason
 } from './src/hypiumApi';
 export { DEFAULT, TestType, Size, Level, TAG, PrintTag } from './src/Constant';
 export { Core } from './src/core';
