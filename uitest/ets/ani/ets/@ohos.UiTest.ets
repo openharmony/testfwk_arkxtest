@@ -721,7 +721,7 @@ export class Component {
         return promise;
     }
   
-    getTitle():Promise<string> {
+    getTitile():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():string => this.getTitileSync());
             promise1.then((e:NullishType)=>{
@@ -884,7 +884,7 @@ export class Component {
     native createUIEventObserver():UIEventObserver;
 
     private native wakeUpDisplaySync():boolean;
-    wakeUpDisplay(): Promise<void> {
+     wakeUpDisplay(): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.wakeUpDisplaySync());
           promise1.then((e:NullishType)=>{
@@ -1424,6 +1424,7 @@ export class UIEventObserver {
         }
     }
     native once(type: String, callback: Callback<UIElementInfo>): void;
+
 }
 
 export const ON: On = new On();
