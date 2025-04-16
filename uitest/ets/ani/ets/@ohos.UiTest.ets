@@ -721,7 +721,7 @@ export class Component {
         return promise;
     }
   
-    getTitile():Promise<string> {
+    getTitle():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():string => this.getTitileSync());
             promise1.then((e:NullishType)=>{
@@ -884,7 +884,7 @@ export class Component {
     native createUIEventObserver():UIEventObserver;
 
     private native wakeUpDisplaySync():boolean;
-     wakeUpDisplay(): Promise<void> {
+    wakeUpDisplay(): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
       let promise1 = taskpool.execute(():boolean => this.wakeUpDisplaySync());
           promise1.then((e:NullishType)=>{
@@ -983,7 +983,7 @@ export class Component {
     private native mouseScrollSync(p: Point, down: boolean, d:number, key1?: number, key2?: number, speed?: number): boolean;
     private native mouseMoveWithTrackSync(f: Point, t: Point, speed?: number): boolean;
     private native mouseMoveToSync(p: Point): boolean;
-    private native mouseDragkSync(f: Point, t: Point, speed?: number): boolean;
+    private native mouseDragSync(f: Point, t: Point, speed?: number): boolean;
     private native mouseClickSync(p: Point, btnId: MouseButton, key1?: number, key2?: number):boolean;
     private native mouseDoubleClickSync(p: Point, btnId: MouseButton, key1?: number, key2?: number):boolean;
     private native mouseLongClickSync(p: Point, btnId: MouseButton, key1?: number, key2?: number):boolean;
@@ -1269,7 +1269,7 @@ export class Component {
   
     mouseDrag(f: Point, t: Point, speed?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-        let promise1 = taskpool.execute(():boolean => this.mouseDragkSync(f, t, speed));
+        let promise1 = taskpool.execute(():boolean => this.mouseDragSync(f, t, speed));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
             }, (err: Object): void => {
@@ -1423,19 +1423,7 @@ export class UIEventObserver {
             this.nativeUIEventObserver = UIEventObserver;
         }
     }
-    private native onceSync(type: String, callback: Callback<UIElementInfo>): void;
-    once(type: String, callback: Callback<UIElementInfo>): Promise<void> {
-        let promise = new Promise < void> ((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-            let promise1 = taskpool.execute((): void => this.onceSync(type, callback));
-            promise1.then((e: NullishType) => {
-                resolve(Promise.resolve());
-            }, (err: Object): void => {
-                let br = err as BusinessError<void>;
-                reject(br);
-            });
-        });
-        return promise;
-    }
+    native once(type: String, callback: Callback<UIElementInfo>): void;
 }
 
 export const ON: On = new On();
