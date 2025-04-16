@@ -1160,12 +1160,12 @@ static ani_boolean mouseMoveWithTrackSync(ani_env *env, ani_object obj, ani_obje
     return true;
 }
 
-static ani_boolean mouseDragkSync(ani_env *env, ani_object obj, ani_object f, ani_object t, ani_object speed)
+static ani_boolean mouseDragSync(ani_env *env, ani_object obj, ani_object f, ani_object t, ani_object speed)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
-    callInfo_.apiId_ = "Driver.mouseDragk";
+    callInfo_.apiId_ = "Driver.mouseDrag";
     auto from = getPoint(env, f);
     auto to = getPoint(env, t);
     callInfo_.paramList_.push_back(from);
@@ -1356,7 +1356,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function {"mouseScrollSync", nullptr, reinterpret_cast<void *>(mouseScrollSync)},
         ani_native_function {"mouseMoveWithTrackSync", nullptr, reinterpret_cast<void *>(mouseMoveWithTrackSync)},
         ani_native_function {"mouseMoveToSync", nullptr, reinterpret_cast<void *>(mouseMoveToSync)},
-        ani_native_function {"mouseDragkSync", nullptr, reinterpret_cast<void *>(mouseDragkSync)},
+        ani_native_function {"mouseDragSync", nullptr, reinterpret_cast<void *>(mouseDragSync)},
         ani_native_function {"mouseClickSync", nullptr, reinterpret_cast<void *>(mouseClickSync)},
         ani_native_function {"mouseDoubleClickSync", nullptr, reinterpret_cast<void *>(mouseDoubleClickSync)},
         ani_native_function {"mouseLongClickSync", nullptr, reinterpret_cast<void *>(mouseLongClickSync)},
@@ -1797,7 +1797,7 @@ static ani_boolean BindComponent(ani_env *env) {
     }
     return true;
 }
-static void onceSync(ani_env *env, ani_object obj, ani_string type, ani_object callback)
+static void once(ani_env *env, ani_object obj, ani_string type, ani_object callback)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -1817,7 +1817,7 @@ static ani_boolean BindUiEventObserver(ani_env *env)
         return false;
     }
     std::array methods = {
-        ani_native_function {"onceSync", nullptr, reinterpret_cast<void *>(onceSync)},
+        ani_native_function {"once", nullptr, reinterpret_cast<void *>(once)},
     };
 
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
