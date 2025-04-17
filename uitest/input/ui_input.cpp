@@ -238,7 +238,7 @@ namespace OHOS::uitest {
             return EXIT_FAILURE;
         }
         auto text = argv[THREE];
-        driver.InputText(text, exception_);
+        driver.InputText(text, exception_, uiOpArgs);
         std::cout << exception_.message_ << std::endl;
         return EXIT_SUCCESS;
     }
@@ -258,7 +258,7 @@ namespace OHOS::uitest {
         driver.PerformTouch(touch, uiOpArgs, exception_);
         static constexpr uint32_t focusTimeMs = 500;
         driver.DelayMs(focusTimeMs);
-        driver.InputText(text, exception_);
+        driver.InputText(text, exception_, uiOpArgs);
         std::cout << exception_.message_ << std::endl;
         return EXIT_SUCCESS;
     }

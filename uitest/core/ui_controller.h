@@ -77,7 +77,7 @@ namespace OHOS::uitest {
 
         virtual void InjectTouchPadEventSequence(const vector<TouchPadEvent>& events) const {};
 
-        virtual void PutTextToClipboard(std::string_view text) const {};
+        virtual void PutTextToClipboard(std::string_view text, ApiCallErr &error) const {};
 
         virtual bool TakeScreenCap(FILE *fp, std::stringstream &errReceiver, int32_t displayId, Rect rect) const
         {

@@ -65,6 +65,18 @@ namespace OHOS::uitest {
         return time_point_cast<microseconds>(steady_clock::now()).time_since_epoch().count();
     }
 
+    inline void ReadInputModeFromJson(const nlohmann::json &json, bool &paste, bool &additional)
+    {
+        if (!json.empty()) {
+            if (json.contains("paste") && json["paste"].is_boolean()) {
+                paste = json["paste"];
+            }
+            if (json.contains("additional") && json["additional"].is_boolean()) {
+                additional = json["additional"];
+            }
+        }
+    }
+
     template <typename T> T ReadArgFromJson(const nlohmann::json &json, const std::string arg, const T defValue)
     {
         if (json.type() == nlohmann::detail::value_t::object && json.contains(arg)) {
