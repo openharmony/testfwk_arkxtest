@@ -127,14 +127,6 @@ class SysTestKit {
     return searchResult;
   }
 
-  static async print(message) {
-    if ('printSync' in SysTestKit.delegator) {
-      console.info(`${TAG}printSync called ...`);
-      SysTestKit.delegator.printSync(message);
-    } else {
-      await SysTestKit.delegator.print(message);
-    }
-  }
 }
 
 function executePromise(cmd: string, timeout: number) {
