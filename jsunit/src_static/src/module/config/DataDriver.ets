@@ -15,141 +15,182 @@
 import { Core } from '../../core';
 import { SuiteService } from '../service/SuiteService';
 import { SpecService } from '../service/SpecService';
+import { StaticSpec } from '../service/StaticSpec';
 import { DataDriverData, DataDriverAttr, DataDriverSuite } from '../../interface';
 
-const SUITES_KEY = 'suites';
-const SPECS_KEY = 'items';
-const DESCRIBE_KEY = 'describe';
-const IT_KEY = 'it';
-const PARAMS_KEY = 'params';
-const STRESS_KEY = 'stress';
-
-class ObjectUtils {
-    static get(object, name, defaultValue) {
-        let result = defaultValue;
-        for (const key in object) {
-            if (key === name) {
-                return object[key];
-            }
-        }
-        return result;
-    }
-
-    static has(object, key) {
-        return Object.prototype.hasOwnProperty.call(object, key);
-    }
-}
-
 class DataDriver {
-    public id: string
-    public coreContext: Core | null
-    public suiteService: SuiteService
-    public specService: SpecService
-    public data: DataDriverData
-    constructor(attr: DataDriverAttr) {
-        this.id = 'dataDriver';
-        this.data = attr.data;
-        this.coreContext = null
-    }
+  public id: string;
+  public coreContext: Core | null;
+  public suiteService: SuiteService;
+  public specService: SpecService;
+  public data: DataDriverData;
+  constructor(attr: DataDriverAttr) {
+    this.id = 'dataDriver';
+    this.data = attr.data;
+    this.coreContext = null;
+  }
 
-    init(coreContext: Core) {
-        this.coreContext = coreContext;
-        this.suiteService = this.coreContext.getDefaultService('suite');
-        this.specService = this.coreContext.getDefaultService('spec');
+  init(coreContext: Core) {
+    this.coreContext = coreContext;
+    const suiteService = coreContext.getDefaultService('suite');
+    if (suiteService) {
+      this.suiteService = suiteService as SuiteService;
     }
-
-    getSpecParamsValue(specs) {
-        let specParams = [];
-        let specDesc = this.specService.getCurrentRunningSpec().description;
-        if (specs === null || specs === undefined) {
-            return specParams;
-        }
-        for (const specItem of specs) {
-            if (ObjectUtils.has(specItem, IT_KEY) && ObjectUtils.get(specItem, IT_KEY) === specDesc) {
-                return ObjectUtils.get(specItem, PARAMS_KEY, specParams);
-            }
-        }
-        return specParams;
+    const specService = coreContext.getDefaultService('spec');
+    if (specService) {
+      this.specService = specService as SpecService;
     }
+  }
 
-    getSpecParams() {
-        let specParams = [];
-        let suiteDesc = this.suiteService.getCurrentRunningSuite().description;
-        let suites = []
-
-        if(this.data.suites) {
-            suites = this.data.suites
-        }
-        for (const suiteItem of suites) {
-            const suite = suiteItem as DataDriverSuite
-            let describeValue: string[] = []
-            if(suite.describe) {
-                describeValue = suite.describe
-            }
-            if(Array.isArray(describeValue) && describeValue.includes(suiteDesc)) {
-                let specs = []
-                if(suite.items) {
-                    specs = suite.items
-                }
-                return this.getSpecParamsValue(specs);
-            }
-        }
-        return specParams;
+  getSpecParamsValue(specs: DataDriverSuite[]) {
+    let specParams: object[] = [];
+    let specDesc = '';
+    const currentRunningSpec = this.specService.getCurrentRunningSpec();
+    if (currentRunningSpec) {
+      specDesc = (currentRunningSpec as StaticSpec).description;
     }
-
-    getSuiteParams() {
-        let suiteParams = {};
-        let suiteDesc = this.suiteService.getCurrentRunningSuite().description;
-        let suites = ObjectUtils.get(this.data, SUITES_KEY, []);
-        for (const suiteItem of suites) {
-            let describeValue = ObjectUtils.get(suiteItem, DESCRIBE_KEY, []);
-            if (ObjectUtils.has(suiteItem, DESCRIBE_KEY) && (typeof describeValue === 'object') && describeValue.constructor === Array && describeValue.includes(suiteDesc)) {
-                suiteParams = Object.assign({}, suiteParams, ObjectUtils.get(suiteItem, PARAMS_KEY, suiteParams));
-            }
-        }
-        return suiteParams;
+    if (specs === null || specs === undefined) {
+      return specParams;
     }
-
-    getStressNum(specs, specDesc) {
-        let stress = 1;
-        if (specs === null || specs === undefined) {
-            return stress;
+    for (const specItem of specs) {
+      if (specItem.it && specItem.it === specDesc) {
+        if (specItem.params && Array.isArray(specItem.params)) {
+          return specItem.params as object[];
+        } else {
+          return specParams;
         }
-        for (const specItem of specs) {
-            if (ObjectUtils.has(specItem, IT_KEY) && ObjectUtils.get(specItem, IT_KEY) === specDesc) {
-                let tempStress = ObjectUtils.get(specItem, STRESS_KEY, stress);
-                return (Number.isInteger(tempStress) && tempStress >= 1) ? tempStress : stress;
-            }
-        }
-        return stress;
+      }
     }
+    return specParams;
+  }
 
-    getSpecStress(specDesc) {
-        let stress = 1;
-        let suiteDesc = this.suiteService.getCurrentRunningSuite().description;
-        let suites = ObjectUtils.get(this.data, SUITES_KEY, []);
-        for (const suiteItem of suites) {
-            let describeValue = ObjectUtils.get(suiteItem, DESCRIBE_KEY, '');
-            if (ObjectUtils.has(suiteItem, DESCRIBE_KEY) && (typeof describeValue === 'object') && describeValue.constructor === Array && describeValue.includes(suiteDesc)) {
-                let specs = ObjectUtils.get(suiteItem, SPECS_KEY, []);
-                return this.getStressNum(specs, specDesc);
-            }
-        }
-        return stress;
+  getSpecParams() {
+    let specParams: object[] = [];
+    let suiteDesc = this.suiteService.getCurrentRunningSuite().description;
+    let suites: DataDriverSuite[] = [];
+    const tempSuite = this.data.suites;
+    if (tempSuite) {
+      suites = tempSuite as DataDriverSuite[];
     }
+    for (const suiteItem of suites) {
+      const suite = suiteItem as DataDriverSuite;
+      let describeValue: string[] = [];
+      const tempdescribe = suite.describe;
+      if (tempdescribe) {
+        describeValue = tempdescribe as string[];
+      }
+      if (suiteDesc && Array.isArray(describeValue) && (describeValue as Array<string>).includes(suiteDesc)) {
+        let specs: DataDriverSuite[] = [];
+        const tempspecs = suite.items;
+        if (tempspecs) {
+          specs = tempspecs as DataDriverSuite[];
+        }
+        return this.getSpecParamsValue(specs);
+      }
+    }
+    return specParams;
+  }
 
-    getSuiteStress(suiteDesc) {
-        let stress = 1;
-        let suites = ObjectUtils.get(this.data, SUITES_KEY, []);
-        for (const suiteItem of suites) {
-            let describeValue = ObjectUtils.get(suiteItem, DESCRIBE_KEY, []);
-            if (ObjectUtils.has(suiteItem, DESCRIBE_KEY) && (typeof describeValue === 'object') && describeValue.constructor === Array && describeValue.includes(suiteDesc)) {
-                let tempStress = ObjectUtils.get(suiteItem, STRESS_KEY, stress);
-                return (Number.isInteger(tempStress) && tempStress >= 1) ? tempStress : stress;
-            }
-        }
-        return stress;
+  getSuiteParams() {
+    let suiteParams = new Map<string, object | undefined | null>();
+    let suiteDesc = this.suiteService.getCurrentRunningSuite().description;
+    let suites: DataDriverSuite[] = [];
+    const tempSuite = this.data.suites;
+    if (tempSuite) {
+      suites = tempSuite as DataDriverSuite[];
     }
+    for (const suiteItem of suites) {
+      let describeValue: string[] = [];
+      const tempdescribe = suiteItem.describe;
+      if (tempdescribe) {
+        describeValue = tempdescribe as string[];
+      }
+      if (suiteDesc && Array.isArray(describeValue) && (describeValue as Array<string>).includes(suiteDesc)) {
+        const params = suiteItem.params as object;
+        for (const entries of Object.entries(params)) {
+          if (!entries) {
+            continue;
+          }
+          const key = entries[0];
+          let value = entries[1];
+          if (!key) {
+            continue;
+          }
+          if (value === undefined) {
+            suiteParams.set(key, value as undefined);
+          } else if (value === null) {
+            suiteParams.set(key, value as null);
+          } else {
+            suiteParams.set(key, value as object);
+          }
+        }
+      }
+    }
+    return suiteParams;
+  }
+
+  getStressNum(specs: DataDriverSuite[], specDesc: string): int {
+    let stress = 1;
+    if (specs === null || specs === undefined) {
+      return stress;
+    }
+    for (const specItem of specs) {
+      if (specItem.it && specItem.it === specDesc) {
+        let tempStress = Number(specItem.stress);
+        return Number.isInteger(tempStress) && tempStress >= 1 ? tempStress : stress;
+      }
+    }
+    return stress;
+  }
+
+  getSpecStress(specDesc: string): int {
+    let stress = 1;
+    let suiteDesc = this.suiteService.getCurrentRunningSuite().description;
+    let suites: DataDriverSuite[] = [];
+    const tempSuite = this.data.suites;
+    if (tempSuite) {
+      suites = tempSuite as DataDriverSuite[];
+    }
+    for (const suiteItem of suites) {
+      const suite = suiteItem as DataDriverSuite;
+      let describeValue: string[] = [];
+      const tempdescribe = suite.describe;
+      if (tempdescribe) {
+        describeValue = tempdescribe as string[];
+      }
+      if (suiteDesc && Array.isArray(describeValue) && (describeValue as Array<string>).includes(suiteDesc)) {
+        let specs: DataDriverSuite[] = [];
+        const tempspecs = suite.items;
+        if (tempspecs) {
+          specs = tempspecs as DataDriverSuite[];
+        }
+        return this.getStressNum(specs, specDesc);
+      }
+    }
+    return stress;
+  }
+
+  getSuiteStress(suiteDesc: string): int {
+    let stress = 1;
+    let suites: DataDriverSuite[] = [];
+    const tempSuite = this.data.suites;
+    if (tempSuite) {
+      suites = tempSuite as DataDriverSuite[];
+    }
+    for (const suiteItem of suites) {
+      const suite = suiteItem as DataDriverSuite;
+      let describeValue: string[] = [];
+      const tempdescribe = suite.describe;
+      if (tempdescribe) {
+        describeValue = tempdescribe as string[];
+      }
+      if (suiteDesc && Array.isArray(describeValue) && (describeValue as Array<string>).includes(suiteDesc)) {
+        let tempStress = Number(suite.stress);
+        return Number.isInteger(tempStress) && tempStress >= 1 ? tempStress : stress;
+      }
+    }
+    return stress;
+  }
 }
 
 export default DataDriver;

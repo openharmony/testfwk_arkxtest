@@ -16,17 +16,26 @@ import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry
 
 import { Core } from './src/core';
 import { TAG, PrintTag } from './src/Constant';
-
+import DataDriver from './src/module/config/DataDriver';
 import { ExpectExtend } from './src/module/assert/ExpectExtend';
 import { OhReport } from './src/module/report/OhReport';
 import { SysTestKit } from './src/module/kit/SysTestKit';
 
-import { TestcaseSummaryIF, ItItemIF } from './src/interface';
+import { TestcaseSummaryIF, ItItemIF, DataDriverData } from './src/interface';
 import { AnyType } from './src/module/types/common';
 import { ConfigService } from './src/module/config/configService';
 
 export class Hypium {
   public static context = new Map<string, AnyType>();
+  static setData(data: DataDriverData) {
+    const core = Core.getInstance();
+    const dataDriver = new DataDriver({ data });
+    if (core) {
+      core.addService('dataDriver', dataDriver);
+    } else {
+      throw Error('core is not created');
+    }
+  }
   static setTimeConfig(systemTime: number) {
     SysTestKit.systemTime = systemTime;
   }
@@ -167,10 +176,11 @@ export {
   hypiumXdescribe as xdescribe,
   hypiumXit as xit,
   hypiumXdescribeReason as xdescribeReason,
-  hypiumXitReason as xitReason
+  hypiumXitReason as xitReason,
 } from './src/hypiumApi';
 export { DEFAULT, TestType, Size, Level, TAG, PrintTag } from './src/Constant';
 export { Core } from './src/core';
 export { ExpectExtend } from './src/module/assert/ExpectExtend';
 export { OhReport } from './src/module/report/OhReport';
 export { SysTestKit } from './src/module/kit/SysTestKit';
+export { default as DataDriver } from './src/module/config/DataDriver';

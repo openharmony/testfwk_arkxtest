@@ -9,6 +9,7 @@ import { SysTestKit } from '../kit/SysTestKit';
 import { AssertException } from './AssertException';
 import { ConfigService } from '../config/configService';
 import { SpecService } from './SpecService';
+import DataDriver from '../config/DataDriver';
 
 class SuiteService {
   public id: string;
@@ -78,6 +79,15 @@ class SuiteService {
         }
         this.suiteSkipReason = '';
         this.isSkipSuite = false;
+
+        const dataDriverMap = core.getServices('dataDriver');
+        if (dataDriverMap && configService.dryRun !== 'true') {
+          const dataDriver = dataDriverMap.get('dataDriver') as DataDriver;
+          const suiteStress = dataDriver.getSuiteStress(desc);
+          for (let i = 1; i < suiteStress; i++) {
+            this.currentRunningSuite.childSuites.push(suite);
+          }
+        }
         this.currentRunningSuite.childSuites.push(suite);
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);

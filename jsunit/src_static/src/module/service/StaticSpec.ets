@@ -1,7 +1,8 @@
 import { StaticSpecIF } from '../../interface';
 import { Core } from '../../core';
 import { SpecService } from './SpecService';
-
+import DataDriver from '../config/DataDriver';
+import { getFunctionArgumentsCount } from '../../util';
 class StaticSpec {
   public description: string;
   public fi: int;
@@ -59,10 +60,23 @@ class StaticSpec {
       specService.setCurrentRunningSpec(this);
       this.isExecuted = true;
       try {
-        let dataDriver = coreContext.getServices('dataDriver');
-        if (typeof dataDriver === 'undefined') {
-          this.fn();
+        let dataDriverMap = coreContext.getServices('dataDriver');
+        if (dataDriverMap) {
+          const dataDriver = dataDriverMap.get('dataDriver') as DataDriver;
+          const suiteParams = dataDriver.getSuiteParams();
+          const specParams = dataDriver.getSpecParams();
+          const funcStr = (this.fn as object).toString();
+          const argsCount = getFunctionArgumentsCount(funcStr);
+          if(argsCount === 0) {
+            this.fn()
+          } else if(specParams.length === 0) {
+            // this.fn(suiteParams);
+            // todo
+          } else {
+            
+          }
         } else {
+          this.fn();
         }
         this.setResult();
       } catch (e: Error) {
