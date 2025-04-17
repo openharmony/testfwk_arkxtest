@@ -118,9 +118,8 @@ class SysTestKit {
     let searchResult = false;
     let cmd = "hilog -x | grep -i '" + keyword + "' | wc -l";
     try {
-      await executePromise(cmd, time).then((data) => {
-        searchResult = data;
-      });
+      const data = await executePromise(cmd, time)
+      searchResult = data;
     } catch (err: Error) {
       throw err;
     }
