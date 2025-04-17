@@ -261,6 +261,17 @@ namespace OHOS::uitest {
         sizeof(WINDOW_FILTER_PROPERTIES) / sizeof(FrontEndJsonPropDef),
     };
 
+    /** InputTextMode jsonObject definition.*/
+    constexpr FrontEndJsonPropDef INPUTTEXT_MODE_PROPERTIES[] = {
+        {"paste", "bool", false},
+        {"addition", "bool", false},
+    };
+    constexpr FrontEndJsonDef INPUTTEXT_MODE_DEF = {
+        "InputTextMode",
+        INPUTTEXT_MODE_PROPERTIES,
+        sizeof(INPUTTEXT_MODE_PROPERTIES) / sizeof(FrontEndJsonPropDef),
+    };
+
     /** UIElementInfo jsonObject definition.*/
     constexpr FrontEndJsonPropDef UI_ELEMENT_INFO_PROPERTIES[] = {
         {"bundleName", "string", false},
@@ -421,7 +432,7 @@ namespace OHOS::uitest {
         {"Driver.mouseDrag", "(Point,Point,int?):void", false, false},
         {"Driver.mouseScroll", "(Point,bool,int,int?,int?,int?):void", false, false},
         {"Driver.createUIEventObserver", "():UIEventObserver", false, false},
-        {"Driver.inputText", "(Point,string):void", false, false},
+        {"Driver.inputText", "(Point,string,InputTextMode?):void", false, false},
         {"Driver.touchPadMultiFingerSwipe", "(int,int,TouchPadSwipeOptions?):void", false, false},
         {"Driver.penClick", "(Point):void", false, false},
         {"Driver.penLongClick", "(Point,float?):void", false, false},
@@ -458,7 +469,7 @@ namespace OHOS::uitest {
         {"Component.doubleClick", "():void", false, false},
         {"Component.scrollToTop", "(int?):void", false, false},
         {"Component.scrollToBottom", "(int?):void", false, false},
-        {"Component.inputText", "(string):void", false, false},
+        {"Component.inputText", "(string,InputTextMode?):void", false, false},
         {"Component.clearText", "():void", false, false},
         {"Component.scrollSearch", "(On, bool?, int?):Component", false, false},
         {"Component.dragTo", "(Component):void", false, false},
@@ -525,7 +536,7 @@ namespace OHOS::uitest {
     const auto FRONTEND_ENUMERATOR_DEFS = {&MATCH_PATTERN_DEF, &WINDOW_MODE_DEF, &RESIZE_DIRECTION_DEF,
                                            &DISPLAY_ROTATION_DEF, &MOUSE_BUTTON_DEF, &UI_DIRECTION_DEF};
     const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF, &UI_ELEMENT_INFO_DEF,
-                                     &TOUCH_PAD_SWIPE_OPTIONS_DEF};
+                                     &TOUCH_PAD_SWIPE_OPTIONS_DEF, &INPUTTEXT_MODE_DEF};
     /** The allowed in/out data type scope of frontend apis.*/
     const std::initializer_list<std::string_view> DATA_TYPE_SCOPE = {
         "int",
@@ -545,6 +556,7 @@ namespace OHOS::uitest {
         POINTER_MATRIX_DEF.name_,
         UI_EVENT_OBSERVER_DEF.name_,
         TOUCH_PAD_SWIPE_OPTIONS_DEF.name_,
+        INPUTTEXT_MODE_DEF.name_,
     };
 } // namespace OHOS::uitest
 
