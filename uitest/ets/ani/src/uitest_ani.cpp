@@ -208,10 +208,25 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
             HiLog::Error(LABEL, "%{public}s Object New Array Failed", __func__);
             return reinterpret_cast<ani_ref>(arrayObj);
         }
+        ani_class cls = findCls(env, "L@ohos/UiTest/Component;");
+        ani_method com_ctor;
+        ani_object com_obj;
+        if (cls != nullptr)
+        {
+            com_ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
+        }
+        if (cls == nullptr || com_ctor == nullptr)
+        {
+            return nullptr;
+        }
         for (ani_size index = 0; index < reply_.resultValue_.size(); index++)
         {
             ani_ref item = UnmarshalObject(env, reply_.resultValue_.at(index));
-            if (ANI_OK != env->Object_CallMethodByName_Void(arrayObj, "$_set", "ILstd/core/Object;:V", index, item))
+            if (ANI_OK != env->Object_New(cls, com_ctor, &com_obj, reinterpret_cast<ani_object>(item)))
+            {
+                HiLog::Error(LABEL, "%{public}s component Object new failed !!!", __func__);
+            }
+            if (ANI_OK != env->Object_CallMethodByName_Void(arrayObj, "$_set", "ILstd/core/Object;:V", index, com_obj))
             {
                 HiLog::Error(LABEL, "%{public}s Object_CallMethodByName_Void set Failed", __func__);
                 break;
@@ -729,51 +744,7 @@ static ani_object findComponentsSync(ani_env *env, ani_object obj, ani_object on
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on_obj, "nativeOn")));
     Transact(callInfo_, reply_);
     ani_object nativeComponents = reinterpret_cast<ani_object>(UnmarshalReply(env, callInfo_, reply_));
-    ani_object com_obj;
-    ani_object com_objs;
-    ani_class arrayCls = findCls(env, "Lescompat/Array");
-    ani_method ctor = nullptr;
-    if (arrayCls != nullptr)
-    {
-        ctor = findCtorMethod(env, arrayCls, "I:V");
-    }
-    ani_size com_size = reply_.resultValue_.size();
-    HiLog::Error(LABEL, "%{public}d ::::: reply_.resultValue_.size() !!!", com_size);
-    if (ANI_OK != env->Object_New(arrayCls, ctor, &com_objs, com_size))
-    {
-        std::cout << "Object_New array failed" << std::endl;
-        return com_objs;
-    }
-    static const char *className = "L@ohos/UiTest/Component;";
-    ani_class cls = findCls(env, className);
-    ani_method com_ctor;
-    if (cls != nullptr)
-    {
-        com_ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
-    }
-    if (cls == nullptr || com_ctor == nullptr)
-    {
-        return nullptr;
-    }
-    for (ani_size i = 0; i < com_size; i++)
-    {
-        ani_ref item;
-        if (ANI_OK != env->Object_CallMethodByName_Ref(nativeComponents, "$_get", nullptr, &item, i))
-        {
-            HiLog::Error(LABEL, "%{public}s Object_CallMethodByName_Ref failed !!!", __func__);
-            break;
-        }
-        if (ANI_OK != env->Object_New(cls, com_ctor, &com_obj, reinterpret_cast<ani_object>(item)))
-        {
-            HiLog::Error(LABEL, "%{public}s component Object new failed !!!", __func__);
-        }
-        if (ANI_OK != env->Object_CallMethodByName_Void(com_objs, "$_set", "ILstd/core/Object;:V", i, com_obj))
-        {
-            HiLog::Error(LABEL, "Object callmethod by name failed :$_set");
-            break;
-        }
-    }
-    return com_objs;
+    return nativeComponents;
 }
 
 static ani_boolean assertComponentExistSync(ani_env *env, ani_object obj, ani_object on_obj)
@@ -1171,13 +1142,16 @@ static ani_boolean screenCaptureSync(ani_env *env, ani_object obj, ani_string pa
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.screenCapture";
     string savePath = aniStringToStdString(env, path);
+    HiLog::Info(LABEL, "savePath: %{public}s", savePath.c_str());
     auto fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
     if (fd == -1)
     {
         return false;
     }
-    callInfo_.paramList_.push_back(fd);
-    callInfo_.paramList_.push_back(getRect(env, rect));
+    HiLog::Info(LABEL, "savePath: %{public}d", fd);
+    callInfo_.paramList_[INDEX_ZERO] = fd;
+    callInfo_.paramList_[INDEX_ONE] = getRect(env, rect);
+    callInfo_.fdParamIndex_ = INDEX_ZERO;
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
@@ -1191,12 +1165,14 @@ static ani_boolean screenCapSync(ani_env *env, ani_object obj, ani_string path)
     callInfo_.apiId_ = "Driver.screenCap";
     string savePath = aniStringToStdString(env, path);
     HiLog::Info(LABEL, "savePath: %{public}s", savePath.c_str());
-    auto fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
+    int32_t fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
     if (fd == -1)
     {
         return false;
     }
-    callInfo_.paramList_.push_back(fd);
+    HiLog::Info(LABEL, "savePath: %{public}d", fd);
+    callInfo_.paramList_[INDEX_ZERO] = fd;
+    callInfo_.fdParamIndex_ = INDEX_ZERO;
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
@@ -1340,7 +1316,7 @@ static ani_boolean mouseClickSync(ani_env *env, ani_object obj, ani_object p, an
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
-    callInfo_.apiId_ = "Driver.mouseClickSync";
+    callInfo_.apiId_ = "Driver.mouseClick";
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     ani_int enumValue;
@@ -1651,12 +1627,12 @@ static ani_ref getBundleNameSync(ani_env *env, ani_object obj)
     return ret;
 }
 
-static ani_ref getTitileSync(ani_env *env, ani_object obj)
+static ani_ref getTitleSync(ani_env *env, ani_object obj)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeWindow"));
-    callInfo_.apiId_ = "UiWindow.getTitile";
+    callInfo_.apiId_ = "UiWindow.getTitle";
     Transact(callInfo_, reply_);
     ani_ref ret = UnmarshalReply(env, callInfo_, reply_);
     return ret;
@@ -1696,7 +1672,7 @@ static ani_boolean BindWindow(ani_env *env)
         ani_native_function{"moveToSync", nullptr, reinterpret_cast<void *>(moveToSync)},
         ani_native_function{"getWindowModeSync", nullptr, reinterpret_cast<void *>(getWindowModeSync)},
         ani_native_function{"getBundleNameSync", nullptr, reinterpret_cast<void *>(getBundleNameSync)},
-        ani_native_function{"getTitileSync", nullptr, reinterpret_cast<void *>(getTitileSync)},
+        ani_native_function{"getTitleSync", nullptr, reinterpret_cast<void *>(getTitleSync)},
         ani_native_function{"winGetBoundsSync", nullptr, reinterpret_cast<void *>(getBoundsSync)},
     };
 
@@ -1845,11 +1821,15 @@ static ani_object scrollSearch(ani_env *env, ani_object obj, ani_object on, ani_
     ApiReplyInfo reply_;
     callInfo_.apiId_ = "Component.scrollSearch";
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
-    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on, "nativeComponent")));
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on, "nativeOn")));
     callInfo_.paramList_.push_back(static_cast<bool>(vertical));
     callInfo_.paramList_.push_back(int(offset));
     Transact(callInfo_, reply_);
     ani_ref nativeComponent = UnmarshalReply(env, callInfo_, reply_);
+    if (nativeComponent == nullptr)
+    {
+        return nullptr;
+    }
     ani_object com_obj;
     static const char *className = "L@ohos/UiTest/Component;";
     ani_class cls = findCls(env, className);
