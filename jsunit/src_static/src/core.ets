@@ -15,6 +15,7 @@
 
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 import { ConfigService } from './module/config/configService';
+import DataDriver from './module/config/DataDriver';
 import { SuiteService } from './module/service/SuiteService';
 import { SpecService } from './module/service/SpecService';
 import { ExpectService, AssertMatcher } from './module/service/ExpectService';
@@ -27,7 +28,7 @@ import { AnyType, ItfnType } from './module/types/common';
 /**
  * core service for execute testcase.
  */
-type ServiceType = SuiteService | SpecService | ConfigService | ExpectService | ReportService | ExpectExtend | OhReport;
+type ServiceType = SuiteService | SpecService | ConfigService | ExpectService | ReportService | ExpectExtend | OhReport | DataDriver;
 type EventType = SuiteEvent | SpecEvent | TaskEvent;
 class Core {
   public static instance: Core | null = null;

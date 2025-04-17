@@ -152,12 +152,8 @@ export function processFunc(
     config.setSupportAsync(true);
     const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
     let isStressTest = false;
-    if (coreContext.getServices('dataDriver')) {
-      if (config.getStress() > 1) {
-        isStressTest = true;
-      } else {
-        isStressTest = false;
-      }
+    if (config.getStress() > 1 || coreContext.getServices('dataDriver')) {
+      isStressTest = true;
     } else {
       isStressTest = false;
     }

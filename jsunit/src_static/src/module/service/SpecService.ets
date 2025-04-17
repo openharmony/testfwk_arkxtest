@@ -15,6 +15,7 @@ import {
 } from '../../util';
 import { SuiteService } from './SuiteService';
 import { ConfigService } from '../config/configService';
+import DataDriver from '../config/DataDriver';
 import { ItfnType } from '../types/common';
 class SpecService {
   public id: string;
@@ -126,6 +127,15 @@ class SpecService {
             cService.filterXdescribe.push(curSuite.description);
           }
           if (cService.dryRun !== 'true') {
+            const dataDriverMap = coreContext.getServices('dataDriver');
+            if (dataDriverMap) {
+              const dataDriver = dataDriverMap.get('dataDriver') as DataDriver;
+              const specStress = dataDriver.getSpecStress(desc);
+              for (let i = 1; i < specStress; i++) {
+                  this.totalTest++;
+                  curSuite.pushSpec(spec);
+              }
+            }
             let stress = cService.getStress(); // 命令配置压力测试
             for (let i = 1; i < stress; i++) {
               this.totalTest++;
