@@ -454,25 +454,10 @@ export class AssertMatcher {
         }
       };
     };
-    const assertDeepEquals = matchers.assertDeepEquals;
-    if (assertDeepEquals) {
-      this.assertDeepEquals = equalFn('assertDeepEquals', assertDeepEquals);
-    }
-
-    const assertContain = matchers.assertContain;
-    if (assertContain) {
-      this.assertContain = equalFn('assertContain', assertContain);
-    }
-
-    const assertEqual = matchers.assertEqual;
-    if (assertEqual) {
-      this.assertEqual = equalFn('assertEqual', assertEqual);
-    }
-
+   
     const assertInstanceOf = matchers.assertInstanceOf;
-    const instanceofFn = assertInstanceOf as (actualValue: AnyType, expected: AnyType[]) => AssertResult;
     if (assertInstanceOf) {
-      this.assertInstanceOf = equalFn('assertInstanceOf', instanceofFn);
+      this.assertInstanceOf = equalFn('assertInstanceOf', assertInstanceOf);
     }
   }
 
