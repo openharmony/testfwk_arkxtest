@@ -306,9 +306,9 @@ do { \
         out->callThroughMessage = CallThroughMessage;
         out->setCallbackMessageHandler = SetCallbackMessageHandler;
         out->atomicTouch = AtomicTouch;
-        out->atomicMouseAction = AtomicMouseAction;
         out->startCapture = StartCapture;
         out->stopCapture = StopCapture;
+        out->atomicMouseAction = AtomicMouseAction;
         return RETCODE_SUCCESS;
     }
 
