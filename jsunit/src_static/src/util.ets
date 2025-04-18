@@ -4,7 +4,7 @@ import { AnyType } from './module/types/common';
 
 export function getFuncWithArgsZero(func: (() => void) | (() => Promise<void>), timeout: int, isStressTest: boolean) {
   return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (value: object) => void) => {
-    let timer = 0;
+    let timer = 0.0;
     if (!isStressTest) {
       timer = setTimeout(() => {
         reject(new Error('execute timeout ' + timeout + 'ms'));
@@ -26,7 +26,7 @@ export function getAsyncFuncWithArgsOne(
   isStressTest: boolean
 ) {
   return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
-    let timer = 0;
+    let timer = 0.0;
     if (!isStressTest) {
       timer = setTimeout(() => {
         reject(new Error('execute timeout ' + timeout + 'ms'));
@@ -53,7 +53,7 @@ export function getAsyncFuncWithArgsOne(
 
 export function getFuncWithArgsOne(func: (params: () => void) => void, timeout: int, isStressTest: boolean) {
   return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
-    let timer = 0;
+    let timer = 0.0;
     if (!isStressTest) {
       timer = setTimeout(() => {
         reject(new Error('execute timeout ' + timeout + 'ms'));
@@ -85,7 +85,7 @@ export function getAsyncFuncWithArgsTwo(
   isStressTest: boolean
 ) {
   return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
-    let timer = 0;
+    let timer = 0.0;
     if (!isStressTest) {
       timer = setTimeout(() => {
         reject(new Error('execute timeout ' + timeout + 'ms'));
@@ -117,7 +117,7 @@ export function getFuncWithArgsTwo(
   isStressTest: boolean
 ) {
   return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
-    let timer = 0;
+    let timer = 0.0;
     if (!isStressTest) {
       timer = setTimeout(() => {
         reject(new Error('execute timeout ' + timeout + 'ms'));
