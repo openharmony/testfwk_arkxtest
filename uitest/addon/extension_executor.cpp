@@ -171,6 +171,22 @@ do { \
         return RETCODE_SUCCESS;
     }
 
+    static RetCode AtomicMouseAction(int32_t stage, int32_t px, int32_t py, int32_t btn)
+    {
+        static auto driver = UiDriver();
+        EXTENSION_API_CHECK(stage >= ActionStage::DOWN && stage <= ActionStage::AXIS_STOP,
+                            "Illegal stage", ERR_BAD_ARG);
+        EXTENSION_API_CHECK(btn >= MouseButton::BUTTON_NONE && btn <= MouseButton::BUTTON_MIDDLE,
+                            "Illegal btn", ERR_BAD_ARG);
+        auto touch = GenericAtomicMouseAction(static_cast<ActionStage>(stage), Point(px, py),
+                                              static_cast<MouseButton>(btn));
+        auto err = ApiCallErr(NO_ERROR);
+        UiOpArgs uiOpArgs;
+        driver.PerformMouseAction(touch, uiOpArgs, err);
+        EXTENSION_API_CHECK(err.code_ == NO_ERROR, err.message_, err.code_);
+        return RETCODE_SUCCESS;
+    }
+
     static RetCode AtomicTouch(int32_t stage, int32_t px, int32_t py)
     {
         static auto driver = UiDriver();
@@ -292,6 +308,7 @@ do { \
         out->atomicTouch = AtomicTouch;
         out->startCapture = StartCapture;
         out->stopCapture = StopCapture;
+        out->atomicMouseAction = AtomicMouseAction;
         return RETCODE_SUCCESS;
     }
 

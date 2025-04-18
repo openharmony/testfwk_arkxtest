@@ -26,7 +26,6 @@
 #include "frontend_api_defines.h"
 #include "ipc_transactor.h"
 #include "ui_event_observer_napi.h"
-#include "test_server_client.h"
 
 namespace OHOS::uitest {
     using namespace nlohmann;
@@ -336,24 +335,11 @@ namespace OHOS::uitest {
         return napi_ok;
     }
 
-    static void SetPasteBoardData(string_view text)
-    {
-        OHOS::testserver::TestServerClient::GetInstance().SetPasteData(string(text));
-    }
-
     static void PreprocessTransaction(napi_env env, TransactionContext &ctx, napi_value &error)
     {
         auto &paramList = ctx.callInfo_.paramList_;
         const auto &id = ctx.callInfo_.apiId_;
-        if (id  == "Component.inputText" && paramList.size() > 0) {
-            if (paramList.at(INDEX_ZERO).type() == nlohmann::detail::value_t::string) {
-                SetPasteBoardData(paramList.at(INDEX_ZERO).get<string>());
-            }
-        } else if (id  == "Driver.inputText" && paramList.size() > 1) {
-            if (paramList.at(INDEX_ONE).type() == nlohmann::detail::value_t::string) {
-                SetPasteBoardData(paramList.at(INDEX_ONE).get<string>());
-            }
-        } else if (id  == "Driver.screenCap" || id  == "UiDriver.screenCap" || id  == "Driver.screenCapture") {
+        if (id  == "Driver.screenCap" || id  == "UiDriver.screenCap" || id  == "Driver.screenCapture") {
             if (paramList.size() < 1 || paramList.at(0).type() != nlohmann::detail::value_t::string) {
                 LOG_E("Missing file path argument");
                 error = CreateJsException(env, ERR_INVALID_INPUT, "Missing file path argument");
