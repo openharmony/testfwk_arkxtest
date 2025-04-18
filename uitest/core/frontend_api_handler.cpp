@@ -881,6 +881,11 @@ namespace OHOS::uitest {
             driver.TriggerKey(keyAction, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.triggerCombineKeys", triggerCombineKeys);
+    }
+
+    static void RegisterUiDriverMiscMethods3()
+    {
+        auto &server = FrontendApiServer::Get();
         auto inputText = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
@@ -888,11 +893,17 @@ namespace OHOS::uitest {
             auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
             auto point = Point(pointJson["x"], pointJson["y"], displayId);
             auto text = ReadCallArg<string>(in, INDEX_ONE);
+            auto inputModeJson = ReadCallArg<json>(in, INDEX_TWO, json());
+            ReadInputModeFromJson(inputModeJson, uiOpArgs.inputByPasteBoard_, uiOpArgs.inputAdditional_);
             auto touch = GenericClick(TouchOp::CLICK, point);
             driver.PerformTouch(touch, uiOpArgs, out.exception_);
             static constexpr uint32_t focusTimeMs = 500;
             driver.DelayMs(focusTimeMs);
-            driver.InputText(text, out.exception_);
+            if (uiOpArgs.inputAdditional_) {
+                driver.TriggerKey(MoveToEnd(), uiOpArgs, out.exception_);
+                driver.DelayMs(focusTimeMs);
+            }
+            driver.InputText(text, out.exception_, uiOpArgs);
         };
         server.AddHandler("Driver.inputText", inputText);
     }
@@ -1452,7 +1463,10 @@ static void RegisterExtensionHandler()
                 auto &widgetTo = GetBackendObject<Widget>(ReadCallArg<string>(in, INDEX_ZERO));
                 wOp.DragIntoWidget(widgetTo, out.exception_);
             } else if (in.apiId_ == "Component.inputText") {
-                wOp.InputText(ReadCallArg<string>(in, INDEX_ZERO), out.exception_);
+                auto inputModeJson = ReadCallArg<json>(in, INDEX_ONE, json());
+                ReadInputModeFromJson(inputModeJson, uiOpArgs.inputByPasteBoard_, uiOpArgs.inputAdditional_);
+                auto wOpToInput = WidgetOperator(driver, widget, uiOpArgs);
+                wOpToInput.InputText(ReadCallArg<string>(in, INDEX_ZERO), out.exception_);
             } else if (in.apiId_ == "Component.clearText") {
                 wOp.InputText("", out.exception_);
             }
@@ -1674,6 +1688,7 @@ static void RegisterExtensionHandler()
         RegisterUiDriverWindowFinder();
         RegisterUiDriverMiscMethods1();
         RegisterUiDriverMiscMethods2();
+        RegisterUiDriverMiscMethods3();
         RegisterUiDriverTouchOperators();
         RegisterUiComponentAttrGetters();
         RegisterUiComponentOperators1();

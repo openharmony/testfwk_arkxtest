@@ -92,7 +92,7 @@ namespace OHOS::uitest {
 
         static void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener);
 
-        void InputText(string_view text, ApiCallErr &error);
+        void InputText(string_view text, ApiCallErr &error, const UiOpArgs &opt);
 
         void PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error);
 

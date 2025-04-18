@@ -40,6 +40,7 @@
 #include "element_node_iterator_impl.h"
 #include "system_ui_controller.h"
 #include "test_server_client.h"
+#include "test_server_error_code.h"
 
 using namespace std;
 using namespace chrono;
@@ -539,7 +540,7 @@ namespace OHOS::uitest {
         pinterItem1.SetPressed(fingerStatus[currentFinger].first);
         SetItemByType(pinterItem1, events);
         event.UpdatePointerItem(currentFinger, pinterItem1);
-        LOG_D("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
+        LOG_I("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
             currentFinger, fingerStatus[currentFinger].first, fingerStatus[currentFinger].second.px_,
             fingerStatus[currentFinger].second.py_);
         // update pinterItem of other fingers which in pressed state.
@@ -558,7 +559,7 @@ namespace OHOS::uitest {
                 pinterItem.SetPressed(true);
                 SetItemByType(pinterItem, events);
                 event.UpdatePointerItem(index, pinterItem);
-                LOG_D("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
+                LOG_I("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
                     index, fingerStatus[index].first, fingerStatus[index].second.px_,
                     fingerStatus[index].second.py_);
             }
@@ -623,7 +624,7 @@ namespace OHOS::uitest {
         item.SetRawDisplayY(event.point_.py_);
         item.SetPressed(false);
         item.SetDownTime(0);
-        LOG_D("Inject mouseEvent, pressed:%{public}d, location:%{public}d, %{public}d",
+        LOG_I("Inject mouseEvent, pressed:%{public}d, location:%{public}d, %{public}d",
             event.stage_ == ActionStage::DOWN, event.point_.px_, event.point_.py_);
     }
 
@@ -650,8 +651,7 @@ namespace OHOS::uitest {
         PointerEvent::PointerItem item;
         SetMousePointerEventAttr(pointerEvent, event);
         constexpr double axialValue = 15;
-        static bool flag = true;
-        auto injectAxialValue = axialValue;
+        static double injectAxialValue = 0;
         switch (event.stage_) {
             case ActionStage::DOWN:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_DOWN);
@@ -666,17 +666,17 @@ namespace OHOS::uitest {
             case ActionStage::AXIS_UP:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
                 pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, -axialValue);
-                flag = false;
+                injectAxialValue = injectAxialValue - axialValue;
                 break;
             case ActionStage::AXIS_DOWN:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
                 pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, axialValue);
-                flag = true;
+                injectAxialValue = injectAxialValue + axialValue;
                 break;
             case ActionStage::AXIS_STOP:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_END);
-                injectAxialValue = flag ? axialValue : -axialValue;
                 pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, injectAxialValue);
+                injectAxialValue = 0;
                 break;
             default:
                 return;
@@ -689,7 +689,7 @@ namespace OHOS::uitest {
             pointerEvent->SetPressedKeys(downKeys_);
         }
         InputManager::GetInstance()->SimulateInputEvent(pointerEvent, false);
-        LOG_D("Inject mouseEvent to display : %{public}d", displayId);
+        LOG_I("Inject mouseEvent to display : %{public}d", displayId);
         this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
     }
 
@@ -732,7 +732,7 @@ namespace OHOS::uitest {
                 keyItem.SetPressed(false);
                 keyEvent->AddKeyItem(keyItem);
                 InputManager::GetInstance()->SimulateInputEvent(keyEvent);
-                LOG_D("Inject keyEvent up, keycode:%{public}d", event.code_);
+                LOG_I("Inject keyEvent up, keycode:%{public}d", event.code_);
             } else {
                 downKeys_.push_back(event.code_);
                 for (auto downKey : downKeys_) {
@@ -744,7 +744,7 @@ namespace OHOS::uitest {
                     keyEvent->AddKeyItem(keyItem);
                 }
                 InputManager::GetInstance()->SimulateInputEvent(keyEvent);
-                LOG_D("Inject keyEvent down, keycode:%{public}d", event.code_);
+                LOG_I("Inject keyEvent down, keycode:%{public}d", event.code_);
                 if (event.holdMs_ > 0) {
                     this_thread::sleep_for(chrono::milliseconds(event.holdMs_));
                 }
@@ -823,9 +823,19 @@ namespace OHOS::uitest {
         }
     }
 
-    void SysUiController::PutTextToClipboard(string_view text) const
+    void SysUiController::PutTextToClipboard(string_view text, ApiCallErr &error) const
     {
-        OHOS::testserver::TestServerClient::GetInstance().SetPasteData(string(text));
+        auto ret = OHOS::testserver::TestServerClient::GetInstance().SetPasteData(string(text));
+        if (ret != OHOS::testserver::TEST_SERVER_OK) {
+            LOG_E("Set pasteBoard data failed.");
+            error = ApiCallErr(ERR_INTERNAL, "Set pasteBoard data failed.");
+            if (ret != OHOS::testserver::TEST_SERVER_SET_PASTE_DATA_FAILED) {
+                error.code_ = ERR_NO_SYSTEM_CAPABILITY;
+            }
+            return;
+        }
+        static constexpr auto sliceMs = 500;
+        this_thread::sleep_for(chrono::milliseconds(sliceMs));
     }
 
     bool SysUiController::IsWorkable() const

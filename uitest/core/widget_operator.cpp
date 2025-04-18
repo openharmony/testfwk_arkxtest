@@ -193,24 +193,27 @@ namespace OHOS::uitest {
         }
         static constexpr uint32_t focusTimeMs = 500;
         static constexpr uint32_t typeCharTimeMs = 50;
-        vector<KeyEvent> events;
-        if (!origText.empty()) {
+        const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY(),
+            retrieved->GetDisplayId());
+        auto touch = OHOS::uitest::GenericClick(TouchOp::CLICK, center);
+        driver_.PerformTouch(touch, options_, error);
+        driver_.DelayMs(focusTimeMs); // short delay to ensure focus gaining
+        if (!options_.inputAdditional_ && !origText.empty()) {
+            vector<KeyEvent> events;
             for (size_t index = 0; index < origText.size(); index++) {
                 events.emplace_back(KeyEvent{ActionStage::DOWN, KEYCODE_DPAD_RIGHT, typeCharTimeMs});
                 events.emplace_back(KeyEvent{ActionStage::UP, KEYCODE_DPAD_RIGHT, 0});
                 events.emplace_back(KeyEvent{ActionStage::DOWN, KEYCODE_DEL, typeCharTimeMs});
                 events.emplace_back(KeyEvent{ActionStage::UP, KEYCODE_DEL, 0});
             }
+            auto keyActionForDelete = KeysForwarder(events);
+            driver_.TriggerKey(keyActionForDelete, options_, error);
+            driver_.DelayMs(focusTimeMs);
+        } else {
+            driver_.TriggerKey(MoveToEnd(), options_, error);
+            driver_.DelayMs(focusTimeMs);
         }
-        const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY(),
-            retrieved->GetDisplayId());
-        auto touch = OHOS::uitest::GenericClick(TouchOp::CLICK, center);
-        driver_.PerformTouch(touch, options_, error);
-        driver_.DelayMs(focusTimeMs); // short delay to ensure focus gaining
-        auto keyActionForDelete = KeysForwarder(events);
-        driver_.TriggerKey(keyActionForDelete, options_, error);
-        driver_.DelayMs(focusTimeMs);
-        driver_.InputText(text, error);
+        driver_.InputText(text, error, options_);
     }
 
     unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector,
@@ -284,7 +287,8 @@ namespace OHOS::uitest {
     void WidgetOperator::TurnPage(bool toTop, int &oriDistance, bool vertical, ApiCallErr &error) const
     {
         auto bounds = widget_.GetBounds();
-        Point topPoint, bottomPoint;
+        Point topPoint;
+        Point bottomPoint;
         auto screenSize = driver_.GetDisplaySize(error, widget_.GetDisplayId());
         auto gestureZone = (vertical) ? screenSize.py_ / 20 : screenSize.px_ / 20;
         topPoint = vertical ? Point(bounds.GetCenterX(), bounds.top_) : Point(bounds.left_, bounds.GetCenterY());
