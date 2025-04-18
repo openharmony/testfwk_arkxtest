@@ -992,7 +992,7 @@ static ani_boolean injectMultiPointerActionSync(ani_env *env, ani_object obj, an
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.injectMultiPointerAction";
-    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, pointers, "nativeDriver")));
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, pointers, "nativePointerMatrix")));
     pushParam(env, speed, callInfo_, true);
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
@@ -1371,7 +1371,7 @@ static ani_boolean injectPenPointerActionSync(ani_env *env, ani_object obj, ani_
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.injectPenPointerAction";
-    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativePointerMatrix")));
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, pointers, "nativePointerMatrix")));
     pushParam(env, speed, callInfo_, true);
     pushParam(env, pressure, callInfo_, false);
     Transact(callInfo_, reply_);
@@ -1815,7 +1815,7 @@ static ani_boolean scrollToBottom(ani_env *env, ani_object obj, ani_object speed
     return true;
 }
 
-static ani_object scrollSearch(ani_env *env, ani_object obj, ani_object on, ani_boolean vertical, ani_double offset)
+static ani_object scrollSearch(ani_env *env, ani_object obj, ani_object on, ani_boolean vertical, ani_object offset)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -1823,7 +1823,7 @@ static ani_object scrollSearch(ani_env *env, ani_object obj, ani_object on, ani_
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on, "nativeOn")));
     callInfo_.paramList_.push_back(static_cast<bool>(vertical));
-    callInfo_.paramList_.push_back(int(offset));
+    pushParam(env, offset, callInfo_, true);
     Transact(callInfo_, reply_);
     ani_ref nativeComponent = UnmarshalReply(env, callInfo_, reply_);
     if (nativeComponent == nullptr)
