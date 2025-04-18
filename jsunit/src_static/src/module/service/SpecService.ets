@@ -6,6 +6,7 @@ import { StaticSuite } from './StaticSuite';
 import { TAG } from '../../Constant';
 import {
   processFunc,
+  processAsyncFunc,
   processFuncWithArgOne,
   processAsyncFuncWithArgOne,
   processFuncWithArgTwo,
@@ -109,8 +110,13 @@ class SpecService {
               processedFunc = processFuncWithArgOne(coreContext, fn);
             }
           } else {
-            const fn = func as () => Promise<void>;
-            processedFunc = processFunc(coreContext, fn);
+            if (isAsync) {
+              const fn = func as () => Promise<void>;
+              processedFunc = processAsyncFunc(coreContext, fn);
+            } else {
+              const fn = func as () => void;
+              processedFunc = processFunc(coreContext, fn);
+            }
           }
           const spec = new StaticSpec({ description: desc, fi: filter, asyncFn: processedFunc });
           if (this.isSkipSpec) {
