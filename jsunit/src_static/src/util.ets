@@ -1,8 +1,9 @@
 import { Core } from './core';
 import { ConfigService } from './module/config/configService';
 import { AnyType } from './module/types/common';
+import { TAG } from './Constant';
 
-export function getFuncWithArgsZero(func: (() => void) | (() => Promise<void>), timeout: int, isStressTest: boolean) {
+export function getAsyncFuncWithArgsZero(func: () => Promise<void>, timeout: int, isStressTest: boolean) {
   return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (value: object) => void) => {
     let timer = 0.0;
     if (!isStressTest) {
@@ -11,8 +12,30 @@ export function getFuncWithArgsZero(func: (() => void) | (() => Promise<void>), 
       }, timeout);
     }
     try {
-      await (func as () => Promise<void>)();
-    } catch (err: Error) {}
+      await func();
+    } catch (err: Error) {
+      console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
+    }
+    if (!!timer) {
+      clearTimeout(timer);
+    }
+    resolve(Promise.resolve());
+  });
+}
+
+export function getFuncWithArgsZero(func: () => void, timeout: int, isStressTest: boolean) {
+  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (value: object) => void) => {
+    let timer = 0.0;
+    if (!isStressTest) {
+      timer = setTimeout(() => {
+        reject(new Error('execute timeout ' + timeout + 'ms'));
+      }, timeout);
+    }
+    try {
+      func()
+    } catch (err: Error) {
+      console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
+    }
     if (!!timer) {
       clearTimeout(timer);
     }
@@ -52,7 +75,7 @@ export function getAsyncFuncWithArgsOne(
 }
 
 export function getFuncWithArgsOne(func: (params: () => void) => void, timeout: int, isStressTest: boolean) {
-  return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
+  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
     let timer = 0.0;
     if (!isStressTest) {
       timer = setTimeout(() => {
@@ -116,7 +139,7 @@ export function getFuncWithArgsTwo(
   paramItem: AnyType,
   isStressTest: boolean
 ) {
-  return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
+  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
     let timer = 0.0;
     if (!isStressTest) {
       timer = setTimeout(() => {
@@ -144,7 +167,7 @@ export function getFuncWithArgsTwo(
 
 export function processFunc(
   coreContext: Core,
-  func: ((param1?: () => void) => void) | ((param1?: () => void) => Promise<void>)
+  func: () => void
 ) {
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
@@ -163,6 +186,30 @@ export function processFunc(
   }
   return () => {
     return getFuncWithArgsZero(func, 0, false);
+  };
+}
+
+export function processAsyncFunc(
+  coreContext: Core,
+  func: (() => Promise<void>)
+) {
+  const configService = coreContext.getDefaultService('config');
+  if (configService !== null) {
+    const config = configService as ConfigService;
+    config.setSupportAsync(true);
+    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    let isStressTest = false;
+    if (config.getStress() > 1 || coreContext.getServices('dataDriver')) {
+      isStressTest = true;
+    } else {
+      isStressTest = false;
+    }
+    return () => {
+      return getAsyncFuncWithArgsZero(func, timeout as int, isStressTest);
+    };
+  }
+  return () => {
+    return getAsyncFuncWithArgsZero(func, 0, false);
   };
 }
 
