@@ -14,6 +14,8 @@
  */
 import systemDateTime from "@ohos.systemDateTime"
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
+import { worker } from '@kit.ArkTS';
+
 import { TAG } from '../../Constant';
 import { Core } from '../../core';
 import { SuiteService } from '../service/SuiteService';
@@ -24,6 +26,7 @@ class SysTestKit {
   public index: short;
   public static delegator: abilityDelegatorRegistry.AbilityDelegator | null = null;
   public static systemTime: number;
+  public static workerPort: worker.ThreadWorker;
   constructor() {
     this.id = 'sysTestKit';
     this.index = 0;
