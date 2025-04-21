@@ -17,6 +17,7 @@ import { SuiteService } from '../service/SuiteService';
 import { SpecService } from '../service/SpecService';
 import { StaticSpec } from '../service/StaticSpec';
 import { DataDriverData, DataDriverAttr, DataDriverSuite } from '../../interface';
+import { AnyType } from "../types/common"
 
 class DataDriver {
   public id: string;
@@ -43,7 +44,7 @@ class DataDriver {
   }
 
   getSpecParamsValue(specs: DataDriverSuite[]) {
-    let specParams: object[] = [];
+    let specParams: Record<string, AnyType>[] = [];
     let specDesc = '';
     const currentRunningSpec = this.specService.getCurrentRunningSpec();
     if (currentRunningSpec) {
@@ -55,7 +56,7 @@ class DataDriver {
     for (const specItem of specs) {
       if (specItem.it && specItem.it === specDesc) {
         if (specItem.params && Array.isArray(specItem.params)) {
-          return specItem.params as object[];
+          return specItem.params as Record<string, AnyType>[];
         } else {
           return specParams;
         }
@@ -65,7 +66,7 @@ class DataDriver {
   }
 
   getSpecParams() {
-    let specParams: object[] = [];
+    let specParams: Record<string, AnyType>[] = [];
     let suiteDesc = this.suiteService.getCurrentRunningSuite().description;
     let suites: DataDriverSuite[] = [];
     const tempSuite = this.data.suites;
@@ -92,7 +93,7 @@ class DataDriver {
   }
 
   getSuiteParams() {
-    let suiteParams = new Map<string, object | undefined | null>();
+    let suiteParams: Record<string, AnyType> = {};
     let suiteDesc = this.suiteService.getCurrentRunningSuite().description;
     let suites: DataDriverSuite[] = [];
     const tempSuite = this.data.suites;
@@ -106,8 +107,8 @@ class DataDriver {
         describeValue = tempdescribe as string[];
       }
       if (suiteDesc && Array.isArray(describeValue) && (describeValue as Array<string>).includes(suiteDesc)) {
-        const params = suiteItem.params as object;
-        for (const entries of Object.entries(params)) {
+        const params = suiteItem.params as Record<string, AnyType>;
+        for (const entries of params.entries()) {
           if (!entries) {
             continue;
           }
@@ -116,13 +117,7 @@ class DataDriver {
           if (!key) {
             continue;
           }
-          if (value === undefined) {
-            suiteParams.set(key, value as undefined);
-          } else if (value === null) {
-            suiteParams.set(key, value as null);
-          } else {
-            suiteParams.set(key, value as object);
-          }
+          suiteParams[key] = value
         }
       }
     }
