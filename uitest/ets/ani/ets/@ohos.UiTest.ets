@@ -14,8 +14,7 @@
  */
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 import hilog from '@ohos.hilog'
-import { Callback } from '@ohos.base';
-import { BusinessError } from '@ohos.base';
+import { Callback, BusinessError } from '@ohos.base';
 let domain: number = 0x0000;
 let tag: string = 'uitestTag';
 
@@ -160,7 +159,7 @@ class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
 }
 
 export class Component {
-  private nativeComponent:string = '';
+  nativeComponent:string = '';
   public constructor(Component:string) {
     if (this.nativeComponent == '') {
       this.nativeComponent = Component;
@@ -179,7 +178,7 @@ export class Component {
     private native clearTextSync(): boolean;
     private native scrollToTopSync(speed?: number): boolean;
     private native scrollToBottomSync(speed?: number): boolean;
-    private native scrollSearchSync(on: On, vertical?: boolean, offset?: number): boolean;
+    private native scrollSearchSync(on: On, vertical?: boolean, offset?: number): Component;
     private native pinchInSync(scale: number): boolean;
     private native pinchOutSync(scale: number): boolean;
     private native isScrollableSync(): boolean;
@@ -232,12 +231,16 @@ export class Component {
       return promise;
     }
     
-    scrollSearch(on: On, vertical?: boolean, offset?: number):Promise<Component> {
-      let promise = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():boolean => this.scrollSearchSync(on, vertical, offset));
+    scrollSearch(on: On, vertical?: boolean, offset?: number):Promise<Component|null> {
+      let promise = new Promise<Component|null>((resolve, reject) => {
+      let promise1 = taskpool.execute(():Component|null => this.scrollSearchSync(on, vertical, offset));
           promise1.then((e:NullishType)=>{
-              let value : Component = e as Component;
-              resolve(value);
+            if (e) {
+                let value : Component = e as Component;
+                resolve(value);
+            } else {
+                resolve(null)
+            }
           }, (err: Object): void => {
               let br = err as BusinessError<void>;
               reject(br);
@@ -554,7 +557,7 @@ export class Component {
     private native resizeSync(w:number, h:number, d:ResizeDirection): boolean;
     private native moveToSync(x:number, y:number): boolean;
     private native getWindowModeSync(): WindowMode;
-    private native GetBundleNameSync(): string;
+    private native getBundleNameSync(): string;
     private native getTitileSync(): string;
     private native winGetBoundsSync(): Rect;
   
@@ -704,9 +707,9 @@ export class Component {
         return promise;
     }
   
-    GetBundleName():Promise<string> {
+    getBundleName():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
-        let promise1 = taskpool.execute(():string => this.GetBundleNameSync());
+        let promise1 = taskpool.execute(():string => this.getBundleNameSync());
             promise1.then((e:NullishType)=>{
                 let value : string = e as string;
                 resolve(value);
@@ -750,7 +753,6 @@ export class Component {
   export class Driver {
     private nativeDriver:string = '';
     public constructor(driver:string) {
-        
         hilog.error(domain, tag, 'driver:'+driver);
         this.nativeDriver = driver;
     }
@@ -862,12 +864,16 @@ export class Component {
       return promise;
     }
     private native findWindowSync(filter: WindowFilter):UiWindow;
-    findWindow(filter: WindowFilter): Promise<UiWindow> {
-      let promise = new Promise<UiWindow>((resolve: (value: UiWindow) => void, reject: (error: Object) => void) => {
-      let promise1 = taskpool.execute(():UiWindow => this.findWindowSync(filter));
-      promise1.then((e:NullishType)=>{
-          let value : UiWindow = e as UiWindow;
-          resolve(value);
+    findWindow(filter: WindowFilter): Promise<UiWindow|null> {
+      let promise = new Promise<UiWindow|null>((resolve, reject) => {
+          let promise1 = taskpool.execute(():UiWindow => this.findWindowSync(filter));
+          promise1.then((e:NullishType)=>{
+            if (e) {
+                let value : UiWindow = e as UiWindow;
+                resolve(value);
+            } else {
+                resolve(null)
+            }
           }, (err: Object): void => {
               let br = err as BusinessError<void>;
               reject(br);
@@ -943,12 +949,16 @@ export class Component {
       return promise;
     }
     private native findComponentsSync(on: On):Array<Component>;
-    findComponents(on: On): Promise<Array<Component>> {
-      let promise = new Promise<Array<Component>>((resolve: (value: Array<Component>) => void, reject: (error: Object) => void) => {
+    findComponents(on: On): Promise<Array<Component>|null> {
+      let promise = new Promise<Array<Component>|null>((resolve, reject) => {
       let promise1 = taskpool.execute(():Array<Component> => this.findComponentsSync(on));
           promise1.then((e:NullishType)=>{
-              let value : Array<Component> = e as Array<Component>;
-              resolve(value);
+            if (e){
+                let value : Array<Component> = e as Array<Component>;
+                resolve(value);
+            } else {
+                resolve(null)
+            }
           }, (err: Object): void => {
               let br = err as BusinessError<void>;
               reject(br);
@@ -973,7 +983,7 @@ export class Component {
     private native mouseScrollSync(p: Point, down: boolean, d:number, key1?: number, key2?: number, speed?: number): boolean;
     private native mouseMoveWithTrackSync(f: Point, t: Point, speed?: number): boolean;
     private native mouseMoveToSync(p: Point): boolean;
-    private native mouseDragkSync(f: Point, t: Point, speed?: number): boolean;
+    private native mouseDragSync(f: Point, t: Point, speed?: number): boolean;
     private native mouseClickSync(p: Point, btnId: MouseButton, key1?: number, key2?: number):boolean;
     private native mouseDoubleClickSync(p: Point, btnId: MouseButton, key1?: number, key2?: number):boolean;
     private native mouseLongClickSync(p: Point, btnId: MouseButton, key1?: number, key2?: number):boolean;
@@ -1034,17 +1044,21 @@ export class Component {
       return promise;
     }
   
-    findComponent(on: On): Promise<Component> {
-        let promise = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
-        let promise1 = taskpool.execute(():Component => this.findComponentSync(on));
-            promise1.then((e:NullishType)=>{
-                let value : Component = e as Component;
-                resolve(value);
-            }, (err: Object): void => {
-                let br = err as BusinessError<void>;
-                reject(br);
+    findComponent(on: On): Promise<Component|null> {
+        let promise = new Promise<Component|null>((resolve, reject) => {
+            let promise1 = taskpool.execute(():Component|null => this.findComponentSync(on));
+                promise1.then((e:NullishType)=>{
+                    if (e) {
+                        let value : Component = e as Component;
+                        resolve(value);
+                    } else {
+                        resolve(null)
+                    }
+                }, (err: Object): void => {
+                    let br = err as BusinessError<void>;
+                    reject(br);
+                });
             });
-        });
         return promise;
     }
   
@@ -1062,12 +1076,16 @@ export class Component {
         return promise;
     }
   
-    waitForComponent(on: On, time: number): Promise<Component> {
-        let promise = new Promise<Component>((resolve: (value: Component) => void, reject: (error: Object) => void) => {
-        let promise1 = taskpool.execute(():Component => this.waitForComponentSync(on, time));
+    waitForComponent(on: On, time: number): Promise<Component|null> {
+        let promise = new Promise<Component|null>((resolve, reject) => {
+        let promise1 = taskpool.execute(():Component|null => this.waitForComponentSync(on, time));
             promise1.then((e:NullishType)=>{
-                let value : Component = e as Component;
-                resolve(value);
+                if (e) {
+                    let value : Component = e as Component;
+                    resolve(value);
+                } else {
+                    resolve(null)
+                }
             }, (err: Object): void => {
                 let br = err as BusinessError<void>;
                 reject(br);
@@ -1196,6 +1214,8 @@ export class Component {
     }
   
     penLongClick(p: Point, pressure?: number): Promise<void> {
+        hilog.info(domain, tag, "p.x"+p.x);
+        hilog.info(domain, tag, "p.y"+p.y);
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
         let promise1 = taskpool.execute(():boolean => this.penLongClickSync(p, pressure));
             promise1.then((e:NullishType)=>{
@@ -1249,7 +1269,7 @@ export class Component {
   
     mouseDrag(f: Point, t: Point, speed?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-        let promise1 = taskpool.execute(():boolean => this.mouseDragkSync(f, t, speed));
+        let promise1 = taskpool.execute(():boolean => this.mouseDragSync(f, t, speed));
             promise1.then((e:NullishType)=>{
                 resolve(Promise.resolve());
             }, (err: Object): void => {
@@ -1395,26 +1415,16 @@ export class Component {
     }
   }
 
-  export class UIEventObserver {
-    private nativeUIEventObserver:string = '';
-    public constructor(UIEventObserver:string) {
-      if (this.nativeUIEventObserver == '') {
-        this.nativeUIEventObserver = UIEventObserver;
-      }
+export class UIEventObserver {
+    private nativeUIEventObserver: string = '';
+    public constructor(UIEventObserver: string) {
+        hilog.error(domain, tag, 'UIEventObserver:' + UIEventObserver);
+        if (this.nativeUIEventObserver == '') {
+            this.nativeUIEventObserver = UIEventObserver;
+        }
     }
-    private native onceSync(type: String, callback: Callback<UIElementInfo>): void;
-    once(type: String, callback: Callback<UIElementInfo>): Promise<void> {
-      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Object) => void) => {
-          let promise1 = taskpool.execute(():void => this.onceSync(type, callback));
-          promise1.then((e:NullishType)=>{
-              resolve(Promise.resolve());
-          }, (err: Object): void => {
-              let br = err as BusinessError<void>;
-              reject(br);
-          });
-      });
-      return promise;
-    }
-  }
-  
+    native once(type: String, callback: Callback<UIElementInfo>): void;
+
+}
+
 export const ON: On = new On();
