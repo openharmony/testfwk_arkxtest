@@ -17,7 +17,7 @@ import {
 import { SuiteService } from './SuiteService';
 import { ConfigService } from '../config/configService';
 import DataDriver from '../config/DataDriver';
-import { ItfnType } from '../types/common';
+import { ItfnType, AnyType } from '../types/common';
 class SpecService {
   public id: string;
   public totalTest: int;
@@ -98,10 +98,18 @@ class SpecService {
           const argsCount = getFunctionArgumentsCount(funcStr);
 
           const isAsync = checkIsAsyncFunction(funcStr);
-          let processedFunc: () => Promise<void> = (): Promise<void> => {
+          let processedFunc: (() => Promise<void>) | ((paramItem: AnyType) => Promise<void>) = (): Promise<void> => {
             return Promise.resolve();
           };
-          if (argsCount === 1) {
+          if (argsCount === 2) {
+            if (isAsync) {
+              const fn = func as (done: () => void, param: AnyType) => Promise<void>;
+              processedFunc = processAsyncFuncWithArgTwo(coreContext, fn);
+            } else {
+              const fn = func as (done: () => void, param: AnyType) => void;
+              processedFunc = processFuncWithArgTwo(coreContext, fn);
+            }
+          } else if (argsCount === 1) {
             if (isAsync) {
               const fn = func as (done: () => void) => Promise<void>;
               processedFunc = processAsyncFuncWithArgOne(coreContext, fn);

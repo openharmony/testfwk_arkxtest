@@ -3,11 +3,12 @@ import { Core } from '../../core';
 import { SpecService } from './SpecService';
 import DataDriver from '../config/DataDriver';
 import { getFunctionArgumentsCount } from '../../util';
+import { AnyType } from '../types/common';
 class StaticSpec {
   public description: string;
   public fi: int;
   public fn: () => void;
-  public asyncFn: (() => Promise<void>) | null;
+  public asyncFn: (() => Promise<void>) | ((params: AnyType) => Promise<void>) | null;
   public isSkip: boolean;
   public skipReason: string;
   public fail: Error | null;
@@ -60,24 +61,7 @@ class StaticSpec {
       specService.setCurrentRunningSpec(this);
       this.isExecuted = true;
       try {
-        let dataDriverMap = coreContext.getServices('dataDriver');
-        if (dataDriverMap) {
-          const dataDriver = dataDriverMap.get('dataDriver') as DataDriver;
-          const suiteParams = dataDriver.getSuiteParams();
-          const specParams = dataDriver.getSpecParams();
-          const funcStr = (this.fn as object).toString();
-          const argsCount = getFunctionArgumentsCount(funcStr);
-          if(argsCount === 0) {
-            this.fn()
-          } else if(specParams.length === 0) {
-            // this.fn(suiteParams);
-            // todo
-          } else {
-            
-          }
-        } else {
-          this.fn();
-        }
+        this.fn();
         this.setResult();
       } catch (e: Error) {
         this.error = e;
@@ -88,17 +72,37 @@ class StaticSpec {
   }
 
   async asyncRun(coreContext: Core) {
-    const dataDriver = coreContext.getServices('dataDriver');
-    if (typeof dataDriver === 'undefined') {
+    const dataDriverMap = coreContext.getServices('dataDriver');
+    if(dataDriverMap) {
+      const dataDriver = dataDriverMap.get('dataDriver') as DataDriver;
+      const suiteParams = dataDriver.getSuiteParams();
+      const specParams = dataDriver.getSpecParams();
+      
+      const funcStr = (this.asyncFn as object).toString();
+      const argsCount = getFunctionArgumentsCount(funcStr)
+      if(argsCount === 1) {
+        if(specParams.length === 0) {
+          await (this.asyncFn as ((params: AnyType) => Promise<void>))(suiteParams);
+        } else {
+          for(const paraItem of specParams) {
+            // todo
+            // const params = {...suiteParams, ...paraItem}
+            // await (this.asyncFn as ((params: AnyType) => Promise<void>))(params);
+          }
+        }
+        
+      } else {
+        await (this.asyncFn as (() => Promise<void>))();
+      }
+    } else {
       const asyncFn = this.asyncFn;
       const fn = this.fn;
       if (asyncFn !== null) {
-        await asyncFn();
+        await (asyncFn as (() => Promise<void>))();
       } else if (fn !== null) {
         fn();
       }
-    } else {
-    }
+    } 
 
     this.isExecuted = true;
   }

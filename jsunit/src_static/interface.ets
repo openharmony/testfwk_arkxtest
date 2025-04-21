@@ -54,7 +54,7 @@ export interface StaticSpecIF {
   description: string;
   fi: int;
   fn?: () => void;
-  asyncFn?: () => Promise<void>;
+  asyncFn?: (() => Promise<void>) | ((params: AnyType) => Promise<void>);
 }
 
 export interface ServiceAttrIF {
