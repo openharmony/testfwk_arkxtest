@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-export { Hypium } from './src/hypium';
-export { Assert } from './src/interface';
+export { Hypium } from './hypium';
+export { Assert } from './interface';
 export {
   hypiumDescribe as describe,
   hypiumBeforeAll as beforeAll,
@@ -29,10 +29,10 @@ export {
   hypiumXit as xit,
   hypiumXdescribeReason as xdescribeReason,
   hypiumXitReason as xitReason,
-} from './src/hypiumApi';
-export { DEFAULT, TestType, Size, Level, TAG, PrintTag } from './src/Constant';
-export { Core } from './src/core';
-export { ExpectExtend } from './src/module/assert/ExpectExtend';
-export { OhReport } from './src/module/report/OhReport';
-export { SysTestKit } from './src/module/kit/SysTestKit';
-export { default as DataDriver } from './src/module/config/DataDriver';
+} from './hypiumApi';
+export { DEFAULT, TestType, Size, Level, TAG, PrintTag } from './Constant';
+export { Core } from './core';
+export { ExpectExtend } from './module/assert/ExpectExtend';
+export { OhReport } from './module/report/OhReport';
+export { SysTestKit } from './module/kit/SysTestKit';
+export { default as DataDriver } from './module/config/DataDriver';
