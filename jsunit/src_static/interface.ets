@@ -238,7 +238,7 @@ export interface DataDriverSuite {
   describe?: string[];
   stress?: NumberType;
   it?: string;
-  params: object | object[]
+  params: Record<string, AnyType> | Record<string, AnyType>[]
   items?: DataDriverSuite[];
 }
 
