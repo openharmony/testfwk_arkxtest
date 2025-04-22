@@ -17,7 +17,7 @@ import { SuiteService } from '../service/SuiteService';
 import { SpecService } from '../service/SpecService';
 import { StaticSpec } from '../service/StaticSpec';
 import { DataDriverData, DataDriverAttr, DataDriverSuite } from '../../interface';
-import { AnyType } from "../types/common"
+import { AnyType } from '../types/common';
 
 class DataDriver {
   public id: string;
@@ -117,7 +117,7 @@ class DataDriver {
           if (!key) {
             continue;
           }
-          suiteParams[key] = value
+          suiteParams[key] = value;
         }
       }
     }
