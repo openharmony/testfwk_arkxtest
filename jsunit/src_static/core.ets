@@ -28,7 +28,14 @@ import { AnyType, ItfnType } from './module/types/common';
 /**
  * core service for execute testcase.
  */
-type ServiceType = SuiteService | SpecService | ConfigService | ExpectService | ReportService | ExpectExtend | OhReport | DataDriver;
+type ServiceType = SuiteService
+  | SpecService
+  | ConfigService
+  | ExpectService
+  | ReportService
+  | ExpectExtend
+  | OhReport
+  | DataDriver;
 type EventType = SuiteEvent | SpecEvent | TaskEvent;
 class Core {
   public static instance: Core | null = null;

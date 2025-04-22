@@ -86,12 +86,19 @@ export class Hypium {
     Promise.all(workerPromiseArray)
       .then(async (items) => {
         console.info(`${TAG}, all result from workers, ${JSON.stringify(items)}`);
-        let allItemList = new Array();
+        let allItemList = new Array<ItItemIF>();
         // 统计执行结果
         Hypium.handleWorkerTestResult(ret, allItemList, items);
         console.info(`${TAG}, all it result, ${JSON.stringify(allItemList)}`);
         // 统计用例执行结果
-        const retResult = { total: 0, failure: 0, error: 0, pass: 0, ignore: 0, duration: 0 };
+        const retResult = {
+          total: 0,
+          failure: 0,
+          error: 0,
+          pass: 0,
+          ignore: 0,
+          duration: 0,
+        };
         // 标记用例执行结果
         Hypium.configWorkerItTestResult(retResult, allItemList);
         // 打印用例结果
@@ -229,7 +236,12 @@ export class Hypium {
     }
   }
 
-  static hypiumWorkerTest(abilityDelegator:abilityDelegatorRegistry.AbilityDelegator, abilityDelegatorArguments: abilityDelegatorRegistry.AbilityDelegatorArgs, testsuite: () => void, workerPort: worker.ThreadWorker) {
+  static hypiumWorkerTest(
+    abilityDelegator: abilityDelegatorRegistry.AbilityDelegator,
+    abilityDelegatorArguments: abilityDelegatorRegistry.AbilityDelegatorArgs,
+    testsuite: () => void,
+    workerPort: worker.ThreadWorker
+  ) {
     console.info(`${TAG}, hypiumWorkerTest call`);
     SysTestKit.workerPort = workerPort;
     let currentWorkerName = workerPort.name;
