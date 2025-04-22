@@ -82,7 +82,14 @@ export class Hypium {
       const workerPromise = Hypium.createWorkerPromise(scriptURL, i, params);
       workerPromiseArray.push(workerPromise);
     }
-    const ret = { total: 0, failure: 0, error: 0, pass: 0, ignore: 0, duration: 0 };
+    const ret = { 
+      total: 0, 
+      failure: 0, 
+      error: 0, 
+      pass: 0, 
+      ignore: 0, 
+      duration: 0 
+    };
     Promise.all(workerPromiseArray)
       .then(async (items) => {
         console.info(`${TAG}, all result from workers, ${JSON.stringify(items)}`);
