@@ -119,7 +119,7 @@ namespace OHOS::uitest {
     };
 
     struct ApiMethod {
-        string_view apiId = "";
+        string_view apiId_ = "";
         vector<string> paramTypes_;
         size_t defaultArgCount_ = 0;
         bool convertError_ = false;
@@ -263,7 +263,7 @@ namespace OHOS::uitest {
         // 0. add convert error label
         const auto find = sApiArgTypesMap.find(inModifier.apiId_);
         if (find != sApiArgTypesMap.end()) {
-            inModifier.callerObjRef_ = find->second.convertError_;
+            inModifier.convertError_ = find->second.convertError_;
         }
         // 1. map method name
         const string &className = GetClassName(inModifier.apiId_, '.');
