@@ -118,8 +118,14 @@ namespace OHOS::uitest {
         map<string, int> refCountMap_;
     };
 
+    struct ApiMethod {
+        string_view apiId = "";
+        vector<string> paramTypes_;
+        size_t defaultArgCount_ = 0;
+        bool convertError_ = false;
+    };
     /** API argument type list map.*/
-    static multimap<string, pair<vector<string>, size_t>> sApiArgTypesMap;
+    static multimap<string, ApiMethod> sApiArgTypesMap;
 
     static void ParseMethodSignature(string_view signature, vector<string> &types, size_t &defArg)
     {
@@ -166,7 +172,8 @@ namespace OHOS::uitest {
                 auto paramTypes = vector<string>();
                 size_t hasDefaultArg = 0;
                 ParseMethodSignature(methodDef.signature_, paramTypes, hasDefaultArg);
-                sApiArgTypesMap.insert(make_pair(string(methodDef.name_), make_pair(paramTypes, hasDefaultArg)));
+                ApiMethod method {methodDef.name_, paramTypes, hasDefaultArg, methodDef.convertError_};
+                sApiArgTypesMap.insert(make_pair(string(methodDef.name_), method));
             }
         }
     }
@@ -175,14 +182,16 @@ namespace OHOS::uitest {
     {
         auto paramTypesForGetAllProperties = vector<string>();
         paramTypesForGetAllProperties.push_back("");
-        string methodForGetAllProperties = "Component.getAllProperties";
-        sApiArgTypesMap.insert(make_pair(methodForGetAllProperties, make_pair(paramTypesForGetAllProperties, 0)));
+        string getAllProperties = "Component.getAllProperties";
+        ApiMethod methodForGetAllProperties{getAllProperties, paramTypesForGetAllProperties, 0, false};
+        sApiArgTypesMap.insert(make_pair(getAllProperties, methodForGetAllProperties));
 
         auto paramTypesForAamsWorkMode = vector<string>();
         paramTypesForAamsWorkMode.push_back("int");
         paramTypesForAamsWorkMode.push_back("");
-        string methodForAamsWorkMode = "Driver.SetAamsWorkMode";
-        sApiArgTypesMap.insert(make_pair(methodForAamsWorkMode, make_pair(paramTypesForAamsWorkMode, 0)));
+        string setAamsWorkMode = "Driver.SetAamsWorkMode";
+        ApiMethod methodForAamsWorkMode {setAamsWorkMode, paramTypesForAamsWorkMode, 0, false};
+        sApiArgTypesMap.insert(make_pair(setAamsWorkMode, methodForAamsWorkMode));
     }
 
     static string GetClassName(const string &apiName, char splitter)
@@ -251,6 +260,11 @@ namespace OHOS::uitest {
     
     string FrontendApiServer::ApiMapPre(ApiCallInfo &inModifier) const
     {
+        // 0. add convert error label
+        const auto find = sApiArgTypesMap.find(inModifier.apiId_);
+        if (find != sApiArgTypesMap.end()) {
+            inModifier.callerObjRef_ = find->second.convertError_;
+        }
         // 1. map method name
         const string &className = GetClassName(inModifier.apiId_, '.');
         const auto result = old2NewApiMap_.find(className);
@@ -273,11 +287,10 @@ namespace OHOS::uitest {
         }
         // 3. map parameters
         // find method signature of old api
-        const auto find = sApiArgTypesMap.find(oldApiName);
         if (find == sApiArgTypesMap.end()) {
             return oldApiName;
         }
-        const auto &argTypes = find->second.first;
+        const auto &argTypes = find->second.paramTypes_;
         size_t argCount = inModifier.paramList_.size();
         if (argTypes.size() - 1 < argCount) {
             // parameter number invalid
@@ -315,7 +328,7 @@ namespace OHOS::uitest {
         if (find == sApiArgTypesMap.end()) {
             return;
         }
-        string &retType = find->second.first.back();
+        string &retType = find->second.paramTypes_.back();
         if ((retType == "string") || (retType == "[string]")) {
             return;
         }
@@ -392,6 +405,7 @@ namespace OHOS::uitest {
             ParseExtensionMethodsSignature();
         }
         string oldApiName = ApiMapPre(call);
+        out.convertError_ = call.convertError_;
         auto find = handlers_.find(call.apiId_);
         if (find == handlers_.end()) {
             out.exception_ = ApiCallErr(ERR_INTERNAL, "No handler found for api '" + call.apiId_ + "'");
@@ -419,6 +433,9 @@ namespace OHOS::uitest {
         }
         if (oldApiName.length() > 0) {
             ApiMapPost(oldApiName, out);
+        }
+        if (out.convertError_ && out.exception_.code_ == ERR_INVALID_INPUT) {
+            out.exception_.code_ = ERR_INVALID_PARAM; // 401 to 17000007
         }
     }
 
@@ -509,8 +526,8 @@ namespace OHOS::uitest {
             bool checkArgNum = false;
             bool checkArgType = true;
             out.exception_ = {NO_ERROR, "No Error"};
-            auto &types = find->second.first;
-            auto argSupportDefault = find->second.second;
+            auto &types = find->second.paramTypes_;
+            auto argSupportDefault = find->second.defaultArgCount_;
             // check argument count.(last item of "types" is return value type)
             auto maxArgc = types.size() - 1;
             auto minArgc = maxArgc - argSupportDefault;
@@ -537,6 +554,9 @@ namespace OHOS::uitest {
             }
             ++find;
             ++index;
+        }
+        if (out.convertError_ && out.exception_.code_ == ERR_INVALID_INPUT) {
+            out.exception_.code_ = ERR_INVALID_PARAM; // 401 to 17000007
         }
     }
 
@@ -937,32 +957,28 @@ namespace OHOS::uitest {
     static void TouchParamsConverts(const ApiCallInfo &in, Point &point0, Point &point1, UiOpArgs &uiOpArgs)
     {
         auto params = in.paramList_;
-        if (params.size() == 1) {
-            auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
-            point0 = Point(pointJson["x"], pointJson["y"], displayId);
+        auto count = params.size();
+        DCHECK(count > ZERO && count < SIX);
+        if (params.at(0).type() != value_t::object) {
+            point0 = Point(ReadCallArg<int32_t>(in, INDEX_ZERO), ReadCallArg<int32_t>(in, INDEX_ONE));
+            point1 = Point(ReadCallArg<int32_t>(in, INDEX_TWO, 0), ReadCallArg<int32_t>(in, INDEX_THREE, 0));
+            uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
             return;
         }
-        if (params.at(1).type() != value_t::object) {
-            if (params.size() == TWO) {
-                point0 = Point(ReadCallArg<int32_t>(in, INDEX_ZERO), ReadCallArg<int32_t>(in, INDEX_ONE));
-                return;
-            } else {
-                point0 = Point(ReadCallArg<int32_t>(in, INDEX_ZERO), ReadCallArg<int32_t>(in, INDEX_ONE));
-                point1 = Point(ReadCallArg<int32_t>(in, INDEX_TWO), ReadCallArg<int32_t>(in, INDEX_THREE));
-                uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.swipeVelocityPps_);
-                return;
-            }
+        auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
+        auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
+        point0 = Point(pointJson["x"], pointJson["y"], displayId);
+        if (count == 1) {
+            return;
+        }
+        if (params.at(1).type() != value_t::object) { // longClickAt
+            uiOpArgs.longClickHoldMs_ = ReadCallArg<uint32_t>(in, INDEX_ONE, uiOpArgs.longClickHoldMs_);
         } else {
-            auto pointJson0 = ReadCallArg<json>(in, INDEX_ZERO);
-            auto displayId0 = ReadArgFromJson<int32_t>(pointJson0, "displayId", UNASSIGNED);
-            point0 = Point(pointJson0["x"], pointJson0["y"], displayId0);
-
             auto pointJson1 = ReadCallArg<json>(in, INDEX_ONE);
             auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
             point1 = Point(pointJson1["x"], pointJson1["y"], displayId1);
             uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
-            return;
+            uiOpArgs.longClickHoldMs_ = ReadCallArg<uint32_t>(in, INDEX_THREE, uiOpArgs.longClickHoldMs_);
         }
     }
 
@@ -984,8 +1000,17 @@ namespace OHOS::uitest {
                 op = TouchOp::SWIPE;
             } else if (in.apiId_ == "Driver.drag") {
                 op = TouchOp::DRAG;
+            } else if (in.apiId_ == "Driver.longClickAt") {
+                op = TouchOp::LONG_CLICK;
+            } else if (in.apiId_ == "Driver.dragBetween") {
+                op = TouchOp::DRAG;
             }
             CheckSwipeVelocityPps(uiOpArgs);
+            const uint32_t minLongClickHoldMs = 1500;
+            if (uiOpArgs.longClickHoldMs_ < minLongClickHoldMs) {
+                out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invialid longclick hold time");
+                return;
+            }
             if (op == TouchOp::SWIPE || op == TouchOp::DRAG) {
                 auto touch = GenericSwipe(op, point0, point1);
                 driver.PerformTouch(touch, uiOpArgs, out.exception_);
@@ -999,6 +1024,8 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.doubleClick", genericClick);
         server.AddHandler("Driver.swipe", genericClick);
         server.AddHandler("Driver.drag", genericClick);
+        server.AddHandler("Driver.longClickAt", genericClick);
+        server.AddHandler("Driver.dragBetween", genericClick);
     }
 
     static bool CheckMultiPointerOperatorsPoint(const PointerMatrix& pointer)
@@ -1129,6 +1156,12 @@ namespace OHOS::uitest {
             auto button = ReadCallArg<MouseButton>(in, INDEX_ONE);
             auto key1 = ReadCallArg<int32_t>(in, INDEX_TWO, KEYCODE_NONE);
             auto key2 = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
+            uiOpArgs.longClickHoldMs_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.longClickHoldMs_);
+            const uint32_t minLongClickHoldMs = 1500;
+            if (uiOpArgs.longClickHoldMs_ < minLongClickHoldMs) {
+                out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invialid longclick hold time");
+                return;
+            }
             auto op = TouchOp::CLICK;
             if (in.apiId_ == "Driver.mouseDoubleClick") {
                 op = TouchOp::DOUBLE_CLICK_P;
@@ -1166,6 +1199,12 @@ namespace OHOS::uitest {
             auto to = Point(pointJson2["x"], pointJson2["y"], displayId2);
             UiOpArgs uiOpArgs;
             uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
+            uiOpArgs.longClickHoldMs_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.longClickHoldMs_);
+            const uint32_t minLongClickHoldMs = 1500;
+            if (uiOpArgs.longClickHoldMs_ < minLongClickHoldMs) {
+                out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invialid longclick hold time");
+                return;
+            }
             CheckSwipeVelocityPps(uiOpArgs);
             auto op = TouchOp::SWIPE;
             if (in.apiId_ == "Driver.mouseDrag") {
