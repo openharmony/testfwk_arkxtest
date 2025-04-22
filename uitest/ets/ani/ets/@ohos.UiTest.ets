@@ -558,7 +558,7 @@ export class Component {
     private native moveToSync(x:number, y:number): boolean;
     private native getWindowModeSync(): WindowMode;
     private native getBundleNameSync(): string;
-    private native getTitileSync(): string;
+    private native getTitleSync(): string;
     private native winGetBoundsSync(): Rect;
   
     split():Promise<void> {
@@ -721,9 +721,9 @@ export class Component {
         return promise;
     }
   
-    getTitile():Promise<string> {
+    getTitle():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Object) => void) => {
-        let promise1 = taskpool.execute(():string => this.getTitileSync());
+        let promise1 = taskpool.execute(():string => this.getTitleSync());
             promise1.then((e:NullishType)=>{
                 let value : string = e as string;
                 resolve(value);
