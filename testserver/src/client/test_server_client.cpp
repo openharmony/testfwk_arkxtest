@@ -161,7 +161,8 @@ namespace OHOS::testserver {
             return TEST_SERVER_GET_INTERFACE_FAILED;
         }
         bool result = false;
-        iTestServerInterface_->PublishCommonEvent(event, result);
+        auto ret = iTestServerInterface_->PublishCommonEvent(event, result);
+        HiLog::Info(LABEL, "%{public}s ipc ret = %{public}d.", __func__, ret);
         return result;
     }
 
