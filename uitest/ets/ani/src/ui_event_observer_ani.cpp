@@ -19,6 +19,10 @@
 #include "nlohmann/json.hpp"
 #include "common_utilities_hpp.h"
 #include "ui_event_observer_ani.h"
+#include "hilog/log.h"
+using namespace OHOS::HiviewDFX;
+
+constexpr OHOS::HiviewDFX::HiLogLabel LABEL = {LogType::LOG_CORE, 0xD003100, "UiTestKit"};
 
 namespace OHOS::uitest {
     using namespace nlohmann;
@@ -141,9 +145,9 @@ namespace OHOS::uitest {
             vm->DetachCurrentThread();
             return;
         }
-        auto bundleName = context->elmentInfo["bundleName"].dump();
-        auto cType = context->elmentInfo["type"].dump();
-        auto text = context->elmentInfo["text"].dump();
+        auto bundleName = context->elmentInfo["bundleName"].get<string>();
+        auto cType = context->elmentInfo["type"].get<string>();
+        auto text = context->elmentInfo["text"].get<string>();
         ani_string strBundleName;
         ani_string strType;
         ani_string strText;
