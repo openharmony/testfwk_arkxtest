@@ -19,6 +19,10 @@
 #include "nlohmann/json.hpp"
 #include "common_utilities_hpp.h"
 #include "ui_event_observer_ani.h"
+#include "hilog/log.h"
+using namespace OHOS::HiviewDFX;
+
+constexpr OHOS::HiviewDFX::HiLogLabel LABEL = {LogType::LOG_CORE, 0xD003100, "UiTestKit"};
 
 namespace OHOS::uitest {
     using namespace nlohmann;
@@ -41,7 +45,7 @@ namespace OHOS::uitest {
         auto &paramList = call.paramList_;
         // pop js_cb_function and save at local side
         if (paramList.size() < 1 || paramList.at(0).type() != detail::value_t::string) {
-            LOG_E("Missing event type argument");
+            HiLog::Error(LABEL,"Missing event type argument");
             out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Missing event type argument");
             return;
         }
@@ -50,22 +54,22 @@ namespace OHOS::uitest {
             // hold the jsObserver to avoid it be recycled, it's needed in performing callback
             ani_ref observerRef;
             if (env->GlobalReference_Create(static_cast<ani_ref>(observerObj), &observerRef) != ANI_OK) {
-                LOG_E("Create observerRef fail");
+                HiLog::Error(LABEL,"Create observerRef fail");
                 out.exception_ = ApiCallErr(ERR_INTERNAL, "Create observerRef fail");
                 return;
             }
-            LOG_D("Hold reference of %{public}s, ref: %{public}p", call.callerObjRef_.c_str(), observerRef);
+            HiLog::Debug(LABEL,"Hold reference of %{public}s, ref: %{public}p", call.callerObjRef_.c_str(), observerRef);
             g_jsRefs.insert({ call.callerObjRef_, observerRef });
         }
         const auto jsCbId = string("js_callback#") + to_string(++g_incJsCbId);
         // hold the const  to avoid it be recycled, it's needed in performing callback
         ani_ref callbackRef;
         if (env->GlobalReference_Create(static_cast<ani_ref>(callbackObj), &callbackRef) != ANI_OK) {
-            LOG_E("Create callbackRef fail");
+            HiLog::Error(LABEL,"Create callbackRef fail");
             out.exception_ = ApiCallErr(ERR_INTERNAL, "Create callbackRef fail");
             return;
         }
-        LOG_I("CbId = %{public}s, CbRef = %{public}p", jsCbId.c_str(), callbackRef);
+        HiLog::Info(LABEL,"CbId = %{public}s, CbRef = %{public}p", jsCbId.c_str(), callbackRef);
         g_jsRefs.insert({ jsCbId, callbackRef });
         // pass jsCbId instread of the function body
         call.paramList_.push_back(jsCbId); // observer.once(type, cllbackId)
@@ -84,10 +88,10 @@ namespace OHOS::uitest {
 
     static void InitCallbackContext(ani_env *env, const ApiCallInfo &in, ApiReplyInfo &out, EventCallbackContext &ctx)
     {
-        LOG_I("Handler api callback: %{public}s", in.apiId_.c_str());
+        HiLog::Info(LABEL,"Handler api callback: %{public}s", in.apiId_.c_str());
         if (in.apiId_ != "UIEventObserver.once") {
             out.exception_ = ApiCallErr(ERR_INTERNAL, "Api dose not support callback: " + in.apiId_);
-            LOG_E("%{public}s", out.exception_.message_.c_str());
+            HiLog::Error(LABEL,"%{public}s", out.exception_.message_.c_str());
             return;
         }
         DCHECK(env != nullptr);
@@ -98,18 +102,18 @@ namespace OHOS::uitest {
         auto &observerId = in.callerObjRef_;
         auto &elementInfo = in.paramList_.at(INDEX_ZERO);
         auto callbackId = in.paramList_.at(INDEX_ONE).get<string>();
-        LOG_I("Begin to callback UiEvent: observer=%{public}s, callback=%{public}s",
+        HiLog::Info(LABEL,"Begin to callback UiEvent: observer=%{public}s, callback=%{public}s",
               observerId.c_str(), callbackId.c_str());
         auto findObserver = g_jsRefs.find(observerId);
         auto findCallback = g_jsRefs.find(callbackId);
         if (findObserver == g_jsRefs.end()) {
             out.exception_ = ApiCallErr(INTERNAL_ERROR, "UIEventObserver is not referenced: " + observerId);
-            LOG_E("%{public}s", out.exception_.message_.c_str());
+            HiLog::Error(LABEL,"%{public}s", out.exception_.message_.c_str());
             return;
         }
         if (findCallback == g_jsRefs.end()) {
             out.exception_ = ApiCallErr(INTERNAL_ERROR, "JsCallbackFunction is not referenced: " + callbackId);
-            LOG_E("%{public}s", out.exception_.message_.c_str());
+            HiLog::Error(LABEL,"%{public}s", out.exception_.message_.c_str());
             return;
         }
         ctx.env = env;
@@ -129,7 +133,7 @@ namespace OHOS::uitest {
         ani_options aniArgs {0, nullptr};
         auto re = vm->AttachCurrentThread(&aniArgs, ANI_VERSION_1, &env);
         if (re != ANI_OK) {
-            LOG_E("AttachCurrentThread fail, result: %{public}d", re);
+            HiLog::Error(LABEL,"AttachCurrentThread fail, result: %{public}d", re);
             out.exception_ = ApiCallErr(ERR_INTERNAL, "AttachCurrentThread fail");
             return;
         }
@@ -137,13 +141,13 @@ namespace OHOS::uitest {
         InitCallbackContext(env, in, out, *context);
         if (out.exception_.code_ != NO_ERROR) {
             delete context;
-            LOG_W("InitCallbackContext failed, cannot perform callback");
+            HiLog::Warn(LABEL,"InitCallbackContext failed, cannot perform callback");
             vm->DetachCurrentThread();
             return;
         }
-        auto bundleName = context->elmentInfo["bundleName"].dump();
-        auto cType = context->elmentInfo["type"].dump();
-        auto text = context->elmentInfo["text"].dump();
+        auto bundleName = context->elmentInfo["bundleName"].get<string>();
+        auto cType = context->elmentInfo["type"].get<string>();
+        auto text = context->elmentInfo["text"].get<string>();
         ani_string strBundleName;
         ani_string strType;
         ani_string strText;
@@ -151,7 +155,7 @@ namespace OHOS::uitest {
         auto re2 = env->String_NewUTF8(cType.c_str(), cType.size(), &strType);
         auto re3 = env->String_NewUTF8(text.c_str(), text.size(), &strText);
         if (re1 != ANI_OK || re2 != ANI_OK || re3 != ANI_OK) {
-            LOG_E("Analysis uielementInfo fail");
+            HiLog::Error(LABEL,"Analysis uielementInfo fail");
             out.exception_ = ApiCallErr(ERR_INTERNAL, "Analysis uielementInfo fail");
             vm->DetachCurrentThread();
             return;
@@ -159,35 +163,35 @@ namespace OHOS::uitest {
         static const char *className = "L@ohos/UiTest/UIElementInfoInner;";
         ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
-            LOG_E("Not found class UIElementInfoInner");
+            HiLog::Error(LABEL,"Not found class UIElementInfoInner");
             out.exception_ = ApiCallErr(ERR_INTERNAL, "FindClass UIElementInfoInner fail");
             vm->DetachCurrentThread();
             return;
         }
         ani_method method;
         if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", ":V", &method)) {
-            LOG_E("Not found method of UIElementInfoInner");
+            HiLog::Error(LABEL,"Not found method of UIElementInfoInner");
             vm->DetachCurrentThread();
             return;
         }
         ani_object obj;
         if (ANI_OK != env->Object_New(cls, method, &obj)) {
-            LOG_E("Object_New UIElementInfoInner fail");
+            HiLog::Error(LABEL,"Object_New UIElementInfoInner fail");
             vm->DetachCurrentThread();
             return;
         }
         if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, "bundleName", reinterpret_cast<ani_ref>(strBundleName))) {
-            LOG_E("SetProperty  bundleName fail");
+            HiLog::Error(LABEL,"SetProperty  bundleName fail");
             vm->DetachCurrentThread();
             return;
         }
         if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, "type", reinterpret_cast<ani_ref>(strType))) {
-            LOG_E("SetProperty  type fail");
+            HiLog::Error(LABEL,"SetProperty  type fail");
             vm->DetachCurrentThread();
             return;
         }
         if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, "text", reinterpret_cast<ani_ref>(strText))) {
-            LOG_E("SetProperty  bundleName fail");
+            HiLog::Error(LABEL,"SetProperty  bundleName fail");
             vm->DetachCurrentThread();
             return;
         }
@@ -196,17 +200,17 @@ namespace OHOS::uitest {
         ani_ref result;
         if (ANI_OK != env->FunctionalObject_Call(reinterpret_cast<ani_fn_object>(context->callbackRef), tmp.size(),
             tmp.data(), &result)) {
-            LOG_E("HandleEventCallback fail");
+            HiLog::Error(LABEL,"HandleEventCallback fail");
             vm->DetachCurrentThread();
             return;
         }
         if (context->releaseObserver) {
-            LOG_D("Unref jsObserver: %{public}s", context->observerId.c_str());
+            HiLog::Debug(LABEL,"Unref jsObserver: %{public}s", context->observerId.c_str());
             env->GlobalReference_Delete(context->observerRef);
             g_jsRefs.erase(context->observerId);
         }
         if (context->releaseCallback) {
-            LOG_D("Unref jsCallback: %{public}s", context->callbackId.c_str());
+            HiLog::Debug(LABEL,"Unref jsCallback: %{public}s", context->callbackId.c_str());
             env->GlobalReference_Delete(context->callbackRef);
             g_jsRefs.erase(context->callbackId);
         }
