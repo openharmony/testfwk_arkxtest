@@ -446,6 +446,7 @@ namespace OHOS::uitest {
         {"Driver.penDoubleClick", "(Point):void", false, false},
         {"Driver.penSwipe", "(Point,Point,int?,float?):void", false, false},
         {"Driver.injectPenPointerAction", "(PointerMatrix,int?,float?):void", false, false},
+        {"Driver.crownRotate", "(int,int?):void", false, false, true},
     };
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",
