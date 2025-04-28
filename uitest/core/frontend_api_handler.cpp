@@ -1215,20 +1215,37 @@ namespace OHOS::uitest {
         };
         server.AddHandler("Driver.mouseMoveWithTrack", mouseSwipe);
         server.AddHandler("Driver.mouseDrag", mouseSwipe);
+    }
+
+    static void RegisterUiDriverMouseOperators3()
+    {
+        auto &server = FrontendApiServer::Get();
         auto mouseScroll = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
-            UiOpArgs uiOpArgs;
-            auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
-            auto point = Point(pointJson["x"], pointJson["y"], displayId);
-            auto scrollValue = ReadCallArg<int32_t>(in, INDEX_TWO);
-            auto adown = ReadCallArg<bool>(in, INDEX_ONE);
-            scrollValue = adown ? scrollValue : -scrollValue;
-            auto key1 = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
-            auto key2 = ReadCallArg<int32_t>(in, INDEX_FOUR, KEYCODE_NONE);
             const uint32_t maxScrollSpeed = 500;
             const uint32_t defaultScrollSpeed = 20;
-            auto speed = ReadCallArg<uint32_t>(in, INDEX_FIVE, defaultScrollSpeed);
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            Point point(0, 0);
+            uint32_t speed =  defaultScrollSpeed;
+            uint32_t scrollValue = 0;
+            UiOpArgs uiOpArgs;
+            auto key1 = KEYCODE_NONE;
+            auto key2 = KEYCODE_NONE;
+            if (in.apiId_ == "Driver.crownRotate") {
+                scrollValue = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+                speed = ReadCallArg<uint32_t>(in, INDEX_ONE, defaultScrollSpeed);
+                auto screenSize = driver.GetDisplaySize(out.exception_, UNASSIGNED);
+                point = Point(screenSize.px_ / 2, screenSize.py_ / 2, screenSize.displayId_);
+            } else if (in.apiId_ == "Driver.mouseScroll") {
+                auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
+                auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
+                point = Point(pointJson["x"], pointJson["y"], displayId);
+                scrollValue = ReadCallArg<int32_t>(in, INDEX_TWO);
+                auto adown = ReadCallArg<bool>(in, INDEX_ONE);
+                scrollValue = adown ? scrollValue : -scrollValue;
+                key1 = ReadCallArg<int32_t>(in, INDEX_THREE, KEYCODE_NONE);
+                key2 = ReadCallArg<int32_t>(in, INDEX_FOUR, KEYCODE_NONE);
+                speed = ReadCallArg<uint32_t>(in, INDEX_FIVE, defaultScrollSpeed);
+            }
             if (speed < 1 || speed > maxScrollSpeed) {
                 speed = defaultScrollSpeed;
             }
@@ -1236,6 +1253,7 @@ namespace OHOS::uitest {
             driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.mouseScroll", mouseScroll);
+        server.AddHandler("Driver.crownRotate", mouseScroll);
     }
 
     static void RegisterUiDriverTouchPadOperators()
@@ -1741,6 +1759,7 @@ static void RegisterExtensionHandler()
         RegisterUiDriverDisplayOperators();
         RegisterUiDriverMouseOperators1();
         RegisterUiDriverMouseOperators2();
+        RegisterUiDriverMouseOperators3();
         RegisterUiEventObserverMethods();
         RegisterExtensionHandler();
         RegisterUiDriverTouchPadOperators();
