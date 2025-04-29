@@ -472,11 +472,8 @@ namespace OHOS::uitest {
         auto find0 = find_if(begin0, end0, [&expect](const FrontEndClassDef *def) { return def->name_ == expect; });
         auto find1 = find_if(begin1, end1, [&expect](const FrontEndJsonDef *def) { return def->name_ == expect; });
         if (expect == "int") {
-            CHECK_CALL_ARG(isInteger, ERR_INVALID_INPUT, "Expect integer", error);
-            if (atoi(value.dump().c_str()) < 0) {
-                error = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which cannot be less than 0");
-                return;
-            }
+            CHECK_CALL_ARG(isInteger && atoi(value.dump().c_str()) > 0, ERR_INVALID_INPUT,
+                "Expect integer which cannot be less than 0", error);
         } else if (expect == "signedInt") {
             CHECK_CALL_ARG(isInteger, ERR_INVALID_INPUT, "Expect signedInt", error);
         } else if (expect == "float") {
