@@ -446,7 +446,7 @@ namespace OHOS::uitest {
         {"Driver.penDoubleClick", "(Point):void", false, false},
         {"Driver.penSwipe", "(Point,Point,int?,float?):void", false, false},
         {"Driver.injectPenPointerAction", "(PointerMatrix,int?,float?):void", false, false},
-        {"Driver.crownRotate", "(int,int?):void", false, false, true},
+        {"Driver.crownRotate", "(signedInt,int?):void", false, false, true},
     };
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",
@@ -548,6 +548,7 @@ namespace OHOS::uitest {
     /** The allowed in/out data type scope of frontend apis.*/
     const std::initializer_list<std::string_view> DATA_TYPE_SCOPE = {
         "int",
+        "signedInt",
         "float",
         "bool",
         "string",

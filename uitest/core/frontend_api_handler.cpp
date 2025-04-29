@@ -477,6 +477,8 @@ namespace OHOS::uitest {
                 error = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which cannot be less than 0");
                 return;
             }
+        } else if (expect == "signedInt") {
+            CHECK_CALL_ARG(isInteger, ERR_INVALID_INPUT, "Expect signedInt", error);
         } else if (expect == "float") {
             CHECK_CALL_ARG(isInteger || type == value_t::number_float, ERR_INVALID_INPUT, "Expect float", error);
         } else if (expect == "bool") {
@@ -1231,6 +1233,10 @@ namespace OHOS::uitest {
             auto key1 = KEYCODE_NONE;
             auto key2 = KEYCODE_NONE;
             if (in.apiId_ == "Driver.crownRotate") {
+                if (!driver.IsWearable()) {
+                    out.exception_ = ApiCallErr(ERR_NO_SYSTEM_CAPABILITY, "Capability not support");
+                    return;
+                }
                 scrollValue = ReadCallArg<uint32_t>(in, INDEX_ZERO);
                 speed = ReadCallArg<uint32_t>(in, INDEX_ONE, defaultScrollSpeed);
                 auto screenSize = driver.GetDisplaySize(out.exception_, UNASSIGNED);

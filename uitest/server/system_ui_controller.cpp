@@ -41,6 +41,7 @@
 #include "system_ui_controller.h"
 #include "test_server_client.h"
 #include "test_server_error_code.h"
+#include "parameters.h"
 
 using namespace std;
 using namespace chrono;
@@ -841,6 +842,17 @@ namespace OHOS::uitest {
     bool SysUiController::IsWorkable() const
     {
         return connected_;
+    }
+
+    bool SysUiController::IsWearable() const
+    {
+        constexpr char PROPERTY_DEVICE_TYPE[] = "const.product.devicetype";
+        constexpr char PROPERTY_DEVICE_TYPE_WEARABLE[] = "wearable";
+        auto deviceProp = system::GetParameter(PROPERTY_DEVICE_TYPE, "");
+        if (deviceProp == PROPERTY_DEVICE_TYPE_WEARABLE) {
+            return true;
+        }
+        return false;
     }
 
     bool SysUiController::GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode) const
