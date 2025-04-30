@@ -825,7 +825,7 @@ namespace OHOS::uitest {
         FrontendApiServer::Get().AddHandler("Driver.findWindow", findWindowHandler);
     }
 
-    static void RegisterUiDriverMethodsOne()
+    static void RegisterUiDriverMiscMethods()
     {
         auto &server = FrontendApiServer::Get();
         auto create = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -866,7 +866,7 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.screenCapture", screenCap);
     }
 
-    static void RegisterUiDriverMethodsTwo()
+    static void RegisterUiDriverKeyOperation()
     {
         auto &server = FrontendApiServer::Get();
         auto pressBack = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -902,7 +902,7 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.triggerCombineKeys", triggerCombineKeys);
     }
 
-    static void RegisterUiDriverMethodsThree()
+    static void RegisterUiDriverInputText()
     {
         auto &server = FrontendApiServer::Get();
         auto inputText = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1497,7 +1497,7 @@ static void RegisterExtensionHandler()
         server.AddHandler("Component.getDisplayId", GenericComponentAttrGetter<UiAttr::DISPLAY_ID>);
     }
 
-    static void RegisterUiComponentMethodOne()
+    static void RegisterUiComponentClickOperation()
     {
         auto &server = FrontendApiServer::Get();
         auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1511,7 +1511,22 @@ static void RegisterExtensionHandler()
                 wOp.GenericClick(TouchOp::LONG_CLICK, out.exception_);
             } else if (in.apiId_ == "Component.doubleClick") {
                 wOp.GenericClick(TouchOp::DOUBLE_CLICK_P, out.exception_);
-            } else if (in.apiId_ == "Component.scrollToTop") {
+            } 
+        };
+        server.AddHandler("Component.click", genericOperationHandler);
+        server.AddHandler("Component.longClick", genericOperationHandler);
+        server.AddHandler("Component.doubleClick", genericOperationHandler);
+    }
+
+    static void RegisterUiComponentMoveOperation()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &widget = GetBackendObject<Widget>(in.callerObjRef_);
+            auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto wOp = WidgetOperator(driver, widget, uiOpArgs);
+            if (in.apiId_ == "Component.scrollToTop") {
                 uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_ZERO, uiOpArgs.swipeVelocityPps_);
                 CheckSwipeVelocityPps(uiOpArgs);
                 wOp.ScrollToEnd(true, out.exception_);
@@ -1522,7 +1537,35 @@ static void RegisterExtensionHandler()
             } else if (in.apiId_ == "Component.dragTo") {
                 auto &widgetTo = GetBackendObject<Widget>(ReadCallArg<string>(in, INDEX_ZERO));
                 wOp.DragIntoWidget(widgetTo, out.exception_);
-            } else if (in.apiId_ == "Component.inputText") {
+            } else if (in.apiId_ == "Component.scrollSearch") {
+                auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
+                bool vertical = ReadCallArg<bool>(in, INDEX_ONE, true);
+                uiOpArgs.scrollWidgetDeadZone_ = ReadCallArg<int32_t>(in, INDEX_TWO, 80);
+                if (!wOp.CheckDeadZone(vertical, out.exception_)) {
+                    return;
+                }
+                auto res = wOp.ScrollFindWidget(selector, vertical, out.exception_);
+                if (res != nullptr) {
+                    out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
+                }
+            }
+        };
+        server.AddHandler("Component.scrollToTop", genericOperationHandler);
+        server.AddHandler("Component.scrollToBottom", genericOperationHandler);
+        server.AddHandler("Component.dragTo", genericOperationHandler);
+        server.AddHandler("Component.scrollSearch", genericOperationHandler);
+    }
+
+
+    static void RegisterUiComponentTextOperation()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &widget = GetBackendObject<Widget>(in.callerObjRef_);
+            auto &driver = GetBoundUiDriver(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto wOp = WidgetOperator(driver, widget, uiOpArgs);
+            if (in.apiId_ == "Component.inputText") {
                 auto inputModeJson = ReadCallArg<json>(in, INDEX_ONE, json());
                 ReadInputModeFromJson(inputModeJson, uiOpArgs.inputByPasteBoard_, uiOpArgs.inputAdditional_);
                 auto wOpToInput = WidgetOperator(driver, widget, uiOpArgs);
@@ -1531,17 +1574,11 @@ static void RegisterExtensionHandler()
                 wOp.InputText("", out.exception_);
             }
         };
-        server.AddHandler("Component.click", genericOperationHandler);
-        server.AddHandler("Component.longClick", genericOperationHandler);
-        server.AddHandler("Component.doubleClick", genericOperationHandler);
-        server.AddHandler("Component.scrollToTop", genericOperationHandler);
-        server.AddHandler("Component.scrollToBottom", genericOperationHandler);
-        server.AddHandler("Component.dragTo", genericOperationHandler);
         server.AddHandler("Component.inputText", genericOperationHandler);
         server.AddHandler("Component.clearText", genericOperationHandler);
     }
 
-    static void RegisterUiComponentMethodTwo()
+    static void RegisterUiComponentMiscMethod()
     {
         auto &server = FrontendApiServer::Get();
         auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1561,22 +1598,10 @@ static void RegisterExtensionHandler()
                     out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Expect integer which ranges from 0 to 1.");
                 }
                 wOp.PinchWidget(pinchScale, out.exception_);
-            } else if (in.apiId_ == "Component.scrollSearch") {
-                auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
-                bool vertical = ReadCallArg<bool>(in, INDEX_ONE, true);
-                uiOpArgs.scrollWidgetDeadZone_ = ReadCallArg<int32_t>(in, INDEX_TWO, 80);
-                if (!wOp.CheckDeadZone(vertical, out.exception_)) {
-                    return;
-                }
-                auto res = wOp.ScrollFindWidget(selector, vertical, out.exception_);
-                if (res != nullptr) {
-                    out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
-                }
             }
         };
         server.AddHandler("Component.pinchOut", genericOperationHandler);
         server.AddHandler("Component.pinchIn", genericOperationHandler);
-        server.AddHandler("Component.scrollSearch", genericOperationHandler);
     }
 
     static void RegisterUiWindowAttrGetters()
@@ -1746,13 +1771,15 @@ static void RegisterExtensionHandler()
         RegisterOnBuilders();
         RegisterUiDriverComponentFinders();
         RegisterUiDriverWindowFinder();
-        RegisterUiDriverMethodsOne();
-        RegisterUiDriverMethodsTwo();
-        RegisterUiDriverMethodsThree();
+        RegisterUiDriverMiscMethods();
+        RegisterUiDriverKeyOperation();
+        RegisterUiDriverInputText();
         RegisterUiDriverTouchOperators();
         RegisterUiComponentAttrGetters();
-        RegisterUiComponentMethodOne();
-        RegisterUiComponentMethodTwo();
+        RegisterUiComponentClickOperation();
+        RegisterUiComponentMoveOperation();
+        RegisterUiComponentTextOperation();
+        RegisterUiComponentMiscMethod();
         RegisterUiWindowAttrGetters();
         RegisterUiWindowOperators();
         RegisterUiWinBarOperators();
