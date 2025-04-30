@@ -1578,7 +1578,7 @@ static void RegisterExtensionHandler()
         server.AddHandler("Component.clearText", genericOperationHandler);
     }
 
-    static void RegisterUiComponentMiscMethod()
+    static void RegisterUiDriverMultiFingerOperations()
     {
         auto &server = FrontendApiServer::Get();
         auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1779,7 +1779,7 @@ static void RegisterExtensionHandler()
         RegisterUiComponentClickOperation();
         RegisterUiComponentMoveOperation();
         RegisterUiComponentTextOperation();
-        RegisterUiComponentMiscMethod();
+        RegisterUiDriverMultiFingerOperations();
         RegisterUiWindowAttrGetters();
         RegisterUiWindowOperators();
         RegisterUiWinBarOperators();
