@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-import Core from './src/core';
-import {TestType, Size, Level, DEFAULT} from './src/Constant';
-import DataDriver from './src/module/config/DataDriver';
-import ExpectExtend from './src/module/assert/ExpectExtend';
-import OhReport from './src/module/report/OhReport';
+import Core from './core.js';
+import {TestType, Size, Level, DEFAULT} from './Constant.js';
+import DataDriver from './module/config/DataDriver.js';
+import ExpectExtend from './module/assert/ExpectExtend.js';
+import OhReport from './module/report/OhReport.js';
 export { xdescribe, xit, describe, it } from './index.ts';
 
 export declare class Hypium {

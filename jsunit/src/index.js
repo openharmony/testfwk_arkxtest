@@ -13,15 +13,15 @@
  * limitations under the License.
  */
 
-import Core from './src/core';
-import { DEFAULT, TestType, Size, Level, TAG, PrintTag } from './src/Constant';
-import DataDriver from './src/module/config/DataDriver';
-import ExpectExtend from './src/module/assert/ExpectExtend';
-import OhReport from './src/module/report/OhReport';
-import SysTestKit from './src/module/kit/SysTestKit';
-import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified, xdescribe, xit } from './src/interface';
-import { MockKit, when } from './src/module/mock/MockKit';
-import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
+import Core from './core';
+import { DEFAULT, TestType, Size, Level, TAG, PrintTag } from './Constant';
+import DataDriver from './module/config/DataDriver';
+import ExpectExtend from './module/assert/ExpectExtend';
+import OhReport from './module/report/OhReport';
+import SysTestKit from './module/kit/SysTestKit';
+import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified, xdescribe, xit } from './interface';
+import { MockKit, when } from './module/mock/MockKit';
+import ArgumentMatchers from './module/mock/ArgumentMatchers';
 import worker from '@ohos.worker';
 
 class Hypium {
