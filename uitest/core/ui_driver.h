@@ -100,6 +100,8 @@ namespace OHOS::uitest {
 
         void SetAamsWorkMode(const AamsWorkMode mode);
 
+        bool IsWearable();
+
     private:
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction

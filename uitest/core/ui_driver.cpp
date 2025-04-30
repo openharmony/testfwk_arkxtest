@@ -633,4 +633,9 @@ namespace OHOS::uitest {
     {
         mode_ = mode;
     }
+
+    bool UiDriver::IsWearable()
+    {
+        return uiController_->IsWearable();
+    }
 } // namespace OHOS::uitest
