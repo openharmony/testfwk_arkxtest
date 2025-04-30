@@ -1511,7 +1511,7 @@ static void RegisterExtensionHandler()
                 wOp.GenericClick(TouchOp::LONG_CLICK, out.exception_);
             } else if (in.apiId_ == "Component.doubleClick") {
                 wOp.GenericClick(TouchOp::DOUBLE_CLICK_P, out.exception_);
-            } 
+            }
         };
         server.AddHandler("Component.click", genericOperationHandler);
         server.AddHandler("Component.longClick", genericOperationHandler);
