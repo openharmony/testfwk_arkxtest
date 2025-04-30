@@ -54,6 +54,8 @@ namespace OHOS::uitest {
 
         bool IsWorkable() const override;
 
+        bool IsWearable() const override;
+
         // setup method, connect to system ability AAMS
         bool ConnectToSysAbility(ApiCallErr &error);
 
