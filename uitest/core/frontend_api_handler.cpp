@@ -825,7 +825,7 @@ namespace OHOS::uitest {
         FrontendApiServer::Get().AddHandler("Driver.findWindow", findWindowHandler);
     }
 
-    static void RegisterUiDriverMiscMethods1()
+    static void RegisterUiDriverMethodsOne()
     {
         auto &server = FrontendApiServer::Get();
         auto create = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -866,7 +866,7 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.screenCapture", screenCap);
     }
 
-    static void RegisterUiDriverMiscMethods2()
+    static void RegisterUiDriverMethodsTwo()
     {
         auto &server = FrontendApiServer::Get();
         auto pressBack = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -902,7 +902,7 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.triggerCombineKeys", triggerCombineKeys);
     }
 
-    static void RegisterUiDriverMiscMethods3()
+    static void RegisterUiDriverMethodsThree()
     {
         auto &server = FrontendApiServer::Get();
         auto inputText = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1142,7 +1142,7 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.injectPenPointerAction", multiPointerAction);
     }
 
-    static void RegisterUiDriverMouseOperators1()
+    static void RegisterUiDriverMouseClickOperators()
     {
         auto &server = FrontendApiServer::Get();
         auto mouseClick = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1173,19 +1173,9 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.mouseClick", mouseClick);
         server.AddHandler("Driver.mouseDoubleClick", mouseClick);
         server.AddHandler("Driver.mouseLongClick", mouseClick);
-        auto mouseMoveTo = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
-            auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
-            UiOpArgs uiOpArgs;
-            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
-            auto point = Point(pointJson["x"], pointJson["y"], displayId);
-            auto touch = MouseMoveTo(point);
-            driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
-        };
-        server.AddHandler("Driver.mouseMoveTo", mouseMoveTo);
     }
 
-    static void RegisterUiDriverMouseOperators2()
+    static void RegisterUiDriverMouseMoveOperators()
     {
         auto &server = FrontendApiServer::Get();
         auto mouseSwipe = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1214,9 +1204,19 @@ namespace OHOS::uitest {
         };
         server.AddHandler("Driver.mouseMoveWithTrack", mouseSwipe);
         server.AddHandler("Driver.mouseDrag", mouseSwipe);
+        auto mouseMoveTo = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
+            UiOpArgs uiOpArgs;
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
+            auto point = Point(pointJson["x"], pointJson["y"], displayId);
+            auto touch = MouseMoveTo(point);
+            driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
+        };
+        server.AddHandler("Driver.mouseMoveTo", mouseMoveTo);
     }
 
-    static void RegisterUiDriverMouseOperators3()
+    static void RegisterUiDriverMouseScrollOperators()
     {
         auto &server = FrontendApiServer::Get();
         auto mouseScroll = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1497,7 +1497,7 @@ static void RegisterExtensionHandler()
         server.AddHandler("Component.getDisplayId", GenericComponentAttrGetter<UiAttr::DISPLAY_ID>);
     }
 
-    static void RegisterUiComponentOperators1()
+    static void RegisterUiComponentMethodOne()
     {
         auto &server = FrontendApiServer::Get();
         auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1541,7 +1541,7 @@ static void RegisterExtensionHandler()
         server.AddHandler("Component.clearText", genericOperationHandler);
     }
 
-    static void RegisterUiComponentOperators2()
+    static void RegisterUiComponentMethodTwo()
     {
         auto &server = FrontendApiServer::Get();
         auto genericOperationHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1746,13 +1746,13 @@ static void RegisterExtensionHandler()
         RegisterOnBuilders();
         RegisterUiDriverComponentFinders();
         RegisterUiDriverWindowFinder();
-        RegisterUiDriverMiscMethods1();
-        RegisterUiDriverMiscMethods2();
-        RegisterUiDriverMiscMethods3();
+        RegisterUiDriverMethodsOne();
+        RegisterUiDriverMethodsTwo();
+        RegisterUiDriverMethodsThree();
         RegisterUiDriverTouchOperators();
         RegisterUiComponentAttrGetters();
-        RegisterUiComponentOperators1();
-        RegisterUiComponentOperators2();
+        RegisterUiComponentMethodOne();
+        RegisterUiComponentMethodTwo();
         RegisterUiWindowAttrGetters();
         RegisterUiWindowOperators();
         RegisterUiWinBarOperators();
@@ -1760,9 +1760,9 @@ static void RegisterExtensionHandler()
         RegisterUiDriverFlingOperators();
         RegisterUiDriverMultiPointerOperators();
         RegisterUiDriverDisplayOperators();
-        RegisterUiDriverMouseOperators1();
-        RegisterUiDriverMouseOperators2();
-        RegisterUiDriverMouseOperators3();
+        RegisterUiDriverMouseClickOperators();
+        RegisterUiDriverMouseMoveOperators();
+        RegisterUiDriverMouseScrollOperators();
         RegisterUiEventObserverMethods();
         RegisterExtensionHandler();
         RegisterUiDriverTouchPadOperators();
