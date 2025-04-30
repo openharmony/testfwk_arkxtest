@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { TestType, Size, Level } from "./src/Constant";
+import { TestType, Size, Level } from "./Constant";
 
 export declare function xdescribe(testSuiteName: string, func: Function): void;
 
