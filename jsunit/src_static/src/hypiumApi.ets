@@ -80,7 +80,7 @@ const hypiumXdescribeReason = (reason: string) => {
     }
   };
 };
-const hypiumXit = (desc: string, filter: int, func: ItfnType) => {
+const hypiumXit = (desc: string, filter: int, func: (() => void) | (() => Promise<void>)) => {
   if (core) {
     return (core as Core).xit(desc, filter, func, '');
   }
