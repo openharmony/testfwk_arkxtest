@@ -138,7 +138,7 @@ class SysTestKit {
 }
 
 function executePromise(cmd: string, timeout: number) {
-  return new Promise<boolean>((resolve: (value: boolean) => void, reject: (value: object) => void) => {
+  return new Promise<boolean>((resolve: (value: boolean) => void, reject: (value: Error) => void) => {
     const delegator = SysTestKit.delegator;
     if (!delegator) {
       reject(new Error('delegator is null'));
