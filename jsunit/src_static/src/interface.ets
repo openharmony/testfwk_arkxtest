@@ -54,7 +54,7 @@ export interface StaticSpecIF {
   description: string;
   fi: int;
   fn?: () => void;
-  asyncFn?: (() => Promise<void>) | ((params: AnyType) => Promise<void>);
+  asyncFn?: () => Promise<void>;
 }
 
 export interface ServiceAttrIF {
@@ -238,7 +238,7 @@ export interface DataDriverSuite {
   describe?: string[];
   stress?: NumberType;
   it?: string;
-  params: Record<string, AnyType> | Record<string, AnyType>[]
+  params: Map<string, string>
   items?: DataDriverSuite[];
 }
 

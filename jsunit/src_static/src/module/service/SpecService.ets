@@ -6,7 +6,6 @@ import { StaticSuite } from './StaticSuite';
 import { TAG } from '../../Constant';
 import {
   processFunc,
-  processAsyncFunc,
   processFuncWithArgOne,
   processAsyncFuncWithArgOne,
   processFuncWithArgTwo,
@@ -16,8 +15,7 @@ import {
 } from '../../util';
 import { SuiteService } from './SuiteService';
 import { ConfigService } from '../config/configService';
-import DataDriver from '../config/DataDriver';
-import { ItfnType, AnyType } from '../types/common';
+import { ItfnType } from '../types/common';
 class SpecService {
   public id: string;
   public totalTest: int;
@@ -98,18 +96,10 @@ class SpecService {
           const argsCount = getFunctionArgumentsCount(funcStr);
 
           const isAsync = checkIsAsyncFunction(funcStr);
-          let processedFunc: (() => Promise<void>) | ((paramItem: AnyType) => Promise<void>) = (): Promise<void> => {
+          let processedFunc: () => Promise<void> = (): Promise<void> => {
             return Promise.resolve();
           };
-          if (argsCount === 2) {
-            if (isAsync) {
-              const fn = func as (done: () => void, param: AnyType) => Promise<void>;
-              processedFunc = processAsyncFuncWithArgTwo(coreContext, fn);
-            } else {
-              const fn = func as (done: () => void, param: AnyType) => void;
-              processedFunc = processFuncWithArgTwo(coreContext, fn);
-            }
-          } else if (argsCount === 1) {
+          if (argsCount === 1) {
             if (isAsync) {
               const fn = func as (done: () => void) => Promise<void>;
               processedFunc = processAsyncFuncWithArgOne(coreContext, fn);
@@ -118,13 +108,8 @@ class SpecService {
               processedFunc = processFuncWithArgOne(coreContext, fn);
             }
           } else {
-            if (isAsync) {
-              const fn = func as () => Promise<void>;
-              processedFunc = processAsyncFunc(coreContext, fn);
-            } else {
-              const fn = func as () => void;
-              processedFunc = processFunc(coreContext, fn);
-            }
+            const fn = func as () => Promise<void>;
+            processedFunc = processFunc(coreContext, fn);
           }
           const spec = new StaticSpec({ description: desc, fi: filter, asyncFn: processedFunc });
           if (this.isSkipSpec) {
@@ -141,15 +126,6 @@ class SpecService {
             cService.filterXdescribe.push(curSuite.description);
           }
           if (cService.dryRun !== 'true') {
-            const dataDriverMap = coreContext.getServices('dataDriver');
-            if (dataDriverMap) {
-              const dataDriver = dataDriverMap.get('dataDriver') as DataDriver;
-              const specStress = dataDriver.getSpecStress(desc);
-              for (let i = 1; i < specStress; i++) {
-                  this.totalTest++;
-                  curSuite.pushSpec(spec);
-              }
-            }
             let stress = cService.getStress(); // 命令配置压力测试
             for (let i = 1; i < stress; i++) {
               this.totalTest++;
