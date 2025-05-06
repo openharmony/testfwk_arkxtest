@@ -16,6 +16,7 @@
 #include <future>
 #include "ui_model.h"
 #include "ui_driver.h"
+#include "errno.h"
 
 namespace OHOS::uitest {
     using namespace std;
@@ -420,6 +421,9 @@ namespace OHOS::uitest {
             return;
         }
         FILE *fp = fdopen(fd, "wb");
+        if (fp  == NULL) {
+            LOG_E("open fail errno = %{public}d reason = %{public}s", errno, strerror(errno));
+        } 
         stringstream errorRecv;
         if (!uiController_->TakeScreenCap(fp, errorRecv, displayId, rect)) {
             string errStr = errorRecv.str();
