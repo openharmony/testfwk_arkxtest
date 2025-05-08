@@ -33,7 +33,13 @@ function assertPromiseIsRejectedWith(actualPromise: Promise<AnyType>, expectedVa
           pass: true,
           message: 'actualValue was rejected with ' + JSON.stringify(actualValue) + '.',
         };
-      } else {
+      } else if(actualValue instanceof Error && typeof expectedValue[0] === "string" && (actualValue as Error).message === expectedValue[0]) {
+        return {
+          pass: true,
+          message: 'actualValue was rejected with ' + (actualValue as Error).message + '.',
+        };
+      }
+      else {
         return {
           pass: false,
           message: tips(false) + ' but it was rejected with ' + JSON.stringify(actualValue) + '.',
