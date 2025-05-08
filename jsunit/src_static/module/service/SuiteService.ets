@@ -4,11 +4,12 @@ import { StaticSuite } from './StaticSuite';
 import { StaticSpec } from './StaticSpec';
 import { TAG } from '../../Constant';
 import { Core } from '../../core';
-import { processFunc, checkIsAsyncFunction } from '../../util';
+import { processFunc, processAsyncFunc, checkIsAsyncFunction } from '../../util';
 import { SysTestKit } from '../kit/SysTestKit';
 import { AssertException } from './AssertException';
 import { ConfigService } from '../config/configService';
 import { SpecService } from './SpecService';
+import DataDriver from '../config/DataDriver';
 
 class SuiteService {
   public id: string;
@@ -78,6 +79,15 @@ class SuiteService {
         }
         this.suiteSkipReason = '';
         this.isSkipSuite = false;
+
+        const dataDriverMap = core.getServices('dataDriver');
+        if (dataDriverMap && configService.dryRun !== 'true') {
+          const dataDriver = dataDriverMap.get('dataDriver') as DataDriver;
+          const suiteStress = dataDriver.getSuiteStress(desc);
+          for (let i = 1; i < suiteStress; i++) {
+            this.currentRunningSuite.childSuites.push(suite);
+          }
+        }
         this.currentRunningSuite.childSuites.push(suite);
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);
@@ -141,43 +151,90 @@ class SuiteService {
   beforeAll(func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
-      const fn = processFunc(core as Core, func);
-      this.currentRunningSuite.beforeAll.add(fn);
+      const funcStr = (func as object).toString();
+      const isAsyncFunc = checkIsAsyncFunction(funcStr);
+      if(isAsyncFunc) {
+        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
+        this.currentRunningSuite.beforeAll.add(fn); 
+      } else {
+        const fn = processFunc(core as Core, func as (() => void));
+        this.currentRunningSuite.beforeAll.add(fn);
+      }
     }
   }
 
   beforeEach(func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
-      this.currentRunningSuite.beforeEach.add(processFunc(core as Core, func));
+      const funcStr = (func as object).toString();
+      const isAsyncFunc = checkIsAsyncFunction(funcStr);
+      if(isAsyncFunc) {
+        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
+        this.currentRunningSuite.beforeEach.add(fn); 
+      } else {
+        const fn = processFunc(core as Core, func as (() => void));
+        this.currentRunningSuite.beforeEach.add(fn);
+      }
     }
   }
 
   beforeItSpecified(itDescs: string | string[], func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
-      this.currentRunningSuite.beforeItSpecified.set(itDescs, processFunc(core as Core, func));
+      const funcStr = (func as object).toString();
+      const isAsyncFunc = checkIsAsyncFunction(funcStr);
+      if(isAsyncFunc) {
+        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
+        this.currentRunningSuite.beforeItSpecified.set(itDescs, fn);
+      } else {
+        const fn = processFunc(core as Core, func as (() => void));
+        this.currentRunningSuite.beforeItSpecified.set(itDescs, fn);
+      }
     }
   }
 
   afterItSpecified(itDescs: string | string[], func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
-      this.currentRunningSuite.afterItSpecified.set(itDescs, processFunc(core as Core, func));
+      const funcStr = (func as object).toString();
+      const isAsyncFunc = checkIsAsyncFunction(funcStr);
+      if(isAsyncFunc) {
+        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
+        this.currentRunningSuite.afterItSpecified.set(itDescs, fn);
+      } else {
+        const fn = processFunc(core as Core, func as (() => void));
+        this.currentRunningSuite.afterItSpecified.set(itDescs, fn);
+      }
     }
   }
 
   afterAll(func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
-      this.currentRunningSuite.afterAll.add(processFunc(core as Core, func));
+      const funcStr = (func as object).toString();
+      const isAsyncFunc = checkIsAsyncFunction(funcStr);
+      if(isAsyncFunc) {
+        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
+        this.currentRunningSuite.afterAll.add(fn); 
+      } else {
+        const fn = processFunc(core as Core, func as (() => void));
+        this.currentRunningSuite.afterAll.add(fn);
+      }
     }
   }
 
   afterEach(func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core) {
-      this.currentRunningSuite.afterEach.add(processFunc(core as Core, func));
+      const funcStr = (func as object).toString();
+      const isAsyncFunc = checkIsAsyncFunction(funcStr);
+      if(isAsyncFunc) {
+        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
+        this.currentRunningSuite.afterEach.add(fn); 
+      } else {
+        const fn = processFunc(core as Core, func as (() => void));
+        this.currentRunningSuite.afterEach.add(fn);
+      }
     }
   }
 
