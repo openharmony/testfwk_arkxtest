@@ -71,8 +71,8 @@ namespace OHOS::uitest {
             if (json.contains("paste") && json["paste"].is_boolean()) {
                 paste = json["paste"];
             }
-            if (json.contains("additional") && json["additional"].is_boolean()) {
-                additional = json["additional"];
+            if (json.contains("addition") && json["addition"].is_boolean()) {
+                additional = json["addition"];
             }
         }
     }

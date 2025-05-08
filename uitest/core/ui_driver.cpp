@@ -577,7 +577,7 @@ namespace OHOS::uitest {
         }
         vector<KeyEvent> events;
         constexpr auto maxKeyEventCounts = 200;
-        if (!TextToKeyEvents(text, events, error) || !opt.inputByPasteBoard_ || text.length() > maxKeyEventCounts) {
+        if (!TextToKeyEvents(text, events, error) || opt.inputByPasteBoard_ || text.length() > maxKeyEventCounts) {
             LOG_D("inputText by pasteBoard");
             uiController_->PutTextToClipboard(text, error);
             if (error.code_ != NO_ERROR) {
