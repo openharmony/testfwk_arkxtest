@@ -25,12 +25,17 @@
 #include "socperf_client.h"
 #include <nlohmann/json.hpp>
 #include <sstream>
+#include "accesstoken_kit.h"
+#include "tokenid_kit.h"
+#include "memory_collector.h"
+
 namespace OHOS::testserver {
     // TEST_SERVER_SA_ID
     REGISTER_SYSTEM_ABILITY_BY_ID(TestServerService, TEST_SERVER_SA_ID, false); // SA run on demand
 
     using namespace std;
     using namespace OHOS::HiviewDFX;
+    using namespace OHOS::HiviewDFX::UCollectUtil;
     static constexpr OHOS::HiviewDFX::HiLogLabel LABEL_SERVICE = {LOG_CORE, 0xD003110, "TestServerService"};
     static constexpr OHOS::HiviewDFX::HiLogLabel LABEL_TIMER = {LOG_CORE, 0xD003110, "CallerDetectTimer"};
     static const int CALLER_DETECT_DURING = 10000;
@@ -312,4 +317,54 @@ namespace OHOS::testserver {
         }
     }
 
+    ErrCode TestServerService::CollectProcessMemory(const int32_t pid, ProcessMemoryInfo &processMemoryInfo)
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
+        CollectResult<ProcessMemory> processMemory = collector->CollectProcessMemory(pid);
+        if (processMemory.retCode != 0) {
+            HiLog::Error(LABEL_SERVICE, "%{public}s. Collect process memory failed.", __func__);
+            return TEST_SERVER_COLLECT_PROCESS_INFO_FAILED;
+        }
+        processMemoryInfo.pid = processMemory.data.pid;
+        processMemoryInfo.name = processMemory.data.name;
+        processMemoryInfo.rss = processMemory.data.rss;
+        processMemoryInfo.pss = processMemory.data.pss;
+        processMemoryInfo.swapPss = processMemory.data.swapPss;
+        processMemoryInfo.adj = processMemory.data.adj;
+        processMemoryInfo.sharedDirty = processMemory.data.sharedDirty;
+        processMemoryInfo.privateDirty = processMemory.data.privateDirty;
+        processMemoryInfo.sharedClean = processMemory.data.sharedClean;
+        processMemoryInfo.privateClean = processMemory.data.privateClean;
+        processMemoryInfo.procState = processMemory.data.procState;
+        HiLog::Info(LABEL_SERVICE, "%{public}s. Collect process memory success.", __func__);
+        return TEST_SERVER_OK;
+    }
+
+    ErrCode TestServerService::CollectProcessCpu(const int32_t pid, bool isNeedUpdate, ProcessCpuInfo &processCpuInfo)
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        if (cpuCollector_ == nullptr) {
+            cpuCollector_ = CpuCollector::Create();
+        }
+        CollectResult<ProcessCpuStatInfo> processCpuStatInfo =
+                                            cpuCollector_->CollectProcessCpuStatInfo(pid, isNeedUpdate);
+        if (processCpuStatInfo.retCode != 0) {
+            HiLog::Error(LABEL_SERVICE, "%{public}s. Collect process cpu failed.", __func__);
+            return TEST_SERVER_COLLECT_PROCESS_INFO_FAILED;
+        }
+        processCpuInfo.startTime = processCpuStatInfo.data.startTime;
+        processCpuInfo.endTime = processCpuStatInfo.data.endTime;
+        processCpuInfo.pid = processCpuStatInfo.data.pid;
+        processCpuInfo.minFlt = processCpuStatInfo.data.minFlt;
+        processCpuInfo.majFlt = processCpuStatInfo.data.majFlt;
+        processCpuInfo.cpuLoad = processCpuStatInfo.data.cpuLoad;
+        processCpuInfo.uCpuUsage = processCpuStatInfo.data.uCpuUsage;
+        processCpuInfo.sCpuUsage = processCpuStatInfo.data.sCpuUsage;
+        processCpuInfo.cpuUsage = processCpuStatInfo.data.cpuUsage;
+        processCpuInfo.procName = processCpuStatInfo.data.procName;
+        processCpuInfo.threadCount = processCpuStatInfo.data.threadCount;
+        HiLog::Info(LABEL_SERVICE, "%{public}s. Collect process cpu success.", __func__);
+        return TEST_SERVER_OK;
+    }
 } // namespace OHOS::testserver
