@@ -21,8 +21,10 @@
 #include "itest_server_interface.h"
 #include <common_event_manager.h>
 #include <common_event_subscribe_info.h>
+#include "memory.h"
 
 namespace OHOS::testserver {
+
     class TestServerClient {
     public:
         static TestServerClient &GetInstance();
@@ -31,13 +33,16 @@ namespace OHOS::testserver {
         bool PublishCommonEvent(const EventFwk::CommonEventData &event);
         void FrequencyLock();
         int32_t SpDaemonProcess(int daemonCommand, std::string extraInfo);
+        int32_t CollectProcessMemory(int32_t &pid, ProcessMemoryInfo &processMemoryInfo);
+        int32_t CollectProcessCpu(int32_t &pid, bool isNeedUpdate, ProcessCpuInfo &processCpuInfo);
     private:
-        TestServerClient() = default;
+        TestServerClient();
         ~TestServerClient() = default;
         void InitLoadState();
         bool WaitLoadStateChange(int32_t systemAbilityId);
 
         sptr<IRemoteObject> remoteObject_ = nullptr;
+        sptr<ITestServerInterface> iTestServerInterface_ = nullptr;
     };
 } // namespace OHOS::testserver
 

@@ -13,6 +13,9 @@
  * limitations under the License.
  */
 
+package OHOS.testserver;
+import Types;
+
 sequenceable SessionToken..OHOS.testserver.SessionToken;
 sequenceable CommonEventData..OHOS.EventFwk.CommonEventData;
 interface OHOS.testserver.ITestServerInterface {
@@ -21,4 +24,6 @@ interface OHOS.testserver.ITestServerInterface {
     void PublishCommonEvent([in] CommonEventData event, [out] boolean re);
     void FrequencyLock();
     void SpDaemonProcess([in] int daemonCommand, [in] String extraInfo);
+    void CollectProcessMemory([in] int pid, [out] ProcessMemoryInfo processMemoryInfo);
+    void CollectProcessCpu([in] int pid, [in] boolean isNeedUpdate, [out] ProcessCpuInfo processCpuInfo);
 }

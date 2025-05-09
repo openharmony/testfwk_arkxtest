@@ -14,7 +14,10 @@
     "component": {
       "name": "arkxtest",
       "subsystem": "testfwk",
-      "syscap": [ "SystemCapability.Test.UiTest" ],
+      "syscap": [ 
+        "SystemCapability.Test.UiTest",
+        "SystemCapability.Test.PerfTest"
+      ],
       "adapted_system_type": [ 
         "standard"
       ],
@@ -23,6 +26,7 @@
       "ram": "100KB",
       "deps": {
         "components": [
+          "access_token",
           "common_event_service",
           "ipc",
           "ability_base",
@@ -45,7 +49,9 @@
           "access_token",
 	        "graphic_2d",
           "libuv",
-          "udmf"
+          "udmf",
+          "hiview",
+          "hisysevent"
         ],
         "third_party": [
           "libpng",
@@ -59,7 +65,8 @@
             "//test/testfwk/arkxtest/testserver/init:testserver_etc",
             "//test/testfwk/arkxtest/testserver/sa_profile:testserver_sa_profile",
             "//test/testfwk/arkxtest/testserver/src:test_server_service",
-            "//test/testfwk/arkxtest/testserver/src:test_server_client"
+            "//test/testfwk/arkxtest/testserver/src:test_server_client",
+            "//test/testfwk/arkxtest/perftest:perftestkit"
         ],
         "inner_api": [
           {
