@@ -438,7 +438,7 @@ namespace OHOS::uitest {
         {"Driver.mouseMoveWithTrack", "(Point,Point,int?):void", false, false},
         {"Driver.mouseDrag", "(Point,Point,int?,int?):void", false, false},
         {"Driver.mouseScroll", "(Point,bool,int,int?,int?,int?):void", false, false},
-        {"Driver.createUIEventObserver", "():UIEventObserver", false, false},
+        {"Driver.createUIEventObserver", "():UIEventObserver", false, true},
         {"Driver.inputText", "(Point,string,InputTextMode?):void", false, false},
         {"Driver.touchPadMultiFingerSwipe", "(int,int,TouchPadSwipeOptions?):void", false, false},
         {"Driver.penClick", "(Point):void", false, false},
