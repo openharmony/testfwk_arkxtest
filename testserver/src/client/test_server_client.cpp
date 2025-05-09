@@ -186,6 +186,26 @@ namespace OHOS::testserver {
 
         return iTestServerInterface_->SpDaemonProcess(daemonCommand, extraInfo);
     }
+
+    int32_t TestServerClient::CollectProcessMemory(int32_t &pid, ProcessMemoryInfo &processMemoryInfo)
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        return iTestServerInterface_->CollectProcessMemory(pid, processMemoryInfo);
+    }
+
+    int32_t TestServerClient::CollectProcessCpu(int32_t &pid, bool isNeedUpdate, ProcessCpuInfo &processCpuInfo)
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        return iTestServerInterface_->CollectProcessCpu(pid, isNeedUpdate, processCpuInfo);
+    }
 } // namespace OHOS::testserver
 
 void FrequencyLockPlugin()
