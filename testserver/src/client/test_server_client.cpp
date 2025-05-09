@@ -93,6 +93,11 @@ namespace OHOS::testserver {
         sptr<IRemoteObject> remoteObject_ = nullptr;
     };
 
+    TestServerClient::TestServerClient()
+    {
+        iTestServerInterface_ = LoadTestServer();
+    }
+
     sptr<ITestServerInterface> TestServerClient::LoadTestServer()
     {
         const int32_t systemAbilityId = TEST_SERVER_SA_ID;
@@ -141,47 +146,64 @@ namespace OHOS::testserver {
     int32_t TestServerClient::SetPasteData(std::string text)
     {
         HiLog::Info(LABEL, "%{public}s called.", __func__);
-        auto iTestServerInterface = LoadTestServer();
-        if (iTestServerInterface == nullptr) {
+        if (iTestServerInterface_ == nullptr) {
             HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
             return TEST_SERVER_GET_INTERFACE_FAILED;
         }
-        return iTestServerInterface->SetPasteData(text);
+        return iTestServerInterface_->SetPasteData(text);
     }
 
     bool TestServerClient::PublishCommonEvent(const EventFwk::CommonEventData &event)
     {
         HiLog::Info(LABEL, "%{public}s called.", __func__);
-        auto iTestServerInterface = LoadTestServer();
-        if (iTestServerInterface == nullptr) {
+        if (iTestServerInterface_ == nullptr) {
             HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
             return TEST_SERVER_GET_INTERFACE_FAILED;
         }
         bool result = false;
-        iTestServerInterface->PublishCommonEvent(event, result);
+        auto ret = iTestServerInterface_->PublishCommonEvent(event, result);
+        HiLog::Info(LABEL, "%{public}s ipc ret = %{public}d.", __func__, ret);
         return result;
     }
 
     void TestServerClient::FrequencyLock()
     {
-        auto iTestServerInterface = LoadTestServer();
-        if (iTestServerInterface == nullptr) {
+        if (iTestServerInterface_ == nullptr) {
             HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
             return;
         }
-        iTestServerInterface->FrequencyLock();
+        iTestServerInterface_->FrequencyLock();
         return;
     }
 
     int32_t TestServerClient::SpDaemonProcess(int daemonCommand, std::string extraInfo)
     {
-        auto iTestServerInterface = LoadTestServer();
-        if (iTestServerInterface == nullptr) {
+        if (iTestServerInterface_ == nullptr) {
             HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
             return TEST_SERVER_GET_INTERFACE_FAILED;
         }
 
-        return iTestServerInterface->SpDaemonProcess(daemonCommand, extraInfo);
+        return iTestServerInterface_->SpDaemonProcess(daemonCommand, extraInfo);
+    }
+
+    int32_t TestServerClient::CollectProcessMemory(int32_t &pid, ProcessMemoryInfo &processMemoryInfo)
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        return iTestServerInterface_->CollectProcessMemory(pid, processMemoryInfo);
+    }
+
+    int32_t TestServerClient::CollectProcessCpu(int32_t &pid, bool isNeedUpdate, ProcessCpuInfo &processCpuInfo)
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        return iTestServerInterface_->CollectProcessCpu(pid, isNeedUpdate, processCpuInfo);
     }
 } // namespace OHOS::testserver
 
