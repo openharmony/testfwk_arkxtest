@@ -1158,7 +1158,7 @@ namespace OHOS::uitest {
             uiOpArgs.longClickHoldMs_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.longClickHoldMs_);
             const uint32_t minLongClickHoldMs = 1500;
             if (uiOpArgs.longClickHoldMs_ < minLongClickHoldMs) {
-                out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invialid longclick hold time");
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Invialid longclick hold time");
                 return;
             }
             auto op = TouchOp::CLICK;
@@ -1188,10 +1188,10 @@ namespace OHOS::uitest {
             auto to = Point(pointJson2["x"], pointJson2["y"], displayId2);
             UiOpArgs uiOpArgs;
             uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
-            uiOpArgs.longClickHoldMs_ = ReadCallArg<uint32_t>(in, INDEX_FOUR, uiOpArgs.longClickHoldMs_);
+            uiOpArgs.longClickHoldMs_ = ReadCallArg<uint32_t>(in, INDEX_THREE, uiOpArgs.longClickHoldMs_);
             const uint32_t minLongClickHoldMs = 1500;
             if (uiOpArgs.longClickHoldMs_ < minLongClickHoldMs) {
-                out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invialid longclick hold time");
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Invialid longclick hold time");
                 return;
             }
             CheckSwipeVelocityPps(uiOpArgs);
