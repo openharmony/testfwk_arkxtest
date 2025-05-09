@@ -1,0 +1,169 @@
+# Copyright (c) 2025 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/config/components/ets_frontend/es2abc_config.gni")
+import("//build/ohos.gni")
+
+config("perftest_common_configs") {
+  cflags = [
+    "-Wfloat-equal",
+    "-Wformat=2",
+    "-Wshadow",
+  ]
+}
+common_external_deps = [
+  "c_utils:utils",
+  "hilog:libhilog",
+  "json:nlohmann_json_static",
+]
+
+ohos_static_library("perftest_core") {
+  use_exceptions = true
+  configs = [ ":perftest_common_configs" ]
+  sources = [
+    "./core/src/start_daemon.cpp",
+    "./core/src/frontend_api_handler.cpp",
+    "./core/src/perf_test.cpp",
+    "./core/src/perf_test_strategy.cpp",
+    "./collection/src/data_collection.cpp",
+    "./collection/src/duration_collection.cpp",
+    "./collection/src/cpu_collection.cpp",
+    "./collection/src/memory_collection.cpp",
+    "./collection/src/app_start_time_collection.cpp",
+    "./collection/src/page_switch_time_collection.cpp",
+    "./collection/src/list_swipe_fps_collection.cpp",
+  ]
+  include_dirs = [
+    "./connection/include",
+    "./core/include",
+    "./collection/include",
+  ]
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"PerfTest_Server\"",
+  ]
+  deps = [ "../testserver/src:test_server_client" ]
+  external_deps = [
+    "ability_base:want",
+    "common_event_service:cesfwk_innerkits",
+    "ipc:ipc_core",
+    "hiview:libucollection_utility",
+    "hisysevent:libhisysevent",
+    "hisysevent:libhisyseventmanager",
+  ]
+  external_deps += common_external_deps
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
+}
+
+ohos_static_library("perftest_ipc") {
+  configs = [ ":perftest_common_configs" ]
+  sources = [
+    "./connection/src/api_caller_client.cpp", 
+    "./connection/src/api_caller_server.cpp", 
+    "./connection/src/ipc_transactor.cpp",
+  ]
+  include_dirs = [ 
+    "./connection/include",
+    "./core/include",
+  ]
+  deps = [ "../testserver/src:test_server_client" ]
+  external_deps = [
+    "ability_base:want",
+    "common_event_service:cesfwk_innerkits",
+    "ipc:ipc_core",
+    "samgr:samgr_proxy",
+  ]
+  external_deps += common_external_deps
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"PerfTest_Conn\"",
+  ]
+}
+
+ohos_executable("perftest_server") {
+  configs = [ ":perftest_common_configs" ]
+  deps = [
+    ":perftest_ipc",
+    ":perftest_core",
+  ]
+  external_deps = [
+    "hilog:libhilog",
+  ]
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
+  output_name = "perftest"
+  install_enable = true
+}
+
+es2abc_gen_abc("gen_perftest_exporter_abc") {
+  src_js = rebase_path("./napi/src/perftest_exporter.js")
+  dst_file = rebase_path(target_out_dir + "/perftest_exporter.abc")
+  in_puts = [ "./napi/src/perftest_exporter.js" ]
+  out_puts = [ target_out_dir + "/perftest_exporter.abc" ]
+  extra_args = [ "--module" ]
+}
+
+gen_js_obj("perftest_exporter_js") {
+  input = "./napi/src/perftest_exporter.js"
+  output = target_out_dir + "/perftest_exporter.o"
+}
+
+gen_js_obj("perftest_exporter_abc") {
+  input = get_label_info(":gen_exporter_abc", "target_out_dir") +
+          "/perftest_exporter.abc"
+  output = target_out_dir + "/perftest_exporter_abc.o"
+  dep = ":gen_perftest_exporter_abc"
+}
+
+ohos_shared_library("perftest_client") {
+  configs = [ ":perftest_common_configs" ]
+  sources = [
+    "./napi/src/perftest_napi.cpp",
+    "./napi/src/callback_code_napi.cpp",
+  ]
+  include_dirs = [
+    "./core/include",
+    "./connection/include",
+    "./napi/include",
+  ]
+  deps = [
+    ":perftest_exporter_abc",
+    ":perftest_exporter_js",
+    ":perftest_ipc",
+  ]
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
+  output_name = "perftest"
+  external_deps = common_external_deps
+  external_deps += [
+    "ability_base:want",
+    "common_event_service:cesfwk_innerkits",
+    "libuv:uv",
+    "napi:ace_napi",
+  ]
+  relative_install_dir = "module/test"
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"PerfTest_Client\"",
+  ]
+}
+
+group("perftestkit") {
+  deps = [
+    ":perftest_client",
+    ":perftest_server",
+  ]
+}

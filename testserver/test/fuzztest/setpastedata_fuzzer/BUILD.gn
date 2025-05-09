@@ -25,6 +25,7 @@ ohos_fuzztest("SetPasteDataFuzzTest") {
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
     "hilog:libhilog",
+    "hiview:libucollection_utility",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
   ]

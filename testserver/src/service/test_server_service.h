@@ -26,6 +26,7 @@
 #include "session_token.h"
 #include <common_event_manager.h>
 #include <common_event_subscribe_info.h>
+#include "cpu_collector.h"
 
 namespace OHOS::testserver {
     class TestServerService : public SystemAbility, public TestServerInterfaceStub {
@@ -37,6 +38,7 @@ namespace OHOS::testserver {
 
         void StartCallerDetectTimer();
         void KillProcess(const std::string& processName);
+        bool RetailDemoAppVerify();
         ErrCode CreateSession(const SessionToken &sessionToken) override;
 
         // Declare the logical interfaces here
@@ -47,6 +49,10 @@ namespace OHOS::testserver {
         ErrCode FrequencyLock() override;
 
         ErrCode SpDaemonProcess(int daemonCommand, const std::string& extraInfo) override;
+
+        ErrCode CollectProcessMemory(const int32_t pid, ProcessMemoryInfo &processMemoryInfo) override;
+
+        ErrCode CollectProcessCpu(const int32_t pid, bool isNeedUpdate, ProcessCpuInfo &processCpuInfo) override;
 
     protected:
         void OnStart() override;
@@ -87,6 +93,7 @@ namespace OHOS::testserver {
         };
 
         CallerDetectTimer* callerDetectTimer_;
+        std::shared_ptr<HiviewDFX::UCollectUtil::CpuCollector> cpuCollector_;
     };
 } // namespace OHOS::testserver
 
