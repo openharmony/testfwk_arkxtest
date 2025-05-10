@@ -273,6 +273,7 @@ ohos_shared_library("uitest_client") {
     "ipc:ipc_single",
     "libuv:uv",
     "napi:ace_napi",
+    "samgr:samgr_proxy",
   ]
   relative_install_dir = "module"
   defines = [
