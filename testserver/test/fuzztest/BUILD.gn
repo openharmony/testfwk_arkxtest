@@ -14,7 +14,7 @@
 import("//build/config/features.gni")
 import("//build/test.gni")
 
-group("fuzztest") {
+group("testserver_fuzztest") {
   testonly = true
   deps = []
   deps += [

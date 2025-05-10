@@ -136,7 +136,7 @@ namespace OHOS::testserver {
             return nullptr;
         }
         sptr<SessionToken> sessionToken = new (std::nothrow) SessionToken();
-        if (iTestServerInterface->CreateSession(*sessionToken) != TEST_SERVER_OK) {
+        if (sessionToken == nullptr || iTestServerInterface->CreateSession(*sessionToken) != TEST_SERVER_OK) {
             HiLog::Error(LABEL, "%{public}s. Create session FAILED", __func__);
             return nullptr;
         }
