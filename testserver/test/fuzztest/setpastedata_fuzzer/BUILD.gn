@@ -26,6 +26,7 @@ ohos_fuzztest("SetPasteDataFuzzTest") {
     "common_event_service:cesfwk_innerkits",
     "hilog:libhilog",
     "ipc:ipc_core",
+    "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
   include_dirs = [

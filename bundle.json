@@ -88,7 +88,7 @@
     "test": [
       "//test/testfwk/arkxtest/uitest:uitestkit_test",
       "//test/testfwk/arkxtest/testserver/test/unittest:testserver_unittest",
-      "//test/testfwk/arkxtest/testserver/test/fuzztest:fuzztest"
+      "//test/testfwk/arkxtest/testserver/test/fuzztest:testserver_fuzztest"
     ]
       }
     }
