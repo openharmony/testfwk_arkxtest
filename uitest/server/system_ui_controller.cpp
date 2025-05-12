@@ -40,6 +40,8 @@
 #include "element_node_iterator_impl.h"
 #include "system_ui_controller.h"
 #include "test_server_client.h"
+#include "test_server_error_code.h"
+#include "parameters.h"
 
 using namespace std;
 using namespace chrono;
@@ -822,14 +824,35 @@ namespace OHOS::uitest {
         }
     }
 
-    void SysUiController::PutTextToClipboard(string_view text) const
+    void SysUiController::PutTextToClipboard(string_view text, ApiCallErr &error) const
     {
-        OHOS::testserver::TestServerClient::GetInstance().SetPasteData(string(text));
+        auto ret = OHOS::testserver::TestServerClient::GetInstance().SetPasteData(string(text));
+        if (ret != OHOS::testserver::TEST_SERVER_OK) {
+            LOG_E("Set pasteBoard data failed.");
+            error = ApiCallErr(ERR_INTERNAL, "Set pasteBoard data failed.");
+            if (ret != OHOS::testserver::TEST_SERVER_SET_PASTE_DATA_FAILED) {
+                error.code_ = ERR_NO_SYSTEM_CAPABILITY;
+            }
+            return;
+        }
+        static constexpr auto sliceMs = 500;
+        this_thread::sleep_for(chrono::milliseconds(sliceMs));
     }
 
     bool SysUiController::IsWorkable() const
     {
         return connected_;
+    }
+
+    bool SysUiController::IsWearable() const
+    {
+        constexpr char PROPERTY_DEVICE_TYPE[] = "const.product.devicetype";
+        constexpr char PROPERTY_DEVICE_TYPE_WEARABLE[] = "wearable";
+        auto deviceProp = system::GetParameter(PROPERTY_DEVICE_TYPE, "");
+        if (deviceProp == PROPERTY_DEVICE_TYPE_WEARABLE) {
+            return true;
+        }
+        return false;
     }
 
     bool SysUiController::GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode) const

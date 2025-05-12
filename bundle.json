@@ -68,7 +68,8 @@
             "header": {
               "header_base": [
                 "${root_out_dir}/gen/test/testfwk/arkxtest/testserver/src",
-                "//test/testfwk/arkxtest/testserver/src/client"
+                "//test/testfwk/arkxtest/testserver/src/client",
+                "//test/testfwk/arkxtest/testserver/src/utils"
               ],
               "header_files": [
                 "itest_server_interface.h",

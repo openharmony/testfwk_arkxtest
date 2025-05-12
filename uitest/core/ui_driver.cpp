@@ -570,22 +570,25 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void UiDriver::InputText(string_view text, ApiCallErr &error)
+    void UiDriver::InputText(string_view text, ApiCallErr &error, const UiOpArgs &opt)
     {
+        if (text.empty()) {
+            return;
+        }
         vector<KeyEvent> events;
-        UiOpArgs uiOpArgs;
-        if (!text.empty()) {
-            constexpr auto maxKeyEventCounts = 200;
-            if (text.length() < maxKeyEventCounts && TextToKeyEvents(text, events, error)) {
-                LOG_D("inputText by Keycode");
-                auto keyActionForInput = KeysForwarder(events);
-                TriggerKey(keyActionForInput, uiOpArgs, error);
-            } else {
-                uiController_->PutTextToClipboard(text);
-                LOG_D("inputText by pasteBoard");
-                auto actionForPatse = CombinedKeys(KEYCODE_CTRL, KEYCODE_V, KEYCODE_NONE);
-                TriggerKey(actionForPatse, uiOpArgs, error);
+        constexpr auto maxKeyEventCounts = 200;
+        if (!TextToKeyEvents(text, events, error) || opt.inputByPasteBoard_ || text.length() > maxKeyEventCounts) {
+            LOG_D("inputText by pasteBoard");
+            uiController_->PutTextToClipboard(text, error);
+            if (error.code_ != NO_ERROR) {
+                return;
             }
+            auto actionForPatse = CombinedKeys(KEYCODE_CTRL, KEYCODE_V, KEYCODE_NONE);
+            TriggerKey(actionForPatse, opt, error);
+        } else {
+            LOG_D("inputText by Keycode");
+            auto keyActionForInput = KeysForwarder(events);
+            TriggerKey(keyActionForInput, opt, error);
         }
     }
 
@@ -629,5 +632,10 @@ namespace OHOS::uitest {
     void UiDriver::SetAamsWorkMode(const AamsWorkMode mode)
     {
         mode_ = mode;
+    }
+
+    bool UiDriver::IsWearable()
+    {
+        return uiController_->IsWearable();
     }
 } // namespace OHOS::uitest

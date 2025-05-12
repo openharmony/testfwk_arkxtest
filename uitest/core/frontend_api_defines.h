@@ -51,6 +51,8 @@ namespace OHOS::uitest {
         ERR_INVALID_INPUT = 401,
         /**The specified SystemCapability name was not found.*/
         ERR_NO_SYSTEM_CAPABILITY = 801,
+        /**Invalid input parameter.*/
+        ERR_INVALID_PARAM = 17000007,
     };
 
     const std::map<ErrCode, std::string> ErrDescMap = {
@@ -93,12 +95,14 @@ namespace OHOS::uitest {
         std::string callerObjRef_;
         nlohmann::json paramList_ = nlohmann::json::array();
         int32_t fdParamIndex_ = -1; // support fd as param
+        bool convertError_ = false;
     };
 
     /**Structure wraps the api-call reply.*/
     struct ApiReplyInfo {
         nlohmann::json resultValue_ = nullptr;
         ApiCallErr exception_ = ApiCallErr(NO_ERROR);
+        bool convertError_ = false;
     };
 
     /** Specifications of a frontend enumerator value.*/
@@ -133,6 +137,7 @@ namespace OHOS::uitest {
         std::string_view signature_;
         bool static_;
         bool fast_;
+        bool convertError_ = false;
     };
 
     /** Specifications of a frontend class.*/
@@ -259,6 +264,17 @@ namespace OHOS::uitest {
         "WindowFilter",
         WINDOW_FILTER_PROPERTIES,
         sizeof(WINDOW_FILTER_PROPERTIES) / sizeof(FrontEndJsonPropDef),
+    };
+
+    /** InputTextMode jsonObject definition.*/
+    constexpr FrontEndJsonPropDef INPUTTEXT_MODE_PROPERTIES[] = {
+        {"paste", "bool", false},
+        {"addition", "bool", false},
+    };
+    constexpr FrontEndJsonDef INPUTTEXT_MODE_DEF = {
+        "InputTextMode",
+        INPUTTEXT_MODE_PROPERTIES,
+        sizeof(INPUTTEXT_MODE_PROPERTIES) / sizeof(FrontEndJsonPropDef),
     };
 
     /** UIElementInfo jsonObject definition.*/
@@ -396,12 +412,14 @@ namespace OHOS::uitest {
         {"Driver.click", "(Point):void", false, false},
         {"Driver.longClick", "(int,int):void", false, false},
         {"Driver.longClick", "(Point):void", false, false},
+        {"Driver.longClickAt", "(Point, int?):void", false, false, true},
         {"Driver.doubleClick", "(int,int):void", false, false},
         {"Driver.doubleClick", "(Point):void", false, false},
         {"Driver.swipe", "(int,int,int,int,int?):void", false, false},
         {"Driver.swipe", "(Point,Point,int?):void", false, false},
         {"Driver.drag", "(int,int,int,int,int?):void", false, false},
         {"Driver.drag", "(Point,Point,int?):void", false, false},
+        {"Driver.dragBetween", "(Point,Point,int?,int?):void", false, false, true},
         {"Driver.setDisplayRotation", "(int):void", false, false},  // DisplayRotation enum as int value
         {"Driver.getDisplayRotation", "(int?):int", false, false},     // DisplayRotation enum as int value
         {"Driver.setDisplayRotationEnabled", "(bool):void", false, false},
@@ -415,19 +433,20 @@ namespace OHOS::uitest {
         {"Driver.injectMultiPointerAction", "(PointerMatrix, int?):bool", false, false},
         {"Driver.mouseClick", "(Point,int,int?,int?):void", false, false},
         {"Driver.mouseDoubleClick", "(Point,int,int?,int?):void", false, false},
-        {"Driver.mouseLongClick", "(Point,int,int?,int?):void", false, false},
+        {"Driver.mouseLongClick", "(Point,int,int?,int?,int?):void", false, false},
         {"Driver.mouseMoveTo", "(Point):void", false, false},
         {"Driver.mouseMoveWithTrack", "(Point,Point,int?):void", false, false},
-        {"Driver.mouseDrag", "(Point,Point,int?):void", false, false},
+        {"Driver.mouseDrag", "(Point,Point,int?,int?):void", false, false},
         {"Driver.mouseScroll", "(Point,bool,int,int?,int?,int?):void", false, false},
         {"Driver.createUIEventObserver", "():UIEventObserver", false, false},
-        {"Driver.inputText", "(Point,string):void", false, false},
+        {"Driver.inputText", "(Point,string,InputTextMode?):void", false, false},
         {"Driver.touchPadMultiFingerSwipe", "(int,int,TouchPadSwipeOptions?):void", false, false},
         {"Driver.penClick", "(Point):void", false, false},
         {"Driver.penLongClick", "(Point,float?):void", false, false},
         {"Driver.penDoubleClick", "(Point):void", false, false},
         {"Driver.penSwipe", "(Point,Point,int?,float?):void", false, false},
         {"Driver.injectPenPointerAction", "(PointerMatrix,int?,float?):void", false, false},
+        {"Driver.crownRotate", "(signedInt,int?):void", false, false, true},
     };
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",
@@ -458,7 +477,7 @@ namespace OHOS::uitest {
         {"Component.doubleClick", "():void", false, false},
         {"Component.scrollToTop", "(int?):void", false, false},
         {"Component.scrollToBottom", "(int?):void", false, false},
-        {"Component.inputText", "(string):void", false, false},
+        {"Component.inputText", "(string,InputTextMode?):void", false, false},
         {"Component.clearText", "():void", false, false},
         {"Component.scrollSearch", "(On, bool?, int?):Component", false, false},
         {"Component.dragTo", "(Component):void", false, false},
@@ -525,10 +544,11 @@ namespace OHOS::uitest {
     const auto FRONTEND_ENUMERATOR_DEFS = {&MATCH_PATTERN_DEF, &WINDOW_MODE_DEF, &RESIZE_DIRECTION_DEF,
                                            &DISPLAY_ROTATION_DEF, &MOUSE_BUTTON_DEF, &UI_DIRECTION_DEF};
     const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF, &UI_ELEMENT_INFO_DEF,
-                                     &TOUCH_PAD_SWIPE_OPTIONS_DEF};
+                                     &TOUCH_PAD_SWIPE_OPTIONS_DEF, &INPUTTEXT_MODE_DEF};
     /** The allowed in/out data type scope of frontend apis.*/
     const std::initializer_list<std::string_view> DATA_TYPE_SCOPE = {
         "int",
+        "signedInt",
         "float",
         "bool",
         "string",
@@ -545,6 +565,7 @@ namespace OHOS::uitest {
         POINTER_MATRIX_DEF.name_,
         UI_EVENT_OBSERVER_DEF.name_,
         TOUCH_PAD_SWIPE_OPTIONS_DEF.name_,
+        INPUTTEXT_MODE_DEF.name_,
     };
 } // namespace OHOS::uitest
 

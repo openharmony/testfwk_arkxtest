@@ -59,6 +59,11 @@ public:
         return workable_;
     }
 
+    bool IsWearable() const override
+    {
+        return false;
+    }
+
     void SetWorkable(bool wb)
     {
         this->workable_ = wb;
