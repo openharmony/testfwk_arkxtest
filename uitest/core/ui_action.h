@@ -30,6 +30,7 @@ namespace OHOS::uitest {
     constexpr int32_t KEYCODE_HOME = 1;
     constexpr int32_t KEYCODE_D = 2020;
     constexpr int32_t KEYCODE_WIN = 2076;
+    constexpr int32_t KEYCODE_MOVETOEND = 2082;
 
     /**Enumerates all the supported coordinate-based touch operations.*/
     enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG, FLING};
@@ -187,6 +188,8 @@ namespace OHOS::uitest {
         int32_t pinchWidgetDeadZone_ = 40;  // pinching at the edges of the widget has no effect.
         uint16_t swipeStepsCounts_ = 50;
         float touchPressure_ = 1.0;
+        bool inputByPasteBoard_ = false;
+        bool inputAdditional_ = false;
     };
 
     class TouchAction {
@@ -370,6 +373,7 @@ namespace OHOS::uitest {
     using Power = NamedPlainKey<KEYCODE_POWER>;
     using Home = NamedPlainKey<KEYCODE_HOME>;
     using Paste = NamedPlainKey<KEYCODE_V, KEYCODE_CTRL>;
+    using MoveToEnd = NamedPlainKey<KEYCODE_MOVETOEND>;
 
     class MouseAction {
     public:
