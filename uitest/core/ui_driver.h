@@ -92,13 +92,15 @@ namespace OHOS::uitest {
 
         static void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener);
 
-        void InputText(string_view text, ApiCallErr &error);
+        void InputText(string_view text, ApiCallErr &error, const UiOpArgs &opt);
 
         void PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error);
 
         void PerformPenTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
 
         void SetAamsWorkMode(const AamsWorkMode mode);
+
+        bool IsWearable();
 
     private:
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
