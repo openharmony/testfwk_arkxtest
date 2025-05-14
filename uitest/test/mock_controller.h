@@ -52,6 +52,11 @@ namespace OHOS::uitest {
             return true;
         }
 
+        bool IsWearable() const override
+        {
+            return false;
+        }
+
         void InjectTouchEventSequence(const PointerMatrix &events) const override
         {
             touch_event_records_ = std::make_unique<PointerMatrix>(events.GetFingers(), events.GetSteps());
