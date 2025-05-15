@@ -22,6 +22,7 @@
 #include "system_ability_definition.h"
 #include "session_token.h"
 #include "test_server_error_code.h"
+#include "system_ability_load_callback_stub.h"
 
 namespace OHOS::testserver {
     using namespace OHOS::HiviewDFX;

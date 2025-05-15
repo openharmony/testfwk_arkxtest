@@ -199,6 +199,7 @@ ohos_executable("uitest_server") {
     "ability_runtime:ability_manager",
     "accessibility:accessibility_common",
     "accessibility:accessibleability",
+    "hisysevent:libhisysevent",
     "image_framework:image_native",
     "input:libmmi-client",
     "ipc:ipc_single",
