@@ -45,7 +45,8 @@
           "access_token",
 	        "graphic_2d",
           "libuv",
-          "udmf"
+          "udmf",
+          "hisysevent"
         ],
         "third_party": [
           "libpng",
