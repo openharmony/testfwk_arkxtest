@@ -21,6 +21,7 @@
 #include <getopt.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/statfs.h>
 #include <typeinfo>
 #include <cstring>
 #include <vector>
@@ -45,6 +46,7 @@
 #include "ui_input.h"
 #include "ui_model.h"
 #include "extension_executor.h"
+#include "hisysevent.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -94,6 +96,75 @@ namespace OHOS::uitest {
     static inline void PrintToConsole(string_view message)
     {
         std::cout << message << std::endl;
+    }
+
+    static bool IsUiTestCreatedFile(const string fileName)
+    {
+        if (fileName.find("layout_") == 0 && fileName.rfind(".json") == fileName.size() - FIVE) {
+            return true;
+        }
+        if (fileName.find("screenCap_") == 0 && fileName.rfind(".png") == fileName.size() - FOUR) {
+            return true;
+        }
+        if (fileName == "record.csv") {
+            return true;
+        }
+        return false;
+    }
+
+    static uint64_t GetFileSize(const string filePath)
+    {
+        struct stat fileStat;
+        uint64_t fileSize = stat(filePath.c_str(), &fileStat) ? 0 : static_cast<uint64_t>(fileStat.st_size);
+        return fileSize;
+    }
+
+    static uint64_t GetUiTestCreatedFileSize(const string newFilePath, string dirName)
+    {
+        uint64_t createdFileSize = 0;
+        DIR* dir = opendir(dirName.c_str());
+        if (!dir) {
+            LOG_E("Open dir %{public}s failed.", dirName.c_str());
+            return createdFileSize;
+        }
+        if (newFilePath != "") {
+            createdFileSize += GetFileSize(newFilePath);
+        }
+        struct dirent* file;
+        while ((file = readdir(dir)) != nullptr) {
+            if (file->d_type == DT_REG && IsUiTestCreatedFile(file->d_name)) {
+                string filePath = dirName + "/" + file->d_name;
+                if (filePath != newFilePath) {
+                    createdFileSize += GetFileSize(filePath);
+                }
+            }
+        }
+        closedir(dir);
+        return createdFileSize;
+    }
+
+    static void ReportFileWriteEvent(string newFilePath)
+    {
+        string partitionName = "/data";
+        string dirName = "/data/local/tmp";
+        struct statfs partitionStat;
+        if (statfs(partitionName.c_str(), &partitionStat) != 0) {
+            LOG_E("Get remain partition size failed, partitionName = %{public}s", partitionName.c_str());
+            return;
+        }
+        constexpr double units = 1024.0;
+        double remainPartitionSize = (static_cast<double>(partitionStat.f_bfree) / units) *
+                                     (static_cast<double>(partitionStat.f_bsize) / units);
+        uint64_t createdFileSize = GetUiTestCreatedFileSize(newFilePath, dirName);
+        vector<std::string> filePaths = { dirName };
+        vector<uint64_t> fileSizes = { createdFileSize };
+        HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::FILEMANAGEMENT, "USER_DATA_SIZE",
+            HiviewDFX::HiSysEvent::EventType::STATISTIC,
+            "COMPONENT_NAME", "arkxtest",
+            "PARTITION_NAME", partitionName,
+            "REMAIN_PARTITION_SIZE", remainPartitionSize,
+            "FILE_OR_FOLDER_PATH", filePaths,
+            "FILE_OR_FOLDER_SIZE", fileSizes);
     }
 
     static int32_t GetParam(int32_t argc, char *argv[], string_view optstring, string_view usage,
@@ -179,6 +250,7 @@ namespace OHOS::uitest {
         DumpLayoutImpl(option, true, err);
         if (err.code_ == NO_ERROR) {
             PrintToConsole("DumpLayout saved to:" + option.savePath_);
+            ReportFileWriteEvent(option.savePath_);
             return EXIT_SUCCESS;
         } else if (err.code_ != ERR_INITIALIZE_FAILED) {
             PrintToConsole("DumpLayout failed:" + err.message_);
@@ -233,6 +305,7 @@ namespace OHOS::uitest {
             return EXIT_FAILURE;
         }
         PrintToConsole("ScreenCap saved to " + savePath);
+        ReportFileWriteEvent(savePath);
         return EXIT_SUCCESS;
     }
 
@@ -329,6 +402,7 @@ namespace OHOS::uitest {
                 return EXIT_FAILURE;
             }
             UiDriver::RegisterController(move(controller));
+            ReportFileWriteEvent("");
             return UiDriverRecordStart(modeOpt);
         } else if (opt == "read") {
             EventData::ReadEventLine();

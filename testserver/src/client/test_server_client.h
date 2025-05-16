@@ -17,7 +17,6 @@
 #define TEST_SERVER_CLIENT_H
 
 #include "iremote_object.h"
-#include "system_ability_load_callback_stub.h"
 #include "itest_server_interface.h"
 #include <common_event_manager.h>
 #include <common_event_subscribe_info.h>
