@@ -39,6 +39,14 @@ namespace OHOS::perftest {
         ERR_INTERNAL = 32400002,
         /**Invalid input parameter.*/
         ERR_INVALID_INPUT = 32400003,
+        /**Execute callback failed.*/
+        ERR_CALLBACK_FAILED = 32400004,
+        /**Collect metric data failed.*/
+        ERR_DATA_COLLECTION_FAILED = 32400005,
+        /**Get measure result failed.*/
+        ERR_GET_RESULT_FAILED = 32400006,
+        /**API does not allow calling concurrently.*/
+        ERR_API_USAGE = 32400007,
     };
 
     const std::map<ErrCode, std::string> ErrDescMap = {
@@ -178,7 +186,7 @@ namespace OHOS::perftest {
         {"PerfTest.create", "(PerfTestStrategy):PerfTest", true, true},
         {"PerfTest.run", "():void", false, false},
         {"PerfTest.getMeasureResult", "(int):PerfMeasureResult", false, true},
-        {"PerfTest.destory", "():void", false, true},
+        {"PerfTest.destroy", "():void", false, true},
     };
     constexpr FrontEndClassDef PERF_TEST_DEF = {
         "PerfTest",

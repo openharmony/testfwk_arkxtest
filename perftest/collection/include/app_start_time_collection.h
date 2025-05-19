@@ -22,7 +22,7 @@ namespace OHOS::perftest {
     using namespace std;
     class AppStartTimeCollection : public DataCollection {
     public:
-        AppStartTimeCollection(PerfMetric perfMetric) : DataCollection(perfMetric) {};
+        AppStartTimeCollection(PerfMetric perfMetric);
         AppStartTimeCollection() = default;
         ~AppStartTimeCollection() = default;
         void StartCollection(ApiCallErr &error) override;

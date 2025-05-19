@@ -96,7 +96,8 @@ namespace OHOS::perftest {
         }
         if (!isMeasureComplete_ || measureResult_.count(perfMetric) == ZERO ||
             measureResult_[perfMetric].size() != perfTestStrategy_->GetIterations()) {
-            error = ApiCallErr(ERR_INTERNAL, "PerfMetric: " + to_string(perfMetric) + " has not been measured yet");
+            error = ApiCallErr(ERR_GET_RESULT_FAILED,
+                               "PerfMetric: " + to_string(perfMetric) + " has not been measured yet");
             return resData;
         }
         list<double> resList = measureResult_[perfMetric];
@@ -125,13 +126,13 @@ namespace OHOS::perftest {
         return isMeasureRunning_;
     }
 
-    void PerfTest::Destory(ApiCallErr &error)
+    void PerfTest::Destroy(ApiCallErr &error)
     {
         list<string> codeRefs;
         codeRefs.push_back(perfTestStrategy_->GetActionCodeRef());
         if (!perfTestStrategy_->GetResetCodeRef().empty()) {
             codeRefs.push_back(perfTestStrategy_->GetResetCodeRef());
         }
-        perfTestCallback_->OnDestory(codeRefs, error);
+        perfTestCallback_->OnDestroy(codeRefs, error);
     }
 } // namespace OHOS::perftest

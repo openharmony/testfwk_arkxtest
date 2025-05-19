@@ -21,7 +21,7 @@ namespace OHOS::perftest {
     using namespace std;
 
     PerfTestStrategy::PerfTestStrategy(set<PerfMetric> metrics, string actionCodeRef, string resetCodeRef,
-                                       string bundleName, int32_t iterations, int32_t timeout)
+                                       string bundleName, int32_t iterations, int32_t timeout, ApiCallErr &error)
     {
         perfMetrics_ = metrics;
         actionCodeRef_ = actionCodeRef;
@@ -29,7 +29,7 @@ namespace OHOS::perftest {
         bundleName_ = bundleName;
         iterations_ = iterations;
         timeout_ = timeout;
-        GetBundleNameByPid();
+        GetBundleNameByPid(error);
         CreateDataCollections();
     }
 
@@ -68,7 +68,7 @@ namespace OHOS::perftest {
         return dataCollections_;
     }
 
-    void PerfTestStrategy::GetBundleNameByPid()
+    void PerfTestStrategy::GetBundleNameByPid(ApiCallErr &error)
     {
         if (bundleName_ != "") {
             return;
@@ -78,6 +78,7 @@ namespace OHOS::perftest {
         ifstream inFile(filePath.c_str());
         if (!inFile) {
             LOG_E("Get bundleName by pid failed");
+            error = ApiCallErr(ERR_INITIALIZE_FAILED, "Get current application bundleName failed");
             return;
         }
         getline(inFile, bundleName_);

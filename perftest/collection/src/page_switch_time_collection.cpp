@@ -25,6 +25,11 @@ namespace OHOS::perftest {
     const int32_t LISTEN_TIMEOUT_UNIT = 500;
     const string COMPLETE_TIME_PARAM = "E2E_LATENCY";
 
+    PageSwitchTimeCollection::PageSwitchTimeCollection(PerfMetric perfMetric) : DataCollection(perfMetric)
+    {
+        completeTime_ = INVALID_VALUE;
+    }
+
     void PageSwitchTimeCollection::StartCollection(ApiCallErr &error)
     {
         pageSwitchListener_ = std::make_shared<TimeListener>(bundleName_);
@@ -33,7 +38,7 @@ namespace OHOS::perftest {
         sysRules.push_back(domainNameRule);
         auto ret = HiSysEventManager::AddListener(pageSwitchListener_, sysRules);
         if (ret != ZERO) {
-            error = ApiCallErr(ERR_INTERNAL, "Start page switch measure failed");
+            error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "Start page switch measure failed");
         }
     }
 

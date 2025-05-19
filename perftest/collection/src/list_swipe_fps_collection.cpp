@@ -41,11 +41,11 @@ namespace OHOS::perftest {
         ExecuteCommand(HITRACE_FINISH_COMMAND, executeRes);
         ExecuteCommand(REMOVE_TRACE_FILE, executeRes);
         if (!ExecuteCommand(HITRACE_START_COMMAND, executeRes)) {
-            error = ApiCallErr(ERR_INTERNAL, "Start list swipe fps measure failed");
+            error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "Start list swipe fps measure failed");
             return;
         }
         if (executeRes.find("OpenRecording done.") == string::npos) {
-            error = ApiCallErr(ERR_INTERNAL, "Start list swipe fps measure failed");
+            error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "Start list swipe fps measure failed");
         }
     }
 
@@ -53,16 +53,16 @@ namespace OHOS::perftest {
     {
         string executeRes;
         if (!ExecuteCommand(HITRACE_FINISH_COMMAND, executeRes)) {
-            error = ApiCallErr(ERR_INTERNAL, "Stop list swipe fps measure failed");
+            error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "Stop list swipe fps measure failed");
             return INVALID_VALUE;
         }
         if (executeRes.find("Trace Closed.") == string::npos) {
-            error = ApiCallErr(ERR_INTERNAL, "Stop list swipe fps measure failed");
+            error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "Stop list swipe fps measure failed");
             return INVALID_VALUE;
         }
         pid_ = GetPidByBundleName(bundleName_);
         if (pid_ == -1) {
-            error = ApiCallErr(ERR_INTERNAL, "The process does not exist when fps trace parse");
+            error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "The process does not exist when fps trace parse");
             return INVALID_VALUE;
         }
         return ParseFpsByTrace(error);
@@ -72,7 +72,7 @@ namespace OHOS::perftest {
     {
         ifstream file(TRACE_FILE_NAME);
         if (!file.is_open()) {
-            error = ApiCallErr(ERR_INTERNAL, "Get list swipe trace failed");
+            error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "Get list swipe trace failed");
             return INVALID_VALUE;
         }
         double startTime = INITIAL_VALUE;
