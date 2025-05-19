@@ -36,6 +36,11 @@ function requireModule(name) {
   return mod;
 }
 
+function delayMs(ms) {
+  const startTime = Date.now();
+  while (Date.now() - startTime < ms) {}
+}
+
 async function scheduleConnectionAsync(perftest) {
   let procInfo = requireModule('process');
   if (procInfo == null) {
@@ -56,12 +61,6 @@ async function scheduleConnectionAsync(perftest) {
   let connToken = `${appContext.applicationInfo.name}@${procInfo.pid}@${procInfo.uid}@${appContext.area}`;
   console.info(`C03120 PerfTestKit_exporter: ScheduleProbeAndEstablishConnection, token=${connToken}`);
   perftest.scheduleEstablishConnection(connToken);
-  let pid = await delegator.executeShellCommand(`pidof perftest`, 3);
-  console.info(`C03120 PerfTestKit_exporter: pid = ${pid.stdResult}`);
-  if (pid.stdResult !== '') {
-    console.info(`C03120 PerfTestKit_exporter: perftest has existed, pid = ${pid.stdResult}`);
-    return;
-  }
   console.info(`C03120 PerfTestKit_exporter command: perftest start-daemon ${connToken}`);
   delegator.executeShellCommand(`perftest start-daemon ${connToken}`, 3).then((value) => {
     console.info(`C03120 PerfTestKit_exporter: Start perftest_daemon finished: ${JSON.stringify(value)}`);
@@ -80,6 +79,8 @@ function loadPerfTest() {
   scheduleConnectionAsync(perftest).catch((error) => {
     console.error(`C03120 PerfTestKit_exporter: ScheduleConnectionAsync failed: ${JSON.stringify(error)}`);
   });
+  let delayTime = 500;
+  delayMs(delayTime);
   return perftest;
 }
 

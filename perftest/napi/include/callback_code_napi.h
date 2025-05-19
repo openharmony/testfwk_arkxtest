@@ -52,7 +52,7 @@ namespace OHOS::perftest {
                                  shared_ptr<CodeCallbackContext> ctx);
         void BindPromiseCallbacks(napi_env env, napi_value promise, shared_ptr<ThreadLock> threadLock);
         void ExecuteCallback(napi_env env, const ApiCallInfo &in, ApiReplyInfo &out);
-        void DestoryCallbacks(napi_env env, const ApiCallInfo &in, ApiReplyInfo &out);
+        void DestroyCallbacks(napi_env env, const ApiCallInfo &in, ApiReplyInfo &out);
         void HandleCallbackEvent(napi_env env, const ApiCallInfo &in, ApiReplyInfo &out);
         static CallbackCodeNapi &Get();
 

@@ -22,7 +22,7 @@ namespace OHOS::perftest {
     using namespace std;
     class PageSwitchTimeCollection : public DataCollection {
     public:
-        PageSwitchTimeCollection(PerfMetric perfMetric) : DataCollection(perfMetric) {};
+        PageSwitchTimeCollection(PerfMetric perfMetric);
         PageSwitchTimeCollection() = default;
         ~PageSwitchTimeCollection() = default;
         void StartCollection(ApiCallErr &error) override;

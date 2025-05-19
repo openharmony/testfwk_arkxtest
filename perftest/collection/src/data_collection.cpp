@@ -57,10 +57,12 @@ namespace OHOS::perftest {
         char buf[4096] = {'\0'};
         while ((fgets(buf, sizeof(buf), fd)) != nullptr) {
             std::string line(buf);
+            LOG_D("Get process info by pid, line = %{public}s, pid = %{public}d", line.c_str(), pid);
             std::istringstream iss(line);
             std::string field;
             int count = 0;
             while (iss >> field) {
+                LOG_D("Get process info by pid, count = %{public}d , field = '%{public}s'", count, field.c_str());
                 if (count == 1 && field == to_string(pid)) {
                     pclose(fd);
                     return true;

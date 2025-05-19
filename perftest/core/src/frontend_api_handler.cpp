@@ -47,12 +47,12 @@ namespace OHOS::perftest {
             server.Callback(in, out);
             error = out.exception_;
         }
-        void OnDestory(const list<string> codeRefs, ApiCallErr &error)
+        void OnDestroy(const list<string> codeRefs, ApiCallErr &error)
         {
             const auto &server = FrontendApiServer::Get();
             ApiCallInfo in;
             ApiReplyInfo out;
-            in.apiId_ = "PerfTest.destory";
+            in.apiId_ = "PerfTest.destroy";
             in.paramList_.push_back(codeRefs);
             server.Callback(in, out);
         }
@@ -226,7 +226,7 @@ namespace OHOS::perftest {
         const auto type = value.type();
         CHECK_CALL_ARG(type == value_t::string, ERR_INVALID_INPUT, "Expect " + string(expect), error);
         const auto findRef = sBackendObjects.find(value.get<string>());
-        CHECK_CALL_ARG(findRef != sBackendObjects.end(), ERR_INTERNAL, "Bad object ref", error);
+        CHECK_CALL_ARG(findRef != sBackendObjects.end(), ERR_INVALID_INPUT, "Bad object ref", error);
         return true;
     }
 
@@ -306,7 +306,7 @@ namespace OHOS::perftest {
         } else if (expect == "string") {
             CHECK_CALL_ARG(type == value_t::string, ERR_INVALID_INPUT, "Expect string", error);
         } else {
-            CHECK_CALL_ARG(false, ERR_INTERNAL, "Unknown target type " + string(expect), error);
+            CHECK_CALL_ARG(false, ERR_INVALID_INPUT, "Unknown target type " + string(expect), error);
         }
         return true;
     }
@@ -464,8 +464,11 @@ namespace OHOS::perftest {
             auto iterations = ReadArgFromJson<int32_t>(perfTestStrategyJson, "iterations", TEST_ITERATIONS);
             auto timeout = ReadArgFromJson<int32_t>(perfTestStrategyJson, "timeout", EXECUTION_TIMEOUT);
             auto perfTestStrategy = make_unique<PerfTestStrategy>(metrics, actionCodeRef, resetCodeRef, bundleName,
-                                                                    iterations, timeout);
+                                                                  iterations, timeout, out.exception_);
             auto perfTestCallback = make_unique<PerfTestCallbackFowarder>();
+            if (out.exception_.code_ != NO_ERROR) {
+                return;
+            }
             auto perfTest = make_unique<PerfTest>(move(perfTestStrategy), move(perfTestCallback));
             out.resultValue_ = StoreBackendObject(move(perfTest));
         };
@@ -499,7 +502,8 @@ namespace OHOS::perftest {
                 return;
             }
             if (perfTest->IsMeasureRunning()) {
-                out.exception_ = ApiCallErr(ERR_INTERNAL, "Measure is running, can not get measure result now");
+                out.exception_ = ApiCallErr(ERR_GET_RESULT_FAILED,
+                                            "Measure is running, can not get measure result now");
                 return;
             }
             json resData = perfTest->GetMeasureResult(metric, out.exception_);
@@ -508,19 +512,19 @@ namespace OHOS::perftest {
         server.AddHandler("PerfTest.getMeasureResult", getMeasureResult);
     }
 
-    static void RegisterPerfTestDestory()
+    static void RegisterPerfTestDestroy()
     {
         auto &server = FrontendApiServer::Get();
-        auto destory = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+        auto destroy = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto perfTest = GetBackendObject<PerfTest>(in.callerObjRef_, out.exception_);
             if (out.exception_.code_ != NO_ERROR) {
                 return;
             }
             if (perfTest->IsMeasureRunning()) {
-                out.exception_ = ApiCallErr(ERR_INTERNAL, "Measure is running, can not destory now");
+                out.exception_ = ApiCallErr(ERR_INTERNAL, "Measure is running, can not destroy now");
                 return;
             }
-            perfTest->Destory(out.exception_);
+            perfTest->Destroy(out.exception_);
             auto gcCall = ApiCallInfo {.apiId_ = "BackendObjectsCleaner"};
             unique_lock<mutex> lock(g_gcQueueMutex);
             gcCall.paramList_.emplace_back(in.callerObjRef_);
@@ -528,7 +532,7 @@ namespace OHOS::perftest {
             auto gcReply = ApiReplyInfo();
             BackendObjectsCleaner(gcCall, gcReply);
         };
-        server.AddHandler("PerfTest.destory", destory);
+        server.AddHandler("PerfTest.destroy", destroy);
     }
 
     /** Register frontendApiHandlers and preprocessors on startup.*/
@@ -540,6 +544,6 @@ namespace OHOS::perftest {
         RegisterPerfTestCreate();
         RegisterPerfTestRun();
         RegisterGetMeasureResult();
-        RegisterPerfTestDestory();
+        RegisterPerfTestDestroy();
     }
 } // namespace OHOS::perftest

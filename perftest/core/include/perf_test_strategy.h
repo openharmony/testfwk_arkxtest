@@ -43,7 +43,7 @@ namespace OHOS::perftest {
     class PerfTestStrategy {
     public:
         explicit PerfTestStrategy(set<PerfMetric> metrics, string actionCodeRef, string resetCodeRef,
-                                    string bundleName, int32_t iterations, int32_t timeout);
+                                  string bundleName, int32_t iterations, int32_t timeout, ApiCallErr &error);
         ~PerfTestStrategy() {};
         set<PerfMetric> GetPerfMetrics();
         string GetActionCodeRef();
@@ -52,7 +52,7 @@ namespace OHOS::perftest {
         int32_t GetIterations();
         int32_t GetTimeout();
         map<PerfMetric, shared_ptr<DataCollection>> GetDataCollections();
-        void GetBundleNameByPid();
+        void GetBundleNameByPid(ApiCallErr &error);
         void CreateDataCollections();
     
     private:
