@@ -467,7 +467,7 @@ namespace OHOS::uitest {
             return OHOS::ERR_INVALID_VALUE;
         }
         g_uiRecordRun = true;
-        ts = to_string(GetCurrentMicroseconds())
+        ts = to_string(GetCurrentMicroseconds());
         // 补充click打印线程
         std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, g_uiCallBackInstance);
         // touch计时线程
