@@ -164,7 +164,6 @@ namespace OHOS::uitest {
         TouchEventInfo firstTrackPoint_;
         PointerInfo lastClickInfo; // for doubleclick
         PointerInfo snapshootPointerInfo;
-        std::string recordMode = "";
         bool isStartRecent = false;
         
     private:

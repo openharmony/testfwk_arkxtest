@@ -50,9 +50,14 @@
 #include "input_manager.h"
 
 namespace OHOS::uitest {
+    struct RecordOption {
+        bool saveJson = false;
+        bool terminalCout = true;
+        bool pointOnly = false;
+    }
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
-        void RecordInitEnv(const std::string &modeOpt);
+        void RecordInitEnv(const RecordOption &option);
         bool InitReportFolder();
         bool InitEventRecordFile();
         bool dealSpecialKey(std::shared_ptr<MMI::KeyEvent> keyEvent) const;
@@ -97,7 +102,7 @@ namespace OHOS::uitest {
         std::condition_variable timerCon;
     private:
         shared_ptr<queue<std::string>> eventQueue_;
-        std::string recordMode = "";
+        RecordOption recordMode;
         std::string filePath;
         WidgetSelector selector = WidgetSelector();
         vector<std::unique_ptr<Widget>> rev;
@@ -143,9 +148,9 @@ namespace OHOS::uitest {
         UiDriver d;
         std::mutex mut;
     };
-    int32_t UiDriverRecordStart(std::string modeOpt);
+    int32_t UiDriverRecordStart(RecordOption modeOpt);
     int32_t UiDriverRecordStart(std::function<void(nlohmann::json)> handler, std::string modeOpt);
-    int32_t UiDriverRecordStartTemplate(std::string modeOpt);
+    int32_t UiDriverRecordStartTemplate(RecordOption modeOpt);
     void UiDriverRecordStop();
 } // namespace OHOS::uitest
 #endif // UI_RECORD_H
