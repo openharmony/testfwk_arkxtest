@@ -26,6 +26,13 @@ namespace OHOS::perftest {
     const string RESPONSE_TIME_PARAM = "RESPONSE_LATENCY";
     const string COMPLETE_TIME_PARAM = "E2E_LATENCY";
 
+    AppStartTimeCollection::AppStartTimeCollection(PerfMetric perfMetric) : DataCollection(perfMetric)
+    {
+        isCollecting_ = false;
+        responseTime_ = INVALID_VALUE;
+        completeTime_ = INVALID_VALUE;
+    }
+
     void AppStartTimeCollection::StartCollection(ApiCallErr &error)
     {
         appStartListener_ = std::make_shared<TimeListener>(bundleName_);
@@ -34,7 +41,7 @@ namespace OHOS::perftest {
         sysRules.push_back(domainNameRule);
         auto ret = HiSysEventManager::AddListener(appStartListener_, sysRules);
         if (ret != ZERO) {
-            error = ApiCallErr(ERR_INTERNAL, "Start app start measure failed");
+            error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "Start app start measure failed");
         }
         isCollecting_ = true;
     }

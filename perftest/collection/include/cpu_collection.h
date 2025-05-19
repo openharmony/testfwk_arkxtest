@@ -26,7 +26,7 @@ namespace OHOS::perftest {
 
     class CpuCollection : public DataCollection {
     public:
-        CpuCollection(PerfMetric perfMetric) : DataCollection(perfMetric) {};
+        CpuCollection(PerfMetric perfMetric);
         CpuCollection() = default;
         ~CpuCollection() = default;
         void StartCollection(ApiCallErr &error) override;

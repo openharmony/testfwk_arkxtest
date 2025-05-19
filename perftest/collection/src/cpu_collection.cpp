@@ -21,6 +21,13 @@ namespace OHOS::perftest {
     using namespace std;
     using namespace OHOS::testserver;
 
+    CpuCollection::CpuCollection(PerfMetric perfMetric) : DataCollection(perfMetric)
+    {
+        isCollecting_ = false;
+        cpuLoad_ = INVALID_VALUE;
+        cpuUsage_ = INVALID_VALUE;
+    }
+
     void CpuCollection::StartCollection(ApiCallErr &error)
     {
         if (isCollecting_) {
@@ -29,12 +36,12 @@ namespace OHOS::perftest {
         }
         pid_ = GetPidByBundleName(bundleName_);
         if (pid_ == -1) {
-            error = ApiCallErr(ERR_INTERNAL, "The process does not exist during cpu collection");
+            error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "The process does not exist during cpu collection");
             return;
         }
         ProcessCpuInfo processCpuInfo;
         if (TestServerClient::GetInstance().CollectProcessCpu(pid_, true, processCpuInfo) != TEST_SERVER_OK) {
-            error = ApiCallErr(ERR_INTERNAL, "Start cpu collection failed");
+            error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "Start cpu collection failed");
             return;
         }
         isCollecting_ = true;
@@ -45,13 +52,13 @@ namespace OHOS::perftest {
         if (isCollecting_) {
             LOG_I("Stop cpu collection");
             if (!IsProcessExist(pid_)) {
-                error = ApiCallErr(ERR_INTERNAL, "The process does not exist during cpu collection");
+                error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "The process does not exist during cpu collection");
                 isCollecting_ = false;
                 return INVALID_VALUE;
             }
             ProcessCpuInfo processCpuInfo;
             if (TestServerClient::GetInstance().CollectProcessCpu(pid_, true, processCpuInfo) != TEST_SERVER_OK) {
-                error = ApiCallErr(ERR_INTERNAL, "Stop cpu collection failed");
+                error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "Stop cpu collection failed");
                 isCollecting_ = false;
                 return INVALID_VALUE;
             }

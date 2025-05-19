@@ -23,7 +23,7 @@ namespace OHOS::perftest {
 
     class MemoryCollection : public DataCollection {
     public:
-        MemoryCollection(PerfMetric perfMetric) : DataCollection(perfMetric) {};
+        MemoryCollection(PerfMetric perfMetric);
         MemoryCollection() = default;
         ~MemoryCollection() = default;
         void StartCollection(ApiCallErr &error) override;
