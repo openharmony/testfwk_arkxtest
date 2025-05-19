@@ -184,6 +184,7 @@ namespace OHOS::uitest {
                     break;
                 case 'j':
                     params.insert(pair<char, string>(opt, "true"));
+                    break;
                 case 'c':
                     if (strcmp(optarg, "true") && strcmp(optarg, "false")) {
                         PrintToConsole("Invalid params");
@@ -417,7 +418,7 @@ namespace OHOS::uitest {
             }
             UiDriver::RegisterController(move(controller));
             ReportFileWriteEvent("");
-            return UiDriverRecordStart(modeOpt);
+            return UiDriverRecordStart(option);
         } else if (opt == "read") {
             EventData::ReadEventLine();
             return OHOS::ERR_OK;
