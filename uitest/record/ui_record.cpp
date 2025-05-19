@@ -160,10 +160,10 @@ namespace OHOS::uitest {
                     err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(option.savePath_) + strerror(errno));
                     fout.close();
                 } else {
-                    fout << layout.dump(-1, '', false, nlohmann::detail::error_handler_t::replace);
+                    fout << layout.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
                     fout.close();
                     std::cout << "Layout saved to :" + savePath << std::endl;
-                    LOG_I("Layout saved to : %{public}s", savePath);
+                    LOG_I("Layout saved to : %{public}s", savePath.c_str());
                 }
             }
             if (KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
@@ -281,10 +281,10 @@ namespace OHOS::uitest {
                     err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(option.savePath_) + strerror(errno));
                     fout.close();
                 } else {
-                    fout << layout.dump(-1, '', false, nlohmann::detail::error_handler_t::replace);
+                    fout << layout.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
                     fout.close();
                     std::cout << "Layout saved to :" + savePath << std::endl;
-                    LOG_I("Layout saved to : %{public}s", savePath);
+                    LOG_I("Layout saved to : %{public}s", savePath.c_str());
                 }            
             } else if (err.code_ != NO_ERROR) {
                 LOG_E("DumpLayout failed");

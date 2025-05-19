@@ -54,7 +54,7 @@ namespace OHOS::uitest {
         bool saveJson = false;
         bool terminalCout = true;
         bool pointOnly = false;
-    }
+    };
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:
         void RecordInitEnv(const RecordOption &option);
