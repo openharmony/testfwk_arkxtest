@@ -182,6 +182,16 @@ namespace OHOS::uitest {
                 case 'a':
                     params.insert(pair<char, string>(opt, "true"));
                     break;
+                case 'j':
+                    params.insert(pair<char, string>(opt, "true"));
+                case 'c':
+                    if (strcmp(optarg, "true") && strcmp(optarg, "false")) {
+                        PrintToConsole("Invalid params");
+                        PrintToConsole(usage);
+                        return EXIT_FAILURE;
+                    }
+                    params.insert(pair<char, string>(opt, optarg));
+                    break;
                 case 'm':
                     if (strcmp(optarg, "true") && strcmp(optarg, "false")) {
                         PrintToConsole("Invalid params");
@@ -384,20 +394,24 @@ namespace OHOS::uitest {
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
-        if (!(argc == INDEX_THREE || argc == INDEX_FOUR)) {
-            PrintToConsole("Missing parameter. \n");
-            PrintToConsole(usage);
-            return EXIT_FAILURE;
-        }
         std::string opt = argv[TWO];
-        std::string modeOpt;
-        if (argc == INDEX_FOUR) {
-            modeOpt = argv[THREE];
+        RecordOption option;
+        if (argc >= 4) {
+            if (strcmp(argv[THREE], "point") == 0) {
+                option.pointOnly = true;
+            }
         }
         if (opt == "record") {
+            map<char, string> params;
+            if (GetParam(argc, argv, "c:j", HELP_MSG, params) == EXIT_FAILURE) {
+                return EXIT_FAILURE;
+            }
+            option.saveJson = params.find('j') != params.end();
+            auto iter = params.find('c');
+            option.terminalCout = (iter != params.end()) ?iter->second == "true" : true;
             auto controller = make_unique<SysUiController>();
             ApiCallErr error = ApiCallErr(NO_ERROR);
-            if (!controller->ConnectToSysAbility(error)) {
+            if (!option.pointOnly && !controller->ConnectToSysAbility(error)) {
                 PrintToConsole(error.message_);
                 return EXIT_FAILURE;
             }
