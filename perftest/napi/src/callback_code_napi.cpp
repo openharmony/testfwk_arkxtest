@@ -80,7 +80,7 @@ namespace OHOS::perftest {
         napi_valuetype paramType = napi_undefined;
         NAPI_CALL_RETURN_VOID(env, napi_typeof(env, jsParam, &paramType));
         if (paramType != napi_object) {
-            LOG_E("PreprocessCallback failed, Invalid type of param");
+            err = ApiCallErr(ERR_INVALID_INPUT, "PreprocessCallback failed, Invalid type of param");
             return;
         }
         auto &paramList = call.paramList_;
@@ -105,7 +105,7 @@ namespace OHOS::perftest {
         LOG_I("Begin to callback function: callback=%{public}s", callbackId.c_str());
         auto findCallback = g_jsRefs.find(callbackId);
         if (findCallback == g_jsRefs.end()) {
-            out.exception_ = ApiCallErr(ERR_INTERNAL, "JsCallbackFunction is not referenced: " + callbackId);
+            out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, "JsCallbackFunction is not referenced: " + callbackId);
             LOG_E("%{public}s", out.exception_.message_.c_str());
             return;
         }
@@ -200,16 +200,18 @@ namespace OHOS::perftest {
         unique_lock<mutex> lock(threadLock->mutex);
         const auto timeout = chrono::milliseconds(context->timeout);
         if (!threadLock->condition.wait_for(lock, timeout, [&threadLock] { return threadLock->ready; })) {
-            LOG_W("Jscallback call timeout, has been waiting for %{public}d ms", context->timeout);
+            LOG_E("Jscallback call timeout, has been waiting for %{public}d ms", context->timeout);
+            out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, "Code execution has been timeout.");
+            return;
         }
         LOG_I("Jscallback call has finished, res = %{public}d", threadLock->res);
         if (!threadLock->errMsg.empty()) {
-            out.exception_ = ApiCallErr(ERR_INTERNAL, threadLock->errMsg);
+            out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, threadLock->errMsg);
             LOG_E("%{public}s", out.exception_.message_.c_str());
         }
     }
 
-    void CallbackCodeNapi::DestoryCallbacks(napi_env env, const ApiCallInfo &in, ApiReplyInfo &out)
+    void CallbackCodeNapi::DestroyCallbacks(napi_env env, const ApiCallInfo &in, ApiReplyInfo &out)
     {
         DCHECK(in.paramList_.size() == ONE);
         DCHECK(in.paramList_.at(INDEX_ZERO).type() == detail::value_t::array);
@@ -227,8 +229,8 @@ namespace OHOS::perftest {
     {
         if (in.apiId_ == "PerfTest.run") {
             ExecuteCallback(env, in, out);
-        } else if (in.apiId_ == "PerfTest.destory") {
-            DestoryCallbacks(env, in, out);
+        } else if (in.apiId_ == "PerfTest.destroy") {
+            DestroyCallbacks(env, in, out);
         } else {
             out.exception_ = ApiCallErr(ERR_INTERNAL, "Api dose not support callback: " + in.apiId_);
             LOG_E("%{public}s", out.exception_.message_.c_str());

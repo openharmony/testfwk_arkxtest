@@ -21,6 +21,17 @@ namespace OHOS::perftest {
     using namespace std;
     using namespace testserver;
 
+    MemoryCollection::MemoryCollection(PerfMetric perfMetric) : DataCollection(perfMetric)
+    {
+        isCollecting_ = false;
+        startRss_ = INITIAL_VALUE;
+        endRss_ = INITIAL_VALUE;
+        startPss_ = INITIAL_VALUE;
+        endPss_ = INITIAL_VALUE;
+        memoryRss_ = INVALID_VALUE;
+        memoryPss_ = INVALID_VALUE;
+    }
+
     void MemoryCollection::StartCollection(ApiCallErr &error)
     {
         if (isCollecting_) {
@@ -29,12 +40,12 @@ namespace OHOS::perftest {
         }
         pid_ = GetPidByBundleName(bundleName_);
         if (pid_ == -1) {
-            error = ApiCallErr(ERR_INTERNAL, "The process does not exist during memory collection");
+            error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "The process does not exist during memory collection");
             return;
         }
         ProcessMemoryInfo processMemoryInfo;
         if (TestServerClient::GetInstance().CollectProcessMemory(pid_, processMemoryInfo) != TEST_SERVER_OK) {
-            error = ApiCallErr(ERR_INTERNAL, "Start memory collection failed");
+            error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "Start memory collection failed");
             return;
         }
         startRss_ = static_cast<double>(processMemoryInfo.rss);
@@ -48,12 +59,12 @@ namespace OHOS::perftest {
         if (isCollecting_) {
             LOG_I("Stop memory collection");
             if (!IsProcessExist(pid_)) {
-                error = ApiCallErr(ERR_INTERNAL, "The process does not exist during memory collection");
+                error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "The process does not exist during memory collection");
                 return INVALID_VALUE;
             }
             ProcessMemoryInfo processMemoryInfo;
             if (TestServerClient::GetInstance().CollectProcessMemory(pid_, processMemoryInfo) != TEST_SERVER_OK) {
-                error = ApiCallErr(ERR_INTERNAL, "Stop memory collection failed");
+                error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "Stop memory collection failed");
                 isCollecting_ = false;
                 return INVALID_VALUE;
             }

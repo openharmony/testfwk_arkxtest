@@ -82,21 +82,10 @@ namespace OHOS::perftest {
             return;
         }
         DCHECK(remoteCaller_ != nullptr);
-        // check PerfTest.finishMeasure must be called during PerfTest.run is being called
-        if (call.apiId_ == "PerfTest.finishMeasure") {
-            if (processingApi_ == "PerfTest.run") {
-                DCHECK(remoteCaller_ != nullptr);
-                remoteCaller_->Call(call, reply);
-            } else {
-                reply.exception_.code_ = ERR_INTERNAL;
-                reply.exception_.message_ = "finishMeasure() can only call during run() is calling";
-            }
-            return;
-        }
         // check concurrent call
         if (!processingApi_.empty()) {
             constexpr auto msg = "perftest-api dose not allow calling concurrently, current processing:";
-            reply.exception_.code_ = ERR_INTERNAL;
+            reply.exception_.code_ = ERR_API_USAGE;
             reply.exception_.message_ = string(msg) + processingApi_ + ", incoming: " + call.apiId_;
             return;
         }

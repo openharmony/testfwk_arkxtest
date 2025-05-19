@@ -28,7 +28,7 @@ namespace OHOS::perftest {
         PerfTestCallback() = default;
         virtual ~PerfTestCallback() = default;
         virtual void OnCall(const std::string&& codeRef, const int32_t timeout, ApiCallErr &error) {};
-        virtual void OnDestory(const list<std::string> codeRefs, ApiCallErr &error) {};
+        virtual void OnDestroy(const list<std::string> codeRefs, ApiCallErr &error) {};
     };
 
     class PerfTest : public BackendClass {
@@ -46,7 +46,7 @@ namespace OHOS::perftest {
         void RunTest(ApiCallErr &error);
         nlohmann::json GetMeasureResult(PerfMetric perfMetric, ApiCallErr &error);
         bool IsMeasureRunning();
-        void Destory(ApiCallErr &error);
+        void Destroy(ApiCallErr &error);
     private:
         unique_ptr<PerfTestStrategy> perfTestStrategy_;
         unique_ptr<PerfTestCallback> perfTestCallback_;
