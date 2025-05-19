@@ -400,7 +400,7 @@ namespace OHOS::uitest {
         std::cout << "The result will be written in csv file at location: " << filePath << std::endl;
         return true;
     }
-    void InputEventCallback::RecordInitEnv(const RecordMode &option)
+    void InputEventCallback::RecordInitEnv(const RecordOption &option)
     {
         recordMode = option;
         ApiCallErr err(NO_ERROR);
@@ -426,7 +426,7 @@ namespace OHOS::uitest {
         }
     }
 
-    int32_t UiDriverRecordStart(RecordMode modeOpt)
+    int32_t UiDriverRecordStart(RecordOption modeOpt)
     {
         g_uiCallBackInstance = std::make_shared<InputEventCallback>();
         return UiDriverRecordStartTemplate(modeOpt);
@@ -443,7 +443,7 @@ namespace OHOS::uitest {
         return UiDriverRecordStartTemplate(opt);
     }
 
-    int32_t UiDriverRecordStartTemplate(RecordMode modeOpt)
+    int32_t UiDriverRecordStartTemplate(RecordOption modeOpt)
     {
         if (g_uiCallBackInstance == nullptr) {
             std::cout << "nullptr" << std::endl;
