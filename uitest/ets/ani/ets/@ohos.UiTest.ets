@@ -24,8 +24,8 @@ export default namespace UiTest {
   export native function GetConnectionStat(): number;
 }
 
-export function loadAndSetupUiTest():void {
-  hilog.error(domain, tag, 'loadAndSetupUiTest');
+export function loadAndSetUpUiTest():void {
+  hilog.error(domain, tag, 'loadAndSetUpUiTest');
   let delegator = abilityDelegatorRegistry.getAbilityDelegator();
   hilog.error(domain, tag, 'after abilityDelegatorRegistry.getAbilityDelegator();');
   try{
@@ -46,8 +46,8 @@ export function loadAndSetupUiTest():void {
       UiTest.ScheduleEstablishConnection('default');
     }
   } catch(error: Error){
-    hilog.error(domain, tag, "loadAndSetupUiTest failed" + error)
-    hilog.error(domain, tag, "loadAndSetupUiTest failed" + error.stack)
+    hilog.error(domain, tag, "loadAndSetUpUiTest failed" + error)
+    hilog.error(domain, tag, "loadAndSetUpUiTest failed" + error.stack)
     hilog.error(domain, tag, "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat())
   }
 }
