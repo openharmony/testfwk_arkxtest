@@ -14,6 +14,7 @@
  */
 
 #include "widget_operator.h"
+#include <thread>
 
 namespace OHOS::uitest {
     using namespace std;
@@ -322,6 +323,8 @@ namespace OHOS::uitest {
         auto touch = (toTop) ? GenericSwipe(TouchOp::SWIPE, topPoint, bottomPoint)
                              : GenericSwipe(TouchOp::SWIPE, bottomPoint, topPoint);
         driver_.PerformTouch(touch, options_, error);
+        static constexpr auto sliceMs = 500;
+        this_thread::sleep_for(chrono::milliseconds(sliceMs));
         oriDistance = (vertical) ? std::abs(topPoint.py_ - bottomPoint.py_) : std::abs(topPoint.px_ - bottomPoint.px_);
         if (vertical && toTop) {
             LOG_I("turn page vertical from %{public}d to %{public}d", topPoint.py_, bottomPoint.py_);
