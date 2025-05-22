@@ -298,9 +298,13 @@ namespace OHOS::uitest {
         return &visitWidgets_[targetWidgetsIndex_[0]];
     }
 
-    void UiDriver::TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error)
+    void UiDriver::TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error, int32_t displayId)
     {
         if (!CheckStatus(false, error)) {
+            return;
+        }
+        if (!CheckDisplayExist(displayId)) {
+            error = ApiCallErr(ERR_INVALID_INPUT, "Invalid display id.");
             return;
         }
         vector<KeyEvent> events;
@@ -308,7 +312,7 @@ namespace OHOS::uitest {
         if (events.empty()) {
             return;
         }
-        uiController_->InjectKeyEventSequence(events);
+        uiController_->InjectKeyEventSequence(events, displayId);
     }
 
     void UiDriver::FindWidgets(const WidgetSelector &selector, vector<unique_ptr<Widget>> &rev,
@@ -398,6 +402,12 @@ namespace OHOS::uitest {
         if (events.Empty()) {
             return;
         }
+        auto displayId = events.At(0, 0).point_.displayId_;
+        if (!CheckDisplayExist(displayId)) {
+            LOG_E("No display: %{public}d", displayId);
+            err = ApiCallErr(ERR_INVALID_INPUT, "Invalid display id.");
+            return;
+        }
         uiController_->InjectTouchEventSequence(events);
     }
 
@@ -409,6 +419,12 @@ namespace OHOS::uitest {
         vector<MouseEvent> events;
         touch.Decompose(events, opt);
         if (events.empty()) {
+            return;
+        }
+        auto displayId = events.begin()->point_.displayId_;
+        if (!CheckDisplayExist(displayId)) {
+            LOG_E("No display: %{public}d", displayId);
+            err = ApiCallErr(ERR_INVALID_INPUT, "Invalid display id.");
             return;
         }
         uiController_->InjectMouseEventSequence(events);
@@ -570,7 +586,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void UiDriver::InputText(string_view text, ApiCallErr &error, const UiOpArgs &opt)
+    void UiDriver::InputText(string_view text, ApiCallErr &error, const UiOpArgs &opt, int32_t displayId)
     {
         if (text.empty()) {
             return;
@@ -584,11 +600,11 @@ namespace OHOS::uitest {
                 return;
             }
             auto actionForPatse = CombinedKeys(KEYCODE_CTRL, KEYCODE_V, KEYCODE_NONE);
-            TriggerKey(actionForPatse, opt, error);
+            TriggerKey(actionForPatse, opt, error, displayId);
         } else {
             LOG_D("inputText by Keycode");
             auto keyActionForInput = KeysForwarder(events);
-            TriggerKey(keyActionForInput, opt, error);
+            TriggerKey(keyActionForInput, opt, error, displayId);
         }
     }
 
@@ -626,6 +642,12 @@ namespace OHOS::uitest {
         if (eventsInPen.Empty()) {
             return;
         }
+        auto displayId = eventsInPen.At(0, 0).point_.displayId_;
+        if (!CheckDisplayExist(displayId)) {
+            LOG_E("No display: %{public}d", displayId);
+            err = ApiCallErr(ERR_INVALID_INPUT, "Invalid display id.");
+            return;
+        }
         uiController_->InjectTouchEventSequence(eventsInPen);
     }
 
@@ -637,5 +659,10 @@ namespace OHOS::uitest {
     bool UiDriver::IsWearable()
     {
         return uiController_->IsWearable();
+    }
+
+    bool UiDriver::CheckDisplayExist(int32_t displayId)
+    {
+        return uiController_->CheckDisplayExist(displayId);
     }
 } // namespace OHOS::uitest

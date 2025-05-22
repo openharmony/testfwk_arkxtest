@@ -52,7 +52,7 @@ namespace OHOS::uitest {
         string GetHostApp(const Widget &widget);
 
         /**Trigger the given key action. */
-        void TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error);
+        void TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error, int32_t displayId = -1);
 
         /**Perform the given touch action.*/
         void PerformTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
@@ -92,7 +92,7 @@ namespace OHOS::uitest {
 
         static void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener);
 
-        void InputText(string_view text, ApiCallErr &error, const UiOpArgs &opt);
+        void InputText(string_view text, ApiCallErr &error, const UiOpArgs &opt, int32_t displayId = -1);
 
         void PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error);
 
@@ -101,6 +101,8 @@ namespace OHOS::uitest {
         void SetAamsWorkMode(const AamsWorkMode mode);
 
         bool IsWearable();
+
+        bool CheckDisplayExist(int32_t displayId);
 
     private:
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
