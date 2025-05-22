@@ -513,6 +513,15 @@ namespace OHOS::uitest {
         return id;
     }
 
+    bool SysUiController::CheckDisplayExist(int32_t displayId) const
+    {
+        if (displayId == UNASSIGNED) {
+            return true;
+        }
+        DisplayManager &displayMgr = DisplayManager::GetInstance();
+        return displayMgr.GetDisplayById(displayId) != nullptr;
+    }
+
     static void SetItemByType(PointerEvent::PointerItem &pinterItem, const PointerMatrix &events)
     {
         switch (events.GetToolType()) {
@@ -699,17 +708,18 @@ namespace OHOS::uitest {
         for (auto &event : events) {
             auto keyEvents = event.keyEvents_;
             if (!keyEvents.empty() && keyEvents.front().stage_ == ActionStage::DOWN) {
-                InjectKeyEventSequence(keyEvents);
+                InjectKeyEventSequence(keyEvents, event.point_.displayId_);
                 InjectMouseEvent(event);
             } else {
                 InjectMouseEvent(event);
-                InjectKeyEventSequence(keyEvents);
+                InjectKeyEventSequence(keyEvents, event.point_.displayId_);
             }
         }
     }
 
-    void SysUiController::InjectKeyEventSequence(const vector<KeyEvent> &events) const
+    void SysUiController::InjectKeyEventSequence(const vector<KeyEvent> &events, int32_t displayId) const
     {
+        displayId = GetValidDisplayId(displayId);
         for (auto &event : events) {
             if (event.code_ == KEYCODE_NONE) {
                 continue;
@@ -732,6 +742,7 @@ namespace OHOS::uitest {
                 keyItem.SetKeyCode(event.code_);
                 keyItem.SetPressed(false);
                 keyEvent->AddKeyItem(keyItem);
+                keyEvent->SetTargetDisplayId(displayId);
                 InputManager::GetInstance()->SimulateInputEvent(keyEvent);
                 LOG_I("Inject keyEvent up, keycode:%{public}d", event.code_);
             } else {
@@ -744,6 +755,7 @@ namespace OHOS::uitest {
                     keyItem.SetPressed(true);
                     keyEvent->AddKeyItem(keyItem);
                 }
+                keyEvent->SetTargetDisplayId(displayId);
                 InputManager::GetInstance()->SimulateInputEvent(keyEvent);
                 LOG_I("Inject keyEvent down, keycode:%{public}d", event.code_);
                 if (event.holdMs_ > 0) {
