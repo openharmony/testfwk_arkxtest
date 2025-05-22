@@ -79,7 +79,7 @@ namespace OHOS::uitest {
 
         virtual void PutTextToClipboard(std::string_view text, ApiCallErr &error) const {};
 
-        virtual bool TakeScreenCap(int32_t fd std::stringstream &errReceiver, int32_t displayId, Rect rect) const
+        virtual bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, int32_t displayId, Rect rect) const
         {
             return false;
         };
