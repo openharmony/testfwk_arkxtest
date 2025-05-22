@@ -1,7 +1,7 @@
 # 自动化测试框架使用介绍
 
 ## 简介
- OpenHarmony自动化测试框架代码部件仓arkXtest，包含单元测试框架(JsUnit)和Ui测试框架(UiTest)。
+ OpenHarmony自动化测试框架代码部件仓arkxtest，包含单元测试框架(JsUnit)和Ui测试框架(UiTest)。
 
  单元测试框架(JsUnit)提供单元测试用例执行能力，提供用例编写基础接口，生成对应报告，用于测试系统或应用接口。
 
@@ -10,22 +10,22 @@
 ## 目录
 
 ```
-arkXtest 
+arkxtest 
   |-----jsunit  单元测试框架
-  |-----uitest  Ui测试框架
+  |-----UiTest  Ui测试框架
 ```
 ## 约束限制
 本模块首批接口从API version 8开始支持。后续版本的新增接口，采用上角标单独标记接口的起始版本。
 
 ## 单元测试框架功能特性
 
-| No.  | 特性     | 功能说明                                                     |
-| ---- | -------- | ------------------------------------------------------------ |
-| 1    | 基础流程 | 支持编写及异步执行基础用例。                                 |
-| 2    | 断言库   | 判断用例实际期望值与预期值是否相符。                         |
+| No.  | 特性     | 功能说明                                               |
+| ---- | -------- |----------------------------------------------------|
+| 1    | 基础流程 | 支持编写及异步执行基础用例。                                     |
+| 2    | 断言库   | 判断用例实际结果值与预期值是否相符。                                 |
 | 3    | Mock能力 | 支持函数级mock能力，对定义的函数进行mock后修改函数的行为，使其返回指定的值或者执行某种动作。 |
-| 4    | 数据驱动 | 提供数据驱动能力，支持复用同一个测试脚本，使用不同输入数据驱动执行。 |
-| 5    | 专项能力 | 支持测试套与用例筛选、随机执行、压力测试、超时设置、遇错即停模式，跳过，支持测试套嵌套等。 |
+| 4    | 数据驱动 | 提供数据驱动能力，支持复用同一个测试脚本，使用不同输入数据驱动执行。                 |
+| 5    | 专项能力 | 支持测试套与用例筛选、随机执行、压力测试、超时设置、遇错即停模式，跳过，支持测试套嵌套等。      |
 
 ### 使用说明
 
@@ -35,13 +35,13 @@ arkXtest
 
 | No. | API               | 功能说明                                                                   |
 |-----| ----------------- |------------------------------------------------------------------------|
-| 1   | describe          | 定义一个测试套，支持两个参数：测试套名称和测试套函数。其中测试套函数不能是异步函数                                   |
+| 1   | describe          | 定义一个测试套，支持两个参数：测试套名称和测试套函数。其中测试套函数不能是异步函数。                             |
 | 2   | beforeAll         | 在测试套内定义一个预置条件，在所有测试用例开始前执行且仅执行一次，支持一个参数：预置动作函数。                        |
 | 3   | beforeEach        | 在测试套内定义一个单元预置条件，在每条测试用例开始前执行，执行次数与it定义的测试用例数一致，支持一个参数：预置动作函数。          |
 | 4   | afterEach         | 在测试套内定义一个单元清理条件，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致，支持一个参数：清理动作函数。          |
 | 5   | afterAll          | 在测试套内定义一个清理条件，在所有测试用例结束后执行且仅执行一次，支持一个参数：清理动作函数。                        |
 | 6   | beforeItSpecified | @since1.0.15在测试套内定义一个单元预置条件，仅在指定测试用例开始前执行，支持两个参数：单个用例名称或用例名称数组、预置动作函数。 |
-| 7   | afterItSpecified  | @since1.0.15在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行，支持两个参数：单个用例名称或用例名称数组、清理动作函数  |
+| 7   | afterItSpecified  | @since1.0.15在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行，支持两个参数：单个用例名称或用例名称数组、清理动作函数。 |
 | 8   | it                | 定义一条测试用例，支持三个参数：用例名称，过滤参数和用例函数。                                        |
 | 9   | expect            | 支持bool类型判断等多种断言方法。                                                     |
 | 10  | xdescribe    | @since1.0.17定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。                             |
@@ -84,32 +84,32 @@ export default function beforeItSpecifiedTest() {
 ##### 断言功能列表
 
 
-| No.  | API                | 功能说明                                                     |
-| :--- | :------------------| ------------------------------------------------------------ |
-| 1    | assertClose        | 检验actualvalue和expectvalue(0)的接近程度是否是expectValue(1)。 |
-| 2    | assertContain      | 检验actualvalue中是否包含expectvalue。                       |
-| 3    | assertEqual        | 检验actualvalue是否等于expectvalue[0]。                      |
-| 4    | assertFail         | 抛出一个错误。                                               |
-| 5    | assertFalse        | 检验actualvalue是否是false。                                 |
-| 6    | assertTrue         | 检验actualvalue是否是true。                                  |
-| 7    | assertInstanceOf   | 检验actualvalue是否是expectvalue类型，支持基础类型。                |
-| 8    | assertLarger       | 检验actualvalue是否大于expectvalue。                         |
-| 9    | assertLess         | 检验actualvalue是否小于expectvalue。                         |
-| 10   | assertNull         | 检验actualvalue是否是null。                                  |
-| 11   | assertThrowError   | 检验actualvalue抛出Error内容是否是expectValue。              |
-| 12   | assertUndefined    | 检验actualvalue是否是undefined。                             |
-| 13   | assertNaN          | @since1.0.4 检验actualvalue是否是一个NAN                     |
-| 14   | assertNegUnlimited | @since1.0.4 检验actualvalue是否等于Number.NEGATIVE_INFINITY |
-| 15   | assertPosUnlimited | @since1.0.4 检验actualvalue是否等于Number.POSITIVE_INFINITY |
-| 16   | assertDeepEquals   | @since1.0.4 检验actualvalue和expectvalue是否完全相等   |
-| 17   | assertPromiseIsPending | @since1.0.4 判断promise是否处于Pending状态。             |
-| 18   | assertPromiseIsRejected | @since1.0.4 判断promise是否处于Rejected状态。           |
-| 19   | assertPromiseIsRejectedWith | @since1.0.4 判断promise是否处于Rejected状态，并且比较执行的结果值。 |
-| 20   | assertPromiseIsRejectedWithError | @since1.0.4 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。       |
-| 21   | assertPromiseIsResolved | @since1.0.4 判断promise是否处于Resolved状态。           |
-| 22   | assertPromiseIsResolvedWith | @since1.0.4 判断promise是否处于Resolved状态，并且比较执行的结果值。 |
-| 23   | not                | @since1.0.4 断言取反,支持上面所有的断言功能                     |
-| 24   | message                | @since1.0.17自定义断言异常信息 |
+| No.  | API                | 功能说明                                                        |
+| :--- | :------------------|-------------------------------------------------------------|
+| 1    | assertClose        | 检验actualvalue和expectvalue(0)的接近程度是否是expectValue(1)。         |
+| 2    | assertContain      | 检验actualvalue中是否包含expectvalue。                              |
+| 3    | assertEqual        | 检验actualvalue是否等于expectvalue[0]。                            |
+| 4    | assertFail         | 抛出一个错误。                                                     |
+| 5    | assertFalse        | 检验actualvalue是否是false。                                      |
+| 6    | assertTrue         | 检验actualvalue是否是true。                                       |
+| 7    | assertInstanceOf   | 检验actualvalue是否是expectvalue类型，支持基础类型。                       |
+| 8    | assertLarger       | 检验actualvalue是否大于expectvalue。                               |
+| 9    | assertLess         | 检验actualvalue是否小于expectvalue。                               |
+| 10   | assertNull         | 检验actualvalue是否是null。                                       |
+| 11   | assertThrowError   | 检验actualvalue抛出Error内容是否是expectValue。                       |
+| 12   | assertUndefined    | 检验actualvalue是否是undefined。                                  |
+| 13   | assertNaN          | @since1.0.4 检验actualvalue是否是一个NaN。                          |
+| 14   | assertNegUnlimited | @since1.0.4 检验actualvalue是否等于Number.NEGATIVE_INFINITY。      |
+| 15   | assertPosUnlimited | @since1.0.4 检验actualvalue是否等于Number.POSITIVE_INFINITY。      |
+| 16   | assertDeepEquals   | @since1.0.4 检验actualvalue和expectvalue是否完全相等。                |
+| 17   | assertPromiseIsPending | @since1.0.4 判断promise是否处于Pending状态。                         |
+| 18   | assertPromiseIsRejected | @since1.0.4 判断promise是否处于Rejected状态。                        |
+| 19   | assertPromiseIsRejectedWith | @since1.0.4 判断promise是否处于Rejected状态，并且比较执行的结果值。             |
+| 20   | assertPromiseIsRejectedWithError | @since1.0.4 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。 |
+| 21   | assertPromiseIsResolved | @since1.0.4 判断promise是否处于Resolved状态。                        |
+| 22   | assertPromiseIsResolvedWith | @since1.0.4 判断promise是否处于Resolved状态，并且比较执行的结果值。             |
+| 23   | not                | @since1.0.4 断言取反,支持上面所有的断言功能。                               |
+| 24   | message                | @since1.0.17自定义断言异常信息。                                      |
 
 expect断言示例代码：
 
@@ -326,7 +326,7 @@ export default function callBackErrorTest() {
 }
 ```
 > - 上述测试用例中,测试函数结束后, 回调函数才执行, 导致用例结果错误。
-> - 当使用框架测试异步代码时,框架需要知道它测试的代码何时完成。以确保测试用例结果正常统计,测试框架用以下俩种方式来处理这个问题。
+> - 当使用框架测试异步代码时,框架需要知道它测试的代码何时完成。以确保测试用例结果正常统计,测试框架用以下两种方式来处理这个问题。
 
 ##### Async/Await
 > 使用 Async关键字定义一个异步测试函数,在测试函数中使用await等待测试函数完成。
@@ -415,6 +415,133 @@ export default function callBackTestTest() {
   })
 }
 ```
+
+#### SysTestKit的公共能力
+
+| No. | API                | 功能说明              |
+|:----| :------------------|-------------------|
+| 1   | getDescribeName        | 获取当前测试用例所属的测试套名称。 |
+| 2   | getItName        | 获取当初测试用例名称。       |
+| 3   | getItAttribute        | 获取当初测试用例等级。       |
+| 4   | actionStart        | 添加用例执行过程打印自定义日志   |
+| 5   | actionEnd        |  添加用例执行过程打印自定义日志                 |
+| 6   | existKeyword        |                   |
+
+##### 获取当前测试用例所属的测试套名称
+
+示例代码：
+```javascript
+import { describe, it, expect, SysTestKit } from '@ohos/hypium';
+import hilog from '@ohos.hilog';
+const domain = 0;
+const tag = 'SysTestKitTest'
+export default function abilityTest() {
+  describe('SysTestKitTest', () => {
+
+    it("testGetDescribeName", 0, () => {
+      hilog.debug(domain, tag, `testGetDescribeName start`);
+      const describeName = SysTestKit.getDescribeName();
+      hilog.debug(domain, tag, `testGetDescribeName describeName, ${describeName}`);
+      expect(describeName).assertEqual('SysTestKitTest');
+      hilog.debug(domain, tag, `testGetDescribeName end`);
+    })
+  })
+}
+```
+
+##### 获取当初测试用例名称
+
+示例代码：
+```javascript
+import { describe, it, expect, SysTestKit } from '@ohos/hypium';
+import hilog from '@ohos.hilog';
+const domain = 0;
+const tag = 'SysTestKitTest'
+export default function abilityTest() {
+  describe('SysTestKitTest', () => {
+
+    it("testGetItName", 0, () => {
+      hilog.debug(domain, tag, `testGetDescribeName start`);
+      const itName = SysTestKit.getItName();
+      hilog.debug(domain, tag, `testGetDescribeName itName, ${itName}`);
+      expect(itName).assertEqual('testGetItName');
+      hilog.debug(domain, tag, `testGetDescribeName end`);
+    })
+  })
+}
+```
+
+##### 获取当初测试用例级别
+
+示例代码：
+```javascript
+import { describe, it, expect, SysTestKit, TestType, Level, Size } from '@ohos/hypium';
+import hilog from '@ohos.hilog';
+const domain = 0;
+const tag = 'SysTestKitTest'
+export default function abilityTest() {
+  describe('SysTestKitTest', () => {
+
+    it("testGetItAttribute", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, () => {
+      hilog.debug(domain, tag, `testGetItAttribute start`);
+      const testType: TestType | Size | Level = SysTestKit.getItAttribute();
+      hilog.debug(domain, tag, `testGetDescribeName testType, ${ testType }`);
+      expect(testType).assertEqual(TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0);
+      hilog.debug(domain, tag, `testGetItAttribute end`);
+    })
+  })
+}
+```
+
+##### 添加自定义打印日志。
+
+示例代码：
+```javascript
+import { describe, it, expect, SysTestKit, TestType, Level, Size } from '@ohos/hypium';
+import hilog from '@ohos.hilog';
+const domain = 0;
+const tag = 'SysTestKitTest'
+export default function abilityTest() {
+  describe('SysTestKitTest', () => {
+
+    it("testActionStart", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, () => {
+      hilog.debug(domain, tag, `testActionStart start `);
+      SysTestKit.actionStart('testActionStart 自定义日志 ');
+      SysTestKit.actionEnd('testActionStart end 自定义日志 ');
+      hilog.debug(domain, tag, `testActionStart end`);
+    })
+  })
+}
+```
+
+##### 检测hilog日志中是否打印。
+
+示例代码：
+```javascript
+import { describe, it, expect, SysTestKit, TestType, Level, Size } from '@ohos/hypium';
+import hilog from '@ohos.hilog';
+const domain = 0;
+const tag = 'SysTestKitTest'
+
+function logTest() {
+  hilog.debug(domain, 'test', `logTest called selfTest`);
+}
+
+export default function abilityTest() {
+  describe('SysTestKitTest', () => {
+
+    it("testExistKeyword", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, async () => {
+      hilog.debug(domain, tag, `testExistKeyword start `);
+      logTest();
+      const isCalled = await SysTestKit.existKeyword('logTest');
+      hilog.debug(domain, tag, `testExistKeyword isCalled, ${isCalled} `);
+      expect(isCalled).assertTrue();
+      hilog.debug(domain, tag, `testExistKeyword end`);
+    })
+  })
+}
+```
+
 #### Mock能力
 
 ##### 约束限制
@@ -451,11 +578,10 @@ export default function callBackTestTest() {
 
 -  **使用示例：**
 
-用户可以通过以下方式进行引入mock模块进行测试用例编写：
+用户可以通过以下方式引入mock模块进行测试用例编写：
 
 - **须知：**
-使用时候必须引入的mock能力模块： MockKit，when
-根据自己用例需要引入断言能力api
+使用时候必须引入的mock能力模块： MockKit，when，根据自己用例需要引入断言能力api。
 例如：`import { describe, expect, it, MockKit, when} from '@ohos/hypium'`
 
 **示例1: afterReturn 的使用**
@@ -538,7 +664,7 @@ export default function  afterReturnNothingTest() {
 }
 ```
 
-**示例3: 设定参数类型为any ，即接受任何参数（undefine和null除外）的使用**
+**示例3: 设定参数类型为any ，即接受任何参数（undefined和null除外）的使用**
 
 
 - **须知：**
@@ -1113,10 +1239,10 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
 
   可以利用框架提供的Level、Size、TestType 对象，对测试用例进行标记，以区分测试用例的级别、粒度、测试类型，各字段含义及代码如下：
 
-  | Key      | 含义说明     | Value取值范围                                                |
-  | -------- | ------------ | ------------------------------------------------------------ |
-  | level    | 用例级别     | "0","1","2","3","4", 例如：-s level 1                        |
-  | size     | 用例粒度     | "small","medium","large", 例如：-s size small                |
+  | Key      | 含义说明     | Value取值范围                                                                                                                                          |
+  | -------- | ------------ |----------------------------------------------------------------------------------------------------------------------------------------------------|
+  | level    | 用例级别     | "0","1","2","3","4", 例如：-s level 1                                                                                                                 |
+  | size     | 用例粒度     | "small","medium","large", 例如：-s size small                                                                                                         |
   | testType | 用例测试类型 | "function","performance","power","reliability","security","global","compatibility","user","standard","safety","resilience", 例如：-s testType function |
 
   示例代码：
@@ -1182,7 +1308,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
   hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s class describeTest_000#testIt_00,describeTest_001
   ```
 
-  该命令作用是执行“describeTest_001”测试套中所用用例，以及“describeTest_000”测试套中的“testIt_00”用例。
+  该命令作用是执行“describeTest_001”测试套中所有用例，以及“describeTest_000”测试套中的“testIt_00”用例。
 
   示例命令2：
 
@@ -1478,25 +1604,25 @@ Ui测试框架通过`On`类提供了丰富的控件特征描述API，用来匹�
 
 - 支持相对定位控件，可通过`isBefore`和`isAfter`等API限定邻近控件特征进行辅助定位。
 
-| No. | API                                | 功能描述                       |
-|-----|------------------------------------|----------------------------|
-| 1   | id(i:string):On                    | 指定控件id。                    |
-| 2   | text(t:string, p?:MatchPattern):On | 指定控件文本，可指定匹配模式。            |
-| 3   | type(t:string):On                 | 指定控件类型。                    |
-| 4   | enabled(e:bool):On                 | 指定控件使能状态。                  |
-| 5   | clickable(c:bool):On               | 指定控件可单击状态。                 |
-| 6   | longClickable(l:bool):On           | 指定控件可长按状态。                 |
-| 7   | focused(f:bool):On                 | 指定控件获焦状态。                  |
-| 8   | scrollable(s:bool):On              | 指定控件可滑动状态。                 |
-| 9   | selected(s:bool):On                | 指定控件选中状态。                  |
-| 10  | checked(c:bool):On                 | 指定控件选择状态。                  |
-| 11  | checkable(c:bool):On               | 指定控件可选择状态。                 |
-| 12  | isBefore(b:On):On                  | **相对定位**，限定目标控件位于指定特征控件之前。 |
-| 13  | isAfter(b:On):On                   | **相对定位**，限定目标控件位于指定特征控件之后。 |
-| 14   | id(i:string，p?:MatchPattern:On                    | 指定控件id，可指定匹配模式。                    |
-| 15   | hint(h:string, p?:MatchPattern):On | 指定控件提示文本，可指定匹配模式。            |
-| 16   | type(t:string，p?:MatchPattern):On                 | 指定控件类型，可指定匹配模式。                   |
-| 17   | description(d:string，p?:MatchPattern):On                 | 指定控件描述文本信息，可指定匹配模式。                   |
+| No. | API                                      | 功能描述                       |
+|-----|------------------------------------------|----------------------------|
+| 1   | id(i:string):On                          | 指定控件id。                    |
+| 2   | text(t:string, p?:MatchPattern):On       | 指定控件文本，可指定匹配模式。            |
+| 3   | type(t:string):On                        | 指定控件类型。                    |
+| 4   | enabled(e:bool):On                       | 指定控件使能状态。                  |
+| 5   | clickable(c:bool):On                     | 指定控件可单击状态。                 |
+| 6   | longClickable(l:bool):On                 | 指定控件可长按状态。                 |
+| 7   | focused(f:bool):On                       | 指定控件获焦状态。                  |
+| 8   | scrollable(s:bool):On                    | 指定控件可滑动状态。                 |
+| 9   | selected(s:bool):On                      | 指定控件选中状态。                  |
+| 10  | checked(c:bool):On                       | 指定控件选择状态。                  |
+| 11  | checkable(c:bool):On                     | 指定控件可选择状态。                 |
+| 12  | isBefore(b:On):On                        | **相对定位**，限定目标控件位于指定特征控件之前。 |
+| 13  | isAfter(b:On):On                         | **相对定位**，限定目标控件位于指定特征控件之后。 |
+| 14   | id(i:string，p?:MatchPattern):On          | 指定控件id，可指定匹配模式。                    |
+| 15   | hint(h:string, p?:MatchPattern):On       | 指定控件提示文本，可指定匹配模式。            |
+| 16   | type(t:string，p?:MatchPattern):On        | 指定控件类型，可指定匹配模式。                   |
+| 17   | description(d:string，p?:MatchPattern):On | 指定控件描述文本信息，可指定匹配模式。                   |
 
 其中，`text`,`id`,`type`,`hint`,`description`属性支持{`MatchPattern.EQUALS`，`MatchPattern.CONTAINS`，`MatchPattern.STARTS_WITH`，`MatchPattern.ENDS_WITH`，`MatchPattern.REG_EXP`，`MatchPattern.REG_EXP_ICASE`}六种匹配模式，缺省使用`MatchPattern.EQUALS`模式。
 
@@ -1844,18 +1970,18 @@ hdc shell chmod +x /system/bin/uitest
 
 | 版本号  | 功能说明                                                     |
 | :------ | :----------------------------------------------------------- |
-| 3.2.2.1 | 1、增加抛滑、获取/设置屏幕方向接口<br />2、窗口处理逻辑增加不支持场景处理逻辑 |
-| 3.2.3.0 | 1、滑动控件进行滑动查找、滑动到尾部/顶部功能优化             |
-| 3.2.4.0 | 1、接口调用异常时会抛出错误码                                |
-| 3.2.5.0 | 1、通信机制变更                                              |
-| 3.2.6.0 | 1、增加模拟鼠标操作能力接口<br />2、增加指定应用的窗口下查找目标控件接口 |
-| 4.0.1.1 | 1、支持在daemon运行时执行uitest dumpLayout                   |
-| 4.0.1.2 | 1、模拟鼠标动作、键鼠协同功能优化                            |
-| 4.0.1.3 | 1、示例代码更新<br />2、滑动控件进行滑动查找、滑动到尾部/顶部功能优化 |
-| 4.0.1.4 | 1、可选参数传入undefined时，当作默认值处理                   |
+| 3.2.2.1 | 1、增加抛滑、获取/设置屏幕方向接口<br />2、窗口处理逻辑增加不支持场景处理逻辑。  |
+| 3.2.3.0 | 1、滑动控件进行滑动查找、滑动到尾部/顶部功能优化。              |
+| 3.2.4.0 | 1、接口调用异常时会抛出错误码。                                 |
+| 3.2.5.0 | 1、通信机制变更。                                               |
+| 3.2.6.0 | 1、增加模拟鼠标操作能力接口<br />2、增加指定应用的窗口下查找目标控件接口。  |
+| 4.0.1.1 | 1、支持在daemon运行时执行uitest dumpLayout。                    |
+| 4.0.1.2 | 1、模拟鼠标动作、键鼠协同功能优化。                             |
+| 4.0.1.3 | 1、示例代码更新<br />2、滑动控件进行滑动查找、滑动到尾部/顶部功能优化。  |
+| 4.0.1.4 | 1、可选参数传入undefined时，当作默认值处理。                    |
 | 4.0.2.0 | 1、支持监听toast和dialog控件出现，使用callback的形式返回结果。 |
 | 4.0.3.0 | 1、增加加载运行.abc文件机制。                                |
-| 4.0.4.0 | 1、支持abc_loader框架获取UI操作录制数据，屏幕数据，控件树等，并以callback的形式返回结果<br />2、修改录制数据结构 |
+| 4.0.4.0 | 1、支持abc_loader框架获取UI操作录制数据，屏幕数据，控件树等，并以callback的形式返回结果<br />2、修改录制数据结构。  |
 | 4.1.1.1 | 1、对接批量获取控件信息能力，缩短获取控件信息的耗时。        |
 | 4.1.2.0 | 1、增加shell命令方式注入UI模拟操作。                         |
 | 4.1.3.0 | 1、新增命令行功能，uitest dumuLayout -a ,dump信息中包含控件的背景色、字体颜色/大小信息。 |
@@ -1863,7 +1989,7 @@ hdc shell chmod +x /system/bin/uitest
 | 5.0.1.0 | 1、优化swipe操作。<br />2、inputText输入中文的实现方式改为设置剪贴板数据后，长按控件点击粘贴。 |
 | 5.0.1.1 | 1、节点新增以下属性，背景色：backgroundColor，背景图片：backgroundImage，透明度：opacity，模糊度：blur，事件是否透传：hitTestBehavior 。 |
 | 5.0.1.2 | 1、通过test Sa发布公共事件。<br />2、节点新增clip属性，判断其子节点是否进行切割。<br />3、过滤机制调整，节点只与其clip为true的父节点进行切换计算可见区域，可见区域宽/高小于等于0记为不可见。<br />4、调用inputText时，被输入字符串超过200个字符时，实现方式调整为设置剪贴板数据后，植入ctrl + v。 |
-| 5.1.1.1 | 1、控件支持正则表达式方式进行查找 <br />2、获取控件属性中的提示文本信息 <br />3、支持横向滑动查找操作 <br />4、支持不指定坐标模拟输入文本的shell命令 hdc shell uitest uiInput text "xxxx" |
+| 5.1.1.1 | 1、控件支持正则表达式方式进行查找 <br />2、获取控件属性中的提示文本信息。  <br />3、支持横向滑动查找操作。  <br />4、支持不指定坐标模拟输入文本的shell命令 hdc shell uitest uiInput text "xxxx"。  |
 | 5.1.1.2 | uitest dumpLayout 能力增强<br /> -w：仅获取指定window id的应用窗口。<br/> -b ：仅获取指定bundleName的应用窗口。<br/> -m ：是否进行窗口合并。不使用该选项时默认进行窗口合并。 |
 | 6.0.1.0 | 1、inputText支持追加输入和指定通过剪贴板粘贴输入。  <br/>2、开放鼠标原子事件。  <br/>3、新增模拟手表表冠旋转。  <br/>4、支持触控屏/鼠标注入长按操作和拖拽操作时指定长按时间。 |
 
