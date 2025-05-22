@@ -40,6 +40,7 @@
 #include "element_node_iterator_impl.h"
 #include "system_ui_controller.h"
 #include "test_server_client.h"
+#include "image_packer.h"
 
 using namespace std;
 using namespace chrono;
