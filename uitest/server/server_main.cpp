@@ -69,6 +69,10 @@ namespace OHOS::uitest {
     "start-daemon <token>                                                                 start the test process\n"
     "uiRecord                                                                            recording Ui Operations\n"
     "  record                                                    wirte location coordinates of events into files\n"
+    "    point                                         not save widget information, when recording Ui operations\n"
+    "    -j                                             Save the current layout information after each operation\n"
+    "    -c <true/false>                          whether to print the Ui event information, true means to print\n" 
+    "                                                                       set it ture when not use this option\n"
     "  read                                                                    print file content to the console\n"
     "uiInput                                                                     inject Ui simulation operations\n"
     "  help                                                                                  print uiInput usage\n"
@@ -82,7 +86,7 @@ namespace OHOS::uitest {
     "  text <text>                                           input text at the location where is already focused\n"
     "--version                                                                        print current tool version\n";
 
-    const std::string VERSION = "6.0.1.1";
+    const std::string VERSION = "6.0.1.2";
     struct option g_longoptions[] = {
         {nullptr, required_argument, nullptr, 'p'},
         {nullptr, required_argument, nullptr, 'd'},
