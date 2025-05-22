@@ -420,12 +420,8 @@ namespace OHOS::uitest {
         if (!CheckStatus(false, err)) {
             return;
         }
-        FILE *fp = fdopen(fd, "wb");
-        if (fp  == NULL) {
-            LOG_E("open fail errno = %{public}d reason = %{public}s", errno, strerror(errno));
-        } 
         stringstream errorRecv;
-        if (!uiController_->TakeScreenCap(fp, errorRecv, displayId, rect)) {
+        if (!uiController_->TakeScreenCap(fd, errorRecv, displayId, rect)) {
             string errStr = errorRecv.str();
             LOG_W("ScreenCap failed: %{public}s", errStr.c_str());
             if (errStr.find("File opening failed") == 0) {
