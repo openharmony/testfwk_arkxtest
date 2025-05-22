@@ -1798,7 +1798,7 @@ static void RegisterExtensionHandler()
                 return;
             }
             auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
-            if (finger != 0 && step != 0 && pointer.At(0, 0).point_.displayId_ != displayId) {
+            if (!(finger == 0 && step == 0) && pointer.At(0, 0).point_.displayId_ != displayId) {
                 out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "All points must belong to the same display.");
                 return;
             }
