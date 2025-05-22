@@ -42,6 +42,7 @@
 #include "test_server_client.h"
 #include "test_server_error_code.h"
 #include "parameters.h"
+#include "image_packer.h"
 
 using namespace std;
 using namespace chrono;
@@ -910,34 +911,49 @@ namespace OHOS::uitest {
       return true;
     }
 
-    bool SysUiController::TakeScreenCap(FILE *fp, std::stringstream &errReceiver, int32_t displayId, Rect rect) const
+    bool SysUiController::TakeScreenCap(int32_t fd, std::stringstream &errReceiver, int32_t displayId, Rect rect) const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
         displayId = GetValidDisplayId(displayId);
         // get PixelMap from DisplayManager API
         shared_ptr<PixelMap> pixelMap;
-        Rect rectInScreen;
-        auto screenSize = GetDisplaySize(displayId);
-        auto screenRect = Rect(0, screenSize.px_, 0, screenSize.py_);
-        if (!RectAlgorithm::ComputeIntersection(rect, screenRect, rectInScreen) || rectInScreen.GetWidth() == 0
-            || rectInScreen.GetHeight() == 0) {
+        if (rect.GetWidth() == 0) {
             pixelMap = displayMgr.GetScreenshot(displayId);
         } else {
-            Media::Rect region = {.left = rectInScreen.left_, .top = rectInScreen.top_,
-                .width = rectInScreen.right_ - rectInScreen.left_, .height = rectInScreen.bottom_ - rectInScreen.top_};
-            Media::Size size = {.width = rectInScreen.right_ - rectInScreen.left_,
-                                .height = rectInScreen.bottom_ - rectInScreen.top_};
+            Media::Rect region = {.left = rect.left_, .top = rect.top_,
+                .width = rect.right_ - rect.left_, .height = rect.bottom_ - rect.top_};
+            Media::Size size = {.width = rect.right_ - rect.left_, .height = rect.bottom_ - rect.top_};
             pixelMap = displayMgr.GetScreenshot(displayId, region, size, 0);
         }
         if (pixelMap == nullptr) {
             errReceiver << "Failed to get display pixelMap";
             return false;
         }
-        if (fp == nullptr) {
-            errReceiver << "File opening failed";
+        int64_t packedSize = 0L;
+        auto pixelSize = static_cast<uint32_t>(pixelMap->GetByteCount());
+        LOG_D("PixelSize: %{public}d", pixelSize);
+        auto buffer = new (std::nothrow) uint8_t[pixelSize];
+        Media::ImagePacker imagePacker;
+        Media::PackOption packOption;
+        packOption.format = "image/png";
+        imagePacker.StartPacking(buffer, pixelSize, packOption);
+        imagePacker.AddImage(*pixelMap);
+        uint32_t packResult = imagePacker.FinalizePacking(packedSize);
+        LOG_D("Packed pixelMap, packResult: %{public}d", packResult);
+        LOG_D("Packed pixelMap, packedSize: %{public}d", packedSize);
+        if (packedResult != NO_ERROR || buffer == nullptr) {
+            delete[] buffer;
             return false;
         }
-        return WriteToPng(fp, pixelMap);
+        int ret = write(fd, buffer, packedSize);
+        if (ret == -1) {
+            int err = errno;
+            LOG_E("write failed: %{public}d", err);
+            LOG_E("write failed reason: %{public}s", strerror(err));
+            return false;
+        }
+        delete[] buffer;
+        return true;
     }
 
     bool SysUiController::ConnectToSysAbility(ApiCallErr &error)

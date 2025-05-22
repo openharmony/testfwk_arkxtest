@@ -86,7 +86,7 @@ namespace OHOS::uitest {
     "  text <text>                                           input text at the location where is already focused\n"
     "--version                                                                        print current tool version\n";
 
-    const std::string VERSION = "6.0.1.2";
+    const std::string VERSION = "6.0.2.1";
     struct option g_longoptions[] = {
         {nullptr, required_argument, nullptr, 'p'},
         {nullptr, required_argument, nullptr, 'd'},
@@ -190,13 +190,7 @@ namespace OHOS::uitest {
                     params.insert(pair<char, string>(opt, "true"));
                     break;
                 case 'c':
-                    if (strcmp(optarg, "true") && strcmp(optarg, "false")) {
-                        PrintToConsole("Invalid params");
-                        PrintToConsole(usage);
-                        return EXIT_FAILURE;
-                    }
-                    params.insert(pair<char, string>(opt, optarg));
-                    break;
+                case 'p':
                 case 'm':
                     if (strcmp(optarg, "true") && strcmp(optarg, "false")) {
                         PrintToConsole("Invalid params");
@@ -310,12 +304,8 @@ namespace OHOS::uitest {
         }
         auto controller = SysUiController();
         stringstream errorRecv;
-        FILE* file = fopen(savePath.c_str(), "wb");
-        if (file == nullptr) {
-            PrintToConsole("Create png file failed");
-            return EXIT_FAILURE;
-        }
-        if (!controller.TakeScreenCap(file, errorRecv, displayId)) {
+        int32_t fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
+        if (!controller.TakeScreenCap(fd, errorRecv, displayId)) {
             PrintToConsole("ScreenCap failed: " + errorRecv.str());
             return EXIT_FAILURE;
         }
@@ -408,15 +398,19 @@ namespace OHOS::uitest {
         }
         if (opt == "record") {
             map<char, string> params;
-            if (GetParam(argc, argv, "c:j", HELP_MSG, params) == EXIT_FAILURE) {
+            if (GetParam(argc, argv, "p:c:j", HELP_MSG, params) == EXIT_FAILURE) {
                 return EXIT_FAILURE;
             }
             option.saveJson = params.find('j') != params.end();
             auto iter = params.find('c');
             option.terminalCout = (iter != params.end()) ?iter->second == "true" : true;
+            auto p = params.find('p');
+            option.pointOnly = (iter != params.end()) ?iter->second == "false" : false;
             auto controller = make_unique<SysUiController>();
             ApiCallErr error = ApiCallErr(NO_ERROR);
-            if (!option.pointOnly && !controller->ConnectToSysAbility(error)) {
+            if (option.pointOnly && !option.saveJson) {
+                LOG_D("Do not need to ConnectToSysAbility.");
+            } else if (!controller->ConnectToSysAbility(error)) {
                 PrintToConsole(error.message_);
                 return EXIT_FAILURE;
             }
