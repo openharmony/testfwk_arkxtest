@@ -405,7 +405,7 @@ namespace OHOS::uitest {
             auto iter = params.find('c');
             option.terminalCout = (iter != params.end()) ?iter->second == "true" : true;
             auto p = params.find('p');
-            option.pointOnly = (iter != params.end()) ?iter->second == "false" : false;
+            option.pointOnly = (p != params.end()) ?p->second == "false" : false;
             auto controller = make_unique<SysUiController>();
             ApiCallErr error = ApiCallErr(NO_ERROR);
             if (option.pointOnly && !option.saveJson) {
