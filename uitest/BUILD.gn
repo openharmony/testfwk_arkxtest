@@ -201,6 +201,7 @@ ohos_executable("uitest_server") {
     "accessibility:accessibility_common",
     "accessibility:accessibleability",
     "image_framework:image_native",
+    "image_framework:image_packer",
     "input:libmmi-client",
     "ipc:ipc_single",
     "window_manager:libdm",
