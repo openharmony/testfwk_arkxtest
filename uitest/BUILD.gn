@@ -201,6 +201,7 @@ ohos_executable("uitest_server") {
     "accessibility:accessibleability",
     "hisysevent:libhisysevent",
     "image_framework:image_native",
+    "image_framework:image_packer",
     "init:libbegetutil",
     "input:libmmi-client",
     "ipc:ipc_single",

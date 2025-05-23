@@ -68,7 +68,12 @@ namespace OHOS::uitest {
     "  -d <displayId>                                           specifies the locate screen of the target window\n"
     "start-daemon <token>                                                                 start the test process\n"
     "uiRecord                                                                            recording Ui Operations\n"
-    "  record                                                    wirte location coordinates of events into files\n"
+    "  record                                                           wirte Ui event information into csv file\n"
+    "    -W <true/false>                                     whether save widget information, true means to save\n" 
+    "                                                                       set it ture when not use this option\n"
+    "    -l                                             Save the current layout information after each operation\n"
+    "    -c <true/false>              whether print the Ui event information to the console, true means to print\n" 
+    "                                                                       set it ture when not use this option\n"
     "  read                                                                    print file content to the console\n"
     "uiInput                                                                     inject Ui simulation operations\n"
     "  help                                                                                  print uiInput usage\n"
@@ -82,7 +87,7 @@ namespace OHOS::uitest {
     "  text <text>                                           input text at the location where is already focused\n"
     "--version                                                                        print current tool version\n";
 
-    const std::string VERSION = "6.0.1.1";
+    const std::string VERSION = "6.0.2.1";
     struct option g_longoptions[] = {
         {nullptr, required_argument, nullptr, 'p'},
         {nullptr, required_argument, nullptr, 'd'},
@@ -182,6 +187,11 @@ namespace OHOS::uitest {
                 case 'a':
                     params.insert(pair<char, string>(opt, "true"));
                     break;
+                case 'l':
+                    params.insert(pair<char, string>(opt, "true"));
+                    break;
+                case 'c':
+                case 'W':
                 case 'm':
                     if (strcmp(optarg, "true") && strcmp(optarg, "false")) {
                         PrintToConsole("Invalid params");
@@ -295,12 +305,8 @@ namespace OHOS::uitest {
         }
         auto controller = SysUiController();
         stringstream errorRecv;
-        FILE* file = fopen(savePath.c_str(), "wb");
-        if (file == nullptr) {
-            PrintToConsole("Create png file failed");
-            return EXIT_FAILURE;
-        }
-        if (!controller.TakeScreenCap(file, errorRecv, displayId)) {
+        int32_t fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
+        if (!controller.TakeScreenCap(fd, errorRecv, displayId)) {
             PrintToConsole("ScreenCap failed: " + errorRecv.str());
             return EXIT_FAILURE;
         }
@@ -384,26 +390,34 @@ namespace OHOS::uitest {
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
         static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
-        if (!(argc == INDEX_THREE || argc == INDEX_FOUR)) {
-            PrintToConsole("Missing parameter. \n");
-            PrintToConsole(usage);
-            return EXIT_FAILURE;
-        }
         std::string opt = argv[TWO];
-        std::string modeOpt;
-        if (argc == INDEX_FOUR) {
-            modeOpt = argv[THREE];
+        RecordOption option;
+        if (argc >= 4) {
+            if (strcmp(argv[THREE], "point") == 0) {
+                option.saveWidget = false;
+            }
         }
         if (opt == "record") {
+            map<char, string> params;
+            if (GetParam(argc, argv, "W:c:l", HELP_MSG, params) == EXIT_FAILURE) {
+                return EXIT_FAILURE;
+            }
+            option.saveLayout = params.find('l') != params.end();
+            auto iter = params.find('c');
+            option.terminalCout = (iter != params.end()) ?iter->second == "true" : true;
+            auto w = params.find('W');
+            option.saveWidget = (w != params.end()) ?w->second == "true" : true;
             auto controller = make_unique<SysUiController>();
             ApiCallErr error = ApiCallErr(NO_ERROR);
-            if (!controller->ConnectToSysAbility(error)) {
-                PrintToConsole(error.message_);
-                return EXIT_FAILURE;
+            if (option.saveWidget || option.saveLayout) {
+                if(!controller->ConnectToSysAbility(error)){
+                    PrintToConsole(error.message_);
+                    return EXIT_FAILURE;
+                }
             }
             UiDriver::RegisterController(move(controller));
             ReportFileWriteEvent("");
-            return UiDriverRecordStart(modeOpt);
+            return UiDriverRecordStart(option);
         } else if (opt == "read") {
             EventData::ReadEventLine();
             return OHOS::ERR_OK;

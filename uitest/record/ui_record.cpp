@@ -23,6 +23,9 @@ namespace OHOS::uitest {
     using nlohmann::json;
 
     static bool g_uiRecordRun = false;
+    std::string ts;
+    std::string savePath;
+    int operationCount = 0;
     int g_callBackId = -1;
     int64_t g_downTime = 0;
     static std::shared_ptr<InputEventCallback> g_uiCallBackInstance = nullptr;
@@ -144,9 +147,35 @@ namespace OHOS::uitest {
                 DoAbcCallBack(json);
             }
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
-            if (!KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
-                return;
+            if (recordMode.saveLayout) {
+                DumpOption option;
+                auto layout = nlohmann::json();
+                ApiCallErr err(NO_ERROR);
+                driver.DumpUiHierarchy(layout, option, err);
+                operationCount++;
+                savePath = "/data/local/tmp/layout_" + ts + "_" + to_string(operationCount) + ".json";
+                ofstream fout;
+                fout.open(savePath, ios::out | ios::binary);
+                if (!fout) {
+                    err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(option.savePath_) + strerror(errno));
+                    fout.close();
+                } else {
+                    fout << layout.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
+                    fout.close();
+                    std::cout << "Layout saved to :" + savePath << std::endl;
+                    LOG_I("Layout saved to : %{public}s", savePath.c_str());
+                }
             }
+            if (KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
+                keyeventTracker_.SetNeedRecord(false);
+                KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
+                if (recordMode.terminalCout) {                
+                    // cout打印 + record.csv保存json
+                    snapshootKeyTracker.WriteSingleData(info, cout_lock);
+                }
+                auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock, savePath);
+                DoAbcCallBack(json);
+            } 
             if (keyeventTracker_.IsNeedRecord()) {
                 keyeventTracker_.SetNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
@@ -243,11 +272,31 @@ namespace OHOS::uitest {
             auto layout = nlohmann::json();
             DumpOption option;
             driver.DumpUiHierarchy(layout, option, err);
+            if (recordMode.saveLayout && err.code_ == NO_ERROR) {
+                operationCount++;
+                savePath = "/data/local/tmp/layout_" + ts + to_string(operationCount) + ".json";
+                ofstream fout;
+                fout.open(savePath, ios::out | ios::binary);
+                if (!fout) {
+                    err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(option.savePath_) + strerror(errno));
+                    fout.close();
+                } else {
+                    fout << layout.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
+                    fout.close();
+                    std::cout << "Layout saved to :" + savePath << std::endl;
+                    LOG_I("Layout saved to : %{public}s", savePath.c_str());
+                }            
+            } else if (err.code_ != NO_ERROR) {
+                LOG_E("DumpLayout failed");
+            }
             selector.SetWantMulti(true);
             driver.FindWidgets(selector, rev, err, true);
             PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
-            pointerTracker_.WriteData(info, cout_lock);
-            auto json = pointerTracker_.WriteData(info, outFile, csv_lock);
+            info.SetSavePath(savePath);
+            if (recordMode.terminalCout) {
+                pointerTracker_.WriteData(info, cout_lock); // Terminal
+            }
+            auto json = pointerTracker_.WriteData(info, outFile, csv_lock); // csv
             if (abcCallBack != nullptr) {
                 auto data = nlohmann::json();
                 data["code"] = MessageStage::FindWidgetsEnd;
@@ -302,7 +351,7 @@ namespace OHOS::uitest {
             while (findWidgetsAllow_) {
                 widgetsCon.wait(widgetsLck);
             }
-            if (recordMode != "point") {
+            if (recordMode.saveWidget) {
                 touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y);
             }
             pointerTracker_.HandleDownEvent(touchEvent);
@@ -311,13 +360,13 @@ namespace OHOS::uitest {
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_PULL_MOVE) {
             pointerTracker_.HandleMoveEvent(touchEvent, OP_DRAG);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP) {
-            if (recordMode != "point") {
+            if (recordMode.saveWidget)  {
                 touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y);
             }
             pointerTracker_.HandleUpEvent(touchEvent);
             WritePointerInfo();
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_PULL_UP) {
-            if (recordMode != "point") {
+            if (recordMode.saveWidget) {
                 touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y);
             }
             pointerTracker_.HandleUpEvent(touchEvent, OP_DRAG);
@@ -351,9 +400,9 @@ namespace OHOS::uitest {
         std::cout << "The result will be written in csv file at location: " << filePath << std::endl;
         return true;
     }
-    void InputEventCallback::RecordInitEnv(const std::string &modeOpt)
+    void InputEventCallback::RecordInitEnv(const RecordOption &option)
     {
-        recordMode = modeOpt;
+        recordMode = option;
         ApiCallErr err(NO_ERROR);
         selector.SetWantMulti(true);
         driver.FindWidgets(selector, rev, err, true);
@@ -377,7 +426,7 @@ namespace OHOS::uitest {
         }
     }
 
-    int32_t UiDriverRecordStart(std::string modeOpt)
+    int32_t UiDriverRecordStart(RecordOption modeOpt)
     {
         g_uiCallBackInstance = std::make_shared<InputEventCallback>();
         return UiDriverRecordStartTemplate(modeOpt);
@@ -387,10 +436,14 @@ namespace OHOS::uitest {
     {
         g_uiCallBackInstance = std::make_shared<InputEventCallback>();
         g_uiCallBackInstance->SetAbcCallBack(handler);
-        return UiDriverRecordStartTemplate(modeOpt);
+        RecordOption opt;
+        if (modeOpt == "point") {
+            opt.saveWidget = false;
+        }
+        return UiDriverRecordStartTemplate(opt);
     }
 
-    int32_t UiDriverRecordStartTemplate(std::string modeOpt)
+    int32_t UiDriverRecordStartTemplate(RecordOption modeOpt)
     {
         if (g_uiCallBackInstance == nullptr) {
             std::cout << "nullptr" << std::endl;
@@ -414,6 +467,7 @@ namespace OHOS::uitest {
             return OHOS::ERR_INVALID_VALUE;
         }
         g_uiRecordRun = true;
+        ts = to_string(GetCurrentMicroseconds());
         // 补充click打印线程
         std::thread clickThread(&InputEventCallback::TimerReprintClickFunction, g_uiCallBackInstance);
         // touch计时线程
