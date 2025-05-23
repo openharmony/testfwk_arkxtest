@@ -1066,7 +1066,7 @@ static ani_boolean screenCaptureSync(ani_env *env, ani_object obj, ani_string pa
     callInfo_.fdParamIndex_ = INDEX_ZERO;
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
-    return true;
+    return reply_.resultValue_.get<bool>();
 }
 
 static ani_boolean screenCapSync(ani_env *env, ani_object obj, ani_string path)
@@ -1086,7 +1086,7 @@ static ani_boolean screenCapSync(ani_env *env, ani_object obj, ani_string path)
     callInfo_.fdParamIndex_ = INDEX_ZERO;
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
-    return true;
+    return reply_.resultValue_.get<bool>();
 }
 
 static ani_boolean setDisplayRotationEnabledSync(ani_env *env, ani_object obj, ani_boolean enable)
