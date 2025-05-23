@@ -223,12 +223,8 @@ namespace OHOS::uitest {
         }
         auto controller = SysUiController();
         stringstream errorRecv;
-        FILE* file = fopen(savePath.c_str(), "wb");
-        if (file == nullptr) {
-            PrintToConsole("Create png file failed");
-            return EXIT_FAILURE;
-        }
-        if (!controller.TakeScreenCap(file, errorRecv, displayId)) {
+        int32_t fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
+        if (!controller.TakeScreenCap(fd, errorRecv, displayId)) {
             PrintToConsole("ScreenCap failed: " + errorRecv.str());
             return EXIT_FAILURE;
         }

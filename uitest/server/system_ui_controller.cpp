@@ -40,6 +40,7 @@
 #include "element_node_iterator_impl.h"
 #include "system_ui_controller.h"
 #include "test_server_client.h"
+#include "image_packer.h"
 
 using namespace std;
 using namespace chrono;
@@ -854,7 +855,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    bool SysUiController::TakeScreenCap(FILE *fp, std::stringstream &errReceiver, int32_t displayId, Rect rect) const
+    bool SysUiController::TakeScreenCap(int32_t fd, std::stringstream &errReceiver, int32_t displayId, Rect rect) const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
         displayId = GetValidDisplayId(displayId);
@@ -872,39 +873,30 @@ namespace OHOS::uitest {
             errReceiver << "Failed to get display pixelMap";
             return false;
         }
-        if (fp == nullptr) {
-            errReceiver << "File opening failed";
+        int64_t packedSize = 0L;
+        auto pixelSize = static_cast<uint32_t>(pixelMap->GetByteCount());
+        LOG_D("PixelSize: %{public}d", pixelSize);
+        auto buffer = new (std::nothrow) uint8_t[pixelSize];
+        Media::ImagePacker imagePacker;
+        Media::PackOption packOption;
+        packOption.format = "image/png";
+        imagePacker.StartPacking(buffer, pixelSize, packOption);
+        imagePacker.AddImage(*pixelMap);
+        uint32_t packResult = imagePacker.FinalizePacking(packedSize);
+        LOG_D("Packed pixelMap, packResult: %{public}d", packResult);
+        LOG_D("Packed pixelMap, packedSize: %{public}" PRId64, packedSize);
+        if (packResult != NO_ERROR || buffer == nullptr) {
+            delete[] buffer;
             return false;
         }
-        png_structp pngStruct = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-        if (pngStruct == nullptr) {
-            fclose(fp);
+        int ret = write(fd, buffer, packedSize);
+        if (ret == -1) {
+            int err = errno;
+            LOG_E("write failed: %{public}d", err);
+            LOG_E("write failed reason: %{public}s", strerror(err));
             return false;
         }
-        png_infop pngInfo = png_create_info_struct(pngStruct);
-        if (pngInfo == nullptr) {
-            fclose(fp);
-            png_destroy_write_struct(&pngStruct, nullptr);
-            return false;
-        }
-        png_init_io(pngStruct, fp);
-        auto width = static_cast<uint32_t>(pixelMap->GetWidth());
-        auto height = static_cast<uint32_t>(pixelMap->GetHeight());
-        auto data = pixelMap->GetPixels();
-        auto stride = static_cast<uint32_t>(pixelMap->GetRowBytes());
-        // set png header
-        static constexpr int bitmapDepth = 8;
-        png_set_IHDR(pngStruct, pngInfo, width, height, bitmapDepth, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
-                     PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-        png_set_packing(pngStruct); // set packing info
-        png_write_info(pngStruct, pngInfo); // write to header
-        for (uint32_t column = 0; column < height; column++) {
-            png_write_row(pngStruct, data + (column * stride));
-        }
-        // free/close
-        png_write_end(pngStruct, pngInfo);
-        png_destroy_write_struct(&pngStruct, &pngInfo);
-        (void)fclose(fp);
+        delete[] buffer;
         return true;
     }
 
