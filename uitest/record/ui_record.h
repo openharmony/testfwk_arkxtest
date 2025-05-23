@@ -51,9 +51,9 @@
 
 namespace OHOS::uitest {
     struct RecordOption {
-        bool saveJson = false;
+        bool saveLayout = false;
         bool terminalCout = true;
-        bool pointOnly = false;
+        bool saveWidget = true;
     };
     class InputEventCallback : public MMI::IInputEventConsumer {
     public:

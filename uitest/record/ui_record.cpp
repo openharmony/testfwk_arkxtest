@@ -147,7 +147,7 @@ namespace OHOS::uitest {
                 DoAbcCallBack(json);
             }
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
-            if (recordMode.saveJson) {
+            if (recordMode.saveLayout) {
                 DumpOption option;
                 auto layout = nlohmann::json();
                 ApiCallErr err(NO_ERROR);
@@ -272,7 +272,7 @@ namespace OHOS::uitest {
             auto layout = nlohmann::json();
             DumpOption option;
             driver.DumpUiHierarchy(layout, option, err);
-            if (recordMode.saveJson && err.code_ == NO_ERROR) {
+            if (recordMode.saveLayout && err.code_ == NO_ERROR) {
                 operationCount++;
                 savePath = "/data/local/tmp/layout_" + ts + to_string(operationCount) + ".json";
                 ofstream fout;
@@ -351,7 +351,7 @@ namespace OHOS::uitest {
             while (findWidgetsAllow_) {
                 widgetsCon.wait(widgetsLck);
             }
-            if (!recordMode.pointOnly) {
+            if (recordMode.saveWidget) {
                 touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y);
             }
             pointerTracker_.HandleDownEvent(touchEvent);
@@ -360,13 +360,13 @@ namespace OHOS::uitest {
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_PULL_MOVE) {
             pointerTracker_.HandleMoveEvent(touchEvent, OP_DRAG);
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_UP) {
-            if (!recordMode.pointOnly)  {
+            if (recordMode.saveWidget)  {
                 touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y);
             }
             pointerTracker_.HandleUpEvent(touchEvent);
             WritePointerInfo();
         } else if (pointerEvent->GetPointerAction() == MMI::PointerEvent::POINTER_ACTION_PULL_UP) {
-            if (!recordMode.pointOnly) {
+            if (recordMode.saveWidget) {
                 touchEvent.attributes = FindWidget(driver, touchEvent.x, touchEvent.y);
             }
             pointerTracker_.HandleUpEvent(touchEvent, OP_DRAG);
@@ -438,7 +438,7 @@ namespace OHOS::uitest {
         g_uiCallBackInstance->SetAbcCallBack(handler);
         RecordOption opt;
         if (modeOpt == "point") {
-            opt.pointOnly = true;
+            opt.saveWidget = false;
         }
         return UiDriverRecordStartTemplate(opt);
     }
