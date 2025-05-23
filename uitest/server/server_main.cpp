@@ -69,7 +69,8 @@ namespace OHOS::uitest {
     "start-daemon <token>                                                                 start the test process\n"
     "uiRecord                                                                            recording Ui Operations\n"
     "  record                                                           wirte Ui event information into csv file\n"
-    "    point                                         not save widget information, when recording Ui operations\n"
+    "    -W <true/false>                                     whether save widget information, true means to save\n" 
+    "                                                                       set it ture when not use this option\n"
     "    -j                                             Save the current layout information after each operation\n"
     "    -c <true/false>              whether print the Ui event information to the console, true means to print\n" 
     "                                                                       set it ture when not use this option\n"
@@ -393,26 +394,26 @@ namespace OHOS::uitest {
         RecordOption option;
         if (argc >= 4) {
             if (strcmp(argv[THREE], "point") == 0) {
-                option.pointOnly = true;
+                option.saveWidget = false;
             }
         }
         if (opt == "record") {
             map<char, string> params;
-            if (GetParam(argc, argv, "p:c:j", HELP_MSG, params) == EXIT_FAILURE) {
+            if (GetParam(argc, argv, "W:c:l", HELP_MSG, params) == EXIT_FAILURE) {
                 return EXIT_FAILURE;
             }
-            option.saveJson = params.find('j') != params.end();
+            option.saveLayout = params.find('l') != params.end();
             auto iter = params.find('c');
             option.terminalCout = (iter != params.end()) ?iter->second == "true" : true;
-            auto p = params.find('p');
-            option.pointOnly = (p != params.end()) ?p->second == "false" : false;
+            auto w = params.find('W');
+            option.saveWidget = (w != params.end()) ?w->second == "true" : true;
             auto controller = make_unique<SysUiController>();
             ApiCallErr error = ApiCallErr(NO_ERROR);
-            if (option.pointOnly && !option.saveJson) {
-                LOG_D("Do not need to ConnectToSysAbility.");
-            } else if (!controller->ConnectToSysAbility(error)) {
-                PrintToConsole(error.message_);
-                return EXIT_FAILURE;
+            if (option.saveWidget || option.saveLayout) {
+                if(!controller->ConnectToSysAbility(error)){
+                    PrintToConsole(error.message_);
+                    return EXIT_FAILURE;
+                }
             }
             UiDriver::RegisterController(move(controller));
             ReportFileWriteEvent("");
