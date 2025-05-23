@@ -208,13 +208,13 @@ namespace OHOS::uitest {
                 events.emplace_back(KeyEvent{ActionStage::UP, KEYCODE_DEL, 0});
             }
             auto keyActionForDelete = KeysForwarder(events);
-            driver_.TriggerKey(keyActionForDelete, options_, error);
+            driver_.TriggerKey(keyActionForDelete, options_, error, widget_.GetDisplayId());
             driver_.DelayMs(focusTimeMs);
         } else {
-            driver_.TriggerKey(MoveToEnd(), options_, error);
+            driver_.TriggerKey(MoveToEnd(), options_, error, widget_.GetDisplayId());
             driver_.DelayMs(focusTimeMs);
         }
-        driver_.InputText(text, error, options_);
+        driver_.InputText(text, error, options_, widget_.GetDisplayId());
     }
 
     unique_ptr<Widget> WidgetOperator::ScrollFindWidget(const WidgetSelector &selector,
