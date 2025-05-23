@@ -877,40 +877,6 @@ namespace OHOS::uitest {
         return true;
     }
 
-    static bool WriteToPng(FILE *fp, shared_ptr<PixelMap> pixelMap)
-    {
-      png_structp pngStruct = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-      if (pngStruct == nullptr) {
-          fclose(fp);
-          return false;
-      }
-      png_infop pngInfo = png_create_info_struct(pngStruct);
-      if (pngInfo == nullptr) {
-          fclose(fp);
-          png_destroy_write_struct(&pngStruct, nullptr);
-          return false;
-      }
-      png_init_io(pngStruct, fp);
-      auto width = static_cast<uint32_t>(pixelMap->GetWidth());
-      auto height = static_cast<uint32_t>(pixelMap->GetHeight());
-      auto data = pixelMap->GetPixels();
-      auto stride = static_cast<uint32_t>(pixelMap->GetRowBytes());
-      // set png header
-      static constexpr int bitmapDepth = 8;
-      png_set_IHDR(pngStruct, pngInfo, width, height, bitmapDepth, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
-                   PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-      png_set_packing(pngStruct); // set packing info
-      png_write_info(pngStruct, pngInfo); // write to header
-      for (uint32_t column = 0; column < height; column++) {
-          png_write_row(pngStruct, data + (column * stride));
-      }
-      // free/close
-      png_write_end(pngStruct, pngInfo);
-      png_destroy_write_struct(&pngStruct, &pngInfo);
-      (void)fclose(fp);
-      return true;
-    }
-
     bool SysUiController::TakeScreenCap(int32_t fd, std::stringstream &errReceiver, int32_t displayId, Rect rect) const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
