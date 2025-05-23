@@ -941,7 +941,7 @@ namespace OHOS::uitest {
         uint32_t packResult = imagePacker.FinalizePacking(packedSize);
         LOG_D("Packed pixelMap, packResult: %{public}d", packResult);
         LOG_D("Packed pixelMap, packedSize: %{public}" PRId64, packedSize);
-        if (packedResult != NO_ERROR || buffer == nullptr) {
+        if (packResult != NO_ERROR || buffer == nullptr) {
             delete[] buffer;
             return false;
         }

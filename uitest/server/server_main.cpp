@@ -71,7 +71,7 @@ namespace OHOS::uitest {
     "  record                                                           wirte Ui event information into csv file\n"
     "    -W <true/false>                                     whether save widget information, true means to save\n" 
     "                                                                       set it ture when not use this option\n"
-    "    -j                                             Save the current layout information after each operation\n"
+    "    -l                                             Save the current layout information after each operation\n"
     "    -c <true/false>              whether print the Ui event information to the console, true means to print\n" 
     "                                                                       set it ture when not use this option\n"
     "  read                                                                    print file content to the console\n"
@@ -187,11 +187,11 @@ namespace OHOS::uitest {
                 case 'a':
                     params.insert(pair<char, string>(opt, "true"));
                     break;
-                case 'j':
+                case 'l':
                     params.insert(pair<char, string>(opt, "true"));
                     break;
                 case 'c':
-                case 'p':
+                case 'W':
                 case 'm':
                     if (strcmp(optarg, "true") && strcmp(optarg, "false")) {
                         PrintToConsole("Invalid params");
