@@ -66,7 +66,7 @@ namespace OHOS::uitest {
 
         virtual void InjectTouchEventSequence(const PointerMatrix& events) const {};
 
-        virtual void InjectKeyEventSequence(const std::vector<KeyEvent>& events) const {};
+        virtual void InjectKeyEventSequence(const std::vector<KeyEvent>& events, int32_t displayId) const {};
 
         virtual void InjectMouseEventSequence(const vector<MouseEvent>& events) const {};
 
@@ -123,6 +123,11 @@ namespace OHOS::uitest {
         virtual void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const {};
 
         virtual void GetHidumperInfo(std::string windowId, char **buf, size_t &len) {};
+
+        virtual bool CheckDisplayExist(int32_t displayId) const
+        {
+            return true;
+        };
     };
 }
 

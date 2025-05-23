@@ -385,6 +385,7 @@ namespace OHOS::uitest {
         {"On.within", "(On):On", false, true},
         {"On.inWindow", "(string):On", false, true},
         {"On.inDisplay", "(int):On", false, true},
+        {"On.belongingDisplay", "(int):On", false, true, true},
     };
 
     constexpr std::string_view REF_SEED_ON = "On#seed";
@@ -402,31 +403,34 @@ namespace OHOS::uitest {
         {"Driver.findWindow", "(WindowFilter):UiWindow", false, false},
         {"Driver.findComponents", "(On):[Component]", false, false},
         {"Driver.waitForComponent", "(On,int):Component", false, false},
-        {"Driver.screenCap", "(int):bool", false, false},            // fliePath as fileDescription.
-        {"Driver.screenCapture", "(int, Rect?, int?):bool", false, false}, // fliePath as fileDescription.
+        {"Driver.screenCap", "(int,int?):bool", false, false},            // fliePath as fileDescription.
+        {"Driver.screenCapture", "(int, Rect?):bool", false, false}, // fliePath as fileDescription.
         {"Driver.assertComponentExist", "(On):void", false, false},
-        {"Driver.pressBack", "():void", false, false},
-        {"Driver.triggerKey", "(int):void", false, false},
-        {"Driver.triggerCombineKeys", "(int,int,int?):void", false, false},
+        {"Driver.pressBack", "(int?):void", false, false, true},
+        {"Driver.triggerKey", "(int,int?):void", false, false},
+        {"Driver.triggerCombineKeys", "(int,int,int?,int?):void", false, false},
         {"Driver.click", "(int,int):void", false, false},
         {"Driver.click", "(Point):void", false, false},
+        {"Driver.clickAt", "(Point):void", false, false, true},
         {"Driver.longClick", "(int,int):void", false, false},
         {"Driver.longClick", "(Point):void", false, false},
         {"Driver.longClickAt", "(Point, int?):void", false, false, true},
         {"Driver.doubleClick", "(int,int):void", false, false},
         {"Driver.doubleClick", "(Point):void", false, false},
+        {"Driver.doubleClickAt", "(Point):void", false, false, true},
         {"Driver.swipe", "(int,int,int,int,int?):void", false, false},
         {"Driver.swipe", "(Point,Point,int?):void", false, false},
+        {"Driver.swipeBetween", "(Point,Point,int?):void", false, false, true},
         {"Driver.drag", "(int,int,int,int,int?):void", false, false},
         {"Driver.drag", "(Point,Point,int?):void", false, false},
         {"Driver.dragBetween", "(Point,Point,int?,int?):void", false, false, true},
         {"Driver.setDisplayRotation", "(int):void", false, false},  // DisplayRotation enum as int value
-        {"Driver.getDisplayRotation", "(int?):int", false, false},     // DisplayRotation enum as int value
+        {"Driver.getDisplayRotation", "(int?):int", false, false, true},     // DisplayRotation enum as int value
         {"Driver.setDisplayRotationEnabled", "(bool):void", false, false},
-        {"Driver.getDisplaySize", "(int?):Point", false, false},
-        {"Driver.getDisplayDensity", "(int?):Point", false, false},
+        {"Driver.getDisplaySize", "(int?):Point", false, false, true},
+        {"Driver.getDisplayDensity", "(int?):Point", false, false, true},
         {"Driver.wakeUpDisplay", "():void", false, false},
-        {"Driver.pressHome", "():void", false, false},
+        {"Driver.pressHome", "(int?):void", false, false, true},
         {"Driver.waitForIdle", "(int,int):bool", false, false},
         {"Driver.fling", "(Point,Point,int,int):void", false, false},
         {"Driver.fling", "(int,int,int?):void", false, false},

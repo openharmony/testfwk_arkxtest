@@ -39,7 +39,7 @@ namespace OHOS::uitest {
 
         void InjectMouseEventSequence(const vector<MouseEvent> &events) const override;
 
-        void InjectKeyEventSequence(const std::vector<KeyEvent> &events) const override;
+        void InjectKeyEventSequence(const std::vector<KeyEvent> &events, int32_t displayId) const override;
 
         bool IsTouchPadExist() const override;
 
@@ -77,6 +77,8 @@ namespace OHOS::uitest {
         void RegisterUiEventListener(std::shared_ptr<UiEventListener> listener) const override;
 
         void GetHidumperInfo(std::string windowId, char **buf, size_t &len) override;
+
+        bool CheckDisplayExist(int32_t displayId) const override;
     private:
         void  InjectMouseEvent(const MouseEvent &event) const;
         int32_t GetValidDisplayId(int32_t id) const;
