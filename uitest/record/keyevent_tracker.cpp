@@ -101,7 +101,7 @@ namespace OHOS::uitest {
     }
 
     // record.csv
-    nlohmann::json KeyeventTracker::WriteCombinationData(ofstream& outFile, shared_ptr<mutex> &csv_lock)
+    nlohmann::json KeyeventTracker::WriteCombinationData(ofstream& outFile, shared_ptr<mutex> &csv_lock, std::string savePath)
     {
         auto data = nlohmann::json();
         if (infos_.size()==0) {
@@ -117,6 +117,9 @@ namespace OHOS::uitest {
         data["KeyCode1"] = eventItems[CaseTypes::KEY_CODE1];
         data["KeyCode2"] = eventItems[CaseTypes::KEY_CODE2];
         data["KeyCode3"] = eventItems[CaseTypes::KEY_CODE3];
+        if (savePath != "") {
+            data["FILEPATH"] = savePath;
+        }
         std::lock_guard<mutex> guard(*csv_lock);
         if (outFile.is_open()) {
             outFile << data.dump() << std::endl;
@@ -124,7 +127,7 @@ namespace OHOS::uitest {
         return data;
     }
 
-    nlohmann::json KeyeventTracker::WriteSingleData(KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock)
+    nlohmann::json KeyeventTracker::WriteSingleData(KeyEventInfo &info, ofstream &outFile, shared_ptr<mutex> &csv_lock, std::string savePath)
     {
         BuildEventItems(info);
         auto data = nlohmann::json();
@@ -135,6 +138,9 @@ namespace OHOS::uitest {
         data["KeyCode1"] = eventItems[CaseTypes::KEY_CODE1];
         data["KeyCode2"] = eventItems[CaseTypes::KEY_CODE2];
         data["KeyCode3"] = eventItems[CaseTypes::KEY_CODE3];
+        if (savePath != "") {
+            data["FILEPAHT"] = savePath;
+        }
         std::lock_guard<mutex> guard(*csv_lock);
         if (outFile.is_open()) {
             outFile << data.dump() << std::endl;

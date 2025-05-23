@@ -213,6 +213,10 @@ namespace OHOS::uitest {
         {
             return firstTrackPoint_;
         }
+
+        void SetSavePath(std::string path) {
+            savePath = path;
+        }
         
     private:
         TouchOpt touchOpt = OP_CLICK;
@@ -226,6 +230,7 @@ namespace OHOS::uitest {
         double avgVelocity;
         Point centerSet;
         TouchEventInfo firstTrackPoint_;
+        std::string savePath;
     };
 }
 #endif // POINTER_INFO_H

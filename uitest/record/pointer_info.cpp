@@ -109,7 +109,7 @@ namespace OHOS::uitest {
         data["OP_TYPE"] = OP_TYPE[touchOpt];
         data["fingerNumber"] = std::to_string(fingers.size());
         data["duration"] = duration;
-
+        data["FILEPAHT"] = savePath;
         data["BUNDLE"] = bundleName;
         data["ABILITY"] = abilityName;
         data["direction.X"] = std::to_string(avgDirection.GetX());
