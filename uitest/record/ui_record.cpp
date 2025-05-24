@@ -274,7 +274,7 @@ namespace OHOS::uitest {
             driver.DumpUiHierarchy(layout, option, err);
             if (recordMode.saveLayout && err.code_ == NO_ERROR) {
                 operationCount++;
-                savePath = "/data/local/tmp/layout_" + ts + to_string(operationCount) + ".json";
+                savePath = "/data/local/tmp/layout_" + ts + "_" + to_string(operationCount) + ".json";
                 ofstream fout;
                 fout.open(savePath, ios::out | ios::binary);
                 if (!fout) {
