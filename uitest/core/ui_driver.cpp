@@ -16,6 +16,7 @@
 #include <future>
 #include "ui_model.h"
 #include "ui_driver.h"
+#include "errno.h"
 
 namespace OHOS::uitest {
     using namespace std;
@@ -419,9 +420,8 @@ namespace OHOS::uitest {
         if (!CheckStatus(false, err)) {
             return;
         }
-        FILE *fp = fdopen(fd, "wb");
         stringstream errorRecv;
-        if (!uiController_->TakeScreenCap(fp, errorRecv, displayId, rect)) {
+        if (!uiController_->TakeScreenCap(fd, errorRecv, displayId, rect)) {
             string errStr = errorRecv.str();
             LOG_W("ScreenCap failed: %{public}s", errStr.c_str());
             if (errStr.find("File opening failed") == 0) {
