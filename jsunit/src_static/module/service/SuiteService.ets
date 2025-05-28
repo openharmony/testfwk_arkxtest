@@ -91,7 +91,7 @@ class SuiteService {
         this.currentRunningSuite.childSuites.push(suite);
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);
-        const funcStr = (func as object).toString();
+        const funcStr = Type.of(func as object).getLiteral();
         const isAsyncFunc = checkIsAsyncFunction(funcStr);
         if (isAsyncFunc) {
           await (func as () => Promise<void>)();
@@ -151,7 +151,7 @@ class SuiteService {
   beforeAll(func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = (func as object).toString();
+      const funcStr = Type.of(func as object).getLiteral();
       const isAsyncFunc = checkIsAsyncFunction(funcStr);
       if(isAsyncFunc) {
         const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
@@ -166,7 +166,7 @@ class SuiteService {
   beforeEach(func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = (func as object).toString();
+      const funcStr = Type.of(func as object).getLiteral();
       const isAsyncFunc = checkIsAsyncFunction(funcStr);
       if(isAsyncFunc) {
         const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
@@ -181,7 +181,7 @@ class SuiteService {
   beforeItSpecified(itDescs: string | string[], func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = (func as object).toString();
+      const funcStr = Type.of(func as object).getLiteral();
       const isAsyncFunc = checkIsAsyncFunction(funcStr);
       if(isAsyncFunc) {
         const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
@@ -196,7 +196,7 @@ class SuiteService {
   afterItSpecified(itDescs: string | string[], func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = (func as object).toString();
+      const funcStr = Type.of(func as object).getLiteral();
       const isAsyncFunc = checkIsAsyncFunction(funcStr);
       if(isAsyncFunc) {
         const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
@@ -211,7 +211,7 @@ class SuiteService {
   afterAll(func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = (func as object).toString();
+      const funcStr = Type.of(func as object).getLiteral();
       const isAsyncFunc = checkIsAsyncFunction(funcStr);
       if(isAsyncFunc) {
         const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
@@ -226,7 +226,7 @@ class SuiteService {
   afterEach(func: (() => void) | (() => Promise<void>)) {
     const core = this.coreContext;
     if (core) {
-      const funcStr = (func as object).toString();
+      const funcStr = Type.of(func as object).getLiteral();
       const isAsyncFunc = checkIsAsyncFunction(funcStr);
       if(isAsyncFunc) {
         const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
