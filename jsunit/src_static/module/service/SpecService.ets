@@ -94,7 +94,7 @@ class SpecService {
         if (cService.filterDesc(curSuite.description, desc, filter) && isFilter && !sService.fullRun) {
           this.initSpecService();
         } else {
-          const funcStr = (func as object).toString();
+          const funcStr = Type.of(func as object).getLiteral();
           const argsCount = getFunctionArgumentsCount(funcStr);
 
           const isAsync = checkIsAsyncFunction(funcStr);
