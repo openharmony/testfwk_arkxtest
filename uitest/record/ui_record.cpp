@@ -113,8 +113,7 @@ namespace OHOS::uitest {
             inFile.close();
         }
     }
-    void InputEventCallback::WriteLayout(nlohmann::json layout) {
-        operationCount++;
+    void InputEventCallback::WriteLayout(nlohmann::json layout, ApiCallErr &err) {
         savePath = "/data/local/tmp/layout_" + ts + "_" + to_string(operationCount) + ".json";
         ofstream fout;
         fout.open(savePath, ios::out | ios::binary);
@@ -168,7 +167,12 @@ namespace OHOS::uitest {
                 auto layout = nlohmann::json();
                 ApiCallErr err(NO_ERROR);
                 driver.DumpUiHierarchy(layout, option, err);
-                WriteLayout(layout);
+                operationCount++;
+                if (recordMode.saveLayout && err.code_ == NO_ERROR) {
+                    WriteLayout(layout, err);
+                } else if (err.code_ != NO_ERROR) {
+                    LOG_E("DumpLayout failed");
+                }            
             }
             if (KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
                 keyeventTracker_.SetNeedRecord(false);
@@ -278,8 +282,9 @@ namespace OHOS::uitest {
             auto layout = nlohmann::json();
             DumpOption option;
             driver.DumpUiHierarchy(layout, option, err);
+            operationCount++;
             if (recordMode.saveLayout && err.code_ == NO_ERROR) {
-                WriteLayout(layout);
+                WriteLayout(layout, err);
             } else if (err.code_ != NO_ERROR) {
                 LOG_E("DumpLayout failed");
             }
