@@ -84,7 +84,7 @@ namespace OHOS::uitest {
         {
             return abcCallBack;
         }
-        void WriteLayout(nlohmann::json layout);
+        void WriteLayout(nlohmann::json layout) const;
 
         static constexpr int TIMEINTERVAL = 5000;
         static constexpr int KEY_DOWN_DURATION = 0;
