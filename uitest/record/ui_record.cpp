@@ -113,11 +113,12 @@ namespace OHOS::uitest {
             inFile.close();
         }
     }
-    void InputEventCallback::WriteLayout(nlohmann::json layout) {
+    void InputEventCallback::WriteLayout(nlohmann::json layout) 
+    {
         savePath = "/data/local/tmp/layout_" + ts + "_" + to_string(operationCount) + ".json";
         ofstream fout;
         fout.open(savePath, ios::out | ios::binary);
-        if (!fout) {            
+        if (!fout) {
             LOG_E("Layout save to %{public}s failed: open failed!", savePath.c_str());
             fout.close();
         } else {
@@ -154,8 +155,7 @@ namespace OHOS::uitest {
             } else {
                 keyeventTracker_.SetNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
-                // cout打印 + record.csv保存
-		        if (recordMode.terminalCout) {
+                if (recordMode.terminalCout) {
                     snapshootKeyTracker.WriteSingleData(info, cout_lock);
                 }
                 auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock);
@@ -172,13 +172,12 @@ namespace OHOS::uitest {
                     WriteLayout(layout);
                 } else if (err.code_ != NO_ERROR) {
                     LOG_E("DumpLayout failed");
-                }            
+                }
             }
             if (KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
                 keyeventTracker_.SetNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
                 if (recordMode.terminalCout) {                
-                    // cout打印 + record.csv保存json
                     snapshootKeyTracker.WriteSingleData(info, cout_lock);
                 }
                 auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock, savePath);
@@ -187,7 +186,6 @@ namespace OHOS::uitest {
             if (keyeventTracker_.IsNeedRecord()) {
                 keyeventTracker_.SetNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
-                // cout打印 + record.csv保存json
                 if (recordMode.terminalCout) {
                     snapshootKeyTracker.WriteCombinationData(cout_lock);
                 }
