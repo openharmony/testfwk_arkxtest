@@ -113,12 +113,12 @@ namespace OHOS::uitest {
             inFile.close();
         }
     }
-    void InputEventCallback::WriteLayout(nlohmann::json layout, ApiCallErr &err) {
+    void InputEventCallback::WriteLayout(nlohmann::json layout) {
         savePath = "/data/local/tmp/layout_" + ts + "_" + to_string(operationCount) + ".json";
         ofstream fout;
         fout.open(savePath, ios::out | ios::binary);
-        if (!fout) {
-            err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(option.savePath_) + strerror(errno));
+        if (!fout) {            
+            LOG_E("Layout save to %{public}s failed: open failed!", savePath.c_str());
             fout.close();
         } else {
             fout << layout.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
@@ -169,7 +169,7 @@ namespace OHOS::uitest {
                 driver.DumpUiHierarchy(layout, option, err);
                 operationCount++;
                 if (recordMode.saveLayout && err.code_ == NO_ERROR) {
-                    WriteLayout(layout, err);
+                    WriteLayout(layout);
                 } else if (err.code_ != NO_ERROR) {
                     LOG_E("DumpLayout failed");
                 }            
@@ -284,7 +284,7 @@ namespace OHOS::uitest {
             driver.DumpUiHierarchy(layout, option, err);
             operationCount++;
             if (recordMode.saveLayout && err.code_ == NO_ERROR) {
-                WriteLayout(layout, err);
+                WriteLayout(layout);
             } else if (err.code_ != NO_ERROR) {
                 LOG_E("DumpLayout failed");
             }
