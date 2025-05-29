@@ -80,31 +80,32 @@ namespace OHOS::perftest {
         int32_t frameCount = ZERO;
         string line;
         while (getline(file, line)) {
-            vector<string> tokens = SplitString(line, ' ');
+            const vector<string> tokens = SplitString(line, ' ');
+            int32_t stateIndex = 0;
             if (line.find(APP_LIST_FLING_TAG) != string::npos) {
-                if (GetSwipeState(tokens[INDEX_SEVEN], APP_LIST_FLING_TAG) == SWIPE_START_STATE) {
+                if (GetSwipeState(tokens, APP_LIST_FLING_TAG, stateIndex) == SWIPE_START_STATE) {
                     LOG_D("App list fling start");
-                    startTime = GetTime(tokens[INDEX_FIVE]);
-                } else if (GetSwipeState(tokens[INDEX_SEVEN], APP_LIST_FLING_TAG) == SWIPE_FINISH_STATE) {
+                    startTime = GetTime(tokens, stateIndex - TWO);
+                } else if (GetSwipeState(tokens, APP_LIST_FLING_TAG, stateIndex) == SWIPE_FINISH_STATE) {
                     LOG_D("App list fling finish");
-                    endTime = GetTime(tokens[INDEX_FIVE]);
+                    endTime = GetTime(tokens, stateIndex - TWO);
                 }
             } else if (line.find(WEB_LIST_FLING_TAG) != string::npos) {
-                if (GetSwipeState(tokens[INDEX_SEVEN], WEB_LIST_FLING_TAG) == SWIPE_START_STATE) {
+                if (GetSwipeState(tokens, WEB_LIST_FLING_TAG, stateIndex) == SWIPE_START_STATE) {
                     LOG_D("Web list fling start");
-                    startTime = GetTime(tokens[INDEX_FIVE]);
-                } else if (GetSwipeState(tokens[INDEX_SEVEN], WEB_LIST_FLING_TAG) == SWIPE_FINISH_STATE) {
+                    startTime = GetTime(tokens, stateIndex - TWO);
+                } else if (GetSwipeState(tokens, WEB_LIST_FLING_TAG, stateIndex) == SWIPE_FINISH_STATE) {
                     LOG_D("Web list fling finish");
-                    endTime = GetTime(tokens[INDEX_FIVE]);
+                    endTime = GetTime(tokens, stateIndex - TWO);
                 }
             } else if (line.find(APP_SWIPER_SCROLL_TAG) != string::npos &&
-                        GetSwipeState(tokens[INDEX_SEVEN], APP_SWIPER_SCROLL_TAG) == SWIPE_START_STATE) {
+                       GetSwipeState(tokens, APP_SWIPER_SCROLL_TAG, stateIndex) == SWIPE_START_STATE) {
                 LOG_D("Swiper scroll start");
-                startTime = GetTime(tokens[INDEX_FIVE]);
+                startTime = GetTime(tokens, stateIndex - TWO);
             } else if (line.find(APP_SWIPER_FLING_TAG) != string::npos && startTime > INITIAL_VALUE &&
-                        GetSwipeState(tokens[INDEX_SEVEN], APP_SWIPER_FLING_TAG) == SWIPE_FINISH_STATE) {
+                       GetSwipeState(tokens, APP_SWIPER_FLING_TAG, stateIndex) == SWIPE_FINISH_STATE) {
                 LOG_D("Swiper scroll finish");
-                endTime = GetTime(tokens[INDEX_FIVE]);
+                endTime = GetTime(tokens, stateIndex - TWO);
             } else if (line.find(DO_COMPOSITION_TAG) != string::npos && startTime > INITIAL_VALUE) {
                 frameCount++;
             }
@@ -117,10 +118,19 @@ namespace OHOS::perftest {
         return INVALID_VALUE;
     }
 
-    string ListSwipeFpsCollection::GetSwipeState(const string token, const string traceTag)
+    string ListSwipeFpsCollection::GetSwipeState(const vector<string> &tokens, const string traceTag,
+                                                 int32_t &stateIndex)
     {
+        string token = "";
+        for (int32_t index = ZERO; index < tokens.size(); index++) {
+            if (tokens[index].find(traceTag) != string::npos) {
+                token = tokens[index];
+                stateIndex = index;
+                break;
+            }
+        }
         vector<string> tagInfos = SplitString(token, '|');
-        if (tagInfos[INDEX_TWO] == traceTag && tagInfos[INDEX_ONE] == to_string(pid_)) {
+        if (tagInfos.size() > TWO && tagInfos[INDEX_TWO] == traceTag && tagInfos[INDEX_ONE] == to_string(pid_)) {
             switch (tagInfos[INDEX_ZERO][INDEX_ZERO]) {
                 case 'S':
                     return SWIPE_START_STATE;
@@ -133,10 +143,17 @@ namespace OHOS::perftest {
         return SWIPE_INVALID_STATE;
     }
 
-    double ListSwipeFpsCollection::GetTime(const string token)
+    double ListSwipeFpsCollection::GetTime(const vector<string> &tokens, const int32_t timeIndex)
     {
-        string timeStr = token.substr(0, token.size() - 1);
         double time = INITIAL_VALUE;
+        if (timeIndex < 0) {
+            return time;
+        }
+        string token = tokens[timeIndex];
+        if (token.size() == 0) {
+            return time;
+        }
+        string timeStr = token.substr(0, token.size() - 1);
         istringstream iss(timeStr);
         if ((iss >> time) && iss.eof()) {
             return time;
