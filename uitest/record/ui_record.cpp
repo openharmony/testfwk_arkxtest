@@ -129,7 +129,7 @@ namespace OHOS::uitest {
         }
     }
 
-    void InputEventCallback::OnInputEventDown(std::shared_ptr<MMI::KeyEvent> keyEvent) const
+    void InputEventCallback::OnInputEventDown(std::shared_ptr<MMI::KeyEvent> keyEvent, KeyEventInfo &info) const
     {
         // 三键以上的同时按键无效
         if (keyeventTracker_.GetInfos().size() >= KeyeventTracker::MAX_COMBINATION_SIZE) {
@@ -151,7 +151,7 @@ namespace OHOS::uitest {
         }
     }
 
-    void InputEventCallback::OnInputEventUp(std::shared_ptr<MMI::KeyEvent> keyEvent) const
+    void InputEventCallback::OnInputEventUp(std::shared_ptr<MMI::KeyEvent> keyEvent, KeyEventInfo &info) const
     {
         if (recordMode.saveLayout) {
             // 抬手时记录跳转后页面控件树
