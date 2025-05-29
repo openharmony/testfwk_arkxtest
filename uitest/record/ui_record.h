@@ -85,8 +85,8 @@ namespace OHOS::uitest {
             return abcCallBack;
         }
         void WriteLayout(nlohmann::json layout) const;
-        void InputEventCallback::OnInputEventUp(std::shared_ptr<MMI::KeyEvent> keyEvent) const;
-        void InputEventCallback::OnInputEventDown(std::shared_ptr<MMI::KeyEvent> keyEvent) const
+        void OnInputEventUp(std::shared_ptr<MMI::KeyEvent> keyEvent) const;
+        void OnInputEventDown(std::shared_ptr<MMI::KeyEvent> keyEvent) const
         static constexpr int TIMEINTERVAL = 5000;
         static constexpr int KEY_DOWN_DURATION = 0;
         static const std::string DEFAULT_DIR;

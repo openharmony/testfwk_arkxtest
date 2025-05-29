@@ -68,7 +68,7 @@ namespace OHOS::uitest {
     "  -d <displayId>                                           specifies the locate screen of the target window\n"
     "start-daemon <token>                                                                 start the test process\n"
     "uiRecord                                                                            recording Ui Operations\n"
-    "  record                                                           wirte Ui event information into csv file\n"
+    "  record                                                           Write Ui event information into csv file\n"
     "    -W <true/false>                                     whether save widget information, true means to save\n" 
     "                                                                       set it true when not use this option\n"
     "    -l                                             Save the current layout information after each operation\n"
