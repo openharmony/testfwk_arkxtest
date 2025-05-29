@@ -113,7 +113,7 @@ namespace OHOS::uitest {
             inFile.close();
         }
     }
-    void InputEventCallback::WriteLayout(nlohmann::json layout) 
+    void InputEventCallback::WriteLayout(nlohmann::json layout) const
     {
         savePath = "/data/local/tmp/layout_" + ts + "_" + to_string(operationCount) + ".json";
         ofstream fout;
