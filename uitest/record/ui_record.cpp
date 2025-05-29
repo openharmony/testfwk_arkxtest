@@ -167,7 +167,6 @@ namespace OHOS::uitest {
             }
         }
         if (!KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
-            keyeventTracker_.SetNeedRecord(false);
             KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
             if (recordMode.terminalCout) {                
                 snapshootKeyTracker.WriteSingleData(info, cout_lock);
