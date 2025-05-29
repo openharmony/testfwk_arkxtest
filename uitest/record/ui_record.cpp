@@ -128,6 +128,65 @@ namespace OHOS::uitest {
             LOG_I("Layout saved to : %{public}s", savePath.c_str());
         }
     }
+
+    void InputEventCallback::OnInputEventDown(std::shared_ptr<MMI::KeyEvent> keyEvent) const
+    {
+        // 三键以上的同时按键无效
+        if (keyeventTracker_.GetInfos().size() >= KeyeventTracker::MAX_COMBINATION_SIZE) {
+            LOG_I("More than three keys are invalid at the same time");
+            std::cout << "More than three keys are invalid at the same time" << std::endl;
+            return;
+        }
+        if (KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
+            keyeventTracker_.SetNeedRecord(true);
+            keyeventTracker_.AddDownKeyEvent(info);
+        } else {
+            keyeventTracker_.SetNeedRecord(false);
+            KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
+            if (recordMode.terminalCout) {
+                snapshootKeyTracker.WriteSingleData(info, cout_lock);
+            }
+            auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock);
+            DoAbcCallBack(json);
+        }
+    }
+
+    void InputEventCallback::OnInputEventUp(std::shared_ptr<MMI::KeyEvent> keyEvent) const
+    {
+        if (recordMode.saveLayout) {
+            // 抬手时记录跳转后页面控件树
+            DumpOption option;
+            auto layout = nlohmann::json();
+            ApiCallErr err(NO_ERROR);
+            driver.DumpUiHierarchy(layout, option, err);
+            operationCount++;
+            if (recordMode.saveLayout && err.code_ == NO_ERROR) {
+                WriteLayout(layout);
+            } else if (err.code_ != NO_ERROR) {
+                LOG_E("DumpLayout failed");
+            }
+        }
+        if (!KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
+            keyeventTracker_.SetNeedRecord(false);
+            KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
+            if (recordMode.terminalCout) {                
+                snapshootKeyTracker.WriteSingleData(info, cout_lock);
+            }
+            auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock, savePath);
+            DoAbcCallBack(json);
+        } 
+        if (keyeventTracker_.IsNeedRecord()) {
+            keyeventTracker_.SetNeedRecord(false);
+            KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
+            if (recordMode.terminalCout) {
+                snapshootKeyTracker.WriteCombinationData(cout_lock);
+            }
+            auto json = snapshootKeyTracker.WriteCombinationData(outFile, csv_lock, savePath);
+            DoAbcCallBack(json);
+        }
+        keyeventTracker_.AddUpKeyEvent(info);
+    }
+
     // KEY_ACTION
     void InputEventCallback::OnInputEvent(std::shared_ptr<MMI::KeyEvent> keyEvent) const
     {
@@ -143,56 +202,9 @@ namespace OHOS::uitest {
         info.SetActionTime(keyEvent->GetActionTime());
         info.SetKeyCode(keyEvent->GetKeyCode());
         if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
-            // 三键以上的同时按键无效
-            if (keyeventTracker_.GetInfos().size() >= KeyeventTracker::MAX_COMBINATION_SIZE) {
-                LOG_I("More than three keys are invalid at the same time");
-                std::cout << "More than three keys are invalid at the same time" << std::endl;
-                return;
-            }
-            if (KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
-                keyeventTracker_.SetNeedRecord(true);
-                keyeventTracker_.AddDownKeyEvent(info);
-            } else {
-                keyeventTracker_.SetNeedRecord(false);
-                KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
-                if (recordMode.terminalCout) {
-                    snapshootKeyTracker.WriteSingleData(info, cout_lock);
-                }
-                auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock);
-                DoAbcCallBack(json);
-            }
+            OnInputEventDown(keyEvent);
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
-            if (recordMode.saveLayout) {
-                DumpOption option;
-                auto layout = nlohmann::json();
-                ApiCallErr err(NO_ERROR);
-                driver.DumpUiHierarchy(layout, option, err);
-                operationCount++;
-                if (recordMode.saveLayout && err.code_ == NO_ERROR) {
-                    WriteLayout(layout);
-                } else if (err.code_ != NO_ERROR) {
-                    LOG_E("DumpLayout failed");
-                }
-            }
-            if (KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
-                keyeventTracker_.SetNeedRecord(false);
-                KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
-                if (recordMode.terminalCout) {                
-                    snapshootKeyTracker.WriteSingleData(info, cout_lock);
-                }
-                auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock, savePath);
-                DoAbcCallBack(json);
-            } 
-            if (keyeventTracker_.IsNeedRecord()) {
-                keyeventTracker_.SetNeedRecord(false);
-                KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
-                if (recordMode.terminalCout) {
-                    snapshootKeyTracker.WriteCombinationData(cout_lock);
-                }
-                auto json = snapshootKeyTracker.WriteCombinationData(outFile, csv_lock, savePath);
-                DoAbcCallBack(json);
-            }
-            keyeventTracker_.AddUpKeyEvent(info);
+            OnInputEventUp(keyEvent);
         }
     }
 
