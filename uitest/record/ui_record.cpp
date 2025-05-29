@@ -141,8 +141,10 @@ namespace OHOS::uitest {
             } else {
                 keyeventTracker_.SetNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
-                 // cout打印 + record.csv保存
-                snapshootKeyTracker.WriteSingleData(info, cout_lock);
+                // cout打印 + record.csv保存
+		        if (recordMode.terminalCout) {
+                    snapshootKeyTracker.WriteSingleData(info, cout_lock);
+                }
                 auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock);
                 DoAbcCallBack(json);
             }
@@ -180,8 +182,10 @@ namespace OHOS::uitest {
                 keyeventTracker_.SetNeedRecord(false);
                 KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
                 // cout打印 + record.csv保存json
-                snapshootKeyTracker.WriteCombinationData(cout_lock);
-                auto json = snapshootKeyTracker.WriteCombinationData(outFile, csv_lock);
+                if (recordMode.terminalCout) {
+                    snapshootKeyTracker.WriteCombinationData(cout_lock);
+                }
+                auto json = snapshootKeyTracker.WriteCombinationData(outFile, csv_lock, savePath);
                 DoAbcCallBack(json);
             }
             keyeventTracker_.AddUpKeyEvent(info);
