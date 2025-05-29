@@ -859,13 +859,11 @@ namespace OHOS::uitest {
 
     bool SysUiController::IsWearable() const
     {
-        constexpr char PROPERTY_DEVICE_TYPE[] = "const.product.devicetype";
-        constexpr char PROPERTY_DEVICE_TYPE_WEARABLE[] = "wearable";
-        auto deviceProp = system::GetParameter(PROPERTY_DEVICE_TYPE, "");
-        if (deviceProp == PROPERTY_DEVICE_TYPE_WEARABLE) {
-            return true;
-        }
-        return false;
+        bool isWearable = false;
+#ifdef ARKXTEST_WATCH_FEATURE_ENABLE
+        isWearable = true;
+#endif
+        return isWearable;
     }
 
     bool SysUiController::GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode) const
