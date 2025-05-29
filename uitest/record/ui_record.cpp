@@ -168,12 +168,12 @@ namespace OHOS::uitest {
         }
         if (!KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
             KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
-            if (recordMode.terminalCout) {                
+            if (recordMode.terminalCout) {
                 snapshootKeyTracker.WriteSingleData(info, cout_lock);
             }
             auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock, savePath);
             DoAbcCallBack(json);
-        } 
+        }
         if (keyeventTracker_.IsNeedRecord()) {
             keyeventTracker_.SetNeedRecord(false);
             KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
