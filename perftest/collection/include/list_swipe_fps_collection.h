@@ -29,8 +29,8 @@ namespace OHOS::perftest {
         double StopCollectionAndGetResult(ApiCallErr &error) override;
     private:
         double ParseFpsByTrace(ApiCallErr &error);
-        string GetSwipeState(const string token, const string traceTag);
-        double GetTime(const string token);
+        string GetSwipeState(const vector<string> &tokens, const string traceTag, int32_t &stateIndex);
+        double GetTime(const vector<string> &tokens, const int32_t timeIndex);
         vector<string> SplitString(const string line, const char delimiter);
     };
 } // namespace OHOS::perftest
