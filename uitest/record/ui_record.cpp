@@ -201,9 +201,9 @@ namespace OHOS::uitest {
         info.SetActionTime(keyEvent->GetActionTime());
         info.SetKeyCode(keyEvent->GetKeyCode());
         if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
-            OnInputEventDown(keyEvent);
+            OnInputEventDown(keyEvent, info);
         } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
-            OnInputEventUp(keyEvent);
+            OnInputEventUp(keyEvent, info);
         }
     }
 
