@@ -50,7 +50,9 @@ namespace OHOS::perftest {
                                 napi_value jsParam, ApiCallErr &err);
         void InitCallbackContext(napi_env env, const ApiCallInfo &in, ApiReplyInfo &out,
                                  shared_ptr<CodeCallbackContext> ctx);
-        void BindPromiseCallbacks(napi_env env, napi_value promise, shared_ptr<ThreadLock> threadLock);
+        void BindPromiseCallbacks(napi_env env, napi_value promise, ThreadLock* threadLock);
+        void WaitforCallbackFinish(napi_env env, shared_ptr<CodeCallbackContext> context,
+                                   ThreadLock* threadLock, ApiReplyInfo &out);
         void ExecuteCallback(napi_env env, const ApiCallInfo &in, ApiReplyInfo &out);
         void DestroyCallbacks(napi_env env, const ApiCallInfo &in, ApiReplyInfo &out);
         void HandleCallbackEvent(napi_env env, const ApiCallInfo &in, ApiReplyInfo &out);
