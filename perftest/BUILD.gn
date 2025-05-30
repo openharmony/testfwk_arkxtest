@@ -13,6 +13,7 @@
 
 import("//build/config/components/ets_frontend/es2abc_config.gni")
 import("//build/ohos.gni")
+import("//test/testfwk/arkxtest/arkxtest_config.gni")
 
 config("perftest_common_configs") {
   cflags = [
@@ -105,7 +106,9 @@ ohos_executable("perftest_server") {
   subsystem_name = "testfwk"
   part_name = "arkxtest"
   output_name = "perftest"
-  install_enable = true
+  if (arkxtest_product_feature == "watch") {
+    install_enable = false
+  }
 }
 
 es2abc_gen_abc("gen_perftest_exporter_abc") {
@@ -159,6 +162,9 @@ ohos_shared_library("perftest_client") {
     "__OHOS__=1",
     "LOG_TAG=\"PerfTest_Client\"",
   ]
+  if (arkxtest_product_feature == "watch") {
+    install_enable = false
+  }
 }
 
 group("perftestkit") {
