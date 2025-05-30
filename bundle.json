@@ -21,7 +21,7 @@
       "adapted_system_type": [ 
         "standard"
       ],
-      "features": [],
+      "features": [ "arkxtest_product_feature" ],
       "rom": "500KB",
       "ram": "100KB",
       "deps": {
