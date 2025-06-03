@@ -166,7 +166,7 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
     HiLog::Info(LABEL, "UITEST: Start to unmarshall return value:%{public}s", reply_.resultValue_.dump().c_str());
     const auto resultType = reply_.resultValue_.type();
     if (resultType == nlohmann::detail::value_t::null) {
-        return nullptr;.
+        return nullptr;
     } else if (resultType == nlohmann::detail::value_t::array) {
         ani_class arrayCls = nullptr;
         if (ANI_OK != env->FindClass("Lescompat/Array;", &arrayCls)) {
@@ -1552,9 +1552,7 @@ static ani_ref getBoundsSync(ani_env *env, ani_object obj)
     callInfo_.apiId_ = "UiWindow.getBounds";
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
-    if (reply_.resultValue_ != nullptr) {
-        ani_object r = newRect(env, obj, reply_.resultValue_);
-    }
+    ani_object r = newRect(env, obj, reply_.resultValue_);
     return r;
 }
 
@@ -1599,16 +1597,10 @@ static ani_ref getBoundsCenterSync(ani_env *env, ani_object obj)
     callInfo_.apiId_ = "Component.getBoundsCenter";
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
-    if (reply_.resultValue_ != nullptr) {
-        ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
-        HiLog::Info(LABEL, " reply_.resultValue_[x]  %{public}s ", reply_.resultValue_["x"].dump().c_str());
-        HiLog::Info(LABEL, " reply_.resultValue_[y]  %{public}s ", reply_.resultValue_["y"].dump().c_str());    
-        return p;
-    } else {
-        ani_ref nullref;
-        env->GetNull(&nullref);
-        return nullref;
-    }
+    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
+    HiLog::Info(LABEL, " reply_.resultValue_[x]  %{public}s ", reply_.resultValue_["x"].dump().c_str());
+    HiLog::Info(LABEL, " reply_.resultValue_[y]  %{public}s ", reply_.resultValue_["y"].dump().c_str());
+    return p;
 }
 static ani_ref comGetBounds(ani_env *env, ani_object obj)
 {
@@ -1618,14 +1610,8 @@ static ani_ref comGetBounds(ani_env *env, ani_object obj)
     callInfo_.apiId_ = "Component.getBounds";
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
-    if (reply_.resultValue_ != nullptr) {
-        ani_object r = newRect(env, obj, reply_.resultValue_);
-        return r;
-    } else {
-        ani_ref nullref;
-        env->GetNull(&nullref);
-        return nullref;
-    }
+    ani_object r = newRect(env, obj, reply_.resultValue_);
+    return r;
 }
 
 static ani_ref performComponentApi(ani_env *env, ani_object obj, string apiId_)
