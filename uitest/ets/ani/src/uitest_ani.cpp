@@ -617,7 +617,6 @@ static ani_ref create([[maybe_unused]] ani_env *env, [[maybe_unused]] ani_class 
     ApiReplyInfo reply_;
     callInfo_.apiId_ = "Driver.create";
     Transact(callInfo_, reply_);
-
     ani_ref nativeDriver = UnmarshalReply(env, callInfo_, reply_);
     ani_object driver_object;
     if (ANI_OK != env->Object_New(cls, ctor, &driver_object, reinterpret_cast<ani_object>(nativeDriver))) {
@@ -844,7 +843,7 @@ static json getWindowFilter(ani_env *env, ani_object f)
         } else {
             ani_boolean value;
             if (env->Object_GetPropertyByName_Boolean(f, cstr, &value) == ANI_OK) {
-                filter[list[i]] = value;
+                filter[list[i]] = static_cast<bool>(value);
             }
         }
     }
@@ -947,6 +946,7 @@ static ani_ref getDisplaySizeSync(ani_env *env, ani_object obj)
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.getDisplaySize";
     Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
     ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
     return p;
 }
@@ -958,6 +958,7 @@ static ani_object getDisplayDensitySync(ani_env *env, ani_object obj)
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.getDisplayDensity";
     Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
     ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
     return p;
 }
@@ -969,6 +970,7 @@ static ani_object getDisplayRotationSync(ani_env *env, ani_object obj)
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.getDisplayRotation";
     Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
     ani_enum enumType;
     if (ANI_OK != env->FindEnum("L@ohos/UiTest/DisplayRotation;", &enumType)) {
         HiLog::Error(LABEL, "Find Enum Faild: %{public}s", __func__);
@@ -1508,6 +1510,7 @@ static ani_ref getWindowModeSync(ani_env *env, ani_object obj)
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeWindow"));
     callInfo_.apiId_ = "UiWindow.getWindowMode";
     Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
     ani_enum enumType;
     if (ANI_OK != env->FindEnum("L@ohos/UiTest/WindowMode;", &enumType)) {
         HiLog::Error(LABEL, "Not found enum item: %{public}s", __func__);
@@ -1548,8 +1551,15 @@ static ani_ref getBoundsSync(ani_env *env, ani_object obj)
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeWindow"));
     callInfo_.apiId_ = "UiWindow.getBounds";
     Transact(callInfo_, reply_);
-    ani_object r = newRect(env, obj, reply_.resultValue_);
-    return r;
+    UnmarshalReply(env, callInfo_, reply_);
+    if (reply_.resultValue_ != nullptr) {
+        ani_object r = newRect(env, obj, reply_.resultValue_);
+        return r;
+    } else {
+        ani_ref nullref;
+        env->GetNull(&nullref);
+        return nullref;
+    }
 }
 
 static ani_boolean BindWindow(ani_env *env)
@@ -1592,10 +1602,17 @@ static ani_ref getBoundsCenterSync(ani_env *env, ani_object obj)
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.apiId_ = "Component.getBoundsCenter";
     Transact(callInfo_, reply_);
-    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
-    HiLog::Info(LABEL, " reply_.resultValue_[x]  %{public}s ", reply_.resultValue_["x"].dump().c_str());
-    HiLog::Info(LABEL, " reply_.resultValue_[y]  %{public}s ", reply_.resultValue_["y"].dump().c_str());
-    return p;
+    UnmarshalReply(env, callInfo_, reply_);
+    if (reply_.resultValue_ != nullptr) {
+        ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
+        HiLog::Info(LABEL, " reply_.resultValue_[x]  %{public}s ", reply_.resultValue_["x"].dump().c_str());
+        HiLog::Info(LABEL, " reply_.resultValue_[y]  %{public}s ", reply_.resultValue_["y"].dump().c_str());    
+        return p;
+    } else {
+        ani_ref nullref;
+        env->GetNull(&nullref);
+        return nullref;
+    }
 }
 static ani_ref comGetBounds(ani_env *env, ani_object obj)
 {
@@ -1604,8 +1621,15 @@ static ani_ref comGetBounds(ani_env *env, ani_object obj)
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.apiId_ = "Component.getBounds";
     Transact(callInfo_, reply_);
-    ani_object r = newRect(env, obj, reply_.resultValue_);
-    return r;
+    UnmarshalReply(env, callInfo_, reply_);
+    if (reply_.resultValue_ != nullptr) {
+        ani_object r = newRect(env, obj, reply_.resultValue_);
+        return r;
+    } else {
+        ani_ref nullref;
+        env->GetNull(&nullref);
+        return nullref;
+    }
 }
 
 static ani_ref performComponentApi(ani_env *env, ani_object obj, string apiId_)
@@ -1776,6 +1800,7 @@ static ani_boolean performComponentApiBool(ani_env *env, ani_object obj, string 
     callInfo_.apiId_ = apiId_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
     return reply_.resultValue_.get<bool>();
 }
 static ani_boolean isSelected(ani_env *env, ani_object obj)
