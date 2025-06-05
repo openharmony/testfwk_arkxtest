@@ -1656,7 +1656,7 @@ static ani_ref comGetBounds(ani_env *env, ani_object obj)
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
     callInfo_.apiId_ = "Component.getBounds";
-    Transact(callInfo_, reply_);    
+    Transact(callInfo_, reply_);
     ani_ref result = UnmarshalReply(env, callInfo_, reply_);
     if (result == nullptr) {
         ani_ref nullref;
