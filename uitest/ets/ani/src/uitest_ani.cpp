@@ -424,7 +424,7 @@ static ani_ref createOn(ani_env *env, ani_object object, nlohmann::json params, 
     }
     Transact(callInfo_, reply_);
     ani_ref nativeOn = UnmarshalReply(env, callInfo_, reply_);
-    if (nativeOn == nullptr) {    
+    if (nativeOn == nullptr) {
         return nullptr;
     }
     ani_object on_object;
@@ -896,7 +896,7 @@ static ani_object createUIEventObserverSync(ani_env *env, ani_object obj)
     callInfo_.apiId_ = "Driver.createUIEventObserver";
     Transact(callInfo_, reply_);
     ani_ref nativeUIEventObserver = UnmarshalReply(env, callInfo_, reply_);
-    if (nativeUIEventObserver == nullptr) {    
+    if (nativeUIEventObserver == nullptr) {
         return nullptr;
     }
     ani_object observer_obj;
@@ -1095,7 +1095,7 @@ static ani_boolean screenCaptureSync(ani_env *env, ani_object obj, ani_string pa
     callInfo_.fdParamIndex_ = INDEX_ZERO;
     Transact(callInfo_, reply_);
     ani_ref result = UnmarshalReply(env, callInfo_, reply_);
-    if (result == nullptr) {    
+    if (result == nullptr) {
         return false;
     }
     return reply_.resultValue_.get<bool>();

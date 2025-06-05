@@ -775,7 +775,7 @@ export class Component {
         this.nativeDriver = driver;
     }
     private native delayMsSync(t:number):boolean;
-    private native findComponentSync(on: On):Component;
+    private native findComponentSync(on: On):Component|null;
     native static create():Driver;
     private native clickSync(x:number, y:number):boolean;
     private native longClickSync(x:number, y:number):boolean;
@@ -881,15 +881,17 @@ export class Component {
       });
       return promise;
     }
-    private native findWindowSync(filter: WindowFilter):UiWindow;
+    private native findWindowSync(filter: WindowFilter):UiWindow|null;
     findWindow(filter: WindowFilter): Promise<UiWindow|null> {
       let promise = new Promise<UiWindow|null>((resolve, reject) => {
-          let promise1 = taskpool.execute(():UiWindow => this.findWindowSync(filter));
+          let promise1 = taskpool.execute(():UiWindow|null => this.findWindowSync(filter));
           promise1.then((e:NullishType)=>{
-            if (e) {
+            if (e != null) {
+                hilog.info(domain, tag, "findWindow return UIWindow object");
                 let value : UiWindow = e as UiWindow;
                 resolve(value);
             } else {
+                hilog.info(domain, tag, "findWindow return null");
                 resolve(null)
             }
           }, (err: Error): void => {
@@ -1066,10 +1068,12 @@ export class Component {
         let promise = new Promise<Component|null>((resolve, reject) => {
             let promise1 = taskpool.execute(():Component|null => this.findComponentSync(on));
                 promise1.then((e:NullishType)=>{
-                    if (e) {
+                    if (e != null) {
+                        hilog.info(domain, tag, "findComponent return Component object");
                         let value : Component = e as Component;
                         resolve(value);
                     } else {
+                        hilog.info(domain, tag, "findComponent return null");
                         resolve(null)
                     }
                 }, (err: Error): void => {
@@ -1245,20 +1249,7 @@ export class Component {
         });
         return promise;
     }
-
-    mouseScroll(p: Point, down: boolean, d:number, key1?: number, key2?: number): Promise<void> {
-        let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
-        let promise1 = taskpool.execute(():boolean => this.mouseScrollSync(p, down, d, key1, key2, 20));
-            promise1.then((e:NullishType)=>{
-                resolve(Promise.resolve());
-            }, (err: Error): void => {
-                let br = err as BusinessError<void>;
-                reject(br);
-            });
-        });
-        return promise;
-    }
-
+  
     mouseScroll(p: Point, down: boolean, d:number, key1?: number, key2?: number, speed?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.mouseScrollSync(p, down, d, key1, key2, speed));
