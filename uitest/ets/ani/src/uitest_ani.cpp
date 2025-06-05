@@ -38,8 +38,6 @@ using namespace nlohmann;
 using namespace std;
 static ApiTransactor g_apiTransactClient(false);
 static future<void> g_establishConnectionFuture;
-using namespace OHOS::HiviewDFX;
-constexpr OHOS::HiviewDFX::HiLogLabel LABEL = {LogType::LOG_CORE, 0xD003100, "UiTestKit"};
 
 template <typename T>
 void compareAndReport(const T &param1, const T &param2, const std::string &errorMessage, const std::string &message)
