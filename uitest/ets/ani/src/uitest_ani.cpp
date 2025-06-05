@@ -961,7 +961,10 @@ static ani_ref getDisplaySizeSync(ani_env *env, ani_object obj)
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.getDisplaySize";
     Transact(callInfo_, reply_);
-    UnmarshalReply(env, callInfo_, reply_);
+    ani_ref result = UnmarshalReply(env, callInfo_, reply_);
+    if (result == nullptr) {
+        return nullptr;
+    }
     ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
     return p;
 }
@@ -973,7 +976,10 @@ static ani_object getDisplayDensitySync(ani_env *env, ani_object obj)
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.getDisplayDensity";
     Transact(callInfo_, reply_);
-    UnmarshalReply(env, callInfo_, reply_);
+    ani_ref result = UnmarshalReply(env, callInfo_, reply_);
+    if (result == nullptr) {
+        return nullptr;
+    }
     ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
     return p;
 }
@@ -985,7 +991,10 @@ static ani_object getDisplayRotationSync(ani_env *env, ani_object obj)
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.getDisplayRotation";
     Transact(callInfo_, reply_);
-    UnmarshalReply(env, callInfo_, reply_);
+    ani_ref result = UnmarshalReply(env, callInfo_, reply_);
+    if (result == nullptr) {
+        return nullptr;
+    }
     ani_enum enumType;
     if (ANI_OK != env->FindEnum("L@ohos/UiTest/DisplayRotation;", &enumType)) {
         HiLog::Error(LABEL, "Find Enum Faild: %{public}s", __func__);
