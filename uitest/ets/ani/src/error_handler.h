@@ -66,7 +66,6 @@ namespace OHOS::uitest {
                 return nullptr;
             }
             return obj;
-
         }
 
 
