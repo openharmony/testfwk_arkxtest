@@ -132,8 +132,8 @@ interface WindowFilter {
 class WindowFilterInner implements WindowFilter {
   bundleName?: string = "";
   title?: string = "";
-  focused?: boolean = true;
-  active?: boolean = true;
+  focused?: boolean = false;
+  active?: boolean = false;
 }
 
 interface UIElementInfo {
