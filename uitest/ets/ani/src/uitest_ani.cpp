@@ -1645,9 +1645,7 @@ static ani_ref getBoundsCenterSync(ani_env *env, ani_object obj)
         env->GetNull(&nullref);
         return nullref;
     }
-    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
-    HiLog::Info(LABEL, "reply_.resultValue_[x]:%{public}s", reply_.resultValue_["x"].dump().c_str());
-    HiLog::Info(LABEL, "reply_.resultValue_[y]:%{public}s", reply_.resultValue_["y"].dump().c_str());    
+    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]); 
     return p;
 }
 static ani_ref comGetBounds(ani_env *env, ani_object obj)
