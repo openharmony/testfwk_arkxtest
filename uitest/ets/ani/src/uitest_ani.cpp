@@ -424,7 +424,7 @@ static ani_ref createOn(ani_env *env, ani_object object, nlohmann::json params, 
     }
     Transact(callInfo_, reply_);
     ani_ref nativeOn = UnmarshalReply(env, callInfo_, reply_);
-    if (nativeOn == nullptr) {
+    if (nativeOn == nullptr) {    
         return nullptr;
     }
     ani_object on_object;
@@ -834,7 +834,6 @@ static json getWindowFilter(ani_env *env, ani_object f)
         HiLog::Error(LABEL, "Not found className: %{public}s", className);
         return filter;
     }
-
     string list[] = {"bundleName", "title", "focused", "active"};
     for (int i = 0; i < 4; i++) {
         char *cstr = new char[list[i].length() + 1];
@@ -850,9 +849,19 @@ static json getWindowFilter(ani_env *env, ani_object f)
                 filter[list[i]] = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
             }
         } else {
-            ani_boolean value;
-            if (env->Object_GetPropertyByName_Boolean(f, cstr, &value) == ANI_OK) {
-                filter[list[i]] = static_cast<bool>(value);
+            HiLog::Info(LABEL, "%{public}d :list[i] !!!", i);
+            ani_ref value;
+            if (env->Object_GetPropertyByName_Ref(f, cstr, &value) != ANI_OK) {
+                HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
+                continue;
+            }
+            ani_boolean ret = false;
+            if (env->Reference_IsUndefined(value, &ret) == ANI_OK) {
+                ani_boolean b;
+                compareAndReport(ANI_OK, env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
+                             "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", "get boolean value");
+                HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
+                filter[list[i]] = static_cast<bool>(b);
             }
         }
     }
@@ -896,7 +905,7 @@ static ani_object createUIEventObserverSync(ani_env *env, ani_object obj)
     callInfo_.apiId_ = "Driver.createUIEventObserver";
     Transact(callInfo_, reply_);
     ani_ref nativeUIEventObserver = UnmarshalReply(env, callInfo_, reply_);
-    if (nativeUIEventObserver == nullptr) {
+    if (nativeUIEventObserver == nullptr) {    
         return nullptr;
     }
     ani_object observer_obj;
@@ -1095,7 +1104,7 @@ static ani_boolean screenCaptureSync(ani_env *env, ani_object obj, ani_string pa
     callInfo_.fdParamIndex_ = INDEX_ZERO;
     Transact(callInfo_, reply_);
     ani_ref result = UnmarshalReply(env, callInfo_, reply_);
-    if (result == nullptr) {
+    if (result == nullptr) {    
         return false;
     }
     return reply_.resultValue_.get<bool>();
@@ -1645,7 +1654,9 @@ static ani_ref getBoundsCenterSync(ani_env *env, ani_object obj)
         env->GetNull(&nullref);
         return nullref;
     }
-    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]); 
+    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
+    HiLog::Info(LABEL, "reply_.resultValue_[x]:%{public}s", reply_.resultValue_["x"].dump().c_str());
+    HiLog::Info(LABEL, "reply_.resultValue_[y]:%{public}s", reply_.resultValue_["y"].dump().c_str());    
     return p;
 }
 static ani_ref comGetBounds(ani_env *env, ani_object obj)
