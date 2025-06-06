@@ -1249,6 +1249,19 @@ export class Component {
         });
         return promise;
     }
+    
+    mouseScroll(p: Point, down: boolean, d:number, key1?: number, key2?: number): Promise<void> {
+        let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+        let promise1 = taskpool.execute(():boolean => this.mouseScrollSync(p, down, d, key1, key2, 20));
+            promise1.then((e:NullishType)=>{
+                resolve(Promise.resolve());
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
 
     mouseScroll(p: Point, down: boolean, d:number, key1?: number, key2?: number, speed?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
