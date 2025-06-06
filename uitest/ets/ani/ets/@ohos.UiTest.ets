@@ -130,10 +130,10 @@ interface WindowFilter {
 }
 
 class WindowFilterInner implements WindowFilter {
-  bundleName?: string = "";
-  title?: string = "";
-  focused?: boolean = false;
-  active?: boolean = false;
+  bundleName?: string = undefined;
+  title?: string = undefined;
+  focused?: boolean = undefined;
+  active?: boolean = undefined;
 }
 
 interface UIElementInfo {
@@ -154,8 +154,8 @@ interface TouchPadSwipeOptions {
 }
 
 class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
-  stay?: boolean = false;
-  speed?: number = 2000;
+  stay?: boolean = undefined;
+  speed?: number = undefined;
 }
 
 export class Component {

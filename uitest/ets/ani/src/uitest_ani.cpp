@@ -844,8 +844,9 @@ static json getWindowFilter(ani_env *env, ani_object f)
                 HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
                 continue;
             }
-            ani_boolean ret = false;
-            if (env->Reference_IsUndefined(value, &ret) == ANI_OK) {
+            ani_boolean ret;
+            env->Reference_IsUndefined(value, &ret);
+            if (ret == ANI_FALSE) {                
                 auto string_value = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
                 if (string_value != "") {
                     filter[list[i]] = string_value;
@@ -858,8 +859,9 @@ static json getWindowFilter(ani_env *env, ani_object f)
                 HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
                 continue;
             }
-            ani_boolean ret = false;
-            if (env->Reference_IsUndefined(value, &ret) == ANI_OK) {
+            ani_boolean ret;
+            env->Reference_IsUndefined(value, &ret);
+            if (ret == ANI_FALSE) {
                 ani_boolean b;
                 compareAndReport(ANI_OK, env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
                              "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", "get boolean value");
@@ -1347,29 +1349,41 @@ static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
         return options;
     }
     string list[] = {"stay", "speed"};
-    for (int index = 0; index < 2; index++) {
-        ani_field field;
-        char *cstr = new char[list[index].length() + 1];
-        strcpy(cstr, list[index].c_str());
-        compareAndReport(ANI_OK, env->Class_FindField(cls, cstr, &field),
-                         "Class_FindField Failed '" + std::string(className) + "'", "Find field?:?");
-        ani_ref ref;
-        compareAndReport(ANI_OK, env->Object_GetField_Ref(f, field, &ref),
-                         "Object_GetField_Ref Failed '" + std::string(className) + "'", "get ref");
-        if (index == 0) {
-            ani_boolean value;
-            compareAndReport(ANI_OK, env->Object_CallMethodByName_Boolean(static_cast<ani_object>(ref), "unboxed", nullptr, &value),
-                             "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", "get boolean value");
-            compareAndReport(1, 1, "", std::to_string(value));
-            options[list[index]] = static_cast<bool>(value);
+    for (int i = 0; i < 2; i++) {
+        char *cstr = new char[list[i].length() + 1];
+        strcpy(cstr, list[i].c_str());
+        if (i == 1) {
+            ani_ref value;
+            if (env->Object_GetPropertyByName_Ref(f, cstr, &value) != ANI_OK) {
+                HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
+                continue;
+            }
+            ani_boolean ret;
+            env->Reference_IsUndefined(value, &ret);
+            if (ret == ANI_FALSE) {     
+                ani_double speed;           
+                compareAndReport(ANI_OK, env->Object_CallMethodByName_Double(static_cast<ani_object>(value), "unboxed", nullptr, &speed),
+                             "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", "get boolean value");                if (string_value != "") {
+                    options[list[i]] = int(speed);
+                }
+            }
         } else {
-            ani_double value;
-            compareAndReport(ANI_OK, env->Object_CallMethodByName_Double(static_cast<ani_object>(ref), "unboxed", nullptr, &value),
-                             "Object_CallMethodByName_Double Failed '" + std::string(className) + "'", "get Int value");
-            compareAndReport(1, 1, "", std::to_string(value));
-            options[list[index]] = int(value);
+            HiLog::Info(LABEL, "%{public}d :list[i] !!!", i);
+            ani_ref value;
+            if (env->Object_GetPropertyByName_Ref(f, cstr, &value) != ANI_OK) {
+                HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
+                continue;
+            }
+            ani_boolean ret;
+            env->Reference_IsUndefined(value, &ret);
+            if (ret == ANI_FALSE) {
+                ani_boolean b;
+                compareAndReport(ANI_OK, env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
+                             "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", "get boolean value");
+                HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
+                filter[list[i]] = static_cast<bool>(b);
+            }
         }
-    }
     return options;
 }
 
