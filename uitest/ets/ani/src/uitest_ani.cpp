@@ -249,8 +249,10 @@ static json getPoint(ani_env *env, ani_object p)
         char *cstr = new char[list[index].length() + 1];
         strcpy(cstr, list[index].c_str());
         ani_double value;
-        compareAndReport(ANI_OK, env->Object_GetPropertyByName_Double(p, cstr, &value),
-                         "Object_GetField_Double Failed '" + std::string(cstr) + "'", "Successful!!get double proprty");
+        compareAndReport(ANI_OK,
+                        env->Object_GetPropertyByName_Double(p, cstr, &value),
+                        "Object_GetField_Double Failed '" + std::string(cstr) + "'",
+                        "Successful!!get double proprty");
         point[list[index]] = int(value);
     }
     return point;
@@ -264,8 +266,10 @@ static json getRect(ani_env *env, ani_object p)
         char *cstr = new char[list[index].length() + 1];
         strcpy(cstr, list[index].c_str());
         ani_double value;
-        compareAndReport(ANI_OK, env->Object_GetPropertyByName_Double(p, cstr, &value),
-                         "Object_GetField_Double Failed '" + std::string(cstr) + "'", "Successful!!get double proprty");
+        compareAndReport(ANI_OK, 
+                        env->Object_GetPropertyByName_Double(p, cstr, &value),
+                        "Object_GetField_Double Failed '" + std::string(cstr) + "'", 
+                        "Successful!!get double proprty");
         rect[list[index]] = int(value);
     }
     return rect;
@@ -853,8 +857,9 @@ static json getWindowFilter(ani_env *env, ani_object f)
         } else {
             ani_boolean b;
             compareAndReport(ANI_OK, 
-                env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
-                "CallMethodByName_Boolean Failed '" + std::string(className) + "'", "get boolean value");
+                             env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
+                             "CallMethodByName_Boolean Failed '" + std::string(className) + "'", 
+                             "get boolean value");
             HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
             filter[list[i]] = static_cast<bool>(b);
         }
@@ -899,7 +904,7 @@ static ani_object createUIEventObserverSync(ani_env *env, ani_object obj)
     callInfo_.apiId_ = "Driver.createUIEventObserver";
     Transact(callInfo_, reply_);
     ani_ref nativeUIEventObserver = UnmarshalReply(env, callInfo_, reply_);
-    if (nativeUIEventObserver == nullptr) {    
+    if (nativeUIEventObserver == nullptr) {
         return nullptr;
     }
     ani_object observer_obj;
@@ -1098,7 +1103,7 @@ static ani_boolean screenCaptureSync(ani_env *env, ani_object obj, ani_string pa
     callInfo_.fdParamIndex_ = INDEX_ZERO;
     Transact(callInfo_, reply_);
     ani_ref result = UnmarshalReply(env, callInfo_, reply_);
-    if (result == nullptr) {    
+    if (result == nullptr) {
         return false;
     }
     return reply_.resultValue_.get<bool>();
@@ -1351,15 +1356,19 @@ static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
         if (ret == ANI_TRUE) {
             continue;
         }
-        if (i == 1) {
+        if (i == ONE) {
             ani_double speed;
-            compareAndReport(ANI_OK, env->Object_CallMethodByName_Double(static_cast<ani_object>(value), "unboxed", nullptr, &speed),
-                            "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", "get boolean value");
+            compareAndReport(ANI_OK, 
+                             env->Object_CallMethodByName_Double(static_cast<ani_object>(value), "unboxed", nullptr, &speed),
+                             "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", 
+                             "get boolean value");
             options[list[i]] = int(speed);
         } else {
             ani_boolean b;
-            compareAndReport(ANI_OK, env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
-                            "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", "get boolean value");
+            compareAndReport(ANI_OK, 
+                             env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
+                             "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", 
+                             "get boolean value");
             HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
             options[list[i]] = static_cast<bool>(b);
         }
@@ -1653,7 +1662,7 @@ static ani_ref getBoundsCenterSync(ani_env *env, ani_object obj)
     }
     ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
     HiLog::Info(LABEL, "reply_.resultValue_[x]:%{public}s", reply_.resultValue_["x"].dump().c_str());
-    HiLog::Info(LABEL, "reply_.resultValue_[y]:%{public}s", reply_.resultValue_["y"].dump().c_str());    
+    HiLog::Info(LABEL, "reply_.resultValue_[y]:%{public}s", reply_.resultValue_["y"].dump().c_str());
     return p;
 }
 static ani_ref comGetBounds(ani_env *env, ani_object obj)
