@@ -775,7 +775,7 @@ export class Component {
         this.nativeDriver = driver;
     }
     private native delayMsSync(t:number):boolean;
-    private native findComponentSync(on: On):Component|null;
+    private native findComponentSync(on: On):Component;
     native static create():Driver;
     private native clickSync(x:number, y:number):boolean;
     private native longClickSync(x:number, y:number):boolean;
@@ -881,17 +881,16 @@ export class Component {
       });
       return promise;
     }
-    private native findWindowSync(filter: WindowFilter):UiWindow|null;
+    private native findWindowSync(filter: WindowFilter):UiWindow;
     findWindow(filter: WindowFilter): Promise<UiWindow|null> {
       let promise = new Promise<UiWindow|null>((resolve, reject) => {
           let promise1 = taskpool.execute(():UiWindow|null => this.findWindowSync(filter));
           promise1.then((e:NullishType)=>{
-            if (e != null) {
+            if (e) {
                 hilog.info(domain, tag, "findWindow return UIWindow object");
                 let value : UiWindow = e as UiWindow;
                 resolve(value);
             } else {
-                hilog.info(domain, tag, "findWindow return null");
                 resolve(null)
             }
           }, (err: Error): void => {
@@ -1068,12 +1067,11 @@ export class Component {
         let promise = new Promise<Component|null>((resolve, reject) => {
             let promise1 = taskpool.execute(():Component|null => this.findComponentSync(on));
                 promise1.then((e:NullishType)=>{
-                    if (e != null) {
+                    if (e) {
                         hilog.info(domain, tag, "findComponent return Component object");
                         let value : Component = e as Component;
                         resolve(value);
                     } else {
-                        hilog.info(domain, tag, "findComponent return null");
                         resolve(null)
                     }
                 }, (err: Error): void => {
