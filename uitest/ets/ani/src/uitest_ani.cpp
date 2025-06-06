@@ -1381,9 +1381,10 @@ static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
                 compareAndReport(ANI_OK, env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
                              "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", "get boolean value");
                 HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
-                filter[list[i]] = static_cast<bool>(b);
+                options[list[i]] = static_cast<bool>(b);
             }
         }
+    }
     return options;
 }
 
