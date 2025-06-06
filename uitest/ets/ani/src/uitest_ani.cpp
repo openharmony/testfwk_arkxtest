@@ -849,7 +849,7 @@ static json getWindowFilter(ani_env *env, ani_object f)
             continue;
         }
         if (i < 2) {
-            auto string_value = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
+            filter[list[i]] = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
         } else {
             ani_boolean b;
             compareAndReport(ANI_OK, env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
