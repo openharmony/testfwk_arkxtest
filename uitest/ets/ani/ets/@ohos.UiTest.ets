@@ -1012,15 +1012,15 @@ export class Component {
     private native touchPadMultiFingerSwipeSync(fingers: number, direction: UiDirection, options?: TouchPadSwipeOptions): boolean;
   
     delayMs(t: number): Promise<void> {
-        let promise = new Promise<void>((resolve, reject) => {
-        let asynctest = async () => {
-            let eaw = new EAWorker();
-            eaw.run<boolean>(():boolean => this.delayMsSync(t)).Await();
-            eaw.join();
-            resolve(undefined);
-        };
-        asynctest();
-        })
+        let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+        let promise1 = taskpool.execute(():boolean => this.delayMsSync(t));
+            promise1.then((e:NullishType)=>{
+                resolve(Promise.resolve());
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
         return promise;
     }
   
