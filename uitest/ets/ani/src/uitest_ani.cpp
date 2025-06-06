@@ -853,7 +853,6 @@ static json getWindowFilter(ani_env *env, ani_object f)
                 }
             }
         } else {
-            HiLog::Info(LABEL, "%{public}d :list[i] !!!", i);
             ani_ref value;
             if (env->Object_GetPropertyByName_Ref(f, cstr, &value) != ANI_OK) {
                 HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
@@ -1363,12 +1362,10 @@ static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
             if (ret == ANI_FALSE) {     
                 ani_double speed;           
                 compareAndReport(ANI_OK, env->Object_CallMethodByName_Double(static_cast<ani_object>(value), "unboxed", nullptr, &speed),
-                             "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", "get boolean value");                if (string_value != "") {
+                             "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", "get boolean value");
                     options[list[i]] = int(speed);
-                }
             }
         } else {
-            HiLog::Info(LABEL, "%{public}d :list[i] !!!", i);
             ani_ref value;
             if (env->Object_GetPropertyByName_Ref(f, cstr, &value) != ANI_OK) {
                 HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
