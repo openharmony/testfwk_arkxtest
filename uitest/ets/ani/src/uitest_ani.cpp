@@ -846,7 +846,10 @@ static json getWindowFilter(ani_env *env, ani_object f)
             }
             ani_boolean ret = false;
             if (env->Reference_IsUndefined(value, &ret) == ANI_OK) {
-                filter[list[i]] = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
+                auto string_value = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
+                if (string_value != "") {
+                    filter[list[i]] = string_value;
+                }
             }
         } else {
             HiLog::Info(LABEL, "%{public}d :list[i] !!!", i);
