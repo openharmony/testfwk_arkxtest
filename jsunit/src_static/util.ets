@@ -283,10 +283,9 @@ export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => vo
 export function getFunctionArgumentsCount(funcStr: string): number {
   const regex = new RegExp('^[0123456789]$', 'g');
   let count: string = '';
-  for (let str of funcStr) {
-    const s = new String(str)
-    if (regex.test(s)) {
-      count = s;
+  for (let str:string of funcStr) {
+    if (regex.test(str)) {
+      count = str;
     }
   }
   if (count.length) {
