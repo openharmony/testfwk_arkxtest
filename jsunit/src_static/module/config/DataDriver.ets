@@ -22,13 +22,15 @@ import { AnyType } from '../types/common';
 class DataDriver {
   public id: string;
   public coreContext: Core | null;
-  public suiteService: SuiteService;
-  public specService: SpecService;
+  public suiteService: SuiteService | null;
+  public specService: SpecService | null;
   public data: DataDriverData;
   constructor(attr: DataDriverAttr) {
     this.id = 'dataDriver';
     this.data = attr.data;
     this.coreContext = null;
+    this.suiteService = null;
+    this.specService = null;
   }
 
   init(coreContext: Core) {
@@ -132,7 +134,7 @@ class DataDriver {
     for (const specItem of specs) {
       if (specItem.it && specItem.it === specDesc) {
         let tempStress = Number(specItem.stress);
-        return Number.isInteger(tempStress) && tempStress >= 1 ? tempStress : stress;
+        return Number.isInteger(tempStress) && tempStress >= 1 ? tempStress as int: stress;
       }
     }
     return stress;
@@ -181,7 +183,7 @@ class DataDriver {
       }
       if (suiteDesc && Array.isArray(describeValue) && (describeValue as Array<string>).includes(suiteDesc)) {
         let tempStress = Number(suite.stress);
-        return Number.isInteger(tempStress) && tempStress >= 1 ? tempStress : stress;
+        return Number.isInteger(tempStress) && tempStress >= 1 ? tempStress as int : stress;
       }
     }
     return stress;
