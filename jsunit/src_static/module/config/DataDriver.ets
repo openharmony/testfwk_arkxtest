@@ -52,7 +52,7 @@ class DataDriver {
   getSpecParamsValue(specs: DataDriverSuite[]) {
     let specParams: Record<string, AnyType>[] = [];
     let specDesc = '';
-    const specService = this.specService as SpecService;
+    const specService = this.specService;
     if (specService) {
       const sService = specService as SpecService;
       const currentRunningSpec = sService.getCurrentRunningSpec();
