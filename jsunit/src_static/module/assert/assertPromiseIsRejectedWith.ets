@@ -16,9 +16,17 @@
 import { AssertResult } from '../modal/assertModel';
 import { AnyType } from '../types/common';
 
-function assertPromiseIsRejectedWith(actualPromise: Promise<AnyType>, expectedValue: AnyType[]): Promise<AssertResult> {
+function assertPromiseIsRejectedWith(
+  actualPromise: Promise<AnyType>,
+  expectedValue: AnyType[]
+): Promise<AssertResult> {
   const tips = (passed: boolean) => {
-    return 'Expected a promise ' + (passed ? 'not ' : '') + 'to be rejected with ' + JSON.stringify(expectedValue[0]);
+    return (
+      'Expected a promise ' +
+      (passed ? 'not ' : '') +
+      'to be rejected with ' +
+      JSON.stringify(expectedValue[0])
+    );
   };
   return actualPromise.then<AssertResult, AssertResult>(
     (): AssertResult => {
@@ -31,18 +39,31 @@ function assertPromiseIsRejectedWith(actualPromise: Promise<AnyType>, expectedVa
       if (JSON.stringify(actualValue) == JSON.stringify(expectedValue[0])) {
         return {
           pass: true,
-          message: 'actualValue was rejected with ' + JSON.stringify(actualValue) + '.',
+          message:
+            'actualValue was rejected with ' +
+            JSON.stringify(actualValue) +
+            '.',
         };
-      } else if(actualValue instanceof Error && typeof expectedValue[0] === "string" && (actualValue as Error).message === expectedValue[0]) {
+      } else if (
+        actualValue instanceof Error &&
+        typeof expectedValue[0] === 'string' &&
+        (actualValue as Error).message === expectedValue[0]
+      ) {
         return {
           pass: true,
-          message: 'actualValue was rejected with ' + (actualValue as Error).message + '.',
+          message:
+            'actualValue was rejected with ' +
+            (actualValue as Error).message +
+            '.',
         };
-      }
-      else {
+      } else {
         return {
           pass: false,
-          message: tips(false) + ' but it was rejected with ' + JSON.stringify(actualValue) + '.',
+          message:
+            tips(false) +
+            ' but it was rejected with ' +
+            JSON.stringify(actualValue) +
+            '.',
         };
       }
     }
