@@ -179,6 +179,8 @@ namespace OHOS::perftest {
         if (!threadLock->errMsg.empty()) {
             out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, threadLock->errMsg);
             LOG_E("%{public}s", out.exception_.message_.c_str());
+        } else if (!threadLock->res) {
+            out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, "Callback execution return false");
         }
         delete threadLock;
         threadLock = nullptr;
