@@ -17,12 +17,9 @@
 #define CPU_COLLECTION_H
 
 #include "data_collection.h"
-#include "cpu_collector.h"
 
 namespace OHOS::perftest {
     using namespace std;
-    using namespace HiviewDFX;
-    using namespace HiviewDFX::UCollectUtil;
 
     class CpuCollection : public DataCollection {
     public:
@@ -32,7 +29,6 @@ namespace OHOS::perftest {
         void StartCollection(ApiCallErr &error) override;
         double StopCollectionAndGetResult(ApiCallErr &error) override;
     private:
-        std::shared_ptr<CpuCollector> cpuCollector_;
         inline static bool isCollecting_ = false;
         inline static double cpuLoad_ = INVALID_VALUE;
         inline static double cpuUsage_ = INVALID_VALUE;
