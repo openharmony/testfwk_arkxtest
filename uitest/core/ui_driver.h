@@ -102,7 +102,7 @@ namespace OHOS::uitest {
 
         bool IsWearable();
 
-        bool IsPc();
+        bool IsAdjustWindowModeEnable();
 
         bool CheckDisplayExist(int32_t displayId);
 

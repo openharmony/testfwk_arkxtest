@@ -325,7 +325,7 @@ namespace OHOS::uitest {
     {
         info.focused_ = node.IsFocused();
         info.actived_ = node.IsActive();
-        info.decoratorEnabled_ = node.IsDecorEnable();
+
         // get bundle name by root node
         AccessibilityElementInfo element;
         LOG_D("Start Get Bundle Name by WindowId %{public}d", node.GetWindowId());
@@ -895,13 +895,13 @@ namespace OHOS::uitest {
         return isWearable;
     }
 
-    bool SysUiController::IsPc() const
+    bool SysUiController::IsAdjustWindowModeEnable() const
     {
-        bool IsPc = false;
+        bool IsAdjustWindowModeEnable = false;
 #ifdef ARKXTEST_ADJUST_WINDOWMODE_ENABLE
-        IsPc = true;
+        IsAdjustWindowModeEnable = true;
 #endif
-        return IsPc;
+        return IsAdjustWindowModeEnable;
     }
 
     bool SysUiController::GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode) const

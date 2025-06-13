@@ -57,7 +57,7 @@ namespace OHOS::uitest {
             return false;
         }
 
-        bool IsPc() const override
+        bool IsAdjustWindowModeEnable() const override
         {
             return false;
         }

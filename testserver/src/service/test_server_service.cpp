@@ -396,8 +396,8 @@ namespace OHOS::testserver {
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         auto sceneSessionManager = Rosen::SessionManagerLite::GetInstance().GetSceneSessionManagerLiteProxy();
         HiLog::Info(LABEL_SERVICE, "Begin to minimizeWindow %{public}d", windowId);
-        auto ret = sceneSessionManager->PendingSessionToBackgroundByPersistenId(windowId);
+        auto ret = sceneSessionManager->PendingSessionToBackgroundByPersistentId(windowId);
         HiLog::Info(LABEL_SERVICE, "MinimizeWindow over, ret: %{public}d", ret);
-        return ret == OHOS::Rosen::WSError::WM_OK ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
+        return ret == OHOS::Rosen::WSError::WS_OK ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
     }
 } // namespace OHOS::testserver

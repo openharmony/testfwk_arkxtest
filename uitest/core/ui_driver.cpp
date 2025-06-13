@@ -660,9 +660,9 @@ namespace OHOS::uitest {
         return uiController_->IsWearable();
     }
 
-    bool UiDriver::IsPc()
+    bool UiDriver::IsAdjustWindowModeEnable()
     {
-        return uiController_->IsPc();
+        return uiController_->IsAdjustWindowModeEnable();
     }
 
     bool UiDriver::CheckDisplayExist(int32_t displayId)
