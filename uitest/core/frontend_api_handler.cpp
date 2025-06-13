@@ -1733,7 +1733,7 @@ static void RegisterExtensionHandler()
             UiOpArgs uiOpArgs;
             auto wOp = WindowOperator(driver, *window, uiOpArgs);
             auto action = in.apiId_;
-            if (window->decoratorEnabled_) {
+            if (driver.IsPc()) {
                 if (action == "UiWindow.split") {
                     wOp.Split(out);
                 } else if (action == "UiWindow.maximize") {
