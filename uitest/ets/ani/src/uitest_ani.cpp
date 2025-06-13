@@ -14,6 +14,7 @@
  */
 
 #include "ani.h"
+#include <ani_signature_builder.h>
 #include "hilog/log.h"
 #include <array>
 #include <iostream>
@@ -36,6 +37,7 @@
 using namespace OHOS::uitest;
 using namespace nlohmann;
 using namespace std;
+using namespace arkts::ani_signature;
 static ApiTransactor g_apiTransactClient(false);
 static future<void> g_establishConnectionFuture;
 
@@ -62,7 +64,9 @@ static void pushParam(ani_env *env, ani_object input, ApiCallInfo &callInfo_, bo
             callInfo_.paramList_.push_back(int(param));
         } else {
             ani_double param;
-            env->Object_CallMethodByName_Double(input, "unboxed", ":D", &param);
+            arkts::ani_signature::SignatureBuilder rd{};
+            rd.SetReturnDouble();
+            env->Object_CallMethodByName_Double(input, "unboxed", rd.BuildSignatureDescriptor().c_str(), &param);
             callInfo_.paramList_.push_back(param);
         }
     }
@@ -96,7 +100,7 @@ static ani_class findCls(ani_env *env, const char *className)
 static ani_method findCtorMethod(ani_env *env, ani_class cls, const char *name)
 {
     ani_method ctor = nullptr;
-    if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", name, &ctor)) {
+    if (ANI_OK != env->Class_FindMethod(cls, Builder::BuildConstructorName().c_str(), name, &ctor)) {
         HiLog::Error(LABEL, "Not found ctor: %{public}s", name);
     }
     return ctor;
@@ -169,25 +173,29 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
         return nullptr;
     } else if (resultType == nlohmann::detail::value_t::array) {
         ani_class arrayCls = nullptr;
-        if (ANI_OK != env->FindClass("Lescompat/Array;", &arrayCls)) {
+        if (ANI_OK != env->FindClass(Builder::BuildClass({"escompat", "Array"}).Descriptor().c_str(), &arrayCls)) {
             HiLog::Error(LABEL, "%{public}s FindClass Array Failed", __func__);
         }
         ani_ref undefinedRef = nullptr;
         if (ANI_OK != env->GetUndefined(&undefinedRef)) {
             HiLog::Error(LABEL, "%{public}s GetUndefined Failed", __func__);
-        }
-        ani_method arrayCtor = findCtorMethod(env, arrayCls, "I:V");
+        }        
+        arkts::ani_signature::SignatureBuilder array_ctor{};
+        array_ctor.AddInt();
+        ani_method arrayCtor = findCtorMethod(env, arrayCls, array_ctor.BuildSignatureDescriptor().c_str());
         ani_object arrayObj;
         ani_size com_size = reply_.resultValue_.size();
         if (ANI_OK != env->Object_New(arrayCls, arrayCtor, &arrayObj, com_size)) {
             HiLog::Error(LABEL, "%{public}s Object New Array Failed", __func__);
             return reinterpret_cast<ani_ref>(arrayObj);
         }
-        ani_class cls = findCls(env, "L@ohos/UiTest/Component;");
+        ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "Component"}).Descriptor().c_str());
         ani_method com_ctor;
         ani_object com_obj;
         if (cls != nullptr) {
-            com_ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
+            arkts::ani_signature::SignatureBuilder string_ctor{};
+            string_ctor.AddClass({"std", "core", "String"});
+            com_ctor = findCtorMethod(env, cls, string_ctor.BuildSignatureDescriptor().c_str());
         }
         if (cls == nullptr || com_ctor == nullptr) {
             return nullptr;
@@ -278,8 +286,7 @@ static json getRect(ani_env *env, ani_object p)
 static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num)
 {
     ani_object rect_obj = {};
-    static const char *className = "L@ohos/UiTest/RectInner;";
-    ani_class cls = findCls(env, className);
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "RectInner"}).Descriptor().c_str());
     ani_method ctor = nullptr;
     if (cls != nullptr) {
         static const char *name = nullptr;
@@ -296,7 +303,7 @@ static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num)
     string direct[] = {"left", "top", "right", "bottom"};
     for (int index = 0; index < 4; index++) {
         string tag = direct[index];
-        char *method_name = strdup(("<set>" + tag).c_str());
+        char *method_name = strdup((Builder::BuildSetterName(tag)).c_str());
         if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
             HiLog::Error(LABEL, "Find Method <set>tag failed");
         }
@@ -311,8 +318,7 @@ static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num)
 static ani_object newPoint(ani_env *env, ani_object obj, int x, int y)
 {
     ani_object point_obj = {};
-    static const char *className = "L@ohos/UiTest/PointInner;";
-    ani_class cls = findCls(env, className);
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "PointInner"}).Descriptor().c_str());
     ani_method ctor = nullptr;
     if (cls != nullptr) {
         static const char *name = nullptr;
@@ -331,7 +337,7 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y)
     for (int index = 0; index < 2; index++)
     {
         string tag = direct[index];
-        char *method_name = strdup(("<set>" + tag).c_str());
+        char *method_name = strdup((Builder::BuildSetterName(tag)).c_str());
         if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
             HiLog::Error(LABEL, "Find Method <set>tag failed");
         }
@@ -345,13 +351,14 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y)
 
 static ani_ref createMatrix(ani_env *env, ani_object object, ani_double fingers, ani_double steps)
 {
-    static const char *className = "L@ohos/UiTest/PointerMatrix;";
-    ani_class cls = findCls(env, className);
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "PointerMatrix"}).Descriptor().c_str());
     ani_ref nullref;
     env->GetNull(&nullref);
     ani_method ctor = nullptr;
     if (cls != nullptr) {
-        ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
+        arkts::ani_signature::SignatureBuilder string_ctor{};
+        string_ctor.AddClass({"std", "core", "String"});
+        ctor = findCtorMethod(env, cls, string_ctor.BuildSignatureDescriptor().c_str());
     } else {
         return nullref;
     }
@@ -388,8 +395,7 @@ static void setPoint(ani_env *env, ani_object object, ani_double finger, ani_dou
 
 static ani_boolean BindPointMatrix(ani_env *env)
 {
-    static const char *className = "L@ohos/UiTest/PointerMatrix;";
-    ani_class cls = findCls(env, className);
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "PointerMatrix"}).Descriptor().c_str());
     if (cls == nullptr) {
         HiLog::Error(LABEL, "%{public}s Not found className !!!", __func__);
         return false;
@@ -407,11 +413,12 @@ static ani_boolean BindPointMatrix(ani_env *env)
 
 static ani_ref createOn(ani_env *env, ani_object object, nlohmann::json params, string apiId_)
 {
-    static const char *className = "L@ohos/UiTest/On;";
-    ani_class cls = findCls(env, className);
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "On"}).Descriptor().c_str());
     ani_method ctor = nullptr;
     if (cls != nullptr) {
-        ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
+        arkts::ani_signature::SignatureBuilder string_ctor{};
+        string_ctor.AddClass({"std", "core", "String"});
+        ctor = findCtorMethod(env, cls, string_ctor.BuildSignatureDescriptor().c_str());
     }
     if (ctor == nullptr || cls == nullptr) {
         return nullptr;
@@ -576,8 +583,7 @@ static ani_ref scrollable(ani_env *env, ani_object obj, ani_object b)
 
 static ani_boolean BindOn(ani_env *env)
 {
-    static const char *className = "L@ohos/UiTest/On;";
-    ani_class cls = findCls(env, className);
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "On"}).Descriptor().c_str());
     if (cls == nullptr) {
         HiLog::Error(LABEL, "%{public}s Not found className !!!", __func__);
         return false;
@@ -610,17 +616,18 @@ static ani_boolean BindOn(ani_env *env)
 
 static ani_ref create([[maybe_unused]] ani_env *env, [[maybe_unused]] ani_class clazz)
 {
-    static const char *className = "L@ohos/UiTest/Driver;";
     ani_class cls;
     ani_ref nullref;
     env->GetNull(&nullref);
-    if (ANI_OK != env->FindClass(className, &cls)) {
-        HiLog::Error(LABEL, "%{public}s Not found !!!", className);
+    if (ANI_OK != env->FindClass(Builder::BuildClass({"@ohos", "UiTest", "Driver"}).Descriptor().c_str(), &cls)) {
+        HiLog::Error(LABEL, "@ohos/uitest/Driver Not found !!!");
         return nullref;
     }
     ani_method ctor = nullptr;
-    if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", "Lstd/core/String;:V", &ctor)) {
-        HiLog::Error(LABEL, "%{public}s Ctor Not found !!!", className);
+    arkts::ani_signature::SignatureBuilder string_ctor{};
+    string_ctor.AddClass({"std", "core", "String"});
+    if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", string_ctor.BuildSignatureDescriptor().c_str(), &ctor)) {
+        HiLog::Error(LABEL, "Driver Ctor Not found !!!");
         return nullref;
     }
     ApiCallInfo callInfo_;
@@ -663,11 +670,12 @@ static ani_ref findComponentSync(ani_env *env, ani_object obj, ani_object on_obj
         return nativeComponent;
     }
     ani_object com_obj;
-    static const char *className = "L@ohos/UiTest/Component;";
-    ani_class cls = findCls(env, className);
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "Component"}).Descriptor().c_str());
     ani_method ctor = nullptr;
     if (cls != nullptr) {
-        ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
+        arkts::ani_signature::SignatureBuilder string_ctor{};
+        string_ctor.AddClass({"std", "core", "String"});
+        ctor = findCtorMethod(env, cls, string_ctor.BuildSignatureDescriptor().c_str());
     }
     if (cls == nullptr || ctor == nullptr) {
         return nullptr;
@@ -832,12 +840,6 @@ static ani_boolean dragSync(ani_env *env, ani_object obj, ani_double x1, ani_dou
 static json getWindowFilter(ani_env *env, ani_object f)
 {
     auto filter = json();
-    static const char *className = "L@ohos/UiTest/WindowFilterInner;";
-    ani_class cls;
-    if (ANI_OK != env->FindClass(className, &cls)) {
-        HiLog::Error(LABEL, "Not found className: %{public}s", className);
-        return filter;
-    }
     string list[] = {"bundleName", "title", "focused", "active"};
     for (int i = 0; i < 4; i++) {
         char *cstr = new char[list[i].length() + 1];
@@ -858,7 +860,7 @@ static json getWindowFilter(ani_env *env, ani_object f)
             ani_boolean b;
             compareAndReport(ANI_OK,
                              env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
-                             "CallMethodByName_Boolean Failed '" + std::string(className) + "'", 
+                             "CallMethodByName_Boolean Failed ", 
                              "get boolean value");
             HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
             filter[list[i]] = static_cast<bool>(b);
@@ -880,12 +882,12 @@ static ani_object findWindowSync(ani_env *env, ani_object obj, ani_object filter
         return reinterpret_cast<ani_object>(nativeWindow);
     }
     ani_object window_obj;
-    static const char *className = "L@ohos/UiTest/UiWindow;";
-    ani_class cls = findCls(env, className);
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "UiWindow"}).Descriptor().c_str());
     ani_method ctor = nullptr;
     if (cls != nullptr) {
-        static const char *name = "Lstd/core/String;:V";
-        ctor = findCtorMethod(env, cls, name);
+        arkts::ani_signature::SignatureBuilder string_ctor{};
+        string_ctor.AddClass({"std", "core", "String"});
+        ctor = findCtorMethod(env, cls, string_ctor.BuildSignatureDescriptor().c_str());
     }
     if (cls == nullptr || ctor == nullptr) {
         return nullptr;
@@ -908,15 +910,15 @@ static ani_object createUIEventObserverSync(ani_env *env, ani_object obj)
         return nullptr;
     }
     ani_object observer_obj;
-    static const char *className = "L@ohos/UiTest/UIEventObserver;";
-    ani_class cls = findCls(env, className);
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "UIEventObserver"}).Descriptor().c_str());
     ani_method ctor = nullptr;
-    if (cls != nullptr) {
-        static const char *name = "Lstd/core/String;:V";
-        ctor = findCtorMethod(env, cls, name);
+    if (cls != nullptr) {        
+        arkts::ani_signature::SignatureBuilder string_ctor{};
+        string_ctor.AddClass({"std", "core", "String"});
+        ctor = findCtorMethod(env, cls, string_ctor.BuildSignatureDescriptor().c_str());
     }
     if (cls == nullptr || ctor == nullptr) {
-        HiLog::Error(LABEL, "Not found className/ctor: %{public}s", className);
+        HiLog::Error(LABEL, "Not found className/ctor: %{public}s", "UIEventObserver");
         return nullptr;
     }
     if (ANI_OK != env->Object_New(cls, ctor, &observer_obj, reinterpret_cast<ani_object>(nativeUIEventObserver))) {
@@ -1004,7 +1006,7 @@ static ani_object getDisplayRotationSync(ani_env *env, ani_object obj)
         return nullptr;
     }
     ani_enum enumType;
-    if (ANI_OK != env->FindEnum("L@ohos/UiTest/DisplayRotation;", &enumType)) {
+    if (ANI_OK != env->FindEnum(Builder::BuildEnum({"@ohos", "UiTest", "DisplayRotation"}).Descriptor().c_str(), &enumType)) {
         HiLog::Error(LABEL, "Find Enum Faild: %{public}s", __func__);
     }
     ani_enum_item enumItem;
@@ -1041,12 +1043,12 @@ static ani_object waitForComponentSync(ani_env *env, ani_object obj, ani_object 
         return reinterpret_cast<ani_object>(nativeComponent);
     }
     ani_object component_obj;
-    static const char *className = "L@ohos/UiTest/Component;";
-    ani_class cls = findCls(env, className);
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "Component"}).Descriptor().c_str());    
     ani_method ctor = nullptr;
     if (cls != nullptr) {
-        static const char *name = "Lstd/core/String;:V";
-        ctor = findCtorMethod(env, cls, name);
+        arkts::ani_signature::SignatureBuilder string_ctor{};
+        string_ctor.AddClass({"std", "core", "String"});
+        ctor = findCtorMethod(env, cls, string_ctor.BuildSignatureDescriptor().c_str());
     }
     if (cls == nullptr || ctor == nullptr) {
         return nullptr;
@@ -1336,12 +1338,6 @@ static ani_boolean injectPenPointerActionSync(ani_env *env, ani_object obj, ani_
 static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
 {
     auto options = json();
-    static const char *className = "L@ohos/UiTest/TouchPadSwipeOptionsInner;";
-    ani_class cls;
-    if (ANI_OK != env->FindClass(className, &cls)) {
-        HiLog::Error(LABEL, "Not found: %{public}s", className);
-        return options;
-    }
     string list[] = {"stay", "speed"};
     for (int i = 0; i < TWO; i++) {
         char *cstr = new char[list[i].length() + 1];
@@ -1360,14 +1356,14 @@ static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
             ani_double speed;
             compareAndReport(ANI_OK,
                              env->Object_CallMethodByName_Double(static_cast<ani_object>(value), "unboxed", nullptr, &speed),
-                             "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", 
+                             "Object_CallMethodByName_Boolean Failed ", 
                              "get boolean value");
             options[list[i]] = int(speed);
         } else {
             ani_boolean b;
             compareAndReport(ANI_OK,
                              env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
-                             "Object_CallMethodByName_Boolean Failed '" + std::string(className) + "'", 
+                             "Object_CallMethodByName_Boolean Failed ", 
                              "get boolean value");
             HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
             options[list[i]] = static_cast<bool>(b);
@@ -1393,9 +1389,8 @@ static ani_boolean touchPadMultiFingerSwipeSync(ani_env *env, ani_object obj, an
 }
 static ani_boolean BindDriver(ani_env *env)
 {
-    static const char *className = "L@ohos/UiTest/Driver;";
     ani_class cls;
-    if (ANI_OK != env->FindClass(className, &cls)) {
+    if (ANI_OK != env->FindClass(Builder::BuildClass({"@ohos", "UiTest", "Driver"}).Descriptor().c_str(), &cls)) {
         HiLog::Error(LABEL, "%{public}s Not found !!!", __func__);
         return false;
     }
@@ -1500,7 +1495,7 @@ static ani_boolean focusSync(ani_env *env, ani_object obj, string api)
     return true;
 }
 
-static ani_ref isFocusedSync(ani_env *env, ani_object obj)
+static ani_boolean isFocusedSync(ani_env *env, ani_object obj)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -1508,10 +1503,12 @@ static ani_ref isFocusedSync(ani_env *env, ani_object obj)
     callInfo_.apiId_ = "UiWindow.isFocused";
     Transact(callInfo_, reply_);
     ani_ref ret = UnmarshalReply(env, callInfo_, reply_);
-    return ret;
-}
+    if (ret == nullptr) {
+        return false;
+    }
+    return reply_.resultValue_.get<bool>();}
 
-static ani_ref isActiveSync(ani_env *env, ani_object obj)
+static ani_boolean isActiveSync(ani_env *env, ani_object obj)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
@@ -1519,8 +1516,10 @@ static ani_ref isActiveSync(ani_env *env, ani_object obj)
     callInfo_.apiId_ = "UiWindow.isActive";
     Transact(callInfo_, reply_);
     ani_ref ret = UnmarshalReply(env, callInfo_, reply_);
-    return ret;
-}
+    if (ret == nullptr) {
+        return false;
+    }
+    return reply_.resultValue_.get<bool>();}
 
 static ani_boolean resizeSync(ani_env *env, ani_object obj, ani_double w, ani_double h, ani_enum_item d)
 {
@@ -1565,7 +1564,7 @@ static ani_ref getWindowModeSync(ani_env *env, ani_object obj)
         return nullref;
     }
     ani_enum enumType;
-    if (ANI_OK != env->FindEnum("L@ohos/UiTest/WindowMode;", &enumType)) {
+    if (ANI_OK != env->FindEnum(Builder::BuildEnum({"@ohos", "UiTest", "WindowMode"}).Descriptor().c_str(), &enumType)) {
         HiLog::Error(LABEL, "Not found enum item: %{public}s", __func__);
     }
     ani_enum_item enumItem;
@@ -1616,9 +1615,8 @@ static ani_ref getBoundsSync(ani_env *env, ani_object obj)
 
 static ani_boolean BindWindow(ani_env *env)
 {
-    static const char *className = "L@ohos/UiTest/UiWindow;";
     ani_class cls;
-    if (ANI_OK != env->FindClass(className, &cls)) {
+    if (ANI_OK != env->FindClass(Builder::BuildClass({"@ohos", "UiTest", "UiWindow"}).Descriptor().c_str(), &cls)) {
         HiLog::Error(LABEL, "%{public}s Not found className !!!", __func__);
         return false;
     }
@@ -1805,11 +1803,12 @@ static ani_object scrollSearch(ani_env *env, ani_object obj, ani_object on, ani_
         return nullptr;
     }
     ani_object com_obj;
-    static const char *className = "L@ohos/UiTest/Component;";
-    ani_class cls = findCls(env, className);
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "Component"}).Descriptor().c_str());    
     ani_method ctor = nullptr;
     if (cls != nullptr) {
-        ctor = findCtorMethod(env, cls, "Lstd/core/String;:V");
+        arkts::ani_signature::SignatureBuilder string_ctor{};
+        string_ctor.AddClass({"std", "core", "String"});
+        ctor = findCtorMethod(env, cls, string_ctor.BuildSignatureDescriptor().c_str());
     }
     if (cls == nullptr || ctor == nullptr) {
         return nullptr;
@@ -1898,9 +1897,8 @@ static ani_boolean isCheckable(ani_env *env, ani_object obj)
 
 static ani_boolean BindComponent(ani_env *env)
 {
-    static const char *className = "L@ohos/UiTest/Component;";
     ani_class cls;
-    if (ANI_OK != env->FindClass(className, &cls)) {
+    if (ANI_OK != env->FindClass(Builder::BuildClass({"@ohos", "UiTest", "Component"}).Descriptor().c_str(), &cls)) {
         HiLog::Error(LABEL, "%{public}s Not found className !!!", __func__);
         return false;
     }
@@ -1952,9 +1950,8 @@ static void once(ani_env *env, ani_object obj, ani_string type, ani_object callb
 }
 static ani_boolean BindUiEventObserver(ani_env *env)
 {
-    static const char *className = "L@ohos/UiTest/UIEventObserver;";
     ani_class cls;
-    if (ANI_OK != env->FindClass(className, &cls)) {
+    if (ANI_OK != env->FindClass(Builder::BuildClass({"@ohos", "UiTest", "UIEventObserver"}).Descriptor().c_str(), &cls)) {
         HiLog::Error(LABEL, "%{public}s Not found className !!!", __func__);
         return false;
     }
@@ -1976,7 +1973,7 @@ void StsUiTestInit(ani_env *env)
         HiLog::Error(LABEL, "%{public}s ResetError failed", __func__);
     }
     ani_namespace ns;
-    status = env->FindNamespace("L@ohos/UiTest/UiTest;", &ns);
+    status = env->FindNamespace(Builder::BuildNamespace({"@ohos", "UiTest", "UiTest"}).Descriptor().c_str(), &ns);
     if (status != ANI_OK) {
         HiLog::Error(LABEL, "FindNamespace UiTest failed status : %{public}d", status);
         return;
