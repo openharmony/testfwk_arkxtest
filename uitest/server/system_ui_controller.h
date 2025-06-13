@@ -56,6 +56,8 @@ namespace OHOS::uitest {
 
         bool IsWearable() const override;
 
+        bool IsPc() const override;
+
         // setup method, connect to system ability AAMS
         bool ConnectToSysAbility(ApiCallErr &error);
 
@@ -79,6 +81,8 @@ namespace OHOS::uitest {
         void GetHidumperInfo(std::string windowId, char **buf, size_t &len) override;
 
         bool CheckDisplayExist(int32_t displayId) const override;
+
+        void ChangeWindowMode(int32_t windowId, WindowMode mode) const override;
     private:
         void  InjectMouseEvent(const MouseEvent &event) const;
         int32_t GetValidDisplayId(int32_t id) const;

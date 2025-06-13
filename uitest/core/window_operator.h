@@ -51,12 +51,6 @@ namespace OHOS::uitest {
         UiDriver &driver_;
         const Window &window_;
         UiOpArgs &options_;
-
-        /**Exhale the decoration bar of the current window.*/
-        void CallBar(ApiReplyInfo &out);
-
-        /**Click on the decoration bar of this window.*/
-        void BarAction(string_view buttonId, ApiReplyInfo &out);
     };
 } // namespace OHOS::uitest
 

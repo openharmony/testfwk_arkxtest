@@ -35,46 +35,44 @@ namespace OHOS::uitest {
         WindowAction action;
         WindowMode windowMode;
         bool support;
-        std::string_view buttonId;
         std::string_view message;
     };
 
     static constexpr Operational OPERATIONS[] = {
-        {MOVETO, FULLSCREEN, false, "", "Fullscreen window can not move"},
-        {MOVETO, SPLIT_PRIMARY, false, "", "SPLIT_PRIMARY window can not move"},
-        {MOVETO, SPLIT_SECONDARY, false, "", "SPLIT_SECONDARY window can not move"},
-        {MOVETO, FLOATING, true, "", ""},
-        {RESIZE, FULLSCREEN, false, "", "Fullscreen window can not resize"},
-        {RESIZE, SPLIT_PRIMARY, true, "", ""},
-        {RESIZE, SPLIT_SECONDARY, true, "", ""},
-        {RESIZE, FLOATING, true, "", ""},
-        {SPLIT, FULLSCREEN, true, "", ""},
-        {SPLIT, SPLIT_PRIMARY, false, "", "SPLIT_PRIMARY can not split again"},
-        {SPLIT, SPLIT_SECONDARY, true, "", ""},
-        {SPLIT, FLOATING, true, "", ""},
-        {MAXIMIZE, FULLSCREEN, false, "", "Fullscreen window is already maximized"},
-        {MAXIMIZE, SPLIT_PRIMARY, true, "EnhanceMaximizeBtn", ""},
-        {MAXIMIZE, SPLIT_SECONDARY, true, "EnhanceMaximizeBtn", ""},
-        {MAXIMIZE, FLOATING, true, "EnhanceMaximizeBtn", ""},
-        {RESUME, FULLSCREEN, true, "EnhanceMaximizeBtn", ""},
-        {RESUME, SPLIT_PRIMARY, true, "EnhanceMaximizeBtn", ""},
-        {RESUME, SPLIT_SECONDARY, true, "EnhanceMaximizeBtn", ""},
-        {RESUME, FLOATING, true, "EnhanceMaximizeBtn", ""},
-        {MINIMIZE, FULLSCREEN, true, "EnhanceMinimizeBtn", ""},
-        {MINIMIZE, SPLIT_PRIMARY, true, "EnhanceMinimizeBtn", ""},
-        {MINIMIZE, SPLIT_SECONDARY, true, "EnhanceMinimizeBtn", ""},
-        {MINIMIZE, FLOATING, true, "EnhanceMinimizeBtn", ""},
-        {CLOSE, FULLSCREEN, true, "EnhanceCloseBtn", ""},
-        {CLOSE, SPLIT_PRIMARY, true, "EnhanceCloseBtn", ""},
-        {CLOSE, SPLIT_SECONDARY, true, "EnhanceCloseBtn", ""},
-        {CLOSE, FLOATING, true, "EnhanceCloseBtn", ""}};
+        {MOVETO, FULLSCREEN, false, "Fullscreen window can not move"},
+        {MOVETO, SPLIT_PRIMARY, false, "SPLIT_PRIMARY window can not move"},
+        {MOVETO, SPLIT_SECONDARY, false, "SPLIT_SECONDARY window can not move"},
+        {MOVETO, FLOATING, true, ""},
+        {RESIZE, FULLSCREEN, false, "Fullscreen window can not resize"},
+        {RESIZE, SPLIT_PRIMARY, true, ""},
+        {RESIZE, SPLIT_SECONDARY, true, ""},
+        {RESIZE, FLOATING, true, ""},
+        {SPLIT, FULLSCREEN, true, ""},
+        {SPLIT, SPLIT_PRIMARY, false, "SPLIT_PRIMARY can not split again"},
+        {SPLIT, SPLIT_SECONDARY, true, ""},
+        {SPLIT, FLOATING, true, ""},
+        {MAXIMIZE, FULLSCREEN, false, "Fullscreen window is already maximized"},
+        {MAXIMIZE, SPLIT_PRIMARY, true, ""},
+        {MAXIMIZE, SPLIT_SECONDARY, true, ""},
+        {MAXIMIZE, FLOATING, true, ""},
+        {RESUME, FULLSCREEN, true, ""},
+        {RESUME, SPLIT_PRIMARY, true, ""},
+        {RESUME, SPLIT_SECONDARY, true, ""},
+        {RESUME, FLOATING, true, ""},
+        {MINIMIZE, FULLSCREEN, true, ""},
+        {MINIMIZE, SPLIT_PRIMARY, true, ""},
+        {MINIMIZE, SPLIT_SECONDARY, true, ""},
+        {MINIMIZE, FLOATING, true, ""},
+        {CLOSE, FULLSCREEN, true, ""},
+        {CLOSE, SPLIT_PRIMARY, true, ""},
+        {CLOSE, SPLIT_SECONDARY, true, ""},
+        {CLOSE, FLOATING, true, ""}};
 
-    static bool CheckOperational(WindowAction action, WindowMode mode, ApiReplyInfo &out, string &buttonId)
+    static bool CheckOperational(WindowAction action, WindowMode mode, ApiReplyInfo &out)
     {
         for (unsigned long index = 0; index < sizeof(OPERATIONS) / sizeof(Operational); index++) {
             if (OPERATIONS[index].action == action && OPERATIONS[index].windowMode == mode) {
                 if (OPERATIONS[index].support) {
-                    buttonId = OPERATIONS[index].buttonId;
                     return true;
                 } else {
                     out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, OPERATIONS[index].message);
@@ -89,24 +87,6 @@ namespace OHOS::uitest {
     WindowOperator::WindowOperator(UiDriver &driver, const Window &window, UiOpArgs &options)
         : driver_(driver), window_(window), options_(options)
     {
-    }
-
-    void WindowOperator::CallBar(ApiReplyInfo &out)
-    {
-        Focus(out);
-        if (window_.mode_ == WindowMode::FLOATING) {
-            return;
-        }
-        auto rect = window_.bounds_;
-        static constexpr uint32_t step1 = 10;
-        static constexpr uint32_t step2 = 40;
-        Point from(rect.GetCenterX(), rect.top_ + step1);
-        Point to(rect.GetCenterX(), rect.top_ + step2);
-        from.displayId_ = window_.displayId_;
-        to.displayId_ = window_.displayId_;
-        auto touch = GenericSwipe(TouchOp::DRAG, from, to);
-        driver_.PerformTouch(touch, options_, out.exception_);
-        driver_.DelayMs(options_.uiSteadyThresholdMs_);
     }
 
     void WindowOperator::Focus(ApiReplyInfo &out)
@@ -125,8 +105,7 @@ namespace OHOS::uitest {
     void WindowOperator::MoveTo(uint32_t endX, uint32_t endY, ApiReplyInfo &out)
     {
         Focus(out);
-        string targetBtnId;
-        if (!CheckOperational(MOVETO, window_.mode_, out, targetBtnId)) {
+        if (!CheckOperational(MOVETO, window_.mode_, out)) {
             return;
         }
         auto rect = window_.bounds_;
@@ -142,8 +121,7 @@ namespace OHOS::uitest {
     void WindowOperator::Resize(int32_t width, int32_t highth, ResizeDirection direction, ApiReplyInfo &out)
     {
         Focus(out);
-        string targetBtnId;
-        if (!CheckOperational(RESIZE, window_.mode_, out, targetBtnId)) {
+        if (!CheckOperational(RESIZE, window_.mode_, out)) {
             return;
         }
         Point from;
@@ -191,109 +169,47 @@ namespace OHOS::uitest {
 
     void WindowOperator::Split(ApiReplyInfo &out)
     {
-        string targetBtnId;
-        if (!CheckOperational(SPLIT, window_.mode_, out, targetBtnId)) {
+        if (!CheckOperational(SPLIT, window_.mode_, out)) {
             return;
         }
-        // call split bar.
-        auto selector = WidgetSelector();
-        auto attrMatcher = WidgetMatchModel(UiAttr::KEY, "EnhanceMaximizeBtn", EQ);
-        auto windowMatcher = WidgetMatchModel(UiAttr::HOST_WINDOW_ID, to_string(window_.id_), EQ);
-        selector.AddMatcher(attrMatcher);
-        selector.AddMatcher(windowMatcher);
-        selector.AddAppLocator(window_.bundleName_);
-        selector.SetWantMulti(false);
-        vector<unique_ptr<Widget>> widgets;
-        driver_.FindWidgets(selector, widgets, out.exception_);
-        if (out.exception_.code_ != NO_ERROR) {
-            return;
-        }
-        if (widgets.empty()) {
-            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
-            return;
-        }
-        auto rect = widgets[0]->GetBounds();
-        Point widgetCenter(rect.GetCenterX(), rect.GetCenterY(), widgets[0]->GetDisplayId());
-        auto touch1 = MouseMoveTo(widgetCenter);
-        driver_.PerformMouseAction(touch1, options_, out.exception_);
-        constexpr auto focusTime = 3000;
-        driver_.DelayMs(focusTime);
-        // find split btn and click.
-        auto selector2 = WidgetSelector();
-        auto attrMatcher2 = WidgetMatchModel(UiAttr::KEY, "EnhanceMenuScreenLeftRow", EQ);
-        selector2.AddMatcher(attrMatcher2);
-        selector2.SetWantMulti(false);
-        vector<unique_ptr<Widget>> widgets2;
-        driver_.FindWidgets(selector2, widgets2, out.exception_);
-        if (widgets2.empty()) {
-            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
-            return;
-        }
-        auto rect2 = widgets2[0]->GetBounds();
-        Point widgetCenter2(rect2.GetCenterX(), rect2.GetCenterY(), widgets2[0]->GetDisplayId());
-        auto touch2 = GenericClick(TouchOp::CLICK, widgetCenter2);
-        driver_.PerformTouch(touch2, options_, out.exception_);
+        driver_.ChangeWindowMode(window_.id_, WindowMode::SPLIT_PRIMARY);
     }
 
     void  WindowOperator::Maximize(ApiReplyInfo &out)
     {
         string targetBtnId;
-        if (!CheckOperational(MAXIMIZE, window_.mode_, out, targetBtnId)) {
+        if (!CheckOperational(MAXIMIZE, window_.mode_, out)) {
             return;
         }
-        BarAction(targetBtnId, out);
+        driver_.ChangeWindowMode(window_.id_, WindowMode::FULLSCREEN);
     }
 
     void WindowOperator::Resume(ApiReplyInfo &out)
     {
         string targetBtnId;
-        if (!CheckOperational(RESUME, window_.mode_, out, targetBtnId)) {
+        if (!CheckOperational(RESUME, window_.mode_, out)) {
             return;
         }
-        BarAction(targetBtnId, out);
+        if (window_.mode_ == WindowMode::FULLSCREEN) {
+            driver_.ChangeWindowMode(window_.id_, WindowMode::FLOATING);
+        } else {
+            driver_.ChangeWindowMode(window_.id_, WindowMode::FULLSCREEN);
+        }
     }
 
     void WindowOperator::Minimize(ApiReplyInfo &out)
     {
-        string targetBtnId;
-        if (!CheckOperational(MINIMIZE, window_.mode_, out, targetBtnId)) {
+        if (!CheckOperational(MINIMIZE, window_.mode_, out)) {
             return;
         }
-        BarAction(targetBtnId, out);
+        driver_.ChangeWindowMode(window_.id_, WindowMode::MINIMIZED);
     }
 
     void WindowOperator::Close(ApiReplyInfo &out)
     {
-        string targetBtnId;
-        if (!CheckOperational(CLOSE, window_.mode_, out, targetBtnId)) {
+        if (!CheckOperational(CLOSE, window_.mode_, out)) {
             return;
         }
-        BarAction(targetBtnId, out);
-    }
-
-    void WindowOperator::BarAction(string_view buttonId, ApiReplyInfo &out)
-    {
-        Focus(out);
-        auto selector = WidgetSelector();
-        auto attrMatcher = WidgetMatchModel(UiAttr::KEY, std::string(buttonId), EQ);
-        auto windowMatcher = WidgetMatchModel(UiAttr::HOST_WINDOW_ID, to_string(window_.id_), EQ);
-        selector.AddMatcher(attrMatcher);
-        selector.AddMatcher(windowMatcher);
-        selector.AddAppLocator(window_.bundleName_);
-        selector.SetWantMulti(false);
-        vector<unique_ptr<Widget>> widgets;
-        driver_.FindWidgets(selector, widgets, out.exception_);
-        if (widgets.empty()) {
-            CallBar(out);
-            driver_.FindWidgets(selector, widgets, out.exception_);
-        }
-        if (widgets.empty() || out.exception_.code_ != NO_ERROR) {
-            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
-            return;
-        }
-        auto rect = widgets[0]->GetBounds();
-        Point widgetCenter(rect.GetCenterX(), rect.GetCenterY(), widgets[0]->GetDisplayId());
-        auto touch = GenericClick(TouchOp::CLICK, widgetCenter);
-        driver_.PerformTouch(touch, options_, out.exception_);
+        driver_.ChangeWindowMode(window_.id_, WindowMode::CLOSED);
     }
 } // namespace OHOS::uitest

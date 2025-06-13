@@ -44,6 +44,12 @@ namespace OHOS::testserver {
         // Declare the logical interfaces here
         ErrCode SetPasteData(const std::string& text) override;
 
+        ErrCode ChangeWindowMode(int windowId, uint32_t mode) override;
+
+        ErrCode TerminateWindow(int windowId) override;
+
+        ErrCode MinimizeWindow(int windowId) override;
+
         ErrCode PublishCommonEvent(const EventFwk::CommonEventData &event, bool &re) override;
 
         ErrCode FrequencyLock() override;
