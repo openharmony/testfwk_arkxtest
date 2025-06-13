@@ -325,7 +325,6 @@ namespace OHOS::uitest {
     {
         info.focused_ = node.IsFocused();
         info.actived_ = node.IsActive();
-
         // get bundle name by root node
         AccessibilityElementInfo element;
         LOG_D("Start Get Bundle Name by WindowId %{public}d", node.GetWindowId());
@@ -874,7 +873,6 @@ namespace OHOS::uitest {
                 OHOS::testserver::TestServerClient::GetInstance().TerminateWindow(windowId);
                 break;
             default:
-                info.mode_ = WindowMode::UNKNOWN;
                 break;
         }
         static constexpr auto sliceMs = 500;
