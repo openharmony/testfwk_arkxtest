@@ -662,7 +662,7 @@ namespace OHOS::uitest {
 
     bool UiDriver::IsPc()
     {
-      return uiController_->IsPc();
+        return uiController_->IsPc();
     }
 
     bool UiDriver::CheckDisplayExist(int32_t displayId)

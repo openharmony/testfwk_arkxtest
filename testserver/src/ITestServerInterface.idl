@@ -21,7 +21,7 @@ sequenceable CommonEventData..OHOS.EventFwk.CommonEventData;
 interface OHOS.testserver.ITestServerInterface {
     void CreateSession([in] SessionToken sessionToken);
     void SetPasteData([in] String text);
-    void ChangeWindowMode([in] int windowId, [in] unsigend int mode);
+    void ChangeWindowMode([in] int windowId, [in] unsigned int mode);
     void TerminateWindow([in] int windowId);
     void MinimizeWindow([in] int windowId);
     void PublishCommonEvent([in] CommonEventData event, [out] boolean re);

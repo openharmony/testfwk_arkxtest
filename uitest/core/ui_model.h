@@ -301,8 +301,16 @@ namespace OHOS::uitest {
     static_assert(std::is_move_constructible<Widget>::value, "Widget need to be movable");
 
     /**Enumerates the supported UiComponent attributes.*/
-    enum WindowMode : uint8_t { UNKNOWN, FULLSCREEN, SPLIT_PRIMARY, SPLIT_SECONDARY, FLOATING, PIP, MINIMIZED,
-        CLOSED };
+    enum WindowMode : uint8_t {
+        UNKNOWN,
+        FULLSCREEN,
+        SPLIT_PRIMARY,
+        SPLIT_SECONDARY,
+        FLOATING,
+        PIP,
+        MINIMIZED,
+        CLOSED
+    };
 
     // Represents a UI window on screen.
     class Window : public BackendClass {
