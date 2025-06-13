@@ -179,7 +179,7 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
         ani_ref undefinedRef = nullptr;
         if (ANI_OK != env->GetUndefined(&undefinedRef)) {
             HiLog::Error(LABEL, "%{public}s GetUndefined Failed", __func__);
-        }        
+        }
         arkts::ani_signature::SignatureBuilder array_ctor{};
         array_ctor.AddInt();
         ani_method arrayCtor = findCtorMethod(env, arrayCls, array_ctor.BuildSignatureDescriptor().c_str());
@@ -303,8 +303,8 @@ static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num)
     string direct[] = {"left", "top", "right", "bottom"};
     for (int index = 0; index < 4; index++) {
         string tag = direct[index];
-        char *method_name = strdup((Builder::BuildSetterName(tag)).c_str());
-        if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
+        char *setter_name = strdup((Builder::BuildSetterName(tag)).c_str());
+        if (ANI_OK != env->Class_FindMethod(cls, setter_name, nullptr, &setter)) {
             HiLog::Error(LABEL, "Find Method <set>tag failed");
         }
         if (ANI_OK != env->Object_CallMethod_Void(rect_obj, setter, ani_double(num[tag]))) {
@@ -860,7 +860,7 @@ static json getWindowFilter(ani_env *env, ani_object f)
             ani_boolean b;
             compareAndReport(ANI_OK,
                              env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
-                             "CallMethodByName_Boolean Failed ", 
+                             "CallMethodByName_Boolean Failed",
                              "get boolean value");
             HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
             filter[list[i]] = static_cast<bool>(b);
@@ -912,7 +912,7 @@ static ani_object createUIEventObserverSync(ani_env *env, ani_object obj)
     ani_object observer_obj;
     ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "UIEventObserver"}).Descriptor().c_str());
     ani_method ctor = nullptr;
-    if (cls != nullptr) {        
+    if (cls != nullptr) {
         arkts::ani_signature::SignatureBuilder string_ctor{};
         string_ctor.AddClass({"std", "core", "String"});
         ctor = findCtorMethod(env, cls, string_ctor.BuildSignatureDescriptor().c_str());
@@ -1043,7 +1043,7 @@ static ani_object waitForComponentSync(ani_env *env, ani_object obj, ani_object 
         return reinterpret_cast<ani_object>(nativeComponent);
     }
     ani_object component_obj;
-    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "Component"}).Descriptor().c_str());    
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "Component"}).Descriptor().c_str());
     ani_method ctor = nullptr;
     if (cls != nullptr) {
         arkts::ani_signature::SignatureBuilder string_ctor{};
@@ -1356,14 +1356,14 @@ static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
             ani_double speed;
             compareAndReport(ANI_OK,
                              env->Object_CallMethodByName_Double(static_cast<ani_object>(value), "unboxed", nullptr, &speed),
-                             "Object_CallMethodByName_Boolean Failed ", 
+                             "Object_CallMethodByName_Boolean Failed",
                              "get boolean value");
             options[list[i]] = int(speed);
         } else {
             ani_boolean b;
             compareAndReport(ANI_OK,
                              env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
-                             "Object_CallMethodByName_Boolean Failed ", 
+                             "Object_CallMethodByName_Boolean Failed",
                              "get boolean value");
             HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
             options[list[i]] = static_cast<bool>(b);
@@ -1506,7 +1506,8 @@ static ani_boolean isFocusedSync(ani_env *env, ani_object obj)
     if (ret == nullptr) {
         return false;
     }
-    return reply_.resultValue_.get<bool>();}
+    return reply_.resultValue_.get<bool>();
+}
 
 static ani_boolean isActiveSync(ani_env *env, ani_object obj)
 {
@@ -1519,7 +1520,8 @@ static ani_boolean isActiveSync(ani_env *env, ani_object obj)
     if (ret == nullptr) {
         return false;
     }
-    return reply_.resultValue_.get<bool>();}
+    return reply_.resultValue_.get<bool>();
+}
 
 static ani_boolean resizeSync(ani_env *env, ani_object obj, ani_double w, ani_double h, ani_enum_item d)
 {
@@ -1803,7 +1805,7 @@ static ani_object scrollSearch(ani_env *env, ani_object obj, ani_object on, ani_
         return nullptr;
     }
     ani_object com_obj;
-    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "Component"}).Descriptor().c_str());    
+    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "Component"}).Descriptor().c_str());
     ani_method ctor = nullptr;
     if (cls != nullptr) {
         arkts::ani_signature::SignatureBuilder string_ctor{};
