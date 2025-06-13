@@ -854,29 +854,29 @@ namespace OHOS::uitest {
 
     void SysUiController::ChangeWindowMode(int32_t windowId, WindowMode mode) const
     {
-      switch (mode) {
-          case WindowMode::FULLSCREEN:
-              OHOS::testserver::TestServerClient::GetInstance().ChangeWindowMode(windowId,
-                  static_cast<uint32_t>(OHOS::Rosen::WindowMode::WINDOW_MODE_FULLSCREEN));
-              break;
-          case WindowMode::SPLIT_PRIMARY:
-              OHOS::testserver::TestServerClient::GetInstance().ChangeWindowMode(windowId,
-                  static_cast<uint32_t>(OHOS::Rosen::WindowMode::WINDOW_MODE_SPLIT_PRIMARY));
-              break;
-          case WindowMode::FLOATING:
-              OHOS::testserver::TestServerClient::GetInstance().ChangeWindowMode(windowId,
-                  static_cast<uint32_t>(OHOS::Rosen::WindowMode::WINDOW_MODE_FLOATING));
-              break;
-          case WindowMode::MINIMIZED:
-            OHOS::testserver::TestServerClient::GetInstance().MinimizeWindow(windowId);
-            break;
-          case WindowMode::CLOSED:
-              OHOS::testserver::TestServerClient::GetInstance().TerminateWindow(windowId);
-              break;
-          default:
-              info.mode_ = WindowMode::UNKNOWN;
-              break;
-    }
+        switch (mode) {
+            case WindowMode::FULLSCREEN:
+                OHOS::testserver::TestServerClient::GetInstance().ChangeWindowMode(windowId,
+                    static_cast<uint32_t>(OHOS::Rosen::WindowMode::WINDOW_MODE_FULLSCREEN));
+                break;
+            case WindowMode::SPLIT_PRIMARY:
+                OHOS::testserver::TestServerClient::GetInstance().ChangeWindowMode(windowId,
+                    static_cast<uint32_t>(OHOS::Rosen::WindowMode::WINDOW_MODE_SPLIT_PRIMARY));
+                break;
+            case WindowMode::FLOATING:
+                OHOS::testserver::TestServerClient::GetInstance().ChangeWindowMode(windowId,
+                    static_cast<uint32_t>(OHOS::Rosen::WindowMode::WINDOW_MODE_FLOATING));
+                break;
+            case WindowMode::MINIMIZED:
+                OHOS::testserver::TestServerClient::GetInstance().MinimizeWindow(windowId);
+                break;
+            case WindowMode::CLOSED:
+                OHOS::testserver::TestServerClient::GetInstance().TerminateWindow(windowId);
+                break;
+            default:
+                info.mode_ = WindowMode::UNKNOWN;
+                break;
+        }
         static constexpr auto sliceMs = 500;
         this_thread::sleep_for(chrono::milliseconds(sliceMs));
     }
