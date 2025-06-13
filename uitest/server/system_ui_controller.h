@@ -56,7 +56,7 @@ namespace OHOS::uitest {
 
         bool IsWearable() const override;
 
-        bool IsPc() const override;
+        bool IsAdjustWindowModeEnable() const override;
 
         // setup method, connect to system ability AAMS
         bool ConnectToSysAbility(ApiCallErr &error);
