@@ -23,6 +23,8 @@
 #include "test_server_error_code.h"
 #include "pasteboard_client.h"
 #include "session_manager_lite.h"
+#include "wm_common.h"
+#include "ws_common.h"
 #include "socperf_client.h"
 #include <nlohmann/json.hpp>
 #include <sstream>
@@ -376,7 +378,7 @@ namespace OHOS::testserver {
         HiLog::Info(LABEL_SERVICE, "Begin to updateWindowLayoutById %{public}d, mode: %{public}d.", windowId, mode);
         auto ret = sceneSessionManager->UpdateWindowLayoutById(windowId, mode);
         HiLog::Info(LABEL_SERVICE, "UpdateWindowLayoutById over, ret: %{public}d", ret);
-        return ret == 0 ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
+        return ret == OHOS::Rosen::WMError_WM_OK ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
     }
 
     ErrCode TestServerService::TerminateWindow(int windowId)
@@ -386,7 +388,7 @@ namespace OHOS::testserver {
         HiLog::Info(LABEL_SERVICE, "Begin to terminateWindow %{public}d", windowId);
         auto ret = sceneSessionManager->TerminateSessionByPersistenId(windowId);
         HiLog::Info(LABEL_SERVICE, "TerminateWindow over, ret: %{public}d", ret);
-        return ret == 0 ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
+        return ret == OHOS::Rosen::WMError_WM_OK ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
     }
 
     ErrCode TestServerService::MinimizeWindow(int windowId)
@@ -396,6 +398,6 @@ namespace OHOS::testserver {
         HiLog::Info(LABEL_SERVICE, "Begin to minimizeWindow %{public}d", windowId);
         auto ret = sceneSessionManager->PendingSessionToBackgroundByPersistenId(windowId);
         HiLog::Info(LABEL_SERVICE, "MinimizeWindow over, ret: %{public}d", ret);
-        return ret == 0 ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
+        return ret == OHOS::Rosen::WSError_WM_OK ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
     }
 } // namespace OHOS::testserver
