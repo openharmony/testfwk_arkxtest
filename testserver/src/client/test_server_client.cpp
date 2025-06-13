@@ -156,35 +156,32 @@ namespace OHOS::testserver {
 
     int32_t TestServerClient::ChangeWindowMode(int windowId, uint32_t mode)
     {
-      HiLog::Info(LABEL, "%{public}s called.", __func__);
-      if (iTestServerInterface_ == nullptr)
-      {
-        HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
-        return TEST_SERVER_GET_INTERFACE_FAILED;
-      }
-      return iTestServerInterface_->ChangeWindowMode(windowId, mode);
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        return iTestServerInterface_->ChangeWindowMode(windowId, mode);
     }
 
     int32_t TestServerClient::TerminateWindow(int windowId)
     {
-      HiLog::Info(LABEL, "%{public}s called.", __func__);
-      if (iTestServerInterface_ == nullptr)
-      {
-        HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
-        return TEST_SERVER_GET_INTERFACE_FAILED;
-      }
-      return iTestServerInterface_->TerminateWindow(windowId);
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        return iTestServerInterface_->TerminateWindow(windowId);
     }
 
     int32_t TestServerClient::MinimizeWindow(int windowId)
     {
-      HiLog::Info(LABEL, "%{public}s called.", __func__);
-      if (iTestServerInterface_ == nullptr)
-      {
-        HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
-        return TEST_SERVER_GET_INTERFACE_FAILED;
-      }
-      return iTestServerInterface_->MinimizeWindow(windowId);
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        return iTestServerInterface_->MinimizeWindow(windowId);
     }
 
     bool TestServerClient::PublishCommonEvent(const EventFwk::CommonEventData &event)
