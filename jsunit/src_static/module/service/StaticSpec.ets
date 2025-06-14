@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { StaticSpecIF } from '../../interface';
 import { Core } from '../../core';
 import { SpecService } from './SpecService';
@@ -83,7 +98,7 @@ class StaticSpec {
         if(specParams.length === 0) {
           await (this.asyncFn as ((params: AnyType) => Promise<void>))(suiteParams);
         } else {
-          const tempParams: Record<string, AnyType> = JSON.parse(JSON.stringify(suiteParams))
+          const tempParams: Record<string, AnyType> = suiteParams
           for(const paraItem of specParams) {
             if(!paraItem) {
               await (this.asyncFn as ((params: AnyType) => Promise<void>))(tempParams);
