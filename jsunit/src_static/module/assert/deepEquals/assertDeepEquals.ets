@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -173,7 +173,7 @@ function eqOfObj(a: object, b: object): boolean {
     if(!bKeys.includes(aKey)) {
       return false
     }
-    if(!eq(aValue, Reflect.get(b, aKey))) {
+    if(!eq(aValue as object, Reflect.get(b, aKey) as object)) {
       return false
     }
   }
