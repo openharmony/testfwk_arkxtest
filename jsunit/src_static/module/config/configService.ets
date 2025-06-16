@@ -201,7 +201,7 @@ class ConfigService {
         this.itName = params.itName as string;
       }
       if (params.filter !== undefined) {
-        this.filter = params.filter as int;
+        this.filter = params.filter.toInt();
       }
       if (params.testType) {
         this.testType = params.testType as string;
