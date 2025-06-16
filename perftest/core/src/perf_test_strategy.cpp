@@ -83,6 +83,10 @@ namespace OHOS::perftest {
         }
         getline(inFile, bundleName_);
         inFile.close();
+        size_t endIndex = bundleName_.find_last_not_of('\0');
+        if (endIndex != std::string::npos) {
+            bundleName_.erase(endIndex + 1);
+        }
         LOG_I("GetBundleNameByPid, pid: %{public}d, bundleName: %{public}s", callingPid, bundleName_.c_str());
     }
 
