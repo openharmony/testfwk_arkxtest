@@ -75,6 +75,7 @@ namespace OHOS::perftest {
                 return completeTime_;
             }
             completeTime_ = static_cast<double>(completeRes);
+            isCollecting_ = false;
         }
         switch (perfMetric_) {
             case APP_START_RESPONSE_TIME:

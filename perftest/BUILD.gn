@@ -13,6 +13,7 @@
 
 import("//build/config/components/ets_frontend/es2abc_config.gni")
 import("//build/ohos.gni")
+import("//test/testfwk/arkxtest/arkxtest_config.gni")
 
 config("perftest_common_configs") {
   cflags = [
@@ -31,7 +32,6 @@ ohos_static_library("perftest_core") {
   use_exceptions = true
   configs = [ ":perftest_common_configs" ]
   sources = [
-    "./core/src/start_daemon.cpp",
     "./core/src/frontend_api_handler.cpp",
     "./core/src/perf_test.cpp",
     "./core/src/perf_test_strategy.cpp",
@@ -95,17 +95,27 @@ ohos_static_library("perftest_ipc") {
 
 ohos_executable("perftest_server") {
   configs = [ ":perftest_common_configs" ]
+  sources = [
+    "./core/src/start_daemon.cpp",
+  ]
+  include_dirs = [ 
+    "./connection/include",
+    "./core/include",
+  ]
   deps = [
     ":perftest_ipc",
     ":perftest_core",
   ]
   external_deps = [
-    "hilog:libhilog",
+    "ability_base:want",
   ]
+  external_deps += common_external_deps
   subsystem_name = "testfwk"
   part_name = "arkxtest"
   output_name = "perftest"
-  install_enable = true
+  if (arkxtest_product_feature == "watch") {
+    install_enable = false
+  }
 }
 
 es2abc_gen_abc("gen_perftest_exporter_abc") {
@@ -159,6 +169,9 @@ ohos_shared_library("perftest_client") {
     "__OHOS__=1",
     "LOG_TAG=\"PerfTest_Client\"",
   ]
+  if (arkxtest_product_feature == "watch") {
+    install_enable = false
+  }
 }
 
 group("perftestkit") {
@@ -166,4 +179,41 @@ group("perftestkit") {
     ":perftest_client",
     ":perftest_server",
   ]
+}
+
+ohos_unittest("perftest_unittest") {
+  sources = [
+    "test/unittest/data_collection_test.cpp",
+    "test/unittest/ipc_transactor_test.cpp",
+    "test/unittest/frontend_api_handler_test.cpp",
+    "test/unittest/perf_test_test.cpp",
+  ]
+  deps = [
+    ":perftest_core",
+    ":perftest_ipc",
+    ":perftest_client",
+  ]
+  include_dirs = [
+    "./core/include",
+    "./connection/include",
+    "./napi/include",
+    "./collection/include",
+  ]
+  external_deps = [
+    "ability_base:want",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "hisysevent:libhisyseventmanager",
+    "json:nlohmann_json_static",
+  ]
+  ldflags = [ "--coverage" ]
+  cflags = [ "--coverage" ]
+  cflags_cc = [ "--coverage" ]
+  use_exceptions = true
+  module_out_path = "arkxtest/perftest"
+  testonly = true
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
 }

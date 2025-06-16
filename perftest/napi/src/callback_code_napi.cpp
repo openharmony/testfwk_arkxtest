@@ -132,7 +132,7 @@ namespace OHOS::perftest {
         ctx->cb = cb;
     }
 
-    void CallbackCodeNapi::BindPromiseCallbacks(napi_env env, napi_value promise, shared_ptr<ThreadLock> threadLock)
+    void CallbackCodeNapi::BindPromiseCallbacks(napi_env env, napi_value promise, ThreadLock* threadLock)
     {
         bool is_promise = false;
         NAPI_CALL_RETURN_VOID(env, napi_is_promise(env, promise, &is_promise));
@@ -152,13 +152,38 @@ namespace OHOS::perftest {
             char buf[NAPI_MAX_BUF_LEN] = {0};
             napi_get_value_string_utf8(env, error_str, buf, NAPI_MAX_BUF_LEN, &buf_size);
             ThreadLock* threadLock = reinterpret_cast<ThreadLock*>(param_in);
+            if (threadLock == nullptr) {
+                LOG_E("ExecuteCallback get threadLock failed");
+                return nullptr;
+            }
             threadLock->LockRelease("Exception raised during call js_cb_function: " + string(buf, buf_size));
             return nullptr;
         };
         napi_value catch_callback;
         NAPI_CALL_RETURN_VOID(env, napi_create_function(env, "CatchCallack", NAPI_AUTO_LENGTH, catch_handle,
-                                                        threadLock.get(), &catch_callback));
+                                                        threadLock, &catch_callback));
         NAPI_CALL_RETURN_VOID(env, napi_call_function(env, promise, catch_property, 1, &catch_callback, nullptr));
+    }
+
+    void CallbackCodeNapi::WaitforCallbackFinish(napi_env env, shared_ptr<CodeCallbackContext> context,
+                                                 ThreadLock* threadLock, ApiReplyInfo &out)
+    {
+        unique_lock<mutex> lock(threadLock->mutex);
+        const auto timeout = chrono::milliseconds(context->timeout);
+        if (!threadLock->condition.wait_for(lock, timeout, [&threadLock] { return threadLock->ready; })) {
+            LOG_E("Jscallback call timeout, has been waiting for %{public}d ms", context->timeout);
+            out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, "Code execution has been timeout.");
+            return;
+        }
+        LOG_I("Jscallback call has finished, res = %{public}d", threadLock->res);
+        if (!threadLock->errMsg.empty()) {
+            out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, threadLock->errMsg);
+            LOG_E("%{public}s", out.exception_.message_.c_str());
+        } else if (!threadLock->res) {
+            out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, "Callback execution return false");
+        }
+        delete threadLock;
+        threadLock = nullptr;
     }
 
     /**Handle api callback from server end.*/
@@ -170,12 +195,12 @@ namespace OHOS::perftest {
             LOG_W("InitCallbackContext failed, cannot perform callback");
             return;
         }
-        shared_ptr<ThreadLock> threadLock = make_shared<ThreadLock>();
+        ThreadLock* threadLock = new (nothrow) ThreadLock();
         auto task = [context, threadLock, this]() {
             napi_value argv[1] = { nullptr };
             napi_value jsCallback = nullptr;
             napi_get_reference_value(context->env, context->callbackRef, &jsCallback);
-            napi_create_function(context->env, "Complete", NAPI_AUTO_LENGTH, context->cb, threadLock.get(), &argv[0]);
+            napi_create_function(context->env, "Complete", NAPI_AUTO_LENGTH, context->cb, threadLock, &argv[0]);
             napi_value promise;
             napi_call_function(context->env, nullptr, jsCallback, 1, argv, &promise);
             // accessing callback from js-caller, do check and warn
@@ -189,6 +214,9 @@ namespace OHOS::perftest {
                 size_t buf_size = 0;
                 char buf[NAPI_MAX_BUF_LEN] = {0};
                 napi_get_value_string_utf8(context->env, error_str, buf, NAPI_MAX_BUF_LEN, &buf_size);
+                if (threadLock == nullptr) {
+                    return;
+                }
                 threadLock->LockRelease("Exception raised during call js_cb_function: " + string(buf, buf_size));
                 return;
             }
@@ -197,18 +225,7 @@ namespace OHOS::perftest {
         if (napi_send_event(env, task, napi_eprio_immediate) != napi_status::napi_ok) {
             LOG_E("Exception raised during call js_cb_function!");
         }
-        unique_lock<mutex> lock(threadLock->mutex);
-        const auto timeout = chrono::milliseconds(context->timeout);
-        if (!threadLock->condition.wait_for(lock, timeout, [&threadLock] { return threadLock->ready; })) {
-            LOG_E("Jscallback call timeout, has been waiting for %{public}d ms", context->timeout);
-            out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, "Code execution has been timeout.");
-            return;
-        }
-        LOG_I("Jscallback call has finished, res = %{public}d", threadLock->res);
-        if (!threadLock->errMsg.empty()) {
-            out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, threadLock->errMsg);
-            LOG_E("%{public}s", out.exception_.message_.c_str());
-        }
+        WaitforCallbackFinish(env, context, threadLock, out);
     }
 
     void CallbackCodeNapi::DestroyCallbacks(napi_env env, const ApiCallInfo &in, ApiReplyInfo &out)
