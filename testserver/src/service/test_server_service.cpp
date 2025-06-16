@@ -350,8 +350,13 @@ namespace OHOS::testserver {
         CollectResult<ProcessCpuStatInfo> processCpuStatInfo =
                                             cpuCollector_->CollectProcessCpuStatInfo(pid, isNeedUpdate);
         if (processCpuStatInfo.retCode != 0) {
-            HiLog::Error(LABEL_SERVICE, "%{public}s. Collect process cpu failed.", __func__);
-            return TEST_SERVER_COLLECT_PROCESS_INFO_FAILED;
+            // Retry to avoid CPU collection failed caused by non-existent process during cpucollactor_ initialization
+            processCpuStatInfo = cpuCollector_->CollectProcessCpuStatInfo(pid, isNeedUpdate);
+            if (processCpuStatInfo.retCode != 0) {
+                HiLog::Error(LABEL_SERVICE, "%{public}s. Collect process cpu failed.", __func__);
+                return TEST_SERVER_COLLECT_PROCESS_INFO_FAILED;
+            }
+            HiLog::Info(LABEL_SERVICE, "%{public}s. Retry to collect success.", __func__);
         }
         processCpuInfo.startTime = processCpuStatInfo.data.startTime;
         processCpuInfo.endTime = processCpuStatInfo.data.endTime;

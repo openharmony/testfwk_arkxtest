@@ -1,11 +1,13 @@
 # 自动化测试框架使用介绍
 
 ## 简介
- OpenHarmony自动化测试框架代码部件仓arkxtest，包含单元测试框架(JsUnit)和Ui测试框架(UiTest)。
+ OpenHarmony自动化测试框架代码部件仓arkxtest，包含单元测试框架(JsUnit)、Ui测试框架(UiTest)和白盒性能测试框架（PerfTest）。
 
  单元测试框架(JsUnit)提供单元测试用例执行能力，提供用例编写基础接口，生成对应报告，用于测试系统或应用接口。
 
  Ui测试框架(UiTest)通过简洁易用的API提供查找和操作界面控件能力，支持用户开发基于界面操作的自动化测试脚本。
+
+ PerfTest提供基于代码段的白盒性能测试能力，支持采集指定代码段执行期间或指定场景发生时的性能数据。
 
 ## 目录
 
@@ -13,6 +15,7 @@
 arkxtest 
   |-----jsunit  单元测试框架
   |-----UiTest  Ui测试框架
+  |-----perftest  白盒性能测试框架
 ```
 ## 约束限制
 本模块首批接口从API version 8开始支持。后续版本的新增接口，采用上角标单独标记接口的起始版本。
@@ -1993,3 +1996,199 @@ hdc shell chmod +x /system/bin/uitest
 | 5.1.1.2 | uitest dumpLayout 能力增强<br /> -w：仅获取指定window id的应用窗口。<br/> -b ：仅获取指定bundleName的应用窗口。<br/> -m ：是否进行窗口合并。不使用该选项时默认进行窗口合并。 |
 | 6.0.1.0 | 1、inputText支持追加输入和指定通过剪贴板粘贴输入。  <br/>2、开放鼠标原子事件。  <br/>3、新增模拟手表表冠旋转。  <br/>4、支持触控屏/鼠标注入长按操作和拖拽操作时指定长按时间。 |
 
+
+## 白盒性能测试框架功能特性
+
+白盒性能测试框架PerfTest提供白盒性能测试能力，供开发者在测试场景使用，支持对指定代码段或指定场景的性能数据测试，支持自动化执行测试代码段，并采集耗时、CPU、内存、时延、帧率等性能数据。
+
+**使用者在测试脚本通过如下方式引入使用：**
+
+```typescript
+import { PerfMetric, PerfTest, PerfTestStrategy, PerfMeasureResult } from '@kit.TestKit';
+```
+
+### 接口说明
+
+`PerfTest`类作为白盒性能测试框架的入口，提供测试任务创建、测试代码段执行和数据采集、测量结果获取等能力。支持通过`PerfTestStrategy`设置测试执行策略，执行测试，并通过`PerfMeasureResult`获取测量结果。
+
+| No.  | API                                                       | 功能描述               |
+| ---- |-----------------------------------------------------------| ---------------------- |
+| 1    | static create(strategy: PerfTestStrategy): PerfTest       | 静态方法，构造一个PerfTest对象，并返回该对象。 |
+| 2    | run(): Promise\<void>                                     | 运行性能测试，迭代执行测试代码段并采集性能数据，使用Promise回调。         |
+| 3    | getMeasureResult(metric: PerfMetric): PerfMeasureResult   | 获取指定性能指标的测量数据。           |
+| 4    | destroy(): void                                           | 销毁PerfTest对象。      |
+
+`PerfTestStrategy`支持设置性能测试的执行策略，如测试性能指标、被测应用包名、迭代次数等。
+
+| 名称 | 类型   | 只读 |  可选 | 说明        |
+| ---- | ------ | ---- | ---- |-----------|
+| metrics     | Array\<[PerfMetric](#perfmetric)>           | 否 | 否 | 被测性能指标列表。  |
+| actionCode  | Callback\<Callback\<boolean>> | 否 | 否 | 测试代码段。  |
+| resetCode   | Callback\<Callback\<boolean>> | 否 | 是 | 测试结束环境重置代码段。默认为空，框架运行时不执行此代码段。  |
+| bundleName  | string                      | 否 | 是 | 被测应用包名。默认为""，框架运行时测试当前测试应用的性能数据。  |
+| iterations  | number                      | 否 | 是 | 测试迭代执行次数，默认值为5。  |
+| timeout     | number                      | 否 | 是 | 单次代码段（actionCode/resetCode）执行的超时时间，默认值为10000ms。  |
+
+`PerfMeasureResult`用于获取每轮测试的数据以及最大值、最小值、平均值等统计数据。
+
+| 名称   | 类型   | 只读 | 可选 | 说明                      |
+| ------ | ------ | ---- | ---- | ------------------------- |
+| metric        | [PerfMetric](#perfmetric)    | 是 | 否 | 被测性能指标。  |
+| roundValues   | Array\<number> | 是 | 否 | 被测性能指标的各轮测量数据值。当数据采集失败时返回-1。  |
+| maximum       | number        | 是 | 否 | 各轮测量数据最大值（剔除为-1的数据后计算）。  |
+| minimum       | number        | 是 | 否 | 各轮测量数据最小值（剔除为-1的数据后计算）。  |
+| average       | number        | 是 | 否 | 各轮测量数据平均值（剔除为-1的数据后计算）。  |
+
+### 使用示例
+
+白盒性能测试框架PerfTest支持基于代码段和针对指定场景的性能测试，使用示例如下。
+
+**示例1：基于代码段的性能测试，测试函数执行期间的应用性能**
+
+- 在main > ets > utils文件夹下新增PerfUtils.ets文件，在文件中编写自定义的函数。
+
+  ```ts
+  export class PerfUtils {
+    public static CalculateTest() {
+      let num: number = 0
+      for (let index = 0; index < 10000; index++) {
+        num++;
+      }
+    }
+  }
+  ```
+
+- 在ohosTest > ets > test文件夹下.test.ets文件中编写具体测试代码。
+
+  ```ts
+  import { describe, it, expect } from '@ohos/hypium';
+  import { PerfMetric, PerfTest, PerfTestStrategy, PerfMeasureResult } from '@kit.TestKit';
+  import { PerfUtils } from '../../../main/ets/utils/PerfUtils';
+
+  export default function PerfTestTest() {
+    describe('PerfTestTest', () => {
+      it('testExample0', 0, async (done: Function) => {
+        let metrics: Array<PerfMetric> = [PerfMetric.DURATION, PerfMetric.CPU_USAGE] // 指定被测指标
+        let actionCode = async (finish: Callback<boolean>) => { // 测试代码段中使用uitest进行列表滑动
+          await await PerfUtils.CalculateTest()
+          finish(true);
+        };
+        let perfTestStrategy: PerfTestStrategy = {  // 定义测试策略
+          metrics: metrics,
+          actionCode: actionCode,
+        };
+        try {
+          let perfTest: PerfTest = PerfTest.create(perfTestStrategy); // 创建测试任务对象PerfTest
+          await perfTest.run(); // 执行测试，异步函数需使用await同步等待完成
+          let res1: PerfMeasureResult = perfTest.getMeasureResult(PerfMetric.DURATION); // 获取耗时指标的测试结果
+          let res2: PerfMeasureResult = perfTest.getMeasureResult(PerfMetric.CPU_USAGE); // 获取CPU使用率指标的测试结果
+          perfTest.destroy(); // 销毁PerfTest对象
+          expect(res1.average).assertLessOrEqual(1000); // 断言性能测试结果
+          expect(res2.average).assertLessOrEqual(30); // 断言性能测试结果
+        } catch (error) {
+          console.error(`Failed to execute perftest. Cause:${JSON.stringify(error)}`);
+          expect(false).assertTrue()
+        }
+        done();
+      })
+    })
+  }
+  ```
+
+**示例1：针对指定场景的性能测试，测试当前应用内列表滑动帧率**
+
+- 编写Index.ets页面代码，作为被测示例demo。
+
+  ```ts
+  @Entry
+  @Component
+  struct ListPage {
+    scroller: Scroller = new Scroller()
+    private arr: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    build() {
+      Row() {
+        Column() {
+          Scroll(this.scroller) {
+            Column() {
+              ForEach(this.arr, (item: number) => {
+                Text(item.toString())
+                  .width('90%')
+                  .height('40%')
+                  .fontSize(80)
+                  .textAlign(TextAlign.Center)
+                  .margin({ top: 10 })
+              }, (item: string) => item)
+            }
+          }
+          .width('100%')
+          .height('100%')
+          .scrollable(ScrollDirection.Vertical)
+          .scrollBar(BarState.On)
+          .scrollBarColor(Color.Gray)
+        }
+        .width('100%')
+      }
+      .height('100%')
+    }
+  }
+  ```
+
+- 在ohosTest > ets > test文件夹下.test.ets文件中编写具体测试代码。
+
+  ```ts
+  import { describe, it, expect } from '@ohos/hypium';
+  import { PerfMetric, PerfTest, PerfTestStrategy, PerfMeasureResult } from '@kit.TestKit';
+  import { abilityDelegatorRegistry, Driver, ON } from '@kit.TestKit';
+  import { Want } from '@kit.AbilityKit';
+
+  const delegator: abilityDelegatorRegistry.AbilityDelegator = abilityDelegatorRegistry.getAbilityDelegator();
+  export default function PerfTestTest() {
+    describe('PerfTestTest', () => {
+      it('testExample',0, async (done: Function) => {
+        let driver = Driver.create();
+        await driver.delayMs(1000);
+        const bundleName = abilityDelegatorRegistry.getArguments().bundleName;
+        const want: Want = {
+          bundleName: bundleName,
+          abilityName: 'EntryAbility'
+        };
+        await delegator.startAbility(want); // 打开测试页面
+        await driver.delayMs(1000);
+        let scroll = await driver.findComponent(ON.type('Scroll'));
+        await driver.delayMs(1000);
+        let center = await scroll.getBoundsCenter();  // 获取Scroll可滚动组件坐标
+        await driver.delayMs(1000);
+        let metrics: Array<PerfMetric> = [PerfMetric.LIST_SWIPE_FPS]  // 指定被测指标为列表滑动帧率
+        let actionCode = async (finish: Callback<boolean>) => { // 测试代码段中使用uitest进行列表滑动
+          await driver.fling({x: center.x, y: Math.floor(center.y * 3 / 2)}, {x: center.x, y: Math.floor(center.y / 2)}, 50, 20000);
+          await driver.delayMs(3000);
+          finish(true);
+        };
+        let resetCode = async (finish: Callback<boolean>) => {  // 复位环境，将列表划至顶部
+          await scroll.scrollToTop(40000);
+          await driver.delayMs(1000);
+          finish(true);
+        };
+        let perfTestStrategy: PerfTestStrategy = {  // 定义测试策略
+          metrics: metrics,
+          actionCode: actionCode,
+          resetCode: resetCode,
+          iterations: 5,  // 指定测试迭代次数
+          timeout: 50000, // 指定actionCode和resetCode的超时时间
+        };
+        try {
+          let perfTest: PerfTest = PerfTest.create(perfTestStrategy); // 创建测试任务对象PerfTest
+          await perfTest.run(); // 执行测试，异步函数需使用await同步等待完成
+          let res: PerfMeasureResult = perfTest.getMeasureResult(PerfMetric.LIST_SWIPE_FPS); // 获取列表滑动帧率指标的测试结果
+          perfTest.destroy(); // 销毁PerfTest对象
+          expect(res.average).assertLargerOrEqual(60);  // 断言性能测试结果
+        } catch (error) {
+          console.error(`Failed to execute perftest. Cause:${JSON.stringify(error)}`);
+        }
+        done();
+      })
+    })
+  }
+  ```
+
+PerfTest完整的API列表请参考[API文档](https://gitee.com/openharmony/interface_sdk-js/blob/master/api/@ohos.test.PerfTest.d.ts)及[示例文档说明](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis-test-kit/js-apis-perftest.md)。
