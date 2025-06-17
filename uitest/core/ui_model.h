@@ -73,7 +73,7 @@ namespace OHOS::uitest {
     };
 
     /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
-    constexpr std::string_view ATTR_NAMES[] = {
+    constexpr std::string_view ATTR_NAMES[36] = {
         "accessibilityId", // ACCESSIBILITY_ID
         "id",            // ID
         "text",          // TEXT
