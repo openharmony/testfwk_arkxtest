@@ -1540,7 +1540,7 @@ static void RegisterExtensionHandler()
         server.AddHandler("Component.getBounds", GenericComponentAttrGetter<UiAttr::BOUNDS>);
         server.AddHandler("Component.getBoundsCenter", GenericComponentAttrGetter<UiAttr::BOUNDSCENTER>);
         server.AddHandler("Component.getDisplayId", GenericComponentAttrGetter<UiAttr::DISPLAY_ID>);
-        server.AddHandler("Component.GetOriginalText", GenericComponentAttrGetter<UiAttr::ORIGINALTEXT>);
+        server.AddHandler("Component.getOriginalText", GenericComponentAttrGetter<UiAttr::ORIGINALTEXT>);
     }
 
     static void RegisterUiComponentClickOperation()
