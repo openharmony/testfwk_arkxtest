@@ -36,7 +36,6 @@ namespace OHOS::uitest {
         ACCESSIBILITY_ID,
         ID,
         TEXT,
-        ORIGINALTEXT,
         KEY,
         DESCRIPTION,
         TYPE,
@@ -59,6 +58,7 @@ namespace OHOS::uitest {
         BLUR,
         HITTESTBEHAVIOR,
         CLIP,
+        ORIGINALTEXT,
         // inner used attributes
         HIERARCHY,
         HASHCODE,
@@ -77,7 +77,6 @@ namespace OHOS::uitest {
         "accessibilityId", // ACCESSIBILITY_ID
         "id",            // ID
         "text",          // TEXT
-        "originalText,"  // ORIGINALTEXT
         "key",           // KEY
         "description",   // DESCRIPTION
         "type",          // TYPE
@@ -100,6 +99,7 @@ namespace OHOS::uitest {
         "blur",          //BLUR
         "hitTestBehavior",   // HITTESTBEHAVIOR
         "clip", // CLIP
+        "originalText,"  // ORIGINALTEXT
         "hierarchy",     // HIERARCHY
         "hashcode",      // HASHCODE
         "boundsCenter",  // BOUNDSCENTER
