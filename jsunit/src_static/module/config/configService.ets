@@ -201,7 +201,7 @@ class ConfigService {
         this.itName = params.itName as string;
       }
       if (params.filter !== undefined) {
-        this.filter = params.filter.toInt();
+        this.filter = params.filter as int;
       }
       if (params.testType) {
         this.testType = params.testType as string;
@@ -297,7 +297,7 @@ class ConfigService {
           const p = this.filterParam as FilterParamIF;
           if (p.level) {
             const level = p.level as int[];
-            const res = level[Number(item).toInt()];
+            const res = level[Number(item) as int];
             if (res) {
               return res;
             } else {
