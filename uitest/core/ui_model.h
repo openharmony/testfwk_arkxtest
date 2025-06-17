@@ -73,7 +73,7 @@ namespace OHOS::uitest {
     };
 
     /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
-    constexpr std::string_view ATTR_NAMES[UiAttr::MAX] = {
+    constexpr std::string_view ATTR_NAMES[] = {
         "accessibilityId", // ACCESSIBILITY_ID
         "id",            // ID
         "text",          // TEXT
@@ -99,7 +99,7 @@ namespace OHOS::uitest {
         "blur",          //BLUR
         "hitTestBehavior",   // HITTESTBEHAVIOR
         "clip", // CLIP
-        "originalText,"  // ORIGINALTEXT
+        "originalText",  // ORIGINALTEXT
         "hierarchy",     // HIERARCHY
         "hashcode",      // HASHCODE
         "boundsCenter",  // BOUNDSCENTER
