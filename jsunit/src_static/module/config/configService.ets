@@ -297,7 +297,7 @@ class ConfigService {
           const p = this.filterParam as FilterParamIF;
           if (p.level) {
             const level = p.level as int[];
-            const res = level[Number(item) as int];
+            const res = level[Number(item).toInt()];
             if (res) {
               return res;
             } else {
