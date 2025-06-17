@@ -1,10 +1,24 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import { Core } from './core';
 import { ConfigService } from './module/config/configService';
 import { AnyType } from './module/types/common';
 import { TAG } from './Constant';
 
 export function getAsyncFuncWithArgsZero(func: () => Promise<void>, timeout: int, isStressTest: boolean) {
-  return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (value: object) => void) => {
+  return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (value: Error) => void) => {
     let timer = 0.0;
     if (!isStressTest) {
       timer = setTimeout(() => {
@@ -24,7 +38,7 @@ export function getAsyncFuncWithArgsZero(func: () => Promise<void>, timeout: int
 }
 
 export function getFuncWithArgsZero(func: () => void, timeout: int, isStressTest: boolean) {
-  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (value: object) => void) => {
+  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (value: Error) => void) => {
     let timer = 0.0;
     if (!isStressTest) {
       timer = setTimeout(() => {
@@ -181,7 +195,7 @@ export function processFunc(
       isStressTest = false;
     }
     return () => {
-      return getFuncWithArgsZero(func, timeout as int, isStressTest);
+      return getFuncWithArgsZero(func, timeout.toInt(), isStressTest);
     };
   }
   return () => {
@@ -205,7 +219,7 @@ export function processAsyncFunc(
       isStressTest = false;
     }
     return () => {
-      return getAsyncFuncWithArgsZero(func, timeout as int, isStressTest);
+      return getAsyncFuncWithArgsZero(func, timeout.toInt(), isStressTest);
     };
   }
   return () => {
@@ -221,7 +235,7 @@ export function processAsyncFuncWithArgOne(coreContext: Core, func: (done: () =>
     const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return () => {
-      return getAsyncFuncWithArgsOne(func, timeout as int, isStressTest);
+      return getAsyncFuncWithArgsOne(func, timeout.toInt(), isStressTest);
     };
   }
   return () => {
@@ -237,7 +251,7 @@ export function processFuncWithArgOne(coreContext: Core, func: (done: () => void
     const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return () => {
-      return getFuncWithArgsOne(func, timeout as int, isStressTest);
+      return getFuncWithArgsOne(func, timeout.toInt(), isStressTest);
     };
   }
   return () => {
@@ -256,7 +270,7 @@ export function processAsyncFuncWithArgTwo(
     const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return (paramItem: AnyType) => {
-      return getAsyncFuncWithArgsTwo(func, timeout as int, paramItem, isStressTest);
+      return getAsyncFuncWithArgsTwo(func, timeout.toInt(), paramItem, isStressTest);
     };
   }
   return (paramItem: AnyType) => {
@@ -272,7 +286,7 @@ export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => vo
     const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return (paramItem: AnyType) => {
-      return getFuncWithArgsTwo(func, timeout as int, paramItem, isStressTest);
+      return getFuncWithArgsTwo(func, timeout.toInt(), paramItem, isStressTest);
     };
   }
   return (paramItem: AnyType) => {
@@ -282,8 +296,9 @@ export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => vo
 
 export function getFunctionArgumentsCount(funcStr: string): number {
   const regex = new RegExp('^[0123456789]$', 'g');
-  let count = '';
-  for (let str of funcStr) {
+  let count: string = '';
+  for (let s of funcStr) {
+    const str = new string(s);
     if (regex.test(str)) {
       count = str;
     }
