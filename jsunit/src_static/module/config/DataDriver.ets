@@ -160,8 +160,8 @@ class DataDriver {
     for (const specItem of specs) {
       if (specItem.it && specItem.it === specDesc) {
         let tempStress = specItem.stress;
-        return tempStress && Number.isInteger(tempStress.toDouble()) && (tempStress.toInt()) >= 1
-          ? (tempStress.toInt())
+        return tempStress && Number.isInteger(tempStress as number) && (tempStress as int) >= 1
+          ? (tempStress as int)
           : stress;
       }
     }
@@ -224,8 +224,8 @@ class DataDriver {
         (describeValue as Array<string>).includes(suiteDesc)
       ) {
         let tempStress = suite.stress;
-        return tempStress && Number.isInteger(tempStress.toDouble()) && (tempStress.toInt()) >= 1
-          ? (tempStress.toInt())
+        return tempStress && Number.isInteger(tempStress as number) && (tempStress as int) >= 1
+          ? (tempStress as int)
           : stress;
       }
     }
