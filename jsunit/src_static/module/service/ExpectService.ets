@@ -175,7 +175,7 @@ export class AssertMatcher {
     const numFn = (matcherName: string, assertFn: (actualValue: number, expected: number[]) => AssertResult) => {
       return (arg1: NumberType, arg2: NumberType) => {
         try {
-          const result = assertFn(this.actualValue.toDouble(), [arg1.toDouble(), arg2.toDouble()]);
+          const result = assertFn(this.actualValue as number, [arg1 as number, arg2 as number]);
           if (this.isNot) {
             result.pass = !result.pass;
             result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg1, result.message);
@@ -213,8 +213,7 @@ export class AssertMatcher {
     const numFn = (matcherName: string, assertFn: (actualValue: number, expected: number[]) => AssertResult) => {
       return (arg1: NumberType): void => {
         try {
-          const c = this.actualValue;
-          const result = assertFn(c.toDouble(), [arg1.toDouble()]);
+          const result = assertFn(this.actualValue as number, [arg1 as number]);
           if (this.isNot) {
             result.pass = !result.pass;
             result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg1, result.message);
@@ -305,7 +304,7 @@ export class AssertMatcher {
     const nNumFn = (matcherName: string, assertFn: (actualValue: number) => AssertResult) => {
       return () => {
         try {
-          const result = assertFn(this.actualValue.toDouble());
+          const result = assertFn(this.actualValue as number);
           if (this.isNot) {
             result.pass = !result.pass;
             result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, 'undefined', result.message);

@@ -61,7 +61,7 @@ class ReportService {
     const spec = this.specService.currentRunningSpec;
     if (spec) {
       console.info(`${TAG}start running case '${spec.description}'`);
-      this.index = (this.index + 1).toByte();
+      this.index = (this.index + 1) as byte;
       spec.startTime = SysTestKit.getRealTime();
     }
   }
