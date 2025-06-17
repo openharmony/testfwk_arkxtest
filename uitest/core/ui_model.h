@@ -36,6 +36,7 @@ namespace OHOS::uitest {
         ACCESSIBILITY_ID,
         ID,
         TEXT,
+        ORIGINALTEXT,
         KEY,
         DESCRIPTION,
         TYPE,
@@ -76,6 +77,7 @@ namespace OHOS::uitest {
         "accessibilityId", // ACCESSIBILITY_ID
         "id",            // ID
         "text",          // TEXT
+        "originalText,"  // ORIGINALTEXT
         "key",           // KEY
         "description",   // DESCRIPTION
         "type",          // TYPE
