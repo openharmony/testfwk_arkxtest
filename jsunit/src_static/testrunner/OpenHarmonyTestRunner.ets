@@ -16,7 +16,7 @@ import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry
 import TestRunner from '@ohos.application.testRunner';
 import hilog from '@ohos.hilog';
 import util from '@ohos.util';
-import { Hypium } from '../../index';
+import { Hypium } from '../index';
 import testsuite from '../test/List.test';
 
 let abilityDelegator: abilityDelegatorRegistry.AbilityDelegator;

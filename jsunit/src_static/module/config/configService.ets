@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -201,7 +201,7 @@ class ConfigService {
         this.itName = params.itName as string;
       }
       if (params.filter !== undefined) {
-        this.filter = params.filter as int;
+        this.filter = params.filter.toInt();
       }
       if (params.testType) {
         this.testType = params.testType as string;
@@ -297,7 +297,7 @@ class ConfigService {
           const p = this.filterParam as FilterParamIF;
           if (p.level) {
             const level = p.level as int[];
-            const res = level[Number(item) as int];
+            const res = level[Number(item).toInt()];
             if (res) {
               return res;
             } else {
