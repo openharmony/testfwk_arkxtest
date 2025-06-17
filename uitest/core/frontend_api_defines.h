@@ -488,7 +488,7 @@ namespace OHOS::uitest {
         {"Component.dragTo", "(Component):void", false, false},
         {"Component.pinchOut", "(float):void", false, false},
         {"Component.pinchIn", "(float):void", false, false},
-        {"Component.GetOriginalText", "():string", false, false,true},
+        {"Component.getOriginalText", "():string", false, false, true},
     };
     constexpr FrontEndClassDef COMPONENT_DEF = {
         "Component",
