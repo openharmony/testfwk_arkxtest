@@ -14,7 +14,7 @@
  */
 import systemDateTime from '@ohos.systemDateTime';
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
-import { BusinessError } from "@ohos.base"
+import { BusinessError } from '@ohos.base';
 import { TAG } from '../../Constant';
 import { Core } from '../../core';
 import { SuiteService } from '../service/SuiteService';
