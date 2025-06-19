@@ -14,7 +14,7 @@
  */
 import systemDateTime from '@ohos.systemDateTime';
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
-
+import { BusinessError } from "@ohos.base"
 import { TAG } from '../../Constant';
 import { Core } from '../../core';
 import { SuiteService } from '../service/SuiteService';
@@ -145,13 +145,14 @@ function executePromise(cmd: string, timeout: number) {
     (delegator as abilityDelegatorRegistry.AbilityDelegator).executeShellCommand(
       cmd,
       timeout,
-      (error: Error, data: abilityDelegatorRegistry.ShellCmdResult) => {
+      (error: BusinessError | null, data: abilityDelegatorRegistry.ShellCmdResult | undefined) => {
         if (error) {
           reject(new Error('executeShellCommand Error: ' + error.message));
           console.info(`${TAG}existKeyword CallBack: err : ${error.message}`);
+        } else if(data) {
+          console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(data)}`);
+          resolve(parseInt(data.stdResult) > 3 ? true : false);
         }
-        console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(data)}`);
-        resolve(parseInt(data.stdResult) > 3 ? true : false);
       }
     );
   });
