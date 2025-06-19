@@ -147,11 +147,13 @@ function executePromise(cmd: string, timeout: number) {
       timeout,
       (error: BusinessError | null, data: abilityDelegatorRegistry.ShellCmdResult | undefined) => {
         if (error) {
-          reject(new Error('executeShellCommand Error: ' + error.message));
-          console.info(`${TAG}existKeyword CallBack: err : ${error.message}`);
+          const e = error as BusinessError
+          reject(new Error('executeShellCommand Error: ' + e.message));
+          console.info(`${TAG}existKeyword CallBack: err : ${e.message}`);
         } else if(data) {
-          console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(data)}`);
-          resolve(parseInt(data.stdResult) > 3 ? true : false);
+          const result = data as abilityDelegatorRegistry.ShellCmdResult;
+          console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(result)}`);
+          resolve(parseInt(result.stdResult) > 3 ? true : false);
         }
       }
     );
