@@ -375,9 +375,9 @@ namespace OHOS::testserver {
     {
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         auto sceneSessionManager = Rosen::SessionManagerLite::GetInstance().GetSceneSessionManagerLiteProxy();
-        HiLog::Info(LABEL_SERVICE, "Begin to updateWindowLayoutById %{public}d, mode: %{public}d.", windowId, mode);
-        auto ret = sceneSessionManager->UpdateWindowLayoutById(windowId, mode);
-        HiLog::Info(LABEL_SERVICE, "UpdateWindowLayoutById over, ret: %{public}d", ret);
+        HiLog::Info(LABEL_SERVICE, "Begin to updateWindowModeById %{public}d, mode: %{public}d.", windowId, mode);
+        auto ret = sceneSessionManager->UpdateWindowModeByIdForUITest(windowId, mode);
+        HiLog::Info(LABEL_SERVICE, "updateWindowModeById over, ret: %{public}d", ret);
         return ret == OHOS::Rosen::WMError::WM_OK ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
     }
 
