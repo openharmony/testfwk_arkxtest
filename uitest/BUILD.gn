@@ -232,6 +232,9 @@ ohos_executable("uitest_server") {
   if (arkxtest_product_feature == "watch") {
     defines += [ "ARKXTEST_WATCH_FEATURE_ENABLE" ]
   }
+  if (arkxtest_product_feature == "pc" || arkxtest_product_feature == "tablet") {
+    defines += [ "ARKXTEST_ADJUST_WINDOWMODE_ENABLE" ]
+  }
 }
 
 es2abc_gen_abc("gen_uitest_exporter_abc") {
@@ -339,6 +342,7 @@ ohos_shared_library("uitest_ani") {
     "hilog:libhilog",
     "json:nlohmann_json_static",
     "runtime_core:ani",
+    "runtime_core:ani_helpers",
     "runtime_core:libarkruntime",
   ]
   output_extension = "so"

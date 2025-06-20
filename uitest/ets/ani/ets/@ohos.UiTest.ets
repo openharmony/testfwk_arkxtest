@@ -1411,7 +1411,6 @@ export class Component {
       this.nativeOn = on;
     }
     public constructor() {
-        hilog.error(domain, tag, "newOn");
     }
     native within(on:On): On;
     native clickable(b?: boolean): On;
