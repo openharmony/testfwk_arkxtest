@@ -22,6 +22,9 @@
 #include "iservice_registry.h"
 #include "test_server_error_code.h"
 #include "pasteboard_client.h"
+#include "session_manager_lite.h"
+#include "wm_common.h"
+#include "ws_common.h"
 #include "socperf_client.h"
 #include <nlohmann/json.hpp>
 #include <sstream>
@@ -371,5 +374,35 @@ namespace OHOS::testserver {
         processCpuInfo.threadCount = processCpuStatInfo.data.threadCount;
         HiLog::Info(LABEL_SERVICE, "%{public}s. Collect process cpu success.", __func__);
         return TEST_SERVER_OK;
+    }
+
+    ErrCode TestServerService::ChangeWindowMode(int windowId, uint32_t mode)
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        auto sceneSessionManager = Rosen::SessionManagerLite::GetInstance().GetSceneSessionManagerLiteProxy();
+        HiLog::Info(LABEL_SERVICE, "Begin to updateWindowModeById %{public}d, mode: %{public}d.", windowId, mode);
+        auto ret = sceneSessionManager->UpdateWindowModeByIdForUITest(windowId, mode);
+        HiLog::Info(LABEL_SERVICE, "updateWindowModeById over, ret: %{public}d", ret);
+        return ret == OHOS::Rosen::WMError::WM_OK ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
+    }
+
+    ErrCode TestServerService::TerminateWindow(int windowId)
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        auto sceneSessionManager = Rosen::SessionManagerLite::GetInstance().GetSceneSessionManagerLiteProxy();
+        HiLog::Info(LABEL_SERVICE, "Begin to terminateWindow %{public}d", windowId);
+        auto ret = sceneSessionManager->TerminateSessionByPersistentId(windowId);
+        HiLog::Info(LABEL_SERVICE, "TerminateWindow over, ret: %{public}d", ret);
+        return ret == OHOS::Rosen::WMError::WM_OK ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
+    }
+
+    ErrCode TestServerService::MinimizeWindow(int windowId)
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        auto sceneSessionManager = Rosen::SessionManagerLite::GetInstance().GetSceneSessionManagerLiteProxy();
+        HiLog::Info(LABEL_SERVICE, "Begin to minimizeWindow %{public}d", windowId);
+        auto ret = sceneSessionManager->PendingSessionToBackgroundByPersistentId(windowId);
+        HiLog::Info(LABEL_SERVICE, "MinimizeWindow over, ret: %{public}d", ret);
+        return ret == OHOS::Rosen::WSError::WS_OK ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
     }
 } // namespace OHOS::testserver

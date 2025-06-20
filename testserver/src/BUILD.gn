@@ -67,6 +67,8 @@ ohos_shared_library("test_server_service") {
     "samgr:samgr_proxy",
     "soc_perf:socperf_client",
     "udmf:udmf_client",
+    "window_manager:session_manager_lite",
+    "ability_runtime:app_manager",
   ]
 
   part_name = "arkxtest"

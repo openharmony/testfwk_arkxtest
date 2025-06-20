@@ -56,6 +56,8 @@ namespace OHOS::uitest {
 
         bool IsWearable() const override;
 
+        bool IsAdjustWindowModeEnable() const override;
+
         // setup method, connect to system ability AAMS
         bool ConnectToSysAbility(ApiCallErr &error);
 
@@ -84,6 +86,7 @@ namespace OHOS::uitest {
 
         void OpenAamsEvent() const override;
 
+        void ChangeWindowMode(int32_t windowId, WindowMode mode) const override;
     private:
         void  InjectMouseEvent(const MouseEvent &event) const;
         int32_t GetValidDisplayId(int32_t id) const;
