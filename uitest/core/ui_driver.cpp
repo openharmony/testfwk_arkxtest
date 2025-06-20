@@ -660,8 +660,18 @@ namespace OHOS::uitest {
         return uiController_->IsWearable();
     }
 
+    bool UiDriver::IsAdjustWindowModeEnable()
+    {
+        return uiController_->IsAdjustWindowModeEnable();
+    }
+
     bool UiDriver::CheckDisplayExist(int32_t displayId)
     {
         return uiController_->CheckDisplayExist(displayId);
+    }
+
+    void UiDriver::ChangeWindowMode(int32_t windowId, WindowMode mode)
+    {
+        return uiController_->ChangeWindowMode(windowId, mode);
     }
 } // namespace OHOS::uitest

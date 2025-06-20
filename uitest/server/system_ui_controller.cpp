@@ -325,7 +325,6 @@ namespace OHOS::uitest {
     {
         info.focused_ = node.IsFocused();
         info.actived_ = node.IsActive();
-        info.decoratorEnabled_ = node.IsDecorEnable();
         // get bundle name by root node
         AccessibilityElementInfo element;
         LOG_D("Start Get Bundle Name by WindowId %{public}d", node.GetWindowId());
@@ -852,6 +851,34 @@ namespace OHOS::uitest {
         this_thread::sleep_for(chrono::milliseconds(sliceMs));
     }
 
+    void SysUiController::ChangeWindowMode(int32_t windowId, WindowMode mode) const
+    {
+        switch (mode) {
+            case WindowMode::FULLSCREEN:
+                OHOS::testserver::TestServerClient::GetInstance().ChangeWindowMode(windowId,
+                    static_cast<uint32_t>(OHOS::Rosen::WindowMode::WINDOW_MODE_FULLSCREEN));
+                break;
+            case WindowMode::SPLIT_PRIMARY:
+                OHOS::testserver::TestServerClient::GetInstance().ChangeWindowMode(windowId,
+                    static_cast<uint32_t>(OHOS::Rosen::WindowMode::WINDOW_MODE_SPLIT_PRIMARY));
+                break;
+            case WindowMode::FLOATING:
+                OHOS::testserver::TestServerClient::GetInstance().ChangeWindowMode(windowId,
+                    static_cast<uint32_t>(OHOS::Rosen::WindowMode::WINDOW_MODE_FLOATING));
+                break;
+            case WindowMode::MINIMIZED:
+                OHOS::testserver::TestServerClient::GetInstance().MinimizeWindow(windowId);
+                break;
+            case WindowMode::CLOSED:
+                OHOS::testserver::TestServerClient::GetInstance().TerminateWindow(windowId);
+                break;
+            default:
+                break;
+        }
+        static constexpr auto sliceMs = 500;
+        this_thread::sleep_for(chrono::milliseconds(sliceMs));
+    }
+
     bool SysUiController::IsWorkable() const
     {
         return connected_;
@@ -864,6 +891,15 @@ namespace OHOS::uitest {
         isWearable = true;
 #endif
         return isWearable;
+    }
+
+    bool SysUiController::IsAdjustWindowModeEnable() const
+    {
+        bool IsAdjustWindowModeEnable = false;
+#ifdef ARKXTEST_ADJUST_WINDOWMODE_ENABLE
+        IsAdjustWindowModeEnable = true;
+#endif
+        return IsAdjustWindowModeEnable;
     }
 
     bool SysUiController::GetCharKeyCode(char ch, int32_t &code, int32_t &ctrlCode) const

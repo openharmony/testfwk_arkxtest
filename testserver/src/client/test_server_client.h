@@ -29,6 +29,9 @@ namespace OHOS::testserver {
         static TestServerClient &GetInstance();
         sptr<ITestServerInterface> LoadTestServer();
         int32_t SetPasteData(std::string text);
+        int32_t ChangeWindowMode(int windowId, uint32_t mode);
+        int32_t TerminateWindow(int windowId);
+        int32_t MinimizeWindow(int windowId);
         bool PublishCommonEvent(const EventFwk::CommonEventData &event);
         void FrequencyLock();
         int32_t SpDaemonProcess(int daemonCommand, std::string extraInfo);
