@@ -13,6 +13,7 @@
 
 base_root = "../../../.."
 import("//build/config/components/ets_frontend/ets2abc_config.gni")
+import("//test/testfwk/arkxtest/arkxtest_config.gni")
 import("$base_root/arkcompiler/ets_frontend/es2panda/es2abc_config.gni")
 import("$base_root/build/ohos.gni")
 
@@ -200,8 +201,10 @@ ohos_executable("uitest_server") {
     "ability_runtime:ability_manager",
     "accessibility:accessibility_common",
     "accessibility:accessibleability",
+    "hisysevent:libhisysevent",
     "image_framework:image_native",
     "image_framework:image_packer",
+    "init:libbegetutil",
     "input:libmmi-client",
     "ipc:ipc_single",
     "window_manager:libdm",
@@ -220,26 +223,27 @@ ohos_executable("uitest_server") {
 
   if (defined(global_parts_info) &&
       defined(global_parts_info.hiviewdfx_hidumper)) {
-    include_dirs +=
-        [ "//base/hiviewdfx/hidumper/interfaces/native/innerkits/include" ]
     external_deps += [
       "hidumper:hidumper_client",
       "samgr:samgr_proxy",
     ]
     defines += [ "HIDUMPER_ENABLED" ]
   }
+  if (arkxtest_product_feature == "watch") {
+    defines += [ "ARKXTEST_WATCH_FEATURE_ENABLE" ]
+  }
 }
 
 es2abc_gen_abc("gen_uitest_exporter_abc") {
-  src_js = rebase_path("${source_root}/js/napi/uitest_exporter.js")
+  src_js = rebase_path("${source_root}/napi/uitest_exporter.js")
   dst_file = rebase_path(target_out_dir + "/uitest_exporter.abc")
-  in_puts = [ "${source_root}/js/napi/uitest_exporter.js" ]
+  in_puts = [ "${source_root}/napi/uitest_exporter.js" ]
   out_puts = [ target_out_dir + "/uitest_exporter.abc" ]
   extra_args = [ "--module" ]
 }
 
 gen_js_obj("uitest_exporter_js") {
-  input = "${source_root}/js/napi/uitest_exporter.js"
+  input = "${source_root}/napi/uitest_exporter.js"
   output = target_out_dir + "/uitest_exporter.o"
 }
 
@@ -253,11 +257,10 @@ gen_js_obj("uitest_exporter_abc") {
 ohos_shared_library("uitest_client") {
   configs = [ ":uitest_common_configs" ]
   sources = [
-    "${source_root}/js/napi/ui_event_observer_napi.cpp",
-    "${source_root}/js/napi/uitest_napi.cpp",
+    "${source_root}/napi/ui_event_observer_napi.cpp",
+    "${source_root}/napi/uitest_napi.cpp",
   ]
   include_dirs = [
-    "//third_party/libuv/include",
     "${source_root}/core",
     "${source_root}/connection",
   ]
@@ -278,6 +281,7 @@ ohos_shared_library("uitest_client") {
     "ipc:ipc_single",
     "libuv:uv",
     "napi:ace_napi",
+    "samgr:samgr_proxy",
   ]
   relative_install_dir = "module"
   defines = [
@@ -302,24 +306,19 @@ ohos_unittest("uitest_core_unittest") {
     ":uitest_core",
     "//third_party/googletest:gtest_main",
   ]
-  include_dirs = [
-    "$base_root/base/hiviewdfx/hilog/interfaces/native/innerkits/include",
-    "//third_party/json/single_include/nlohmann",
-    "${source_root}/core",
-  ]
   external_deps = [
     "hilog:libhilog",
     "json:nlohmann_json_static",
   ]
+  include_dirs = [ "${source_root}/core" ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   use_exceptions = true
-  module_out_path = "uitestkit/unittest"
+  module_out_path = "arkxtest/uitest"
   testonly = true
   subsystem_name = "testfwk"
   part_name = "arkxtest"
 }
-
 ohos_shared_library("uitest_ani") {
   configs = [ ":uitest_common_configs" ]
   external_deps = common_external_deps
@@ -347,7 +346,6 @@ ohos_shared_library("uitest_ani") {
   part_name = "arkxtest"
   subsystem_name = "testfwk"
 }
-
 generate_static_abc("uitest_abc") {
   base_url = "./ets/ani/ets"
   files = [ "./ets/ani/ets/@ohos.UiTest.ets" ]
@@ -356,7 +354,6 @@ generate_static_abc("uitest_abc") {
   out_puts = [ "$target_out_dir/@ohos.UiTest.abc" ]
   device_dst_file = "/system/framework/@ohos.UiTest.abc"
 }
-
 ohos_prebuilt_etc("uitest_etc") {
   source = "$target_out_dir/@ohos.UiTest.abc"
   module_install_dir = "framework"
