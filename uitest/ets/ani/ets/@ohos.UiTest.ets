@@ -130,10 +130,10 @@ interface WindowFilter {
 }
 
 class WindowFilterInner implements WindowFilter {
-  bundleName?: string = "";
-  title?: string = "";
-  focused?: boolean = false;
-  active?: boolean = false;
+  bundleName?: string = undefined;
+  title?: string = undefined;
+  focused?: boolean = undefined;
+  active?: boolean = undefined;
 }
 
 interface UIElementInfo {
@@ -154,8 +154,8 @@ interface TouchPadSwipeOptions {
 }
 
 class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
-  stay?: boolean = false;
-  speed?: number = 2000;
+  stay?: boolean = undefined;
+  speed?: number = undefined;
 }
 
 export class Component {
@@ -884,9 +884,10 @@ export class Component {
     private native findWindowSync(filter: WindowFilter):UiWindow;
     findWindow(filter: WindowFilter): Promise<UiWindow|null> {
       let promise = new Promise<UiWindow|null>((resolve, reject) => {
-          let promise1 = taskpool.execute(():UiWindow => this.findWindowSync(filter));
+          let promise1 = taskpool.execute(():UiWindow|null => this.findWindowSync(filter));
           promise1.then((e:NullishType)=>{
             if (e) {
+                hilog.info(domain, tag, "findWindow return UIWindow object");
                 let value : UiWindow = e as UiWindow;
                 resolve(value);
             } else {
@@ -1067,6 +1068,7 @@ export class Component {
             let promise1 = taskpool.execute(():Component|null => this.findComponentSync(on));
                 promise1.then((e:NullishType)=>{
                     if (e) {
+                        hilog.info(domain, tag, "findComponent return Component object");
                         let value : Component = e as Component;
                         resolve(value);
                     } else {
@@ -1245,7 +1247,20 @@ export class Component {
         });
         return promise;
     }
-  
+    
+    mouseScroll(p: Point, down: boolean, d:number, key1?: number, key2?: number): Promise<void> {
+        let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+        let promise1 = taskpool.execute(():boolean => this.mouseScrollSync(p, down, d, key1, key2, 20));
+            promise1.then((e:NullishType)=>{
+                resolve(Promise.resolve());
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
+
     mouseScroll(p: Point, down: boolean, d:number, key1?: number, key2?: number, speed?: number): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.mouseScrollSync(p, down, d, key1, key2, speed));
@@ -1396,7 +1411,6 @@ export class Component {
       this.nativeOn = on;
     }
     public constructor() {
-        hilog.error(domain, tag, "newOn");
     }
     native within(on:On): On;
     native clickable(b?: boolean): On;
