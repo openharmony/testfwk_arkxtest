@@ -342,6 +342,7 @@ ohos_shared_library("uitest_ani") {
     "hilog:libhilog",
     "json:nlohmann_json_static",
     "runtime_core:ani",
+    "runtime_core:ani_helpers",
     "runtime_core:libarkruntime",
   ]
   output_extension = "so"
