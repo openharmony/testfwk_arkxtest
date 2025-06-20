@@ -57,6 +57,11 @@ namespace OHOS::uitest {
             return false;
         }
 
+        bool IsAdjustWindowModeEnable() const override
+        {
+            return false;
+        }
+
         void InjectTouchEventSequence(const PointerMatrix &events) const override
         {
             touch_event_records_ = std::make_unique<PointerMatrix>(events.GetFingers(), events.GetSteps());

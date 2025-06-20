@@ -102,7 +102,11 @@ namespace OHOS::uitest {
 
         bool IsWearable();
 
+        bool IsAdjustWindowModeEnable();
+
         bool CheckDisplayExist(int32_t displayId);
+
+        void ChangeWindowMode(int32_t windowId, WindowMode mode);
 
     private:
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);

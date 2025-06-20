@@ -1735,7 +1735,7 @@ static void RegisterExtensionHandler()
             UiOpArgs uiOpArgs;
             auto wOp = WindowOperator(driver, *window, uiOpArgs);
             auto action = in.apiId_;
-            if (window->decoratorEnabled_) {
+            if (driver.IsAdjustWindowModeEnable()) {
                 if (action == "UiWindow.split") {
                     wOp.Split(out);
                 } else if (action == "UiWindow.maximize") {
