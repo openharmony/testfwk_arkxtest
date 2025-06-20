@@ -58,6 +58,7 @@ namespace OHOS::uitest {
         BLUR,
         HITTESTBEHAVIOR,
         CLIP,
+        ORIGINALTEXT,
         // inner used attributes
         HIERARCHY,
         HASHCODE,
@@ -98,6 +99,7 @@ namespace OHOS::uitest {
         "blur",          //BLUR
         "hitTestBehavior",   // HITTESTBEHAVIOR
         "clip", // CLIP
+        "originalText",  // ORIGINALTEXT
         "hierarchy",     // HIERARCHY
         "hashcode",      // HASHCODE
         "boundsCenter",  // BOUNDSCENTER
