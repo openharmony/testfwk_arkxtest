@@ -664,4 +664,14 @@ namespace OHOS::uitest {
     {
         return uiController_->CheckDisplayExist(displayId);
     }
+
+    void UiDriver::CloseAamsEvent()
+    {
+        return uiController_->CloseAamsEvent();
+    }
+
+    void UiDriver::OpenAamsEvent()
+    {
+        return uiController_->OpenAamsEvent();
+    }
 } // namespace OHOS::uitest

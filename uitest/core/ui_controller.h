@@ -128,6 +128,10 @@ namespace OHOS::uitest {
         {
             return true;
         };
+
+        virtual void CloseAamsEvent() const {};
+
+        virtual void OpenAamsEvent() const {};
     };
 }
 

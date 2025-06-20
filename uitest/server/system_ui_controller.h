@@ -79,6 +79,11 @@ namespace OHOS::uitest {
         void GetHidumperInfo(std::string windowId, char **buf, size_t &len) override;
 
         bool CheckDisplayExist(int32_t displayId) const override;
+
+        void CloseAamsEvent() const override;
+
+        void OpenAamsEvent() const override;
+
     private:
         void  InjectMouseEvent(const MouseEvent &event) const;
         int32_t GetValidDisplayId(int32_t id) const;
