@@ -709,6 +709,7 @@ namespace OHOS::uitest {
         server.AddHandler("On.scrollable", GenericOnAttrBuilder<UiAttr::SCROLLABLE, bool>);
         server.AddHandler("On.checkable", GenericOnAttrBuilder<UiAttr::CHECKABLE, bool>);
         server.AddHandler("On.checked", GenericOnAttrBuilder<UiAttr::CHECKED, bool>);
+        server.AddHandler("On.originalText", GenericOnAttrBuilder<UiAttr::ORIGINALTEXT, string>);
 
         auto genericRelativeBuilder = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             const auto attrName = in.apiId_.substr(ON_DEF.name_.length() + 1); // On.xxx()->xxx
@@ -1539,6 +1540,7 @@ static void RegisterExtensionHandler()
         server.AddHandler("Component.getBounds", GenericComponentAttrGetter<UiAttr::BOUNDS>);
         server.AddHandler("Component.getBoundsCenter", GenericComponentAttrGetter<UiAttr::BOUNDSCENTER>);
         server.AddHandler("Component.getDisplayId", GenericComponentAttrGetter<UiAttr::DISPLAY_ID>);
+        server.AddHandler("Component.getOriginalText", GenericComponentAttrGetter<UiAttr::ORIGINALTEXT, true>);
     }
 
     static void RegisterUiComponentClickOperation()

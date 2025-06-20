@@ -386,6 +386,7 @@ namespace OHOS::uitest {
         {"On.inWindow", "(string):On", false, true},
         {"On.inDisplay", "(int):On", false, true},
         {"On.belongingDisplay", "(int):On", false, true, true},
+        {"On.originalText", "(string,int?):On", false, true, true}, //  MatchPattern enum as int value
     };
 
     constexpr std::string_view REF_SEED_ON = "On#seed";
@@ -487,6 +488,7 @@ namespace OHOS::uitest {
         {"Component.dragTo", "(Component):void", false, false},
         {"Component.pinchOut", "(float):void", false, false},
         {"Component.pinchIn", "(float):void", false, false},
+        {"Component.getOriginalText", "():string", false, false, true},
     };
     constexpr FrontEndClassDef COMPONENT_DEF = {
         "Component",
