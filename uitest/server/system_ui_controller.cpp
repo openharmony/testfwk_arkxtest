@@ -222,7 +222,7 @@ namespace OHOS::uitest {
                 listener->OnEvent(capturedEvent, uiEventSourceInfo);
             }
         }
-        if (std::find(EVENT_MASK.begin(), EVENT_MASK.end(), eventInfo.GetEventType())) {
+        if (std::find(EVENT_MASK.begin(), EVENT_MASK.end(), eventInfo.GetEventType()) != EVENT_MASK.end()) {
             lastEventMillis_.store(GetCurrentMillisecond());
         }
     }
