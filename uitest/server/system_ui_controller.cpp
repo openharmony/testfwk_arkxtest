@@ -184,12 +184,13 @@ namespace OHOS::uitest {
     }
 
     // the monitored events
-    static const std::set<uint32_t> EVENT_MASK = {
+    static const std::vector<uint32_t> EVENT_MASK = {
         EventType::TYPE_VIEW_TEXT_UPDATE_EVENT,
         EventType::TYPE_PAGE_STATE_UPDATE,
         EventType::TYPE_PAGE_CONTENT_UPDATE,
         EventType::TYPE_VIEW_SCROLLED_EVENT,
-        EventType::TYPE_WINDOW_UPDATE
+        EventType::TYPE_WINDOW_UPDATE,
+        EventType::TYPE_PAGE_OPEN
     };
 
     void UiEventMonitor::RegisterUiEventListener(std::shared_ptr<UiEventListener> listerner)
@@ -221,7 +222,7 @@ namespace OHOS::uitest {
                 listener->OnEvent(capturedEvent, uiEventSourceInfo);
             }
         }
-        if (EVENT_MASK.find(eventInfo.GetEventType()) != EVENT_MASK.end()) {
+        if (std::find(EVENT_MASK.begin(), EVENT_MASK.end(), eventInfo.GetEventType()) != EVENT_MASK.end()) {
             lastEventMillis_.store(GetCurrentMillisecond());
         }
     }
@@ -1009,6 +1010,7 @@ namespace OHOS::uitest {
             return false;
         }
         connected_ = true;
+        OpenAamsEvent();
         return true;
     }
 
@@ -1154,6 +1156,17 @@ namespace OHOS::uitest {
         auto displayId = displayMgr.GetDefaultDisplayId();
         auto state = displayMgr.GetDisplayState(displayId);
         return (state != DisplayState::OFF);
+    }
+
+    void SysUiController::CloseAamsEvent() const
+    {
+        vector<uint32_t> noEvents;
+        AccessibilityUITestAbility::GetInstance()->ConfigureEvents(noEvents);
+    }
+
+    void SysUiController::OpenAamsEvent() const
+    {
+        AccessibilityUITestAbility::GetInstance()->ConfigureEvents(EVENT_MASK);
     }
 
     class OnSaLoadCallback : public SystemAbilityLoadCallbackStub {

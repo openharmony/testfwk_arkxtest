@@ -82,6 +82,10 @@ namespace OHOS::uitest {
 
         bool CheckDisplayExist(int32_t displayId) const override;
 
+        void CloseAamsEvent() const override;
+
+        void OpenAamsEvent() const override;
+
         void ChangeWindowMode(int32_t windowId, WindowMode mode) const override;
     private:
         void  InjectMouseEvent(const MouseEvent &event) const;

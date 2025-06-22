@@ -106,6 +106,10 @@ namespace OHOS::uitest {
 
         bool CheckDisplayExist(int32_t displayId);
 
+        void CloseAamsEvent();
+
+        void OpenAamsEvent();
+        
         void ChangeWindowMode(int32_t windowId, WindowMode mode);
 
     private:
