@@ -131,6 +131,8 @@ namespace OHOS::uitest {
             return true;
         };
 
+        virtual void CloseAamsEvent() const {};
+        virtual void OpenAamsEvent() const {};
         virtual void ChangeWindowMode(int32_t windowId, WindowMode mode) const {};
     };
 }

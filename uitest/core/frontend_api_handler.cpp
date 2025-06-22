@@ -192,6 +192,18 @@ namespace OHOS::uitest {
         string setAamsWorkMode = "Driver.SetAamsWorkMode";
         ApiMethod methodForAamsWorkMode {setAamsWorkMode, paramTypesForAamsWorkMode, 0, false};
         sApiArgTypesMap.insert(make_pair(setAamsWorkMode, methodForAamsWorkMode));
+
+        auto paramTypesForCloseAamsEvent = vector<string>();
+        paramTypesForCloseAamsEvent.push_back("");
+        string closeAamsEvent = "Driver.CloseAamsEvent";
+        ApiMethod methodForCloseAamsEvent{closeAamsEvent, paramTypesForCloseAamsEvent, 0, false};
+        sApiArgTypesMap.insert(make_pair(closeAamsEvent, methodForCloseAamsEvent));
+
+        auto paramTypesForOpenAamsEvent = vector<string>();
+        paramTypesForOpenAamsEvent.push_back("");
+        string openAamsEvent = "Driver.OpenAamsEvent";
+        ApiMethod methodForOpenAamsEvent{openAamsEvent, paramTypesForOpenAamsEvent, 0, false};
+        sApiArgTypesMap.insert(make_pair(openAamsEvent, methodForOpenAamsEvent));
     }
 
     static string GetClassName(const string &apiName, char splitter)
@@ -1518,6 +1530,16 @@ static void RegisterExtensionHandler()
         driver.SetAamsWorkMode(static_cast<AamsWorkMode>(mode));
     };
     server.AddHandler("Driver.SetAamsWorkMode", genericSetModeHandler);
+    auto genericCloseAamsEventHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+        auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+        driver.CloseAamsEvent();
+    };
+    server.AddHandler("Driver.CloseAamsEvent", genericCloseAamsEventHandler);
+    auto genericOpenAamsEventHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+        auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+        driver.OpenAamsEvent();
+    };
+    server.AddHandler("Driver.OpenAamsEvent", genericOpenAamsEventHandler);
 }
 
     static void RegisterUiComponentAttrGetters()
