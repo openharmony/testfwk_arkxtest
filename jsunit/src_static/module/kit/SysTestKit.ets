@@ -111,7 +111,7 @@ class SysTestKit {
     } catch (err: Error) {
       console.error(`${TAG} failed to systemDateTime.getUptime because ` + err.message);
     }
-    return 0;
+    return current;
   }
 
   static async existKeyword(keyword: string, timeout?: number): Promise<boolean> {
