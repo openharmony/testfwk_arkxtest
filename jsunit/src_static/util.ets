@@ -187,7 +187,7 @@ export function processFunc(
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    const timeout = !config.timeout ? 5000 : Number(config.timeout);
     let isStressTest = false;
     if (config.getStress() > 1 || coreContext.getServices('dataDriver')) {
       isStressTest = true;
@@ -211,7 +211,7 @@ export function processAsyncFunc(
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    const timeout = !config.timeout ? 5000 : Number(config.timeout);
     let isStressTest = false;
     if (config.getStress() > 1 || coreContext.getServices('dataDriver')) {
       isStressTest = true;
@@ -232,7 +232,7 @@ export function processAsyncFuncWithArgOne(coreContext: Core, func: (done: () =>
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    const timeout = !config.timeout ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return () => {
       return getAsyncFuncWithArgsOne(func, timeout.toInt(), isStressTest);
@@ -248,7 +248,7 @@ export function processFuncWithArgOne(coreContext: Core, func: (done: () => void
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    const timeout = !config.timeout ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return () => {
       return getFuncWithArgsOne(func, timeout.toInt(), isStressTest);
@@ -267,7 +267,7 @@ export function processAsyncFuncWithArgTwo(
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    const timeout = !config.timeout ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return (paramItem: AnyType) => {
       return getAsyncFuncWithArgsTwo(func, timeout.toInt(), paramItem, isStressTest);
@@ -283,7 +283,7 @@ export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => vo
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    const timeout = !config.timeout ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return (paramItem: AnyType) => {
       return getFuncWithArgsTwo(func, timeout.toInt(), paramItem, isStressTest);
