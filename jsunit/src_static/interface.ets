@@ -163,8 +163,8 @@ export interface FilterParamIF {
 
 export interface ApiIF {
   name: string;
-  describe?: (desc: string, func: (() => void) | (() => Promise<void>)) => Promise<undefined>;
-  xdescribe?: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => Promise<void>;
+  describe?: (desc: string, func: () => void) => Promise<undefined>;
+  xdescribe?: (desc: string, func: () => void, reason: string) => Promise<void>;
   beforeItSpecified?: (itDescs: string | string[], func: HookFuncType) => void;
   afterItSpecified?: (itDescs: string | string[], func: HookFuncType) => void;
   beforeAll?: (func: HookFuncType) => void;

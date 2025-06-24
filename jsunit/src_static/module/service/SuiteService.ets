@@ -62,7 +62,7 @@ class SuiteService {
     };
   }
 
-  async describe(desc: string, func: (() => void) | (() => Promise<void>)): Promise<undefined> {
+  async describe(desc: string, func: () => void): Promise<undefined> {
     const core = this.coreContext;
     if (core) {
       const cc = core as Core;
@@ -124,7 +124,7 @@ class SuiteService {
       }
     }
   }
-  async xdescribe(desc: string, func: (() => void) | (() => Promise<void>), reason: string): Promise<void> {
+  async xdescribe(desc: string, func: () => void, reason: string): Promise<void> {
     const core = this.coreContext;
     if (core) {
       const cc = core as Core;
@@ -569,11 +569,11 @@ class SuiteService {
     const _this = this;
     return {
       name: 'SuiteService',
-      describe: (desc: string, func: (() => void) | (() => Promise<void>)) => {
+      describe: (desc: string, func: () => void) => {
         const c = _this.describe(desc, func);
         return c;
       },
-      xdescribe: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => {
+      xdescribe: (desc: string, func: () => void, reason: string) => {
         return _this.xdescribe(desc, func, reason);
       },
       beforeItSpecified: (itDescs: string | string[], func: HookFuncType) => {
