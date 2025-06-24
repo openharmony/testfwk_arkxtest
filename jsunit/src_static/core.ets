@@ -48,8 +48,8 @@ class Core {
 
   public services: Map<string, Map<string, ServiceType>>;
   public events: Map<string, Map<string, EventType>>;
-  public describe: (desc: string, func: (() => void) | (() => Promise<void>)) => Promise<undefined>;
-  public xdescribe: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => Promise<void>;
+  public describe: (desc: string, func: () => void) => Promise<undefined>;
+  public xdescribe: (desc: string, func: () => void, reason: string) => Promise<void>;
   public beforeItSpecified: (itDescs: string | string[], func: HookFuncType) => void;
   public afterItSpecified: (itDescs: string | string[], func: HookFuncType) => void;
   public beforeAll: (func: HookFuncType) => void;
@@ -66,10 +66,10 @@ class Core {
   constructor() {
     this.services = new Map<string, Map<string, ServiceType>>();
     this.events = new Map<string, Map<string, EventType>>();
-    this.describe = (desc: string, func: (() => void) | (() => Promise<void>)): Promise<undefined> => {
+    this.describe = (desc: string, func: () => void): Promise<undefined> => {
       return Promise.resolve(undefined);
     };
-    this.xdescribe = (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => {
+    this.xdescribe = (desc: string, func: () => void, reason: string) => {
       return Promise.resolve();
     };
     this.beforeItSpecified = (itDescs: string | string[], func: HookFuncType) => { };
