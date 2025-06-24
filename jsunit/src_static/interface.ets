@@ -20,7 +20,7 @@ import { ExpectService, AssertMatcher } from './module/service/ExpectService';
 import { ReportService } from './module/service/ReportService';
 import { OhReport } from './module/report/OhReport';
 import { ExpectExtend } from './module/assert/ExpectExtend';
-import { AnyType, ItfnType, NumberType } from './module/types/common';
+import { AnyType, HookFuncType, ItfnType, NumberType } from './module/types/common';
 
 import { SpecEvent, TaskEvent, SuiteEvent } from './module/service/event';
 import { Core } from './core';
