@@ -576,22 +576,22 @@ class SuiteService {
       xdescribe: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => {
         return _this.xdescribe(desc, func, reason);
       },
-      beforeItSpecified: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {
+      beforeItSpecified: (itDescs: string | string[], func: HookFuncType) => {
         return _this.beforeItSpecified(itDescs, func);
       },
-      afterItSpecified: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {
+      afterItSpecified: (itDescs: string | string[], func: HookFuncType) => {
         return _this.afterItSpecified(itDescs, func);
       },
-      beforeAll: (func: (() => void) | (() => Promise<void>)) => {
+      beforeAll: (func: HookFuncType) => {
         return _this.beforeAll(func);
       },
-      beforeEach: (func: (() => void) | (() => Promise<void>)) => {
+      beforeEach: (func: HookFuncType) => {
         return _this.beforeEach(func);
       },
-      afterAll: (func: (() => void) | (() => Promise<void>)) => {
+      afterAll: (func: HookFuncType) => {
         return _this.afterAll(func);
       },
-      afterEach: (func: (() => void) | (() => Promise<void>)) => {
+      afterEach: (func: HookFuncType) => {
         return _this.afterEach(func);
       },
     };
