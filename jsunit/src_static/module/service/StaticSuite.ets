@@ -164,57 +164,66 @@ class StaticSuite {
     }
   }
 
-  runBeforeItSpecified(
+  async runBeforeItSpecified(
     beforeItSpecified: Map<string | string[], (() => void) | (() => Promise<void>)>,
     specItem: StaticSpec
   ) {
-    for (const itNames of beforeItSpecified.keys()) {
-      let flag = false;
-      if (typeof itNames === 'string' && (itNames as string) === specItem.description) {
-        flag = true;
-      } else if (Array.isArray(itNames)) {
-        const itNamesArr = itNames as string[];
-        for (const name of itNamesArr) {
-          if (name === specItem.description) {
-            flag = true;
-            break;
+    try {
+      for (const itNames of beforeItSpecified.keys()) {
+        let flag = false;
+        if (typeof itNames === 'string' && (itNames as string) === specItem.description) {
+          flag = true;
+        } else if (Array.isArray(itNames)) {
+          const itNamesArr = itNames as string[];
+          for (const name of itNamesArr) {
+            if (name === specItem.description) {
+              flag = true;
+              break;
+            }
           }
         }
-      }
-      if (flag) {
-        const hookFunc = beforeItSpecified.get(itNames);
-        if (hookFunc) {
-          (hookFunc as () => Promise<void>)();
+        if (flag) {
+          const hookFunc = beforeItSpecified.get(itNames);
+          if (hookFunc) {
+            await (hookFunc as () => Promise<void>)();
+          }
+          break;
         }
-        break;
       }
+    } catch (err: Error) {
+      console.error(`${TAG}${err.stack}`);
     }
   }
 
-  runAfterItSpecified(
+  async runAfterItSpecified(
     afterItSpecified: Map<string | string[], (() => void) | (() => Promise<void>)>,
     specItem: StaticSpec
   ) {
-    for (const itNames of afterItSpecified.keys()) {
-      let flag = false;
-      if (typeof itNames === 'string' && (itNames as string) === specItem.description) {
-        flag = true;
-      } else if (Array.isArray(itNames)) {
-        const itNamesArr = itNames as string[];
-        for (const name of itNamesArr) {
-          if (name === specItem.description) {
-            flag = true;
-            break;
+    try {
+      for (const itNames of afterItSpecified.keys()) {
+        let flag = false;
+        if (typeof itNames === 'string' && (itNames as string) === specItem.description) {
+          flag = true;
+        } else if (Array.isArray(itNames)) {
+          const itNamesArr = itNames as string[];
+          for (const name of itNamesArr) {
+            if (name === specItem.description) {
+              flag = true;
+              break;
+            }
           }
         }
-      }
-      if (flag) {
-        const hookFunc = afterItSpecified.get(itNames);
-        if (hookFunc) {
-          (hookFunc as () => Promise<void>)();
+        if (flag) {
+          const hookFunc = afterItSpecified.get(itNames);
+          if (hookFunc) {
+            await (hookFunc as () => Promise<void>)();
+          }
+          break;
         }
-        break;
       }
+    } catch (err: Error) {
+      console.error(`${TAG}${err.stack}`);
+
     }
   }
 
@@ -240,7 +249,7 @@ class StaticSuite {
           }
           await coreContext.fireEvents('spec', 'specStart');
           try {
-            this.runBeforeItSpecified(this.beforeItSpecified, specItem);
+            await this.runBeforeItSpecified(this.beforeItSpecified, specItem);
             for (const hookItem of this.beforeEach) {
               if (hookItem) {
                 try {
@@ -255,7 +264,7 @@ class StaticSuite {
               }
             }
             await specItem.asyncRun(coreContext);
-            this.runAfterItSpecified(this.afterItSpecified, specItem);
+            await this.runAfterItSpecified(this.afterItSpecified, specItem);
             for (const hookItem of this.afterEach) {
               try {
                 await (hookItem as () => Promise<void>)();
