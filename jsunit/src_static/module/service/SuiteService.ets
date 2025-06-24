@@ -19,12 +19,13 @@ import { StaticSuite } from './StaticSuite';
 import { StaticSpec } from './StaticSpec';
 import { TAG } from '../../Constant';
 import { Core } from '../../core';
-import { processFunc, processAsyncFunc, checkIsAsyncFunction } from '../../util';
+import { processFunc, processAsyncFunc, processAsyncFuncWithArgOne, processFuncWithArgOne, checkIsAsyncFunction, getFunctionArgumentsCount } from '../../util';
 import { SysTestKit } from '../kit/SysTestKit';
 import { AssertException } from './AssertException';
 import { ConfigService } from '../config/configService';
 import { SpecService } from './SpecService';
 import DataDriver from '../config/DataDriver';
+import { HookFuncType } from '../types/common';
 
 class SuiteService {
   public id: string;
@@ -162,99 +163,72 @@ class SuiteService {
     return Promise.resolve();
   }
 
-  beforeAll(func: (() => void) | (() => Promise<void>)) {
-    const core = this.coreContext;
-    if (core !== null) {
-      const funcStr = Type.of(func as object).getLiteral();
-      const isAsyncFunc = checkIsAsyncFunction(funcStr);
-      if(isAsyncFunc) {
-        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
-        this.currentRunningSuite.beforeAll.add(fn); 
-      } else {
-        const fn = processFunc(core as Core, func as (() => void));
-        this.currentRunningSuite.beforeAll.add(fn);
-      }
-    } else {
+  handleHookFunction(core: Core, func: HookFuncType) {
+    const funcStr = Type.of(func as object).getLiteral();
+    const isAsyncFunc = checkIsAsyncFunction(funcStr);
+    const argsCount = getFunctionArgumentsCount(funcStr);
+    let fn = func
+    if (argsCount === 1) {
       if (isAsyncFunc) {
         fn = processAsyncFunc(core, func as (() => Promise<void>));
       } else {
         fn = processFunc(core, func as (() => void));
       }
-    }
-  }
-
-  beforeEach(func: (() => void) | (() => Promise<void>)) {
-    const core = this.coreContext;
-    if (core !== null) {
-      const funcStr = Type.of(func as object).getLiteral();
-      const isAsyncFunc = checkIsAsyncFunction(funcStr);
-      if(isAsyncFunc) {
-        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
-        this.currentRunningSuite.beforeEach.add(fn); 
+    } else {
+      if (isAsyncFunc) {
+        fn = processAsyncFuncWithArgOne(core, func as ((done: () => void) => Promise<void>));
       } else {
-        const fn = processFunc(core as Core, func as (() => void));
-        this.currentRunningSuite.beforeEach.add(fn);
+        fn = processFuncWithArgOne(core, func as ((done: () => void) => void));
       }
     }
+    return fn
   }
 
-  beforeItSpecified(itDescs: string | string[], func: (() => void) | (() => Promise<void>)) {
+  beforeAll(func: HookFuncType) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = Type.of(func as object).getLiteral();
-      const isAsyncFunc = checkIsAsyncFunction(funcStr);
-      if(isAsyncFunc) {
-        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
-        this.currentRunningSuite.beforeItSpecified.set(itDescs, fn);
-      } else {
-        const fn = processFunc(core as Core, func as (() => void));
-        this.currentRunningSuite.beforeItSpecified.set(itDescs, fn);
-      }
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.beforeAll.add(fn);
     }
   }
 
-  afterItSpecified(itDescs: string | string[], func: (() => void) | (() => Promise<void>)) {
+  beforeEach(func: HookFuncType) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = Type.of(func as object).getLiteral();
-      const isAsyncFunc = checkIsAsyncFunction(funcStr);
-      if(isAsyncFunc) {
-        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
-        this.currentRunningSuite.afterItSpecified.set(itDescs, fn);
-      } else {
-        const fn = processFunc(core as Core, func as (() => void));
-        this.currentRunningSuite.afterItSpecified.set(itDescs, fn);
-      }
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.beforeEach.add(fn);
     }
   }
 
-  afterAll(func: (() => void) | (() => Promise<void>)) {
+  beforeItSpecified(itDescs: string | string[], func: HookFuncType) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = Type.of(func as object).getLiteral();
-      const isAsyncFunc = checkIsAsyncFunction(funcStr);
-      if(isAsyncFunc) {
-        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
-        this.currentRunningSuite.afterAll.add(fn); 
-      } else {
-        const fn = processFunc(core as Core, func as (() => void));
-        this.currentRunningSuite.afterAll.add(fn);
-      }
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.beforeItSpecified.set(itDescs, fn);
     }
   }
 
-  afterEach(func: (() => void) | (() => Promise<void>)) {
+  afterItSpecified(itDescs: string | string[], func: HookFuncType) {
+    const core = this.coreContext;
+    if (core !== null) {
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.afterItSpecified.set(itDescs, fn);
+    }
+  }
+
+  afterAll(func: HookFuncType) {
+    const core = this.coreContext;
+    if (core !== null) {
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.afterAll.add(fn);
+    }
+  }
+
+  afterEach(func: HookFuncType) {
     const core = this.coreContext;
     if (core) {
-      const funcStr = Type.of(func as object).getLiteral();
-      const isAsyncFunc = checkIsAsyncFunction(funcStr);
-      if(isAsyncFunc) {
-        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
-        this.currentRunningSuite.afterEach.add(fn); 
-      } else {
-        const fn = processFunc(core as Core, func as (() => void));
-        this.currentRunningSuite.afterEach.add(fn);
-      }
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.afterEach.add(fn);
     }
   }
 

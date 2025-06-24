@@ -24,7 +24,7 @@ import { OhReport } from './module/report/OhReport';
 import { ExpectExtend } from './module/assert/ExpectExtend';
 import { SpecEvent, TaskEvent, SuiteEvent } from './module/service/event';
 import { ApiIF } from './interface';
-import { AnyType, ItfnType } from './module/types/common';
+import { AnyType, HookFuncType, ItfnType } from './module/types/common';
 /**
  * core service for execute testcase.
  */
@@ -72,14 +72,14 @@ class Core {
     this.xdescribe = (desc: string, func: () => void, reason: string) => {
       return Promise.resolve();
     };
-    this.beforeItSpecified = (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {};
-    this.afterItSpecified = (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {};
-    this.beforeAll = (func: (() => void) | (() => Promise<void>)) => {};
-    this.beforeEach = (func: (() => void) | (() => Promise<void>)) => {};
-    this.afterAll = (func: (() => void) | (() => Promise<void>)) => {};
-    this.afterEach = (func: (() => void) | (() => Promise<void>)) => {};
-    this.it = (desc: string, filter: int, func: ItfnType) => {};
-    this.xit = (desc: string, filter: int, func: ItfnType, reason: string) => {};
+    this.beforeItSpecified = (itDescs: string | string[], func: HookFuncType) => { };
+    this.afterItSpecified = (itDescs: string | string[], func: HookFuncType) => { };
+    this.beforeAll = (func: HookFuncType) => { };
+    this.beforeEach = (func: HookFuncType) => { };
+    this.afterAll = (func: HookFuncType) => { };
+    this.afterEach = (func: HookFuncType) => { };
+    this.it = (desc: string, filter: int, func: ItfnType) => { };
+    this.xit = (desc: string, filter: int, func: ItfnType, reason: string) => { };
     this.expect = null;
     this.specEvent = new SpecEvent({ id: '' });
     this.suiteEvent = new SuiteEvent({ id: '' });
