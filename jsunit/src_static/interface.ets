@@ -163,14 +163,14 @@ export interface FilterParamIF {
 
 export interface ApiIF {
   name: string;
-  describe?: (desc: string, func: (() => void) | (() => Promise<void>)) => Promise<undefined>;
-  xdescribe?: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => Promise<void>;
-  beforeItSpecified?: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => void;
-  afterItSpecified?: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => void;
-  beforeAll?: (func: (() => void) | (() => Promise<void>)) => void;
-  beforeEach?: (func: (() => void) | (() => Promise<void>)) => void;
-  afterAll?: (func: (() => void) | (() => Promise<void>)) => void;
-  afterEach?: (func: (() => void) | (() => Promise<void>)) => void;
+  describe?: (desc: string, func: () => void) => Promise<undefined>;
+  xdescribe?: (desc: string, func: () => void, reason: string) => Promise<void>;
+  beforeItSpecified?: (itDescs: string | string[], func: HookFuncType) => void;
+  afterItSpecified?: (itDescs: string | string[], func: HookFuncType) => void;
+  beforeAll?: (func: HookFuncType) => void;
+  beforeEach?: (func: HookFuncType) => void;
+  afterAll?: (func: HookFuncType) => void;
+  afterEach?: (func: HookFuncType) => void;
   it?: (desc: string, filter: int, func: ItfnType) => void;
   xit?: (desc: string, filter: int, func: ItfnType, reason: string) => void;
   expect?: (actualValue?: AnyType) => AssertMatcher;
