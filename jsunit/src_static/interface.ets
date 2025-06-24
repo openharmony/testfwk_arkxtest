@@ -20,7 +20,7 @@ import { ExpectService, AssertMatcher } from './module/service/ExpectService';
 import { ReportService } from './module/service/ReportService';
 import { OhReport } from './module/report/OhReport';
 import { ExpectExtend } from './module/assert/ExpectExtend';
-import { AnyType, ItfnType, NumberType } from './module/types/common';
+import { AnyType, HookFuncType, ItfnType, NumberType } from './module/types/common';
 
 import { SpecEvent, TaskEvent, SuiteEvent } from './module/service/event';
 import { Core } from './core';
@@ -165,12 +165,12 @@ export interface ApiIF {
   name: string;
   describe?: (desc: string, func: (() => void) | (() => Promise<void>)) => Promise<undefined>;
   xdescribe?: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => Promise<void>;
-  beforeItSpecified?: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => void;
-  afterItSpecified?: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => void;
-  beforeAll?: (func: (() => void) | (() => Promise<void>)) => void;
-  beforeEach?: (func: (() => void) | (() => Promise<void>)) => void;
-  afterAll?: (func: (() => void) | (() => Promise<void>)) => void;
-  afterEach?: (func: (() => void) | (() => Promise<void>)) => void;
+  beforeItSpecified?: (itDescs: string | string[], func: HookFuncType) => void;
+  afterItSpecified?: (itDescs: string | string[], func: HookFuncType) => void;
+  beforeAll?: (func: HookFuncType) => void;
+  beforeEach?: (func: HookFuncType) => void;
+  afterAll?: (func: HookFuncType) => void;
+  afterEach?: (func: HookFuncType) => void;
   it?: (desc: string, filter: int, func: ItfnType) => void;
   xit?: (desc: string, filter: int, func: ItfnType, reason: string) => void;
   expect?: (actualValue?: AnyType) => AssertMatcher;
