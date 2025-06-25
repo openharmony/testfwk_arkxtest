@@ -106,13 +106,7 @@ class SuiteService {
         this.currentRunningSuite.childSuites.push(suite);
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);
-        const funcStr = Type.of(func as object).getLiteral();
-        const isAsyncFunc = checkIsAsyncFunction(funcStr);
-        if (isAsyncFunc) {
-          await (func as () => Promise<void>)();
-        } else {
-          (func as () => void)();
-        }
+        func()
         this.suitesStack.pop();
 
         const staticService = this.suitesStack.pop();
