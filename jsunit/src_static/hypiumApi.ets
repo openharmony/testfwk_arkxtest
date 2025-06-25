@@ -74,7 +74,7 @@ const hypiumXdescribe = (desc: string, func: () => void) => {
   }
 };
 const hypiumXdescribeReason = (reason: string) => {
-  return (desc: string, func: (() => void) | (() => Promise<void>)) => {
+  return (desc: string, func: () => void) => {
     if (core) {
       return (core as Core).xdescribe(desc, func, reason);
     }
