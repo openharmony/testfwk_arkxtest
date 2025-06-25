@@ -106,7 +106,12 @@ class SuiteService {
         this.currentRunningSuite.childSuites.push(suite);
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);
-        func()
+        try {
+          func()
+        } catch (err: Error) {
+          console.info(`${TAG} describe ${desc} 执行报错： ${err.message}`);
+          console.info(`${err.stack}`);
+        }
         this.suitesStack.pop();
 
         const staticService = this.suitesStack.pop();
@@ -168,6 +173,12 @@ class SuiteService {
       } else {
         const fn = processFunc(core as Core, func as (() => void));
         this.currentRunningSuite.beforeAll.add(fn);
+      }
+    } else {
+      if (isAsyncFunc) {
+        fn = processAsyncFunc(core, func as (() => Promise<void>));
+      } else {
+        fn = processFunc(core, func as (() => void));
       }
     }
   }
