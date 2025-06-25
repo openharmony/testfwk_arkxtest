@@ -107,7 +107,12 @@ class SuiteService {
         this.currentRunningSuite.childSuites.push(suite);
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);
-        func()
+        try {
+          func()
+        } catch (err: Error) {
+          console.info(`${TAG} describe ${desc} 执行报错： ${err.message}`);
+          console.info(`${err.stack}`);
+        }
         this.suitesStack.pop();
 
         const staticService = this.suitesStack.pop();
@@ -162,18 +167,18 @@ class SuiteService {
     const funcStr = Type.of(func as object).getLiteral();
     const isAsyncFunc = checkIsAsyncFunction(funcStr);
     const argsCount = getFunctionArgumentsCount(funcStr);
-    let fn = func
+    let fn = (): Promise<void> => { }
     if (argsCount === 1) {
-      if (isAsyncFunc) {
-        fn = processAsyncFunc(core, func as (() => Promise<void>));
-      } else {
-        fn = processFunc(core, func as (() => void));
-      }
-    } else {
       if (isAsyncFunc) {
         fn = processAsyncFuncWithArgOne(core, func as ((done: () => void) => Promise<void>));
       } else {
         fn = processFuncWithArgOne(core, func as ((done: () => void) => void));
+      }
+    } else {
+      if (isAsyncFunc) {
+        fn = processAsyncFunc(core, func as (() => Promise<void>));
+      } else {
+        fn = processFunc(core, func as (() => void));
       }
     }
     return fn
