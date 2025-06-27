@@ -328,27 +328,25 @@ class SuiteService {
   }
 
   async setSuiteResults(suite: StaticSuite, error: Error, coreContext: Core) {
-    if (suite.childSuites.length > 0 && suite.specs.length > 0) {
-      if (suite.specs.length > 0) {
-        const specService = coreContext.getDefaultService('spec');
-        if (specService !== null) {
-          const ss = specService as SpecService;
-          for (const specItem of suite.specs) {
-            ss.setCurrentRunningSpec(specItem);
-            if ((error as Error) instanceof AssertException) {
-              specItem.fail = error;
-            } else {
-              specItem.error = error;
-            }
-            await coreContext.fireEvents('spec', 'specStart');
-            await coreContext.fireEvents('spec', 'specDone');
+    if (suite.specs.length > 0) {
+      const specService = coreContext.getDefaultService('spec');
+      if (specService !== null) {
+        const ss = specService as SpecService;
+        for (const specItem of suite.specs) {
+          ss.setCurrentRunningSpec(specItem);
+          if ((error as Error) instanceof AssertException) {
+            specItem.fail = error;
+          } else {
+            specItem.error = error;
           }
+          await coreContext.fireEvents('spec', 'specStart');
+          await coreContext.fireEvents('spec', 'specDone');
         }
       }
-      if (suite.childSuites.length > 0) {
-        for (const suiteItem of suite.childSuites) {
-          await this.setSuiteResults(suiteItem, error, coreContext);
-        }
+    }
+    if (suite.childSuites.length > 0) {
+      for (const suiteItem of suite.childSuites) {
+        await this.setSuiteResults(suiteItem, error, coreContext);
       }
     }
   }
