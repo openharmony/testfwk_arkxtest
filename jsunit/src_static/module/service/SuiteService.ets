@@ -170,15 +170,15 @@ class SuiteService {
     let fn = func
     if (argsCount === 1) {
       if (isAsyncFunc) {
-        fn = processAsyncFunc(core, func as (() => Promise<void>));
-      } else {
-        fn = processFunc(core, func as (() => void));
-      }
-    } else {
-      if (isAsyncFunc) {
         fn = processAsyncFuncWithArgOne(core, func as ((done: () => void) => Promise<void>));
       } else {
         fn = processFuncWithArgOne(core, func as ((done: () => void) => void));
+      }
+    } else {
+      if (isAsyncFunc) {
+        fn = processAsyncFunc(core, func as (() => Promise<void>));
+      } else {
+        fn = processFunc(core, func as (() => void));
       }
     }
     return fn
