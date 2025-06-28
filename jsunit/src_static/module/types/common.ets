@@ -19,7 +19,10 @@ export type HookFuncType = (() => void)
   | (() => Promise<void>)
   | ((done: () => void) => void)
   | ((done: () => void) => Promise<void>)
-export type ItfnType = HookFuncType
+export type ItfnType = (() => void)
+  | (() => Promise<void>)
+  | ((done: () => void) => void)
+  | ((done: () => void) => Promise<void>)
   | ((done: () => void, param2: AnyType) => void)
   | ((done: () => void, param2: AnyType) => Promise<void>);
 export type NumberType = byte | short | int | long | float | double;
