@@ -24,7 +24,7 @@ import { OhReport } from './module/report/OhReport';
 import { ExpectExtend } from './module/assert/ExpectExtend';
 import { SpecEvent, TaskEvent, SuiteEvent } from './module/service/event';
 import { ApiIF } from './interface';
-import { AnyType, ItfnType } from './module/types/common';
+import { AnyType, HookFuncType, ItfnType } from './module/types/common';
 /**
  * core service for execute testcase.
  */
@@ -48,14 +48,14 @@ class Core {
 
   public services: Map<string, Map<string, ServiceType>>;
   public events: Map<string, Map<string, EventType>>;
-  public describe: (desc: string, func: (() => void) | (() => Promise<void>)) => Promise<undefined>;
-  public xdescribe: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => Promise<void>;
-  public beforeItSpecified: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => void;
-  public afterItSpecified: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => void;
-  public beforeAll: (func: (() => void) | (() => Promise<void>)) => void;
-  public beforeEach: (func: (() => void) | (() => Promise<void>)) => void;
-  public afterAll: (func: (() => void) | (() => Promise<void>)) => void;
-  public afterEach: (func: (() => void) | (() => Promise<void>)) => void;
+  public describe: (desc: string, func: () => void) => Promise<undefined>;
+  public xdescribe: (desc: string, func: () => void, reason: string) => Promise<void>;
+  public beforeItSpecified: (itDescs: string | string[], func: HookFuncType) => void;
+  public afterItSpecified: (itDescs: string | string[], func: HookFuncType) => void;
+  public beforeAll: (func: HookFuncType) => void;
+  public beforeEach: (func: HookFuncType) => void;
+  public afterAll: (func: HookFuncType) => void;
+  public afterEach: (func: HookFuncType) => void;
   public it: (desc: string, filter: int, func: ItfnType) => void;
   public xit: (desc: string, filter: int, func: ItfnType, reason: string) => void;
   public expect: ((actualValue?: AnyType) => AssertMatcher) | null;
@@ -66,20 +66,20 @@ class Core {
   constructor() {
     this.services = new Map<string, Map<string, ServiceType>>();
     this.events = new Map<string, Map<string, EventType>>();
-    this.describe = (desc: string, func: (() => void) | (() => Promise<void>)): Promise<undefined> => {
+    this.describe = (desc: string, func: () => void): Promise<undefined> => {
       return Promise.resolve(undefined);
     };
-    this.xdescribe = (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => {
+    this.xdescribe = (desc: string, func: () => void, reason: string) => {
       return Promise.resolve();
     };
-    this.beforeItSpecified = (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {};
-    this.afterItSpecified = (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {};
-    this.beforeAll = (func: (() => void) | (() => Promise<void>)) => {};
-    this.beforeEach = (func: (() => void) | (() => Promise<void>)) => {};
-    this.afterAll = (func: (() => void) | (() => Promise<void>)) => {};
-    this.afterEach = (func: (() => void) | (() => Promise<void>)) => {};
-    this.it = (desc: string, filter: int, func: ItfnType) => {};
-    this.xit = (desc: string, filter: int, func: ItfnType, reason: string) => {};
+    this.beforeItSpecified = (itDescs: string | string[], func: HookFuncType) => { };
+    this.afterItSpecified = (itDescs: string | string[], func: HookFuncType) => { };
+    this.beforeAll = (func: HookFuncType) => { };
+    this.beforeEach = (func: HookFuncType) => { };
+    this.afterAll = (func: HookFuncType) => { };
+    this.afterEach = (func: HookFuncType) => { };
+    this.it = (desc: string, filter: int, func: ItfnType) => { };
+    this.xit = (desc: string, filter: int, func: ItfnType, reason: string) => { };
     this.expect = null;
     this.specEvent = new SpecEvent({ id: '' });
     this.suiteEvent = new SuiteEvent({ id: '' });

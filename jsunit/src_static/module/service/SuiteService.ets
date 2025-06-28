@@ -19,12 +19,13 @@ import { StaticSuite } from './StaticSuite';
 import { StaticSpec } from './StaticSpec';
 import { TAG } from '../../Constant';
 import { Core } from '../../core';
-import { processFunc, processAsyncFunc, checkIsAsyncFunction } from '../../util';
+import { processFunc, processAsyncFunc, processAsyncFuncWithArgOne, processFuncWithArgOne, checkIsAsyncFunction, getFunctionArgumentsCount } from '../../util';
 import { SysTestKit } from '../kit/SysTestKit';
 import { AssertException } from './AssertException';
 import { ConfigService } from '../config/configService';
 import { SpecService } from './SpecService';
 import DataDriver from '../config/DataDriver';
+import { HookFuncType } from '../types/common';
 
 class SuiteService {
   public id: string;
@@ -61,7 +62,7 @@ class SuiteService {
     };
   }
 
-  async describe(desc: string, func: (() => void) | (() => Promise<void>)): Promise<undefined> {
+  async describe(desc: string, func: () => void): Promise<undefined> {
     const core = this.coreContext;
     if (core) {
       const cc = core as Core;
@@ -106,12 +107,11 @@ class SuiteService {
         this.currentRunningSuite.childSuites.push(suite);
         this.currentRunningSuite = suite;
         this.suitesStack.push(suite);
-        const funcStr = Type.of(func as object).getLiteral();
-        const isAsyncFunc = checkIsAsyncFunction(funcStr);
-        if (isAsyncFunc) {
-          await (func as () => Promise<void>)();
-        } else {
-          (func as () => void)();
+        try {
+          func()
+        } catch (err: Error) {
+          console.info(`${TAG} describe ${desc} 执行报错： ${err.message}`);
+          console.info(`${err.stack}`);
         }
         this.suitesStack.pop();
 
@@ -123,7 +123,7 @@ class SuiteService {
       }
     }
   }
-  async xdescribe(desc: string, func: (() => void) | (() => Promise<void>), reason: string): Promise<void> {
+  async xdescribe(desc: string, func: () => void, reason: string): Promise<void> {
     const core = this.coreContext;
     if (core) {
       const cc = core as Core;
@@ -163,93 +163,72 @@ class SuiteService {
     return Promise.resolve();
   }
 
-  beforeAll(func: (() => void) | (() => Promise<void>)) {
+  handleHookFunction(core: Core, func: HookFuncType) {
+    const funcStr = Type.of(func as object).getLiteral();
+    const isAsyncFunc = checkIsAsyncFunction(funcStr);
+    const argsCount = getFunctionArgumentsCount(funcStr);
+    let fn = func
+    if (argsCount === 1) {
+      if (isAsyncFunc) {
+        fn = processAsyncFuncWithArgOne(core, func as ((done: () => void) => Promise<void>));
+      } else {
+        fn = processFuncWithArgOne(core, func as ((done: () => void) => void));
+      }
+    } else {
+      if (isAsyncFunc) {
+        fn = processAsyncFunc(core, func as (() => Promise<void>));
+      } else {
+        fn = processFunc(core, func as (() => void));
+      }
+    }
+    return fn
+  }
+
+  beforeAll(func: HookFuncType) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = Type.of(func as object).getLiteral();
-      const isAsyncFunc = checkIsAsyncFunction(funcStr);
-      if(isAsyncFunc) {
-        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
-        this.currentRunningSuite.beforeAll.add(fn); 
-      } else {
-        const fn = processFunc(core as Core, func as (() => void));
-        this.currentRunningSuite.beforeAll.add(fn);
-      }
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.beforeAll.add(fn);
     }
   }
 
-  beforeEach(func: (() => void) | (() => Promise<void>)) {
+  beforeEach(func: HookFuncType) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = Type.of(func as object).getLiteral();
-      const isAsyncFunc = checkIsAsyncFunction(funcStr);
-      if(isAsyncFunc) {
-        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
-        this.currentRunningSuite.beforeEach.add(fn); 
-      } else {
-        const fn = processFunc(core as Core, func as (() => void));
-        this.currentRunningSuite.beforeEach.add(fn);
-      }
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.beforeEach.add(fn);
     }
   }
 
-  beforeItSpecified(itDescs: string | string[], func: (() => void) | (() => Promise<void>)) {
+  beforeItSpecified(itDescs: string | string[], func: HookFuncType) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = Type.of(func as object).getLiteral();
-      const isAsyncFunc = checkIsAsyncFunction(funcStr);
-      if(isAsyncFunc) {
-        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
-        this.currentRunningSuite.beforeItSpecified.set(itDescs, fn);
-      } else {
-        const fn = processFunc(core as Core, func as (() => void));
-        this.currentRunningSuite.beforeItSpecified.set(itDescs, fn);
-      }
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.beforeItSpecified.set(itDescs, fn);
     }
   }
 
-  afterItSpecified(itDescs: string | string[], func: (() => void) | (() => Promise<void>)) {
+  afterItSpecified(itDescs: string | string[], func: HookFuncType) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = Type.of(func as object).getLiteral();
-      const isAsyncFunc = checkIsAsyncFunction(funcStr);
-      if(isAsyncFunc) {
-        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
-        this.currentRunningSuite.afterItSpecified.set(itDescs, fn);
-      } else {
-        const fn = processFunc(core as Core, func as (() => void));
-        this.currentRunningSuite.afterItSpecified.set(itDescs, fn);
-      }
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.afterItSpecified.set(itDescs, fn);
     }
   }
 
-  afterAll(func: (() => void) | (() => Promise<void>)) {
+  afterAll(func: HookFuncType) {
     const core = this.coreContext;
     if (core !== null) {
-      const funcStr = Type.of(func as object).getLiteral();
-      const isAsyncFunc = checkIsAsyncFunction(funcStr);
-      if(isAsyncFunc) {
-        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
-        this.currentRunningSuite.afterAll.add(fn); 
-      } else {
-        const fn = processFunc(core as Core, func as (() => void));
-        this.currentRunningSuite.afterAll.add(fn);
-      }
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.afterAll.add(fn);
     }
   }
 
-  afterEach(func: (() => void) | (() => Promise<void>)) {
+  afterEach(func: HookFuncType) {
     const core = this.coreContext;
     if (core) {
-      const funcStr = Type.of(func as object).getLiteral();
-      const isAsyncFunc = checkIsAsyncFunction(funcStr);
-      if(isAsyncFunc) {
-        const fn = processAsyncFunc(core as Core, func as (() => Promise<void>));
-        this.currentRunningSuite.afterEach.add(fn); 
-      } else {
-        const fn = processFunc(core as Core, func as (() => void));
-        this.currentRunningSuite.afterEach.add(fn);
-      }
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.afterEach.add(fn);
     }
   }
 
@@ -349,27 +328,25 @@ class SuiteService {
   }
 
   async setSuiteResults(suite: StaticSuite, error: Error, coreContext: Core) {
-    if (suite.childSuites.length > 0 && suite.specs.length > 0) {
-      if (suite.specs.length > 0) {
-        const specService = coreContext.getDefaultService('spec');
-        if (specService !== null) {
-          const ss = specService as SpecService;
-          for (const specItem of suite.specs) {
-            ss.setCurrentRunningSpec(specItem);
-            if ((error as Error) instanceof AssertException) {
-              specItem.fail = error;
-            } else {
-              specItem.error = error;
-            }
-            await coreContext.fireEvents('spec', 'specStart');
-            await coreContext.fireEvents('spec', 'specDone');
+    if (suite.specs.length > 0) {
+      const specService = coreContext.getDefaultService('spec');
+      if (specService !== null) {
+        const ss = specService as SpecService;
+        for (const specItem of suite.specs) {
+          ss.setCurrentRunningSpec(specItem);
+          if ((error as Error) instanceof AssertException) {
+            specItem.fail = error;
+          } else {
+            specItem.error = error;
           }
+          await coreContext.fireEvents('spec', 'specStart');
+          await coreContext.fireEvents('spec', 'specDone');
         }
       }
-      if (suite.childSuites.length > 0) {
-        for (const suiteItem of suite.childSuites) {
-          await this.setSuiteResults(suiteItem, error, coreContext);
-        }
+    }
+    if (suite.childSuites.length > 0) {
+      for (const suiteItem of suite.childSuites) {
+        await this.setSuiteResults(suiteItem, error, coreContext);
       }
     }
   }
@@ -589,29 +566,29 @@ class SuiteService {
     const _this = this;
     return {
       name: 'SuiteService',
-      describe: (desc: string, func: (() => void) | (() => Promise<void>)) => {
+      describe: (desc: string, func: () => void) => {
         const c = _this.describe(desc, func);
         return c;
       },
-      xdescribe: (desc: string, func: (() => void) | (() => Promise<void>), reason: string) => {
+      xdescribe: (desc: string, func: () => void, reason: string) => {
         return _this.xdescribe(desc, func, reason);
       },
-      beforeItSpecified: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {
+      beforeItSpecified: (itDescs: string | string[], func: HookFuncType) => {
         return _this.beforeItSpecified(itDescs, func);
       },
-      afterItSpecified: (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {
+      afterItSpecified: (itDescs: string | string[], func: HookFuncType) => {
         return _this.afterItSpecified(itDescs, func);
       },
-      beforeAll: (func: (() => void) | (() => Promise<void>)) => {
+      beforeAll: (func: HookFuncType) => {
         return _this.beforeAll(func);
       },
-      beforeEach: (func: (() => void) | (() => Promise<void>)) => {
+      beforeEach: (func: HookFuncType) => {
         return _this.beforeEach(func);
       },
-      afterAll: (func: (() => void) | (() => Promise<void>)) => {
+      afterAll: (func: HookFuncType) => {
         return _this.afterAll(func);
       },
-      afterEach: (func: (() => void) | (() => Promise<void>)) => {
+      afterEach: (func: HookFuncType) => {
         return _this.afterEach(func);
       },
     };
