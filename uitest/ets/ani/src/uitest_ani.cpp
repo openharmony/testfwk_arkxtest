@@ -280,7 +280,7 @@ static json getRect(ani_env *env, ani_object p)
             ani_status status = env->Object_GetPropertyByName_Int(p, cstr, &value);
             HiLog::Error(LABEL, "Object_GetPropertyByName_Int  status : %{public}d", status);
             compareAndReport(ANI_OK, status,
-                            "Object_GetField_Int Failed '" + std::string(cstr) + "'", 
+                            "Object_GetField_Int Failed '" + std::string(cstr) + "'",
                             "Successful!!get int proprty");
             rect[list[index]] = value;
         }
