@@ -17,7 +17,8 @@ import hilog from '@ohos.hilog'
 import { Callback, BusinessError } from '@ohos.base';
 let domain: int = 0x0000;
 let tag: string = 'uitestTag';
-
+let connectedState = 1;
+let executeTime = 3;
 export default namespace UiTest {
   loadLibrary("uitest_ani");
   export native function ScheduleEstablishConnection(tokken: String): boolean;
@@ -26,7 +27,7 @@ export default namespace UiTest {
 
 export function loadAndSetUpUiTest():void {
   hilog.info(domain, tag, 'loadAndSetUpUiTest');
-  if (UiTest.GetConnectionStat() == 1) {
+  if (UiTest.GetConnectionStat() == connectedState) {
     hilog.info(domain, tag, "Uitest is already connected: "+ UiTest.GetConnectionStat())
   } else {
     let delegator = abilityDelegatorRegistry.getAbilityDelegator();
@@ -37,7 +38,7 @@ export function loadAndSetUpUiTest():void {
             let result = UiTest.ScheduleEstablishConnection("default");
             hilog.info(domain, tag, "Uitest.ScheduleEstablishConnection(): "+result )
             hilog.info(domain, tag, 'UiTestKit_exporter: Begin executing shell command to start server-daemon');
-            await delegator.executeShellCommand(`uitest start-daemon default`, 3.0);
+            await delegator.executeShellCommand(`uitest start-daemon default`, executeTime);
         } else {
             hilog.error(domain, tag, 'UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started');
             UiTest.ScheduleEstablishConnection('default');
