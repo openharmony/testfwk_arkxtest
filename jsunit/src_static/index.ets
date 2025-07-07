@@ -35,4 +35,4 @@ export { Core } from './core';
 export { ExpectExtend } from './module/assert/ExpectExtend';
 export { OhReport } from './module/report/OhReport';
 export { SysTestKit } from './module/kit/SysTestKit';
-export { default as DataDriver } from './module/config/DataDriver';
+export { DataDriver } from './module/config/DataDriver';

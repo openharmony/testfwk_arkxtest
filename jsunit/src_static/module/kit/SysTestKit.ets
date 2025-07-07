@@ -14,8 +14,7 @@
  */
 import systemDateTime from '@ohos.systemDateTime';
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
-import { worker } from '@kit.ArkTS';
-
+import { BusinessError } from '@ohos.base';
 import { TAG } from '../../Constant';
 import { Core } from '../../core';
 import { SuiteService } from '../service/SuiteService';
@@ -26,7 +25,7 @@ class SysTestKit {
   public index: short;
   public static delegator: abilityDelegatorRegistry.AbilityDelegator | null = null;
   public static systemTime: number;
-  public static workerPort: worker.ThreadWorker;
+  // public static workerPort: worker.ThreadWorker;
   constructor() {
     this.id = 'sysTestKit';
     this.index = 0;
@@ -112,7 +111,7 @@ class SysTestKit {
     } catch (err: Error) {
       console.error(`${TAG} failed to systemDateTime.getUptime because ` + err.message);
     }
-    return 0;
+    return current;
   }
 
   static async existKeyword(keyword: string, timeout?: number): Promise<boolean> {
@@ -146,13 +145,16 @@ function executePromise(cmd: string, timeout: number) {
     (delegator as abilityDelegatorRegistry.AbilityDelegator).executeShellCommand(
       cmd,
       timeout,
-      (error: Error, data: abilityDelegatorRegistry.ShellCmdResult) => {
+      (error: BusinessError | null, data: abilityDelegatorRegistry.ShellCmdResult | undefined) => {
         if (error) {
-          reject(new Error('executeShellCommand Error: ' + error.message));
-          console.info(`${TAG}existKeyword CallBack: err : ${error.message}`);
+          const e = error as BusinessError
+          reject(new Error('executeShellCommand Error: ' + e.message));
+          console.info(`${TAG}existKeyword CallBack: err : ${e.message}`);
+        } else if(data) {
+          const result = data as abilityDelegatorRegistry.ShellCmdResult;
+          console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(result)}`);
+          resolve(parseInt(result.stdResult) > 3 ? true : false);
         }
-        console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(data)}`);
-        resolve(parseInt(data.stdResult) > 3 ? true : false);
       }
     );
   });
