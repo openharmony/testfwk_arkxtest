@@ -18,7 +18,6 @@ import {TestType, Size, Level, DEFAULT} from './src/Constant';
 import DataDriver from './src/module/config/DataDriver';
 import ExpectExtend from './src/module/assert/ExpectExtend';
 import OhReport from './src/module/report/OhReport';
-
 export { xdescribe, xit, describe, it } from './index.ts';
 
 export declare class Hypium {

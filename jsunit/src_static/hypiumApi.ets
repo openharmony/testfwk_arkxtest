@@ -14,10 +14,10 @@
  */
 
 import { Core } from './core';
-import { AnyType, ItfnType } from './module/types/common';
+import { AnyType, HookFuncType, ItfnType } from './module/types/common';
 
 const core = Core.getInstance();
-const hypiumDescribe = (desc: string, func: (() => void) | (() => Promise<void>)): Promise<undefined> => {
+const hypiumDescribe = (desc: string, func: () => void): Promise<undefined> => {
   if (core) {
     return (core as Core).describe(desc, func);
   }
@@ -28,33 +28,33 @@ const hypiumIt = (desc: string, filter: int, func: ItfnType) => {
     return (core as Core).it(desc, filter, func);
   }
 };
-const hypiumBeforeItSpecified = (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {
+const hypiumBeforeItSpecified = (itDescs: string | string[], func: HookFuncType) => {
   if (core) {
     return (core as Core).beforeItSpecified(itDescs, func);
   }
 };
 
-const hypiumAfterItSpecified = (itDescs: string | string[], func: (() => void) | (() => Promise<void>)) => {
+const hypiumAfterItSpecified = (itDescs: string | string[], func: HookFuncType) => {
   if (core) {
     return (core as Core).afterItSpecified(itDescs, func);
   }
 };
-const hypiumBeforeEach = (func: (() => void) | (() => Promise<void>)) => {
+const hypiumBeforeEach = (func: HookFuncType) => {
   if (core) {
     return (core as Core).beforeEach(func);
   }
 };
-const hypiumAfterEach = (func: (() => void) | (() => Promise<void>)) => {
+const hypiumAfterEach = (func: HookFuncType) => {
   if (core) {
     return (core as Core).afterEach(func);
   }
 };
-const hypiumBeforeAll = (func: (() => void) | (() => Promise<void>)) => {
+const hypiumBeforeAll = (func: HookFuncType) => {
   if (core) {
     return (core as Core).beforeAll(func);
   }
 };
-const hypiumAfterAll = (func: (() => void) | (() => Promise<void>)) => {
+const hypiumAfterAll = (func: HookFuncType) => {
   if (core) {
     return (core as Core).afterAll(func);
   }
@@ -68,13 +68,13 @@ const hypiumExpect = (actualValue?: AnyType) => {
   }
 };
 
-const hypiumXdescribe = (desc: string, func: (() => void) | (() => Promise<void>)) => {
+const hypiumXdescribe = (desc: string, func: () => void) => {
   if (core) {
     return (core as Core).xdescribe(desc, func, '');
   }
 };
 const hypiumXdescribeReason = (reason: string) => {
-  return (desc: string, func: (() => void) | (() => Promise<void>)) => {
+  return (desc: string, func: () => void) => {
     if (core) {
       return (core as Core).xdescribe(desc, func, reason);
     }
