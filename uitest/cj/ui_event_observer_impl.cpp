@@ -102,9 +102,18 @@ static void InitCallbackContext(const ApiCallInfo &in, ApiReplyInfo &out, EventC
 
 static void DestructElementInfo(CUIElementInfo &info)
 {
-    if (info.bundleName != nullptr) { free(info.bundleName); }
-    if (info.componentType != nullptr) { free(info.componentType); }
-    if (info.text != nullptr) { free(info.text); }
+    if (info.bundleName != nullptr) {
+        free(info.bundleName);
+        info.bundleName = nullptr;
+    }
+    if (info.componentType != nullptr) {
+        free(info.componentType);
+        info.bundleName = nullptr;
+    }
+    if (info.text != nullptr) {
+        free(info.text);
+        info.text = nullptr;
+    }
     return;
 }
 
