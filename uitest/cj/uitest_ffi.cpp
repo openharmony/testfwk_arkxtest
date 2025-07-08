@@ -155,7 +155,6 @@ namespace OHOS::cjuitest {
         void CJ_InitConnection(char *token)
         {
             string realToken{token};
-            LOG_I("connect token is %{public}s", token);
             g_establishConnectionFuture = async(launch::async, [realToken]() {
                 auto &instance = UiEventObserverImpl::Get();
                 using namespace std::placeholders;
