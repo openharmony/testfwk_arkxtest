@@ -108,7 +108,7 @@ static void DestructElementInfo(CUIElementInfo &info)
     }
     if (info.componentType != nullptr) {
         free(info.componentType);
-        info.bundleName = nullptr;
+        info.componentType = nullptr;
     }
     if (info.text != nullptr) {
         free(info.text);
