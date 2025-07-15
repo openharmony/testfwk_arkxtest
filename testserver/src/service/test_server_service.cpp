@@ -49,14 +49,14 @@ namespace OHOS::testserver {
 
     TestServerService::TestServerService(int32_t saId, bool runOnCreate) : SystemAbility(saId, runOnCreate)
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called. saId=%{public}d, runOnCreate=%{public}d",
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called. saId=%{public}d, runOnCreate=%{public}d",
             __func__, saId, runOnCreate);
         StartCallerDetectTimer();
     }
 
     TestServerService::~TestServerService()
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
         if (callerDetectTimer_ == nullptr) {
             HiLog::Error(LABEL_SERVICE, "%{public}s. callerDetectTimer_ is nullptr.", __func__);
             return;
@@ -66,7 +66,7 @@ namespace OHOS::testserver {
 
     void TestServerService::OnStart()
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
         if (!IsRootVersion() && !IsDeveloperMode()) {
             HiLog::Error(LABEL_SERVICE, "%{public}s. System mode is unsatisfied.", __func__);
             return;
@@ -79,34 +79,34 @@ namespace OHOS::testserver {
 
     void TestServerService::OnStop()
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
         IsDeveloperMode();
     }
 
     bool TestServerService::IsRootVersion()
     {
         bool debugmode = OHOS::system::GetBoolParameter("const.debuggable", false);
-        HiLog::Info(LABEL_SERVICE, "%{public}s. debugmode=%{public}d", __func__, debugmode);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s. debugmode=%{public}d", __func__, debugmode);
         return debugmode;
     }
 
     bool TestServerService::IsDeveloperMode()
     {
         bool developerMode = OHOS::system::GetBoolParameter("const.security.developermode.state", false);
-        HiLog::Info(LABEL_SERVICE, "%{public}s. developerMode=%{public}d", __func__, developerMode);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s. developerMode=%{public}d", __func__, developerMode);
         return developerMode;
     }
 
     void TestServerService::StartCallerDetectTimer()
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
         callerDetectTimer_ = new CallerDetectTimer(this);
         callerDetectTimer_->Start();
     }
 
     ErrCode TestServerService::CreateSession(const SessionToken &sessionToken)
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
         bool result = true;
         try {
             result = sessionToken.AddDeathRecipient(
@@ -120,7 +120,7 @@ namespace OHOS::testserver {
             return TEST_SERVER_ADD_DEATH_RECIPIENT_FAILED;
         }
         AddCaller();
-        HiLog::Info(LABEL_SERVICE, "%{public}s. Create session SUCCESS. callerCount=%{public}d",
+        HiLog::Debug(LABEL_SERVICE, "%{public}s. Create session SUCCESS. callerCount=%{public}d",
             __func__, GetCallerCount());
         return TEST_SERVER_OK;
     }
@@ -167,18 +167,18 @@ namespace OHOS::testserver {
 
     void TestServerService::DestorySession()
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
         if (callerCount_ == 0) {
-            HiLog::Info(LABEL_SERVICE, "%{public}s. No proxy exists. Remove the TestServer", __func__);
+            HiLog::Debug(LABEL_SERVICE, "%{public}s. No proxy exists. Remove the TestServer", __func__);
             RemoveTestServer();
         } else {
-            HiLog::Info(LABEL_SERVICE, "%{public}s. Other proxys exist. Can not remove the TestServer", __func__);
+            HiLog::Debug(LABEL_SERVICE, "%{public}s. Other proxys exist. Can not remove the TestServer", __func__);
         }
     }
 
     bool TestServerService::RemoveTestServer()
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called. ", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called. ", __func__);
         sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (samgr == nullptr) {
             HiLog::Error(LABEL_SERVICE, "%{public}s. Get SystemAbility Manager failed!", __func__);
@@ -190,7 +190,7 @@ namespace OHOS::testserver {
 
     void TestServerService::TestServerProxyDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &object)
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
         if (object == nullptr) {
             HiLog::Error(LABEL_SERVICE, "%{public}s. IRemoteObject is NULL.", __func__);
             return;
@@ -201,10 +201,10 @@ namespace OHOS::testserver {
 
     void TestServerService::CallerDetectTimer::Start()
     {
-        HiLog::Info(LABEL_TIMER, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_TIMER, "%{public}s called.", __func__);
         thread_ = thread([this] {
             this_thread::sleep_for(chrono::milliseconds(CALLER_DETECT_DURING));
-            HiLog::Info(LABEL_TIMER, "%{public}s. Timer is done.", __func__);
+            HiLog::Debug(LABEL_TIMER, "%{public}s. Timer is done.", __func__);
             if (!testServerExit_) {
                 testServerService_->DestorySession();
             }
@@ -214,13 +214,13 @@ namespace OHOS::testserver {
 
     void TestServerService::CallerDetectTimer::Cancel()
     {
-        HiLog::Info(LABEL_TIMER, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_TIMER, "%{public}s called.", __func__);
         testServerExit_ = true;
     }
 
     ErrCode TestServerService::FrequencyLock()
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
         int performanceModeId = 9100;
         OHOS::SOCPERF::SocPerfClient::GetInstance().PerfRequest(performanceModeId, "");
         return TEST_SERVER_OK;
@@ -264,7 +264,7 @@ namespace OHOS::testserver {
 
     ErrCode TestServerService::SpDaemonProcess(int daemonCommand, const std::string& extraInfo)
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
         if (extraInfo == "") {
             HiLog::Error(LABEL_SERVICE, "%{public}s called. but extraInfo is empty", __func__);
             return TEST_SERVER_SPDAEMON_PROCESS_FAILED;
@@ -294,7 +294,7 @@ namespace OHOS::testserver {
         char buf[4096] = {'\0'};
         while ((fgets(buf, sizeof(buf), fd)) != nullptr) {
             std::string line(buf);
-            HiLog::Info(LABEL_SERVICE, "line %s", line.c_str());
+            HiLog::Debug(LABEL_SERVICE, "line %s", line.c_str());
             std::istringstream iss(line);
             std::string field;
             std::string pid = "-1";
@@ -306,23 +306,23 @@ namespace OHOS::testserver {
                 }
                 count++;
             }
-            HiLog::Info(LABEL_SERVICE, "pid %s", pid.c_str());
+            HiLog::Debug(LABEL_SERVICE, "pid %s", pid.c_str());
             cmd = "kill " + pid;
             FILE *fpd = popen(cmd.c_str(), "r");
             if (pclose(fpd) == -1) {
-                HiLog::Info(LABEL_SERVICE, "Error: Failed to close file");
+                HiLog::Debug(LABEL_SERVICE, "Error: Failed to close file");
                 return;
             }
         }
         if (pclose(fd) == -1) {
-            HiLog::Info(LABEL_SERVICE, "Error: Failed to close file");
+            HiLog::Debug(LABEL_SERVICE, "Error: Failed to close file");
             return;
         }
     }
 
     ErrCode TestServerService::CollectProcessMemory(const int32_t pid, ProcessMemoryInfo &processMemoryInfo)
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
         shared_ptr<MemoryCollector> collector = MemoryCollector::Create();
         CollectResult<ProcessMemory> processMemory = collector->CollectProcessMemory(pid);
         if (processMemory.retCode != 0) {
@@ -340,13 +340,13 @@ namespace OHOS::testserver {
         processMemoryInfo.sharedClean = processMemory.data.sharedClean;
         processMemoryInfo.privateClean = processMemory.data.privateClean;
         processMemoryInfo.procState = processMemory.data.procState;
-        HiLog::Info(LABEL_SERVICE, "%{public}s. Collect process memory success.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s. Collect process memory success.", __func__);
         return TEST_SERVER_OK;
     }
 
     ErrCode TestServerService::CollectProcessCpu(const int32_t pid, bool isNeedUpdate, ProcessCpuInfo &processCpuInfo)
     {
-        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
         if (cpuCollector_ == nullptr) {
             cpuCollector_ = CpuCollector::Create();
         }
@@ -359,7 +359,7 @@ namespace OHOS::testserver {
                 HiLog::Error(LABEL_SERVICE, "%{public}s. Collect process cpu failed.", __func__);
                 return TEST_SERVER_COLLECT_PROCESS_INFO_FAILED;
             }
-            HiLog::Info(LABEL_SERVICE, "%{public}s. Retry to collect success.", __func__);
+            HiLog::Debug(LABEL_SERVICE, "%{public}s. Retry to collect success.", __func__);
         }
         processCpuInfo.startTime = processCpuStatInfo.data.startTime;
         processCpuInfo.endTime = processCpuStatInfo.data.endTime;
@@ -372,7 +372,7 @@ namespace OHOS::testserver {
         processCpuInfo.cpuUsage = processCpuStatInfo.data.cpuUsage;
         processCpuInfo.procName = processCpuStatInfo.data.procName;
         processCpuInfo.threadCount = processCpuStatInfo.data.threadCount;
-        HiLog::Info(LABEL_SERVICE, "%{public}s. Collect process cpu success.", __func__);
+        HiLog::Debug(LABEL_SERVICE, "%{public}s. Collect process cpu success.", __func__);
         return TEST_SERVER_OK;
     }
 
