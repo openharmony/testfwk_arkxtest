@@ -226,7 +226,14 @@ namespace OHOS::uitest {
             fout.close();
             return;
         }
-        fout << data.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
+        string dumpStr = data.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
+        LOG_D("dumpStr size = %{public}d", dumpStr.size());
+        fout << dumpStr;
+        if (fout.fail()) {
+            LOG_E("Write dumpStr to file failed.");
+        } else if (fout.bad()) {
+            LOG_E("Error in write dumpStr to file.");
+        }
         fout.close();
         return;
     }

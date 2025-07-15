@@ -31,6 +31,7 @@ namespace OHOS::uitest {
     constexpr int32_t KEYCODE_D = 2020;
     constexpr int32_t KEYCODE_WIN = 2076;
     constexpr int32_t KEYCODE_MOVETOEND = 2082;
+    constexpr int32_t KEYCODE_A = 2017;
 
     /**Enumerates all the supported coordinate-based touch operations.*/
     enum TouchOp : uint8_t { CLICK, LONG_CLICK, DOUBLE_CLICK_P, SWIPE, DRAG, FLING};
