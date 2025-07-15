@@ -29,26 +29,26 @@ namespace OHOS::testserver {
         SessionToken(sptr<IPCObjectStub> ipcObjectStub = new(std::nothrow) IPCObjectStub(),
                                                                     sptr<IRemoteObject> iRemoteObject = nullptr)
         {
-            HiLog::Info(LABEL_SESSION_TOKEN, "%{public}s called. ", __func__);
+            HiLog::Debug(LABEL_SESSION_TOKEN, "%{public}s called. ", __func__);
             ipcObjectStub_ = ipcObjectStub;
             iRemoteObject_ = iRemoteObject;
         }
 
         ~SessionToken()
         {
-            HiLog::Info(LABEL_SESSION_TOKEN, "%{public}s called. ", __func__);
+            HiLog::Debug(LABEL_SESSION_TOKEN, "%{public}s called. ", __func__);
         }
 
         bool Marshalling(Parcel &out) const override
         {
-            HiLog::Info(LABEL_SESSION_TOKEN, "%{public}s called. ", __func__);
+            HiLog::Debug(LABEL_SESSION_TOKEN, "%{public}s called. ", __func__);
             static_cast<MessageParcel *>(&out)->WriteRemoteObject(ipcObjectStub_);
             return true;
         }
 
         static SessionToken *Unmarshalling(Parcel &in)
         {
-            HiLog::Info(LABEL_SESSION_TOKEN, "%{public}s called. ", __func__);
+            HiLog::Debug(LABEL_SESSION_TOKEN, "%{public}s called. ", __func__);
             sptr<IRemoteObject> iRemoteObject = static_cast<MessageParcel *>(&in)->ReadRemoteObject();
             SessionToken *sessionToken = new SessionToken(nullptr, iRemoteObject);
             return sessionToken;
@@ -56,7 +56,7 @@ namespace OHOS::testserver {
 
         bool AddDeathRecipient(const sptr<IRemoteObject::DeathRecipient> &recipient) const
         {
-            HiLog::Info(LABEL_SESSION_TOKEN, "%{public}s called. ", __func__);
+            HiLog::Debug(LABEL_SESSION_TOKEN, "%{public}s called. ", __func__);
             if (iRemoteObject_ == nullptr) {
                 return false;
             }
