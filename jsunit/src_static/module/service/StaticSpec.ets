@@ -98,7 +98,7 @@ class StaticSpec {
         if(specParams.length === 0) {
           await (this.asyncFn as ((params: AnyType) => Promise<void>))(suiteParams);
         } else {
-          const tempParams: Record<string, AnyType> = JSON.parse(JSON.stringify(suiteParams))
+          const tempParams: Record<string, AnyType> = suiteParams
           for(const paraItem of specParams) {
             if(!paraItem) {
               await (this.asyncFn as ((params: AnyType) => Promise<void>))(tempParams);

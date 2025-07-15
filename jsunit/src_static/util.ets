@@ -18,7 +18,7 @@ import { AnyType } from './module/types/common';
 import { TAG } from './Constant';
 
 export function getAsyncFuncWithArgsZero(func: () => Promise<void>, timeout: int, isStressTest: boolean) {
-  return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (value: object) => void) => {
+  return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (value: Error) => void) => {
     let timer = 0.0;
     if (!isStressTest) {
       timer = setTimeout(() => {
@@ -38,7 +38,7 @@ export function getAsyncFuncWithArgsZero(func: () => Promise<void>, timeout: int
 }
 
 export function getFuncWithArgsZero(func: () => void, timeout: int, isStressTest: boolean) {
-  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (value: object) => void) => {
+  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (value: Error) => void) => {
     let timer = 0.0;
     if (!isStressTest) {
       timer = setTimeout(() => {
@@ -187,7 +187,7 @@ export function processFunc(
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    const timeout = !config.timeout ? 5000 : Number(config.timeout);
     let isStressTest = false;
     if (config.getStress() > 1 || coreContext.getServices('dataDriver')) {
       isStressTest = true;
@@ -211,7 +211,7 @@ export function processAsyncFunc(
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    const timeout = !config.timeout ? 5000 : Number(config.timeout);
     let isStressTest = false;
     if (config.getStress() > 1 || coreContext.getServices('dataDriver')) {
       isStressTest = true;
@@ -232,7 +232,7 @@ export function processAsyncFuncWithArgOne(coreContext: Core, func: (done: () =>
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    const timeout = !config.timeout ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return () => {
       return getAsyncFuncWithArgsOne(func, timeout as int, isStressTest);
@@ -248,7 +248,7 @@ export function processFuncWithArgOne(coreContext: Core, func: (done: () => void
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    const timeout = !config.timeout ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return () => {
       return getFuncWithArgsOne(func, timeout as int, isStressTest);
@@ -267,7 +267,7 @@ export function processAsyncFuncWithArgTwo(
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    const timeout = !config.timeout ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return (paramItem: AnyType) => {
       return getAsyncFuncWithArgsTwo(func, timeout as int, paramItem, isStressTest);
@@ -283,7 +283,7 @@ export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => vo
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = config.timeout === undefined ? 5000 : Number(config.timeout);
+    const timeout = !config.timeout ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return (paramItem: AnyType) => {
       return getFuncWithArgsTwo(func, timeout as int, paramItem, isStressTest);
@@ -297,7 +297,8 @@ export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => vo
 export function getFunctionArgumentsCount(funcStr: string): number {
   const regex = new RegExp('^[0123456789]$', 'g');
   let count: string = '';
-  for (let str:string of funcStr) {
+  for (let s of funcStr) {
+    const str = new string(s);
     if (regex.test(str)) {
       count = str;
     }
