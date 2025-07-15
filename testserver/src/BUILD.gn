@@ -66,10 +66,15 @@ ohos_shared_library("test_server_service") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "soc_perf:socperf_client",
-    "udmf:udmf_client",
     "window_manager:session_manager_lite",
     "ability_runtime:app_manager",
   ]
+
+  if (defined(global_parts_info) && defined(global_parts_info.distributeddatamgr_udmf)) {
+    external_deps += [
+      "udmf:udmf_client",
+    ]
+  }
 
   part_name = "arkxtest"
   subsystem_name = "testfwk"

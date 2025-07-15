@@ -31,7 +31,7 @@ namespace OHOS::testserver {
 
     TestServerClient &TestServerClient::GetInstance()
     {
-        HiLog::Info(LABEL, "%{public}s called. ", __func__);
+        HiLog::Debug(LABEL, "%{public}s called. ", __func__);
         static TestServerClient testServerClient;
         return testServerClient;
     }
@@ -68,8 +68,8 @@ namespace OHOS::testserver {
     private:
         void OnLoadSystemAbilitySuccess(int32_t systemAbilityId, const sptr<IRemoteObject> &remoteObject) override
         {
-            HiLog::Info(LABEL, "%{public}s. Load SystemAbility success, systemAbilityId = [%{public}d]",
-                        __func__, systemAbilityId);
+            HiLog::Debug(LABEL, "%{public}s. Load SystemAbility success, systemAbilityId = [%{public}d]",
+                         __func__, systemAbilityId);
             if (systemAbilityId == systemAbilityId_) {
                 std::unique_lock<std::mutex> lock(locatorMutex_);
                 loadState_ = true;
@@ -80,8 +80,8 @@ namespace OHOS::testserver {
 
         void OnLoadSystemAbilityFail(int32_t systemAbilityId) override
         {
-            HiLog::Info(LABEL, "%{public}s. Load SystemAbility failed, systemAbilityId = [%{public}d]",
-                        __func__, systemAbilityId);
+            HiLog::Debug(LABEL, "%{public}s. Load SystemAbility failed, systemAbilityId = [%{public}d]",
+                         __func__, systemAbilityId);
             std::unique_lock<std::mutex> lock(locatorMutex_);
             loadState_ = false;
             locatorCond_.notify_one();
@@ -102,7 +102,7 @@ namespace OHOS::testserver {
     sptr<ITestServerInterface> TestServerClient::LoadTestServer()
     {
         const int32_t systemAbilityId = TEST_SERVER_SA_ID;
-        HiLog::Info(LABEL, "%{public}s called. SystemAbility [%{public}d] loading", __func__, systemAbilityId);
+        HiLog::Debug(LABEL, "%{public}s called. SystemAbility [%{public}d] loading", __func__, systemAbilityId);
         sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (samgr == nullptr) {
             HiLog::Error(LABEL, "%{public}s. Get SystemAbility Manager failed!", __func__);
@@ -110,7 +110,7 @@ namespace OHOS::testserver {
         }
         auto object = samgr->CheckSystemAbility(systemAbilityId);
         if (object != nullptr) {
-            HiLog::Info(LABEL, "%{public}s. CheckSystemAbility [%{public}d] SUCCESS", __func__, systemAbilityId);
+            HiLog::Debug(LABEL, "%{public}s. CheckSystemAbility [%{public}d] SUCCESS", __func__, systemAbilityId);
             remoteObject_ = object;
         } else {
             auto testServerLoadCallback = sptr<TestServerLoadCallback>(new TestServerLoadCallback(systemAbilityId));
@@ -122,7 +122,7 @@ namespace OHOS::testserver {
                 return nullptr;
             }
             if (testServerLoadCallback->WaitLoadStateChange(systemAbilityId)) {
-                HiLog::Info(LABEL, "%{public}s. LoadSystemAbility [%{public}d] SUCCESS", __func__, systemAbilityId);
+                HiLog::Debug(LABEL, "%{public}s. LoadSystemAbility [%{public}d] SUCCESS", __func__, systemAbilityId);
                 remoteObject_ = testServerLoadCallback->GetTestServerObject();
             }
         }
@@ -219,7 +219,7 @@ namespace OHOS::testserver {
 
     int32_t TestServerClient::CollectProcessMemory(int32_t &pid, ProcessMemoryInfo &processMemoryInfo)
     {
-        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL, "%{public}s called.", __func__);
         if (iTestServerInterface_ == nullptr) {
             HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
             return TEST_SERVER_GET_INTERFACE_FAILED;
@@ -229,7 +229,7 @@ namespace OHOS::testserver {
 
     int32_t TestServerClient::CollectProcessCpu(int32_t &pid, bool isNeedUpdate, ProcessCpuInfo &processCpuInfo)
     {
-        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        HiLog::Debug(LABEL, "%{public}s called.", __func__);
         if (iTestServerInterface_ == nullptr) {
             HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
             return TEST_SERVER_GET_INTERFACE_FAILED;
