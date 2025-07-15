@@ -51,64 +51,11 @@ class DataDriver {
 
   getSpecParamsValue(specs: DataDriverSuite[]) {
     let specParams: Record<string, AnyType>[] = [];
-    // let specDesc = '';
-    // const specService = this.specService;
-    // if (specService) {
-    //   const sService = specService as SpecService;
-    //   const currentRunningSpec = sService.getCurrentRunningSpec();
-    //   if (currentRunningSpec) {
-    //     specDesc = (currentRunningSpec as StaticSpec).description;
-    //   }
-    // }
-
-    // if (specs === null || specs === undefined) {
-    //   return specParams;
-    // }
-    // for (const specItem of specs) {
-    //   if (specItem.it && specItem.it === specDesc) {
-    //     if (specItem.params && Array.isArray(specItem.params)) {
-    //       return specItem.params as Record<string, AnyType>[];
-    //     } else {
-    //       return specParams;
-    //     }
-    //   }
-    // }
     return specParams;
   }
 
   getSpecParams() {
     let specParams: Record<string, AnyType>[] = [];
-    // const suiteService = this.suiteService;
-    // let suiteDesc = '';
-    // if (suiteService) {
-    //   const sService = suiteService as SuiteService;
-    //   suiteDesc = sService.getCurrentRunningSuite().description;
-    // }
-    // let suites: DataDriverSuite[] = [];
-    // const tempSuite = this.data.suites;
-    // if (tempSuite) {
-    //   suites = tempSuite as DataDriverSuite[];
-    // }
-    // for (const suiteItem of suites) {
-    //   const suite = suiteItem as DataDriverSuite;
-    //   let describeValue: string[] = [];
-    //   const tempdescribe = suite.describe;
-    //   if (tempdescribe) {
-    //     describeValue = tempdescribe as string[];
-    //   }
-    //   if (
-    //     suiteDesc &&
-    //     Array.isArray(describeValue) &&
-    //     (describeValue as Array<string>).includes(suiteDesc)
-    //   ) {
-    //     let specs: DataDriverSuite[] = [];
-    //     const tempspecs = suite.items;
-    //     if (tempspecs) {
-    //       specs = tempspecs as DataDriverSuite[];
-    //     }
-    //     return this.getSpecParamsValue(specs);
-    //   }
-    // }
     return specParams;
   }
 
