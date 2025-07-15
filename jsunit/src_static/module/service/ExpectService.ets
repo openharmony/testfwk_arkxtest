@@ -211,10 +211,9 @@ export class AssertMatcher {
 
   addNumAssert(matchers: AssertMatcherIF) {
     const numFn = (matcherName: string, assertFn: (actualValue: number, expected: number[]) => AssertResult) => {
-      return (arg1: number): void => {
+      return (arg1: NumberType): void => {
         try {
-          const c = this.actualValue;
-          const result = assertFn(c as number, [arg1]);
+          const result = assertFn(this.actualValue as number, [arg1 as number]);
           if (this.isNot) {
             result.pass = !result.pass;
             result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg1, result.message);

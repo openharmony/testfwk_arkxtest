@@ -12,10 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import systemDateTime from '@ohos.systemDateTime';
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
-import { worker } from '@kit.ArkTS';
-
 import { TAG } from '../../Constant';
 import { Core } from '../../core';
 import { SuiteService } from '../service/SuiteService';
@@ -26,7 +23,7 @@ class SysTestKit {
   public index: short;
   public static delegator: abilityDelegatorRegistry.AbilityDelegator | null = null;
   public static systemTime: number;
-  public static workerPort: worker.ThreadWorker;
+  // public static workerPort: worker.ThreadWorker;
   constructor() {
     this.id = 'sysTestKit';
     this.index = 0;
@@ -95,6 +92,7 @@ class SysTestKit {
     SysTestKit.print(message);
     console.info(`${TAG}${JSON.stringify(tag)}  actionEnd print success`);
   }
+
   static async print(message: string) {
     const delegator = SysTestKit.delegator;
     if (delegator === null) {
@@ -106,56 +104,8 @@ class SysTestKit {
 
   static getRealTime(): number {
     let current = new Date().getTime();
-    try {
-      current = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
-      console.info(`${TAG} systemDateTime.getUptime success`);
-    } catch (err: Error) {
-      console.error(`${TAG} failed to systemDateTime.getUptime because ` + err.message);
-    }
-    return 0;
+    return current;
   }
-
-  static async existKeyword(keyword: string, timeout?: number): Promise<boolean> {
-    let reg = new RegExp('^[a-zA-Z0-9]{1,}$');
-    if (!reg.test(keyword)) {
-      throw new Error('keyword must contain more than one string, and only letters and numbers are supported.');
-    }
-    let time = 4.0;
-    if (timeout !== undefined) {
-      time = timeout;
-    }
-
-    let searchResult = false;
-    let cmd = "hilog -x | grep -i '" + keyword + "' | wc -l";
-    try {
-      const data = await executePromise(cmd, time);
-      searchResult = data;
-    } catch (err: Error) {
-      throw err;
-    }
-    return searchResult;
-  }
-}
-
-function executePromise(cmd: string, timeout: number) {
-  return new Promise<boolean>((resolve: (value: boolean) => void, reject: (value: Error) => void) => {
-    const delegator = SysTestKit.delegator;
-    if (!delegator) {
-      reject(new Error('delegator is null'));
-    }
-    (delegator as abilityDelegatorRegistry.AbilityDelegator).executeShellCommand(
-      cmd,
-      timeout,
-      (error: Error, data: abilityDelegatorRegistry.ShellCmdResult) => {
-        if (error) {
-          reject(new Error('executeShellCommand Error: ' + error.message));
-          console.info(`${TAG}existKeyword CallBack: err : ${error.message}`);
-        }
-        console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(data)}`);
-        resolve(parseInt(data.stdResult) > 3 ? true : false);
-      }
-    );
-  });
 }
 
 export { SysTestKit };
