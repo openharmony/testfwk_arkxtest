@@ -176,7 +176,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -215,7 +215,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -268,7 +268,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -306,7 +306,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -353,7 +353,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -399,7 +399,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -452,7 +452,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -493,7 +493,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -530,7 +530,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -578,7 +578,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
@@ -626,7 +626,7 @@ export class AssertMatcher {
             }
             throw assertError;
           }
-        } catch (error) {
+        } catch (error: Error) {
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
