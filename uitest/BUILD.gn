@@ -323,6 +323,7 @@ ohos_unittest("uitest_core_unittest") {
   part_name = "arkxtest"
 }
 ohos_shared_library("uitest_ani") {
+  shlib_type = "ani"
   configs = [ ":uitest_common_configs" ]
   external_deps = common_external_deps
   include_dirs = [
