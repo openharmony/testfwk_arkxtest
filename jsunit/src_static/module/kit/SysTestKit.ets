@@ -119,9 +119,9 @@ class SysTestKit {
     if (!reg.test(keyword)) {
       throw new Error('keyword must contain more than one string, and only letters and numbers are supported.');
     }
-    let time = 4.0;
+    let time: long = 4;
     if (timeout !== undefined) {
-      time = timeout;
+      time = timeout.toLong();
     }
 
     let searchResult = false;
@@ -136,7 +136,7 @@ class SysTestKit {
   }
 }
 
-function executePromise(cmd: string, timeout: number) {
+function executePromise(cmd: string, timeout: long) {
   return new Promise<boolean>((resolve: (value: boolean) => void, reject: (value: Error) => void) => {
     const delegator = SysTestKit.delegator;
     if (!delegator) {
