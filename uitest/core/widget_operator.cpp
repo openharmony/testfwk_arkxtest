@@ -179,6 +179,7 @@ namespace OHOS::uitest {
             return;
         }
         static constexpr uint32_t focusTimeMs = 500;
+        static constexpr uint32_t typeCharTimeMs = 50;
         const auto center = Point(retrieved->GetBounds().GetCenterX(), retrieved->GetBounds().GetCenterY(),
             retrieved->GetDisplayId());
         auto touch = OHOS::uitest::GenericClick(TouchOp::CLICK, center);
@@ -186,11 +187,14 @@ namespace OHOS::uitest {
         driver_.DelayMs(focusTimeMs); // short delay to ensure focus gaining
         if (!options_.inputAdditional_ && !origText.empty()) {
             vector<KeyEvent> events;
-            auto selectAllKeyAction = CombinedKeys(KEYCODE_CTRL, KEYCODE_A, KEYCODE_NONE);
-            driver_.TriggerKey(selectAllKeyAction, options_, error, widget_.GetDisplayId());
-            driver_.DelayMs(focusTimeMs);
-            auto deleteKeyAction = AnonymousSingleKey(KEYCODE_DEL);
-            driver_.TriggerKey(deleteKeyAction, options_, error, widget_.GetDisplayId());
+            for (size_t index = 0; index < origText.size(); index++) {
+                events.emplace_back(KeyEvent{ActionStage::DOWN, KEYCODE_DPAD_RIGHT, typeCharTimeMs});
+                events.emplace_back(KeyEvent{ActionStage::UP, KEYCODE_DPAD_RIGHT, 0});
+                events.emplace_back(KeyEvent{ActionStage::DOWN, KEYCODE_DEL, typeCharTimeMs});
+                events.emplace_back(KeyEvent{ActionStage::UP, KEYCODE_DEL, 0});
+            }
+            auto keyActionForDelete = KeysForwarder(events);
+            driver_.TriggerKey(keyActionForDelete, options_, error, widget_.GetDisplayId());
             driver_.DelayMs(focusTimeMs);
         } else {
             driver_.TriggerKey(MoveToEnd(), options_, error, widget_.GetDisplayId());
