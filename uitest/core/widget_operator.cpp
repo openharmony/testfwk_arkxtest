@@ -187,9 +187,10 @@ namespace OHOS::uitest {
         driver_.DelayMs(focusTimeMs); // short delay to ensure focus gaining
         if (!options_.inputAdditional_ && !origText.empty()) {
             vector<KeyEvent> events;
+            events.emplace_back(KeyEvent{ActionStage::DOWN, KEYCODE_MOVETOEND, typeCharTimeMs});
+            events.emplace_back(KeyEvent{ActionStage::UP, KEYCODE_MOVETOEND, 0});
+            driver_.DelayMs(focusTimeMs);
             for (size_t index = 0; index < origText.size(); index++) {
-                events.emplace_back(KeyEvent{ActionStage::DOWN, KEYCODE_DPAD_RIGHT, typeCharTimeMs});
-                events.emplace_back(KeyEvent{ActionStage::UP, KEYCODE_DPAD_RIGHT, 0});
                 events.emplace_back(KeyEvent{ActionStage::DOWN, KEYCODE_DEL, typeCharTimeMs});
                 events.emplace_back(KeyEvent{ActionStage::UP, KEYCODE_DEL, 0});
             }
