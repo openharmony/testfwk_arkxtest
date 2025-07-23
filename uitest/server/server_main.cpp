@@ -227,7 +227,7 @@ namespace OHOS::uitest {
             return;
         }
         string dumpStr = data.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
-        LOG_D("dumpStr size = %{public}lu", dumpStr.size());
+        LOG_D("dumpStr size = %{public}zu", dumpStr.size());
         fout << dumpStr;
         if (fout.fail()) {
             LOG_E("Write dumpStr to file failed.");
