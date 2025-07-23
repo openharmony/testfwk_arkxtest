@@ -407,12 +407,14 @@ static ani_boolean BindPointMatrix(ani_env *env)
         HiLog::Error(LABEL, "%{public}s Not found className !!!", __func__);
         return false;
     }
-    std::array methods = {
-        ani_native_function{"create", nullptr, reinterpret_cast<void *>(createMatrix)},
-        ani_native_function{"setPoint", nullptr, reinterpret_cast<void *>(setPoint)},
-    };
-    if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
+    ani_native_function setPointMethod {"setPoint", nullptr, reinterpret_cast<void *>(setPoint)};
+    if (ANI_OK != env->Class_BindNativeMethods(cls, &setPointMethod, 1)) {
         HiLog::Error(LABEL, "%{public}s Cannot bind native methods to !!!", __func__);
+        return false;
+    }
+    ani_native_function createMethod {"create", nullptr, reinterpret_cast<void *>(createMatrix)};
+    if (ANI_OK != env->Class_BindStaticNativeMethods(cls, &createMethod, 1)) {
+        HiLog::Error(LABEL, "%{public}s Cannot bind static native methods to !!!", __func__);
         return false;
     }
     return true;
@@ -1403,7 +1405,6 @@ static ani_boolean BindDriver(ani_env *env)
     }
 
     std::array methods = {
-        ani_native_function{"create", ":L@ohos/UiTest/Driver;", reinterpret_cast<void *>(create)},
         ani_native_function{"delayMsSync", nullptr, reinterpret_cast<void *>(delayMsSync)},
         ani_native_function{"clickSync", nullptr, reinterpret_cast<void *>(clickSync)},
         ani_native_function{"longClickSync", nullptr, reinterpret_cast<void *>(longClickSync)},
@@ -1451,6 +1452,11 @@ static ani_boolean BindDriver(ani_env *env)
 
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
         HiLog::Error(LABEL, "%{public}s Cannot bind native methods to !!!", __func__);
+        return false;
+    }
+    ani_native_function createMethod {"create", ":L@ohos/UiTest/Driver;", reinterpret_cast<void *>(create)};
+    if (ANI_OK != env->Class_BindStaticNativeMethods(cls, &createMethod, 1)) {
+        HiLog::Error(LABEL, "%{public}s Cannot bind static native methods to !!!", __func__);
         return false;
     }
     return true;
