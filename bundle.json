@@ -26,7 +26,6 @@
       "ram": "100KB",
       "deps": {
         "components": [
-          "access_token",
           "common_event_service",
           "ipc",
           "ability_base",
@@ -47,7 +46,7 @@
           "soc_perf",
           "init",
           "access_token",
-	  "graphic_2d",
+	        "graphic_2d",
           "runtime_core",
           "libuv",
           "udmf",
