@@ -1010,7 +1010,6 @@ namespace OHOS::uitest {
             return false;
         }
         connected_ = true;
-        OpenAamsEvent();
         return true;
     }
 
@@ -1160,8 +1159,7 @@ namespace OHOS::uitest {
 
     void SysUiController::CloseAamsEvent() const
     {
-        vector<uint32_t> noEvents;
-        AccessibilityUITestAbility::GetInstance()->ConfigureEvents(noEvents);
+        AccessibilityUITestAbility::GetInstance()->ConfigureEvents({ Accessibility::EventType::TYPE_VIEW_INVALID });
     }
 
     void SysUiController::OpenAamsEvent() const

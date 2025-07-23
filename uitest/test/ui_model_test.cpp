@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include "gtest/gtest.h"
-#include "ui_model.h"
+#include "../core/ui_model.h"
 #include <regex.h>
 
 using namespace OHOS::uitest;
