@@ -38,7 +38,11 @@ export function loadAndSetUpUiTest():void {
             let result = UiTest.ScheduleEstablishConnection("default");
             hilog.info(domain, tag, "Uitest.ScheduleEstablishConnection(): "+result )
             hilog.info(domain, tag, 'UiTestKit_exporter: Begin executing shell command to start server-daemon');
-            await delegator.executeShellCommand(`uitest start-daemon default`, executeTime);
+            delegator.executeShellCommand(`uitest start-daemon default`, executeTime).then((value: NullishType) => {
+                hilog.error(domain, tag, `UiTestKit_exporter: Start server-daemon finished!!!!`);
+            }).catch((error:Error) :void=> {
+                hilog.error(domain, tag, "UiTestKit_exporter: Start server-daemon failed:"+error)
+            });
         } else {
             hilog.error(domain, tag, 'UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started');
             UiTest.ScheduleEstablishConnection('default');
