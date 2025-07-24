@@ -220,8 +220,7 @@ static ani_boolean ScheduleEstablishConnection(ani_env *env, ani_string connToke
 {
     auto token = aniStringToStdString(env, connToken);
     ani_vm *vm = nullptr;
-    auto vmWorkable = env->GetVM(&vm);
-    if (vmWorkable != env->GetVM(&vm)) {
+    if (ANI_OK != env->GetVM(&vm)) {
         HiLog::Error(LABEL, "%{public}s GetVM failed", __func__);
     }
     bool result = false;
@@ -398,6 +397,34 @@ static void setPoint(ani_env *env, ani_object object, ani_int finger, ani_int st
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return;
+}
+
+static json getInputTextModeOptions(ani_env *env, ani_object f)
+{
+    auto options = json();
+    string list[] = {"paste", "addition"};
+    for (int i = 0; i < TWO; i++) {
+        char *cstr = new char[list[i].length() + 1];
+        strcpy(cstr, list[i].c_str());
+        ani_ref value;
+        if (env->Object_GetPropertyByName_Ref(f, cstr, &value) != ANI_OK) {
+            HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
+            continue;
+        }
+        ani_boolean ret;
+        env->Reference_IsUndefined(value, &ret);
+        if (ret == ANI_TRUE) {
+            continue;
+        }
+        ani_boolean b;
+        compareAndReport(ANI_OK,
+                         env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
+                         "Object_CallMethodByName_Boolean Failed",
+                         "get boolean value");
+        HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
+        options[list[i]] = static_cast<bool>(b);
+    }
+    return options;
 }
 
 static ani_boolean BindPointMatrix(ani_env *env)
@@ -766,6 +793,18 @@ static ani_boolean pressBackSync(ani_env *env, ani_object obj)
     return true;
 }
 
+static ani_boolean pressBackWithDisplayIdSync(ani_env *env, ani_object obj, ani_int displayId)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.pressBack";
+    callInfo_.paramList_.push_back(displayId);
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
 static ani_boolean flingSync(ani_env *env, ani_object obj, ani_object f, ani_object t, ani_int stepLen, ani_int speed)
 {
     ApiCallInfo callInfo_;
@@ -798,6 +837,23 @@ static ani_boolean flingSyncDirection(ani_env *env, ani_object obj, ani_enum_ite
     return true;
 }
 
+static ani_boolean flingWithDisplayIdSync(ani_env *env, ani_object obj, ani_enum_item direction, ani_int speed,
+    ani_int displayId)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.fling";
+    ani_int enumValue;
+    env->EnumItem_GetValue_Int(direction, &enumValue);
+    callInfo_.paramList_.push_back(enumValue);
+    callInfo_.paramList_.push_back(speed);
+    callInfo_.paramList_.push_back(displayId);
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
 static ani_boolean inputTextSync(ani_env *env, ani_object obj, ani_object p, ani_string text)
 {
     ApiCallInfo callInfo_;
@@ -807,6 +863,22 @@ static ani_boolean inputTextSync(ani_env *env, ani_object obj, ani_object p, ani
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
     callInfo_.paramList_.push_back(aniStringToStdString(env, text));
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
+static ani_boolean inputTextWithModeSync(ani_env *env, ani_object obj, ani_object p, ani_string text,
+    ani_object inputMode)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.inputText";
+    auto point = getPoint(env, p);
+    callInfo_.paramList_.push_back(point);
+    callInfo_.paramList_.push_back(aniStringToStdString(env, text));
+    callInfo_.paramList_.push_back(getInputTextModeOptions(env, inputMode));
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
@@ -959,6 +1031,19 @@ static ani_boolean triggerKeySync(ani_env *env, ani_object obj, ani_int keyCode)
     return true;
 }
 
+static ani_boolean triggerKeyWithDisplayIdSync(ani_env *env, ani_object obj, ani_int keyCode, ani_int displayId)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.triggerKey";
+    callInfo_.paramList_.push_back(keyCode);
+    callInfo_.paramList_.push_back(displayId);
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
 static ani_boolean wakeUpDisplaySync(ani_env *env, ani_object obj)
 {
     performDriver(env, obj, "Driver.wakeUpDisplay");
@@ -971,12 +1056,40 @@ static ani_boolean pressHomeSync(ani_env *env, ani_object obj)
     return true;
 }
 
+static ani_boolean pressHomeWithDisplayIdSync(ani_env *env, ani_object obj, ani_int displayId)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.pressHome";
+    callInfo_.paramList_.push_back(displayId);
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
 static ani_ref getDisplaySizeSync(ani_env *env, ani_object obj)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.getDisplaySize";
+    Transact(callInfo_, reply_);
+    ani_ref result = UnmarshalReply(env, callInfo_, reply_);
+    if (result == nullptr) {
+        return nullptr;
+    }
+    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
+    return p;
+}
+
+static ani_ref getDisplaySizeWithDisplayIdSync(ani_env *env, ani_object obj, ani_int displayId)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.getDisplaySize";
+    callInfo_.paramList_.push_back(displayId);
     Transact(callInfo_, reply_);
     ani_ref result = UnmarshalReply(env, callInfo_, reply_);
     if (result == nullptr) {
@@ -1410,18 +1523,28 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function{"doubleClickSync", nullptr, reinterpret_cast<void *>(doubleClickSync)},
         ani_native_function{"flingSync", nullptr, reinterpret_cast<void *>(flingSync)},
         ani_native_function{"flingSyncDirection", nullptr, reinterpret_cast<void *>(flingSyncDirection)},
+        ani_native_function{"flingWithDisplayIdSync", nullptr, reinterpret_cast<void *>(flingWithDisplayIdSync)},
         ani_native_function{"swipeSync", nullptr, reinterpret_cast<void *>(swipeSync)},
         ani_native_function{"dragSync", nullptr, reinterpret_cast<void *>(dragSync)},
         ani_native_function{"pressBackSync", nullptr, reinterpret_cast<void *>(pressBackSync)},
+        ani_native_function{"pressBackWithDisplayIdSync", nullptr,
+                            reinterpret_cast<void *>(pressBackWithDisplayIdSync)},
         ani_native_function{"assertComponentExistSync", nullptr, reinterpret_cast<void *>(assertComponentExistSync)},
         ani_native_function{"triggerKeySync", nullptr, reinterpret_cast<void *>(triggerKeySync)},
+        ani_native_function{"triggerKeyWithDisplayIdSync", nullptr,
+                            reinterpret_cast<void *>(triggerKeyWithDisplayIdSync)},
         ani_native_function{"inputTextSync", nullptr, reinterpret_cast<void *>(inputTextSync)},
+        ani_native_function{"inputTextWithModeSync", nullptr, reinterpret_cast<void *>(inputTextWithModeSync)},
         ani_native_function{"findWindowSync", nullptr, reinterpret_cast<void *>(findWindowSync)},
         ani_native_function{"createUIEventObserver", nullptr,
                             reinterpret_cast<void *>(createUIEventObserverSync)},
         ani_native_function{"wakeUpDisplaySync", nullptr, reinterpret_cast<void *>(wakeUpDisplaySync)},
         ani_native_function{"pressHomeSync", nullptr, reinterpret_cast<void *>(pressHomeSync)},
+        ani_native_function{"pressHomeWithDisplayIdSync", nullptr,
+                            reinterpret_cast<void *>(pressHomeWithDisplayIdSync)},
         ani_native_function{"getDisplaySizeSync", nullptr, reinterpret_cast<void *>(getDisplaySizeSync)},
+        ani_native_function{"getDisplaySizeWithDisplayIdSync", nullptr,
+                            reinterpret_cast<void *>(getDisplaySizeWithDisplayIdSync)},
         ani_native_function{"getDisplayDensitySync", nullptr, reinterpret_cast<void *>(getDisplayDensitySync)},
         ani_native_function{"getDisplayRotationSync", nullptr, reinterpret_cast<void *>(getDisplayRotationSync)},
         ani_native_function{"findComponentsSync", nullptr, reinterpret_cast<void *>(findComponentsSync)},
@@ -1767,6 +1890,19 @@ static ani_boolean comInputText(ani_env *env, ani_object obj, ani_string txt)
     return true;
 }
 
+static ani_boolean comInputTextWithMode(ani_env *env, ani_object obj, ani_string txt, ani_object inputMode)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.apiId_ = "Component.inputText";
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeComponent"));
+    callInfo_.paramList_.push_back(aniStringToStdString(env, txt));
+    callInfo_.paramList_.push_back(getInputTextModeOptions(env, inputMode));
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
 static ani_boolean clearText(ani_env *env, ani_object obj)
 {
     performComponentApi(env, obj, "Component.clearText");
@@ -1924,6 +2060,7 @@ static ani_boolean BindComponent(ani_env *env)
         ani_native_function{"getHintSync", nullptr, reinterpret_cast<void *>(getHint)},
         ani_native_function{"getDescriptionSync", nullptr, reinterpret_cast<void *>(getDescription)},
         ani_native_function{"comInputTextSync", nullptr, reinterpret_cast<void *>(comInputText)},
+        ani_native_function{"comInputTextWithModeSync", nullptr, reinterpret_cast<void *>(comInputTextWithMode)},
         ani_native_function{"clearTextSync", nullptr, reinterpret_cast<void *>(clearText)},
         ani_native_function{"scrollToTopSync", nullptr, reinterpret_cast<void *>(scrollToTop)},
         ani_native_function{"scrollToBottomSync", nullptr, reinterpret_cast<void *>(scrollToBottom)},
