@@ -568,28 +568,28 @@ class SuiteService {
     return {
       name: 'SuiteService',
       describe: (desc: string, func: () => void) => {
-        return _this.describe(desc, func);
+        _this.describe(desc, func);
       },
       xdescribe: (desc: string, func: () => void, reason: string) => {
-        return _this.xdescribe(desc, func, reason);
+        _this.xdescribe(desc, func, reason);
       },
       beforeItSpecified: (itDescs: string | string[], func: HookFuncType) => {
-        return _this.beforeItSpecified(itDescs, func);
+        _this.beforeItSpecified(itDescs, func);
       },
       afterItSpecified: (itDescs: string | string[], func: HookFuncType) => {
-        return _this.afterItSpecified(itDescs, func);
+        _this.afterItSpecified(itDescs, func);
       },
       beforeAll: (func: HookFuncType) => {
-        return _this.beforeAll(func);
+        _this.beforeAll(func);
       },
       beforeEach: (func: HookFuncType) => {
-        return _this.beforeEach(func);
+        _this.beforeEach(func);
       },
       afterAll: (func: HookFuncType) => {
-        return _this.afterAll(func);
+        _this.afterAll(func);
       },
       afterEach: (func: HookFuncType) => {
-        return _this.afterEach(func);
+        _this.afterEach(func);
       },
     };
   }

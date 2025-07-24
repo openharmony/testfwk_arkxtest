@@ -223,10 +223,10 @@ class SpecService {
     return {
       name: 'SpecService',
       it: (desc: string, filter: int, func: ItfnType) => {
-        return _this.it(desc, filter, func);
+        _this.it(desc, filter, func);
       },
       xit: (desc: string, filter: int, func: ItfnType, reason: string) => {
-        return _this.xit(desc, filter, func, reason);
+        _this.xit(desc, filter, func, reason);
       },
     };
   }
