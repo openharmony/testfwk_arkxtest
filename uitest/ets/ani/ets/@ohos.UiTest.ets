@@ -18,18 +18,25 @@ import { Callback, BusinessError } from '@ohos.base';
 let domain: int = 0x0000;
 let tag: string = 'uitestTag';
 let connectedState = 1;
+let currentState = 0;
 let executeTime = 3;
+let isLoaded = false;
+
 export default namespace UiTest {
   loadLibrary("uitest_ani");
   export native function ScheduleEstablishConnection(tokken: String): boolean;
   export native function GetConnectionStat(): int;
 }
 
-export function loadAndSetUpUiTest():void {
+export function loadAndSetUpUiTest(): boolean {
+  let domain: int = 0x0000;
+  let tag: string = 'uitestTag';
   hilog.info(domain, tag, 'loadAndSetUpUiTest');
-  if (UiTest.GetConnectionStat() == connectedState) {
+  if (isLoaded | UiTest.GetConnectionStat() == connectedState) {
     hilog.info(domain, tag, "Uitest is already connected: "+ UiTest.GetConnectionStat())
+    return true;
   } else {
+    isLoaded = true;
     let delegator = abilityDelegatorRegistry.getAbilityDelegator();
     hilog.info(domain, tag, 'after abilityDelegatorRegistry.getAbilityDelegator();');
     try{
@@ -39,18 +46,20 @@ export function loadAndSetUpUiTest():void {
             hilog.info(domain, tag, "Uitest.ScheduleEstablishConnection(): "+result )
             hilog.info(domain, tag, 'UiTestKit_exporter: Begin executing shell command to start server-daemon');
             delegator.executeShellCommand(`uitest start-daemon default`, executeTime).then((value: NullishType) => {
-                hilog.error(domain, tag, `UiTestKit_exporter: Start server-daemon finished!!!!`);
+                hilog.info(domain, tag, `UiTestKit_exporter: Start server-daemon finished!!!!`);
             }).catch((error:Error) :void=> {
                 hilog.error(domain, tag, "UiTestKit_exporter: Start server-daemon failed:"+error)
             });
+            return true;
         } else {
             hilog.error(domain, tag, 'UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started');
             UiTest.ScheduleEstablishConnection('default');
+            return false;
         }
     } catch(error: Error){
-        hilog.error(domain, tag, "loadAndSetUpUiTest failed" + error)
-        hilog.error(domain, tag, "loadAndSetUpUiTest failed" + error.stack)
-        hilog.error(domain, tag, "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat())
+        hilog.error(domain, tag, "loadAndSetUpUiTest failed" + error.stack);
+        hilog.error(domain, tag, "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat());
+        return false;
     }
   }
 }
@@ -108,6 +117,12 @@ interface Point {
 }
   
 class PointInner implements Point {
+ static {
+    let domain: int = 0x0000;
+    let tag: string = 'uitestTag';
+    currentState = UiTest.GetConnectionStat();
+    hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState )
+ }
  x: int = 0;
  y: int = 0;
 }
@@ -120,6 +135,12 @@ interface Rect {
 }
   
 class RectInner implements Rect {
+ static {
+    let domain: int = 0x0000;
+    let tag: string = 'uitestTag';
+    currentState = UiTest.GetConnectionStat();
+    hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState )
+ }
   left: int = 0;
   top: int = 0;
   right: int = 0;
@@ -134,6 +155,12 @@ interface WindowFilter {
 }
 
 class WindowFilterInner implements WindowFilter {
+ static {
+    let domain: int = 0x0000;
+    let tag: string = 'uitestTag';
+    currentState = UiTest.GetConnectionStat();
+    hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState )
+ }
   bundleName?: string = undefined;
   title?: string = undefined;
   focused?: boolean = undefined;
@@ -147,22 +174,47 @@ interface UIElementInfo {
 }
 
 class UIElementInfoInner implements UIElementInfo {
+ static {
+    let domain: int = 0x0000;
+    let tag: string = 'uitestTag';
+    currentState = UiTest.GetConnectionStat();
+    hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState )
+ }
   bundleName: string = "";
   type: string = "";
   text: string = "";
 }
 
+interface InputTextMode {
+  paste?: boolean;
+  addition?: boolean;
+}
+
+class InputTextModeInner implements InputTextMode {
+  paste?: boolean = undefined;
+  addition?: boolean = undefined;
+}
 interface TouchPadSwipeOptions {
   stay?: boolean;
   speed?: int;
 }
 
 class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
+static {
+    let domain: int = 0x0000;
+    let tag: string = 'uitestTag';
+    hilog.info(domain, tag, "Uitest ConnectionStat: "+ UiTest.GetConnectionStat())
+}
   stay?: boolean = undefined;
   speed?: int = undefined;
 }
 
 export class Component {
+    static {
+        let domain: int = 0x0000;
+        let tag: string = 'uitestTag';
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ UiTest.GetConnectionStat())
+    }
   nativeComponent:string = '';
   public constructor(Component:string) {
     if (this.nativeComponent == '') {
@@ -179,6 +231,7 @@ export class Component {
     private native getHintSync(): string;
     private native getDescriptionSync(): string;
     private native comInputTextSync(text: string): boolean;
+    private native comInputTextWithModeSync(text: string, mode: InputTextMode): boolean;
     private native clearTextSync(): boolean;
     private native scrollToTopSync(speed?: int): boolean;
     private native scrollToBottomSync(speed?: int): boolean;
@@ -325,6 +378,19 @@ export class Component {
     inputText(text: string):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.comInputTextSync(text));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
+    }
+
+    inputText(text: string, mode: InputTextMode):Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.comInputTextWithModeSync(text, mode));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           }, (err: Error): void => {
@@ -564,6 +630,11 @@ export class Component {
   }
   
   export class UiWindow {
+    static {
+        let domain: int = 0x0000;
+        let tag: string = 'uitestTag';
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ UiTest.GetConnectionStat())
+    }
     nativeWindow:string = '';
     public constructor(Window:string) {
       this.nativeWindow = Window;
@@ -773,9 +844,15 @@ export class Component {
   }
   
   export class Driver {
+    static {
+        let domain: int = 0x0000;
+        let tag: string = 'uitestTag';
+        currentState = UiTest.GetConnectionStat();
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState )
+    }
     private nativeDriver:string = '';
     public constructor(driver:string) {
-        hilog.error(domain, tag, 'driver:'+driver);
+        hilog.info(domain, tag, 'driver:'+driver);
         this.nativeDriver = driver;
     }
     private native delayMsSync(t:int):boolean;
@@ -801,6 +878,19 @@ export class Component {
     fling(direction:UiDirection, speed: int): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.flingSyncDirection(direction, speed));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+          });
+      });
+      return promise;
+    }
+    private native flingWithDisplayIdSync(direction:UiDirection, speed: int, displayId: int):boolean;
+    fling(direction:UiDirection, speed: int, displayId: int): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.flingWithDisplayIdSync(direction, speed, displayId));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           }, (err: Error): void => {
@@ -849,6 +939,19 @@ export class Component {
       });
       return promise;
     }
+    private native pressBackWithDisplayIdSync(displayId: int):boolean;
+    pressBack(displayId: int): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.pressBackWithDisplayIdSync(displayId));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
+    }
     private native assertComponentExistSync(on: On):boolean;
     assertComponentExist(on: On): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
@@ -868,6 +971,22 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.triggerKeySync(keyCode));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
+    }
+    private native triggerKeyWithDisplayIdSync(keyCode: int, displayId: int):boolean;
+    triggerKey(keyCode: int, displayId: int): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.triggerKeyWithDisplayIdSync(keyCode, displayId));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -876,6 +995,19 @@ export class Component {
     inputText(p: Point, text: string): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.inputTextSync(p, text));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
+    }
+    private native inputTextWithModeSync(p: Point, text: string, mode: InputTextMode):boolean;
+    inputText(p: Point, text: string, mode: InputTextMode): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.inputTextWithModeSync(p, text, mode));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           }, (err: Error): void => {
@@ -925,6 +1057,22 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.pressHomeSync());
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
+    }
+    private native pressHomeWithDisplayIdSync(displayId: int):boolean;
+     pressHome(displayId: int): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.pressHomeWithDisplayIdSync(displayId));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -933,6 +1081,20 @@ export class Component {
      getDisplaySize(): Promise<Point> {
       let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Error) => void) => {
           let promise1 = taskpool.execute(():Point => this.getDisplaySizeSync());
+          promise1.then((e:NullishType)=>{
+              let value : Point = e as Point;
+              resolve(value);
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
+    }
+    private native getDisplaySizeWithDisplayIdSync(displayId: int):Point;
+     getDisplaySize(displayId: int): Promise<Point> {
+      let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Error) => void) => {
+          let promise1 = taskpool.execute(():Point => this.getDisplaySizeWithDisplayIdSync(displayId));
           promise1.then((e:NullishType)=>{
               let value : Point = e as Point;
               resolve(value);
@@ -962,9 +1124,8 @@ export class Component {
       let promise = new Promise<DisplayRotation>((resolve: (value: DisplayRotation) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():DisplayRotation => this.getDisplayRotationSync());
       promise1.then((e:NullishType)=>{
-          hilog.info(domain, tag, "getDisplayRotationSync return DisplayRotation 11111");
           let value : DisplayRotation = e as DisplayRotation;
-          hilog.info(domain, tag, "getDisplayRotationSync return DisplayRotation 222222");
+          hilog.info(domain, tag, "getDisplayRotationSync return DisplayRotation");
           resolve(value);
         }, (err: Error): void => {
             let br = err as BusinessError<void>;
@@ -1074,8 +1235,8 @@ export class Component {
             let promise1 = taskpool.execute(():Component|null => this.findComponentSync(on));
                 promise1.then((e:NullishType)=>{
                     if (e) {
-                        hilog.info(domain, tag, "findComponent return Component object");
                         let value : Component = e as Component;
+                        hilog.info(domain, tag, "findComponent return Component object");
                         resolve(value);
                     } else {
                         resolve(null)
@@ -1240,8 +1401,6 @@ export class Component {
     }
   
     penLongClick(p: Point, pressure?: double): Promise<void> {
-        hilog.info(domain, tag, "p.x"+p.x);
-        hilog.info(domain, tag, "p.y"+p.y);
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.penLongClickSync(p, pressure));
             promise1.then((e:NullishType)=>{
@@ -1399,6 +1558,11 @@ export class Component {
   }
   
   export class PointerMatrix {
+    static {
+        let domain: int = 0x0000;
+        let tag: string = 'uitestTag';
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ UiTest.GetConnectionStat())
+    }
     private nativePointerMatrix:string = '';
     public constructor(PointerMatrix:string) {
       if (this.nativePointerMatrix == '') {
@@ -1410,10 +1574,17 @@ export class Component {
     native setPoint(finger: int, step: int, point: Point): void;
   }
   export class On {
+    static {
+        if (isLoaded == false | UiTest.GetConnectionStat() == 0) {
+            let domain: int = 0x0000;
+            let tag: string = 'uitestTag';
+            hilog.info(domain, tag, 'On static loadAndSetUpUiTest: ' + loadAndSetUpUiTest());
+            isLoaded = true;
+        }
+    }
     private nativeOn:String = '';
     public constructor(on:string) {
-      hilog.error(domain, tag, "newOnBynative");
-      hilog.error(domain, tag, on);
+      hilog.info(domain, tag, "nativeOn: " + on);
       this.nativeOn = on;
     }
     public constructor() {
@@ -1454,9 +1625,14 @@ export class Component {
   }
 
 export class UIEventObserver {
+    static {
+        let domain: int = 0x0000;
+        let tag: string = 'uitestTag';
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ UiTest.GetConnectionStat())
+    }
     private nativeUIEventObserver: string = '';
     public constructor(UIEventObserver: string) {
-        hilog.error(domain, tag, 'UIEventObserver:' + UIEventObserver);
+        hilog.info(domain, tag, 'UIEventObserver:' + UIEventObserver);
         if (this.nativeUIEventObserver == '') {
             this.nativeUIEventObserver = UIEventObserver;
         }
