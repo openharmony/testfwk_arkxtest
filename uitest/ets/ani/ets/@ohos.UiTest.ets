@@ -183,8 +183,6 @@ class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
 
 export class Component {
     static {
-        let domain: int = 0x0000;
-        let tag: string = 'uitestTag';
         currentState = UiTest.GetConnectionStat();
         hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
     }
@@ -604,8 +602,6 @@ export class Component {
   
   export class UiWindow {
     static {
-        let domain: int = 0x0000;
-        let tag: string = 'uitestTag';
         currentState = UiTest.GetConnectionStat();
         hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
     }
@@ -819,8 +815,6 @@ export class Component {
   
   export class Driver {
     static {
-        let domain: int = 0x0000;
-        let tag: string = 'uitestTag';
         currentState = UiTest.GetConnectionStat();
         hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState )
     }
@@ -1533,8 +1527,6 @@ export class Component {
   
   export class PointerMatrix {
     static {
-        let domain: int = 0x0000;
-        let tag: string = 'uitestTag';
         currentState = UiTest.GetConnectionStat();
         hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
     }
@@ -1552,8 +1544,7 @@ export class Component {
     static {
         if (isLoaded == false | UiTest.GetConnectionStat() == 0) {
             let domain: int = 0x0000;
-            let tag: string = 'uitestTag';
-            hilog.info(domain, tag, 'On static loadAndSetUpUiTest: ' + loadAndSetUpUiTest());
+            hilog.info(domain, 'uitestTag', 'On static loadAndSetUpUiTest: ' + loadAndSetUpUiTest());
             isLoaded = true;
         }
     }
@@ -1601,8 +1592,6 @@ export class Component {
 
 export class UIEventObserver {
     static {
-        let domain: int = 0x0000;
-        let tag: string = 'uitestTag';
         currentState = UiTest.GetConnectionStat();
         hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
     }
