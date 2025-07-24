@@ -117,12 +117,6 @@ interface Point {
 }
   
 class PointInner implements Point {
- static {
-    let domain: int = 0x0000;
-    let tag: string = 'uitestTag';
-    currentState = UiTest.GetConnectionStat();
-    hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState )
- }
  x: int = 0;
  y: int = 0;
 }
@@ -174,12 +168,6 @@ interface UIElementInfo {
 }
 
 class UIElementInfoInner implements UIElementInfo {
- static {
-    let domain: int = 0x0000;
-    let tag: string = 'uitestTag';
-    currentState = UiTest.GetConnectionStat();
-    hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState )
- }
   bundleName: string = "";
   type: string = "";
   text: string = "";
@@ -200,11 +188,6 @@ interface TouchPadSwipeOptions {
 }
 
 class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
-static {
-    let domain: int = 0x0000;
-    let tag: string = 'uitestTag';
-    hilog.info(domain, tag, "Uitest ConnectionStat: "+ UiTest.GetConnectionStat())
-}
   stay?: boolean = undefined;
   speed?: int = undefined;
 }
@@ -213,7 +196,8 @@ export class Component {
     static {
         let domain: int = 0x0000;
         let tag: string = 'uitestTag';
-        hilog.info(domain, tag, "Uitest ConnectionStat: "+ UiTest.GetConnectionStat())
+        currentState = UiTest.GetConnectionStat();
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
     }
   nativeComponent:string = '';
   public constructor(Component:string) {
@@ -633,7 +617,8 @@ export class Component {
     static {
         let domain: int = 0x0000;
         let tag: string = 'uitestTag';
-        hilog.info(domain, tag, "Uitest ConnectionStat: "+ UiTest.GetConnectionStat())
+        currentState = UiTest.GetConnectionStat();
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
     }
     nativeWindow:string = '';
     public constructor(Window:string) {
@@ -1561,7 +1546,8 @@ export class Component {
     static {
         let domain: int = 0x0000;
         let tag: string = 'uitestTag';
-        hilog.info(domain, tag, "Uitest ConnectionStat: "+ UiTest.GetConnectionStat())
+        currentState = UiTest.GetConnectionStat();
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
     }
     private nativePointerMatrix:string = '';
     public constructor(PointerMatrix:string) {
@@ -1628,7 +1614,8 @@ export class UIEventObserver {
     static {
         let domain: int = 0x0000;
         let tag: string = 'uitestTag';
-        hilog.info(domain, tag, "Uitest ConnectionStat: "+ UiTest.GetConnectionStat())
+        currentState = UiTest.GetConnectionStat();
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
     }
     private nativeUIEventObserver: string = '';
     public constructor(UIEventObserver: string) {
