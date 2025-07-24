@@ -129,12 +129,6 @@ interface Rect {
 }
   
 class RectInner implements Rect {
- static {
-    let domain: int = 0x0000;
-    let tag: string = 'uitestTag';
-    currentState = UiTest.GetConnectionStat();
-    hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState )
- }
   left: int = 0;
   top: int = 0;
   right: int = 0;
@@ -149,12 +143,6 @@ interface WindowFilter {
 }
 
 class WindowFilterInner implements WindowFilter {
- static {
-    let domain: int = 0x0000;
-    let tag: string = 'uitestTag';
-    currentState = UiTest.GetConnectionStat();
-    hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState )
- }
   bundleName?: string = undefined;
   title?: string = undefined;
   focused?: boolean = undefined;
@@ -182,6 +170,7 @@ class InputTextModeInner implements InputTextMode {
   paste?: boolean = undefined;
   addition?: boolean = undefined;
 }
+
 interface TouchPadSwipeOptions {
   stay?: boolean;
   speed?: int;
