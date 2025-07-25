@@ -148,6 +148,15 @@ class UIElementInfoInner implements UIElementInfo {
   text: string = "";
 }
 
+interface InputTextMode {
+  paste?: boolean;
+  addition?: boolean;
+}
+
+class InputTextModeInner implements InputTextMode {
+  paste?: boolean = undefined;
+  addition?: boolean = undefined;
+}
 interface TouchPadSwipeOptions {
   stay?: boolean;
   speed?: number;
@@ -321,6 +330,19 @@ export class Component {
     inputText(text: string):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.comInputTextSync(text));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
+    }
+
+    inputText(text: string, mode: InputTextMode):Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.comInputTextWithModeSync(text, mode));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           }, (err: Error): void => {
@@ -806,6 +828,19 @@ export class Component {
       });
       return promise;
     }
+    private native flingWithDisplayIdSync(direction:UiDirection, speed: number, displayId: number):boolean;
+    fling(direction:UiDirection, speed: number, displayId: number): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.flingWithDisplayIdSync(direction, speed, displayId));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+          });
+      });
+      return promise;
+    }
     private native swipeSync(startx: number, starty: number, endx: number, endy: number, speed?: number):boolean;
     swipe(startx: number, starty: number, endx: number, endy: number, speed?: number): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
@@ -845,6 +880,19 @@ export class Component {
       });
       return promise;
     }
+    private native pressBackWithDisplayIdSync(displayId: number):boolean;
+    pressBack(displayId: number): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.pressBackWithDisplayIdSync(displayId));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
+    }
     private native assertComponentExistSync(on: On):boolean;
     assertComponentExist(on: On): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
@@ -864,6 +912,22 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.triggerKeySync(keyCode));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
+    }
+    private native triggerKeyWithDisplayIdSync(keyCode: number, displayId: number):boolean;
+    triggerKey(keyCode: number, displayId: number): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.triggerKeyWithDisplayIdSync(keyCode, displayId));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -872,6 +936,19 @@ export class Component {
     inputText(p: Point, text: string): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.inputTextSync(p, text));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
+    }
+    private native inputTextWithModeSync(p: Point, text: string, mode: InputTextMode):boolean;
+    inputText(p: Point, text: string, mode: InputTextMode): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.inputTextWithModeSync(p, text, mode));
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
           }, (err: Error): void => {
@@ -921,6 +998,22 @@ export class Component {
       let promise1 = taskpool.execute(():boolean => this.pressHomeSync());
           promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
+    }
+    private native pressHomeWithDisplayIdSync(displayId: number):boolean;
+     pressHome(displayId: number): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+      let promise1 = taskpool.execute(():boolean => this.pressHomeWithDisplayIdSync(displayId));
+          promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
           });
       });
       return promise;
@@ -929,6 +1022,20 @@ export class Component {
      getDisplaySize(): Promise<Point> {
       let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Error) => void) => {
           let promise1 = taskpool.execute(():Point => this.getDisplaySizeSync());
+          promise1.then((e:NullishType)=>{
+              let value : Point = e as Point;
+              resolve(value);
+          }, (err: Error): void => {
+              let br = err as BusinessError<void>;
+              reject(br);
+          });
+      });
+      return promise;
+    }
+    private native getDisplaySizeWithDisplayIdSync(displayId: number):Point;
+     getDisplaySize(displayId: number): Promise<Point> {
+      let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Error) => void) => {
+          let promise1 = taskpool.execute(():Point => this.getDisplaySizeWithDisplayIdSync(displayId));
           promise1.then((e:NullishType)=>{
               let value : Point = e as Point;
               resolve(value);
