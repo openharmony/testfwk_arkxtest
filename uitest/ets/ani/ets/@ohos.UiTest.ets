@@ -184,6 +184,7 @@ export class Component {
     private native getHintSync(): string;
     private native getDescriptionSync(): string;
     private native comInputTextSync(text: string): boolean;
+    private native comInputTextWithModeSync(text: string, mode: InputTextMode): boolean;
     private native clearTextSync(): boolean;
     private native scrollToTopSync(speed?: number): boolean;
     private native scrollToBottomSync(speed?: number): boolean;
