@@ -382,7 +382,7 @@ ohos_unittest("uitest_ipc_unittest") {
   ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
-  module_out_path = "uitestkit/unittest"
+  module_out_path = "arkxtest/uitest"
   testonly = true
   subsystem_name = "testfwk"
   part_name = "arkxtest"
@@ -404,7 +404,7 @@ ohos_unittest("uitest_extension_unittest") {
   ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
-  module_out_path = "uitestkit/unittest"
+  module_out_path = "arkxtest/uitest"
   testonly = true
   subsystem_name = "testfwk"
   part_name = "arkxtest"
