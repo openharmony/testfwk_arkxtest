@@ -17,7 +17,7 @@ import hilog from '@ohos.hilog'
 import { Callback, BusinessError } from '@ohos.base';
 let domain: int = 0x0000;
 let tag: string = 'uitestTag';
-let connectedState = 1;
+
 let currentState = 0;
 let executeTime = 3;
 
@@ -29,8 +29,8 @@ export default namespace UiTest {
 
 export function loadAndSetUpUiTest(): boolean {
   let domain: int = 0x0000;
-  let tag: string = 'uitestTag';
-  hilog.info(domain, tag, 'loadAndSetUpUiTest');
+  let connectedState = 1;
+  hilog.info(domain, 'uitestTag', 'loadAndSetUpUiTest');
   if (UiTest.GetConnectionStat() == connectedState) {
     hilog.info(domain, tag, "Uitest is already connected: "+ UiTest.GetConnectionStat())
     return true;
