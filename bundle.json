@@ -56,7 +56,6 @@
         "third_party": [
           "libpng",
           "libjpeg-turbo"
-          "googletest"
         ]
       },
       "build": {
