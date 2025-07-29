@@ -20,7 +20,6 @@ let tag: string = 'uitestTag';
 let connectedState = 1;
 let currentState = 0;
 let executeTime = 3;
-let isLoaded = false;
 
 export default namespace UiTest {
   loadLibrary("uitest_ani");
@@ -32,11 +31,10 @@ export function loadAndSetUpUiTest(): boolean {
   let domain: int = 0x0000;
   let tag: string = 'uitestTag';
   hilog.info(domain, tag, 'loadAndSetUpUiTest');
-  if (isLoaded | UiTest.GetConnectionStat() == connectedState) {
+  if (UiTest.GetConnectionStat() == connectedState) {
     hilog.info(domain, tag, "Uitest is already connected: "+ UiTest.GetConnectionStat())
     return true;
   } else {
-    isLoaded = true;
     let delegator = abilityDelegatorRegistry.getAbilityDelegator();
     hilog.info(domain, tag, 'after abilityDelegatorRegistry.getAbilityDelegator();');
     try{
@@ -1542,10 +1540,9 @@ export class Component {
   }
   export class On {
     static {
-        if (isLoaded == false | UiTest.GetConnectionStat() == 0) {
+        if (UiTest.GetConnectionStat() == 0) {
             let domain: int = 0x0000;
             hilog.info(domain, 'uitestTag', 'On static loadAndSetUpUiTest: ' + loadAndSetUpUiTest());
-            isLoaded = true;
         }
     }
     private nativeOn:String = '';
