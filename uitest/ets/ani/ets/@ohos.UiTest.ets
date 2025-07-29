@@ -17,6 +17,8 @@ import hilog from '@ohos.hilog'
 import { Callback, BusinessError } from '@ohos.base';
 let domain: number = 0x0000;
 let tag: string = 'uitestTag';
+let currentState: number = 0;
+let executeTime: number = 3;
 
 export default namespace UiTest {
   loadLibrary("uitest_ani");
@@ -24,33 +26,41 @@ export default namespace UiTest {
   export native function GetConnectionStat(): number;
 }
 
-export function loadAndSetUpUiTest():void {
-  hilog.error(domain, tag, 'loadAndSetUpUiTest');
-  let delegator = abilityDelegatorRegistry.getAbilityDelegator();
-  hilog.error(domain, tag, 'after abilityDelegatorRegistry.getAbilityDelegator();');
-  try{
-    if (delegator!=null) {
-      hilog.error(domain, tag, 'UiTestKit_exporter: Got AbilityDelegator');
-      let result = UiTest.ScheduleEstablishConnection("default");
-      hilog.error(domain, tag, "Uitest.ScheduleEstablishConnection(): "+result )
-      hilog.error(domain, tag, "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat())
-      hilog.error(domain, tag, 'UiTestKit_exporter: Begin executing shell command to start server-daemon');
-      delegator.executeShellCommand(`uitest start-daemon default`, 3.0).then((value: NullishType) => {
-        hilog.error(domain, tag, `UiTestKit_exporter: Start server-daemon finished!!!!`);
-      }).catch((error:Error) :void=> {
-        hilog.error(domain, tag, "UiTestKit_exporter: Start server-daemon failed:"+error)
-      });
-      hilog.error(domain, tag, "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat())
-    } else {
-      hilog.error(domain, tag, 'UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started');
-      UiTest.ScheduleEstablishConnection('default');
+export function loadAndSetUpUiTest(): boolean {
+  let domain: number = 0x0000;
+  let connectedState: number = 1;
+  hilog.info(domain, tag, "Uitest GetConnectionStat: "+ UiTest.GetConnectionStat())
+  if (UiTest.GetConnectionStat() == connectedState) {
+    hilog.info(domain, tag, "Uitest is already connected: "+ UiTest.GetConnectionStat())
+    return true;
+  } else {
+    let delegator = abilityDelegatorRegistry.getAbilityDelegator();
+    hilog.info(domain, tag, 'after abilityDelegatorRegistry.getAbilityDelegator();');
+    try{
+        if (delegator!=null) {
+            hilog.info(domain, tag, 'UiTestKit_exporter: Got AbilityDelegator');
+            let result = UiTest.ScheduleEstablishConnection("default");
+            hilog.info(domain, tag, "Uitest.ScheduleEstablishConnection(): "+result )
+            hilog.info(domain, tag, 'UiTestKit_exporter: Begin executing shell command to start server-daemon');
+            delegator.executeShellCommand(`uitest start-daemon default`, executeTime).then((value: NullishType) => {
+                hilog.info(domain, tag, `UiTestKit_exporter: Start server-daemon finished!!!!`);
+            }).catch((error:Error) :void=> {
+                hilog.error(domain, tag, "UiTestKit_exporter: Start server-daemon failed:"+error)
+            });
+            return true;
+        } else {
+            hilog.error(domain, tag, 'UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started');
+            UiTest.ScheduleEstablishConnection('default');
+            return false;
+        }
+    } catch(error: Error){
+        hilog.error(domain, tag, "loadAndSetUpUiTest failed" + error.stack);
+        hilog.error(domain, tag, "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat());
+        return false;
     }
-  } catch(error: Error){
-    hilog.error(domain, tag, "loadAndSetUpUiTest failed" + error)
-    hilog.error(domain, tag, "loadAndSetUpUiTest failed" + error.stack)
-    hilog.error(domain, tag, "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat())
   }
 }
+
 enum MatchPattern {
     EQUALS = 0,
     CONTAINS = 1,
@@ -168,6 +178,10 @@ class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
 }
 
 export class Component {
+    static {
+        currentState = UiTest.GetConnectionStat();
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
+    }
   nativeComponent:string = '';
   public constructor(Component:string) {
     if (this.nativeComponent == '') {
@@ -583,6 +597,10 @@ export class Component {
   }
   
   export class UiWindow {
+    static {
+        currentState = UiTest.GetConnectionStat();
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
+    }
     nativeWindow:string = '';
     public constructor(Window:string) {
       this.nativeWindow = Window;
@@ -792,9 +810,13 @@ export class Component {
   }
   
   export class Driver {
+    static {
+        currentState = UiTest.GetConnectionStat();
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState )
+    }
     private nativeDriver:string = '';
     public constructor(driver:string) {
-        hilog.error(domain, tag, 'driver:'+driver);
+        hilog.info(domain, tag, 'driver:'+driver);
         this.nativeDriver = driver;
     }
     private native delayMsSync(t:number):boolean;
@@ -1067,6 +1089,7 @@ export class Component {
       let promise1 = taskpool.execute(():DisplayRotation => this.getDisplayRotationSync());
       promise1.then((e:NullishType)=>{
           let value : DisplayRotation = e as DisplayRotation;
+          hilog.info(domain, tag, "getDisplayRotationSync return DisplayRotation");
           resolve(value);
         }, (err: Error): void => {
             let br = err as BusinessError<void>;
@@ -1342,8 +1365,6 @@ export class Component {
     }
   
     penLongClick(p: Point, pressure?: number): Promise<void> {
-        hilog.info(domain, tag, "p.x"+p.x);
-        hilog.info(domain, tag, "p.y"+p.y);
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.penLongClickSync(p, pressure));
             promise1.then((e:NullishType)=>{
@@ -1501,6 +1522,10 @@ export class Component {
   }
   
   export class PointerMatrix {
+    static {
+        currentState = UiTest.GetConnectionStat();
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
+    }
     private nativePointerMatrix:string = '';
     public constructor(PointerMatrix:string) {
       if (this.nativePointerMatrix == '') {
@@ -1512,10 +1537,15 @@ export class Component {
     native setPoint(finger: number, step: number, point: Point): void;
   }
   export class On {
+    static {
+        if (UiTest.GetConnectionStat() == 0) {
+            let domain: number = 0x0000;
+            hilog.info(domain, 'uitestTag', 'On static loadAndSetUpUiTest: ' + loadAndSetUpUiTest());
+        }
+    }
     private nativeOn:String = '';
     public constructor(on:string) {
-      hilog.error(domain, tag, "newOnBynative");
-      hilog.error(domain, tag, on);
+      hilog.info(domain, tag, "nativeOn: " + on);
       this.nativeOn = on;
     }
     public constructor() {
@@ -1556,9 +1586,13 @@ export class Component {
   }
 
 export class UIEventObserver {
+    static {
+        currentState = UiTest.GetConnectionStat();
+        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
+    }
     private nativeUIEventObserver: string = '';
     public constructor(UIEventObserver: string) {
-        hilog.error(domain, tag, 'UIEventObserver:' + UIEventObserver);
+        hilog.info(domain, tag, 'UIEventObserver:' + UIEventObserver);
         if (this.nativeUIEventObserver == '') {
             this.nativeUIEventObserver = UIEventObserver;
         }
