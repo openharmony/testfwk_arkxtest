@@ -105,12 +105,6 @@ class SysTestKit {
 
   static getRealTime(): number {
     let current = new Date().getTime();
-    try {
-      current = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
-      console.info(`${TAG} systemDateTime.getUptime success`);
-    } catch (err: Error) {
-      console.error(`${TAG} failed to systemDateTime.getUptime because ` + err.message);
-    }
     return current;
   }
 
