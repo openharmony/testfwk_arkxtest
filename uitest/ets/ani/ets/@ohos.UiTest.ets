@@ -32,31 +32,31 @@ export function loadAndSetUpUiTest(): boolean {
   let connectedState = 1;
   hilog.info(domain, 'uitestTag', 'loadAndSetUpUiTest');
   if (UiTest.GetConnectionStat() == connectedState) {
-    hilog.info(domain, tag, "Uitest is already connected: "+ UiTest.GetConnectionStat())
+    hilog.info(domain, 'uitestTag', "Uitest is already connected: "+ UiTest.GetConnectionStat())
     return true;
   } else {
     let delegator = abilityDelegatorRegistry.getAbilityDelegator();
-    hilog.info(domain, tag, 'after abilityDelegatorRegistry.getAbilityDelegator();');
+    hilog.info(domain, 'uitestTag', 'after abilityDelegatorRegistry.getAbilityDelegator();');
     try{
         if (delegator!=null) {
-            hilog.info(domain, tag, 'UiTestKit_exporter: Got AbilityDelegator');
+            hilog.info(domain, 'uitestTag', 'UiTestKit_exporter: Got AbilityDelegator');
             let result = UiTest.ScheduleEstablishConnection("default");
-            hilog.info(domain, tag, "Uitest.ScheduleEstablishConnection(): "+result )
-            hilog.info(domain, tag, 'UiTestKit_exporter: Begin executing shell command to start server-daemon');
+            hilog.info(domain, 'uitestTag', "Uitest.ScheduleEstablishConnection(): "+result )
+            hilog.info(domain, 'uitestTag', 'UiTestKit_exporter: Begin executing shell command to start server-daemon');
             delegator.executeShellCommand(`uitest start-daemon default`, executeTime).then((value: NullishType) => {
-                hilog.info(domain, tag, `UiTestKit_exporter: Start server-daemon finished!!!!`);
+                hilog.info(domain, 'uitestTag', `UiTestKit_exporter: Start server-daemon finished!!!!`);
             }).catch((error:Error) :void=> {
-                hilog.error(domain, tag, "UiTestKit_exporter: Start server-daemon failed:"+error)
+                hilog.error(domain, 'uitestTag', "UiTestKit_exporter: Start server-daemon failed:"+error)
             });
             return true;
         } else {
-            hilog.error(domain, tag, 'UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started');
+            hilog.error(domain, 'uitestTag', 'UiTestKit_exporter: Cannot get AbilityDelegator, uitest_daemon need to be pre-started');
             UiTest.ScheduleEstablishConnection('default');
             return false;
         }
     } catch(error: Error){
-        hilog.error(domain, tag, "loadAndSetUpUiTest failed" + error.stack);
-        hilog.error(domain, tag, "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat());
+        hilog.error(domain, 'uitestTag', "loadAndSetUpUiTest failed" + error.stack);
+        hilog.error(domain, 'uitestTag', "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat());
         return false;
     }
   }
