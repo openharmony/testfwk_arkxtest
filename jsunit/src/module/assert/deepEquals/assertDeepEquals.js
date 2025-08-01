@@ -38,8 +38,49 @@ function logMsg(actualValue, expected) {
         actualMsg = 'actualValue Function';
     } else if (aClassName == '[object Promise]') {
         actualMsg = 'actualValue Promise';
-    } else if (aClassName == '[object Set]' || aClassName == '[object Map]') {
-        actualMsg = JSON.stringify(Array.from(actualValue));
+    } else if (aClassName == '[object Map]') {
+        let result = Array.from(actualValue);
+        let finallyResult = result.flatMap((item) => {
+            let valueStr = '';
+            let keyValue = '';
+            if (item.length > 1) {
+                let key = item[0];
+                let value = item[1];
+                if (value !== value) {
+                    valueStr = value ;
+                } else {
+                    valueStr = JSON.stringify(value);
+                }
+                keyValue = JSON.stringify(key);
+            }
+            return "[" + keyValue + "," + valueStr + "]";
+        })
+        actualMsg ="[" + finallyResult + "]";
+    } else if (aClassName == '[object Set]') {
+        let setArray = Array.from(actualValue);
+        let flatMapResult = setArray.flatMap((item) => {
+            // NAN
+            if (item !== item) {
+                return item;
+            }
+            if (item === undefined) {
+                return 'undefined'
+            }
+            return JSON.stringify(item)
+        })
+        actualMsg = '[' + flatMapResult + ']';
+    } else if (aClassName == '[object Array]') {
+        let flatMapResult = actualValue.flatMap((item) => {
+            // NAN
+            if (item !== item) {
+                return item;
+            }
+            if (item === undefined) {
+                return 'undefined'
+            }
+            return JSON.stringify(item)
+        })
+        actualMsg = '[' + flatMapResult + ']';
     } else if (aClassName == '[object RegExp]') {
         actualMsg = JSON.stringify(actualValue.source.replace('\\', ''));
     } else if (aClassName == '[object BigInt]') {
@@ -50,14 +91,60 @@ function logMsg(actualValue, expected) {
         actualMsg = actualValue.byteLength;
     }
     else {
-        actualMsg = JSON.stringify(actualValue);
+        // NAN
+        if (actualValue !== actualValue) {
+            actualMsg = actualValue.toString();
+        } else {
+            actualMsg = JSON.stringify(actualValue);
+        }
     }
     if (bClassName == '[object Function]') {
         expectMsg = 'expected Function';
     } else if (bClassName == '[object Promise]') {
         expectMsg = 'expected Promise';
-    } else if (bClassName == '[object Set]' || bClassName == '[object Map]') {
-        expectMsg = JSON.stringify(Array.from(expected));
+    } else if (bClassName == '[object Map]') {
+        let result = Array.from(expected);
+        let finallyResult = result.flatMap((item) => {
+            let valueStr = '';
+            let keyValue = '';
+            if (item.length > 1) {
+                let key = item[0];
+                let value = item[1];
+                if (value !== value) {
+                    valueStr =  value ;
+                } else {
+                    valueStr = JSON.stringify(value);
+                }
+                keyValue = JSON.stringify(key);
+            }
+            return "[" + keyValue + "," + valueStr + "]";
+        })
+        expectMsg ="[" + finallyResult + "]";
+    } else if (bClassName == '[object Set]') {
+        let setArray = Array.from(expected);
+        let flatMapResult = setArray.flatMap((item) => {
+            // NAN
+            if (item !== item) {
+                return item;
+            }
+            if (item === undefined) {
+                return 'undefined';
+            }
+            return JSON.stringify(item)
+        })
+        expectMsg = '[' + flatMapResult + ']';
+    } else if (aClassName == '[object Array]') {
+        let flatMapResult = expected.flatMap((item) => {
+            // NAN
+            if (item !== item) {
+                return item;
+            }
+            if (item === undefined) {
+                return 'undefined';
+            }
+            return JSON.stringify(item)
+        })
+        expectMsg = '[' + flatMapResult + ']';
     } else if (bClassName == '[object RegExp]') {
         expectMsg = JSON.stringify(expected.source.replace('\\', ''));
     } else if (bClassName == '[object BigInt]') {
@@ -68,9 +155,14 @@ function logMsg(actualValue, expected) {
         expectMsg = expected.byteLength;
     }
     else {
-        expectMsg = JSON.stringify(expected);
+        // NAN
+        if (expected !== expected) {
+            expectMsg = expected.toString();
+        } else {
+            expectMsg = JSON.stringify(expected);
+        }
     }
-    return actualMsg + ' is not deep equal ' + expectMsg;
+    return 'expect ' + actualMsg + ' deep equals ' + expectMsg;
 }
 
 function eq(a, b) {
@@ -198,6 +290,10 @@ function isEqualSampleObj(a, b) {
     }
     // 俩个Number对象
     if (aClassName === '[object Number]') {
+        // NAN
+        if (a !== a && b !== b) {
+            return a === b;
+        }
         equalSampleObj = a !== +a ? b !== +b : a === 0 && b === 0 ? 1 / a === 1 / b : a === +b;
         return equalSampleObj;
     }
