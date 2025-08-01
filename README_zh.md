@@ -98,23 +98,23 @@ export default function beforeItSpecifiedTest() {
 | 7   | assertInstanceOf   | 检验actualvalue是否是expectvalue类型，支持基础类型。                       |
 | 8   | assertLarger       | 检验actualvalue是否大于expectvalue。                               |
 | 9   | assertLargerOrEqual       | 检验actualvalue是否大于等于expectvalue。                             |
-| 9   | assertLess         | 检验actualvalue是否小于expectvalue。                               |
-| 9   | assertLessOrEqual         | 检验actualvalue是否小于等于expectvalue。                             |
-| 10  | assertNull         | 检验actualvalue是否是null。                                       |
-| 11  | assertThrowError   | 检验actualvalue抛出Error内容是否是expectValue。                       |
-| 12  | assertUndefined    | 检验actualvalue是否是undefined。                                  |
-| 13  | assertNaN          | @since1.0.4 检验actualvalue是否是一个NaN。                          |
-| 14  | assertNegUnlimited | @since1.0.4 检验actualvalue是否等于Number.NEGATIVE_INFINITY。      |
-| 15  | assertPosUnlimited | @since1.0.4 检验actualvalue是否等于Number.POSITIVE_INFINITY。      |
-| 16  | assertDeepEquals   | @since1.0.4 检验actualvalue和expectvalue是否完全相等。                |
-| 17  | assertPromiseIsPending | @since1.0.4 判断promise是否处于Pending状态。                         |
-| 18  | assertPromiseIsRejected | @since1.0.4 判断promise是否处于Rejected状态。                        |
-| 19  | assertPromiseIsRejectedWith | @since1.0.4 判断promise是否处于Rejected状态，并且比较执行的结果值。             |
-| 20  | assertPromiseIsRejectedWithError | @since1.0.4 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。 |
-| 21  | assertPromiseIsResolved | @since1.0.4 判断promise是否处于Resolved状态。                        |
-| 22  | assertPromiseIsResolvedWith | @since1.0.4 判断promise是否处于Resolved状态，并且比较执行的结果值。             |
-| 23  | not                | @since1.0.4 断言取反,支持上面所有的断言功能。                               |
-| 24  | message                | @since1.0.17自定义断言异常信息。                                      |
+| 10  | assertLess         | 检验actualvalue是否小于expectvalue。                               |
+| 11  | assertLessOrEqual         | 检验actualvalue是否小于等于expectvalue。                             |
+| 12  | assertNull         | 检验actualvalue是否是null。                                       |
+| 13  | assertThrowError   | 检验actualvalue抛出Error内容是否是expectValue。                       |
+| 14  | assertUndefined    | 检验actualvalue是否是undefined。                                  |
+| 15  | assertNaN          | @since1.0.4 检验actualvalue是否是一个NaN。                          |
+| 16  | assertNegUnlimited | @since1.0.4 检验actualvalue是否等于Number.NEGATIVE_INFINITY。      |
+| 17  | assertPosUnlimited | @since1.0.4 检验actualvalue是否等于Number.POSITIVE_INFINITY。      |
+| 18  | assertDeepEquals   | @since1.0.4 检验actualvalue和expectvalue是否完全相等。                |
+| 19  | assertPromiseIsPending | @since1.0.4 判断promise是否处于Pending状态。                         |
+| 20  | assertPromiseIsRejected | @since1.0.4 判断promise是否处于Rejected状态。                        |
+| 21  | assertPromiseIsRejectedWith | @since1.0.4 判断promise是否处于Rejected状态，并且比较执行的结果值。             |
+| 22  | assertPromiseIsRejectedWithError | @since1.0.4 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。 |
+| 23  | assertPromiseIsResolved | @since1.0.4 判断promise是否处于Resolved状态。                        |
+| 24  | assertPromiseIsResolvedWith | @since1.0.4 判断promise是否处于Resolved状态，并且比较执行的结果值。             |
+| 25  | not                | @since1.0.4 断言取反,支持上面所有的断言功能。                               |
+| 26  | message                | @since1.0.17自定义断言异常信息。                                      |
 
 expect断言示例代码：
 
