@@ -65,7 +65,7 @@ function getCollectionLog(data) {
         let setArray = Array.from(data);
         finallyResult = setArray.flatMap((item) => {
             return getArrayLog(item);
-        })
+        });
     }
     if (aClassName === '[object Array]') {
         finallyResult = data.flatMap((item) => {
@@ -75,17 +75,10 @@ function getCollectionLog(data) {
     return finallyResult;
 }
 
-/**
- * 获取失败显示日志
- * @param actualValue 实际对象
- * @param expected 期待比较对象
- */
-function logMsg(actualValue, expected) {
+function getActualValueLog(actualValue) {
     // 获取a的对象名称
     const aClassName = Object.prototype.toString.call(actualValue);
-    const bClassName = Object.prototype.toString.call(expected);
-    let actualMsg;
-    let expectMsg;
+    let actualMsg = '';
     if (aClassName == '[object Function]') {
         actualMsg = 'actualValue Function';
     } else if (aClassName == '[object Promise]') {
@@ -116,6 +109,12 @@ function logMsg(actualValue, expected) {
             actualMsg = JSON.stringify(actualValue);
         }
     }
+    return actualMsg;
+}
+
+function getExpectedLog(expected) {
+    const bClassName = Object.prototype.toString.call(expected);
+    let expectMsg = '';
     if (bClassName == '[object Function]') {
         expectMsg = 'expected Function';
     } else if (bClassName == '[object Promise]') {
@@ -126,7 +125,7 @@ function logMsg(actualValue, expected) {
     } else if (bClassName == '[object Set]') {
         let flatMapResult = getCollectionLog(expected);
         expectMsg = '[' + flatMapResult + ']';
-    } else if (aClassName == '[object Array]') {
+    } else if (bClassName == '[object Array]') {
         let flatMapResult = getCollectionLog(expected);
         expectMsg = '[' + flatMapResult + ']';
     } else if (bClassName == '[object RegExp]') {
@@ -146,6 +145,19 @@ function logMsg(actualValue, expected) {
             expectMsg = JSON.stringify(expected);
         }
     }
+    return expectMsg;
+}
+
+/**
+ * 获取失败显示日志
+ * @param actualValue 实际对象
+ * @param expected 期待比较对象
+ */
+function logMsg(actualValue, expected) {
+    // 获取a的对象名称
+    let actualMsg = getActualValueLog(actualValue);
+    let expectMsg = getExpectedLog(expected);
+
     return 'expect ' + actualMsg + ' deep equals ' + expectMsg;
 }
 
