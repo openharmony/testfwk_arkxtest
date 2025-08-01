@@ -58,7 +58,7 @@ function getCollectionLog(data) {
     if (aClassName === '[object Map]') {
         let result = Array.from(data);
         finallyResult = result.flatMap((item) => {
-            return getMapLog(item)
+            return getMapLog(item);
         });
     }
     if (aClassName === '[object Set]') {
@@ -79,26 +79,26 @@ function getActualValueLog(actualValue) {
     // 获取a的对象名称
     const aClassName = Object.prototype.toString.call(actualValue);
     let actualMsg = '';
-    if (aClassName == '[object Function]') {
+    if (aClassName === '[object Function]') {
         actualMsg = 'actualValue Function';
-    } else if (aClassName == '[object Promise]') {
+    } else if (aClassName === '[object Promise]') {
         actualMsg = 'actualValue Promise';
-    } else if (aClassName == '[object Map]') {
+    } else if (aClassName === '[object Map]') {
         let finallyResult = getCollectionLog(actualValue);
         actualMsg = '[' + finallyResult + ']';
-    } else if (aClassName == '[object Set]') {
+    } else if (aClassName === '[object Set]') {
         let flatMapResult = getCollectionLog(actualValue);
         actualMsg = '[' + flatMapResult + ']';
-    } else if (aClassName == '[object Array]') {
+    } else if (aClassName === '[object Array]') {
         let flatMapResult = getCollectionLog(actualValue);
         actualMsg = '[' + flatMapResult + ']';
-    } else if (aClassName == '[object RegExp]') {
+    } else if (aClassName === '[object RegExp]') {
         actualMsg = JSON.stringify(actualValue.source.replace('\\', ''));
-    } else if (aClassName == '[object BigInt]') {
+    } else if (aClassName === '[object BigInt]') {
         actualMsg = actualValue;
-    } else if (aClassName == '[object Error]') {
+    } else if (aClassName === '[object Error]') {
         actualMsg = actualValue.message;
-    } else if (aClassName == '[object ArrayBuffer]') {
+    } else if (aClassName === '[object ArrayBuffer]') {
         actualMsg = actualValue.byteLength;
     }
     else {
@@ -115,26 +115,26 @@ function getActualValueLog(actualValue) {
 function getExpectedLog(expected) {
     const bClassName = Object.prototype.toString.call(expected);
     let expectMsg = '';
-    if (bClassName == '[object Function]') {
+    if (bClassName === '[object Function]') {
         expectMsg = 'expected Function';
-    } else if (bClassName == '[object Promise]') {
+    } else if (bClassName === '[object Promise]') {
         expectMsg = 'expected Promise';
-    } else if (bClassName == '[object Map]') {
+    } else if (bClassName === '[object Map]') {
         let finallyResult = getCollectionLog(expected);
         expectMsg = '[' + finallyResult + ']';
-    } else if (bClassName == '[object Set]') {
+    } else if (bClassName === '[object Set]') {
         let flatMapResult = getCollectionLog(expected);
         expectMsg = '[' + flatMapResult + ']';
-    } else if (bClassName == '[object Array]') {
+    } else if (bClassName === '[object Array]') {
         let flatMapResult = getCollectionLog(expected);
         expectMsg = '[' + flatMapResult + ']';
-    } else if (bClassName == '[object RegExp]') {
+    } else if (bClassName === '[object RegExp]') {
         expectMsg = JSON.stringify(expected.source.replace('\\', ''));
-    } else if (bClassName == '[object BigInt]') {
+    } else if (bClassName === '[object BigInt]') {
         expectMsg = expected;
-    } else if (bClassName == '[object Error]') {
+    } else if (bClassName === '[object Error]') {
         expectMsg = expected.message;
-    } else if (bClassName == '[object ArrayBuffer]') {
+    } else if (bClassName === '[object ArrayBuffer]') {
         expectMsg = expected.byteLength;
     }
     else {
