@@ -148,13 +148,25 @@ export default function expectTest() {
     it('not_NaN_true', 0, () => {
       expect(3).not().assertNaN();
     })
-    it('not_contain_true', 0, () => {
-      let a: string = "abc";
-      let b: string = "cdf";
-      expect(a).not().assertContain(b);
+    it('assertContain_1', 0, () => {
+      let a = "abc";
+      expect(a).assertContain('b');
     })
-    it('not_large_true', 0, () => {
-      expect(3).not().assertLarger(4);
+    it('assertContain_2', 0, () => {
+      let a = [1, 2, 3];
+      expect(a).assertContain(1);
+    })
+    it('assertFailTest', 0, () => {
+      expect().assertFail() // 用例失败;
+    })
+    it('assertFalseTest', 0, () => {
+      expect(false).assertFalse();
+    })
+    it('assertTrueTest', 0, () => {
+      expect(true).assertTrue();
+    })
+    it('assertLargerTest', 0, () => {
+      expect(3).assertLarger(2);
     })
     it('not_less_true', 0, () => {
       expect(3).not().assertLess(2);
@@ -426,9 +438,9 @@ export default function callBackTestTest() {
 | 1   | getDescribeName        | 获取当前测试用例所属的测试套名称。 |
 | 2   | getItName        | 获取当初测试用例名称。       |
 | 3   | getItAttribute        | 获取当初测试用例等级。       |
-| 4   | actionStart        | 添加用例执行过程打印自定义日志   |
-| 5   | actionEnd        |  添加用例执行过程打印自定义日志                 |
-| 6   | existKeyword        |                   |
+| 4   | actionStart        | 添加用例执行过程打印自定义日志。  |
+| 5   | actionEnd        | 添加用例执行过程打印自定义日志。  |
+| 6   | existKeyword        | 检测hilog日志中是否打印。   |
 
 ##### 获取当前测试用例所属的测试套名称
 
