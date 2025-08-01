@@ -23,55 +23,56 @@ function assertDeepEquals(actualValue, expected) {
     };
 }
 
+function getMapLog(item) {
+    let valueStr = '';
+    let keyValue = '';
+    if (item.length > 1) {
+        let key = item[0];
+        let value = item[1];
+        if (value !== value) {
+            valueStr = value;
+        } else {
+            valueStr = JSON.stringify(value);
+        }
+        keyValue = JSON.stringify(key);
+    }
+    return '[' + keyValue + ',' + valueStr + ']';
+}
+
+function getArrayLog(item) {
+    // NAN
+    if (item !== item) {
+        return item;
+    }
+    if (item === undefined) {
+        return 'undefined'
+    }
+    return JSON.stringify(item);
+}
+
+
 function getCollectionLog(data) {
     // 获取a的对象名称
+    let finallyResult = ''
     const aClassName = Object.prototype.toString.call(data);
     if (aClassName == '[object Map]') {
         let result = Array.from(data);
-        let finallyResult = result.flatMap((item) => {
-            let valueStr = '';
-            let keyValue = '';
-            if (item.length > 1) {
-                let key = item[0];
-                let value = item[1];
-                if (value !== value) {
-                    valueStr = value ;
-                } else {
-                    valueStr = JSON.stringify(value);
-                }
-                keyValue = JSON.stringify(key);
-            }
-            return '[' + keyValue + ',' + valueStr + ']';
+        finallyResult = result.flatMap((item) => {
+            return getMapLog(item)
         });
-        return finallyResult;
     }
     if (aClassName == '[object Set]') {
         let setArray = Array.from(data);
-        let flatMapResult = setArray.flatMap((item) => {
-            // NAN
-            if (item !== item) {
-                return item;
-            }
-            if (item === undefined) {
-                return 'undefined'
-            }
-            return JSON.stringify(item);
+        finallyResult = setArray.flatMap((item) => {
+            return getArrayLog(item);
         })
-        return flatMapResult;
     }
     if (aClassName == '[object Array]') {
-        let flatMapResult = data.flatMap((item) => {
-            // NAN
-            if (item !== item) {
-                return item;
-            }
-            if (item === undefined) {
-                return 'undefined';
-            }
-            return JSON.stringify(item);
+        finallyResult = data.flatMap((item) => {
+            return getArrayLog(item);
         })
-        return flatMapResult;
     }
+    return finallyResult;
 }
 
 /**
@@ -121,7 +122,7 @@ function logMsg(actualValue, expected) {
         expectMsg = 'expected Promise';
     } else if (bClassName == '[object Map]') {
         let finallyResult = getCollectionLog(expected);
-        expectMsg = '[' + finallyResult + ']';
+        expectMsg ="[" + finallyResult + "]";
     } else if (bClassName == '[object Set]') {
         let flatMapResult = getCollectionLog(expected);
         expectMsg = '[' + flatMapResult + ']';
