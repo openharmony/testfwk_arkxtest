@@ -21,7 +21,7 @@ function assertInstanceOf(actualValue, expected) {
     } else {
         return {
             pass: false,
-            message: 'expect ' + actualValue + ' is ' + expected[0] + " actualValue is " + Object.prototype.toString.call(actualValue)
+            message: 'expect ' + actualValue + ' is ' + expected[0] + ' actualValue is ' + Object.prototype.toString.call(actualValue)
         };
     }
 }

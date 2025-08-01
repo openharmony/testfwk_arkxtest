@@ -23,6 +23,57 @@ function assertDeepEquals(actualValue, expected) {
     };
 }
 
+function getCollectionLog(data) {
+    // 获取a的对象名称
+    const aClassName = Object.prototype.toString.call(data);
+    if (aClassName == '[object Map]') {
+        let result = Array.from(data);
+        let finallyResult = result.flatMap((item) => {
+            let valueStr = '';
+            let keyValue = '';
+            if (item.length > 1) {
+                let key = item[0];
+                let value = item[1];
+                if (value !== value) {
+                    valueStr = value ;
+                } else {
+                    valueStr = JSON.stringify(value);
+                }
+                keyValue = JSON.stringify(key);
+            }
+            return '[' + keyValue + ',' + valueStr + ']';
+        });
+        return finallyResult;
+    }
+    if (aClassName == '[object Set]') {
+        let setArray = Array.from(data);
+        let flatMapResult = setArray.flatMap((item) => {
+            // NAN
+            if (item !== item) {
+                return item;
+            }
+            if (item === undefined) {
+                return 'undefined'
+            }
+            return JSON.stringify(item);
+        })
+        return flatMapResult;
+    }
+    if (aClassName == '[object Array]') {
+        let flatMapResult = data.flatMap((item) => {
+            // NAN
+            if (item !== item) {
+                return item;
+            }
+            if (item === undefined) {
+                return 'undefined';
+            }
+            return JSON.stringify(item);
+        })
+        return flatMapResult;
+    }
+}
+
 /**
  * 获取失败显示日志
  * @param actualValue 实际对象
@@ -39,47 +90,13 @@ function logMsg(actualValue, expected) {
     } else if (aClassName == '[object Promise]') {
         actualMsg = 'actualValue Promise';
     } else if (aClassName == '[object Map]') {
-        let result = Array.from(actualValue);
-        let finallyResult = result.flatMap((item) => {
-            let valueStr = '';
-            let keyValue = '';
-            if (item.length > 1) {
-                let key = item[0];
-                let value = item[1];
-                if (value !== value) {
-                    valueStr = value ;
-                } else {
-                    valueStr = JSON.stringify(value);
-                }
-                keyValue = JSON.stringify(key);
-            }
-            return "[" + keyValue + "," + valueStr + "]";
-        })
-        actualMsg ="[" + finallyResult + "]";
+        let finallyResult = getCollectionLog(actualValue);
+        actualMsg = '[' + finallyResult + ']';
     } else if (aClassName == '[object Set]') {
-        let setArray = Array.from(actualValue);
-        let flatMapResult = setArray.flatMap((item) => {
-            // NAN
-            if (item !== item) {
-                return item;
-            }
-            if (item === undefined) {
-                return 'undefined'
-            }
-            return JSON.stringify(item)
-        })
+        let flatMapResult = getCollectionLog(actualValue);
         actualMsg = '[' + flatMapResult + ']';
     } else if (aClassName == '[object Array]') {
-        let flatMapResult = actualValue.flatMap((item) => {
-            // NAN
-            if (item !== item) {
-                return item;
-            }
-            if (item === undefined) {
-                return 'undefined'
-            }
-            return JSON.stringify(item)
-        })
+        let flatMapResult = getCollectionLog(actualValue);
         actualMsg = '[' + flatMapResult + ']';
     } else if (aClassName == '[object RegExp]') {
         actualMsg = JSON.stringify(actualValue.source.replace('\\', ''));
@@ -103,47 +120,13 @@ function logMsg(actualValue, expected) {
     } else if (bClassName == '[object Promise]') {
         expectMsg = 'expected Promise';
     } else if (bClassName == '[object Map]') {
-        let result = Array.from(expected);
-        let finallyResult = result.flatMap((item) => {
-            let valueStr = '';
-            let keyValue = '';
-            if (item.length > 1) {
-                let key = item[0];
-                let value = item[1];
-                if (value !== value) {
-                    valueStr =  value ;
-                } else {
-                    valueStr = JSON.stringify(value);
-                }
-                keyValue = JSON.stringify(key);
-            }
-            return "[" + keyValue + "," + valueStr + "]";
-        })
-        expectMsg ="[" + finallyResult + "]";
+        let finallyResult = getCollectionLog(expected);
+        expectMsg = '[' + finallyResult + ']';
     } else if (bClassName == '[object Set]') {
-        let setArray = Array.from(expected);
-        let flatMapResult = setArray.flatMap((item) => {
-            // NAN
-            if (item !== item) {
-                return item;
-            }
-            if (item === undefined) {
-                return 'undefined';
-            }
-            return JSON.stringify(item)
-        })
+        let flatMapResult = getCollectionLog(expected);
         expectMsg = '[' + flatMapResult + ']';
     } else if (aClassName == '[object Array]') {
-        let flatMapResult = expected.flatMap((item) => {
-            // NAN
-            if (item !== item) {
-                return item;
-            }
-            if (item === undefined) {
-                return 'undefined';
-            }
-            return JSON.stringify(item)
-        })
+        let flatMapResult = getCollectionLog(expected);
         expectMsg = '[' + flatMapResult + ']';
     } else if (bClassName == '[object RegExp]') {
         expectMsg = JSON.stringify(expected.source.replace('\\', ''));

@@ -162,10 +162,9 @@ export default function expectTest() {
       expect(null).assertNull();
     })
     it('assertThrowErrorTest', 0, () => {
-      let aa = () => {
+      expect(() => {
         throw new Error('test')
-      }
-      expect(aa).assertThrowError('test');
+      }).assertThrowError('test');
     })
     it('assertUndefinedTest', 0, () => {
       expect(undefined).assertUndefined();
