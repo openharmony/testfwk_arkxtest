@@ -33,7 +33,7 @@ function assertClose(actualValue, expected) {
     }
     return {
         pass: result,
-        message: '|' + actualValue + ' - ' + expected[0] + '|/' + actualValue + ' is not less than ' + expected[1]
+        message: 'expect |' + actualValue + ' - ' + expected[0] + '|/' + actualValue + ' close ' + expected[1]
     };
 }
 
