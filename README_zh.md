@@ -87,32 +87,34 @@ export default function beforeItSpecifiedTest() {
 ##### 断言功能列表
 
 
-| No.  | API                | 功能说明                                                        |
-| :--- | :------------------|-------------------------------------------------------------|
-| 1    | assertClose        | 检验actualvalue和expectvalue(0)的接近程度是否是expectValue(1)。         |
-| 2    | assertContain      | 检验actualvalue中是否包含expectvalue。                              |
-| 3    | assertEqual        | 检验actualvalue是否等于expectvalue[0]。                            |
-| 4    | assertFail         | 抛出一个错误。                                                     |
-| 5    | assertFalse        | 检验actualvalue是否是false。                                      |
-| 6    | assertTrue         | 检验actualvalue是否是true。                                       |
-| 7    | assertInstanceOf   | 检验actualvalue是否是expectvalue类型，支持基础类型。                       |
-| 8    | assertLarger       | 检验actualvalue是否大于expectvalue。                               |
-| 9    | assertLess         | 检验actualvalue是否小于expectvalue。                               |
-| 10   | assertNull         | 检验actualvalue是否是null。                                       |
-| 11   | assertThrowError   | 检验actualvalue抛出Error内容是否是expectValue。                       |
-| 12   | assertUndefined    | 检验actualvalue是否是undefined。                                  |
-| 13   | assertNaN          | @since1.0.4 检验actualvalue是否是一个NaN。                          |
-| 14   | assertNegUnlimited | @since1.0.4 检验actualvalue是否等于Number.NEGATIVE_INFINITY。      |
-| 15   | assertPosUnlimited | @since1.0.4 检验actualvalue是否等于Number.POSITIVE_INFINITY。      |
-| 16   | assertDeepEquals   | @since1.0.4 检验actualvalue和expectvalue是否完全相等。                |
-| 17   | assertPromiseIsPending | @since1.0.4 判断promise是否处于Pending状态。                         |
-| 18   | assertPromiseIsRejected | @since1.0.4 判断promise是否处于Rejected状态。                        |
-| 19   | assertPromiseIsRejectedWith | @since1.0.4 判断promise是否处于Rejected状态，并且比较执行的结果值。             |
-| 20   | assertPromiseIsRejectedWithError | @since1.0.4 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。 |
-| 21   | assertPromiseIsResolved | @since1.0.4 判断promise是否处于Resolved状态。                        |
-| 22   | assertPromiseIsResolvedWith | @since1.0.4 判断promise是否处于Resolved状态，并且比较执行的结果值。             |
-| 23   | not                | @since1.0.4 断言取反,支持上面所有的断言功能。                               |
-| 24   | message                | @since1.0.17自定义断言异常信息。                                      |
+| No. | API                | 功能说明                                                        |
+|:----| :------------------|-------------------------------------------------------------|
+| 1   | assertClose        | 检验actualvalue和expectvalue(0)的接近程度是否是expectValue(1)。         |
+| 2   | assertContain      | 检验actualvalue中是否包含expectvalue。                              |
+| 3   | assertEqual        | 检验actualvalue是否等于expectvalue[0]。                            |
+| 4   | assertFail         | 抛出一个错误。                                                     |
+| 5   | assertFalse        | 检验actualvalue是否是false。                                      |
+| 6   | assertTrue         | 检验actualvalue是否是true。                                       |
+| 7   | assertInstanceOf   | 检验actualvalue是否是expectvalue类型，支持基础类型。                       |
+| 8   | assertLarger       | 检验actualvalue是否大于expectvalue。                               |
+| 9   | assertLargerOrEqual       | 检验actualvalue是否大于等于expectvalue。                             |
+| 9   | assertLess         | 检验actualvalue是否小于expectvalue。                               |
+| 9   | assertLessOrEqual         | 检验actualvalue是否小于等于expectvalue。                             |
+| 10  | assertNull         | 检验actualvalue是否是null。                                       |
+| 11  | assertThrowError   | 检验actualvalue抛出Error内容是否是expectValue。                       |
+| 12  | assertUndefined    | 检验actualvalue是否是undefined。                                  |
+| 13  | assertNaN          | @since1.0.4 检验actualvalue是否是一个NaN。                          |
+| 14  | assertNegUnlimited | @since1.0.4 检验actualvalue是否等于Number.NEGATIVE_INFINITY。      |
+| 15  | assertPosUnlimited | @since1.0.4 检验actualvalue是否等于Number.POSITIVE_INFINITY。      |
+| 16  | assertDeepEquals   | @since1.0.4 检验actualvalue和expectvalue是否完全相等。                |
+| 17  | assertPromiseIsPending | @since1.0.4 判断promise是否处于Pending状态。                         |
+| 18  | assertPromiseIsRejected | @since1.0.4 判断promise是否处于Rejected状态。                        |
+| 19  | assertPromiseIsRejectedWith | @since1.0.4 判断promise是否处于Rejected状态，并且比较执行的结果值。             |
+| 20  | assertPromiseIsRejectedWithError | @since1.0.4 判断promise是否处于Rejected状态并有异常，同时比较异常的类型和message值。 |
+| 21  | assertPromiseIsResolved | @since1.0.4 判断promise是否处于Resolved状态。                        |
+| 22  | assertPromiseIsResolvedWith | @since1.0.4 判断promise是否处于Resolved状态，并且比较执行的结果值。             |
+| 23  | not                | @since1.0.4 断言取反,支持上面所有的断言功能。                               |
+| 24  | message                | @since1.0.17自定义断言异常信息。                                      |
 
 expect断言示例代码：
 
@@ -121,32 +123,10 @@ import { describe, it, expect } from '@ohos/hypium';
 
 export default function expectTest() {
   describe('expectTest', () => {
-    it('assertBeClose_success', 0, () => {
+    it('assertCloseTest', 0, () => {
       let a: number = 100;
       let b: number = 0.1;
       expect(a).assertClose(99, b);
-    })
-    it('assertInstanceOf_success', 0, () => {
-      let a: string = 'strTest';
-      expect(a).assertInstanceOf('String');
-    })
-    it('assertNaN_success', 0, () => {
-      expect(Number.NaN).assertNaN(); // true
-    })
-    it('assertNegUnlimited_success', 0, () => {
-      expect(Number.NEGATIVE_INFINITY).assertNegUnlimited(); // true
-    })
-    it('assertPosUnlimited_success', 0, () => {
-      expect(Number.POSITIVE_INFINITY).assertPosUnlimited(); // true
-    })
-    it('not_number_true', 0, () => {
-      expect(1).not().assertLargerOrEqual(2);
-    })
-    it('not_number_true_1', 0, () => {
-      expect(3).not().assertLessOrEqual(2);
-    })
-    it('not_NaN_true', 0, () => {
-      expect(3).not().assertNaN();
     })
     it('assertContain_1', 0, () => {
       let a = "abc";
@@ -155,6 +135,9 @@ export default function expectTest() {
     it('assertContain_2', 0, () => {
       let a = [1, 2, 3];
       expect(a).assertContain(1);
+    })
+    it('assertEqualTest', 0, () => {
+      expect(3).assertEqual(3);
     })
     it('assertFailTest', 0, () => {
       expect().assertFail() // 用例失败;
@@ -165,14 +148,42 @@ export default function expectTest() {
     it('assertTrueTest', 0, () => {
       expect(true).assertTrue();
     })
+    it('assertInstanceOfTest', 0, () => {
+      let a: string = 'strTest';
+      expect(a).assertInstanceOf('String');
+    })
     it('assertLargerTest', 0, () => {
       expect(3).assertLarger(2);
     })
-    it('not_less_true', 0, () => {
-      expect(3).not().assertLess(2);
+    it('assertLessTest', 0, () => {
+      expect(2).assertLess(3);
     })
-    it('not_undefined_true', 0, () => {
-      expect(3).not().assertUndefined();
+    it('assertNullTest', 0, () => {
+      expect(null).assertNull();
+    })
+    it('assertThrowErrorTest', 0, () => {
+      let aa = () => {
+        throw new Error('test')
+      }
+      expect(aa).assertThrowError('test');
+    })
+    it('assertUndefinedTest', 0, () => {
+      expect(undefined).assertUndefined();
+    })
+    it('assertLargerOrEqualTest', 0, () => {
+      expect(3).assertLargerOrEqual(3);
+    })
+    it('assertLessOrEqualTest', 0, () => {
+      expect(3).assertLessOrEqual(3);
+    })
+    it('assertNaNTest', 0, () => {
+      expect(Number.NaN).assertNaN(); // true
+    })
+    it('assertNegUnlimitedTest', 0, () => {
+      expect(Number.NEGATIVE_INFINITY).assertNegUnlimited(); // true
+    })
+    it('assertPosUnlimitedTest', 0, () => {
+      expect(Number.POSITIVE_INFINITY).assertPosUnlimited(); // true
     })
     it('deepEquals_null_true', 0, () => {
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
@@ -204,30 +215,30 @@ export default function expectTest() {
       const b: RegExp = new RegExp("/test/");
       expect(a).assertDeepEquals(b);
     })
-    it('test_isPending_pass_1', 0, () => {
+    it('assertPromiseIsPendingTest', 0, () => {
       let p: Promise<void> = new Promise<void>(() => {});
       expect(p).assertPromiseIsPending();
     })
-    it('test_isRejected_pass_1', 0, () => {
+    it('assertPromiseIsRejectedTest', 0, () => {
       let info: PromiseInfo = {res: "no"};
       let p: Promise<PromiseInfo> = Promise.reject(info);
       expect(p).assertPromiseIsRejected();
     })
-    it('test_isRejectedWith_pass_1', 0, () => {
+    it('assertPromiseIsRejectedWithTest', 0, () => {
       let info: PromiseInfo = {res: "reject value"};
       let p: Promise<PromiseInfo> = Promise.reject(info);
       expect(p).assertPromiseIsRejectedWith(info);
     })
-    it('test_isRejectedWithError_pass_1', 0, () => {
+    it('assertPromiseIsRejectedWithErrorTest', 0, () => {
       let p1: Promise<TypeError> = Promise.reject(new TypeError('number'));
       expect(p1).assertPromiseIsRejectedWithError(TypeError);
     })
-    it('test_isResolved_pass_1', 0, () => {
+    it('assertPromiseIsResolvedTest', 0, () => {
       let info: PromiseInfo = {res: "result value"};
       let p: Promise<PromiseInfo> = Promise.resolve(info);
       expect(p).assertPromiseIsResolved();
     })
-    it('test_isResolvedTo_pass_1', 0, () => {
+    it('assertPromiseIsResolvedWithTest', 0, () => {
       let info: PromiseInfo = {res: "result value"};
       let p: Promise<PromiseInfo> = Promise.resolve(info);
       expect(p).assertPromiseIsResolvedWith(info);
