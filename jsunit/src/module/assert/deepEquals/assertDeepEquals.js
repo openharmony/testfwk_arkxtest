@@ -45,7 +45,7 @@ function getArrayLog(item) {
         return item;
     }
     if (item === undefined) {
-        return 'undefined'
+        return 'undefined';
     }
     return JSON.stringify(item);
 }
@@ -55,22 +55,22 @@ function getCollectionLog(data) {
     // 获取a的对象名称
     let finallyResult = ''
     const aClassName = Object.prototype.toString.call(data);
-    if (aClassName == '[object Map]') {
+    if (aClassName === '[object Map]') {
         let result = Array.from(data);
         finallyResult = result.flatMap((item) => {
             return getMapLog(item)
         });
     }
-    if (aClassName == '[object Set]') {
+    if (aClassName === '[object Set]') {
         let setArray = Array.from(data);
         finallyResult = setArray.flatMap((item) => {
             return getArrayLog(item);
         })
     }
-    if (aClassName == '[object Array]') {
+    if (aClassName === '[object Array]') {
         finallyResult = data.flatMap((item) => {
             return getArrayLog(item);
-        })
+        });
     }
     return finallyResult;
 }
@@ -122,7 +122,7 @@ function logMsg(actualValue, expected) {
         expectMsg = 'expected Promise';
     } else if (bClassName == '[object Map]') {
         let finallyResult = getCollectionLog(expected);
-        expectMsg ="[" + finallyResult + "]";
+        expectMsg = '[' + finallyResult + ']';
     } else if (bClassName == '[object Set]') {
         let flatMapResult = getCollectionLog(expected);
         expectMsg = '[' + flatMapResult + ']';
