@@ -33,10 +33,10 @@ function assertThrowError(actualValue, expected) {
         let type = typeof expected[0];
         if (type === 'function') {
             result = err.constructor.name === expected[0].name;
-            message = 'expect throw '+ expected[0].name + ' actualValue ' + err.constructor.name;
+            message = 'expect throw ' + expected[0].name + ' actualValue is ' + err.constructor.name;
         } else if (type === 'string') {
             result = err.message.includes(expected[0]);
-            message = 'expect throw ' + expected[0] + ' actualValue ' + err.message;
+            message = 'expect throw ' + expected[0] + ' actualValue is ' + err.message;
         }
     }
     return {
