@@ -63,6 +63,7 @@ ohos_shared_library("test_server_service") {
     "init:libbegetutil",
     "ipc:ipc_core",
     "pasteboard:pasteboard_client",
+    "pasteboard:pasteboard_data",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "soc_perf:socperf_client",
