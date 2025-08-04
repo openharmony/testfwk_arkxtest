@@ -214,33 +214,33 @@ export default function expectTest() {
       const b: RegExp = new RegExp("/test/");
       expect(a).assertDeepEquals(b);
     })
-    it('assertPromiseIsPendingTest', 0, () => {
+    it('assertPromiseIsPendingTest', 0, async () => {
       let p: Promise<void> = new Promise<void>(() => {});
-      expect(p).assertPromiseIsPending();
+      await expect(p).assertPromiseIsPending();
     })
-    it('assertPromiseIsRejectedTest', 0, () => {
+    it('assertPromiseIsRejectedTest', 0, async () => {
       let info: PromiseInfo = {res: "no"};
       let p: Promise<PromiseInfo> = Promise.reject(info);
-      expect(p).assertPromiseIsRejected();
+      await expect(p).assertPromiseIsRejected();
     })
-    it('assertPromiseIsRejectedWithTest', 0, () => {
+    it('assertPromiseIsRejectedWithTest', 0, async () => {
       let info: PromiseInfo = {res: "reject value"};
       let p: Promise<PromiseInfo> = Promise.reject(info);
-      expect(p).assertPromiseIsRejectedWith(info);
+      await expect(p).assertPromiseIsRejectedWith(info);
     })
-    it('assertPromiseIsRejectedWithErrorTest', 0, () => {
+    it('assertPromiseIsRejectedWithErrorTest', 0, async () => {
       let p1: Promise<TypeError> = Promise.reject(new TypeError('number'));
-      expect(p1).assertPromiseIsRejectedWithError(TypeError);
+      await expect(p1).assertPromiseIsRejectedWithError(TypeError);
     })
-    it('assertPromiseIsResolvedTest', 0, () => {
+    it('assertPromiseIsResolvedTest', 0, async () => {
       let info: PromiseInfo = {res: "result value"};
       let p: Promise<PromiseInfo> = Promise.resolve(info);
-      expect(p).assertPromiseIsResolved();
+      await expect(p).assertPromiseIsResolved();
     })
-    it('assertPromiseIsResolvedWithTest', 0, () => {
+    it('assertPromiseIsResolvedWithTest', 0, async () => {
       let info: PromiseInfo = {res: "result value"};
       let p: Promise<PromiseInfo> = Promise.resolve(info);
-      expect(p).assertPromiseIsResolvedWith(info);
+      await expect(p).assertPromiseIsResolvedWith(info);
     })
     it("test_message", 0, () => {
       expect(1).message('1 is not equal 2!').assertEqual(2); // fail
