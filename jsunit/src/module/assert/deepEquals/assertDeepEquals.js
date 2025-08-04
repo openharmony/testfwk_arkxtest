@@ -53,7 +53,7 @@ function getArrayLog(item) {
 
 function getCollectionLog(data) {
     // 获取a的对象名称
-    let finallyResult = ''
+    let finallyResult = '';
     const aClassName = Object.prototype.toString.call(data);
     if (aClassName === '[object Map]') {
         let result = Array.from(data);
