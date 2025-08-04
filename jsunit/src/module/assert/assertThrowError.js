@@ -33,10 +33,10 @@ function assertThrowError(actualValue, expected) {
         let type = typeof expected[0];
         if (type === 'function') {
             result = err.constructor.name === expected[0].name;
-            message = 'Expected to throw an error of type ' + expected[0].name + ', but the actual error thrown is of type ' + err.constructor.name + '.'
+            message = 'Expected to throw an error of type ' + expected[0].name + ', but the actual error thrown is of type ' + err.constructor.name + '.';
         } else if (type === 'string') {
             result = err.message.includes(expected[0]);
-            message = 'Expected to throw an error with message ' + expected[0] + ', but the actual error message thrown is ' + err.message + '.'
+            message = 'Expected to throw an error with message ' + expected[0] + ', but the actual error message thrown is ' + err.message + '.';
         }
     }
     return {
