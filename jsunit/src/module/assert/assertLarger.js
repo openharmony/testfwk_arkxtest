@@ -16,7 +16,7 @@
 function assertLarger(actualValue, expected) {
     return {
         pass: (actualValue) > expected[0],
-        message: 'expect ' + (actualValue) + ' larger than ' + expected[0]
+        message: 'expect ' + (actualValue) + ' to be larger than ' + expected[0]
     };
 }
 
