@@ -16,7 +16,7 @@
 function assertNegUnlimited(actualValue) {
     return {
         pass: actualValue === Number.NEGATIVE_INFINITY,
-        message: 'expect actualValue to be -Infinity.  actualValue is, ' + actualValue
+        message: 'expect actualValue to be -Infinity, actualValue is, ' + actualValue
     };
 }
 
