@@ -508,8 +508,14 @@ static ani_ref id(ani_env *env, ani_object obj, ani_string id, ani_enum_item pat
 {
     nlohmann::json params = nlohmann::json::array();
     params.push_back(aniStringToStdString(env, id));
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(pattern, &enumValue);
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pattern), &ret);
+    ani_int enumValue = 0;
+    if (ret == ANI_FALSE) {
+        if (ANI_OK != env->EnumItem_GetValue_Int(pattern, &enumValue)) {
+            HiLog::Error(LABEL, "%{public}s Not get pattern !!!", __func__);
+        }
+    }
     params.push_back(enumValue);
     return createOn(env, obj, params, "On.id");
 }
@@ -517,8 +523,14 @@ static ani_ref text(ani_env *env, ani_object obj, ani_string text, ani_enum_item
 {
     nlohmann::json params = nlohmann::json::array();
     params.push_back(aniStringToStdString(env, text));
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(pattern, &enumValue);
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pattern), &ret);
+    ani_int enumValue = 0;
+    if (ret == ANI_FALSE) {
+        if (ANI_OK != env->EnumItem_GetValue_Int(pattern, &enumValue)) {
+            HiLog::Error(LABEL, "%{public}s Not get pattern !!!", __func__);
+        }
+    }
     params.push_back(enumValue);
     return createOn(env, obj, params, "On.text");
 }
@@ -526,8 +538,14 @@ static ani_ref type(ani_env *env, ani_object obj, ani_string type, ani_enum_item
 {
     nlohmann::json params = nlohmann::json::array();
     params.push_back(aniStringToStdString(env, type));
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(pattern, &enumValue);
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pattern), &ret);
+    ani_int enumValue = 0;
+    if (ret == ANI_FALSE) {
+        if (ANI_OK != env->EnumItem_GetValue_Int(pattern, &enumValue)) {
+            HiLog::Error(LABEL, "%{public}s Not get pattern !!!", __func__);
+        }
+    }
     params.push_back(enumValue);
     return createOn(env, obj, params, "On.type");
 }
@@ -535,8 +553,14 @@ static ani_ref hint(ani_env *env, ani_object obj, ani_string text, ani_enum_item
 {
     nlohmann::json params = nlohmann::json::array();
     params.push_back(aniStringToStdString(env, text));
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(pattern, &enumValue);
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pattern), &ret);
+    ani_int enumValue = 0;
+    if (ret == ANI_FALSE) {
+        if (ANI_OK != env->EnumItem_GetValue_Int(pattern, &enumValue)) {
+            HiLog::Error(LABEL, "%{public}s Not get pattern !!!", __func__);
+        }
+    }
     params.push_back(enumValue);
     return createOn(env, obj, params, "On.hint");
 }
@@ -544,8 +568,14 @@ static ani_ref description(ani_env *env, ani_object obj, ani_string text, ani_en
 {
     nlohmann::json params = nlohmann::json::array();
     params.push_back(aniStringToStdString(env, text));
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(pattern, &enumValue);
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pattern), &ret);
+    ani_int enumValue = 0;
+    if (ret == ANI_FALSE) {
+        if (ANI_OK != env->EnumItem_GetValue_Int(pattern, &enumValue)) {
+            HiLog::Error(LABEL, "%{public}s Not get pattern !!!", __func__);
+        }
+    }
     params.push_back(enumValue);
     return createOn(env, obj, params, "On.description");
 }
