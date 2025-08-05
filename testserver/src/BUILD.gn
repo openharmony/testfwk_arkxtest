@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
-import("//foundation/ability/idl_tool/idl_config.gni")
+import("//build/config/components/idl_tool/idl.gni")
 
 idl_interface_sources = [
   "${target_gen_dir}/test_server_interface_proxy.cpp",
