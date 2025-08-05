@@ -18,7 +18,7 @@ import { Core } from './core';
 import { AnyType, HookFuncType, ItfnType } from './module/types/common';
 
 const core = Core.getInstance();
-const hypiumDescribe = (desc: string, func: () => void): Promise<undefined> => {
+const hypiumDescribe = (desc: string, func: () => void): void => {
   if (core) {
     return (core as Core).describe(desc, func);
   }

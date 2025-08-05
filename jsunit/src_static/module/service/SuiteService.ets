@@ -63,7 +63,7 @@ class SuiteService {
     };
   }
 
-  async describe(desc: string, func: () => void): Promise<undefined> {
+  async describe(desc: string, func: () => void): void {
     const core = this.coreContext;
     if (core) {
       const cc = core as Core;
@@ -124,7 +124,7 @@ class SuiteService {
       }
     }
   }
-  async xdescribe(desc: string, func: () => void, reason: string): Promise<void> {
+  async xdescribe(desc: string, func: () => void, reason: string): void {
     const core = this.coreContext;
     if (core) {
       const cc = core as Core;
@@ -568,8 +568,7 @@ class SuiteService {
     return {
       name: 'SuiteService',
       describe: (desc: string, func: () => void) => {
-        const c = _this.describe(desc, func);
-        return c;
+        return _this.describe(desc, func);
       },
       xdescribe: (desc: string, func: () => void, reason: string) => {
         return _this.xdescribe(desc, func, reason);
