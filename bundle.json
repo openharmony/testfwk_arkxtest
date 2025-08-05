@@ -51,11 +51,9 @@
           "libuv",
           "udmf",
           "hiview",
-          "hisysevent"
-        ],
-        "third_party": [
-          "libpng",
-          "libjpeg-turbo"
+          "hisysevent",
+          "libjpeg-turbo",
+          "libpng"
         ]
       },
       "build": {
