@@ -840,7 +840,7 @@ export class Component {
       });
       return promise;
     }
-    private native flingSyncDirection(direction:UiDirection, speed: int):boolean;
+    private native flingSyncDirection(direction: UiDirection, speed: int):boolean;
     fling(direction:UiDirection, speed: int): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.flingSyncDirection(direction, speed));
@@ -853,7 +853,7 @@ export class Component {
       });
       return promise;
     }
-    private native flingWithDisplayIdSync(direction:UiDirection, speed: int, displayId: int):boolean;
+    private native flingWithDisplayIdSync(direction: UiDirection, speed: int, displayId: int):boolean;
     fling(direction:UiDirection, speed: int, displayId: int): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.flingWithDisplayIdSync(direction, speed, displayId));
@@ -1570,20 +1570,11 @@ export class Component {
     native type(tp: string, pattern?: MatchPattern): On;
     native hint(val: string, pattern?: MatchPattern): On;
     
-    text(txt: string): On {
-        return this.text(txt, MatchPattern.EQUALS);
-    }
-    description(val: string): On {
-        return this.description(val, MatchPattern.EQUALS);
-    }
     id(id: string): On {
         return this.id(id, MatchPattern.EQUALS);
     }
     type(tp: string): On {
         return this.type(tp, MatchPattern.EQUALS);
-    }
-    hint(val: string): On {
-        return this.hint(val, MatchPattern.EQUALS);
     }
   }
 
