@@ -241,7 +241,8 @@ class ConfigService {
         size: SIZE,
       } as FilterParamIF;
       this.parseParams();
-    } catch (err: Error) {
+    } catch (err) {
+      err = err as Error;
       console.info(`${TAG}setConfig error: ${err.message}`);
     }
   }

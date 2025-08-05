@@ -110,9 +110,9 @@ class SuiteService {
         this.suitesStack.push(suite);
         try {
           func()
-        } catch (err: Error) {
-          console.info(`${TAG} describe ${desc} 执行报错： ${err.message}`);
-          console.info(`${err.stack}`);
+        } catch (err) {
+          console.info(`${TAG} describe ${desc} 执行报错： ${(err as Error).message}`);
+          console.info(`${(err as Error).stack}`);
         }
         this.suitesStack.pop();
 
