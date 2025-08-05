@@ -109,7 +109,8 @@ class SysTestKit {
     try {
       current = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
       console.info(`${TAG} systemDateTime.getUptime success`);
-    } catch (err: Error) {
+    } catch (err) {
+      err = err as Error;
       console.error(`${TAG} failed to systemDateTime.getUptime because ` + err.message);
     }
     return current;
@@ -130,8 +131,8 @@ class SysTestKit {
     try {
       const data = await executePromise(cmd, time);
       searchResult = data;
-    } catch (err: Error) {
-      throw err;
+    } catch (err) {
+      throw err as Error;
     }
     return searchResult;
   }

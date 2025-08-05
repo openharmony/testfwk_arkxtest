@@ -28,7 +28,8 @@ export function getAsyncFuncWithArgsZero(func: () => Promise<void>, timeout: int
     }
     try {
       await func();
-    } catch (err: Error) {
+    } catch (err) {
+      err = err as Error;
       console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
       reject(err)
     }
@@ -49,7 +50,8 @@ export function getFuncWithArgsZero(func: () => void, timeout: int, isStressTest
     }
     try {
       func()
-    } catch (err: Error) {
+    } catch (err) {
+      err = err as Error;
       console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
       reject(err)
     }
@@ -82,11 +84,11 @@ export function getAsyncFuncWithArgsOne(
 
     try {
       await func(done);
-    } catch (err: Error) {
+    } catch (err) {
       if (!!timer) {
         clearTimeout(timer);
       }
-      reject(err);
+      reject(err as Error);
     }
   });
 }
@@ -109,11 +111,11 @@ export function getFuncWithArgsOne(func: (params: () => void) => void, timeout: 
 
     try {
       func(done);
-    } catch (err: Error) {
+    } catch (err) {
       if (!!timer) {
         clearTimeout(timer);
       }
-      reject(err);
+      reject(err as Error);
     }
   });
 }
@@ -141,11 +143,11 @@ export function getAsyncFuncWithArgsTwo(
 
     try {
       await func(done, paramItem);
-    } catch (err: Error) {
+    } catch (err) {
       if (!!timer) {
         clearTimeout(timer);
       }
-      reject(err);
+      reject(err as Error);
     }
   });
 }
@@ -173,11 +175,11 @@ export function getFuncWithArgsTwo(
 
     try {
       func(done, paramItem);
-    } catch (err: Error) {
+    } catch (err) {
       if (!!timer) {
         clearTimeout(timer);
       }
-      reject(err);
+      reject(err as Error);
     }
   });
 }

@@ -54,8 +54,8 @@ export function loadAndSetUpUiTest(): boolean {
             UiTest.ScheduleEstablishConnection('default');
             return false;
         }
-    } catch(error: Error){
-        hilog.error(domain, 'uitestTag', "loadAndSetUpUiTest failed" + error.stack);
+    } catch(error){
+        hilog.error(domain, 'uitestTag', "loadAndSetUpUiTest failed" + (error as Error).stack);
         hilog.error(domain, 'uitestTag', "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat());
         return false;
     }
