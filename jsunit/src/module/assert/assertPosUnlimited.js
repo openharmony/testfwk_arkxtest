@@ -16,7 +16,7 @@
 function assertPosUnlimited(actualValue) {
     return {
         pass: actualValue === Number.POSITIVE_INFINITY,
-        message: 'expect actualValue to be POSITIVE_INFINITY, actualValue is, ' + actualValue
+        message: 'Expected actualValue is POSITIVE_INFINITY.  actualValue is,' + actualValue
     };
 }
 
