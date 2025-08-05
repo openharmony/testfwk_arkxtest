@@ -44,7 +44,7 @@ class Hypium {
         return Hypium.context.get(key);
     }
 
-    static hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite) {
+    static init(abilityDelegator, abilityDelegatorArguments) {
         const core = Core.getInstance();
         const expectExtend = new ExpectExtend({
             'id': 'extend'
@@ -66,8 +66,24 @@ class Hypium {
             console.info(`${TAG}parameters:${JSON.stringify(testParameters)}`);
             configService.setConfig(testParameters);
         }
-        testsuite();
-        core.execute(abilityDelegator);
+        return core;
+    }
+
+    static execute(core, abilityDelegator) {
+      core.execute(abilityDelegator);
+    }
+
+    static updateTotalTest(core, staticTotal) {
+      const specServiceDynamic = core.getDefaultService("spec");
+      const dynamicTotal = specServiceDynamic.totalTest || 0;
+      specServiceDynamic.totalTest += staticTotal;
+      return dynamicTotal;
+    }
+
+    static hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite) {
+      const core = Hypium.init(abilityDelegator, abilityDelegatorArguments);
+      testsuite();
+      Hypium.execute(core, abilityDelegator);
     }
     static async hypiumInitWorkers(abilityDelegator, scriptURL, workerNum = 8, params) {
         console.info(`${TAG}, hypiumInitWorkers call,${scriptURL}`);

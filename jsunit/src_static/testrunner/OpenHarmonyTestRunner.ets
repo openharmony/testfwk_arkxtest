@@ -1,3 +1,4 @@
+'use static'
 /*
  * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,97 +13,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
-import TestRunner from '@ohos.application.testRunner';
 import hilog from '@ohos.hilog';
-import util from '@ohos.util';
-import { Hypium } from '../index';
-import testsuite from '../test/List.test';
+import AbilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
+import TestRunner from '@ohos.application.testRunner';
+import Want from '@ohos.app.ability.Want';
+import UIAbility from '@ohos.app.ability.UIAbility';
+import { BusinessError } from '@ohos.base';
 
-let abilityDelegator: abilityDelegatorRegistry.AbilityDelegator;
-let abilityDelegatorArguments: abilityDelegatorRegistry.AbilityDelegatorArgs;
-const jsonPath: string = 'mock/mock-config.json';
-const domain: int = 0x0000; //日志标识,0x0000作为测试框架的业务标识
-const tag: string = 'testTag'; //日志标识字符串,作为tag标识当前runner类下的测试行为
+let tag: string = 'testTag';
+const UNLOCK_ERROR = -3;
 
-export class OpenHarmonyTestRunner implements TestRunner {
-  constructor() {}
+function onAbilityCreateCallback(ability: UIAbility) {
+  hilog.info(0x0000, 'testTag', '%{public}s', 'onAbilityCreateCallback');
+}
 
-  public onPrepare: () => void = () => {
-    hilog.info(domain, tag, '%{public}s', 'OpenHarmonyTestRunner OnPrepare');
-  }
-
-  public onRun: () => void = () => {
-    hilog.info(domain, tag, '%{public}s', 'OpenHarmonyTestRunner onRun run');
-    abilityDelegatorArguments = abilityDelegatorRegistry.getArguments();
-    abilityDelegator = abilityDelegatorRegistry.getAbilityDelegator();
-    try {
-      checkMock(abilityDelegator, abilityDelegatorArguments)
-    } catch(error: Error) {
-      let code = error.code;
-      let message = error.message;
-      hilog.error(domain, tag, `checkMock failed, error code: ${code}, message: ${message}.`);
-    }
-    hilog.info(domain, tag, '%{public}s', 'start run testcase!!!');
-    Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
-    hilog.info(domain, tag, '%{public}s', 'OpenHarmonyTestRunner onRun end');
+function addAbilityMonitorCallback(err: BusinessError | null) {
+  if(err) {
+    hilog.info(0x0000, 'testTag', 'addAbilityMonitorCallback : %{public}s', JSON.stringify(err as BusinessError));
+  } else {
+    hilog.info(0x0000, 'testTag', 'addAbilityMonitorCallback : %{public}s', "");
   }
 }
 
-function checkMock(
-  abilityDelegator: abilityDelegatorRegistry.AbilityDelegator,
-  abilityDelegatorArguments: abilityDelegatorRegistry.AbilityDelegatorArgs
-) {
-  const parameters = abilityDelegatorArguments.parameters;
-  let moduleName = '';
-  for (const key of parameters.keys()) {
-    if (key === '-m') {
-      moduleName = parameters[key];
-    }
+export default class OpenHarmonyTestRunner implements TestRunner {
+  constructor() {
   }
-  const context = abilityDelegator.getAppContext().getApplicationContext().createModuleContext(moduleName);
-  const resourceManager = context.resourceManager;
-  let rawFile: Uint8Array;
+
+  onPrepare() {
+    hilog.info(0x0000, 'testTag', '%{public}s', "OpenHarmonyTestRunner onPrepare");
+  }
+
+  onRun() {
+    hilog.info(0x0000, 'testTag', '%{public}s', "OpenHarmonyTestRunner onRun run");
+    const abilityDelegatorArguments: AbilityDelegatorRegistry.AbilityDelegatorArgs = AbilityDelegatorRegistry.getArguments();
+    const abilityDelegator: AbilityDelegatorRegistry.AbilityDelegator = AbilityDelegatorRegistry.getAbilityDelegator();
+    const bundleName = abilityDelegatorArguments.bundleName;
+    const testAbilityName = 'TestAbility';
+    const parameters: Record<string, string> = abilityDelegatorArguments.parameters;
+    const moduleName = parameters['-m'];
+    const lMonitor: AbilityDelegatorRegistry.AbilityMonitor = {
+      abilityName: testAbilityName,
+      onAbilityCreate: onAbilityCreateCallback,
+      moduleName: moduleName
+    };
+    abilityDelegator.addAbilityMonitor(lMonitor, addAbilityMonitorCallback);
+    startAbility(abilityDelegator, bundleName, testAbilityName).then((res) => {
+      hilog.info(0x0000, 'testTag', '%{public}s', "OpenHarmonyTestRunner onRun end");
+    })
+  }
+}
+
+async function startAbility(abilityDelegator: AbilityDelegatorRegistry.AbilityDelegator, bundleName: string, abilityName: string): Promise<void> {
   try {
-    rawFile = resourceManager.getRawFileContentSync(jsonPath);
-    hilog.info(domain, tag, 'MockList file exists');
-    const mockStr: string = util.TextDecoder.create('utf-8', { ignoreBOM: true }).decodeWithStream(rawFile);
-    const mockMap: Record<string, string> = getMockList(mockStr);
-    try {
-      abilityDelegator.setMockList(mockMap);
-    } catch (error: Error) {
-      let code = error.code;
-      let message = error.message;
-      hilog.error(domain, tag, `abilityDelegator.setMockList failed, error code: ${code}, message: ${message}.`);
+    const result = await abilityDelegator.executeShellCommand('aa start -b ${bundleName} -a ${abilityName}');
+    if (result.stdResult.includes("error: unlock screen failed in developer mode")) {
+      hilog.info(0x0000, 'testTag', '%{public}s', "startAbility failed ${result.stdResult}");
+      abilityDelegator.finishTest("", UNLOCK_ERROR, () => {});
     }
-  } catch (error: Error) {
-    let code = error.code;
-    let message = error.message;
-    hilog.error(
-      domain,
-      tag,
-      `ResourceManager:callback getRawFileContent failed, error code: ${code}, message: ${message}.`
-    );
+  } catch (err: Error) {
+    hilog.info(0x0000, 'testTag', '%{public}s', "startAbility error: ${err.message}");
   }
-}
 
-interface SourceObj {
-  source?: string;
-}
-
-function getMockList(jsonStr: string) {
-  let jsonObj: Record<string, Object> = JSON.parse(jsonStr);
-  let map: Map<string, object> = new Map<string, object>(Object.entries(jsonObj));
-  let mockList: Record<string, string> = {};
-  map.forEach((value: object, key: string) => {
-    if (value) {
-      const sourceValue = value as SourceObj;
-      const source = sourceValue.source;
-      if (source) {
-        mockList[key] = source;
-      }
-    }
-  });
-  hilog.info(domain, tag, '%{public}s', 'mock-json value:' + JSON.stringify(mockList));
-  return mockList;
 }
