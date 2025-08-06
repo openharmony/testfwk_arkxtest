@@ -63,7 +63,7 @@ class SuiteService {
     };
   }
 
-  async describe(desc: string, func: () => void): void {
+  describe(desc: string, func: () => void): void {
     const core = this.coreContext;
     if (core) {
       const cc = core as Core;
@@ -78,7 +78,7 @@ class SuiteService {
           console.error(`${TAG} Loop nesting occurs : ${desc}`);
           this.suiteSkipReason = '';
           this.isSkipSuite = false;
-          return Promise.resolve(undefined);
+          return;
         }
         const isFilter = this.analyzeConfigServiceClass(configService.className, desc);
         if (configService.filterSuite(desc) && isFilter) {
@@ -86,7 +86,7 @@ class SuiteService {
             console.info(`${TAG}filter suite : ${desc}`);
             this.suiteSkipReason = '';
             this.isSkipSuite = false;
-            return Promise.resolve(undefined);
+            return;
           }
         }
         const suite = new StaticSuite({ description: desc });
@@ -124,7 +124,7 @@ class SuiteService {
       }
     }
   }
-  async xdescribe(desc: string, func: () => void, reason: string): void {
+  xdescribe(desc: string, func: () => void, reason: string): void {
     const core = this.coreContext;
     if (core) {
       const cc = core as Core;
@@ -147,21 +147,21 @@ class SuiteService {
                   ? `${TAG} skip suite: ${desc}`
                   : `${TAG} skip suite: ${desc}, and the reason is ${reason}`
               );
-              return Promise.resolve();
+              return;
             }
           } else {
             console.info(
               reason == null ? `${TAG} skip suite: ${desc}` : `${TAG} skip suite: ${desc}, and the reason is ${reason}`
             );
-            return Promise.resolve();
+            return;
           }
         }
         this.isSkipSuite = true;
         this.suiteSkipReason = reason;
-        await this.describe(desc, func);
+        this.describe(desc, func);
       }
     }
-    return Promise.resolve();
+    return;
   }
 
   handleHookFunction(core: Core, func: HookFuncType) {
@@ -525,7 +525,7 @@ class SuiteService {
     await core.fireEvents('task', 'taskDone');
   }
 
-  async execute(dynamicCount): Promise<void> {
+  async execute(dynamicCount: int): Promise<void> {
     const cc = this.coreContext;
     if (cc) {
       const core = cc as Core;
