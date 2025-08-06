@@ -1534,7 +1534,11 @@ static ani_boolean touchPadMultiFingerSwipeSync(ani_env *env, ani_object obj, an
     ani_int enumValue;
     env->EnumItem_GetValue_Int(direction, &enumValue);
     callInfo_.paramList_.push_back(enumValue);
-    callInfo_.paramList_.push_back(getTouchPadSwipeOptions(env, touchPadOpt));
+    ani_boolean ret;
+    env->Reference_IsUndefined(touchPadOpt, &ret);
+    if (ret == ANI_FALSE) {
+        callInfo_.paramList_.push_back(getTouchPadSwipeOptions(env, touchPadOpt));
+    }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
