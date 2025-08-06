@@ -36,15 +36,34 @@ class OhReport {
     }
   }
 
+  updateIndex(index) {
+    this.index = index || 0
+  }
+
   taskStart() {
   }
 
-  async taskDone() {
+  async taskDone(staticSummary) {
     let summary = this.suiteService.getSummary();
+    if (staticSummary !== undefined && staticSummary.total) {
+      const {
+        total = 0,
+        failure = 0,
+        error = 0,
+        pass = 0,
+        ignore = 0,
+        duration = 0,
+      } = staticSummary;
+      summary.total += total;
+      summary.failure += failure;
+      summary.error += error;
+      summary.pass += pass;
+      summary.ignore += ignore;
+      summary.duration += duration;
+    }
     if (this.abilityDelegatorArguments !== null) {
       this.taskDoneTime = new Date().getTime();
       const configService = this.coreContext.getDefaultService('config');
-      const suiteService = this.coreContext.getDefaultService('suite');
       const specService = this.coreContext.getDefaultService('spec');
       if (configService['coverage'] === 'true') {
         await collectCoverageData();

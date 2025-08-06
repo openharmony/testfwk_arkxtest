@@ -1,4 +1,4 @@
-'use static'
+'use static';
 /*
  * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,14 +22,11 @@ import DataDriver from './module/config/DataDriver';
 import { ExpectExtend } from './module/assert/ExpectExtend';
 import { OhReport } from './module/report/OhReport';
 import { SysTestKit } from './module/kit/SysTestKit';
-import { DataDriverData } from './interface';
+import { DataDriverData, TestcaseSummaryIF } from './interface';
 import { AnyType } from './module/types/common';
 import { ConfigService } from './module/config/configService';
 import { SpecService } from './module/service/SpecService';
-import transfer from '@ohos.transfer'
-
-// 引入1.1的hypium
-const HypiumDynamic = ESValue.load("../index.js").getProperty("Hypium")
+import { SuiteService } from './module/service/SuiteService';
 
 export class Hypium {
   public static context = new Map<string, AnyType>();
@@ -77,7 +74,9 @@ export class Hypium {
       const cService = core.getDefaultService('config');
       if (cService !== null && abilityDelegatorArguments !== null) {
         const configService = cService as ConfigService;
-        const testParameters = configService.translateParams(abilityDelegatorArguments.parameters);
+        const testParameters = configService.translateParams(
+          abilityDelegatorArguments.parameters
+        );
         console.info(`${TAG}parameters:${JSON.stringify(testParameters)}`);
         configService.setConfig(testParameters);
       }
@@ -85,36 +84,74 @@ export class Hypium {
     return core;
   }
 
-  static execute(core: Core, abilityDelegator: abilityDelegatorRegistry.AbilityDelegator) {
-    core.execute(abilityDelegator);
+  static async execute(
+    core: Core,
+    abilityDelegator: abilityDelegatorRegistry.AbilityDelegator,
+    dynamicCount: int
+  ) {
+    await core.execute(abilityDelegator, dynamicCount);
   }
 
-  static hypiumTest(
+  static async hypiumTest(
     abilityDelegator: abilityDelegatorRegistry.AbilityDelegator,
     abilityDelegatorArguments: abilityDelegatorRegistry.AbilityDelegatorArgs,
     testsuite: () => void
   ) {
     const core = Hypium.init(abilityDelegator, abilityDelegatorArguments);
-    const dynamicInit = HypiumDynamic.getProperty('init');
-    const coreDynamic = dynamicInit.invoke(ESObject.wrap(abilityDelegator), ESObject.wrap(abilityDelegatorArguments));
+
+    // 引入1.1的hypium
+    const { bundleName = '', parameters = {} } = abilityDelegatorArguments;
+    const moduleName = parameters['-m'] || 'entry_test';
+    const loadPath = `@normalized:N&${moduleName}&${bundleName}&@ohos/hypium/src/main_dynamic/index&1.0.0`;
+    const HypiumDynamic = ESValue.load(loadPath).getProperty('Hypium');
+
+    const coreDynamic = HypiumDynamic.invokeMethod(
+      'init',
+      ESObject.wrap(abilityDelegator),
+      ESObject.wrap(abilityDelegatorArguments)
+    );
     testsuite();
     let staticTotal = 0;
     let specService: SpecService | null = null;
     if (core) {
-      specService = (core as Core).getDefaultService("spec") as SpecService;
+      specService = (core as Core).getDefaultService('spec') as SpecService;
       staticTotal = specService.totalTest;
     }
-    const dynamicUpdateTotalTest = HypiumDynamic.getProperty('updateTotalTest');
-    const dynamicTotal = dynamicUpdateTotalTest.invoke(ESObject.wrap(coreDynamic), ESObject.wrap(staticTotal));
-    const dynamicTotalValue = transfer.transferStatic(dynamicTotal, 'interopTransferHelper');
-    const totalTest = staticTotal + (dynamicTotalValue as int);
+    const dynamicTotal = HypiumDynamic.invokeMethod(
+      'updateTotalTest',
+      coreDynamic,
+      ESObject.wrap(staticTotal)
+    );
+    const dynamicTotalValue = dynamicTotal.toNumber().toInt();
+    const totalTest = staticTotal + dynamicTotalValue;
     if (staticTotal > 0) {
       (specService as SpecService).totalTest = totalTest;
-      Hypium.execute(core as Core, abilityDelegator);
+      await Hypium.execute(core as Core, abilityDelegator, dynamicTotalValue);
     }
-    if ((dynamicTotalValue as int) > 0) {
-      const dynamicExecute = HypiumDynamic.getProperty('execute');
-      dynamicExecute.invoke(ESObject.wrap(coreDynamic), ESObject.wrap('abilityDelegator'));
+    if (dynamicTotalValue > 0) {
+      let summary: TestcaseSummaryIF = {
+        total: 0,
+        failure: 0,
+        error: 0,
+        pass: 0,
+        ignore: 0,
+        duration: 0,
+        itItemList: [],
+      };
+      if (staticTotal > 0) {
+        const suiteService = (core as Core).getDefaultService(
+          'suite'
+        ) as SuiteService;
+        summary = suiteService.getSummary();
+      }
+      setTimeout(() => {
+        HypiumDynamic.invoke(
+          'execute',
+          coreDynamic,
+          ESObject.wrap(abilityDelegator),
+          ESObject.wrap(summary)
+        );
+      }, 0);
     }
   }
 }

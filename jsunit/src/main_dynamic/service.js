@@ -391,8 +391,8 @@ class SuiteService {
                 } else {
                     specItem.error = error;
                 }
-                await coreContext.fireEvents('spec', 'specStart', specItem);
-                await coreContext.fireEvents('spec', 'specDone', specItem);
+                await coreContext.fireEvents('spec', 'specStart');
+                await coreContext.fireEvents('spec', 'specDone');
             }
         }
         if (suite.childSuites.length > 0) {
@@ -510,7 +510,7 @@ class SuiteService {
         }
     }
 
-    execute() {
+    execute(summary) {
         const configService = this.coreContext.getDefaultService('config');
         if (configService.filterValid.length !== 0) {
             this.coreContext.fireEvents('task', 'incorrectFormat');
@@ -533,13 +533,13 @@ class SuiteService {
                 await this.rootSuite.asyncRun(this.coreContext);
             };
             asyncExecute().then(async () => {
-                await this.coreContext.fireEvents('task', 'taskDone');
+                await this.coreContext.fireEvents('task', 'taskDone', [summary]);
             });
         } else {
             console.info('${TAG} rootSuite:' + JSON.stringify(this.rootSuite));
             this.coreContext.fireEvents('task', 'taskStart');
             this.rootSuite.run(this.coreContext);
-            this.coreContext.fireEvents('task', 'taskDone');
+            this.coreContext.fireEvents('task', 'taskDone', [summary]);
         }
     }
 
@@ -618,7 +618,7 @@ SuiteService.Suite = class {
         const suiteService = coreContext.getDefaultService('suite');
         suiteService.setCurrentRunningSuite(this);
         if (this.description !== '') {
-            coreContext.fireEvents('suite', 'suiteStart', this);
+            coreContext.fireEvents('suite', 'suiteStart');
         }
         this.runHookFunc('beforeAll');
         if (this.specs.length > 0) {
@@ -690,7 +690,7 @@ SuiteService.Suite = class {
                 console.info('break description :' + this.description);
                 break;
             }
-            await coreContext.fireEvents('spec', 'specStart', specItem);
+            await coreContext.fireEvents('spec', 'specStart');
             try {
                 await this.runBeforeItSpecified(this.beforeItSpecified, specItem);
                 await this.runAsyncHookFunc('beforeEach');
@@ -708,7 +708,7 @@ SuiteService.Suite = class {
                 specService.setStatus(true);
             }
             specItem.setResult();
-            await coreContext.fireEvents('spec', 'specDone', specItem);
+            await coreContext.fireEvents('spec', 'specDone');
             specService.setCurrentRunningSpec(null);
         }
     }
@@ -732,7 +732,7 @@ SuiteService.Suite = class {
         suiteService.setCurrentRunningSuite(this);
         suiteService.suitesStack.push(this);
         if (this.description !== '') {
-            await coreContext.fireEvents('suite', 'suiteStart', this);
+            await coreContext.fireEvents('suite', 'suiteStart');
         }
 
         try {
@@ -956,7 +956,7 @@ SpecService.Spec = class {
     run(coreContext) {
         const specService = coreContext.getDefaultService('spec');
         specService.setCurrentRunningSpec(this);
-        coreContext.fireEvents('spec', 'specStart', this);
+        coreContext.fireEvents('spec', 'specStart');
         this.isExecuted = true;
         try {
             let dataDriver = coreContext.getServices('dataDriver');
@@ -980,7 +980,7 @@ SpecService.Spec = class {
             this.error = e;
             specService.setStatus(true);
         }
-        coreContext.fireEvents('spec', 'specDone', this);
+        coreContext.fireEvents('spec', 'specDone');
     }
 
     async asyncRun(coreContext) {
@@ -1200,9 +1200,25 @@ class ReportService {
         console.info(`[suite end] ${suite.description} consuming ${suite.duration} ms${message}`);
     }
 
-    taskDone() {
+    taskDone(staticSummary) {
         let msg = '';
         let summary = this.suiteService.getSummary();
+        if(staticSummary !== undefined && staticSummary.total) {
+            const {
+                total = 0,
+                failure = 0,
+                error = 0,
+                pass = 0,
+                ignore = 0,
+                duration = 0
+            } = staticSummary
+            summary.total += total
+            summary.failure += failure
+            summary.error += error
+            summary.pass += pass
+            summary.ignore += ignore
+            summary.duration += duration
+        }
         msg = 'total cases:' + summary.total + ';failure ' + summary.failure + ',' + 'error ' + summary.error;
         msg += ',pass ' + summary.pass + '; consuming ' + summary.duration + 'ms';
         console.info(`${TAG}${msg}`);

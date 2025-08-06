@@ -525,7 +525,7 @@ class SuiteService {
     await core.fireEvents('task', 'taskDone');
   }
 
-  execute() {
+  async execute(dynamicCount): Promise<void> {
     const cc = this.coreContext;
     if (cc) {
       const core = cc as Core;
@@ -547,17 +547,17 @@ class SuiteService {
           this.currentRunningSuite = this.rootSuite.childSuites[0];
         }
         if (configService.isSupportAsync()) {
-          let asyncExecute = async () => {
-            await core.fireEvents('task', 'taskStart');
-            await this.rootSuite.asyncRun(core);
-          };
-          asyncExecute().then(async () => {
+          await core.fireEvents('task', 'taskStart');
+          await this.rootSuite.asyncRun(core);
+          if(dynamicCount <= 0) {
             await core.fireEvents('task', 'taskDone');
-          });
+          }
         } else {
           core.fireEvents('task', 'taskStart');
           this.rootSuite.run(core);
-          core.fireEvents('task', 'taskDone');
+          if(dynamicCount <= 0) {
+            core.fireEvents('task', 'taskDone');
+          }
         }
       }
     }

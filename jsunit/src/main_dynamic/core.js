@@ -90,13 +90,16 @@ class Core {
         }
     }
 
-    async fireEvents(serviceName, eventName) {
+    async fireEvents(serviceName, eventName, args) {
         const eventObj = this.events[serviceName];
         if (!eventObj) {
             return;
         }
+        if(!args) {
+            args = []
+        }
         for (const attr in eventObj) {
-            await eventObj[attr][eventName]();
+            await eventObj[attr][eventName](...args);
         }
     }
 
@@ -141,7 +144,7 @@ class Core {
         }
     }
 
-    execute(abilityDelegator) {
+    execute(abilityDelegator, summary) {
         const suiteService = this.getDefaultService('suite');
         const configService = this.getDefaultService('config');
         if (configService['dryRun'] === 'true') {
@@ -151,7 +154,7 @@ class Core {
             return;
         }
         setTimeout(() => {
-            suiteService.execute();
+            suiteService.execute(summary);
         }, 10);
     }
 }
