@@ -290,7 +290,7 @@ class Core {
     }
   }
 
-  async execute(abilityDelegator: abilityDelegatorRegistry.AbilityDelegator) {
+  async execute(abilityDelegator: abilityDelegatorRegistry.AbilityDelegator, dynamicCount: int) {
     const suiteService = this.getDefaultService('suite');
     const configService = this.getDefaultService('config');
     if (suiteService !== null && configService !== null) {
@@ -301,11 +301,9 @@ class Core {
         if (cService.dryRun === 'true') {
           await service.dryRun(abilityDelegator);
         } else {
-          setTimeout(() => {
-            if (service !== null) {
-              service.execute();
-            }
-          }, 0);
+          if (service !== null) {
+            await service.execute(dynamicCount);
+          }
         }
       }
     }
