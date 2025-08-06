@@ -23,6 +23,131 @@ function assertDeepEquals(actualValue, expected) {
     };
 }
 
+function getMapLog(item) {
+    let valueStr = '';
+    let keyValue = '';
+    if (item.length > 1) {
+        let key = item[0];
+        let value = item[1];
+        if (value !== value) {
+            valueStr = value;
+        } else {
+            valueStr = JSON.stringify(value);
+        }
+        keyValue = JSON.stringify(key);
+    }
+    return '[' + keyValue + ',' + valueStr + ']';
+}
+
+function getArrayLog(item) {
+    // NAN
+    if (item !== item) {
+        return item;
+    }
+    if (item === undefined) {
+        return 'undefined';
+    }
+    return JSON.stringify(item);
+}
+
+
+function getCollectionLog(data) {
+    // 获取a的对象名称
+    let finallyResult = '';
+    const aClassName = Object.prototype.toString.call(data);
+    if (aClassName === '[object Map]') {
+        let result = Array.from(data);
+        finallyResult = result.flatMap((item) => {
+            return getMapLog(item);
+        });
+    }
+    if (aClassName === '[object Set]') {
+        let setArray = Array.from(data);
+        finallyResult = setArray.flatMap((item) => {
+            return getArrayLog(item);
+        });
+    }
+    if (aClassName === '[object Array]') {
+        finallyResult = data.flatMap((item) => {
+            return getArrayLog(item);
+        });
+    }
+    return finallyResult;
+}
+
+function getActualValueLog(actualValue) {
+    // 获取a的对象名称
+    const aClassName = Object.prototype.toString.call(actualValue);
+    let actualMsg = '';
+    if (aClassName === '[object Function]') {
+        actualMsg = 'actualValue Function';
+    } else if (aClassName === '[object Promise]') {
+        actualMsg = 'actualValue Promise';
+    } else if (aClassName === '[object Map]') {
+        let finallyResult = getCollectionLog(actualValue);
+        actualMsg = '[' + finallyResult + ']';
+    } else if (aClassName === '[object Set]') {
+        let flatMapResult = getCollectionLog(actualValue);
+        actualMsg = '[' + flatMapResult + ']';
+    } else if (aClassName === '[object Array]') {
+        let flatMapResult = getCollectionLog(actualValue);
+        actualMsg = '[' + flatMapResult + ']';
+    } else if (aClassName === '[object RegExp]') {
+        actualMsg = JSON.stringify(actualValue.source.replace('\\', ''));
+    } else if (aClassName === '[object BigInt]') {
+        actualMsg = actualValue;
+    } else if (aClassName === '[object Error]') {
+        actualMsg = actualValue.message;
+    } else if (aClassName === '[object ArrayBuffer]') {
+        actualMsg = actualValue.byteLength;
+    }
+    else {
+        // NAN
+        if (actualValue !== actualValue) {
+            actualMsg = actualValue.toString();
+        } else {
+            actualMsg = JSON.stringify(actualValue);
+        }
+    }
+    return actualMsg;
+}
+
+function getExpectedLog(expected) {
+    const bClassName = Object.prototype.toString.call(expected);
+    let expectMsg = '';
+    if (bClassName === '[object Function]') {
+        expectMsg = 'expected Function';
+    } else if (bClassName === '[object Promise]') {
+        expectMsg = 'expected Promise';
+    } else if (bClassName === '[object Map]') {
+        let finallyResult = getCollectionLog(expected);
+        expectMsg = '[' + finallyResult + ']';
+    } else if (bClassName === '[object Set]') {
+        let flatMapResult = getCollectionLog(expected);
+        expectMsg = '[' + flatMapResult + ']';
+    } else if (bClassName === '[object Array]') {
+        let flatMapResult = getCollectionLog(expected);
+        expectMsg = '[' + flatMapResult + ']';
+    } else if (bClassName === '[object RegExp]') {
+        expectMsg = JSON.stringify(expected.source.replace('\\', ''));
+    } else if (bClassName === '[object BigInt]') {
+        expectMsg = expected;
+    } else if (bClassName === '[object Error]') {
+        expectMsg = expected.message;
+    } else if (bClassName === '[object ArrayBuffer]') {
+        expectMsg = expected.byteLength;
+    }
+    else {
+        // NAN
+        if (expected !== expected) {
+            expectMsg = expected.toString();
+        } else {
+            expectMsg = JSON.stringify(expected);
+        }
+    }
+    return expectMsg;
+}
+
 /**
  * 获取失败显示日志
  * @param actualValue 实际对象
@@ -30,47 +155,10 @@ function assertDeepEquals(actualValue, expected) {
  */
 function logMsg(actualValue, expected) {
     // 获取a的对象名称
-    const aClassName = Object.prototype.toString.call(actualValue);
-    const bClassName = Object.prototype.toString.call(expected);
-    let actualMsg;
-    let expectMsg;
-    if (aClassName == '[object Function]') {
-        actualMsg = 'actualValue Function';
-    } else if (aClassName == '[object Promise]') {
-        actualMsg = 'actualValue Promise';
-    } else if (aClassName == '[object Set]' || aClassName == '[object Map]') {
-        actualMsg = JSON.stringify(Array.from(actualValue));
-    } else if (aClassName == '[object RegExp]') {
-        actualMsg = JSON.stringify(actualValue.source.replace('\\', ''));
-    } else if (aClassName == '[object BigInt]') {
-        actualMsg = actualValue;
-    } else if (aClassName == '[object Error]') {
-        actualMsg = actualValue.message;
-    } else if (aClassName == '[object ArrayBuffer]') {
-        actualMsg = actualValue.byteLength;
-    }
-    else {
-        actualMsg = JSON.stringify(actualValue);
-    }
-    if (bClassName == '[object Function]') {
-        expectMsg = 'expected Function';
-    } else if (bClassName == '[object Promise]') {
-        expectMsg = 'expected Promise';
-    } else if (bClassName == '[object Set]' || bClassName == '[object Map]') {
-        expectMsg = JSON.stringify(Array.from(expected));
-    } else if (bClassName == '[object RegExp]') {
-        expectMsg = JSON.stringify(expected.source.replace('\\', ''));
-    } else if (bClassName == '[object BigInt]') {
-        expectMsg = expected;
-    } else if (bClassName == '[object Error]') {
-        expectMsg = expected.message;
-    } else if (bClassName == '[object ArrayBuffer]') {
-        expectMsg = expected.byteLength;
-    }
-    else {
-        expectMsg = JSON.stringify(expected);
-    }
-    return actualMsg + ' is not deep equal ' + expectMsg;
+    let actualMsg = getActualValueLog(actualValue);
+    let expectMsg = getExpectedLog(expected);
+
+    return 'expect ' + actualMsg + ' deep equals ' + expectMsg;
 }
 
 function eq(a, b) {
@@ -198,6 +286,10 @@ function isEqualSampleObj(a, b) {
     }
     // 俩个Number对象
     if (aClassName === '[object Number]') {
+        // NAN
+        if (a !== a && b !== b) {
+            return a === b;
+        }
         equalSampleObj = a !== +a ? b !== +b : a === 0 && b === 0 ? 1 / a === 1 / b : a === +b;
         return equalSampleObj;
     }
