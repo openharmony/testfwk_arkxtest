@@ -20,7 +20,7 @@ import Want from '@ohos.app.ability.Want';
 import { abilityDelegatorRegistry } from '@kit.TestKit';
 import hilog from '@ohos.hilog';
 import window from '@ohos.window';
-import { Hypium } from '@ohos/hypium/src/main/src_static/index';
+import { Hypium } from '@ohos/hypium/src/main/IndexStatic';
 import testsuite from '../test/List.test';
 const ON_DESTROY_ERROR = -2;
 

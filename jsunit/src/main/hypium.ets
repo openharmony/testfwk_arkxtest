@@ -100,7 +100,8 @@ export class Hypium {
     const core = Hypium.init(abilityDelegator, abilityDelegatorArguments);
 
     // 引入1.1的hypium
-    const { bundleName = '', parameters = {} } = abilityDelegatorArguments;
+    const bundleName = abilityDelegatorArguments.bundleName;
+    const parameters = abilityDelegatorArguments.parameters;
     const moduleName = parameters['-m'] || 'entry_test';
     const loadPath = `@normalized:N&${moduleName}&${bundleName}&@ohos/hypium/src/main_dynamic/index&1.0.0`;
     const HypiumDynamic = ESValue.load(loadPath).getProperty('Hypium');
@@ -145,7 +146,7 @@ export class Hypium {
         summary = suiteService.getSummary();
       }
       setTimeout(() => {
-        HypiumDynamic.invoke(
+        HypiumDynamic.invokeMethod(
           'execute',
           coreDynamic,
           ESObject.wrap(abilityDelegator),

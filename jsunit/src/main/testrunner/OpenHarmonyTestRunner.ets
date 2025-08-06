@@ -16,7 +16,6 @@
 import hilog from '@ohos.hilog';
 import AbilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 import TestRunner from '@ohos.application.testRunner';
-import Want from '@ohos.app.ability.Want';
 import UIAbility from '@ohos.app.ability.UIAbility';
 import { BusinessError } from '@ohos.base';
 
@@ -39,11 +38,11 @@ export default class OpenHarmonyTestRunner implements TestRunner {
   constructor() {
   }
 
-  onPrepare() {
+  onPrepare: () => void = () => {
     hilog.info(0x0000, 'testTag', '%{public}s', "OpenHarmonyTestRunner onPrepare");
   }
 
-  onRun() {
+  onRun: () => void = () => {
     hilog.info(0x0000, 'testTag', '%{public}s', "OpenHarmonyTestRunner onRun run");
     const abilityDelegatorArguments: AbilityDelegatorRegistry.AbilityDelegatorArgs = AbilityDelegatorRegistry.getArguments();
     const abilityDelegator: AbilityDelegatorRegistry.AbilityDelegator = AbilityDelegatorRegistry.getAbilityDelegator();
