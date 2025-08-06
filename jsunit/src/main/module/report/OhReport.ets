@@ -197,7 +197,7 @@ class OhReport {
             const staticSpec = curSpec as StaticSpec;
             let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + suiteService.getCurrentRunningSuiteDesc();
             message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + ++this.index;
-            message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=JS`;
+            message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=ArkTS`;
             message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + specService.getTestTotal();
             message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
             message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + staticSpec.description;
@@ -222,7 +222,7 @@ class OhReport {
         if (suiteService) {
           let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + suiteService.getCurrentRunningSuiteDesc();
           message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + this.index;
-          message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=JS`;
+          message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=ArkTS`;
           message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + specService.getTestTotal();
           let messageStack = '';
           let messageCode = '';
