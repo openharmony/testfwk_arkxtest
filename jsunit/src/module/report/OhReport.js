@@ -64,7 +64,7 @@ class OhReport {
       if (specService.skipSpecNum > 0) {
         message += ', SkipSpec: ' + specService.skipSpecNum;
       }
-      message += `\n${PrintTag.OHOS_REPORT_CODE}: ${summary.failure > 0 ? -1 : 0}\n`
+      message += `\n${PrintTag.OHOS_REPORT_CODE}: ${summary.failure > 0 ? -1 : 0}\n`;
       let isHasError = summary.failure > 0 || summary.error > 0;
       let config = this.coreContext.getDefaultService('config');
       if (config.isBreakOnError() && isHasError) {
@@ -258,10 +258,9 @@ class OhReport {
           messageStack +=
             `${PrintTag.OHOS_REPORT_STATUS}: stack=${this.specService.currentRunningSpec.fail?.stack?.slice(0, -1)}`;
           messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-          messageCode +=
-            this.specService.currentRunningSpec.expectMsg !== ''
-              ? `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`
-              : `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`;
+          messageCode += this.specService.currentRunningSpec.expectMsg !== ''
+            ? `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`
+            : `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`;
           messageCode += `\n${PrintTag.OHOS_REPORT_STATUS}: test=${this.specService.currentRunningSpec.description}`;
           messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -2` + '\n';
         } else {
@@ -269,8 +268,7 @@ class OhReport {
           messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
           messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 0` + '\n';
           messageCode += this.specService.currentRunningSpec.isSkip
-            ? `${PrintTag.OHOS_REPORT_STATUS}: skipReason=${this.specService.currentRunningSpec.skipReason}\n`
-            : '';
+            ? `${PrintTag.OHOS_REPORT_STATUS}: skipReason=${this.specService.currentRunningSpec.skipReason}\n` : '';
         }
       } else {
         messageCode += '\n';
@@ -279,9 +277,7 @@ class OhReport {
       if (SysTestKit.workerPort !== null) {
         messageCode += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=${this.currentThreadName}`;
       }
-      console.info(`${message}`);
-      console.info(`\n${messageStack}`);
-      console.info(`\n${messageCode}`);
+      console.info(`${message}\n${messageStack}\n${messageCode}`);
       await SysTestKit.print(message);
       await SysTestKit.print(messageStack);
       await SysTestKit.print(messageCode);
