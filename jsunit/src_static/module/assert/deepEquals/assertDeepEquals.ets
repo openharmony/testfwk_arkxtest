@@ -173,7 +173,7 @@ function eqOfObj(a: object, b: object): boolean {
     if(!bKeys.includes(aKey)) {
       return false
     }
-    if(!eq(aValue as object, Reflect.get(b, aKey) as object)) {
+    if(!eq(aValue as object, (reflect.Value.of(b) as ClassValue).getFieldByName(aKey).getData() as object)) {
       return false
     }
   }
