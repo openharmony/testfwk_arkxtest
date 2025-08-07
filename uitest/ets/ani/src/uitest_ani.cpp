@@ -838,7 +838,7 @@ static ani_boolean flingSyncDirection(ani_env *env, ani_object obj, ani_enum_ite
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.fling";
-    ani_int enumValue = getEnumValue(direction, pattern);
+    ani_int enumValue = getEnumValue(env, direction);
     callInfo_.paramList_.push_back(enumValue);
     callInfo_.paramList_.push_back(speed);
     Transact(callInfo_, reply_);
@@ -853,7 +853,7 @@ static ani_boolean flingWithDisplayIdSync(ani_env *env, ani_object obj, ani_enum
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.fling";
-    ani_int enumValue = getEnumValue(direction, pattern);
+    ani_int enumValue = getEnumValue(env, direction);
     callInfo_.paramList_.push_back(enumValue);
     callInfo_.paramList_.push_back(speed);
     callInfo_.paramList_.push_back(displayId);
@@ -1207,7 +1207,7 @@ static ani_boolean setDisplayRotationSync(ani_env *env, ani_object obj, ani_enum
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.setDisplayRotation";
-    ani_int enumValue = getEnumValue(rotation, pattern);
+    ani_int enumValue = getEnumValue(env, rotation);
     callInfo_.paramList_.push_back(enumValue);
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
@@ -1402,7 +1402,7 @@ static ani_boolean mouseClickSync(ani_env *env, ani_object obj, ani_object p, an
     callInfo_.apiId_ = "Driver.mouseClick";
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
-    ani_int enumValue = getEnumValue(btnId, pattern);
+    ani_int enumValue = getEnumValue(env, btnId);
     callInfo_.paramList_.push_back(enumValue);
     pushParam(env, key1, callInfo_, true);
     pushParam(env, key2, callInfo_, true);
@@ -1419,7 +1419,7 @@ static ani_boolean mouseDoubleClickSync(ani_env *env, ani_object obj, ani_object
     callInfo_.apiId_ = "Driver.mouseDoubleClick";
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
-    ani_int enumValue = getEnumValue(btnId, pattern);
+    ani_int enumValue = getEnumValue(env, btnId);
     callInfo_.paramList_.push_back(enumValue);
     pushParam(env, key1, callInfo_, true);
     pushParam(env, key2, callInfo_, true);
@@ -1436,7 +1436,7 @@ static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p
     callInfo_.apiId_ = "Driver.mouseLongClick";
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
-    ani_int enumValue = getEnumValue(btnId, pattern);
+    ani_int enumValue = getEnumValue(env, btnId);
     callInfo_.paramList_.push_back(enumValue);
     pushParam(env, key1, callInfo_, true);
     pushParam(env, key2, callInfo_, true);
@@ -1503,7 +1503,7 @@ static ani_boolean touchPadMultiFingerSwipeSync(ani_env *env, ani_object obj, an
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.touchPadMultiFingerSwipe";
     callInfo_.paramList_.push_back(fingers);
-    ani_int enumValue = getEnumValue(direction, pattern);
+    ani_int enumValue = getEnumValue(env, direction);
     callInfo_.paramList_.push_back(enumValue);
     ani_boolean ret;
     env->Reference_IsUndefined(touchPadOpt, &ret);
