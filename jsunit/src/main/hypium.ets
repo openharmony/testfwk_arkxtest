@@ -104,9 +104,10 @@ export class Hypium {
     const parameters = abilityDelegatorArguments.parameters;
     const moduleName = parameters['-m'] || 'entry_test';
     const loadPath = `@normalized:N&${moduleName}&${bundleName}&@ohos/hypium/src/main_dynamic/index&1.0.0`;
-    const HypiumDynamic = ESValue.load(loadPath).getProperty('Hypium');
+    const dynamicModule = ESValue.load(loadPath)
+    const hypiumDynamic = dynamicModule && dynamicModule.getProperty('Hypium');
 
-    const coreDynamic = HypiumDynamic.invokeMethod(
+    const coreDynamic = hypiumDynamic && hypiumDynamic.invokeMethod(
       'init',
       ESObject.wrap(abilityDelegator),
       ESObject.wrap(abilityDelegatorArguments)
@@ -118,11 +119,11 @@ export class Hypium {
       specService = (core as Core).getDefaultService('spec') as SpecService;
       staticTotal = specService.totalTest;
     }
-    const dynamicTotal = HypiumDynamic.invokeMethod(
+    const dynamicTotal = (hypiumDynamic && hypiumDynamic.invokeMethod(
       'updateTotalTest',
       coreDynamic,
       ESObject.wrap(staticTotal)
-    );
+    )) || 0;
     const dynamicTotalValue = dynamicTotal.toNumber().toInt();
     const totalTest = staticTotal + dynamicTotalValue;
     if (staticTotal > 0) {
@@ -146,7 +147,7 @@ export class Hypium {
         summary = suiteService.getSummary();
       }
       setTimeout(() => {
-        HypiumDynamic.invokeMethod(
+        hypiumDynamic.invokeMethod(
           'execute',
           coreDynamic,
           ESObject.wrap(abilityDelegator),

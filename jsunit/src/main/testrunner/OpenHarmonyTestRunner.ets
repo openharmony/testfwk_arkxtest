@@ -1,4 +1,4 @@
-'use static'
+'use static';
 /*
  * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,50 +27,89 @@ function onAbilityCreateCallback(ability: UIAbility) {
 }
 
 function addAbilityMonitorCallback(err: BusinessError | null) {
-  if(err) {
-    hilog.info(0x0000, 'testTag', 'addAbilityMonitorCallback : %{public}s', JSON.stringify(err as BusinessError));
+  if (err) {
+    hilog.info(
+      0x0000,
+      'testTag',
+      'addAbilityMonitorCallback : %{public}s',
+      JSON.stringify(err as BusinessError)
+    );
   } else {
-    hilog.info(0x0000, 'testTag', 'addAbilityMonitorCallback : %{public}s', "");
+    hilog.info(0x0000, 'testTag', 'addAbilityMonitorCallback : %{public}s', '');
   }
 }
 
 export default class OpenHarmonyTestRunner implements TestRunner {
-  constructor() {
-  }
+  constructor() {}
 
-  onPrepare: () => void = () => {
-    hilog.info(0x0000, 'testTag', '%{public}s', "OpenHarmonyTestRunner onPrepare");
-  }
+  public onPrepare: () => void = () => {
+    hilog.info(
+      0x0000,
+      'testTag',
+      '%{public}s',
+      'OpenHarmonyTestRunner onPrepare'
+    );
+  };
 
-  onRun: () => void = () => {
-    hilog.info(0x0000, 'testTag', '%{public}s', "OpenHarmonyTestRunner onRun run");
-    const abilityDelegatorArguments: AbilityDelegatorRegistry.AbilityDelegatorArgs = AbilityDelegatorRegistry.getArguments();
-    const abilityDelegator: AbilityDelegatorRegistry.AbilityDelegator = AbilityDelegatorRegistry.getAbilityDelegator();
+  public onRun: () => void = () => {
+    hilog.info(
+      0x0000,
+      'testTag',
+      '%{public}s',
+      'OpenHarmonyTestRunner onRun run'
+    );
+    const abilityDelegatorArguments: AbilityDelegatorRegistry.AbilityDelegatorArgs =
+      AbilityDelegatorRegistry.getArguments();
+    const abilityDelegator: AbilityDelegatorRegistry.AbilityDelegator =
+      AbilityDelegatorRegistry.getAbilityDelegator();
     const bundleName = abilityDelegatorArguments.bundleName;
     const testAbilityName = 'TestAbility';
-    const parameters: Record<string, string> = abilityDelegatorArguments.parameters;
+    const parameters: Record<string, string> =
+      abilityDelegatorArguments.parameters;
     const moduleName = parameters['-m'];
     const lMonitor: AbilityDelegatorRegistry.AbilityMonitor = {
       abilityName: testAbilityName,
       onAbilityCreate: onAbilityCreateCallback,
-      moduleName: moduleName
+      moduleName: moduleName,
     };
     abilityDelegator.addAbilityMonitor(lMonitor, addAbilityMonitorCallback);
     startAbility(abilityDelegator, bundleName, testAbilityName).then((res) => {
-      hilog.info(0x0000, 'testTag', '%{public}s', "OpenHarmonyTestRunner onRun end");
-    })
-  }
+      hilog.info(
+        0x0000,
+        'testTag',
+        '%{public}s',
+        'OpenHarmonyTestRunner onRun end'
+      );
+    });
+  };
 }
 
-async function startAbility(abilityDelegator: AbilityDelegatorRegistry.AbilityDelegator, bundleName: string, abilityName: string): Promise<void> {
+async function startAbility(
+  abilityDelegator: AbilityDelegatorRegistry.AbilityDelegator,
+  bundleName: string,
+  abilityName: string
+): Promise<void> {
   try {
-    const result = await abilityDelegator.executeShellCommand('aa start -b ${bundleName} -a ${abilityName}');
-    if (result.stdResult.includes("error: unlock screen failed in developer mode")) {
-      hilog.info(0x0000, 'testTag', '%{public}s', "startAbility failed ${result.stdResult}");
-      abilityDelegator.finishTest("", UNLOCK_ERROR, () => {});
+    const result = await abilityDelegator.executeShellCommand(
+      'aa start -b ${bundleName} -a ${abilityName}'
+    );
+    if (
+      result.stdResult.includes('error: unlock screen failed in developer mode')
+    ) {
+      hilog.info(
+        0x0000,
+        'testTag',
+        '%{public}s',
+        'startAbility failed ${result.stdResult}'
+      );
+      abilityDelegator.finishTest('', UNLOCK_ERROR, () => {});
     }
   } catch (err: Error) {
-    hilog.info(0x0000, 'testTag', '%{public}s', "startAbility error: ${err.message}");
+    hilog.info(
+      0x0000,
+      'testTag',
+      '%{public}s',
+      'startAbility error: ${err.message}'
+    );
   }
-
 }

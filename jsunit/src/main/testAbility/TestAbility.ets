@@ -1,4 +1,4 @@
-'use static'
+'use static';
 /*
  * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@ import testsuite from '../test/List.test';
 const ON_DESTROY_ERROR = -2;
 
 export default class TestAbility extends UIAbility {
-  abilityDelegator: abilityDelegatorRegistry.AbilityDelegator;
+  public abilityDelegator: abilityDelegatorRegistry.AbilityDelegator;
 
   constructor() {
     super();
@@ -34,32 +34,65 @@ export default class TestAbility extends UIAbility {
 
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam) {
     hilog.info(0x0000, 'testTag', '%{public}s', 'TestAbility onCreate');
-    hilog.info(0x0000, 'testTag', '%{public}s', 'want param:' + JSON.stringify(want) ?? '');
-    hilog.info(0x0000, 'testTag', '%{public}s', 'launchParam:' + JSON.stringify(launchParam) ?? '');
-    let abilityDelegatorArguments : abilityDelegatorRegistry.AbilityDelegatorArgs;
+    hilog.info(
+      0x0000,
+      'testTag',
+      '%{public}s',
+      'want param:' + JSON.stringify(want) ?? ''
+    );
+    hilog.info(
+      0x0000,
+      'testTag',
+      '%{public}s',
+      'launchParam:' + JSON.stringify(launchParam) ?? ''
+    );
+    let abilityDelegatorArguments: abilityDelegatorRegistry.AbilityDelegatorArgs;
     abilityDelegatorArguments = abilityDelegatorRegistry.getArguments();
     hilog.info(0x0000, 'testTag', '%{public}s', 'start run testcase!!!');
-    Hypium.hypiumTest(this.abilityDelegator, abilityDelegatorArguments, testsuite);
+    Hypium.hypiumTest(
+      this.abilityDelegator,
+      abilityDelegatorArguments,
+      testsuite
+    );
   }
 
   onDestroy() {
     hilog.info(0x0000, 'testTag', '%{public}s', 'TestAbility onDestroy');
-    this.abilityDelegator.finishTest('TestAbility onDestroy unexpectedly!', ON_DESTROY_ERROR, () => {});
+    this.abilityDelegator.finishTest(
+      'TestAbility onDestroy unexpectedly!',
+      ON_DESTROY_ERROR,
+      () => {}
+    );
   }
 
   onWindowStageCreate(windowStage: window.WindowStage) {
-    hilog.info(0x0000, 'testTag', '%{public}s', 'TestAbility onWindowStageCreate');
+    hilog.info(
+      0x0000,
+      'testTag',
+      '%{public}s',
+      'TestAbility onWindowStageCreate'
+    );
     windowStage.loadContent('testability/pages/Index', (err: Error | null) => {
       if (err && (err as Error).code) {
-        hilog.error(0x0000, 'testTag', 'Failed to load the content. Cause: "%{public}s', JSON.stringify(err) || '');
+        hilog.error(
+          0x0000,
+          'testTag',
+          'Failed to load the content. Cause: "%{public}s',
+          JSON.stringify(err) || ''
+        );
         return;
       }
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content');
-    })
+    });
   }
 
   onWindowStageDestroy() {
-    hilog.info(0x0000, 'testTag', '%{public}s', 'TestAbility onWindowStageDestroy');
+    hilog.info(
+      0x0000,
+      'testTag',
+      '%{public}s',
+      'TestAbility onWindowStageDestroy'
+    );
   }
 
   onForeground() {
