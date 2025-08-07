@@ -125,7 +125,7 @@ class Hypium {
       const workerPromise = Hypium.createWorkerPromise(scriptURL, i, params);
       workerPromiseArray.push(workerPromise);
     }
-    const ret = {
+    const originRet = {
       total: 0,
       failure: 0,
       error: 0,
@@ -133,6 +133,7 @@ class Hypium {
       ignore: 0,
       duration: 0,
     };
+    const ret = JSON.parse(JSON.stringify(originRet));
     Promise.all(workerPromiseArray).then(async (items) => {
       console.info(`${TAG}, all result from workers, ${JSON.stringify(items)}`);
       let allItemList = new Array();
@@ -140,14 +141,7 @@ class Hypium {
       Hypium.handleWorkerTestResult(ret, allItemList, items);
       console.info(`${TAG}, all it result, ${JSON.stringify(allItemList)}`);
       // 统计用例执行结果
-      const retResult = {
-        total: 0,
-        failure: 0,
-        error: 0,
-        pass: 0,
-        ignore: 0,
-        duration: 0,
-      };
+      const retResult = JSON.parse(JSON.stringify(originRet));
       // 标记用例执行结果
       Hypium.configWorkerItTestResult(retResult, allItemList);
       // 打印用例结果
@@ -167,11 +161,7 @@ class Hypium {
     })
       .catch((e) => {
         console.info(`${TAG}, [end] error you worker test, ${JSON.stringify(e)}`);
-        abilityDelegator.finishTest(
-          'you worker test error finished!!!',
-          0,
-          () => { }
-        );
+        abilityDelegator.finishTest('you worker test error finished!!!', 0, () => { });
       })
       .finally(() => {
         console.info(`${TAG}, all promise finally end`);

@@ -199,7 +199,7 @@ class SuiteService {
 
   describe(desc, func) {
     const configService = this.coreContext.getDefaultService('config');
-    if (this.suitesStack.some((suite) => { return suite.description === desc; })) {
+    if (this.suitesStack.some((suite) => suite.description === desc)) {
       console.error(`${TAG} Loop nesting occurs : ${desc}`);
       this.suiteSkipReason = '';
       this.isSkipSuite = false;
@@ -910,22 +910,13 @@ class SpecService {
       this.initSpecService();
       return;
     }
-    if (
-      configService.filterDesc(
-        suiteService.currentRunningSuite.description, desc, filter, this.coreContext
-      ) &&
-      isFilter &&
-      !suiteService.fullRun
-    ) {
+    if (configService.filterDesc(suiteService.currentRunningSuite.description, desc, filter, this.coreContext) &&
+      isFilter && !suiteService.fullRun) {
       console.info(`${TAG}filter it :${desc}`);
       this.initSpecService();
     } else {
       let processedFunc = processFunc(this.coreContext, func);
-      const spec = new SpecService.Spec({
-        description: desc,
-        fi: filter,
-        fn: processedFunc,
-      });
+      const spec = new SpecService.Spec({ description: desc, fi: filter, fn: processedFunc, });
       if (this.isSkipSpec) {
         spec.isSkip = true;
         spec.skipReason = this.specSkipReason;
@@ -945,7 +936,6 @@ class SpecService {
           suiteService.getCurrentRunningSuite().pushSpec(spec);
         }
       }
-      // dryRun 状态下不统计压力测试重复数据
       if (configService['dryRun'] !== 'true') {
         let stress = configService.getStress(); // 命令配置压力测试
         console.info(`${TAG}stress length : ${stress}`);
