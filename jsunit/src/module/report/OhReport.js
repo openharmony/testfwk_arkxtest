@@ -59,7 +59,7 @@ class OhReport {
       if (configService['coverage'] === 'true') {
         await collectCoverageData();
       }
-      let message = `\n${PrintTag.OHOS_REPORT_RESULT}: stream=Tests run: ${summary.total}, Failure: ${summary.failure}`
+      let message = `\n${PrintTag.OHOS_REPORT_RESULT}: stream=Tests run: ${summary.total}, Failure: ${summary.failure}`;
       message += `, Error: ${summary.error}, Pass: ${summary.pass}, Ignore: ${summary.ignore}`;
       if (specService.skipSpecNum > 0) {
         message += ', SkipSpec: ' + specService.skipSpecNum;
