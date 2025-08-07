@@ -13,12 +13,12 @@
  * limitations under the License.
  */
 
-import Core from './core';
-import { DEFAULT, TestType, Size, Level, TAG, PrintTag } from './Constant';
-import DataDriver from './module/config/DataDriver';
-import ExpectExtend from './module/assert/ExpectExtend';
-import OhReport from './module/report/OhReport';
-import SysTestKit from './module/kit/SysTestKit';
+import Core from './src/core';
+import { DEFAULT, TestType, Size, Level, TAG, PrintTag } from './src/Constant';
+import DataDriver from './src/module/config/DataDriver';
+import ExpectExtend from './src/module/assert/ExpectExtend';
+import OhReport from './src/module/report/OhReport';
+import SysTestKit from './src/module/kit/SysTestKit';
 import {
   describe,
   beforeAll,
@@ -31,9 +31,9 @@ import {
   afterItSpecified,
   xdescribe,
   xit,
-} from './interface';
-import { MockKit, when } from './module/mock/MockKit';
-import ArgumentMatchers from './module/mock/ArgumentMatchers';
+} from './src/interface';
+import { MockKit, when } from './src/module/mock/MockKit';
+import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
 import worker from '@ohos.worker';
 
 class Hypium {
@@ -114,12 +114,7 @@ class Hypium {
     Hypium.execute(core, abilityDelegator, summary);
   }
 
-  static async hypiumInitWorkers(
-    abilityDelegator,
-    scriptURL,
-    workerNum = 8,
-    params
-  ) {
+  static async hypiumInitWorkers(abilityDelegator, scriptURL, workerNum = 8, params) {
     console.info(`${TAG}, hypiumInitWorkers call,${scriptURL}`);
     let workerPromiseArray = [];
 
@@ -138,51 +133,44 @@ class Hypium {
       ignore: 0,
       duration: 0,
     };
-    Promise.all(workerPromiseArray)
-      .then(async (items) => {
-        console.info(
-          `${TAG}, all result from workers, ${JSON.stringify(items)}`
-        );
-        let allItemList = new Array();
-        // 统计执行结果
-        Hypium.handleWorkerTestResult(ret, allItemList, items);
-        console.info(`${TAG}, all it result, ${JSON.stringify(allItemList)}`);
-        // 统计用例执行结果
-        const retResult = {
-          total: 0,
-          failure: 0,
-          error: 0,
-          pass: 0,
-          ignore: 0,
-          duration: 0,
-        };
-        // 标记用例执行结果
-        Hypium.configWorkerItTestResult(retResult, allItemList);
-        // 打印用例结果
-        Hypium.printWorkerTestResult(abilityDelegator, allItemList);
-        // 用例执行完成统计时间
-        let endTime = await SysTestKit.getRealTime();
-        const taskConsuming = endTime - startTime;
-        const message =
-          `\n${PrintTag.OHOS_REPORT_ALL_RESULT}: stream=Test run: runTimes: ${ret.total},total: ${retResult.total}, Failure: ${retResult.failure}, Error: ${retResult.error}, Pass: ${retResult.pass}, Ignore: ${retResult.ignore}` +
-          `\n${PrintTag.OHOS_REPORT_ALL_CODE}: ${
-            retResult.failure > 0 || retResult.error > 0 ? -1 : 0
-          }` +
-          `\n${PrintTag.OHOS_REPORT_ALL_STATUS}: taskconsuming=${
-            taskConsuming > 0 ? taskConsuming : ret.duration
-          }`;
-        abilityDelegator.printSync(message);
-        console.info(`${TAG}, [end] you worker test`);
-        abilityDelegator.finishTest('you worker test finished!!!', 0, () => {});
-      })
+    Promise.all(workerPromiseArray).then(async (items) => {
+      console.info(`${TAG}, all result from workers, ${JSON.stringify(items)}`);
+      let allItemList = new Array();
+      // 统计执行结果
+      Hypium.handleWorkerTestResult(ret, allItemList, items);
+      console.info(`${TAG}, all it result, ${JSON.stringify(allItemList)}`);
+      // 统计用例执行结果
+      const retResult = {
+        total: 0,
+        failure: 0,
+        error: 0,
+        pass: 0,
+        ignore: 0,
+        duration: 0,
+      };
+      // 标记用例执行结果
+      Hypium.configWorkerItTestResult(retResult, allItemList);
+      // 打印用例结果
+      Hypium.printWorkerTestResult(abilityDelegator, allItemList);
+      // 用例执行完成统计时间
+      let endTime = await SysTestKit.getRealTime();
+      const taskConsuming = endTime - startTime;
+      const message =
+        `\n${PrintTag.OHOS_REPORT_ALL_RESULT}: stream=Test run: runTimes: ${ret.total},total: ${retResult.total}, Failure: ${retResult.failure}, Error: ${retResult.error}, Pass: ${retResult.pass}, Ignore: ${retResult.ignore}` +
+        `\n${PrintTag.OHOS_REPORT_ALL_CODE}: ${retResult.failure > 0 || retResult.error > 0 ? -1 : 0
+        }` +
+        `\n${PrintTag.OHOS_REPORT_ALL_STATUS}: taskconsuming=${taskConsuming > 0 ? taskConsuming : ret.duration
+        }`;
+      abilityDelegator.printSync(message);
+      console.info(`${TAG}, [end] you worker test`);
+      abilityDelegator.finishTest('you worker test finished!!!', 0, () => { });
+    })
       .catch((e) => {
-        console.info(
-          `${TAG}, [end] error you worker test, ${JSON.stringify(e)}`
-        );
+        console.info(`${TAG}, [end] error you worker test, ${JSON.stringify(e)}`);
         abilityDelegator.finishTest(
           'you worker test error finished!!!',
           0,
-          () => {}
+          () => { }
         );
       })
       .finally(() => {
