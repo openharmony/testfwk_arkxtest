@@ -103,15 +103,18 @@ export class Hypium {
     const bundleName = abilityDelegatorArguments.bundleName;
     const parameters = abilityDelegatorArguments.parameters;
     const moduleName = parameters['-m'] || 'entry_test';
-    const loadPath = `@normalized:N&${moduleName}&${bundleName}&@ohos/hypium/src/main_dynamic/index&1.0.0`;
-    const dynamicModule = ESValue.load(loadPath)
-    const hypiumDynamic = dynamicModule && dynamicModule.getProperty('Hypium');
-
-    const coreDynamic = hypiumDynamic && hypiumDynamic.invokeMethod(
-      'init',
-      ESObject.wrap(abilityDelegator),
-      ESObject.wrap(abilityDelegatorArguments)
-    );
+    const loadPath = `@normalized:N&${moduleName}&${bundleName}&@ohos/hypium/index&1.0.0`;
+    const dynamicModule = ESValue.load(loadPath);
+    let hypiumDynamic: ESValue | null = null;
+    let coreDynamic: ESValue | null = null;
+    if (dynamicModule) {
+      hypiumDynamic = (dynamicModule as ESValue).getProperty('Hypium');
+      coreDynamic = (hypiumDynamic as ESValue).invokeMethod(
+        'init',
+        ESObject.wrap(abilityDelegator),
+        ESObject.wrap(abilityDelegatorArguments)
+      );
+    }
     testsuite();
     let staticTotal = 0;
     let specService: SpecService | null = null;
@@ -119,12 +122,15 @@ export class Hypium {
       specService = (core as Core).getDefaultService('spec') as SpecService;
       staticTotal = specService.totalTest;
     }
-    const dynamicTotal = (hypiumDynamic && hypiumDynamic.invokeMethod(
-      'updateTotalTest',
-      coreDynamic,
-      ESObject.wrap(staticTotal)
-    )) || 0;
-    const dynamicTotalValue = dynamicTotal.toNumber().toInt();
+    let dynamicTotalValue = 0;
+    if (hypiumDynamic) {
+      const dynamicTotal = (hypiumDynamic as ESValue).invokeMethod(
+        'updateTotalTest',
+        coreDynamic,
+        ESObject.wrap(staticTotal)
+      );
+      dynamicTotalValue = dynamicTotal.toNumber().toInt();
+    }
     const totalTest = staticTotal + dynamicTotalValue;
     if (staticTotal > 0) {
       (specService as SpecService).totalTest = totalTest;
@@ -147,7 +153,7 @@ export class Hypium {
         summary = suiteService.getSummary();
       }
       setTimeout(() => {
-        hypiumDynamic.invokeMethod(
+        (hypiumDynamic as ESValue).invokeMethod(
           'execute',
           coreDynamic,
           ESObject.wrap(abilityDelegator),

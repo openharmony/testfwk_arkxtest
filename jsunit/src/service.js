@@ -199,11 +199,7 @@ class SuiteService {
 
   describe(desc, func) {
     const configService = this.coreContext.getDefaultService('config');
-    if (
-      this.suitesStack.some((suite) => {
-        return suite.description === desc;
-      })
-    ) {
+    if (this.suitesStack.some((suite) => { return suite.description === desc; })) {
       console.error(`${TAG} Loop nesting occurs : ${desc}`);
       this.suiteSkipReason = '';
       this.isSkipSuite = false;
@@ -211,10 +207,8 @@ class SuiteService {
     }
     let isFilter = this.analyzeConfigServiceClass(configService.class, desc);
     if (configService.filterSuite(desc) && isFilter) {
-      if (
-        this.currentRunningSuite.description === '' ||
-        this.currentRunningSuite.description == null
-      ) {
+      if (this.currentRunningSuite.description === '' ||
+        this.currentRunningSuite.description == null) {
         console.info(`${TAG}filter suite : ${desc}`);
         this.suiteSkipReason = '';
         this.isSkipSuite = false;
@@ -521,7 +515,7 @@ class SuiteService {
       );
     }
     console.info(`${TAG}dryRun print success`);
-    abilityDelegator.finishTest('dry run finished!!!', 0, () => {});
+    abilityDelegator.finishTest('dry run finished!!!', 0, () => { });
   }
 
   //将suitesArray的嵌套结构展开成三层结构
@@ -909,10 +903,7 @@ class SpecService {
     const suiteService = this.coreContext.getDefaultService('suite');
     const configService = this.coreContext.getDefaultService('config');
     let isFilter = new NestFilter().filterNestName(
-      suiteService.targetSuiteArray,
-      suiteService.targetSpecArray,
-      suiteService.suitesStack,
-      desc
+      suiteService.targetSuiteArray, suiteService.targetSpecArray, suiteService.suitesStack, desc
     );
     if (configService.filterWithNest(desc, filter)) {
       console.info(`${TAG}filter it :${desc}`);
@@ -921,10 +912,7 @@ class SpecService {
     }
     if (
       configService.filterDesc(
-        suiteService.currentRunningSuite.description,
-        desc,
-        filter,
-        this.coreContext
+        suiteService.currentRunningSuite.description, desc, filter, this.coreContext
       ) &&
       isFilter &&
       !suiteService.fullRun
@@ -944,23 +932,14 @@ class SpecService {
       }
       this.initSpecService();
       if (configService.runSkipped === 'skipped' && !spec.isSkip) {
-        console.info(
-          `${TAG} runSkipped is skipped , just run xit, don't run it: ${spec.description}`
-        );
+        console.info(`${TAG} runSkipped is skipped , just run xit, don't run it: ${spec.description}`);
         return;
       }
       if (suiteService.getCurrentRunningSuite().isSkip && !spec.isSkip) {
-        configService.filterXdescribe.push(
-          suiteService.getCurrentRunningSuite().description
-        );
+        configService.filterXdescribe.push(suiteService.getCurrentRunningSuite().description);
       }
-      if (
-        typeof this.coreContext.getServices('dataDriver') !== 'undefined' &&
-        configService['dryRun'] !== 'true'
-      ) {
-        let specStress = this.coreContext
-          .getServices('dataDriver')
-          .dataDriver.getSpecStress(desc);
+      if (typeof this.coreContext.getServices('dataDriver') !== 'undefined' && configService['dryRun'] !== 'true') {
+        let specStress = this.coreContext.getServices('dataDriver').dataDriver.getSpecStress(desc);
         for (let i = 1; i < specStress; i++) {
           this.totalTest++;
           suiteService.getCurrentRunningSuite().pushSpec(spec);
@@ -1032,7 +1011,7 @@ SpecService.Spec = class {
   constructor(attrs) {
     this.description = attrs.description || '';
     this.fi = attrs.fi;
-    this.fn = attrs.fn || function () {};
+    this.fn = attrs.fn || function () { };
     this.fail = undefined;
     this.error = undefined;
     this.duration = 0;
@@ -1142,8 +1121,8 @@ class ExpectService {
       for (const matcherName in this.matchers) {
         this.matchers[matcherName] = this.customMatchers.includes(matcherName)
           ? () => {
-              throw new Error(`${matcherName} is unregistered`);
-            }
+            throw new Error(`${matcherName} is unregistered`);
+          }
           : undefined;
       }
     } else {
@@ -1316,8 +1295,7 @@ class ReportService {
 
   async suiteStart() {
     console.info(
-      `${TAG}[suite start]${
-        this.suiteService.getCurrentRunningSuite().description
+      `${TAG}[suite start]${this.suiteService.getCurrentRunningSuite().description
       }`
     );
   }
