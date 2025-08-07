@@ -81,9 +81,9 @@ class Core {
     this.it = (desc: string, filter: int, func: ItfnType) => { };
     this.xit = (desc: string, filter: int, func: ItfnType, reason: string) => { };
     this.expect = null;
-    this.specEvent = new SpecEvent({ id: '' });
-    this.suiteEvent = new SuiteEvent({ id: '' });
-    this.taskEvent = new TaskEvent({ id: '' });
+    this.specEvent = new SpecEvent({ id: '', coreContext: {} });
+    this.suiteEvent = new SuiteEvent({ id: '', coreContext: {} });
+    this.taskEvent = new TaskEvent({ id: '', coreContext: {} });
     this.sService = null;
   }
 
@@ -261,7 +261,7 @@ class Core {
     const context = this;
     for (const serviceMap of this.services.values()) {
       for (const service of serviceMap.values()) {
-        let apis: ApiIF = {};
+        let apis: ApiIF = {name: 'undefined'};
         if (service instanceof SuiteService) {
           const typeService = service as SuiteService;
           typeService.init(context);
