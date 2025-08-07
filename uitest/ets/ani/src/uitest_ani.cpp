@@ -106,6 +106,19 @@ static ani_method findCtorMethod(ani_env *env, ani_class cls, const char *name)
     return ctor;
 }
 
+static ani_int getEnumValue(ani_env *env, ani_enum_item pattern)
+{
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pattern), &ret);
+    ani_int enumValue = 0;
+    if (ret == ANI_FALSE) {
+        if (ANI_OK != env->EnumItem_GetValue_Int(pattern, &enumValue)) {
+            HiLog::Error(LABEL, "%{public}s Not get pattern !!!", __func__);
+        }
+    }
+    return enumValue;
+}
+
 static void waitForConnectionIfNeed()
 {
     if (g_establishConnectionFuture.valid()) {
@@ -508,14 +521,7 @@ static ani_ref id(ani_env *env, ani_object obj, ani_string id, ani_enum_item pat
 {
     nlohmann::json params = nlohmann::json::array();
     params.push_back(aniStringToStdString(env, id));
-    ani_boolean ret;
-    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pattern), &ret);
-    ani_int enumValue = 0;
-    if (ret == ANI_FALSE) {
-        if (ANI_OK != env->EnumItem_GetValue_Int(pattern, &enumValue)) {
-            HiLog::Error(LABEL, "%{public}s Not get pattern !!!", __func__);
-        }
-    }
+    ani_int enumValue = getEnumValue(env, pattern);
     params.push_back(enumValue);
     return createOn(env, obj, params, "On.id");
 }
@@ -523,14 +529,7 @@ static ani_ref text(ani_env *env, ani_object obj, ani_string text, ani_enum_item
 {
     nlohmann::json params = nlohmann::json::array();
     params.push_back(aniStringToStdString(env, text));
-    ani_boolean ret;
-    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pattern), &ret);
-    ani_int enumValue = 0;
-    if (ret == ANI_FALSE) {
-        if (ANI_OK != env->EnumItem_GetValue_Int(pattern, &enumValue)) {
-            HiLog::Error(LABEL, "%{public}s Not get pattern !!!", __func__);
-        }
-    }
+    ani_int enumValue = getEnumValue(env, pattern);
     params.push_back(enumValue);
     return createOn(env, obj, params, "On.text");
 }
@@ -538,14 +537,7 @@ static ani_ref type(ani_env *env, ani_object obj, ani_string type, ani_enum_item
 {
     nlohmann::json params = nlohmann::json::array();
     params.push_back(aniStringToStdString(env, type));
-    ani_boolean ret;
-    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pattern), &ret);
-    ani_int enumValue = 0;
-    if (ret == ANI_FALSE) {
-        if (ANI_OK != env->EnumItem_GetValue_Int(pattern, &enumValue)) {
-            HiLog::Error(LABEL, "%{public}s Not get pattern !!!", __func__);
-        }
-    }
+    ani_int enumValue = getEnumValue(env, pattern);
     params.push_back(enumValue);
     return createOn(env, obj, params, "On.type");
 }
@@ -553,14 +545,7 @@ static ani_ref hint(ani_env *env, ani_object obj, ani_string text, ani_enum_item
 {
     nlohmann::json params = nlohmann::json::array();
     params.push_back(aniStringToStdString(env, text));
-    ani_boolean ret;
-    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pattern), &ret);
-    ani_int enumValue = 0;
-    if (ret == ANI_FALSE) {
-        if (ANI_OK != env->EnumItem_GetValue_Int(pattern, &enumValue)) {
-            HiLog::Error(LABEL, "%{public}s Not get pattern !!!", __func__);
-        }
-    }
+    ani_int enumValue = getEnumValue(env, pattern);
     params.push_back(enumValue);
     return createOn(env, obj, params, "On.hint");
 }
@@ -568,14 +553,7 @@ static ani_ref description(ani_env *env, ani_object obj, ani_string text, ani_en
 {
     nlohmann::json params = nlohmann::json::array();
     params.push_back(aniStringToStdString(env, text));
-    ani_boolean ret;
-    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pattern), &ret);
-    ani_int enumValue = 0;
-    if (ret == ANI_FALSE) {
-        if (ANI_OK != env->EnumItem_GetValue_Int(pattern, &enumValue)) {
-            HiLog::Error(LABEL, "%{public}s Not get pattern !!!", __func__);
-        }
-    }
+    ani_int enumValue = getEnumValue(env, pattern);
     params.push_back(enumValue);
     return createOn(env, obj, params, "On.description");
 }
@@ -860,8 +838,7 @@ static ani_boolean flingSyncDirection(ani_env *env, ani_object obj, ani_enum_ite
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.fling";
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(direction, &enumValue);
+    ani_int enumValue = getEnumValue(direction, pattern);
     callInfo_.paramList_.push_back(enumValue);
     callInfo_.paramList_.push_back(speed);
     Transact(callInfo_, reply_);
@@ -876,8 +853,7 @@ static ani_boolean flingWithDisplayIdSync(ani_env *env, ani_object obj, ani_enum
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.fling";
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(direction, &enumValue);
+    ani_int enumValue = getEnumValue(direction, pattern);
     callInfo_.paramList_.push_back(enumValue);
     callInfo_.paramList_.push_back(speed);
     callInfo_.paramList_.push_back(displayId);
@@ -1231,8 +1207,7 @@ static ani_boolean setDisplayRotationSync(ani_env *env, ani_object obj, ani_enum
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.setDisplayRotation";
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(rotation, &enumValue);
+    ani_int enumValue = getEnumValue(rotation, pattern);
     callInfo_.paramList_.push_back(enumValue);
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
@@ -1427,8 +1402,7 @@ static ani_boolean mouseClickSync(ani_env *env, ani_object obj, ani_object p, an
     callInfo_.apiId_ = "Driver.mouseClick";
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(btnId, &enumValue);
+    ani_int enumValue = getEnumValue(btnId, pattern);
     callInfo_.paramList_.push_back(enumValue);
     pushParam(env, key1, callInfo_, true);
     pushParam(env, key2, callInfo_, true);
@@ -1445,8 +1419,7 @@ static ani_boolean mouseDoubleClickSync(ani_env *env, ani_object obj, ani_object
     callInfo_.apiId_ = "Driver.mouseDoubleClick";
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(btnId, &enumValue);
+    ani_int enumValue = getEnumValue(btnId, pattern);
     callInfo_.paramList_.push_back(enumValue);
     pushParam(env, key1, callInfo_, true);
     pushParam(env, key2, callInfo_, true);
@@ -1463,8 +1436,7 @@ static ani_boolean mouseLongClickSync(ani_env *env, ani_object obj, ani_object p
     callInfo_.apiId_ = "Driver.mouseLongClick";
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(btnId, &enumValue);
+    ani_int enumValue = getEnumValue(btnId, pattern);
     callInfo_.paramList_.push_back(enumValue);
     pushParam(env, key1, callInfo_, true);
     pushParam(env, key2, callInfo_, true);
@@ -1531,10 +1503,13 @@ static ani_boolean touchPadMultiFingerSwipeSync(ani_env *env, ani_object obj, an
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.touchPadMultiFingerSwipe";
     callInfo_.paramList_.push_back(fingers);
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(direction, &enumValue);
+    ani_int enumValue = getEnumValue(direction, pattern);
     callInfo_.paramList_.push_back(enumValue);
-    callInfo_.paramList_.push_back(getTouchPadSwipeOptions(env, touchPadOpt));
+    ani_boolean ret;
+    env->Reference_IsUndefined(touchPadOpt, &ret);
+    if (ret == ANI_FALSE) {
+        callInfo_.paramList_.push_back(getTouchPadSwipeOptions(env, touchPadOpt));
+    }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
@@ -1697,8 +1672,7 @@ static ani_boolean resizeSync(ani_env *env, ani_object obj, ani_int w, ani_int h
     callInfo_.apiId_ = "UiWindow.resize";
     callInfo_.paramList_.push_back(w);
     callInfo_.paramList_.push_back(h);
-    ani_int enumValue;
-    env->EnumItem_GetValue_Int(d, &enumValue);
+    ani_int enumValue = getEnumValue(env, d);
     callInfo_.paramList_.push_back(enumValue);
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
