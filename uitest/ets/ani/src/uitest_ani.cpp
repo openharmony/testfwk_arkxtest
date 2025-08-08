@@ -324,7 +324,7 @@ static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num)
         string tag = direct[index];
         char *setter_name = strdup((Builder::BuildSetterName(tag)).c_str());
         if (ANI_OK != env->Class_FindMethod(cls, setter_name, nullptr, &setter)) {
-            HiLog::Error(LABEL, "Find Method <set>tag failed");
+            HiLog::Error(LABEL, "Find Method %{public}s failed", setter_name);
         }
         if (ANI_OK != env->Object_CallMethod_Void(rect_obj, setter, ani_int(num[tag]))) {
             HiLog::Error(LABEL, "call setter failed %{public}s", direct[index].c_str());
@@ -358,7 +358,7 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y)
         string tag = direct[index];
         char *method_name = strdup((Builder::BuildSetterName(tag)).c_str());
         if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
-            HiLog::Error(LABEL, "Find Method <set>tag failed");
+            HiLog::Error(LABEL, "Find Method %{public}s failed", method_name);
         }
         if (ANI_OK != env->Object_CallMethod_Void(point_obj, setter, ani_int(num[index]))) {
             HiLog::Error(LABEL, "call setter failed %{public}s", direct[index].c_str());
