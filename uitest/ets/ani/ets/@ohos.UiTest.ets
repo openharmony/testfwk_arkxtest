@@ -1570,20 +1570,11 @@ export class Component {
     native type(tp: string, pattern?: MatchPattern): On;
     native hint(val: string, pattern?: MatchPattern): On;
     
-    text(txt: string): On {
-        return this.text(txt, MatchPattern.EQUALS);
-    }
-    description(val: string): On {
-        return this.description(val, MatchPattern.EQUALS);
-    }
     id(id: string): On {
         return this.id(id, MatchPattern.EQUALS);
     }
     type(tp: string): On {
         return this.type(tp, MatchPattern.EQUALS);
-    }
-    hint(val: string): On {
-        return this.hint(val, MatchPattern.EQUALS);
     }
   }
 
