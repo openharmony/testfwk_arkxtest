@@ -78,9 +78,9 @@ class TaskEvent {
         }
     }
 
-    async taskDone() {
+    async taskDone(summary) {
         for (const monitor of this.eventMonitors) {
-            await monitor['taskDone']();
+            await monitor['taskDone'](summary);
         }
     }
 

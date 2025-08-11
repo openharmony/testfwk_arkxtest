@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import {TAG} from '../../Constant.js';
-import Core from '../../core.js';
+import {TAG} from '../../Constant';
+import Core from '../../core';
 
 export default class SysTestKit {
 
