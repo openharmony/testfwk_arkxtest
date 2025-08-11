@@ -36,34 +36,43 @@ class OhReport {
     }
   }
 
-  taskStart() {
+  updateIndex(index) {
+    this.index = index || 0;
   }
 
-  async taskDone() {
+  taskStart() { }
+
+  async taskDone(staticSummary) {
     let summary = this.suiteService.getSummary();
+    if (staticSummary !== undefined && staticSummary.total) {
+      summary.total += staticSummary.total;
+      summary.failure += staticSummary.failure;
+      summary.error += staticSummary.error;
+      summary.pass += staticSummary.pass;
+      summary.ignore += staticSummary.ignore;
+      summary.duration += staticSummary.duration;
+    }
     if (this.abilityDelegatorArguments !== null) {
       this.taskDoneTime = new Date().getTime();
       const configService = this.coreContext.getDefaultService('config');
-      const suiteService = this.coreContext.getDefaultService('suite');
       const specService = this.coreContext.getDefaultService('spec');
       if (configService['coverage'] === 'true') {
         await collectCoverageData();
       }
-      let message = '\n' + `${PrintTag.OHOS_REPORT_RESULT}: stream=Tests run: ` + summary.total + ', Failure: ' + summary.failure;
-      message += ', Error: ' + summary.error;
-      message += ', Pass: ' + summary.pass;
-      message += ', Ignore: ' + summary.ignore;
+      let message = `\n${PrintTag.OHOS_REPORT_RESULT}: stream=Tests run: ${summary.total}, Failure: ${summary.failure}`;
+      message += `, Error: ${summary.error}, Pass: ${summary.pass}, Ignore: ${summary.ignore}`;
       if (specService.skipSpecNum > 0) {
         message += ', SkipSpec: ' + specService.skipSpecNum;
       }
-      message += '\n' + `${PrintTag.OHOS_REPORT_CODE}: ` + (summary.failure > 0 ? -1 : 0) + '\n';
+      message += `\n${PrintTag.OHOS_REPORT_CODE}: ${summary.failure > 0 ? -1 : 0}\n`;
       let isHasError = summary.failure > 0 || summary.error > 0;
       let config = this.coreContext.getDefaultService('config');
       if (config.isBreakOnError() && isHasError) {
         // 未执行全部说明
-        message += '\n' + `${PrintTag.OHOS_REPORT_RESULT}: breakOnError model, Stopping whole test suite if one specific test case failed or error` + '\n';
+        message += '\n' + PrintTag.OHOS_REPORT_RESULT +
+          ': breakOnError model, Stopping whole test suite if one specific test case failed or error\n';
       }
-      message += `${PrintTag.OHOS_REPORT_STATUS}: taskconsuming=` + summary.duration + '\n';
+      message += `${PrintTag.OHOS_REPORT_STATUS}: taskconsuming=${summary.duration}\n`;
       console.info(`${message}`);
       await SysTestKit.print(message);
     }
@@ -75,7 +84,7 @@ class OhReport {
       // worker线程执行完成将数据发送到主线程中。
       let sendData = {
         currentThreadName: this.currentThreadName,
-        summary: summary
+        summary: summary,
       };
       console.info(`${TAG}, send data to mainThread, ${this.currentThreadName}, ${JSON.stringify(sendData)}`);
       SysTestKit.workerPort.postMessage(sendData);
@@ -86,126 +95,189 @@ class OhReport {
     if (this.coreContext.getDefaultService('config').filterValid.length !== 0) {
       var value = this.coreContext.getDefaultService('config').filterValid;
       var message = 'this param ' + value.join(',') + ' is invalid' + '\n';
-      this.delegator.finishTest(message, 0, () => {
-      });
+      this.delegator.finishTest(message, 0, () => { });
     }
   }
 
   incorrectTestSuiteFormat() {
-    if (this.coreContext.getDefaultService('config').filterXdescribe.length !== 0) {
+    if (
+      this.coreContext.getDefaultService('config').filterXdescribe.length !== 0
+    ) {
       let value = this.coreContext.getDefaultService('config').filterXdescribe;
-      let message = 'xdescribe ' + value.join(',') + ' should not contain it' + '\n';
-      this.delegator.finishTest(message, 0, () => {
-      });
+      let message =
+        'xdescribe ' + value.join(',') + ' should not contain it' + '\n';
+      this.delegator.finishTest(message, 0, () => { });
     }
   }
   async suiteStart() {
     if (this.abilityDelegatorArguments !== null) {
       let specArr = [];
-      this.suiteService.getAllChildSuiteNum(this.suiteService.getCurrentRunningSuite(), specArr);
+      this.suiteService.getAllChildSuiteNum(
+        this.suiteService.getCurrentRunningSuite(),
+        specArr
+      );
       let message = '\n' + `${PrintTag.OHOS_REPORT_SUM}: ` + specArr.length;
-      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), this.suiteService.getCurrentRunningSuite(), '');
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc() + '\n';
+      this.suiteService.setCurrentRunningSuiteDesc(
+        this.suiteService.getRootSuite(),
+        this.suiteService.getCurrentRunningSuite(),
+        ''
+      );
+      message +=
+        '\n' +
+        `${PrintTag.OHOS_REPORT_STATUS}: class=` +
+        this.suiteService.getCurrentRunningSuiteDesc() +
+        '\n';
       if (this.suiteService.currentRunningSuite.isSkip) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.suiteService.currentRunningSuite.skipReason + '\n';
+        message +=
+          `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` +
+          this.suiteService.currentRunningSuite.skipReason +
+          '\n';
       }
       if (SysTestKit.workerPort !== null) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
+        message +=
+          `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` +
+          this.currentThreadName;
       }
       console.info(`${message}`);
       await SysTestKit.print(message);
-      console.info(`${TAG}${this.suiteService.getCurrentRunningSuite().description} suiteStart print success`);
+      console.info(
+        `${TAG}${this.suiteService.getCurrentRunningSuite().description
+        } suiteStart print success`
+      );
     }
   }
 
   async suiteDone() {
     if (this.abilityDelegatorArguments !== null) {
       const currentRunningSuite = this.suiteService.getCurrentRunningSuite();
-      this.suiteService.setCurrentRunningSuiteDesc(this.suiteService.getRootSuite(), currentRunningSuite, '');
-      let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
-      if (this.suiteService.currentRunningSuite.isSkip && this.suiteService.currentRunningSuite.skipReason !== '') {
-        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.suiteService.currentRunningSuite.skipReason;
+      this.suiteService.setCurrentRunningSuiteDesc(
+        this.suiteService.getRootSuite(),
+        currentRunningSuite,
+        ''
+      );
+      let message =
+        '\n' +
+        `${PrintTag.OHOS_REPORT_STATUS}: class=` +
+        this.suiteService.getCurrentRunningSuiteDesc();
+      if (
+        this.suiteService.currentRunningSuite.isSkip &&
+        this.suiteService.currentRunningSuite.skipReason !== ''
+      ) {
+        message +=
+          '\n' +
+          `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` +
+          this.suiteService.currentRunningSuite.skipReason;
       }
       const isPromiseError = currentRunningSuite.isPromiseError;
       if (isPromiseError) {
-        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: shortMsg=Promise(async, await) in describe is not allowed!`;
+        message +=
+          '\n' +
+          `${PrintTag.OHOS_REPORT_STATUS}: shortMsg=Promise(async, await) in describe is not allowed!`;
       }
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: suiteconsuming=` + currentRunningSuite.duration;
+      message +=
+        '\n' +
+        `${PrintTag.OHOS_REPORT_STATUS}: suiteconsuming=` +
+        currentRunningSuite.duration;
       if (currentRunningSuite.hookError) {
-        message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: ${currentRunningSuite.hookError.message}`;
+        message +=
+          '\n' +
+          `${PrintTag.OHOS_REPORT_STATUS}: ${currentRunningSuite.hookError.message}`;
       }
       message += '\n';
       if (SysTestKit.workerPort !== null) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
+        message +=
+          `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` +
+          this.currentThreadName;
       }
       console.info(`${message}`);
       await SysTestKit.print(message);
-      console.info(`${TAG}${currentRunningSuite.description} suiteDone print success`);
+      console.info(
+        `${TAG}${currentRunningSuite.description} suiteDone print success`
+      );
     }
   }
 
   async specStart() {
     if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + (++this.index);
+      let message =
+        '\n' +
+        `${PrintTag.OHOS_REPORT_STATUS}: class=` +
+        this.suiteService.getCurrentRunningSuiteDesc();
+      message +=
+        '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + ++this.index;
       message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=JS`;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + this.specService.getTestTotal();
+      message +=
+        '\n' +
+        `${PrintTag.OHOS_REPORT_STATUS}: numtests=` +
+        this.specService.getTestTotal();
       message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
+      message +=
+        '\n' +
+        `${PrintTag.OHOS_REPORT_STATUS}: test=` +
+        this.specService.currentRunningSpec.description;
       message += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 1` + '\n';
       if (this.specService.currentRunningSpec.isSkip) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.specService.currentRunningSpec.skipReason + '\n';
+        message +=
+          `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` +
+          this.specService.currentRunningSpec.skipReason +
+          '\n';
       }
       if (SysTestKit.workerPort !== null) {
-        message += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
+        message +=
+          `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` +
+          this.currentThreadName;
       }
       console.info(`${message}`);
       await SysTestKit.print(message);
-      console.info(`${TAG}${this.specService.currentRunningSpec.description} specStart start print success`);
+      console.info(
+        `${TAG}${this.specService.currentRunningSpec.description} specStart start print success`
+      );
     }
   }
 
   async specDone() {
     if (this.abilityDelegatorArguments !== null) {
-      let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + (this.index);
+      let message = `\n${PrintTag.OHOS_REPORT_STATUS}: class=${this.suiteService.getCurrentRunningSuiteDesc()}`;
+      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + this.index;
       message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=JS`;
-      message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + this.specService.getTestTotal();
+      message += `\n${PrintTag.OHOS_REPORT_STATUS}: numtests=${this.specService.getTestTotal()}`;
       let messageStack = '';
       let messageCode = '';
       if (this.specService.currentRunningSpec.error) {
-        messageStack = `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.error?.stack?.slice(0, -1);
+        messageStack =
+          `${PrintTag.OHOS_REPORT_STATUS}: stack=${this.specService.currentRunningSpec.error?.stack?.slice(0, -1)}`;
         messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-        messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
-          `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}` :
-          `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}`;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
+        messageCode +=
+          this.specService.currentRunningSpec.expectMsg !== ''
+            ? `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}`
+            : `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}`;
+        messageCode += `\n${PrintTag.OHOS_REPORT_STATUS}: test=${this.specService.currentRunningSpec.description}`;
         messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -1` + '\n';
       } else if (this.specService.currentRunningSpec) {
         if (this.specService.currentRunningSpec.fail) {
-          messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.fail?.stack?.slice(0, -1);
+          messageStack +=
+            `${PrintTag.OHOS_REPORT_STATUS}: stack=${this.specService.currentRunningSpec.fail?.stack?.slice(0, -1)}`;
           messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-          messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
-            `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}` :
-            `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
+          messageCode += this.specService.currentRunningSpec.expectMsg !== ''
+            ? `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`
+            : `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`;
+          messageCode += `\n${PrintTag.OHOS_REPORT_STATUS}: test=${this.specService.currentRunningSpec.description}`;
           messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -2` + '\n';
         } else {
           messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
           messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
           messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 0` + '\n';
-          messageCode += this.specService.currentRunningSpec.isSkip ? (`${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.specService.currentRunningSpec.skipReason + '\n') : '';
+          messageCode += this.specService.currentRunningSpec.isSkip
+            ? `${PrintTag.OHOS_REPORT_STATUS}: skipReason=${this.specService.currentRunningSpec.skipReason}\n` : '';
         }
       } else {
         messageCode += '\n';
       }
-      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=` + this.specService.currentRunningSpec.duration + '\n';
+      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=${this.specService.currentRunningSpec.duration}\n`;
       if (SysTestKit.workerPort !== null) {
-        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
+        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=${this.currentThreadName}`;
       }
-      console.info(`${message}`);
-      console.info(`\n${messageStack}`);
-      console.info(`\n${messageCode}`);
+      console.info(`${message}\n${messageStack}\n${messageCode}`);
       await SysTestKit.print(message);
       await SysTestKit.print(messageStack);
       await SysTestKit.print(messageCode);
