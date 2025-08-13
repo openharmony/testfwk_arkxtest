@@ -267,7 +267,7 @@ static json getPoint(ani_env *env, ani_object p)
                 continue;
             }
         }
-        ani_int value;
+        ani_double value;
         compareAndReport(ANI_OK,
                          env->Object_GetPropertyByName_Double(p, cstr, &value),
                          "Object_GetField_Double Failed '" + std::string(cstr) + "'",
@@ -362,20 +362,20 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y, int displ
     for (int index = 0; index < THREE; index++)
     {
         if (index == 2) {
-            auto ret1 = env->Object_SetPropertyByName_Ref(point_obj, "displayId", reinterpret_cast<ani_ref>(createDouble(env, ani_double (displayId))));
+            auto ret1 = env->Object_SetPropertyByName_Ref(point_obj, "displayId", reinterpret_cast<ani_ref>(createDouble(env, ani_double(displayId))));
             if (ANI_OK != ret1) {
                 HiLog::Error(LABEL, "Object_SetPropertyByName_Ref  failed, %{public}d", ret1);
             } 
         } else {
-        string tag = direct[index];
-        char *method_name = strdup((Builder::BuildSetterName(tag)).c_str());
-        if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
-            HiLog::Error(LABEL, "Find Method <set>tag failed");
-        }
-        if (ANI_OK != env->Object_CallMethod_Void(point_obj, setter, ani_double(num[index]))) {
-            HiLog::Error(LABEL, "call setter failed %{public}s", direct[index].c_str());
-            return point_obj;
-        }
+            string tag = direct[index];
+            char *method_name = strdup((Builder::BuildSetterName(tag)).c_str());
+            if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
+                HiLog::Error(LABEL, "Find Method <set>tag failed");
+            }
+            if (ANI_OK != env->Object_CallMethod_Void(point_obj, setter, ani_double(num[index]))) {
+                HiLog::Error(LABEL, "call setter failed %{public}s", direct[index].c_str());
+                return point_obj;
+            }
         }
     }
     return point_obj;
