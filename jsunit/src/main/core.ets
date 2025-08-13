@@ -78,9 +78,9 @@ class Core {
     this.it = (desc: string, filter: int, func: ItfnType) => { };
     this.xit = (desc: string, filter: int, func: ItfnType, reason: string) => { };
     this.expect = null;
-    this.specEvent = new SpecEvent({ id: '', coreContext: {} });
-    this.suiteEvent = new SuiteEvent({ id: '', coreContext: {} });
-    this.taskEvent = new TaskEvent({ id: '', coreContext: {} });
+    this.specEvent = new SpecEvent({ id: '' });
+    this.suiteEvent = new SuiteEvent({ id: '' });
+    this.taskEvent = new TaskEvent({ id: '' });
     this.sService = null;
   }
 
