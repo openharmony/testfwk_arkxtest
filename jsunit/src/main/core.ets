@@ -78,9 +78,9 @@ class Core {
     this.it = (desc: string, filter: int, func: ItfnType) => { };
     this.xit = (desc: string, filter: int, func: ItfnType, reason: string) => { };
     this.expect = null;
-    this.specEvent = new SpecEvent({ id: '', coreContext: {} });
-    this.suiteEvent = new SuiteEvent({ id: '', coreContext: {} });
-    this.taskEvent = new TaskEvent({ id: '', coreContext: {} });
+    this.specEvent = new SpecEvent({ id: '' });
+    this.suiteEvent = new SuiteEvent({ id: '' });
+    this.taskEvent = new TaskEvent({ id: '' });
     this.sService = null;
   }
 
@@ -245,9 +245,9 @@ class Core {
     this.addService('expect', new ExpectService({ id: 'default' }));
     this.addService('report', new ReportService({ id: 'default' }));
     this.addService('config', new ConfigService({ id: 'default' }));
-    this.registerEvent('task', new TaskEvent({ id: 'default', coreContext: this }));
-    this.registerEvent('suite', new SuiteEvent({ id: 'default', coreContext: this }));
-    this.registerEvent('spec', new SpecEvent({ id: 'default', coreContext: this }));
+    this.registerEvent('task', new TaskEvent({ id: 'default' }));
+    this.registerEvent('suite', new SuiteEvent({ id: 'default' }));
+    this.registerEvent('spec', new SpecEvent({ id: 'default' }));
     const report = this.getDefaultService('report');
     if (report !== null) {
       this.subscribeEvent('spec', report as ReportService);
@@ -258,7 +258,7 @@ class Core {
     const context = this;
     for (const serviceMap of this.services.values()) {
       for (const service of serviceMap.values()) {
-        let apis: ApiIF = {name: 'undefined'};
+        let apis: ApiIF = {name : ''};
         if (service instanceof SuiteService) {
           const typeService = service as SuiteService;
           typeService.init(context);
