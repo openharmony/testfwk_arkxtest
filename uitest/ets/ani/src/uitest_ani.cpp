@@ -264,10 +264,22 @@ static ani_string unwrapp(ani_env *env, ani_object object, const char *name)
 static json getPoint(ani_env *env, ani_object p)
 {
     auto point = json();
-    string list[] = {"x", "y"};
-    for (int index = 0; index < 2; index++) {
+    string list[] = {"x", "y", "displayId"};
+    for (int index = 0; index < THREE; index++) {
         char *cstr = new char[list[index].length() + 1];
         strcpy(cstr, list[index].c_str());
+        if (index == TWO) {
+            ani_ref ref;
+            if (env->Object_GetPropertyByName_Ref(p, cstr, &ref) != ANI_OK) {
+                HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
+                continue;
+            }
+            ani_boolean ret;
+            env->Reference_IsUndefined(ref, &ret);
+            if (ret == ANI_TRUE) {
+                continue;
+            }
+        }
         ani_int value;
         compareAndReport(ANI_OK,
                          env->Object_GetPropertyByName_Int(p, cstr, &value),
@@ -334,7 +346,22 @@ static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num)
     return rect_obj;
 }
 
-static ani_object newPoint(ani_env *env, ani_object obj, int x, int y)
+ani_object createInt(ani_env *env, ani_int displayId) {
+    static constexpr const char *className = "std.core.Int";
+    ani_class IntCls {};
+    env->FindClass(className, &IntCls);
+    ani_method ctor {};
+    env->Class_FindMethod(IntCls, "<ctor>", "i:", &ctor);
+    ani_object obj {};
+    if (env->Object_New(IntCls, ctor, &obj, displayId)!=ANI_OK) {
+        ani_ref unRef;
+        env->GetUndefined(&unRef);
+        return reinterpret_cast<ani_object>(unRef);
+    }
+    return obj;
+}
+
+static ani_object newPoint(ani_env *env, ani_object obj, int x, int y, int displayId)
 {
     ani_object point_obj = {};
     ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "PointInner"}).Descriptor().c_str());
@@ -351,10 +378,16 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y)
         return point_obj;
     }
     ani_method setter;
-    string direct[] = {"x", "y"};
-    int num[2] = {x, y};
-    for (int index = 0; index < 2; index++)
+    string direct[] = {"x", "y", "displayId"};
+    int num[] = {x, y, displayId};
+    for (int index = 0; index < THREE; index++)
     {
+        if (index == 2) {
+            auto ret1 = env->Object_SetPropertyByName_Ref(point_obj, "displayId", reinterpret_cast<ani_ref>(createInt(env, ani_int(displayId))));
+            if (ANI_OK != ret1) {
+                HiLog::Error(LABEL, "Object_SetPropertyByName_Ref  failed, %{public}d", ret1);
+            } 
+        } else {
         string tag = direct[index];
         char *method_name = strdup((Builder::BuildSetterName(tag)).c_str());
         if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
@@ -363,6 +396,7 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y)
         if (ANI_OK != env->Object_CallMethod_Void(point_obj, setter, ani_int(num[index]))) {
             HiLog::Error(LABEL, "call setter failed %{public}s", direct[index].c_str());
             return point_obj;
+            }
         }
     }
     return point_obj;
@@ -1087,7 +1121,8 @@ static ani_ref getDisplaySizeSync(ani_env *env, ani_object obj)
     if (result == nullptr) {
         return nullptr;
     }
-    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
+    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"],
+        reply_.resultValue_["displayId"]);
     return p;
 }
 
@@ -1103,7 +1138,8 @@ static ani_ref getDisplaySizeWithDisplayIdSync(ani_env *env, ani_object obj, ani
     if (result == nullptr) {
         return nullptr;
     }
-    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
+    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"],
+        reply_.resultValue_["displayId"]);
     return p;
 }
 
@@ -1118,7 +1154,8 @@ static ani_object getDisplayDensitySync(ani_env *env, ani_object obj)
     if (result == nullptr) {
         return nullptr;
     }
-    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
+    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"],
+        reply_.resultValue_["displayId"]);
     return p;
 }
 
@@ -1800,7 +1837,8 @@ static ani_ref getBoundsCenterSync(ani_env *env, ani_object obj)
         env->GetNull(&nullref);
         return nullref;
     }
-    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"]);
+    ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"],
+      reply_.resultValue_["displayId"]);
     HiLog::Info(LABEL, "reply_.resultValue_[x]:%{public}s", reply_.resultValue_["x"].dump().c_str());
     HiLog::Info(LABEL, "reply_.resultValue_[y]:%{public}s", reply_.resultValue_["y"].dump().c_str());
     return p;
