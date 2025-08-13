@@ -388,14 +388,14 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y, int displ
                 HiLog::Error(LABEL, "Object_SetPropertyByName_Ref  failed, %{public}d", ret1);
             } 
         } else {
-        string tag = direct[index];
-        char *method_name = strdup((Builder::BuildSetterName(tag)).c_str());
-        if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
-            HiLog::Error(LABEL, "Find Method %{public}s failed", method_name);
-        }
-        if (ANI_OK != env->Object_CallMethod_Void(point_obj, setter, ani_int(num[index]))) {
-            HiLog::Error(LABEL, "call setter failed %{public}s", direct[index].c_str());
-            return point_obj;
+            string tag = direct[index];
+            char *method_name = strdup((Builder::BuildSetterName(tag)).c_str());
+            if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
+                HiLog::Error(LABEL, "Find Method %{public}s failed", method_name);
+            }
+            if (ANI_OK != env->Object_CallMethod_Void(point_obj, setter, ani_int(num[index]))) {
+                HiLog::Error(LABEL, "call setter failed %{public}s", direct[index].c_str());
+                return point_obj;
             }
         }
     }
