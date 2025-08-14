@@ -342,8 +342,10 @@ namespace OHOS::uitest {
         info.mode_ = WindowMode::UNKNOWN;
         auto touchAreas = node.GetTouchHotAreas();
         for (auto area : touchAreas) {
-            Rect rect { area.GetLeftTopXScreenPostion(), area.GetRightBottomXScreenPostion(),
-                        area.GetLeftTopYScreenPostion(), area.GetRightBottomYScreenPostion() };
+            Rect rect { info.bounds_.left_ + area.GetLeftTopXScreenPostion(),
+                        info.bounds_.left_ + area.GetRightBottomXScreenPostion(),
+                        info.bounds_.top_  + area.GetLeftTopYScreenPostion(),
+                        info.bounds_.top_  + area.GetRightBottomYScreenPostion() };
             info.touchHotAreas_.push_back(rect);
         }
         const auto origMode = static_cast<OHOS::Rosen::WindowMode>(node.GetWindowMode());
@@ -460,8 +462,8 @@ namespace OHOS::uitest {
                     "%{public}d, active: %{public}d, focus: %{public}d, layer: %{public}d",
                     win.GetWindowId(), win.IsActive(), win.IsFocused(), win.GetWindowLayer());
                 Window winWrapper{win.GetWindowId()};
-                InflateWindowInfo(win, winWrapper);
                 winWrapper.bounds_ = winRectInScreen;
+                InflateWindowInfo(win, winWrapper);
                 winWrapper.displayId_ = win.GetDisplayId();
                 UpdateWindowAttrs(winWrapper, overplays);
                 winWrapper.displayId_ = displayId;
