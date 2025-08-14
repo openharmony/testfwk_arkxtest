@@ -1419,6 +1419,7 @@ namespace OHOS::uitest {
         auto genericGetDisplayAttrOperator = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto displayId = ReadCallArg<int32_t>(in, INDEX_ZERO, UNASSIGNED);
+            json data;
             if (!driver.CheckDisplayExist(displayId)) {
                 out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invalid display id.");
                 return;
@@ -1427,15 +1428,15 @@ namespace OHOS::uitest {
                 out.resultValue_ = driver.GetDisplayRotation(out.exception_, displayId);
             } else if (in.apiId_ == "Driver.getDisplaySize") {
                 auto result = driver.GetDisplaySize(out.exception_, displayId);
-                json data;
                 data["x"] = result.px_;
                 data["y"] = result.py_;
+                data["displayId"] = result.displayId_;
                 out.resultValue_ = data;
             } else if (in.apiId_ == "Driver.getDisplayDensity") {
                 auto result = driver.GetDisplayDensity(out.exception_, displayId);
-                json data;
                 data["x"] = result.px_;
                 data["y"] = result.py_;
+                data["displayId"] = result.displayId_;
                 out.resultValue_ = data;
             }
         };
