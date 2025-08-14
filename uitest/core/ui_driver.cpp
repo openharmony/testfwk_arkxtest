@@ -682,7 +682,7 @@ namespace OHOS::uitest {
         return uiController_->OpenAamsEvent();
     }
 
-    bool GetEventObserverEnable()
+    bool UiDriver::GetEventObserverEnable()
     {
         return eventObserverEnable_;
     }
