@@ -672,12 +672,19 @@ namespace OHOS::uitest {
 
     void UiDriver::CloseAamsEvent()
     {
+        eventObserverEnable_ = false;
         return uiController_->CloseAamsEvent();
     }
 
     void UiDriver::OpenAamsEvent()
     {
+        eventObserverEnable_ = true;
         return uiController_->OpenAamsEvent();
+    }
+
+    bool UiDriver::GetEventObserverEnable()
+    {
+        return eventObserverEnable_;
     }
     
     void UiDriver::ChangeWindowMode(int32_t windowId, WindowMode mode)

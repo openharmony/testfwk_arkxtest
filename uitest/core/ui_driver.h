@@ -112,6 +112,8 @@ namespace OHOS::uitest {
         
         void ChangeWindowMode(int32_t windowId, WindowMode mode);
 
+        bool GetEventObserverEnable();
+
     private:
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction
@@ -124,6 +126,7 @@ namespace OHOS::uitest {
         std::vector<Widget> visitWidgets_;
         std::vector<int> targetWidgetsIndex_;
         AamsWorkMode mode_ = AamsWorkMode::NORMAL;
+        bool eventObserverEnable_ = true;
     };
 } // namespace OHOS::uitest
 
