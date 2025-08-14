@@ -124,6 +124,7 @@ namespace OHOS::uitest {
         std::vector<Widget> visitWidgets_;
         std::vector<int> targetWidgetsIndex_;
         AamsWorkMode mode_ = AamsWorkMode::NORMAL;
+        bool eventObserverEnable_ = true;
     };
 } // namespace OHOS::uitest
 
