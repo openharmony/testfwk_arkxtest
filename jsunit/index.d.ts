@@ -12,6 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import Core from './core';
+import DataDriver from './module/config/DataDriver';
+import ExpectExtend from './module/assert/ExpectExtend';
+import OhReport from './module/report/OhReport';
+
+export { Core, DataDriver, ExpectExtend, OhReport };
 
 export const DEFAULT = 0b0000;
 
