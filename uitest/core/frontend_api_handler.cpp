@@ -1430,12 +1430,14 @@ namespace OHOS::uitest {
                 json data;
                 data["x"] = result.px_;
                 data["y"] = result.py_;
+                data["displayId"] = result.displayId_;
                 out.resultValue_ = data;
             } else if (in.apiId_ == "Driver.getDisplayDensity") {
                 auto result = driver.GetDisplayDensity(out.exception_, displayId);
                 json data;
                 data["x"] = result.px_;
                 data["y"] = result.py_;
+                data["displayId"] = result.displayId_;
                 out.resultValue_ = data;
             }
         };
