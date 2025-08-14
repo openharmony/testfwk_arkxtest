@@ -346,7 +346,8 @@ static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num)
     return rect_obj;
 }
 
-ani_object createInt(ani_env *env, ani_int displayId) {
+ani_object createInt(ani_env *env, ani_int displayId)
+{
     static constexpr const char *className = "std.core.Int";
     ani_class IntCls {};
     env->FindClass(className, &IntCls);
@@ -382,8 +383,9 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y, int displ
     int num[] = {x, y, displayId};
     for (int index = 0; index < THREE; index++)
     {
-        if (index == 2) {
-            auto ret1 = env->Object_SetPropertyByName_Ref(point_obj, "displayId", reinterpret_cast<ani_ref>(createInt(env, ani_int(displayId))));
+        if (index ==  TWO) {
+            auto ret1 = env->Object_SetPropertyByName_Ref(point_obj, "displayId",
+                reinterpret_cast<ani_ref>(createInt(env, ani_int(displayId))));
             if (ANI_OK != ret1) {
                 HiLog::Error(LABEL, "Object_SetPropertyByName_Ref  failed, %{public}d", ret1);
             } 
@@ -1838,7 +1840,7 @@ static ani_ref getBoundsCenterSync(ani_env *env, ani_object obj)
         return nullref;
     }
     ani_object p = newPoint(env, obj, reply_.resultValue_["x"], reply_.resultValue_["y"],
-      reply_.resultValue_["displayId"]);
+        reply_.resultValue_["displayId"]);
     HiLog::Info(LABEL, "reply_.resultValue_[x]:%{public}s", reply_.resultValue_["x"].dump().c_str());
     HiLog::Info(LABEL, "reply_.resultValue_[y]:%{public}s", reply_.resultValue_["y"].dump().c_str());
     return p;
