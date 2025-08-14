@@ -112,7 +112,7 @@ namespace OHOS::uitest {
         
         void ChangeWindowMode(int32_t windowId, WindowMode mode);
 
-        bool GetEventObserverEnable()
+        bool GetEventObserverEnable();
 
     private:
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
