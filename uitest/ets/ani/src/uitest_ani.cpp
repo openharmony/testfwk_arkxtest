@@ -388,7 +388,7 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y, int displ
                 reinterpret_cast<ani_ref>(createInt(env, ani_int(displayId))));
             if (ANI_OK != ret1) {
                 HiLog::Error(LABEL, "Object_SetPropertyByName_Ref  failed, %{public}d", ret1);
-            } 
+            }
         } else {
             string tag = direct[index];
             char *method_name = strdup((Builder::BuildSetterName(tag)).c_str());
