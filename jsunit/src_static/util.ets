@@ -29,6 +29,7 @@ export function getAsyncFuncWithArgsZero(func: () => Promise<void>, timeout: int
       await func();
     } catch (err: Error) {
       console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
+      reject(err)
     }
     if (!!timer) {
       clearTimeout(timer);
@@ -49,6 +50,7 @@ export function getFuncWithArgsZero(func: () => void, timeout: int, isStressTest
       func()
     } catch (err: Error) {
       console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
+      reject(err)
     }
     if (!!timer) {
       clearTimeout(timer);
