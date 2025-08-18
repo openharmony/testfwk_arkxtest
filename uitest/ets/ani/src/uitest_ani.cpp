@@ -266,13 +266,14 @@ static json getPoint(ani_env *env, ani_object p)
             if (ret == ANI_TRUE) {
                 continue;
             }
+        } else {
+            ani_double value;
+            compareAndReport(ANI_OK,
+                            env->Object_GetPropertyByName_Double(p, cstr, &value),
+                            "Object_GetField_Double Failed '" + std::string(cstr) + "'",
+                            "Successful!!get double proprty");
+            point[list[index]] = int(value);
         }
-        ani_double value;
-        compareAndReport(ANI_OK,
-                         env->Object_GetPropertyByName_Double(p, cstr, &value),
-                         "Object_GetField_Double Failed '" + std::string(cstr) + "'",
-                         "Successful!!get double proprty");
-        point[list[index]] = int(value);
     }
     return point;
 }
