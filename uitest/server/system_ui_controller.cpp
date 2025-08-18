@@ -1114,7 +1114,7 @@ namespace OHOS::uitest {
         auto display = displayMgr.GetDisplayById(displayId);
         if (display == nullptr) {
             LOG_E("DisplayManager init fail");
-            return {0, 0};
+            return {0, 0, displayId};
         }
         auto width = display->GetWidth();
         auto height = display->GetHeight();
@@ -1142,11 +1142,11 @@ namespace OHOS::uitest {
         auto display = displayMgr.GetDisplayById(displayId);
         if (display == nullptr) {
             LOG_E("DisplayManager init fail");
-            return {0, 0};
+            return {0, 0, displayId};
         }
         auto rate = display->GetVirtualPixelRatio();
         Point displaySize = GetDisplaySize(displayId);
-        Point result(displaySize.px_ * rate, displaySize.py_ * rate);
+        Point result(displaySize.px_ * rate, displaySize.py_ * rate, displayId);
         return result;
     }
 
