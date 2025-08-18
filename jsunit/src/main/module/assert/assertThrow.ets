@@ -25,9 +25,9 @@ export function assertThrow(actual: () => void, args: string[]): AssertResult {
     let throwError = new Error();
     try {
       actual();
-    } catch (e: Error) {
+    } catch (e) {
       hasThrow = true;
-      throwError = e;
+      throwError = e as Error;
     }
     if (!hasThrow) {
       message = 'function did not throw an exception';
