@@ -41,14 +41,14 @@ namespace OHOS::uitest {
         const std::string usage =
         "USAGE : \n"
         "help                                                                                  print uiInput usage\n"
-        "dircFling [velocity stepLength]                     direction ranges from 0,1,2,3 (left, right, up, down)\n"
+        "dircFling  <direction> [velocity] [stepLength]      direction ranges from 0,1,2,3 (left, right, up, down)\n"
         "click/doubleClick/longClick <x> <y>                                       click on the target coordinates\n"
         "swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity]      velocity ranges from 200 to 40000, default 600\n"
-        "fling <from_x> <from_y> <to_x> <to_y> [velocity]           velocity ranges from 200 to 40000, default 600\n"
+        "fling <from_x> <from_y> <to_x> <to_y> [velocity] [stepLength]   velocity ranges from 200 to 40000, default 600\n"
         "keyEvent <keyID/Back/Home/Power>                                                          inject keyEvent\n"
         "keyEvent <keyID_0> <keyID_1> [keyID_2]                                           keyID_2 default to None \n"
         "inputText <x> <y> <text>                                         inputText at the target coordinate point\n"
-        "text <text>                                           input text at the location where is already focused\n";
+        "text <text>                                           input text at the location where is already focused\n"
         std::cout << usage << std::endl;
     }
     bool ParameterRedundancy()
