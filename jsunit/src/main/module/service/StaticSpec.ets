@@ -79,8 +79,8 @@ class StaticSpec {
       try {
         this.fn();
         this.setResult();
-      } catch (e: Error) {
-        this.error = e;
+      } catch (e) {
+        this.error = e as Error;
         specService.setStatus(true);
       }
     }
