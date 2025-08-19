@@ -111,11 +111,13 @@ enum MouseButton {
 interface Point {
  x: number;
  y: number;
+ displayId?: number;
 }
   
 class PointInner implements Point {
  x: number = 0;
  y: number = 0;
+ displayId?: number;
 }
   
 interface Rect {
