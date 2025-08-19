@@ -41,8 +41,8 @@ protected:
 
 HWTEST_F(DataCollectionTest, testGetPidByBundleName, TestSize.Level1)
 {
-    string bundleName = "com.unittest.test";
-    EXPECT_EQ(dataCollection_->GetPidByBundleName(bundleName), -1);
+    dataCollection_->SetBundleName("com.unittest.test");
+    EXPECT_EQ(dataCollection_->GetPidByBundleName(), -1);
 }
 
 HWTEST_F(DataCollectionTest, testIsProcessExist, TestSize.Level1)

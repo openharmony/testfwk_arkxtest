@@ -21,27 +21,6 @@
 
 namespace OHOS::perftest {
     using namespace std;
-    
-    int32_t PerfTest::GetPidByBundleName(string bundleName)
-    {
-        string getPidCmd = "pidof " + bundleName;
-        int32_t pid = -1;
-        FILE *fp = popen(getPidCmd.c_str(), "r");
-        if (fp == nullptr) {
-            LOG_E("Excute popen to get process pid failed");
-            return pid;
-        }
-        string pidStr;
-        char bufferInfo[1024] = { '\0' };
-        while (fgets(bufferInfo, sizeof(bufferInfo), fp) != nullptr) {
-            pidStr += bufferInfo;
-        }
-        pclose(fp);
-        LOG_I("Pid of process %{public}s is %{public}s", bundleName.c_str(), pidStr.c_str());
-        stringstream pidStream(pidStr);
-        pidStream >> pid;
-        return pid;
-    }
 
     void PerfTest::RunTest(ApiCallErr &error)
     {
