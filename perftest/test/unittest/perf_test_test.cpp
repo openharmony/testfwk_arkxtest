@@ -82,13 +82,6 @@ HWTEST_F(PerfTestTest, testCreateDataCollections, TestSize.Level1)
     ASSERT_EQ(perfTest_->perfTestStrategy_->dataCollections_.size(), 9);
 }
 
-HWTEST_F(PerfTestTest, testGetPidByBundleName, TestSize.Level1)
-{
-    int32_t currentPid = getpid();
-    int32_t pid = perfTest_->GetPidByBundleName("perftest_unittest");
-    ASSERT_EQ(currentPid, pid);
-}
-
 HWTEST_F(PerfTestTest, testRunTest, TestSize.Level1)
 {
     set<PerfMetric> metrics;

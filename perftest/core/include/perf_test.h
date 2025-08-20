@@ -42,7 +42,6 @@ namespace OHOS::perftest {
             return PERF_TEST_DEF;
         }
 
-        int32_t GetPidByBundleName(string bundleName);
         void RunTest(ApiCallErr &error);
         nlohmann::json GetMeasureResult(PerfMetric perfMetric, ApiCallErr &error);
         bool IsMeasureRunning();

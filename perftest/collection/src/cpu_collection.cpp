@@ -34,7 +34,7 @@ namespace OHOS::perftest {
             LOG_I("Cpu collection has started");
             return;
         }
-        pid_ = GetPidByBundleName(bundleName_);
+        pid_ = GetPidByBundleName();
         if (pid_ == -1) {
             error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "The process does not exist during cpu collection");
             return;

@@ -48,7 +48,7 @@ namespace OHOS::perftest {
         virtual double StopCollectionAndGetResult(ApiCallErr &error) = 0;
         void SetPid(int32_t pid);
         void SetBundleName(string bundleName);
-        int32_t GetPidByBundleName(string bundleName);
+        int32_t GetPidByBundleName();
         bool IsProcessExist(int32_t pid);
         bool ExecuteCommand(const string command, string& result);
     protected:

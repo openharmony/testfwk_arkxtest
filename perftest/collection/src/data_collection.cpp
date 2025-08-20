@@ -16,6 +16,8 @@
 #include <fstream>
 #include <sstream>
 #include <csignal>
+#include <sys/wait.h>
+#include <unistd.h>
 #include "data_collection.h"
 
 namespace OHOS::perftest {
@@ -32,17 +34,38 @@ namespace OHOS::perftest {
         bundleName_ = bundleName;
     }
 
-    int32_t DataCollection::GetPidByBundleName(string bundleName)
+    int32_t DataCollection::GetPidByBundleName()
     {
-        string getPidCmd = "pidof " + bundleName_;
-        string executeRes;
         int32_t pid = -1;
-        if (!ExecuteCommand(getPidCmd, executeRes)) {
+        int32_t pipefd[2];
+        if (pipe(pipefd) == -1) {
             return pid;
         }
-        LOG_I("Pid of process %{public}s is %{public}s", bundleName_.c_str(), executeRes.c_str());
-        stringstream pidStream(executeRes);
-        pidStream >> pid;
+        pid_t executePid = fork();
+        if (executePid == 0) {
+            close(pipefd[0]);
+            dup2(pipefd[1], STDOUT_FILENO);
+            close(pipefd[1]);
+            string pifofCommand = "pidof";
+            char *executeParam[] = {pifofCommand.data(), bundleName_.data(), NULL};
+            int32_t res = execv("/bin/pidof", executeParam);
+            if (res == -1) {
+                return pid;
+            }
+        } else {
+            close(pipefd[1]);
+            char buffer[128];
+            string executeRes;
+            ssize_t count;
+            while ((count = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
+                executeRes.append(buffer, count);
+            }
+            LOG_I("Pid of process %{public}s is %{public}s", bundleName_.c_str(), executeRes.c_str());
+            stringstream pidStream(executeRes);
+            pidStream >> pid;
+            close(pipefd[0]);
+            waitpid(executePid, nullptr, 0);
+        }
         return pid;
     }
 
