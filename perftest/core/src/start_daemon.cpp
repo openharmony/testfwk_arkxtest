@@ -29,6 +29,16 @@
 using namespace std;
 
 namespace OHOS::perftest {
+    const std::string HELP_MSG =
+        "usage: perftest <command> [options]                                                                        \n"
+        "help                                                                                    print help messages\n"
+        "start-daemon <token>                                                             start the perftest process\n";
+
+    static inline void PrintToConsole(string_view message)
+    {
+        std::cout << message << std::endl;
+    }
+
     static string TranslateToken(string_view raw)
     {
         if (raw.find_first_of('@') != string_view::npos) {
@@ -76,14 +86,25 @@ namespace OHOS::perftest {
     extern "C" int32_t main(int32_t argc, char *argv[])
     {
         LOG_I("Server command start");
-        if ((size_t)argc < THREE) {
+        if ((size_t)argc < TWO) {
+            PrintToConsole("Missing argument");
+            PrintToConsole(HELP_MSG);
             _Exit(EXIT_FAILURE);
         }
         string command(argv[INDEX_ONE]);
         if (command == "start-daemon") {
-            string_view token = argv[INDEX_TWO];
-            _Exit(StartDaemon(token));
+            string_view token = argc < THREE ? "" : argv[INDEX_TWO];
+            if (StartDaemon(token) == EXIT_FAILURE) {
+                PrintToConsole("Start daemon failed");
+                _Exit(EXIT_FAILURE);
+            }
+            _Exit(EXIT_SUCCESS);
+        } else if (command == "help") {
+            PrintToConsole(HELP_MSG);
+            _Exit(EXIT_SUCCESS);
         }
+        PrintToConsole("Illegal argument: " + command);
+        PrintToConsole(HELP_MSG);
         _Exit(EXIT_FAILURE);
     }
 } // namespace OHOS::perftest

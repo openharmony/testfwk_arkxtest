@@ -60,7 +60,7 @@ namespace OHOS::perftest {
             error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "Stop list swipe fps measure failed");
             return INVALID_VALUE;
         }
-        pid_ = GetPidByBundleName(bundleName_);
+        pid_ = GetPidByBundleName();
         if (pid_ == -1) {
             error = ApiCallErr(ERR_DATA_COLLECTION_FAILED, "The process does not exist when fps trace parse");
             return INVALID_VALUE;
