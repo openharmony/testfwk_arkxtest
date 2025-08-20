@@ -48,7 +48,7 @@ namespace OHOS::uitest {
         "keyEvent <keyID/Back/Home/Power>                                                          inject keyEvent\n"
         "keyEvent <keyID_0> <keyID_1> [keyID_2]                                           keyID_2 default to None \n"
         "inputText <x> <y> <text>                                         inputText at the target coordinate point\n"
-        "text <text>                                           input text at the location where is already focused\n"
+        "text <text>                                           input text at the location where is already focused\n";
         std::cout << usage << std::endl;
     }
     bool ParameterRedundancy()
