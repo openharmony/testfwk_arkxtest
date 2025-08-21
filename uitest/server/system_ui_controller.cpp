@@ -382,8 +382,8 @@ namespace OHOS::uitest {
                 displayId, ret);
             return false;
         }
-        auto hasVirtual = DisplayManager::GetInstance().GetDisplayById(VIRTUAL_DISPLAY_ID) != nullptr;
-        if (hasVirtual && displayId == 0) {
+        auto foldStatus = DisplayManager::GetInstance().GetFoldStatus();
+        if (foldStatus == Rosen::FoldStatus::HALF_FOLD && displayId == 0) {
             vector<AccessibilityWindowInfo> windowsInVirtual;
             auto ret1 = ability->GetWindows(VIRTUAL_DISPLAY_ID, windowsInVirtual);
             LOG_D("GetWindows in display 999 from AccessibilityUITestAbility, ret: %{public}d", ret1);
@@ -458,9 +458,9 @@ namespace OHOS::uitest {
                           win.GetWindowLayer());
                     continue;
                 }
-                LOG_I("window is visible, windowId: "
-                    "%{public}d, active: %{public}d, focus: %{public}d, layer: %{public}d",
-                    win.GetWindowId(), win.IsActive(), win.IsFocused(), win.GetWindowLayer());
+                LOG_I("window is visible, windowId: %{public}d, active: %{public}d, focus: %{public}d,"
+                    "layer: %{public}d, displayId: %{public}" PRIu64 "",
+                    win.GetWindowId(), win.IsActive(), win.IsFocused(), win.GetWindowLayer(), win.GetDisplayId());
                 Window winWrapper{win.GetWindowId()};
                 winWrapper.bounds_ = winRectInScreen;
                 InflateWindowInfo(win, winWrapper);
@@ -1120,17 +1120,21 @@ namespace OHOS::uitest {
         auto width = display->GetWidth();
         auto height = display->GetHeight();
         LOG_D("GetDisplaysize in display %{public}d, width: %{public}d, height: %{public}d", displayId, width, height);
-        auto virtualDisplay = displayMgr.GetDisplayById(VIRTUAL_DISPLAY_ID);
-        if (displayId == 0 && virtualDisplay != nullptr) {
-            auto virtualwidth = virtualDisplay->GetWidth();
-            auto virtualheight = virtualDisplay->GetHeight();
-            auto foldArea = GetFoldArea();
-            auto foldAreaWidth = foldArea.right_ - foldArea.left_;
-            auto foldAreaHeight = foldArea.bottom_ - foldArea.top_;
-            LOG_D("GetDisplaysize in virtual display, width: %{public}d, height: %{public}d",
-                virtualwidth, virtualheight);
-            LOG_D("GetDisplaysize in foldArea, width: %{public}d, height: %{public}d", foldAreaWidth, foldAreaHeight);
-            height = height + virtualheight + foldAreaHeight;
+        auto foldStatus = displayMgr.GetFoldStatus();
+        if (foldStatus == Rosen::FoldStatus::HALF_FOLD && displayId == 0) {
+            auto virtualDisplay = displayMgr.GetDisplayById(VIRTUAL_DISPLAY_ID);
+            if (virtualDisplay != nullptr) {
+                auto virtualwidth = virtualDisplay->GetWidth();
+                auto virtualheight = virtualDisplay->GetHeight();
+                auto foldArea = GetFoldArea();
+                auto foldAreaWidth = foldArea.right_ - foldArea.left_;
+                auto foldAreaHeight = foldArea.bottom_ - foldArea.top_;
+                LOG_D("GetDisplaysize in virtual display, width: %{public}d, height: %{public}d",
+                    virtualwidth, virtualheight);
+                LOG_D("GetDisplaysize in foldArea, width: %{public}d, height: %{public}d", foldAreaWidth,
+                    foldAreaHeight);
+                height = height + virtualheight + foldAreaHeight;
+            }
         }
         Point result(width, height, displayId);
         return result;
