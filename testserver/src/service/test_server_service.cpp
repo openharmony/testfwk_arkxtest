@@ -19,9 +19,12 @@
 #include "system_ability_definition.h"
 #include "hilog/log.h"
 #include "parameters.h"
+#include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "test_server_error_code.h"
+#ifdef ARKXTEST_PASTEBOARD_ENABLE
 #include "pasteboard_client.h"
+#endif
 #include "session_manager_lite.h"
 #include "wm_common.h"
 #include "ws_common.h"
@@ -127,6 +130,7 @@ namespace OHOS::testserver {
 
     ErrCode TestServerService::SetPasteData(const std::string& text)
     {
+#ifdef ARKXTEST_PASTEBOARD_ENABLE
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
         pasteBoardMgr->Clear();
@@ -137,6 +141,10 @@ namespace OHOS::testserver {
         int32_t ret = pasteBoardMgr->SetPasteData(*pasteData);
         int32_t successErrCode = 27787264;
         return ret == successErrCode ? TEST_SERVER_OK : TEST_SERVER_SET_PASTE_DATA_FAILED;
+#else
+        HiLog::Warn(LABEL_SERVICE, "pasteboard is not supported, ignored.", __func__);
+        return TEST_SERVER_OK;
+#endif
     }
 
     ErrCode TestServerService::PublishCommonEvent(const EventFwk::CommonEventData &event, bool &re)

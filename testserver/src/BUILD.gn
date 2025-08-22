@@ -62,8 +62,6 @@ ohos_shared_library("test_server_service") {
     "hiview:libucollection_utility",
     "init:libbegetutil",
     "ipc:ipc_core",
-    "pasteboard:pasteboard_client",
-    "pasteboard:pasteboard_data",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "soc_perf:socperf_client",
@@ -75,6 +73,14 @@ ohos_shared_library("test_server_service") {
     external_deps += [
       "udmf:udmf_client",
     ]
+  }
+
+  if (defined(global_parts_info) && defined(global_parts_info.distributeddatamgr_pasteboard)) {
+    external_deps += [
+      "pasteboard:pasteboard_client",
+      "pasteboard:pasteboard_data",
+    ]
+    defines = [ "ARKXTEST_PASTEBOARD_ENABLE"]
   }
 
   part_name = "arkxtest"
