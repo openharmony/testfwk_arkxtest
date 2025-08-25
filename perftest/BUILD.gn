@@ -109,6 +109,7 @@ ohos_executable("perftest_server") {
   external_deps = [
     "ability_base:want",
     "common_event_service:cesfwk_innerkits",
+    "ipc:ipc_single",
   ]
   external_deps += common_external_deps
   subsystem_name = "testfwk"
@@ -162,6 +163,7 @@ ohos_shared_library("perftest_client") {
   external_deps += [
     "ability_base:want",
     "common_event_service:cesfwk_innerkits",
+    "ipc:ipc_single",
     "libuv:uv",
     "napi:ace_napi",
   ]
@@ -203,6 +205,7 @@ ohos_unittest("perftest_unittest") {
   external_deps = [
     "ability_base:want",
     "common_event_service:cesfwk_innerkits",
+    "ipc:ipc_single",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
