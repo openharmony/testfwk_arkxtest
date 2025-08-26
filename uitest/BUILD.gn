@@ -338,6 +338,7 @@ ohos_shared_library("uitest_ani") {
   external_deps += [
     "common_event_service:cesfwk_innerkits",
     "hilog:libhilog",
+    "ipc:ipc_single",
     "json:nlohmann_json_static",
     "runtime_core:ani",
     "runtime_core:ani_helpers",
@@ -375,6 +376,7 @@ ohos_unittest("uitest_ipc_unittest") {
   external_deps = [
     "ability_base:base",
     "ability_base:want",
+    "ipc:ipc_single",
     "hilog:libhilog",
     "googletest:gtest_main",
   ]
