@@ -23,7 +23,9 @@
 #include "mock_permission.h"
 #include "start_test_server.h"
 #include "test_server_error_code.h"
+#ifdef ARKXTEST_PASTEBOARD_ENABLE
 #include "pasteboard_client.h"
+#endif
 #include <common_event_manager.h>
 #include <common_event_subscribe_info.h>
 
@@ -159,6 +161,7 @@ HWTEST_F(ServiceTest, testDestorySessionWithoutCaller, TestSize.Level1)
 
 HWTEST_F(ServiceTest, testSetPasteData, TestSize.Level1)
 {
+#ifdef ARKXTEST_PASTEBOARD_ENABLE
     auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
     pasteBoardMgr->Clear();
     EXPECT_FALSE(pasteBoardMgr->HasPasteData());
@@ -173,6 +176,10 @@ HWTEST_F(ServiceTest, testSetPasteData, TestSize.Level1)
     auto primaryText = pasteData.GetPrimaryText();
     ASSERT_TRUE(primaryText != nullptr);
     ASSERT_TRUE(*primaryText == text);
+#else
+    int32_t resCode1 = testServerServiceMock_->SetPasteData("text");
+    EXPECT_EQ(resCode1, 0);
+#endif
 }
 
 HWTEST_F(ServiceTest, testPublishEvent, TestSize.Level1)
