@@ -35,13 +35,20 @@ ohos_unittest("testserver_unittest") {
     "hiview:libucollection_utility",
     "init:libbegetutil",
     "ipc:ipc_core",
-    "pasteboard:pasteboard_client",
-    "pasteboard:pasteboard_data",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "googletest:gmock_main",
     "googletest:gtest_main",
   ]
+
+  if (defined(global_parts_info) && defined(global_parts_info.distributeddatamgr_pasteboard)) {
+    external_deps += [
+      "pasteboard:pasteboard_client",
+      "pasteboard:pasteboard_data",
+    ]
+    defines = [ "ARKXTEST_PASTEBOARD_ENABLE"]
+  }
+
   include_dirs = [
     "${source_root}/src/service",
     "${source_root}/src/client",

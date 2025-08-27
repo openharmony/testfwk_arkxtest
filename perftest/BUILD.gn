@@ -115,7 +115,7 @@ ohos_executable("perftest_server") {
   subsystem_name = "testfwk"
   part_name = "arkxtest"
   output_name = "perftest"
-  if (arkxtest_product_feature == "watch") {
+  if (arkxtest_product_feature == "watch" || arkxtest_product_feature == "glasses") {
     install_enable = false
   }
 }
@@ -172,7 +172,7 @@ ohos_shared_library("perftest_client") {
     "__OHOS__=1",
     "LOG_TAG=\"PerfTest_Client\"",
   ]
-  if (arkxtest_product_feature == "watch") {
+  if (arkxtest_product_feature == "watch" || arkxtest_product_feature == "glasses") {
     install_enable = false
   }
 }
