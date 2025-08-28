@@ -91,7 +91,7 @@ async function startAbility(
 ): Promise<void> {
   try {
     const result = await abilityDelegator.executeShellCommand(
-      'aa start -b ${bundleName} -a ${abilityName}'
+      `aa start -b ${bundleName} -a ${abilityName}`
     );
     if (
       result.stdResult.includes('error: unlock screen failed in developer mode')
