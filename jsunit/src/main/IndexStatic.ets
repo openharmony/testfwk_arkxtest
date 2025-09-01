@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export { Hypium } from './hypium_static';
+export { Hypium } from './hypium';
 export { Assert } from './interface';
 export {
   hypiumDescribe as describe,
