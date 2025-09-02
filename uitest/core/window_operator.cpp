@@ -167,7 +167,7 @@ namespace OHOS::uitest {
         driver_.PerformTouch(GenericSwipe(TouchOp::DRAG, from, to), options_, out.exception_);
     }
 
-#ifdef ARKXTEST_WATCH_FEATURE_ENABLE
+#ifdef ARKXTEST_TABLET_FEATURE_ENABLE
     void WindowOperator::BarAction(string_view buttonId, ApiReplyInfo &out)
     {
         if (!window_.decoratorEnabled_) {
@@ -208,7 +208,7 @@ namespace OHOS::uitest {
         if (!CheckOperational(MAXIMIZE, window_.mode_, out)) {
             return;
         }
-#ifdef ARKXTEST_WATCH_FEATURE_ENABLE
+#ifdef ARKXTEST_TABLET_FEATURE_ENABLE
         const auto maximizeBtnId = "EnhanceMaximizeBtn";
         BarAction(maximizeBtnId, out);
         return;
@@ -221,7 +221,7 @@ namespace OHOS::uitest {
         if (!CheckOperational(RESUME, window_.mode_, out)) {
             return;
         }
-#ifdef ARKXTEST_WATCH_FEATURE_ENABLE
+#ifdef ARKXTEST_TABLET_FEATURE_ENABLE
         const auto resumeBtnId = "EnhanceMaximizeBtn";
         BarAction(resumeBtnId, out);
         return;
