@@ -87,7 +87,7 @@ namespace OHOS::uitest {
     "  text <text>                                           input text at the location where is already focused\n"
     "--version                                                                        print current tool version\n";
 
-    const std::string VERSION = "6.0.2.1";
+    const std::string VERSION = "6.0.2.2";
     struct option g_longoptions[] = {
         {nullptr, required_argument, nullptr, 'p'},
         {nullptr, required_argument, nullptr, 'd'},
