@@ -167,6 +167,34 @@ namespace OHOS::uitest {
         driver_.PerformTouch(GenericSwipe(TouchOp::DRAG, from, to), options_, out.exception_);
     }
 
+#ifdef ARKXTEST_WATCH_FEATURE_ENABLE
+    void WindowOperator::BarAction(string_view buttonId, ApiReplyInfo &out)
+    {
+        if (!window_.decoratorEnabled_) {
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        Focus(out);
+        auto selector = WidgetSelector();
+        auto attrMatcher = WidgetMatchModel(UiAttr::KEY, std::string(buttonId), EQ);
+        auto windowMatcher = WidgetMatchModel(UiAttr::HOST_WINDOW_ID, to_string(window_.id_), EQ);
+        selector.AddMatcher(attrMatcher);
+        selector.AddMatcher(windowMatcher);
+        selector.AddAppLocator(window_.bundleName_);
+        selector.SetWantMulti(false);
+        vector<unique_ptr<Widget>> widgets;
+        driver_.FindWidgets(selector, widgets, out.exception_);
+        if (widgets.empty() || out.exception_.code_ != NO_ERROR) {
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        auto rect = widgets[0]->GetBounds();
+        Point widgetCenter(rect.GetCenterX(), rect.GetCenterY(), widgets[0]->GetDisplayId());
+        auto touch = GenericClick(TouchOp::CLICK, widgetCenter);
+        driver_.PerformTouch(touch, options_, out.exception_);
+    }
+#endif
+
     void WindowOperator::Split(ApiReplyInfo &out)
     {
         if (!CheckOperational(SPLIT, window_.mode_, out)) {
@@ -177,19 +205,27 @@ namespace OHOS::uitest {
 
     void  WindowOperator::Maximize(ApiReplyInfo &out)
     {
-        string targetBtnId;
         if (!CheckOperational(MAXIMIZE, window_.mode_, out)) {
             return;
         }
+#ifdef ARKXTEST_WATCH_FEATURE_ENABLE
+        const auto maximizeBtnId = "EnhanceMaximizeBtn";
+        BarAction(maximizeBtnId, out);
+        return;
+#endif
         driver_.ChangeWindowMode(window_.id_, WindowMode::FULLSCREEN);
     }
 
     void WindowOperator::Resume(ApiReplyInfo &out)
     {
-        string targetBtnId;
         if (!CheckOperational(RESUME, window_.mode_, out)) {
             return;
         }
+#ifdef ARKXTEST_WATCH_FEATURE_ENABLE
+        const auto resumeBtnId = "EnhanceMaximizeBtn";
+        BarAction(resumeBtnId, out);
+        return;
+#endif
         if (window_.mode_ == WindowMode::FULLSCREEN) {
             driver_.ChangeWindowMode(window_.id_, WindowMode::FLOATING);
         } else {

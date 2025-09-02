@@ -51,6 +51,9 @@ ohos_static_library("uitest_core") {
     "LOG_TAG=\"UiTestKit_Base\"",
   ]
 
+  if (arkxtest_product_feature == "tablet") {
+    defines += [ "ARKXTEST_TABLET_FEATURE_ENABLE" ]
+  }
   subsystem_name = "testfwk"
   part_name = "arkxtest"
 }
