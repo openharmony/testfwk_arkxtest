@@ -310,6 +310,15 @@ namespace OHOS::uitest {
         auto topY = nodeBounds.GetLeftTopYScreenPostion();
         auto rightX = nodeBounds.GetRightBottomXScreenPostion();
         auto bottomY = nodeBounds.GetRightBottomYScreenPostion();
+        float scaleX = node.GetScaleX();
+        float scaleY = node.GetScaleY();
+        LOG_D("Get window %{public}d, leftX: %{public}d, topY: %{public}d, rightX: %{public}d, bottomY: %{public}d,"
+              "scaleX: %{public}f, scaleY: %{public}f",
+              node.GetWindowId(), leftX, topY, rightX, bottomY, scaleX, scaleY);
+        scaleX = (fabs(scaleX) < 1e-6) ? 1.0 : scaleX;
+        scaleY = (fabs(scaleY) < 1e-6) ? 1.0 : scaleY;
+        rightX = leftX + (rightX - leftX) * scaleX;
+        bottomY = topY + (bottomY - topY) * scaleY;
         if (node.GetDisplayId() == VIRTUAL_DISPLAY_ID) {
             auto foldArea = GetFoldArea();
             topY += foldArea.bottom_;
@@ -326,6 +335,7 @@ namespace OHOS::uitest {
     {
         info.focused_ = node.IsFocused();
         info.actived_ = node.IsActive();
+        info.decoratorEnabled_ = node.IsDecorEnable();
         // get bundle name by root node
         AccessibilityElementInfo element;
         LOG_D("Start Get Bundle Name by WindowId %{public}d", node.GetWindowId());
