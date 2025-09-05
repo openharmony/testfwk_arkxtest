@@ -668,10 +668,11 @@ static ani_boolean BindOn(ani_env *env)
         HiLog::Error(LABEL, "%{public}s Not found className !!!", __func__);
         return false;
     }
+    static constexpr const char *SIGNATURE = "C{std.core.String}E{@ohos.UiTest.MatchPattern}:C{@ohos.UiTest.On}";
     std::array methods = {
-        ani_native_function{"id", nullptr, reinterpret_cast<void *>(id)},
+        ani_native_function{"id", SIGNATURE, reinterpret_cast<void *>(id)},
         ani_native_function{"text", nullptr, reinterpret_cast<void *>(text)},
-        ani_native_function{"type", nullptr, reinterpret_cast<void *>(type)},
+        ani_native_function{"type", SIGNATURE, reinterpret_cast<void *>(type)},
         ani_native_function{"hint", nullptr, reinterpret_cast<void *>(hint)},
         ani_native_function{"description", nullptr, reinterpret_cast<void *>(description)},
         ani_native_function{"inWindow", nullptr, reinterpret_cast<void *>(inWindow)},
@@ -1604,7 +1605,8 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function{"penSwipeSync", nullptr, reinterpret_cast<void *>(penSwipeSync)},
         ani_native_function{"penClickSync", nullptr, reinterpret_cast<void *>(penClickSync)},
         ani_native_function{"penDoubleClickSync", nullptr, reinterpret_cast<void *>(penDoubleClickSync)},
-        ani_native_function{"penLongClickSync", "L@ohos/UiTest/Point;Lstd/core/Double;:Z", reinterpret_cast<void *>(penLongClickSync)},
+        ani_native_function{"penLongClickSync",
+            "C{@ohos.UiTest.Point}C{std.core.Double}:z", reinterpret_cast<void *>(penLongClickSync)},
         ani_native_function{"mouseScrollSync", nullptr, reinterpret_cast<void *>(mouseScrollSync)},
         ani_native_function{"mouseMoveWithTrackSync", nullptr, reinterpret_cast<void *>(mouseMoveWithTrackSync)},
         ani_native_function{"mouseMoveToSync", nullptr, reinterpret_cast<void *>(mouseMoveToSync)},
@@ -1621,7 +1623,7 @@ static ani_boolean BindDriver(ani_env *env)
         HiLog::Error(LABEL, "%{public}s Cannot bind native methods to !!!", __func__);
         return false;
     }
-    ani_native_function createMethod {"create", ":L@ohos/UiTest/Driver;", reinterpret_cast<void *>(create)};
+    ani_native_function createMethod {"create", ":C{@ohos.UiTest.Driver}", reinterpret_cast<void *>(create)};
     if (ANI_OK != env->Class_BindStaticNativeMethods(cls, &createMethod, 1)) {
         HiLog::Error(LABEL, "%{public}s Cannot bind static native methods to !!!", __func__);
         return false;
