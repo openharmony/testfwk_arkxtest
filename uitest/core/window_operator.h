@@ -51,6 +51,10 @@ namespace OHOS::uitest {
         UiDriver &driver_;
         const Window &window_;
         UiOpArgs &options_;
+#ifdef ARKXTEST_TABLET_FEATURE_ENABLE
+        /**Click on the decoration bar of this window.*/
+        void BarAction(string_view buttonId, ApiReplyInfo &out);
+#endif
     };
 } // namespace OHOS::uitest
 
