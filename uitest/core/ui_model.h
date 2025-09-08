@@ -333,6 +333,7 @@ namespace OHOS::uitest {
         std::string title_ = "";
         bool focused_ = false;
         bool actived_ = false;
+        bool decoratorEnabled_ = false;
         Rect bounds_ = {0, 0, 0, 0};
         Rect visibleBounds_ = {0, 0, 0, 0};
         std::vector<Rect> invisibleBoundsVec_;
