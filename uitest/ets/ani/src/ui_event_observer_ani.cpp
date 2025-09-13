@@ -160,7 +160,7 @@ namespace OHOS::uitest {
             vm->DetachCurrentThread();
             return;
         }
-        static const char *className = "L@ohos/UiTest/UIElementInfoInner;";
+        static const char *className = "@ohos.UiTest.UIElementInfoInner";
         ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
             HiLog::Error(LABEL,"Not found class UIElementInfoInner");
@@ -169,7 +169,7 @@ namespace OHOS::uitest {
             return;
         }
         ani_method method;
-        if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", ":V", &method)) {
+        if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", ":", &method)) {
             HiLog::Error(LABEL,"Not found method of UIElementInfoInner");
             vm->DetachCurrentThread();
             return;
