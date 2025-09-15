@@ -218,8 +218,7 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
             if (ANI_OK != env->Object_New(cls, com_ctor, &com_obj, reinterpret_cast<ani_object>(item))) {
                 HiLog::Error(LABEL, "%{public}s component Object new failed !!!", __func__);
             }
-            if (ANI_OK != env->Object_CallMethodByName_Void(arrayObj, "$_set", "iC{std.core.Object}:",
-                index, com_obj)) {
+            if (ANI_OK != env->Object_CallMethodByName_Void(arrayObj, "$_set", "ILstd/core/Object;:V", index, com_obj)) {
                 HiLog::Error(LABEL, "%{public}s Object_CallMethodByName_Void set Failed", __func__);
                 break;
             }
@@ -607,7 +606,7 @@ static void pushBool(ani_env *env, ani_object input, nlohmann::json &params)
     if (ret == ANI_FALSE) {
         ani_boolean param;
         HiLog::Info(LABEL, "%{public}s ani_boolean !!!", __func__);
-        env->Object_CallMethodByName_Boolean(input, "unboxed", ":z", &param);
+        env->Object_CallMethodByName_Boolean(input, "unboxed", ":Z", &param);
         HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(param));
         params.push_back(static_cast<bool>(param));
     }
@@ -670,6 +669,7 @@ static ani_boolean BindOn(ani_env *env)
         return false;
     }
     static constexpr const char *SIGNATURE = "C{std.core.String}E{@ohos.UiTest.MatchPattern}:C{@ohos.UiTest.On}";
+
     std::array methods = {
         ani_native_function{"id", SIGNATURE, reinterpret_cast<void *>(id)},
         ani_native_function{"text", nullptr, reinterpret_cast<void *>(text)},
@@ -1606,9 +1606,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function{"penSwipeSync", nullptr, reinterpret_cast<void *>(penSwipeSync)},
         ani_native_function{"penClickSync", nullptr, reinterpret_cast<void *>(penClickSync)},
         ani_native_function{"penDoubleClickSync", nullptr, reinterpret_cast<void *>(penDoubleClickSync)},
-        ani_native_function{"penLongClickSync",
-            "C{@ohos.UiTest.Point}C{std.core.Double}:z", reinterpret_cast<void *>(penLongClickSync)},
-        ani_native_function{"mouseScrollSync", nullptr, reinterpret_cast<void *>(mouseScrollSync)},
+        ani_native_function{"penLongClickSync", "C{@ohos.UiTest.Point}C{std.core.Double}:z", reinterpret_cast<void *>(penLongClickSync)},        ani_native_function{"mouseScrollSync", nullptr, reinterpret_cast<void *>(mouseScrollSync)},
         ani_native_function{"mouseMoveWithTrackSync", nullptr, reinterpret_cast<void *>(mouseMoveWithTrackSync)},
         ani_native_function{"mouseMoveToSync", nullptr, reinterpret_cast<void *>(mouseMoveToSync)},
         ani_native_function{"mouseDragSync", nullptr, reinterpret_cast<void *>(mouseDragSync)},
@@ -2136,16 +2134,28 @@ static ani_boolean BindComponent(ani_env *env)
     }
     return true;
 }
-static void once(ani_env *env, ani_object obj, ani_string type, ani_object callback)
+static void once(ani_env *env, ani_object obj, nlohmann::json paramList, ani_object callback)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeUIEventObserver"));
     callInfo_.apiId_ = "UIEventObserver.once";
-    callInfo_.paramList_.push_back(aniStringToStdString(env, type));
+    callInfo_.paramList_ = paramList;
     UiEventObserverAni::Get().PreprocessCallOnce(env, callInfo_, obj, callback, reply_);
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
+}
+static void onceToastShow(ani_env *env, ani_object obj, ani_object callback)
+{    
+    nlohmann::json paramList_ = nlohmann::json::array();
+    paramList_.push_back("toastShow");
+    once(env, obj, paramList_, callback);
+}
+static void onceDialogShow(ani_env *env, ani_object obj, ani_object callback)
+{
+    nlohmann::json paramList_ = nlohmann::json::array();
+    paramList_.push_back("dialogShow");
+    once(env, obj, paramList_, callback);
 }
 static ani_boolean BindUiEventObserver(ani_env *env)
 {
@@ -2155,7 +2165,8 @@ static ani_boolean BindUiEventObserver(ani_env *env)
         return false;
     }
     std::array methods = {
-        ani_native_function{"once", nullptr, reinterpret_cast<void *>(once)},
+        ani_native_function{"onceToastShow", nullptr, reinterpret_cast<void *>(onceToastShow)},
+        ani_native_function{"onceDialogShow", nullptr, reinterpret_cast<void *>(onceDialogShow)},
     };
 
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {

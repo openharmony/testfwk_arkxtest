@@ -276,24 +276,6 @@ export class Component {
       });
       return promise;
     }
-    
-    scrollSearch(on: On):Promise<Component|null> {
-        let promise = new Promise<Component|null>((resolve, reject) => {
-        let promise1 = taskpool.execute(():Component|null => this.scrollSearchSync(on, true, 80));
-            promise1.then((e:NullishType)=>{
-              if (e) {
-                  let value : Component = e as Component;
-                  resolve(value);
-              } else {
-                  resolve(null)
-              }
-            }, (err: Object): void => {
-                let br = err as BusinessError<void>;
-                reject(br);
-            });
-        });
-        return promise;
-      }
   
     pinchIn(scale: double):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
@@ -1380,19 +1362,6 @@ export class Component {
         });
         return promise;
     }
-    
-    mouseScroll(p: Point, down: boolean, d:int, key1?: int, key2?: int): Promise<void> {
-        let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
-        let promise1 = taskpool.execute(():boolean => this.mouseScrollSync(p, down, d, key1, key2, 20));
-            promise1.then((e:NullishType)=>{
-                resolve(Promise.resolve());
-            }, (err: Error): void => {
-                let br = err as BusinessError<void>;
-                reject(br);
-            });
-        });
-        return promise;
-    }
 
     mouseScroll(p: Point, down: boolean, d:int, key1?: int, key2?: int, speed?: int): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
@@ -1592,8 +1561,8 @@ export class UIEventObserver {
             this.nativeUIEventObserver = UIEventObserver;
         }
     }
-    native once(type: String, callback: Callback<UIElementInfo>): void;
-
+    native onceToastShow(callback: Callback<UIElementInfo>): void;
+    native onceDialogShow(callback: Callback<UIElementInfo>): void;
 }
 
 export const ON: On = new On();
