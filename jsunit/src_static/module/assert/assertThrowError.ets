@@ -13,9 +13,6 @@
  * limitations under the License.
  */
 import { AssertResult } from '../modal/assertModel';
-import hilog from '@ohos.hilog';
-let domain: int = 0x0000; //日志标识,0x0000作为测试框架的业务标识
-let tag: string = 'testTag'; //日志标识字符串,作为tag标识当前runner类下的测试行为
 
 export function assertThrowError(actualValue: () => void, expected: string[]): AssertResult {
   let result = false;
@@ -34,8 +31,6 @@ export function assertThrowError(actualValue: () => void, expected: string[]): A
     const errorType = Class.of(err).getName();
     const errorTypeArr = errorType.split('.');
     const errType = errorTypeArr[errorTypeArr.length - 1];
-    hilog.info(domain, tag, '%{public}s', 'assertThrowError errorType');
-    hilog.info(domain, tag, '%{public}s', errorType);
     if (length === 1) {
       if (expected[0] !== '' && errType === expected[0]) {
         result = true;
