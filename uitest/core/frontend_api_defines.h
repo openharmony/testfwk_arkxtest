@@ -452,6 +452,9 @@ namespace OHOS::uitest {
         {"Driver.penSwipe", "(Point,Point,int?,float?):void", false, false},
         {"Driver.injectPenPointerAction", "(PointerMatrix,int?,float?):void", false, false},
         {"Driver.crownRotate", "(signedInt,int?):void", false, false, true},
+        {"Driver.isComponentPresentWhenLongClick", "(On,Point,int?):bool", false, false, true},
+        {"Driver.isComponentPresentWhenDrag", "(On,Point,Point,int?,int?):bool", false, false, true},
+        {"Driver.isComponentPresentWhenSwipe", "(On,Point,Point,int?):bool", false, false, true},
     };
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",
