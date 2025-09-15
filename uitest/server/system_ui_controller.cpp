@@ -295,11 +295,9 @@ namespace OHOS::uitest {
         if (capturedEvent != "undefine") {
             LOG_D("testfwk Capture event: %{public}s", capturedEvent.c_str());
             auto bundleName = eventInfo.GetBundleName();
-            LOG_D("testfwk OnAccessibilityEvent bundleName: %{public}s", bundleName.c_str());
             auto contentList = eventInfo.GetContentList();
             auto text = !contentList.empty() ? contentList[0] : "";
             auto type = eventInfo.GetComponentType();
-
             int32_t windowChangeType = GetWindowChangeType(eventInfo.GetWindowChangeTypes());
             int32_t componentEventType = GetComPonentEventType(eventInfo.GetEventType());
             int32_t windowId = eventInfo.GetWindowId();
@@ -307,9 +305,9 @@ namespace OHOS::uitest {
             AccessibilityWindowInfo windowInfo;
             if (AccessibilityUITestAbility::GetInstance()->GetWindow(windowId, windowInfo) == RET_OK) {
                 bundleName = bundleName.empty() ? windowInfo.GetBundleName() : bundleName;
-                LOG_D("testfwk OnAccessibilityEvent  windowInfo->bundleName: %{public}s", bundleName.c_str());
                 componentRect.displayId_ = windowInfo.GetDisplayId();
             }
+            LOG_D("testfwk OnAccessibilityEvent bundleName: %{public}s", bundleName.c_str());
             const auto& elemInfo = eventInfo.GetElementInfo();
             auto componentId = elemInfo.GetInspectorKey();
             auto bounds = elemInfo.GetRectInScreen();
@@ -326,7 +324,6 @@ namespace OHOS::uitest {
                 ElementNodeIteratorImpl iterator;
                 iterator.WrapperNodeAttrToVec(*widget, elemInfo);
             }
-
             NotifyListeners(capturedEvent, uiEventSourceInfo, widget.get());
         }
         if (std::find(EVENT_MASK.begin(), EVENT_MASK.end(), eventInfo.GetEventType()) != EVENT_MASK.end()) {
@@ -387,8 +384,8 @@ namespace OHOS::uitest {
     {
         LOG_D("testfwk NotifyListeners capturedEvent: %{public}s", capturedEvent.c_str());
         for (auto &listener : listeners_) {
-          listener->OnEvent(capturedEvent, uiEventSourceInfo, widget);
-      }
+            listener->OnEvent(capturedEvent, uiEventSourceInfo, widget);
+        }
     }
 
     SysUiController::SysUiController() : UiController() {}
