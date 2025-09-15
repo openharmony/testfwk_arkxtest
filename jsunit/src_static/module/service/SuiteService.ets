@@ -167,7 +167,7 @@ class SuiteService {
     const funcStr = Type.of(func as object).getLiteral();
     const isAsyncFunc = checkIsAsyncFunction(funcStr);
     const argsCount = getFunctionArgumentsCount(funcStr);
-    let fn = func
+    let fn = (): Promise<void> => { }
     if (argsCount === 1) {
       if (isAsyncFunc) {
         fn = processAsyncFuncWithArgOne(core, func as ((done: () => void) => Promise<void>));
