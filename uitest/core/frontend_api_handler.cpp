@@ -109,7 +109,8 @@ namespace OHOS::uitest {
             return true;
         }
 
-        bool ShouldTriggerComponentEvent(const UiEventSourceInfo& source, const EventOptionsInfo& options, Widget* widget)
+        bool ShouldTriggerComponentEvent(const UiEventSourceInfo& source, const EventOptionsInfo& options,
+            Widget* widget)
         {
             if (options.componentType != 0 && options.componentType != source.componentEventType) {
                 return false;
@@ -120,7 +121,7 @@ namespace OHOS::uitest {
                 }
             }
             return true;
-        }    
+        }
 
         bool ShouldTriggerEvent(const std::string &event, const UiEventSourceInfo &source,
             const EventOptionsInfo &eventOptions, Widget* widget = nullptr)
@@ -135,7 +136,6 @@ namespace OHOS::uitest {
 
         void OnEvent(const std::string &event, const UiEventSourceInfo &source, Widget* widget = nullptr) override
         {
-  
             const auto currentTime = GetCurrentMillisecond();
             auto range = callBackInfos_.equal_range(event);
             for (auto it = range.first; it != range.second;) {
@@ -151,7 +151,7 @@ namespace OHOS::uitest {
                 if (shouldTrigger) {
                     shouldTrigger = ShouldTriggerEvent(event, source, eventOptions, widget);
                 }
-                LOG_I("testfwk OnEvent shouldRemove: %{public}d, shouldTrigger: %{public}d.", 
+                LOG_I("testfwk OnEvent shouldRemove: %{public}d, shouldTrigger: %{public}d.",
                     shouldRemove, shouldTrigger);
                 if (shouldRemove) {
                     it = callBackInfos_.erase(it);
@@ -169,19 +169,20 @@ namespace OHOS::uitest {
         void AddCallbackInfo(const string &&event, const string &observerRef, const string &&cbRef,
             EventOptionsInfo&& eventOptions)
         {
-            LOG_D("testfwk AddCallbackInfo begin. event: %{public}s, observerRef: %{public}s, cbRef: %{public}s.", 
+            LOG_D("testfwk AddCallbackInfo begin. event: %{public}s, observerRef: %{public}s, cbRef: %{public}s.",
                 event.c_str(), observerRef.c_str(), cbRef.c_str());
             auto count = callBackInfos_.count(event);
             auto find = callBackInfos_.find(event);
             for (size_t index = 0; index < count; index++) {
                 if (find != callBackInfos_.end()) {
-                    if (std::get<INDEX_ZERO>(find->second) == observerRef && std::get<INDEX_ONE>(find->second) == cbRef) {
+                    if (std::get<INDEX_ZERO>(find->second) == observerRef &&
+                        std::get<INDEX_ONE>(find->second) == cbRef) {
                         return;
                     }
                     find++;
                 }
-            } 
-            callBackInfos_.insert(make_pair(event, make_tuple(observerRef, cbRef, std::move(eventOptionsInfo))));
+            }
+            callBackInfos_.insert(make_pair(event, make_tuple(observerRef, cbRef, std::move(eventOptions))));
             IncRef(observerRef);
             IncRef(cbRef);
         }
@@ -1141,7 +1142,8 @@ namespace OHOS::uitest {
             }
       
             fowarder->AddCallbackInfo(move(event), in.callerObjRef_, move(cbRef), move(eventOptionsInfo));
-            LOG_D("testfwk RegisterUiEventObserverMethods observerDelegateRegistered: %{public}d.", observerDelegateRegistered);
+            LOG_D("testfwk RegisterUiEventObserverMethods observerDelegateRegistered: %{public}d.",
+                observerDelegateRegistered);
             if (!observerDelegateRegistered) {
                 driver.RegisterUiEventListener(fowarder);
                 observerDelegateRegistered = true;
