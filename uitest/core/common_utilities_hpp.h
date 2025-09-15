@@ -50,6 +50,7 @@ namespace OHOS::uitest {
     constexpr int32_t EIGHT = 8;
     constexpr int32_t UNASSIGNED = -1;
     constexpr int32_t VIRTUAL_DISPLAY_ID = 999;
+    constexpr int32_t TIMEOUT = 10000;
 
     /**Get current time millisecond.*/
     inline uint64_t GetCurrentMillisecond()

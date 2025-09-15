@@ -27,17 +27,57 @@
 #include "select_strategy.h"
 
 namespace OHOS::uitest {
+
+    // Forward declaration
+    class Widget;
+
+    enum WindowChangeType {
+        WINDOW_UNDEFINED = 0,
+        WINDOW_ADDED,
+        WINDOW_REMOVED,
+        WINDOW_BOUNDS_CHANGED,
+    };
+
+    enum ComponentEventType {
+        COMPONENT_UNDEFINED = 0,
+        COMPONENT_CLICKED,
+        COMPONENT_LONG_CLICKED,
+        COMPONENT_SCROLL_START,
+        COMPONENT_SCROLL_END,
+        COMPONENT_TEXT_CHANGED,
+        COMPONENT_HOVER_ENTER,
+        COMPONENT_HOVER_EXIT,
+    };
+  
     struct UiEventSourceInfo {
         std::string bundleName;
         std::string text;
         std::string type;
+        int32_t windowChangeType = 0;
+        int32_t componentEventType = 0; // EventType
+        int32_t windowId = 0;
+        std::string componentId = "";
+        Rect componentRect;
+    };
+
+    struct EventOptionsInfo {
+        int32_t windowType = 0;
+        std::string bundleName;
+        bool isExistbundleName = false;
+        uint64_t registerTime = 0;
+        uint64_t timeOut = 0;
+        int32_t componentType = 0;
+        bool isExistOn = false;
+        std::vector<WidgetMatchModel> selfMatchers = {};
+        EventOptionsInfo() = default;
     };
 
     class UiEventListener {
     public:
         UiEventListener() = default;
         virtual ~UiEventListener() = default;
-        virtual void OnEvent(const std::string &event, const UiEventSourceInfo &source) {};
+        virtual void OnEvent(const std::string &event, const UiEventSourceInfo &source,
+            Widget* widget = nullptr) {};
     };
 
     class UiController {

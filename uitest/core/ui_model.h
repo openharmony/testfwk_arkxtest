@@ -289,6 +289,8 @@ namespace OHOS::uitest {
 
         bool MatchAttr(const WidgetMatchModel& matchModel) const;
 
+        bool MatchSelector(const std::vector<WidgetMatchModel>& matchers) const;
+
         void SetHierarchy(const std::string& hierarch);
 
         void WrapperWidgetToJson(nlohmann::json& out);

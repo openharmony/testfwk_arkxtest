@@ -66,61 +66,135 @@ namespace OHOS::uitest {
             return 0;
         }
 
-        void OnEvent(const std::string &event, const UiEventSourceInfo &source) override
+        void TriggerCallback(const string& observerRef, const string& callbackRef, const UiEventSourceInfo& source)
         {
             const auto &server = FrontendApiServer::Get();
             json uiElementInfo;
             uiElementInfo["bundleName"] = source.bundleName;
             uiElementInfo["type"] = source.type;
             uiElementInfo["text"] = source.text;
-            auto count = callBackInfos_.count(event);
-            size_t index = 0;
-            while (index < count) {
-                auto find = callBackInfos_.find(event);
-                if (find == callBackInfos_.end()) {
-                    return;
+            uiElementInfo["windowChangeType"] = source.windowChangeType;
+            uiElementInfo["componentEventType"] = source.componentEventType;
+            uiElementInfo["windowId"] = source.windowId;
+            uiElementInfo["componentId"] = source.componentId;
+            uiElementInfo["componentRect"] = {
+                {"left", source.componentRect.left_},
+                {"right", source.componentRect.right_},
+                {"top", source.componentRect.top_},
+                {"bottom", source.componentRect.bottom_},
+                {"displayId", source.componentRect.displayId_}
+            };
+
+            ApiCallInfo in;
+            ApiReplyInfo out;
+            in.apiId_ = "UIEventObserver.once";
+            in.callerObjRef_ = observerRef;
+            in.paramList_.push_back(uiElementInfo);
+            in.paramList_.push_back(callbackRef);
+            in.paramList_.push_back(DecAndGetRef(observerRef) == 0);
+            in.paramList_.push_back(DecAndGetRef(callbackRef) == 0);
+            server.Callback(in, out);
+        }
+
+        bool ShouldTriggerWindowChange(const UiEventSourceInfo& source, const EventOptionsInfo& options)
+        {
+            if (options.windowType != 0 && options.windowType != source.windowChangeType) {
+                return false;
+            }
+
+            if (options.isExistbundleName && options.bundleName != source.bundleName) {
+                return false;
+            }
+           
+            return true;
+        }
+
+        bool ShouldTriggerComponentEvent(const UiEventSourceInfo& source, const EventOptionsInfo& options, Widget* widget)
+        {
+            if (options.componentType != 0 && options.componentType != source.componentEventType) {
+                return false;
+            }
+            if (options.isExistOn && widget) {
+                if (!widget->MatchSelector(options.selfMatchers)) {
+                    return false;
                 }
-                const auto &observerRef = find->second.first;
-                const auto &callbackRef = find->second.second;
-                ApiCallInfo in;
-                ApiReplyInfo out;
-                in.apiId_ = "UIEventObserver.once";
-                in.callerObjRef_ = observerRef;
-                in.paramList_.push_back(uiElementInfo);
-                in.paramList_.push_back(callbackRef);
-                in.paramList_.push_back(DecAndGetRef(observerRef) == 0);
-                in.paramList_.push_back(DecAndGetRef(callbackRef) == 0);
-                server.Callback(in, out);
-                callBackInfos_.erase(find);
-                index++;
+            }
+            return true;
+        }    
+
+        bool ShouldTriggerEvent(const std::string &event, const UiEventSourceInfo &source,
+            const EventOptionsInfo &eventOptions, Widget* widget = nullptr)
+        {
+            if (event == "windowChange") {
+                return ShouldTriggerWindowChange(source, eventOptions);
+            } else if (event == "componentEventOccur") {
+                return ShouldTriggerComponentEvent(source, eventOptions, widget);
+            }
+            return true;
+        }
+
+        void OnEvent(const std::string &event, const UiEventSourceInfo &source, Widget* widget = nullptr) override
+        {
+  
+            const auto currentTime = GetCurrentMillisecond();
+            auto range = callBackInfos_.equal_range(event);
+            for (auto it = range.first; it != range.second;) {
+                const auto& [observerRef, callbackRef, eventOptions] = it->second;
+                bool shouldTrigger = true;
+                bool shouldRemove = false;
+                if (eventOptions.timeOut > 0 &&
+                    currentTime > (eventOptions.registerTime + eventOptions.timeOut)) {
+                    shouldRemove = true;
+                    shouldTrigger = false;
+                }
+                
+                if (shouldTrigger) {
+                    shouldTrigger = ShouldTriggerEvent(event, source, eventOptions, widget);
+                }
+                LOG_I("testfwk OnEvent shouldRemove: %{public}d, shouldTrigger: %{public}d.", 
+                    shouldRemove, shouldTrigger);
+                if (shouldRemove) {
+                    it = callBackInfos_.erase(it);
+                    DecAndGetRef(observerRef);
+                    DecAndGetRef(callbackRef);
+                } else if (shouldTrigger) {
+                    TriggerCallback(observerRef, callbackRef, source);
+                    it = callBackInfos_.erase(it);
+                } else {
+                    ++it;
+                }
             }
         }
 
-        void AddCallbackInfo(const string &&event, const string &observerRef, const string &&cbRef)
+        void AddCallbackInfo(const string &&event, const string &observerRef, const string &&cbRef,
+            EventOptionsInfo&& eventOptions)
         {
+            LOG_D("testfwk AddCallbackInfo begin. event: %{public}s, observerRef: %{public}s, cbRef: %{public}s.", 
+                event.c_str(), observerRef.c_str(), cbRef.c_str());
             auto count = callBackInfos_.count(event);
             auto find = callBackInfos_.find(event);
             for (size_t index = 0; index < count; index++) {
                 if (find != callBackInfos_.end()) {
-                    if (find->second.first == observerRef && find->second.second == cbRef) {
+                    if (std::get<INDEX_ZERO>(find->second) == observerRef && std::get<INDEX_ONE>(find->second) == cbRef) {
                         return;
                     }
                     find++;
                 }
-            }
-            callBackInfos_.insert(make_pair(event, make_pair(observerRef, cbRef)));
+            } 
+            callBackInfos_.insert(make_pair(event, make_tuple(observerRef, cbRef, std::move(eventOptionsInfo))));
             IncRef(observerRef);
             IncRef(cbRef);
         }
 
     private:
-        multimap<string, pair<string, string>> callBackInfos_;
+        multimap<string, tuple<string, string, EventOptionsInfo>> callBackInfos_;
         map<string, int> refCountMap_;
     };
 
     struct ApiMethod {
         string_view apiId_ = "";
         vector<string> paramTypes_;
+        size_t paramCount = 0;
         size_t defaultArgCount_ = 0;
         bool convertError_ = false;
     };
@@ -172,7 +246,8 @@ namespace OHOS::uitest {
                 auto paramTypes = vector<string>();
                 size_t hasDefaultArg = 0;
                 ParseMethodSignature(methodDef.signature_, paramTypes, hasDefaultArg);
-                ApiMethod method {methodDef.name_, paramTypes, hasDefaultArg, methodDef.convertError_};
+                ApiMethod method {methodDef.name_, paramTypes, paramTypes.size() - 1,
+                    hasDefaultArg, methodDef.convertError_};
                 sApiArgTypesMap.insert(make_pair(string(methodDef.name_), method));
             }
         }
@@ -183,26 +258,30 @@ namespace OHOS::uitest {
         auto paramTypesForGetAllProperties = vector<string>();
         paramTypesForGetAllProperties.push_back("");
         string getAllProperties = "Component.getAllProperties";
-        ApiMethod methodForGetAllProperties{getAllProperties, paramTypesForGetAllProperties, 0, false};
+        ApiMethod methodForGetAllProperties{getAllProperties, paramTypesForGetAllProperties,
+            paramTypesForGetAllProperties.size(), 0, false};
         sApiArgTypesMap.insert(make_pair(getAllProperties, methodForGetAllProperties));
 
         auto paramTypesForAamsWorkMode = vector<string>();
         paramTypesForAamsWorkMode.push_back("int");
         paramTypesForAamsWorkMode.push_back("");
         string setAamsWorkMode = "Driver.SetAamsWorkMode";
-        ApiMethod methodForAamsWorkMode {setAamsWorkMode, paramTypesForAamsWorkMode, 0, false};
+        ApiMethod methodForAamsWorkMode {setAamsWorkMode, paramTypesForAamsWorkMode,
+            paramTypesForAamsWorkMode.size(), 0, false};
         sApiArgTypesMap.insert(make_pair(setAamsWorkMode, methodForAamsWorkMode));
 
         auto paramTypesForCloseAamsEvent = vector<string>();
         paramTypesForCloseAamsEvent.push_back("");
         string closeAamsEvent = "Driver.CloseAamsEvent";
-        ApiMethod methodForCloseAamsEvent{closeAamsEvent, paramTypesForCloseAamsEvent, 0, false};
+        ApiMethod methodForCloseAamsEvent{closeAamsEvent, paramTypesForCloseAamsEvent,
+            paramTypesForCloseAamsEvent.size(), 0, false};
         sApiArgTypesMap.insert(make_pair(closeAamsEvent, methodForCloseAamsEvent));
 
         auto paramTypesForOpenAamsEvent = vector<string>();
         paramTypesForOpenAamsEvent.push_back("");
         string openAamsEvent = "Driver.OpenAamsEvent";
-        ApiMethod methodForOpenAamsEvent{openAamsEvent, paramTypesForOpenAamsEvent, 0, false};
+        ApiMethod methodForOpenAamsEvent{openAamsEvent, paramTypesForOpenAamsEvent,
+            paramTypesForOpenAamsEvent.size(), 0, false};
         sApiArgTypesMap.insert(make_pair(openAamsEvent, methodForOpenAamsEvent));
     }
 
@@ -532,46 +611,39 @@ namespace OHOS::uitest {
     /** Checks ApiCallInfo data, deliver exception and abort invocation if check fails.*/
     static void APiCallInfoChecker(const ApiCallInfo &in, ApiReplyInfo &out)
     {
-        auto count = sApiArgTypesMap.count(in.apiId_);
-        // return nullptr by default
-        out.resultValue_ = nullptr;
-        auto find = sApiArgTypesMap.find(in.apiId_);
-        size_t index = 0;
-        while (index < count) {
-            if (find == sApiArgTypesMap.end()) {
-                return;
-            }
-            bool checkArgNum = false;
-            bool checkArgType = true;
-            out.exception_ = {NO_ERROR, "No Error"};
-            auto &types = find->second.paramTypes_;
-            auto argSupportDefault = find->second.defaultArgCount_;
+        auto range = sApiArgTypesMap.equal_range(in.apiId_);
+        bool foundPossibleOverload = false;
+        string typeMismatchMsg;
+        for (auto it = range.first; it != range.second; ++it) {
+            const auto& method = it->second;
             // check argument count.(last item of "types" is return value type)
-            auto maxArgc = types.size() - 1;
-            auto minArgc = maxArgc - argSupportDefault;
-            auto argc = in.paramList_.size();
-            checkArgNum = argc <= maxArgc && argc >= minArgc;
-            if (!checkArgNum) {
-                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Illegal argument count");
-                ++find;
-                ++index;
+            const size_t argc = in.paramList_.size();
+            const size_t minArgc = method.paramCount - method.defaultArgCount_;
+            const size_t maxArgc = method.paramCount;
+            if (argc < minArgc || argc > maxArgc) {
                 continue;
             }
             // check argument type
+            foundPossibleOverload = true;
+            bool allTypesMatch = true;
             for (size_t idx = 0; idx < argc; idx++) {
-                auto isDefArg = (idx >= minArgc) ? true : false;
-                CheckCallArgType(types.at(idx), in.paramList_.at(idx), isDefArg, out.exception_);
+                const bool isDefArg = (idx >= minArgc);
+                CheckCallArgType(method.paramTypes_[idx], in.paramList_[idx], isDefArg, out.exception_);
+                out.exception_.code_ = NO_ERROR;
                 if (out.exception_.code_ != NO_ERROR) {
-                    out.exception_.message_ = "Check arg" + to_string(idx) + " failed: " + out.exception_.message_;
-                    checkArgType = false;
+                    allTypesMatch = false;
+                    typeMismatchMsg = "Check arg" + to_string(idx) + " failed: " + out.exception_.message_;
                     break;
                 }
             }
-            if (checkArgType) {
+            if (allTypesMatch) {
                 return;
             }
-            ++find;
-            ++index;
+        }
+        if (foundPossibleOverload) {
+            out.exception_.message_ = typeMismatchMsg.empty() ? "Parameter type mismatch" : typeMismatchMsg;
+        } else {
+            out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Illegal argument count");
         }
         ConvertError(out);
     }
@@ -964,16 +1036,112 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.inputText", inputText);
     }
 
+    static void ParseCommonOptions(const json& options, EventOptionsInfo& eventOptionsInfo,
+        ApiReplyInfo& out)
+    {
+        eventOptionsInfo.timeOut = TIMEOUT;
+        if (options.contains("timeout") && options["timeout"].is_number()) {
+            auto timeOut = options["timeout"].get<int64_t>();
+            if (timeOut < 0) {
+                LOG_E("Timeout cannot be negative!");
+                out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invalid timeout.");
+                return;
+            }
+            eventOptionsInfo.timeOut = static_cast<uint64_t>(timeOut);
+        }
+    }
+
+    static void ProcessWindowChange(const ApiCallInfo& in, ApiReplyInfo& out, size_t paramInSize,
+        EventOptionsInfo& eventOptionsInfo)
+    {
+        auto windowChangeType = ReadCallArg<int32_t>(in, INDEX_ONE);
+        if (windowChangeType <= WindowChangeType::WINDOW_UNDEFINED ||
+            windowChangeType > WindowChangeType::WINDOW_BOUNDS_CHANGED) {
+            LOG_E("Please input right enum value!");
+            out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invalid windowChangeType.");
+            return;
+        }
+        eventOptionsInfo.windowType = windowChangeType;
+
+        if (paramInSize != FOUR) {
+            return;
+        }
+
+        auto options = ReadCallArg<json>(in, INDEX_TWO);
+        if (options.contains("bundleName")) {
+            eventOptionsInfo.isExistbundleName = true;
+            eventOptionsInfo.bundleName = options["bundleName"].get<string>();
+        }
+        ParseCommonOptions(options, eventOptionsInfo, out);
+    }
+
+    static void ProcessComponentEvent(const ApiCallInfo& in, ApiReplyInfo& out, size_t paramInSize,
+        EventOptionsInfo& eventOptionsInfo)
+    {
+        auto componentEventType = ReadCallArg<int32_t>(in, INDEX_ONE);
+        if (componentEventType <= ComponentEventType::COMPONENT_UNDEFINED ||
+            componentEventType > ComponentEventType::COMPONENT_HOVER_EXIT) {
+            LOG_E("Please input right enum value!");
+            out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invalid componentEventType.");
+            return;
+        }
+        eventOptionsInfo.componentType = componentEventType;
+
+        if (paramInSize != FOUR) {
+            return;
+        }
+
+        auto options = ReadCallArg<json>(in, INDEX_TWO);
+        ParseCommonOptions(options, eventOptionsInfo, out);
+
+        if (options.contains("on")) {
+            eventOptionsInfo.isExistOn = true;
+            auto& selector = GetBackendObject<WidgetSelector>(options["on"].get<string>());
+            const auto& selfMatchers = selector.GetSelfMatchers();
+            for (const auto& matcher : selfMatchers) {
+                eventOptionsInfo.selfMatchers.push_back(matcher);
+            }
+        }
+    }
+
     static void RegisterUiEventObserverMethods()
     {
         static bool observerDelegateRegistered = false;
         static auto fowarder = std::make_shared<UiEventFowarder>();
         auto &server = FrontendApiServer::Get();
+
+        using EventHandler = std::function<void(const ApiCallInfo&, ApiReplyInfo&,
+            size_t, EventOptionsInfo&)>;
+        static const std::unordered_map<string, EventHandler> eventHandlers = {
+            {"windowChange", [](auto&&... args) { ProcessWindowChange(std::forward<decltype(args)>(args)...); }},
+            {"componentEventOccur", [](auto&&... args) {
+                ProcessComponentEvent(std::forward<decltype(args)>(args)...);}
+            }
+        };
+
         auto once = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto paramInSize = in.paramList_.size();
             auto &driver = GetBoundUiDriver(in.callerObjRef_);
             auto event = ReadCallArg<string>(in, INDEX_ZERO);
-            auto cbRef = ReadCallArg<string>(in, INDEX_ONE);
-            fowarder->AddCallbackInfo(move(event), in.callerObjRef_, move(cbRef));
+            LOG_I("testfwk RegisterUiEventObserverMethods event: %{public}s", event.c_str());
+            bool enabled = driver.GetEventObserverEnable();
+            if ((event == "windowChange" || event == "componentEventOccur") && !enabled) {
+                LOG_E("GetEventObserverEnable: false!");
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "Event observer is not enabled.");
+                return;
+            }
+            auto cbRef = ReadCallArg<string>(in, paramInSize - 1);
+
+            EventOptionsInfo eventOptionsInfo;
+            eventOptionsInfo.registerTime = GetCurrentMillisecond();
+
+            auto handlerIt = eventHandlers.find(event);
+            if (handlerIt != eventHandlers.end()) {
+                handlerIt->second(in, out, paramInSize, eventOptionsInfo);
+            }
+      
+            fowarder->AddCallbackInfo(move(event), in.callerObjRef_, move(cbRef), move(eventOptionsInfo));
+            LOG_D("testfwk RegisterUiEventObserverMethods observerDelegateRegistered: %{public}d.", observerDelegateRegistered);
             if (!observerDelegateRegistered) {
                 driver.RegisterUiEventListener(fowarder);
                 observerDelegateRegistered = true;

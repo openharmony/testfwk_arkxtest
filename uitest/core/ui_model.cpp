@@ -130,6 +130,16 @@ namespace OHOS::uitest {
         return false;
     }
 
+    bool Widget::MatchSelector(const std::vector<WidgetMatchModel>& matchers) const
+    {
+        for (const auto& matcher : matchers) {
+            if (!MatchAttr(matcher)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     void Widget::SetHierarchy(const std::string &hierarch)
     {
         hierarchy_ = hierarch;
