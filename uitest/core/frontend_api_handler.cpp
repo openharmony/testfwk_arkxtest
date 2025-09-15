@@ -1042,64 +1042,82 @@ namespace OHOS::uitest {
         return uiOpArgs.swipeVelocityPps_;
     }
 
+    static void HandleLongClickComponentPresent(const ApiCallInfo &in, ApiReplyInfo &out,
+        UiDriver &driver, const WidgetSelector &selector)
+    {
+        auto pointJson = ReadCallArg<json>(in, INDEX_ONE);
+        UiOpArgs uiOpArgs;
+        auto duration = ReadCallArg<int32_t>(in, INDEX_TWO, uiOpArgs.defaultDuration_);
+        Point point = ParsePointFromJson(pointJson);
+        ValidateDuration(duration, out.exception_);
+        if (out.exception_.code_ != NO_ERROR) {
+            return;
+        }
+        uiOpArgs.longClickHoldMs_ = duration;
+        auto longClickAction = GenericClick(TouchOp::LONG_CLICK, point);
+        out.resultValue_ = driver.IsComponentPresentWhenLongClick(selector, longClickAction, uiOpArgs,
+            out.exception_);
+    }
+
+    static void HandleDragComponentPresent(const ApiCallInfo &in, ApiReplyInfo &out,
+        UiDriver &driver, const WidgetSelector &selector)
+    {
+        auto fromPointJson = ReadCallArg<json>(in, INDEX_ONE);
+        auto toPointJson = ReadCallArg<json>(in, INDEX_TWO);
+        UiOpArgs uiOpArgs;
+        auto speed = ReadCallArg<int32_t>(in, INDEX_THREE, uiOpArgs.defaultSwipeVelocityPps_);
+        auto duration = ReadCallArg<int32_t>(in, INDEX_FOUR, uiOpArgs.defaultDuration_);
+        Point fromPoint = ParsePointFromJson(fromPointJson);
+        Point toPoint = ParsePointFromJson(toPointJson);
+        speed = ValidateAndGetSpeed(speed);
+        ValidateDuration(duration, out.exception_);
+        if (out.exception_.code_ != NO_ERROR) {
+            return;
+        }
+        if (fromPoint.displayId_ != toPoint.displayId_) {
+            out.exception_ = ApiCallErr(ERR_INVALID_INPUT,
+                "The start point and end point must belong to the same display.");
+            return;
+        }
+        uiOpArgs.swipeVelocityPps_ = speed;
+        uiOpArgs.longClickHoldMs_ = duration;
+        auto dragAction = GenericSwipe(TouchOp::DRAG, fromPoint, toPoint);
+        out.resultValue_ = driver.IsComponentPresentWhenDrag(selector, dragAction, uiOpArgs,
+            out.exception_);
+    }
+
+    static void HandleSwipeComponentPresent(const ApiCallInfo &in, ApiReplyInfo &out,
+        UiDriver &driver, const WidgetSelector &selector)
+    {
+        auto fromPointJson = ReadCallArg<json>(in, INDEX_ONE);
+        auto toPointJson = ReadCallArg<json>(in, INDEX_TWO);
+        UiOpArgs uiOpArgs;
+        auto speed = ReadCallArg<int32_t>(in, INDEX_THREE, uiOpArgs.defaultSwipeVelocityPps_);
+        Point fromPoint = ParsePointFromJson(fromPointJson);
+        Point toPoint = ParsePointFromJson(toPointJson);
+        speed = ValidateAndGetSpeed(speed);
+        if (fromPoint.displayId_ != toPoint.displayId_) {
+            out.exception_ = ApiCallErr(ERR_INVALID_INPUT,
+                "The start point and end point must belong to the same display.");
+            return;
+        }
+        uiOpArgs.swipeVelocityPps_ = speed;
+        auto swipeAction = GenericSwipe(TouchOp::SWIPE, fromPoint, toPoint);
+        out.resultValue_ = driver.IsComponentPresentWhenSwipe(selector, swipeAction, uiOpArgs,
+            out.exception_);
+    }
+
     static void GenericComponentPresentHandler(const ApiCallInfo &in, ApiReplyInfo &out)
     {
         auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
         auto &selector = GetBackendObject<WidgetSelector>(ReadCallArg<string>(in, INDEX_ZERO));
         
         if (in.apiId_ == "Driver.isComponentPresentWhenLongClick") {
-            auto pointJson = ReadCallArg<json>(in, INDEX_ONE);
-            UiOpArgs uiOpArgs;
-            auto duration = ReadCallArg<int32_t>(in, INDEX_TWO, uiOpArgs.defaultDuration_);
-            Point point = ParsePointFromJson(pointJson);
-            ValidateDuration(duration, out.exception_);
-            if (out.exception_.code_ != NO_ERROR) {
-                return;
-            }
-            uiOpArgs.longClickHoldMs_ = duration;
-            auto longClickAction = GenericClick(TouchOp::LONG_CLICK, point);
-            out.resultValue_ = driver.IsComponentPresentWhenLongClick(selector, longClickAction, uiOpArgs,
-                out.exception_);
+            HandleLongClickComponentPresent(in, out, driver, selector);
         } else if (in.apiId_ == "Driver.isComponentPresentWhenDrag") {
-            auto fromPointJson = ReadCallArg<json>(in, INDEX_ONE);
-            auto toPointJson = ReadCallArg<json>(in, INDEX_TWO);
-            UiOpArgs uiOpArgs;
-            auto speed = ReadCallArg<int32_t>(in, INDEX_THREE, uiOpArgs.defaultSwipeVelocityPps_);
-            auto duration = ReadCallArg<int32_t>(in, INDEX_FOUR, uiOpArgs.defaultDuration_);
-            Point fromPoint = ParsePointFromJson(fromPointJson);
-            Point toPoint = ParsePointFromJson(toPointJson);
-            speed = ValidateAndGetSpeed(speed);
-            ValidateDuration(duration, out.exception_);
-            if (out.exception_.code_ != NO_ERROR) {
-                return;
-            }
-            if (fromPoint.displayId_ != toPoint.displayId_) {
-                out.exception_ = ApiCallErr(ERR_INVALID_INPUT,
-                    "The start point and end point must belong to the same display.");
-                return;
-            }
-            uiOpArgs.swipeVelocityPps_ = speed;
-            uiOpArgs.longClickHoldMs_ = duration;
-            auto dragAction = GenericSwipe(TouchOp::DRAG, fromPoint, toPoint);
-            out.resultValue_ = driver.IsComponentPresentWhenDrag(selector, dragAction, uiOpArgs,
-                out.exception_);
+            HandleDragComponentPresent(in, out, driver, selector);
         } else if (in.apiId_ == "Driver.isComponentPresentWhenSwipe") {
-            auto fromPointJson = ReadCallArg<json>(in, INDEX_ONE);
-            auto toPointJson = ReadCallArg<json>(in, INDEX_TWO);
-            UiOpArgs uiOpArgs;
-            auto speed = ReadCallArg<int32_t>(in, INDEX_THREE, uiOpArgs.defaultSwipeVelocityPps_);
-            Point fromPoint = ParsePointFromJson(fromPointJson);
-            Point toPoint = ParsePointFromJson(toPointJson);
-            speed = ValidateAndGetSpeed(speed);
-            if (fromPoint.displayId_ != toPoint.displayId_) {
-                out.exception_ = ApiCallErr(ERR_INVALID_INPUT,
-                    "The start point and end point must belong to the same display.");
-                return;
-            }
-            uiOpArgs.swipeVelocityPps_ = speed;
-            auto swipeAction = GenericSwipe(TouchOp::SWIPE, fromPoint, toPoint);
-            out.resultValue_ = driver.IsComponentPresentWhenSwipe(selector, swipeAction, uiOpArgs,
-                out.exception_);
+            HandleSwipeComponentPresent(in, out, driver, selector);
         }
     }
 
