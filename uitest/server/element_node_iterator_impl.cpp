@@ -218,7 +218,7 @@ namespace OHOS::uitest {
 
     void ElementNodeIteratorImpl::WrapperNodeAttrToVec(Widget &widget, const AccessibilityElementInfo &element)
     {
-        Accessibility::Rect nodeOriginRect = elementInfoLists_[currentIndex_].GetRectInScreen();
+        Accessibility::Rect nodeOriginRect = element.GetRectInScreen();
         Rect visibleRect{nodeOriginRect.GetLeftTopXScreenPostion(), nodeOriginRect.GetRightBottomXScreenPostion(),
                          nodeOriginRect.GetLeftTopYScreenPostion(), nodeOriginRect.GetRightBottomYScreenPostion()};
         widget.SetBounds(visibleRect);

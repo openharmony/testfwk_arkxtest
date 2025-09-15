@@ -162,6 +162,58 @@ namespace OHOS::uitest {
         PATTERN_VALUES,
         sizeof(PATTERN_VALUES) / sizeof(FrontendEnumValueDef),
     };
+   
+    /** WindowChangeType enumerator definition.*/
+    constexpr FrontendEnumValueDef WINDOW_CHANGE_TYPE_VALUES[] = {
+        {"WINDOW_UNDEFINED", "0"},
+        {"WINDOW_ADDED", "1"},
+        {"WINDOW_REMOVED", "2"},
+        {"WINDOW_BOUNDS_CHANGED", "3"},
+    };
+    constexpr FrontendEnumeratorDef WINDOW_CHANGE_TYPE_DEF = {
+        "WindowChangeType",
+        WINDOW_CHANGE_TYPE_VALUES,
+        sizeof(WINDOW_CHANGE_TYPE_VALUES) / sizeof(FrontendEnumValueDef),
+    };
+
+    /** ComponentEventType enumerator definition.*/
+    constexpr FrontendEnumValueDef COMPONENT_EVENT_TYPE_VALUES[] = {
+        {"COMPONENT_UNDEFINED", "0"},
+        {"COMPONENT_CLICKED", "1"},
+        {"COMPONENT_LONG_CLICKED", "2"},
+        {"COMPONENT_SCROLL_START", "3"},
+        {"COMPONENT_SCROLL_END", "4"},
+        {"COMPONENT_TEXT_CHANGED", "5"},
+        {"COMPONENT_HOVER_ENTER", "6"},
+        {"COMPONENT_HOVER_EXIT", "7"},
+    };
+    constexpr FrontendEnumeratorDef COMPONENT_EVENT_TYPE_DEF = {
+        "ComponentEventType",
+        COMPONENT_EVENT_TYPE_VALUES,
+        sizeof(COMPONENT_EVENT_TYPE_VALUES) / sizeof(FrontendEnumValueDef),
+    };
+
+    /** WindowChangeOptions jsonObject definition.*/
+    constexpr FrontEndJsonPropDef WINDOW_CHANGE_OPTIONS_PROPERTIES[] = {
+        {"timeout", "int", false},
+        {"bundleName", "string", false},
+    };
+    constexpr FrontEndJsonDef WINDOW_CHANGE_OPTIONS_DEF = {
+        "WindowChangeOptions",
+        WINDOW_CHANGE_OPTIONS_PROPERTIES,
+        sizeof(WINDOW_CHANGE_OPTIONS_PROPERTIES) / sizeof(FrontEndJsonPropDef),
+    };
+
+    /** ComponentEventOptions jsonObject definition.*/
+    constexpr FrontEndJsonPropDef COMPONENT_EVENT_OPTIONS_PROPERTIES[] = {
+        {"timeout", "int", false},
+        {"on", "On", false},
+    };
+    constexpr FrontEndJsonDef COMPONENT_EVENT_OPTIONS_DEF = {
+        "ComponentEventOptions",
+        COMPONENT_EVENT_OPTIONS_PROPERTIES,
+        sizeof(COMPONENT_EVENT_OPTIONS_PROPERTIES) / sizeof(FrontEndJsonPropDef),
+    };
 
     /** Window ResizeDirection enumerator definition.*/
     constexpr FrontendEnumValueDef RESIZE_DIRECTION_VALUES[] = {
@@ -536,6 +588,9 @@ namespace OHOS::uitest {
     constexpr FrontendMethodDef UI_EVENT_OBSERVER_METHODS[] = {
 	    // callback<UIElementInfo> saved in js, works as callbackRef in c++.
         {"UIEventObserver.once", "(string, string):void", false, true},
+        {"UIEventObserver.once", "(string, int, string):void", false, true, true},
+        {"UIEventObserver.once", "(string, int, WindowChangeOptions, string):void", false, true, true},
+        {"UIEventObserver.once", "(string, int, ComponentEventOptions, string):void", false, true, true},
     };
     constexpr FrontEndClassDef UI_EVENT_OBSERVER_DEF = {
         "UIEventObserver",
@@ -548,9 +603,13 @@ namespace OHOS::uitest {
                                       &DRIVER_DEF, &COMPONENT_DEF, &UI_WINDOW_DEF, &POINTER_MATRIX_DEF,
                                       &UI_EVENT_OBSERVER_DEF};
     const auto FRONTEND_ENUMERATOR_DEFS = {&MATCH_PATTERN_DEF, &WINDOW_MODE_DEF, &RESIZE_DIRECTION_DEF,
-                                           &DISPLAY_ROTATION_DEF, &MOUSE_BUTTON_DEF, &UI_DIRECTION_DEF};
+                                           &DISPLAY_ROTATION_DEF, &MOUSE_BUTTON_DEF, &UI_DIRECTION_DEF,
+                                           &WINDOW_CHANGE_TYPE_DEF, &COMPONENT_EVENT_TYPE_DEF};
     const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF, &UI_ELEMENT_INFO_DEF,
-                                     &TOUCH_PAD_SWIPE_OPTIONS_DEF, &INPUTTEXT_MODE_DEF};
+                                     &TOUCH_PAD_SWIPE_OPTIONS_DEF, &INPUTTEXT_MODE_DEF,
+                                     &WINDOW_CHANGE_OPTIONS_DEF,
+                                     &COMPONENT_EVENT_OPTIONS_DEF
+                                    };
     /** The allowed in/out data type scope of frontend apis.*/
     const std::initializer_list<std::string_view> DATA_TYPE_SCOPE = {
         "int",
@@ -569,6 +628,8 @@ namespace OHOS::uitest {
         COMPONENT_DEF.name_,
         UI_WINDOW_DEF.name_,
         POINTER_MATRIX_DEF.name_,
+        WINDOW_CHANGE_OPTIONS_DEF.name_,
+        COMPONENT_EVENT_OPTIONS_DEF.name_,
         UI_EVENT_OBSERVER_DEF.name_,
         TOUCH_PAD_SWIPE_OPTIONS_DEF.name_,
         INPUTTEXT_MODE_DEF.name_,

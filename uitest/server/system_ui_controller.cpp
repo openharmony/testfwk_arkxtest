@@ -56,6 +56,8 @@ namespace OHOS::uitest {
     using namespace OHOS::Media;
     using namespace OHOS::HiviewDFX;
     using namespace OHOS;
+    using OHOS::Accessibility::WindowUpdateType;
+    using OHOS::Accessibility::EventType;
 
     class UiEventMonitor final : public AccessibleAbilityListener {
     public:
@@ -91,10 +93,19 @@ namespace OHOS::uitest {
         atomic<uint64_t> lastScrollBeginEventMillis_ = 0;
         atomic<bool> scrollCompelete_ = true;
         vector<shared_ptr<UiEventListener>> listeners_;
+        
+        // Helper functions
+        void NotifyListeners(const std::string& capturedEvent, const UiEventSourceInfo& uiEventSourceInfo,
+            Widget* widget = nullptr);
     };
 
     struct EventSpec {
         std::string_view componentTyep;
+        int32_t eventType;
+        std::string_view event;
+    };
+
+    struct EventTypeSpec {
         int32_t eventType;
         std::string_view event;
     };
@@ -143,6 +154,57 @@ namespace OHOS::uitest {
         {"AlertDialog", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "dialogShow"}
     };
 
+    static constexpr EventTypeSpec WATCHED_COMPONENT_EVENTS[] = {
+        { EventType::TYPE_VIEW_CLICKED_EVENT, "componentEventOccur"},
+        { EventType::TYPE_VIEW_LONG_CLICKED_EVENT, "componentEventOccur"},
+        { EventType::TYPE_VIEW_SCROLLED_START, "componentEventOccur"},
+        { EventType::TYPE_VIEW_SCROLLED_EVENT, "componentEventOccur"},
+        { EventType::TYPE_VIEW_TEXT_UPDATE_EVENT, "componentEventOccur"},
+        { EventType::TYPE_VIEW_HOVER_ENTER_EVENT, "componentEventOccur"},
+        { EventType::TYPE_VIEW_HOVER_EXIT_EVENT, "componentEventOccur"}
+    };
+
+    static constexpr EventTypeSpec WATCHED_WINDOW_EVENTS[] = {
+        { WindowUpdateType::WINDOW_UPDATE_ADDED, "windowChange"},
+        { WindowUpdateType::WINDOW_UPDATE_REMOVED, "windowChange"},
+        { WindowUpdateType::WINDOW_UPDATE_BOUNDS, "windowChange"}
+    };
+
+    static int32_t GetWindowChangeType(WindowUpdateType eventType)
+    {
+        switch (eventType) {
+            case WindowUpdateType::WINDOW_UPDATE_ADDED:
+                return WindowChangeType::WINDOW_ADDED;
+            case WindowUpdateType::WINDOW_UPDATE_REMOVED:
+                return WindowChangeType::WINDOW_REMOVED;
+            case WindowUpdateType::WINDOW_UPDATE_BOUNDS:
+                return WindowChangeType::WINDOW_BOUNDS_CHANGED;
+            default:
+                return WindowChangeType::WINDOW_UNDEFINED;
+        }
+    }
+
+    static int32_t GetComPonentEventType(EventType eventType)
+    {
+        switch (eventType) {
+            case EventType::TYPE_VIEW_CLICKED_EVENT:
+                return ComponentEventType::COMPONENT_CLICKED;
+            case EventType::TYPE_VIEW_LONG_CLICKED_EVENT:
+                return ComponentEventType::COMPONENT_LONG_CLICKED;
+            case EventType::TYPE_VIEW_SCROLLED_START:
+                return ComponentEventType::COMPONENT_SCROLL_START;
+            case EventType::TYPE_VIEW_SCROLLED_EVENT:
+                return ComponentEventType::COMPONENT_SCROLL_END;
+            case EventType::TYPE_VIEW_TEXT_UPDATE_EVENT:
+                return ComponentEventType::COMPONENT_TEXT_CHANGED;
+            case EventType::TYPE_VIEW_HOVER_ENTER_EVENT:
+                return ComponentEventType::COMPONENT_HOVER_ENTER;
+            case EventType::TYPE_VIEW_HOVER_EXIT_EVENT:
+                return ComponentEventType::COMPONENT_HOVER_EXIT;
+            default:
+                return ComponentEventType::COMPONENT_UNDEFINED;
+        }
+    }
     static std::string GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
     {
         auto eventCounts = sizeof(WATCHED_EVENTS) / sizeof(EventSpec);
@@ -153,6 +215,23 @@ namespace OHOS::uitest {
                 return string(WATCHED_EVENTS[index].event);
             }
         }
+
+        static constexpr size_t componentEventCount = sizeof(WATCHED_COMPONENT_EVENTS) / sizeof(EventTypeSpec);
+        auto componentType = static_cast<uint32_t>(eventInfo.GetEventType());
+        for (size_t i = 0; i < componentEventCount; ++i) {
+            if (static_cast<uint32_t>(WATCHED_COMPONENT_EVENTS[i].eventType) == componentType) {
+                return std::string(WATCHED_COMPONENT_EVENTS[i].event);
+            }
+        }
+
+        auto windowUpdateType = static_cast<uint32_t>(eventInfo.GetWindowChangeTypes());
+        static constexpr size_t windowEventCount = sizeof(WATCHED_WINDOW_EVENTS) / sizeof(EventTypeSpec);
+        for (size_t i = 0; i < windowEventCount; ++i) {
+            if (static_cast<uint32_t>(WATCHED_WINDOW_EVENTS[i].eventType) == windowUpdateType) {
+                return std::string(WATCHED_WINDOW_EVENTS[i].event);
+            }
+        }
+
         return "undefine";
     }
 
@@ -212,15 +291,43 @@ namespace OHOS::uitest {
             LOG_I("Capture scroll end");
             scrollCompelete_.store(true);
         }
+
         if (capturedEvent != "undefine") {
+            LOG_D("testfwk Capture event: %{public}s", capturedEvent.c_str());
             auto bundleName = eventInfo.GetBundleName();
+            LOG_D("testfwk OnAccessibilityEvent bundleName: %{public}s", bundleName.c_str());
             auto contentList = eventInfo.GetContentList();
             auto text = !contentList.empty() ? contentList[0] : "";
             auto type = eventInfo.GetComponentType();
-            UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type};
-            for (auto &listener : listeners_) {
-                listener->OnEvent(capturedEvent, uiEventSourceInfo);
+
+            int32_t windowChangeType = GetWindowChangeType(eventInfo.GetWindowChangeTypes());
+            int32_t componentEventType = GetComPonentEventType(eventInfo.GetEventType());
+            int32_t windowId = eventInfo.GetWindowId();
+            Rect componentRect;
+            AccessibilityWindowInfo windowInfo;
+            if (AccessibilityUITestAbility::GetInstance()->GetWindow(windowId, windowInfo) == RET_OK) {
+                bundleName = bundleName.empty() ? windowInfo.GetBundleName() : bundleName;
+                LOG_D("testfwk OnAccessibilityEvent  windowInfo->bundleName: %{public}s", bundleName.c_str());
+                componentRect.displayId_ = windowInfo.GetDisplayId();
             }
+            const auto& elemInfo = eventInfo.GetElementInfo();
+            auto componentId = elemInfo.GetInspectorKey();
+            auto bounds = elemInfo.GetRectInScreen();
+            componentRect.left_ = bounds.GetLeftTopXScreenPostion();
+            componentRect.top_ = bounds.GetLeftTopYScreenPostion();
+            componentRect.right_ = bounds.GetRightBottomXScreenPostion();
+            componentRect.bottom_ = bounds.GetRightBottomYScreenPostion();
+
+            UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type, windowChangeType, componentEventType,
+                windowId, componentId, componentRect};
+            std::unique_ptr<Widget> widget = nullptr;
+            if (capturedEvent == "componentEventOccur") {
+                widget = std::make_unique<Widget>("");
+                ElementNodeIteratorImpl iterator;
+                iterator.WrapperNodeAttrToVec(*widget, elemInfo);
+            }
+
+            NotifyListeners(capturedEvent, uiEventSourceInfo, widget.get());
         }
         if (std::find(EVENT_MASK.begin(), EVENT_MASK.end(), eventInfo.GetEventType()) != EVENT_MASK.end()) {
             lastEventMillis_.store(GetCurrentMillisecond());
@@ -273,6 +380,15 @@ namespace OHOS::uitest {
             return false;
         }
         return WaitEventIdle(idleThresholdMs, timeoutMs - sliceMs);
+    }
+
+    void UiEventMonitor::NotifyListeners(const std::string& capturedEvent,
+        const UiEventSourceInfo& uiEventSourceInfo, Widget* widget)
+    {
+        LOG_D("testfwk NotifyListeners capturedEvent: %{public}s", capturedEvent.c_str());
+        for (auto &listener : listeners_) {
+          listener->OnEvent(capturedEvent, uiEventSourceInfo, widget);
+      }
     }
 
     SysUiController::SysUiController() : UiController() {}

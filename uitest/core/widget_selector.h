@@ -66,8 +66,9 @@ namespace OHOS::uitest {
                     std::vector<Widget> &visitWidgets,
                     std::vector<int> &targetWidgets) const;
 
-    private:
         std::vector<WidgetMatchModel> GetSelfMatchers() const;
+
+    private:
         std::unique_ptr<SelectStrategy> ConstructSelectStrategy() const;
         std::vector<WidgetMatchModel> selfMatchers_;
         std::vector<WidgetSelector> frontLocators_;
