@@ -77,7 +77,7 @@ class SuiteService {
           console.error(`${TAG} Loop nesting occurs : ${desc}`);
           this.suiteSkipReason = '';
           this.isSkipSuite = false;
-          return Promise.resolve(undefined);
+          return;
         }
         const isFilter = this.analyzeConfigServiceClass(configService.className, desc);
         if (configService.filterSuite(desc) && isFilter) {
@@ -85,7 +85,7 @@ class SuiteService {
             console.info(`${TAG}filter suite : ${desc}`);
             this.suiteSkipReason = '';
             this.isSkipSuite = false;
-            return Promise.resolve(undefined);
+            return;
           }
         }
         const suite = new StaticSuite({ description: desc });
@@ -146,18 +146,18 @@ class SuiteService {
                   ? `${TAG} skip suite: ${desc}`
                   : `${TAG} skip suite: ${desc}, and the reason is ${reason}`
               );
-              return Promise.resolve();
+              return;
             }
           } else {
             console.info(
               reason == null ? `${TAG} skip suite: ${desc}` : `${TAG} skip suite: ${desc}, and the reason is ${reason}`
             );
-            return Promise.resolve();
+            return;
           }
         }
         this.isSkipSuite = true;
         this.suiteSkipReason = reason;
-        await this.describe(desc, func);
+        this.describe(desc, func);
       }
     }
     return Promise.resolve();
