@@ -22,7 +22,7 @@ let currentState = 0;
 let executeTime = 3;
 
 export default namespace UiTest {
-  loadLibrary("uitest_ani");
+  loadLibraryWithPermissionCheck("uitest_ani", "@ohos.UiTest");
   export native function ScheduleEstablishConnection(tokken: String): boolean;
   export native function GetConnectionStat(): int;
 }
