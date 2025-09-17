@@ -62,7 +62,7 @@ class SuiteService {
     };
   }
 
-  async describe(desc: string, func: () => void): void {
+  describe(desc: string, func: () => void): void {
     const core = this.coreContext;
     if (core) {
       const cc = core as Core;
@@ -123,7 +123,7 @@ class SuiteService {
       }
     }
   }
-  async xdescribe(desc: string, func: () => void, reason: string): void {
+  xdescribe(desc: string, func: () => void, reason: string): void {
     const core = this.coreContext;
     if (core) {
       const cc = core as Core;
