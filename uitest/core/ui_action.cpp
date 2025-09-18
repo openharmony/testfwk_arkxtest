@@ -131,7 +131,7 @@ namespace OHOS::uitest {
         const auto msInterval = options.doubleClickIntervalMs_;
         PointerMatrix pointer(fingers, steps);
         for (auto finger = 0; finger < fingers; finger++) {
-            for(auto time = 0; time < times_; time++) {
+            for (auto time = 0; time < times_; time++) {
                 pointer.PushAction(TouchEvent {ActionStage::DOWN, points_[finger], 0, options.clickHoldMs_});
                 pointer.PushAction(TouchEvent {ActionStage::UP, points_[finger], options.clickHoldMs_, msInterval});
             }
