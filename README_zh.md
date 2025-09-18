@@ -1135,7 +1135,7 @@ export default function staticTest() {
 
 **示例14：mock私有函数**
 
-> @since1.0.24 支持
+> @since1.0.25 支持
 
 ```javascript
 import { describe, it, expect, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
@@ -1176,7 +1176,7 @@ export default function staticTest() {
 
 **示例14：mock成员变量**
 
-> @since1.0.24 支持
+> @since1.0.25 支持
 
 ```javascript
 import { describe, it, expect, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
@@ -1208,8 +1208,6 @@ export default function staticTest() {
   })
 }
 ```
-
-#### 数据驱动
 
 #### 数据驱动
 
