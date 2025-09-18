@@ -29,6 +29,7 @@ export function getAsyncFuncWithArgsZero(func: () => Promise<void>, timeout: int
       await func();
     } catch (err: Error) {
       console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
+      reject(err)
     }
     if (!!timer) {
       clearTimeout(timer);
@@ -49,6 +50,7 @@ export function getFuncWithArgsZero(func: () => void, timeout: int, isStressTest
       func()
     } catch (err: Error) {
       console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
+      reject(err)
     }
     if (!!timer) {
       clearTimeout(timer);
@@ -195,7 +197,7 @@ export function processFunc(
       isStressTest = false;
     }
     return () => {
-      return getFuncWithArgsZero(func, timeout as int, isStressTest);
+      return getFuncWithArgsZero(func, timeout.toInt(), isStressTest);
     };
   }
   return () => {
@@ -219,7 +221,7 @@ export function processAsyncFunc(
       isStressTest = false;
     }
     return () => {
-      return getAsyncFuncWithArgsZero(func, timeout as int, isStressTest);
+      return getAsyncFuncWithArgsZero(func, timeout.toInt(), isStressTest);
     };
   }
   return () => {
@@ -235,7 +237,7 @@ export function processAsyncFuncWithArgOne(coreContext: Core, func: (done: () =>
     const timeout = !config.timeout ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return () => {
-      return getAsyncFuncWithArgsOne(func, timeout as int, isStressTest);
+      return getAsyncFuncWithArgsOne(func, timeout.toInt(), isStressTest);
     };
   }
   return () => {
@@ -251,7 +253,7 @@ export function processFuncWithArgOne(coreContext: Core, func: (done: () => void
     const timeout = !config.timeout ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return () => {
-      return getFuncWithArgsOne(func, timeout as int, isStressTest);
+      return getFuncWithArgsOne(func, timeout.toInt(), isStressTest);
     };
   }
   return () => {
@@ -270,7 +272,7 @@ export function processAsyncFuncWithArgTwo(
     const timeout = !config.timeout ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return (paramItem: AnyType) => {
-      return getAsyncFuncWithArgsTwo(func, timeout as int, paramItem, isStressTest);
+      return getAsyncFuncWithArgsTwo(func, timeout.toInt(), paramItem, isStressTest);
     };
   }
   return (paramItem: AnyType) => {
@@ -286,7 +288,7 @@ export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => vo
     const timeout = !config.timeout ? 5000 : Number(config.timeout);
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return (paramItem: AnyType) => {
-      return getFuncWithArgsTwo(func, timeout as int, paramItem, isStressTest);
+      return getFuncWithArgsTwo(func, timeout.toInt(), paramItem, isStressTest);
     };
   }
   return (paramItem: AnyType) => {

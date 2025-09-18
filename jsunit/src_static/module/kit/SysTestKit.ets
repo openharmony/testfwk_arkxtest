@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import systemDateTime from '@ohos.systemDateTime';
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 import { BusinessError } from '@ohos.base';
 import { TAG } from '../../Constant';
@@ -105,6 +104,11 @@ class SysTestKit {
 
   static getRealTime(): number {
     let current = new Date().getTime();
+    try {
+      console.info(`${TAG} systemDateTime.getUptime success`);
+    } catch (err: Error) {
+      console.error(`${TAG} failed to systemDateTime.getUptime because ` + err.message);
+    }
     return current;
   }
 
@@ -113,9 +117,9 @@ class SysTestKit {
     if (!reg.test(keyword)) {
       throw new Error('keyword must contain more than one string, and only letters and numbers are supported.');
     }
-    let time = 4.0;
+    let time: long = 4;
     if (timeout !== undefined) {
-      time = timeout;
+      time = timeout.toLong();
     }
 
     let searchResult = false;
@@ -130,7 +134,7 @@ class SysTestKit {
   }
 }
 
-function executePromise(cmd: string, timeout: number) {
+function executePromise(cmd: string, timeout: long) {
   return new Promise<boolean>((resolve: (value: boolean) => void, reject: (value: Error) => void) => {
     const delegator = SysTestKit.delegator;
     if (!delegator) {
