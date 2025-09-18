@@ -160,7 +160,7 @@ class SuiteService {
         this.describe(desc, func);
       }
     }
-    return Promise.resolve();
+    return;
   }
 
   handleHookFunction(core: Core, func: HookFuncType) {
