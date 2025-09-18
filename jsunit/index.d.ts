@@ -123,7 +123,7 @@ export class MockKit {
   mockFunc(obj: Object, func: Function): Function
   mockObject(obj: Object): Object
   verify(methodName: String, argsArray: Array<any>): VerificationMode
-  ignoreMock(obj: Object, func: Function): void
+  ignoreMock(obj: Object, func: Function | String): void
   clear(obj: Object): void
   clearAll(): void
   mockPrivateFunc(originalObject: Object, method: String): Function
