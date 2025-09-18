@@ -598,7 +598,7 @@ export default function abilityTest() {
 | 18 | atLeast(count) | 验证行为至少调用过count次。                                                                                                                                |
 | 19 | atMost(count) | 验证行为至多调用过count次。                                                                                                                                |
 | 20 | never | 验证行为从未发生过。                                                                                                                                      |
-| 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效。                                                                                                   |
+| 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数/属性，对被mock后的函数/属性有效。                                                                                       |
 | 22 | clearAll() | 用例执行完毕后，进行数据和内存清理,不会还原obj对象中被mock后的函数。                                                                                                                  |
 | 23 | mockPrivateFunc | mock某个类的对象的私有函数。 |
 | 24 | mockProperty | mock某个类的对象的成员变量，将其值设置为预期值，支持私有成员变量。 |
