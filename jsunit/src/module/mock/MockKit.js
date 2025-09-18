@@ -340,18 +340,6 @@ class MockKit {
     obj[propertyName] = value;
   }
 
-  ignorePropertyMock(obj, propertyName) {
-    if (!obj[propertyName]) {
-        throw new Error('No such property:' + propertyName);
-    }
-    let originalValue = this.propertyValueMap.get(propertyName);
-    if (originalValue) {
-        obj[propertyName] = originalValue;
-    } else {
-        throw new Error('This property has not been mocked:' + propertyName);
-    }
-  }
-
   verify(methodName, argsArray) {
     if (!methodName) {
       throw Error('not a function name');
