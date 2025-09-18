@@ -567,12 +567,12 @@ namespace OHOS::uitest {
         const PointerMatrix &events, uint32_t currentFinger, uint32_t currentStep)
     {
         if (events.IsSyncInject()) {
-          for (auto finger = 0; finger < events.GetFingers(); finger++) {
-              PointerEvent::PointerItem pinterItem;
-              SetItemByType(pinterItem, events, finger, fingerStatus[finger].first,
-                  events.At(finger, currentStep).point_);
-              event.UpdatePointerItem(finger, pinterItem);
-          }
+            for (auto finger = 0; finger < events.GetFingers(); finger++) {
+                PointerEvent::PointerItem pinterItem;
+                SetItemByType(pinterItem, events, finger, fingerStatus[finger].first,
+                    events.At(finger, currentStep).point_);
+                event.UpdatePointerItem(finger, pinterItem);
+            }
         } else {
             PointerEvent::PointerItem pinterItem;
             SetItemByType(pinterItem, events, currentFinger, fingerStatus[currentFinger].first,

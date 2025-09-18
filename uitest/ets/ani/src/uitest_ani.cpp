@@ -1661,7 +1661,8 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function{"touchPadMultiFingerSwipeSync", nullptr, reinterpret_cast<void *>(touchPadMultiFingerSwipeSync)},
         ani_native_function{"kunckleClickOnePointSync", nullptr, reinterpret_cast<void *>(kunckleClickOnePointSync)},
         ani_native_function{"kunckleClickTwoPointSync", nullptr, reinterpret_cast<void *>(kunckleClickTwoPointSync)},
-        ani_native_function{"injectKnucklePointerActionSync", nullptr, reinterpret_cast<void *>(injectKnucklePointerActionSync)},
+        ani_native_function{"injectKnucklePointerActionSync", nullptr,
+            reinterpret_cast<void *>(injectKnucklePointerActionSync)},
     };
 
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {

@@ -113,6 +113,8 @@ namespace OHOS::uitest {
         
         void ChangeWindowMode(int32_t windowId, WindowMode mode);
 
+        bool GetEventObserverEnable();
+
         bool IsKnuckleSnapshotEnable();
 
         bool IsKnuckleRecordEnable();

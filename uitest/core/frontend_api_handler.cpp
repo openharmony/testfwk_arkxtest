@@ -1834,7 +1834,7 @@ static void RegisterExtensionHandler()
         server.AddHandler("PointerMatrix.setPoint", setPoint);
     }
 
-    static void RegisterKnuckleOperators()
+    static void RegisterKnuckleKnock()
     {
         auto &server = FrontendApiServer::Get();
         auto genericClick = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1870,6 +1870,11 @@ static void RegisterExtensionHandler()
             auto touch = GenericMultiClick(points, clickTimes);
             driver.PerformKnuckleAction(touch, uiOpArgs, out.exception_);
         };
+        server.AddHandler("Driver.knuckleKnock", genericClick);
+    }
+
+    static void RegisterKnucklePointerAction() {
+        auto &server = FrontendApiServer::Get();
         auto pointerAction = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto &pointer = GetBackendObject<PointerMatrix>(ReadCallArg<string>(in, INDEX_ZERO));
@@ -1891,9 +1896,9 @@ static void RegisterExtensionHandler()
             CheckSwipeVelocityPps(uiOpArgs);
             driver.PerformKnuckleAction(touch, uiOpArgs, out.exception_);
         };
-        server.AddHandler("Driver.knuckleKnock", genericClick);
         server.AddHandler("Driver.injectKnucklePointerAction", pointerAction);
     }
+
     /** Register frontendApiHandlers and preprocessors on startup.*/
     __attribute__((constructor)) static void RegisterApiHandlers()
     {
@@ -1926,6 +1931,7 @@ static void RegisterExtensionHandler()
         RegisterExtensionHandler();
         RegisterUiDriverTouchPadOperators();
         RegisterUiDriverPenOperators();
-        RegisterKnuckleOperators();
+        RegisterKnuckleKnock();
+        RegisterKnucklePointerAction();
     }
 } // namespace OHOS::uitest
