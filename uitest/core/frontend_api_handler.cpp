@@ -1873,7 +1873,8 @@ static void RegisterExtensionHandler()
         server.AddHandler("Driver.knuckleKnock", genericClick);
     }
 
-    static void RegisterKnucklePointerAction() {
+    static void RegisterKnucklePointerAction()
+    {
         auto &server = FrontendApiServer::Get();
         auto pointerAction = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
