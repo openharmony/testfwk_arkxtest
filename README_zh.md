@@ -1160,7 +1160,7 @@ export default function staticTest() {
       let mocker: MockKit = new MockKit();
       // 2.mock  类ClassName对象的私有方法，比如method_1
       let func_1: Function = mocker.mockPrivateFunc(claser, "method_1");
-      // 3.期望被mock后的函数返回结果'mock_data'
+      // 3.期望被mock后的函数返回结果456
       when(func_1)(ArgumentMatchers.any).afterReturn(456);
       let mock_result = claser.method(123);
       expect(mock_result).assertEqual(456);
