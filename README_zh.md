@@ -600,9 +600,9 @@ export default function abilityTest() {
 | 20 | never | 验证行为从未发生过。                                                                                                                                      |
 | 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效。                                                                                                   |
 | 22 | clearAll() | 用例执行完毕后，进行数据和内存清理,不会还原obj对象中被mock后的函数。                                                                                                                  |
-| 23 | mockPrivateFunc((obj: object, methodName：string) | mock某个类的对象obj的私有函数methodName。 |
-| 24 | mockProperty(obj: object, propertyName: string, value: object\|undefined\|null) | mock某个类的对象obj的成员propertyName，将其值设置为预期值value。 |
-| 25 | ignorePropertyMock(obj: object, propertyName: String) | 还原obj对象中被mock后成员propertyName，对被mock后的函数的propertyName有效。 |
+| 23 | mockPrivateFunc | mock某个类的对象的私有函数。 |
+| 24 | mockProperty | mock某个类的对象的成员变量，将其设置为预期值，支持私有成员变量。 |
+| 25 | ignorePropertyMock | 还原obj对象中被mock的成员，对被mock后的成员有效。 |
 
 -  **使用示例：**
 
@@ -1143,8 +1143,8 @@ import { describe, it, expect, MockKit, when, ArgumentMatchers } from '@ohos/hyp
 class ClassName {
   constructor() {
   }
-  method(arg: number) {
-    return method_1(arg) as number | string;
+  method(arg: number):number {
+    return this.method_1(arg);
   }
   private method_1(arg: number) {
     return arg;
@@ -1162,9 +1162,9 @@ export default function staticTest() {
       // 2.mock  类ClassName对象的私有方法，比如method_1
       let func_1: Function = mocker.mockPrivateFunc(claser, "method_1");
       // 3.期望被mock后的函数返回结果'mock_data'
-      when(func_1)(ArgumentMatchers.any).afterReturn('mock_data');
+      when(func_1)(ArgumentMatchers.any).afterReturn(456);
       let mock_result = claser.method(123);
-      expect(mock_result).assertEqual('mock_data');
+      expect(mock_result).assertEqual(456);
       // 清除mock能力
       mocker.clear(claser);
       let really_result1 = claser.method(123);
@@ -1184,26 +1184,38 @@ import { describe, it, expect, MockKit, when, ArgumentMatchers } from '@ohos/hyp
 class ClassName {
   constructor() {
   }
-  data = 1
+  data = 1;
+  private priData = 2;
+  method() {
+    return this.priData;
+  }
 }
 
 export default function staticTest() {
   describe('propertyTest', () => {
     it('property_001', 0, () => {
       let claser: ClassName = new ClassName(); 
-      let really_result = claser.data;
-      expect(really_result).assertEqual(1);
+      let data = claser.data;
+      expect(data).assertEqual(1);
+      let priData = claser.method();
+      expect(priData).assertEqual(2);
       // 1.创建MockKit对象
       let mocker: MockKit = new MockKit();
       // 2.mock  类ClassName对象的成员变量data
       mocker.mockProperty(claser, "data", 3);
-      // 3.期望被mock后的成员值为0
+      mocker.mockProperty(claser, "priData", 4);
+      // 3.期望被mock后的成员和私有成员的值分别为3，4
       let mock_result = claser.data;
+      let mock_private_result = claser.method();
       expect(mock_result).assertEqual(3);
+      expect(mock_private_result).assertEqual(4);
       // 清除mock能力
       mocker.ignorePropertyMock(claser, "data");
-      let really_result1 = claser.data;
-      expect(really_result1).assertEqual(1);
+      mocker.ignorePropertyMock(claser, "priData");
+      let really_result = claser.data;
+      expect(really_result).assertEqual(1);
+      let really_private_result = claser.method();
+      expect(really_private_result).assertEqual(2);
     })
   })
 }
