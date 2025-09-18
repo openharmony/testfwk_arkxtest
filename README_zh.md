@@ -600,9 +600,9 @@ export default function abilityTest() {
 | 20 | never | 验证行为从未发生过。                                                                                                                                      |
 | 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效。                                                                                                   |
 | 22 | clearAll() | 用例执行完毕后，进行数据和内存清理,不会还原obj对象中被mock后的函数。                                                                                                                  |
-| 23 | mockPrivateFunc((obj: object, f：String) | mock某个类的对象obj的私有函数f。 |
-| 24 | mockProperty(obj: Object, propertyName: String, value: any) | mock某个类的对象obj的成员propertyName，将其值设置为预期值value。 |
-| 25 | ignorePropertyMock(obj: Object, propertyName: String) | 还原obj对象中被mock后成员propertyName，对被mock后的函数的propertyName有效。 |
+| 23 | mockPrivateFunc((obj: object, methodName：string) | mock某个类的对象obj的私有函数methodName。 |
+| 24 | mockProperty(obj: object, propertyName: string, value: object\|undefined\|null) | mock某个类的对象obj的成员propertyName，将其值设置为预期值value。 |
+| 25 | ignorePropertyMock(obj: object, propertyName: String) | 还原obj对象中被mock后成员propertyName，对被mock后的函数的propertyName有效。 |
 
 -  **使用示例：**
 
