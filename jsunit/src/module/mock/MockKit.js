@@ -25,6 +25,7 @@ class MockKit {
     this.currentSetKey = new Map();
     this.mockObj = null;
     this.recordMockedMethod = new Map();
+    this.propertyValueMap = new Map();
   }
 
   init() {
@@ -38,6 +39,7 @@ class MockKit {
     this.currentSetKey = new Map();
     this.mockObj = null;
     this.recordMockedMethod = new Map();
+    this.propertyValueMap = new Map();
   }
 
   clearAll() {
@@ -258,7 +260,10 @@ class MockKit {
     Function.prototype.getName = function () {
       return this.name || this.toString().match(/function\s*([^(]*)\(/)[1];
     };
-    let name = originalMethod.getName();
+    let name = originalMethod;
+    if (typeof originalMethod !== "string") {
+        name = originalMethod.getName();
+    }
     let arglistString = name + '(' + Array.from(args).toString() + ')';
     let records = this.recordCalls.get(arglistString);
     if (!records) {
@@ -303,6 +308,35 @@ class MockKit {
     this.mFunctions.push(f);
     this.extend(f, new ExtendInterface(this));
     return f;
+  }
+
+  mockPrivateFunc(originalObject, method) {
+    let fun = originalObject[method];
+    if (!fun) {
+        throw new Error('No such method:' + method);
+    }
+    return this.mockFunc(originalObject, fun);
+  }
+
+  mockProperty(obj, propertyName, value) {
+    let originalValue = obj[propertyName];
+    if (!originalValue) {
+        throw new Error('No such property:' + propertyName);
+    }
+    this.propertyValueMap.set(propertyName, originalValue);
+    obj[propertyName] = value;
+  }
+
+  ignorePropertyMock(obj, propertyName) {
+    if (!obj[propertyName]) {
+        throw new Error('No such property:' + propertyName);
+    }
+    let originalValue = this.propertyValueMap.get(propertyName);
+    if (originalValue) {
+        obj[propertyName] = originalValue;
+    } else {
+        throw new Error('This property has not been mocked:' + propertyName);
+    }
   }
 
   verify(methodName, argsArray) {
