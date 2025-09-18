@@ -27,6 +27,7 @@
 #include <common_event_manager.h>
 #include <common_event_subscribe_info.h>
 #include "cpu_collector.h"
+#include "datashare_helper.h"
 
 namespace OHOS::testserver {
     class TestServerService : public SystemAbility, public TestServerInterfaceStub {
@@ -60,6 +61,8 @@ namespace OHOS::testserver {
 
         ErrCode CollectProcessCpu(const int32_t pid, bool isNeedUpdate, ProcessCpuInfo &processCpuInfo) override;
 
+        ErrCode GetValueFromDataShare(const std::string &uri, const std::string &key, std::string &value) override;
+
     protected:
         void OnStart() override;
         void OnStop() override;
@@ -70,6 +73,9 @@ namespace OHOS::testserver {
         int GetCallerCount();
         void DestorySession();
         bool RemoveTestServer();
+        std::shared_ptr<DataShare::DataShareHelper> CreateDataShareHelper(const std::string &uri);
+        Uri AssembleUri(const std::string &uri, const std::string &key);
+        void ReleaseDataShareHelper(std::shared_ptr<DataShare::DataShareHelper> &helper);
 
     private:
         std::atomic<int> callerCount_{0};
