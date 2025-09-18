@@ -29,4 +29,5 @@ interface OHOS.testserver.ITestServerInterface {
     void SpDaemonProcess([in] int daemonCommand, [in] String extraInfo);
     void CollectProcessMemory([in] int pid, [out] ProcessMemoryInfo processMemoryInfo);
     void CollectProcessCpu([in] int pid, [in] boolean isNeedUpdate, [out] ProcessCpuInfo processCpuInfo);
+    void GetValueFromDataShare([in] String url, [in] String key, [out] String value);
 }

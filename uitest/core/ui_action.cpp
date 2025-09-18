@@ -124,6 +124,21 @@ namespace OHOS::uitest {
         }
     }
 
+    void GenericMultiClick::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
+    {
+        auto fingers = points_.size();
+        auto steps = times_ * TWO;
+        const auto msInterval = options.doubleClickIntervalMs_;
+        PointerMatrix pointer(fingers, steps);
+        for (auto finger = 0; finger < fingers; finger++) {
+            for(auto time = 0; time < times_; time++) {
+                pointer.PushAction(TouchEvent {ActionStage::DOWN, points_[finger], 0, options.clickHoldMs_});
+                pointer.PushAction(TouchEvent {ActionStage::UP, points_[finger], options.clickHoldMs_, msInterval});
+            }
+        }
+        pointer.SeTSyncInject();
+        recv = move(pointer);
+    }
     void GenericSwipe::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
     {
         DCHECK(type_ >= TouchOp::SWIPE && type_ <= TouchOp::FLING);
@@ -280,6 +295,7 @@ namespace OHOS::uitest {
         this->stepNum_ = other.stepNum_;
         this->capacity_ = other.capacity_;
         this->size_ = other.size_;
+        this->syncInject_ = other.syncInject_;
         other.fingerNum_ = 0;
         other.stepNum_ = 0;
         other.capacity_ = 0;
@@ -349,6 +365,16 @@ namespace OHOS::uitest {
     float PointerMatrix::GetTouchPressure() const
     {
         return touchPressure_;
+    }
+
+    bool PointerMatrix::IsSyncInject() const
+    {
+        return syncInject_;
+    }
+
+    void PointerMatrix::SeTSyncInject()
+    {
+        syncInject_ = true;
     }
 
     void PointerMatrix::ConvertToPenEvents(PointerMatrix &recv) const

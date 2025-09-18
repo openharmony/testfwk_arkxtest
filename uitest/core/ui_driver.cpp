@@ -650,6 +650,28 @@ namespace OHOS::uitest {
         uiController_->InjectTouchEventSequence(eventsInPen);
     }
 
+    void UiDriver::PerformKnuckleAction(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err)
+    {
+#ifdef ARKXTEST_KNUCKLE_ACTION_ENABLE
+        if (!CheckStatus(false, err)) {
+            return;
+        }
+        PointerMatrix events;
+        touch.Decompose(events, opt);
+        events.SetToolType(TouchToolType::KNUCKLE);
+        auto displayId = events.At(0, 0).point_.displayId_;
+        if (!CheckDisplayExist(displayId)) {
+            LOG_E("No display: %{public}d", displayId);
+            err = ApiCallErr(ERR_INVALID_PARAM, "Invalid display id.");
+            return;
+        }
+        uiController_->InjectTouchEventSequence(events);
+        return;
+#endif
+        err = ApiCallErr(ERR_NO_SYSTEM_CAPABILITY, "Capability not support");
+        return;
+    }
+
     void UiDriver::SetAamsWorkMode(const AamsWorkMode mode)
     {
         mode_ = mode;
@@ -690,5 +712,15 @@ namespace OHOS::uitest {
     void UiDriver::ChangeWindowMode(int32_t windowId, WindowMode mode)
     {
         return uiController_->ChangeWindowMode(windowId, mode);
+    }
+
+    bool UiDriver::IsKnuckleSnapshotEnable()
+    {
+        return uiController_->IsKnuckleSnapshotEnable();
+    }
+
+    bool UiDriver::IsKnuckleRecordEnable()
+    {
+        return uiController_->IsKnuckleRecordEnable();
     }
 } // namespace OHOS::uitest

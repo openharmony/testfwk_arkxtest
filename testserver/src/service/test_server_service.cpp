@@ -413,4 +413,68 @@ namespace OHOS::testserver {
         HiLog::Info(LABEL_SERVICE, "MinimizeWindow over, ret: %{public}d", ret);
         return ret == OHOS::Rosen::WSError::WS_OK ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
     }
+
+    std::shared_ptr<DataShare::DataShareHelper> TestServerService::CreateDataShareHelper(const std::string &uri)
+    {
+        auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+        if (samgr == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "samgr is nullptr");
+            return nullptr;
+        }
+        auto datashareSA = samgr->CheckSystemAbility(DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID);
+        if (datashareSA == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "datashareSA is null");
+            return nullptr;
+        }
+        sptr<IRemoteObject> remoteObj = samgr->CheckSystemAbility(TEST_SERVER_SA_ID);
+        std::pair<int, std::shared_ptr<DataShare::DataShareHelper>> ret;
+        ret = DataShare::DataShareHelper::Create(remoteObj, uri, "");
+        return ret.second;
+    }
+
+    Uri TestServerService::AssembleUri(const std::string &uri, const std::string &key)
+    {
+        return Uri(uri + "&key=" + key);
+    }
+
+    void TestServerService::ReleaseDataShareHelper(std::shared_ptr<DataShare::DataShareHelper> &helper)
+    {
+        helper->Release();
+    }
+
+    ErrCode TestServerService::GetValueFromDataShare(const std::string &uri, const std::string &key, std::string &value)
+    {
+        auto helper = CreateDataShareHelper(uri);
+        if (helper == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "dataShareHelper is nullptr");
+            return TEST_SERVER_DATASHARE_FAILED;
+        }
+        string columnKeyWordName = "KEYWORD";
+        string columnValueName = "VALUE";
+        std::vector<std::string> columns = { columnKeyWordName };
+        DataShare::DataSharePredicates predicates;
+        predicates.EqualTo(columnKeyWordName, key);
+        Uri queryUri(AssembleUri(uri, key));
+        auto resultSet = helper->Query(queryUri, predicates, columns);
+        ReleaseDataShareHelper(helper);
+        if (resultSet == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "resultSet is nullptr");
+            return TEST_SERVER_DATASHARE_FAILED;
+        }
+        int32_t count = 0;
+        resultSet->GetRowCount(count);
+        if (count == 0) {
+            HiLog::Warn(LABEL_SERVICE, "resultSet is empty");
+            return TEST_SERVER_OK;
+        }
+        resultSet->GoToRow(0);
+        int32_t ret = resultSet->GetString(0, value);
+        if (ret != 0) {
+            HiLog::Error(LABEL_SERVICE, "ret is not ok");
+            return TEST_SERVER_DATASHARE_FAILED;
+        }
+        HiLog::Debug(LABEL_SERVICE, "key = %{public}s, value = %{public}s", key.c_str(), value.c_str());
+        resultSet->Close();
+        return TEST_SERVER_OK;
+    }
 } // namespace OHOS::testserver

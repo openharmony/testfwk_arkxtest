@@ -1834,6 +1834,66 @@ static void RegisterExtensionHandler()
         server.AddHandler("PointerMatrix.setPoint", setPoint);
     }
 
+    static void RegisterKnuckleOperators()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto genericClick = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            vector<Point> points;
+            auto clickTimes = 0;
+            auto pointJson0 = ReadCallArg<json>(in, INDEX_ZERO);
+            auto displayId0 = ReadArgFromJson<int32_t>(pointJson0, "displayId", UNASSIGNED);
+            auto point0 = Point(pointJson0["x"], pointJson0["y"], displayId0);
+            points.push_back(point0);
+            if (in.paramList_.size() == THREE) {
+                if (!driver.IsKnuckleRecordEnable()) {
+                    out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This action is not support.");
+                    return;
+                }
+                auto pointJson1 = ReadCallArg<json>(in, INDEX_ONE);
+                auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
+                if (displayId0 != displayId1) {
+                    out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Cross-screen operation is not suypport.");
+                    return;
+                }
+                auto point1 = Point(pointJson1["x"], pointJson1["y"], displayId1);
+                points.push_back(point1);
+                clickTimes = ReadCallArg<int32_t>(in, INDEX_TWO);
+            } else {
+                if (!driver.IsKnuckleSnapshotEnable()) {
+                    out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This action is not support.");
+                    return;
+                }
+                clickTimes = ReadCallArg<int32_t>(in, INDEX_ONE);
+            }
+            auto touch = GenericMultiClick(points, clickTimes);
+            driver.PerformKnuckleAction(touch, uiOpArgs, out.exception_);
+        };
+        auto pointerAction = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            auto &pointer = GetBackendObject<PointerMatrix>(ReadCallArg<string>(in, INDEX_ZERO));
+            if (pointer.GetFingers() != 1) {
+                out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invalid fingers");
+                return;
+            }
+            if (!CheckMultiPointerOperatorsPoint(pointer)) {
+                out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "There is not all coordinate points are set");
+                return;
+            }
+            if (!driver.IsKnuckleSnapshotEnable()) {
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This action is not support.");
+                return;
+            }
+            UiOpArgs uiOpArgs;
+            uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_ONE, uiOpArgs.swipeVelocityPps_);
+            auto touch = MultiPointerAction(pointer);
+            CheckSwipeVelocityPps(uiOpArgs);
+            driver.PerformKnuckleAction(touch, uiOpArgs, out.exception_);
+        };
+        server.AddHandler("Driver.knuckleKnock", genericClick);
+        server.AddHandler("Driver.injectKnucklePointerAction", pointerAction);
+    }
     /** Register frontendApiHandlers and preprocessors on startup.*/
     __attribute__((constructor)) static void RegisterApiHandlers()
     {
@@ -1866,5 +1926,6 @@ static void RegisterExtensionHandler()
         RegisterExtensionHandler();
         RegisterUiDriverTouchPadOperators();
         RegisterUiDriverPenOperators();
+        RegisterKnuckleOperators();
     }
 } // namespace OHOS::uitest

@@ -50,7 +50,7 @@ namespace OHOS::uitest {
         PROXIMITY_OUT = 8
     };
 
-    enum TouchToolType : uint8_t { FINGER = 0, PEN = 1 };
+    enum TouchToolType : uint8_t { FINGER = 0, PEN = 1, KNUCKLE = 8 };
 
     enum ResizeDirection : uint8_t {
         LEFT,
@@ -155,6 +155,10 @@ namespace OHOS::uitest {
         void ConvertToMouseEvents(vector<MouseEvent> &recv) const;
 
         void ConvertToPenEvents(PointerMatrix &recv) const;
+
+        bool IsSyncInject() const;
+
+        void SeTSyncInject();
     private:
         std::unique_ptr<TouchEvent[]> data_ = nullptr;
         uint32_t capacity_ = 0;
@@ -163,6 +167,7 @@ namespace OHOS::uitest {
         uint32_t size_ = 0;
         TouchToolType touchToolType_ = TouchToolType::FINGER;
         float touchPressure_ = 1.0;
+        bool syncInject_ = false;
     };
 
     /**
@@ -215,6 +220,19 @@ namespace OHOS::uitest {
     private:
         const TouchOp type_;
         const Point point_;
+    };
+
+    class GenericMultiClick : public TouchAction {
+    public:
+        GenericMultiClick(const vector<Point> points, const int32_t times) : points_(points), times_(times) {};
+
+        void Decompose(PointerMatrix &recv, const UiOpArgs &options) const override;
+
+        ~GenericMultiClick() = default;
+
+    private:
+        const vector<Point> points_;
+        const int32_t times_;
     };
 
     /**
