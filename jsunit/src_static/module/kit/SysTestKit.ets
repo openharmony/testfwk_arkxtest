@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import systemDateTime from '@ohos.systemDateTime';
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 import { BusinessError } from '@ohos.base';
 import { TAG } from '../../Constant';
@@ -106,7 +105,6 @@ class SysTestKit {
   static getRealTime(): number {
     let current = new Date().getTime();
     try {
-      current = systemDateTime.getUptime(systemDateTime.TimeType.STARTUP, false);
       console.info(`${TAG} systemDateTime.getUptime success`);
     } catch (err: Error) {
       console.error(`${TAG} failed to systemDateTime.getUptime because ` + err.message);
