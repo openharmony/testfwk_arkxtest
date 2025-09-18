@@ -601,8 +601,7 @@ export default function abilityTest() {
 | 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效。                                                                                                   |
 | 22 | clearAll() | 用例执行完毕后，进行数据和内存清理,不会还原obj对象中被mock后的函数。                                                                                                                  |
 | 23 | mockPrivateFunc | mock某个类的对象的私有函数。 |
-| 24 | mockProperty | mock某个类的对象的成员变量，将其设置为预期值，支持私有成员变量。 |
-| 25 | ignorePropertyMock | 还原obj对象中被mock的成员，对被mock后的成员有效。 |
+| 24 | mockProperty | mock某个类的对象的成员变量，将其值设置为预期值，支持私有成员变量。 |
 
 -  **使用示例：**
 
@@ -1210,8 +1209,8 @@ export default function staticTest() {
       expect(mock_result).assertEqual(3);
       expect(mock_private_result).assertEqual(4);
       // 清除mock能力
-      mocker.ignorePropertyMock(claser, "data");
-      mocker.ignorePropertyMock(claser, "priData");
+      mocker.ignoreMock(claser, "data");
+      mocker.ignoreMock(claser, "priData");
       let really_result = claser.data;
       expect(really_result).assertEqual(1);
       let really_private_result = claser.method();

@@ -70,19 +70,32 @@ class MockKit {
         obj[key] = value;
       }
     });
+    this.propertyValueMap.forEach(function (value, key, map) {
+      if (key) {
+        obj[key] = value;
+      }
+    });
   }
 
   ignoreMock(obj, method) {
     if (typeof obj !== 'object' && typeof obj !== 'function') {
       throw new Error('Not a object or static class');
     }
-    if (typeof method !== 'function') {
+    if (typeof method !== 'function' && typeof method !== 'string') {
       throw new Error('Not a function');
     }
-    let og = this.recordMockedMethod.get(method.propName);
+    let name = method;
+    if (typeof method !== 'string') {
+      name = method.propName;
+    }
+    let og = this.recordMockedMethod.get(name);
     if (og) {
-      obj[method.propName] = og;
-      this.recordMockedMethod.set(method.propName, undefined);
+      obj[name] = og;
+      this.recordMockedMethod.set(name, undefined);
+    }
+    let op = this.propertyValueMap.get(name);
+    if (op) {
+      obj[name] = op;
     }
   }
 
