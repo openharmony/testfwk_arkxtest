@@ -69,6 +69,16 @@ public:
         return false;
     }
 
+    bool IsKnuckleSnapshotEnable() const override
+    {
+        return false;
+    }
+
+    bool IsKnuckleRecordEnable() const override
+    {
+        return false;
+    }    
+
     void SetWorkable(bool wb)
     {
         this->workable_ = wb;
