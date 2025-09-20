@@ -575,6 +575,7 @@ export default function abilityTest() {
 > -  仅支持mock自定义对象,不支持mock系统API对象。
 > -  不支持mock对象的私有函数。 
 -  **接口列表：**
+  
 **Mockit相关接口**
   
 Mockit是mock的基础类，用于指定需要mock的实例和方法。
@@ -585,6 +586,7 @@ Mockit是mock的基础类，用于指定需要mock的实例和方法。
 | 3 | ignoreMock | 使用ignoreMock可以还原实例中被mock后的函数，对被mock后的函数有效。                                                                                                   |
 | 4 | clear | 用例执行完毕后，进行被mocker实例进行还原处理（还原之后对象恢复被mock之前的功能）。                                                                                                  |
 | 5 | clearAll | 用例执行完毕后，进行数据和内存清理,不会还原实例中被mock后的函数。                                                                                                                  |  
+  
 **VerificationMode相关接口**
   
 VerificationMode用于验证被mock的函数的调用次数。
@@ -595,6 +597,7 @@ VerificationMode用于验证被mock的函数的调用次数。
 | 3 | atLeast | 验证函数至少调用的次数符合预期。                                                                                                                                |
 | 4 | atMost | 验证函数至多调用的次数符合预期。                                                                                                                               |
 | 5 | never | 验证函数从未被调用过。                                                                                                                                |
+  
 **when相关接口**
   
 when是一个函数，用于设置函数期望被mock的值。
