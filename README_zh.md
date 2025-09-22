@@ -598,8 +598,10 @@ export default function abilityTest() {
 | 18 | atLeast(count) | 验证行为至少调用过count次。                                                                                                                                |
 | 19 | atMost(count) | 验证行为至多调用过count次。                                                                                                                                |
 | 20 | never | 验证行为从未发生过。                                                                                                                                      |
-| 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效。                                                                                                   |
-| 22 | clearAll() | 用例执行完毕后，进行数据和内存清理,不会还原obj对象中被mock后的函数。                                                                                                                  |                                                                                                                            |
+| 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数/属性，对被mock后的函数/属性有效。                                                                                       |
+| 22 | clearAll() | 用例执行完毕后，进行数据和内存清理,不会还原obj对象中被mock后的函数。                                                                                                                  |
+| 23 | mockPrivateFunc | mock某个类的对象的私有函数。 |
+| 24 | mockProperty | mock某个类的对象的成员变量，将其值设置为预期值，支持私有成员变量。 |
 
 -  **使用示例：**
 
@@ -1055,7 +1057,6 @@ export default function verifyTimesTest() {
 }
 ```
 
-
 **示例12：verify atLeast函数的使用(验证函数调用次数)**
 
 ```javascript
@@ -1126,6 +1127,94 @@ export default function staticTest() {
       mocker.clear(ClassName);
       let really_result1 = ClassName.method_1();
       expect(really_result1).assertEqual('ClassName_method_1_call');
+    })
+  })
+}
+```
+
+**示例14：mock私有函数**
+
+> @since1.0.25 支持
+
+```javascript
+import { describe, it, expect, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
+
+class ClassName {
+  constructor() {
+  }
+  method(arg: number):number {
+    return this.method_1(arg);
+  }
+  private method_1(arg: number) {
+    return arg;
+  }
+}
+
+export default function staticTest() {
+  describe('privateTest', () => {
+    it('private_001', 0, () => {
+      let claser: ClassName = new ClassName(); 
+      let really_result = claser.method(123);
+      expect(really_result).assertEqual(123);
+      // 1.创建MockKit对象
+      let mocker: MockKit = new MockKit();
+      // 2.mock  类ClassName对象的私有方法，比如method_1
+      let func_1: Function = mocker.mockPrivateFunc(claser, "method_1");
+      // 3.期望被mock后的函数返回结果456
+      when(func_1)(ArgumentMatchers.any).afterReturn(456);
+      let mock_result = claser.method(123);
+      expect(mock_result).assertEqual(456);
+      // 清除mock能力
+      mocker.clear(claser);
+      let really_result1 = claser.method(123);
+      expect(really_result1).assertEqual(123);
+    })
+  })
+}
+```
+
+**示例14：mock成员变量**
+
+> @since1.0.25 支持
+
+```javascript
+import { describe, it, expect, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
+
+class ClassName {
+  constructor() {
+  }
+  data = 1;
+  private priData = 2;
+  method() {
+    return this.priData;
+  }
+}
+
+export default function staticTest() {
+  describe('propertyTest', () => {
+    it('property_001', 0, () => {
+      let claser: ClassName = new ClassName(); 
+      let data = claser.data;
+      expect(data).assertEqual(1);
+      let priData = claser.method();
+      expect(priData).assertEqual(2);
+      // 1.创建MockKit对象
+      let mocker: MockKit = new MockKit();
+      // 2.mock  类ClassName对象的成员变量data
+      mocker.mockProperty(claser, "data", 3);
+      mocker.mockProperty(claser, "priData", 4);
+      // 3.期望被mock后的成员和私有成员的值分别为3，4
+      let mock_result = claser.data;
+      let mock_private_result = claser.method();
+      expect(mock_result).assertEqual(3);
+      expect(mock_private_result).assertEqual(4);
+      // 清除mock能力
+      mocker.ignoreMock(claser, "data");
+      mocker.ignoreMock(claser, "priData");
+      let really_result = claser.data;
+      expect(really_result).assertEqual(1);
+      let really_private_result = claser.method();
+      expect(really_private_result).assertEqual(2);
     })
   })
 }
@@ -2086,7 +2175,7 @@ import { PerfMetric, PerfTest, PerfTestStrategy, PerfMeasureResult } from '@kit.
   import { describe, it, expect } from '@ohos/hypium';
   import { PerfMetric, PerfTest, PerfTestStrategy, PerfMeasureResult } from '@kit.TestKit';
   import { PerfUtils } from '../../../main/ets/utils/PerfUtils';
-
+  
   export default function PerfTestTest() {
     describe('PerfTestTest', () => {
       it('testExample0', 0, async (done: Function) => {
@@ -2162,7 +2251,7 @@ import { PerfMetric, PerfTest, PerfTestStrategy, PerfMeasureResult } from '@kit.
   import { PerfMetric, PerfTest, PerfTestStrategy, PerfMeasureResult } from '@kit.TestKit';
   import { abilityDelegatorRegistry, Driver, ON } from '@kit.TestKit';
   import { Want } from '@kit.AbilityKit';
-
+  
   const delegator: abilityDelegatorRegistry.AbilityDelegator = abilityDelegatorRegistry.getAbilityDelegator();
   export default function PerfTestTest() {
     describe('PerfTestTest', () => {
