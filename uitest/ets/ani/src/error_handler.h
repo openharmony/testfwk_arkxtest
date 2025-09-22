@@ -80,7 +80,7 @@ namespace OHOS::uitest {
                 return ANI_ERROR;
             }
             ani_method method;
-            if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", "DLescompat/Error;:V", &method)) {
+            if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", "ILescompat/Error;:V", &method)) {
                 HiLog::Error(LABEL, "Not found method of BusinessError");
                 return ANI_ERROR;
             }
@@ -90,7 +90,7 @@ namespace OHOS::uitest {
                 return ANI_ERROR;
             }
             ani_object obj;
-            ani_double dCode(code);
+            ani_int dCode(code);
             if (env->Object_New(cls, method, &obj, dCode, error) != ANI_OK) {
                 HiLog::Error(LABEL, "Object_New error fail");
                 return ANI_ERROR;
