@@ -77,7 +77,7 @@ public:
     bool IsKnuckleRecordEnable() const override
     {
         return false;
-    }    
+    }
 
     void SetWorkable(bool wb)
     {
