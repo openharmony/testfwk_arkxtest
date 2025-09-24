@@ -27,11 +27,11 @@ function assertTrueFun(actualValue) {
 }
 
 function assertEqualFun(actualValue, args) {
-    let msg = 'expect ' + actualValue + ' equals ' + args[0];
+    let msg = 'expect ' + actualValue.toString() + ' equals ' + args[0].toString();
     if (actualValue === args[0]) { // 数值相同,提示数据类型
         const aClassName = Object.prototype.toString.call(actualValue);
         const bClassName = Object.prototype.toString.call(args[0]);
-        msg = 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName + 'strict mode inspect type';
+        msg = 'expect ' + actualValue.toString() + aClassName + ' equals ' + args[0].toString() + bClassName + 'strict mode inspect type';
     }
     let result = {
         pass: (actualValue) === args[0],

@@ -451,6 +451,7 @@ export default function callBackTestTest() {
 | 4   | actionStart        | 添加用例执行过程打印自定义日志。  |
 | 5   | actionEnd        | 添加用例执行过程打印自定义日志。  |
 | 6   | existKeyword        | 检测hilog日志中是否打印。   |
+| 7 | cleanLog | 清理被测样机的hilog缓存。 |
 
 ##### 获取当前测试用例所属的测试套名称
 
@@ -549,13 +550,14 @@ const domain = 0;
 const tag = 'SysTestKitTest'
 
 function logTest() {
-  hilog.debug(domain, 'test', `logTest called selfTest`);
+  hilog.info(domain, 'test', `logTest called selfTest`);
 }
 
 export default function abilityTest() {
   describe('SysTestKitTest', () => {
 
     it("testExistKeyword", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, async () => {
+      await SysTestKit.cleanLog();
       hilog.debug(domain, tag, `testExistKeyword start `);
       logTest();
       const isCalled = await SysTestKit.existKeyword('logTest');
