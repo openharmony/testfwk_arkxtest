@@ -450,7 +450,7 @@ export default function callBackTestTest() {
 | 3   | getItAttribute        | 获取当初测试用例等级。       |
 | 4   | actionStart        | 添加用例执行过程打印自定义日志。  |
 | 5   | actionEnd        | 添加用例执行过程打印自定义日志。  |
-| 6   | existKeyword        | 检测hilog日志中是否打印。   |
+| 6   | existKeyword        | 检测hilog日志中是否打印，仅支持检测单行日志。 |
 | 7 | cleanLog | 清理被测样机的hilog缓存。 |
 
 ##### 获取当前测试用例所属的测试套名称
