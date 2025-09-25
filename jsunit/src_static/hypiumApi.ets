@@ -44,9 +44,19 @@ const hypiumBeforeEach = (func: HookFuncType) => {
     return (core as Core).beforeEach(func);
   }
 };
+const hypiumBeforeEachIt = (func: HookFuncType) => {
+  if (core) {
+    return (core as Core).beforeEachIt(func);
+  }
+};
 const hypiumAfterEach = (func: HookFuncType) => {
   if (core) {
     return (core as Core).afterEach(func);
+  }
+};
+const hypiumAfterEachIt = (func: HookFuncType) => {
+  if (core) {
+    return (core as Core).afterEachIt(func);
   }
 };
 const hypiumBeforeAll = (func: HookFuncType) => {
@@ -98,7 +108,9 @@ export {
   hypiumIt,
   hypiumBeforeAll,
   hypiumBeforeEach,
+  hypiumBeforeEachIt,
   hypiumAfterEach,
+  hypiumAfterEachIt,
   hypiumAfterAll,
   hypiumExpect,
   hypiumBeforeItSpecified,

@@ -33,7 +33,9 @@ class StaticSuite {
   public beforeAll: Set<(() => void) | (() => Promise<void>)>;
   public afterAll: Set<(() => void) | (() => Promise<void>)>;
   public beforeEach: Set<(() => void) | (() => Promise<void>)>;
+  public beforeEachIt: Set<(() => void) | (() => Promise<void>)>;
   public afterEach: Set<(() => void) | (() => Promise<void>)>;
+  public afterEachIt: Set<(() => void) | (() => Promise<void>)>;
   public hookError: Error | null;
   public isSkip: boolean;
   public skipReason: string;
@@ -45,7 +47,9 @@ class StaticSuite {
     this.beforeAll = new Set<(() => void) | (() => Promise<void>)>();
     this.afterAll = new Set<(() => void) | (() => Promise<void>)>();
     this.beforeEach = new Set<(() => void) | (() => Promise<void>)>();
+    this.beforeEachIt = new Set<(() => void) | (() => Promise<void>)>();
     this.afterEach = new Set<(() => void) | (() => Promise<void>)>();
+    this.afterEachIt = new Set<(() => void) | (() => Promise<void>)>();
     this.beforeItSpecified = new Map<string | string[], (() => void) | (() => Promise<void>)>();
     this.afterItSpecified = new Map<string | string[], (() => void) | (() => Promise<void>)>();
     this.duration = 0;
@@ -114,6 +118,15 @@ class StaticSuite {
           if (isBreakOnError) {
             break;
           }
+          if (this.beforeEachIt && this.beforeEachIt.size > 0) {
+            this.beforeEachIt.forEach((func: (() => void) | (() => Promise<void>)) => {
+              try {
+                (func as () => void)();
+              } catch (e: Error) {
+                console.error(`${TAG}${e.stack}`);
+              }
+            });
+          }
           if (this.beforeEach && this.beforeEach.size > 0) {
             this.beforeEach.forEach((func: (() => void) | (() => Promise<void>)) => {
               try {
@@ -134,11 +147,31 @@ class StaticSuite {
               }
             });
           }
+          if (this.afterEachIt && this.afterEachIt.size > 0) {
+            this.afterEachIt.forEach((func: (() => void) | (() => Promise<void>)) => {
+              try {
+                (func as () => void)();
+              } catch (e: Error) {
+                console.error(`${TAG}${e.stack}`);
+              }
+            });
+          }
         }
       }
       const clength = this.childSuites.length;
       if (clength > 0) {
         for (let i = 0; i < clength; i++) {
+          let beforeEachIt = new Set<(() => void) | (() => Promise<void>)>();
+          for (const hookItem of this.beforeEachIt) {
+            beforeEachIt.add(hookItem)
+          }
+          for (const hookItem of this.childSuites[i].beforeEachIt) {
+            beforeEachIt.add(hookItem)
+          }
+          this.childSuites[i].beforeEachIt = beforeEachIt;
+          for (const hookItem of this.afterEachIt) {
+            this.childSuites[i].afterEachIt.add(hookItem)
+          }
           const suite = this.childSuites[i];
           let isBreakOnError = this.isRun(coreContext);
           if (isBreakOnError) {
@@ -250,6 +283,19 @@ class StaticSuite {
           await coreContext.fireEvents('spec', 'specStart');
           try {
             await this.runBeforeItSpecified(this.beforeItSpecified, specItem);
+            for (const hookItem of this.beforeEachIt) {
+              if (hookItem) {
+                try {
+                  await (hookItem as () => Promise<void>)();
+                } catch (error) {
+                  if (error) {
+                    const err = error as Error;
+                    err.message += `, error in beforeEachIt function`;
+                    throw err;
+                  }
+                }
+              }
+            }
             for (const hookItem of this.beforeEach) {
               if (hookItem) {
                 try {
@@ -272,6 +318,17 @@ class StaticSuite {
                 if (error) {
                   const err = error as Error;
                   err.message += `, error in afterEach function`;
+                  throw err;
+                }
+              }
+            }
+            for (const hookItem of this.afterEachIt) {
+              try {
+                await (hookItem as () => Promise<void>)();
+              } catch (error) {
+                if (error) {
+                  const err = error as Error;
+                  err.message += `, error in afterEachIt function`;
                   throw err;
                 }
               }
@@ -299,6 +356,18 @@ class StaticSuite {
 
   async asyncRunChildSuites(coreContext: Core) {
     for (let i = 0; i < this.childSuites.length; i++) {
+      let beforeEachIt = new Set<(() => void) | (() => Promise<void>)>();
+      for (const hookItem of this.beforeEachIt) {
+        beforeEachIt.add(hookItem)
+      }
+      for (const hookItem of this.childSuites[i].beforeEachIt) {
+        beforeEachIt.add(hookItem)
+      }
+      this.childSuites[i].beforeEachIt = beforeEachIt;
+      for (const hookItem of this.afterEachIt) {
+        this.childSuites[i].afterEachIt.add(hookItem)
+      }
+
       const isBreakOnError = this.isRun(coreContext);
       if (isBreakOnError) {
         console.info(`${TAG}break description : ${this.description}`);
