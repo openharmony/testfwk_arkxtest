@@ -54,18 +54,24 @@ export default class SysTestKit {
   }
 
   static async existKeyword(keyword, timeout) {
-    let reg = new RegExp(/^[a-zA-Z0-9]{1,}$/);
-    if (!reg.test(keyword)) {
-      throw new Error('keyword must contain more than one string, and only letters and numbers are supported.');
-    }
     timeout = timeout || 4;
 
     let searchResult = false;
-    let cmd = 'hilog -x | grep -i \'' + keyword + '\' | wc -l';
+    let cmd = 'hilog -x | grep -i \'' + keyword + '\'';
     await executePromise(cmd, timeout).then((data) => {
       searchResult = data;
     });
     return searchResult;
+  }
+
+  static async clearLog() {
+    let cmd = 'hilog -r | hilog -G 16M';
+    try {
+      await SysTestKit.delegator.executeShellCommand(cmd);
+      return true;
+    } catch (error) {
+      throw error;
+    }
   }
   static async print(message) {
     if ('printSync' in SysTestKit.delegator) {
@@ -96,7 +102,14 @@ function executePromise(cmd, timeout) {
       (error, data) => {
         console.info(`${TAG}existKeyword CallBack: err : ${JSON.stringify(error)}`);
         console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(data)}`);
-        resolve(parseInt(data.stdResult) > 3 ? true : false);
+        let lines = data.stdResult.split("\n");
+        let num = lines.length;
+        for (let line of lines) {
+          if (line.includes("C01330") || line.includes("C01303") || line ==="") {
+            num--;
+          }
+        }
+        resolve(num > 0 ? true : false);
       });
   });
 }
