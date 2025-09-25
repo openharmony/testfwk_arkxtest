@@ -52,7 +52,11 @@ export declare function afterItSpecified(testCaseNames: Array<string> | string, 
 
 export declare function beforeEach(callback: Function): void
 
+export declare function beforeEachIt(callback: Function): void
+
 export declare function afterEach(callback: Function): void
+
+export declare function afterEachIt(callback: Function): void
 
 export declare function beforeAll(callback: Function): void
 

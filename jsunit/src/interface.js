@@ -36,6 +36,12 @@ const beforeEach = function (func) {
 const afterEach = function (func) {
     return Reflect.has(core, 'afterEach') ? core.afterEach(func) : (func) => { };
 };
+const beforeEachIt = function (func) {
+    return Reflect.has(core, 'beforeEachIt') ? core.beforeEachIt(func) : (func) => { };
+};
+const afterEachIt = function (func) {
+    return Reflect.has(core, 'afterEachIt') ? core.afterEachIt(func) : (func) => { };
+};
 const beforeAll = function (func) {
     return Reflect.has(core, 'beforeAll') ? core.beforeAll(func) : (func) => { };
 };
@@ -64,5 +70,5 @@ xit.reason = (reason) => {
 };
 
 export {
-    describe, it, beforeAll, beforeEach, afterEach, afterAll, expect, beforeItSpecified, afterItSpecified, xdescribe, xit
+    describe, it, beforeAll, beforeEach, beforeEachIt, afterEach, afterEachIt, afterAll, expect, beforeItSpecified, afterItSpecified, xdescribe, xit
 };
