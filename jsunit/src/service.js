@@ -666,7 +666,7 @@ SuiteService.Suite = class {
                     suite.beforeEachIt.splice(0, 0, this.beforeEachIt[beforeEachItSize - j]);
                 }
                 for (let j = 0; j < afterEachItSize; j++) {
-                    suite.beforeEachIt.push(this.afterEachIt[j]);
+                    suite.afterEachIt.push(this.afterEachIt[j]);
                 }
                 let isBreakOnError = this.isRun(coreContext);
                 if (isBreakOnError) {
@@ -752,7 +752,7 @@ SuiteService.Suite = class {
                 this.childSuites[i].beforeEachIt.splice(0, 0, this.beforeEachIt[beforeEachItSize - j]);
             }
             for (let j = 0; j < afterEachItSize; j++) {
-                this.childSuites.beforeEachIt.push(this.afterEachIt[j]);
+                this.childSuites[i].afterEachIt.push(this.afterEachIt[j]);
             }
             let isBreakOnError = this.isRun(coreContext);
             if (isBreakOnError) {
