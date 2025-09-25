@@ -195,7 +195,6 @@ namespace OHOS::uitest {
     struct ApiMethod {
         string_view apiId_ = "";
         vector<string> paramTypes_;
-        size_t paramCount = 0;
         size_t defaultArgCount_ = 0;
         bool convertError_ = false;
     };
@@ -247,8 +246,7 @@ namespace OHOS::uitest {
                 auto paramTypes = vector<string>();
                 size_t hasDefaultArg = 0;
                 ParseMethodSignature(methodDef.signature_, paramTypes, hasDefaultArg);
-                ApiMethod method {methodDef.name_, paramTypes, paramTypes.size() - 1,
-                    hasDefaultArg, methodDef.convertError_};
+                ApiMethod method {methodDef.name_, paramTypes, hasDefaultArg, methodDef.convertError_};
                 sApiArgTypesMap.insert(make_pair(string(methodDef.name_), method));
             }
         }
@@ -259,30 +257,26 @@ namespace OHOS::uitest {
         auto paramTypesForGetAllProperties = vector<string>();
         paramTypesForGetAllProperties.push_back("");
         string getAllProperties = "Component.getAllProperties";
-        ApiMethod methodForGetAllProperties{getAllProperties, paramTypesForGetAllProperties,
-            paramTypesForGetAllProperties.size(), 0, false};
+        ApiMethod methodForGetAllProperties{getAllProperties, paramTypesForGetAllProperties, 0, false};
         sApiArgTypesMap.insert(make_pair(getAllProperties, methodForGetAllProperties));
 
         auto paramTypesForAamsWorkMode = vector<string>();
         paramTypesForAamsWorkMode.push_back("int");
         paramTypesForAamsWorkMode.push_back("");
         string setAamsWorkMode = "Driver.SetAamsWorkMode";
-        ApiMethod methodForAamsWorkMode {setAamsWorkMode, paramTypesForAamsWorkMode,
-            paramTypesForAamsWorkMode.size(), 0, false};
+        ApiMethod methodForAamsWorkMode {setAamsWorkMode, paramTypesForAamsWorkMode, 0, false};
         sApiArgTypesMap.insert(make_pair(setAamsWorkMode, methodForAamsWorkMode));
 
         auto paramTypesForCloseAamsEvent = vector<string>();
         paramTypesForCloseAamsEvent.push_back("");
         string closeAamsEvent = "Driver.CloseAamsEvent";
-        ApiMethod methodForCloseAamsEvent{closeAamsEvent, paramTypesForCloseAamsEvent,
-            paramTypesForCloseAamsEvent.size(), 0, false};
+        ApiMethod methodForCloseAamsEvent{closeAamsEvent, paramTypesForCloseAamsEvent, 0, false};
         sApiArgTypesMap.insert(make_pair(closeAamsEvent, methodForCloseAamsEvent));
 
         auto paramTypesForOpenAamsEvent = vector<string>();
         paramTypesForOpenAamsEvent.push_back("");
         string openAamsEvent = "Driver.OpenAamsEvent";
-        ApiMethod methodForOpenAamsEvent{openAamsEvent, paramTypesForOpenAamsEvent,
-            paramTypesForOpenAamsEvent.size(), 0, false};
+        ApiMethod methodForOpenAamsEvent{openAamsEvent, paramTypesForOpenAamsEvent, 0, false};
         sApiArgTypesMap.insert(make_pair(openAamsEvent, methodForOpenAamsEvent));
     }
 
@@ -612,39 +606,46 @@ namespace OHOS::uitest {
     /** Checks ApiCallInfo data, deliver exception and abort invocation if check fails.*/
     static void APiCallInfoChecker(const ApiCallInfo &in, ApiReplyInfo &out)
     {
-        auto range = sApiArgTypesMap.equal_range(in.apiId_);
-        bool foundPossibleOverload = false;
-        string typeMismatchMsg;
-        for (auto it = range.first; it != range.second; ++it) {
-            const auto& method = it->second;
+        auto count = sApiArgTypesMap.count(in.apiId_);
+        // return nullptr by default
+        out.resultValue_ = nullptr;
+        auto find = sApiArgTypesMap.find(in.apiId_);
+        size_t index = 0;
+        while (index < count) {
+            if (find == sApiArgTypesMap.end()) {
+                return;
+            }
+            bool checkArgNum = false;
+            bool checkArgType = true;
+            out.exception_ = {NO_ERROR, "No Error"};
+            auto &types = find->second.paramTypes_;
+            auto argSupportDefault = find->second.defaultArgCount_;
             // check argument count.(last item of "types" is return value type)
-            const size_t argc = in.paramList_.size();
-            const size_t minArgc = method.paramCount - method.defaultArgCount_;
-            const size_t maxArgc = method.paramCount;
-            if (argc < minArgc || argc > maxArgc) {
+            auto maxArgc = types.size() - 1;
+            auto minArgc = maxArgc - argSupportDefault;
+            auto argc = in.paramList_.size();
+            checkArgNum = argc <= maxArgc && argc >= minArgc;
+            if (!checkArgNum) {
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Illegal argument count");
+                ++find;
+                ++index;
                 continue;
             }
             // check argument type
-            foundPossibleOverload = true;
-            bool allTypesMatch = true;
             for (size_t idx = 0; idx < argc; idx++) {
-                const bool isDefArg = (idx >= minArgc);
-                CheckCallArgType(method.paramTypes_[idx], in.paramList_[idx], isDefArg, out.exception_);
-                out.exception_.code_ = NO_ERROR;
+                auto isDefArg = (idx >= minArgc) ? true : false;
+                CheckCallArgType(types.at(idx), in.paramList_.at(idx), isDefArg, out.exception_);
                 if (out.exception_.code_ != NO_ERROR) {
-                    allTypesMatch = false;
-                    typeMismatchMsg = "Check arg" + to_string(idx) + " failed: " + out.exception_.message_;
+                    out.exception_.message_ = "Check arg" + to_string(idx) + " failed: " + out.exception_.message_;
+                    checkArgType = false;
                     break;
                 }
             }
-            if (allTypesMatch) {
+            if (checkArgType) {
                 return;
             }
-        }
-        if (foundPossibleOverload) {
-            out.exception_.message_ = typeMismatchMsg.empty() ? "Parameter type mismatch" : typeMismatchMsg;
-        } else {
-            out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Illegal argument count");
+            ++find;
+            ++index;
         }
         ConvertError(out);
     }
