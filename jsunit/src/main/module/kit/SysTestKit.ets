@@ -133,7 +133,7 @@ class SysTestKit {
     return searchResult;
   }
 
-  static async cleanLog(): Promise<boolean> {
+  static async clearLog(): Promise<boolean> {
     let cmd = "hilog -r | hilog -G 16M";
     const delegator = SysTestKit.delegator;
     try {
