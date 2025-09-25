@@ -57,7 +57,11 @@ export function afterItSpecified(
 
 export function beforeEach(callback: Function): void;
 
+export function beforeEachIt(callback: Function): void;
+
 export function afterEach(callback: Function): void;
+
+export function afterEachIt(callback: Function): void;
 
 export function beforeAll(callback: Function): void;
 
