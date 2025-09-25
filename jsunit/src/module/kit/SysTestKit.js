@@ -64,7 +64,7 @@ export default class SysTestKit {
     return searchResult;
   }
 
-  static async cleanLog() {
+  static async clearLog() {
     let cmd = 'hilog -r | hilog -G 16M';
     try {
       await SysTestKit.delegator.executeShellCommand(cmd);
