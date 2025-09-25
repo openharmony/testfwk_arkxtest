@@ -135,6 +135,6 @@ export declare class SysTestKit {
     static actionStart(tag: string): void
     static actionEnd(tag: string): void
     static existKeyword(keyword: string, timeout?: number): boolean
-    static cleanLog(): boolean
+    static clearLog(): boolean
 }
 
