@@ -19,7 +19,7 @@ import DataDriver from './src/module/config/DataDriver';
 import ExpectExtend from './src/module/assert/ExpectExtend';
 import OhReport from './src/module/report/OhReport';
 import SysTestKit from './src/module/kit/SysTestKit';
-import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified, xdescribe, xit } from './src/interface';
+import { describe, beforeAll, beforeEach, afterEach, beforeEachIt, afterEachIt, afterAll, it, expect, beforeItSpecified, afterItSpecified, xdescribe, xit } from './src/interface';
 import { MockKit, when } from './src/module/mock/MockKit';
 import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
 import worker from '@ohos.worker';
@@ -255,7 +255,7 @@ export {
     ExpectExtend,
     OhReport,
     SysTestKit,
-    describe, beforeAll, beforeEach, afterEach, afterAll, it, expect, beforeItSpecified, afterItSpecified, xdescribe, xit,
+    describe, beforeAll, beforeEach, afterEach, beforeEachIt, afterEachIt, afterAll, it, expect, beforeItSpecified, afterItSpecified, xdescribe, xit,
     MockKit, when,
     ArgumentMatchers
 };

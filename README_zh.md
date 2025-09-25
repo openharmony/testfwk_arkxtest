@@ -41,14 +41,16 @@ arkxtest
 | 1   | describe          | 定义一个测试套，支持两个参数：测试套名称和测试套函数。其中测试套函数不能是异步函数。                             |
 | 2   | beforeAll         | 在测试套内定义一个预置条件，在所有测试用例开始前执行且仅执行一次，支持一个参数：预置动作函数。                        |
 | 3   | beforeEach        | 在测试套内定义一个单元预置条件，在每条测试用例开始前执行，执行次数与it定义的测试用例数一致，支持一个参数：预置动作函数。          |
-| 4   | afterEach         | 在测试套内定义一个单元清理条件，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致，支持一个参数：清理动作函数。          |
-| 5   | afterAll          | 在测试套内定义一个清理条件，在所有测试用例结束后执行且仅执行一次，支持一个参数：清理动作函数。                        |
-| 6   | beforeItSpecified | @since1.0.15在测试套内定义一个单元预置条件，仅在指定测试用例开始前执行，支持两个参数：单个用例名称或用例名称数组、预置动作函数。 |
-| 7   | afterItSpecified  | @since1.0.15在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行，支持两个参数：单个用例名称或用例名称数组、清理动作函数。 |
-| 8   | it                | 定义一条测试用例，支持三个参数：用例名称，过滤参数和用例函数。                                        |
-| 9   | expect            | 支持bool类型判断等多种断言方法。                                                     |
-| 10  | xdescribe    | @since1.0.17定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。                             |
-| 11  | xit                | @since1.0.17定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。                         |
+| 4 | beforeEachIt | @since1.0.25 在测试套内定义一个单元预置条件，在每条测试用例开始前执行，支持一个参数：预置动作函数。<br />外层测试套定义的beforeEachIt会在内部测试套中的测试用例执行前执行。 |
+| 5   | afterEach         | 在测试套内定义一个单元清理条件，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致，支持一个参数：清理动作函数。          |
+| 6 | afterEachIt | @since1.0.25 在测试套内定义一个单元预置条件，在每条测试用例结束后执行，支持一个参数：预置动作函数。<br />外层测试套定义的afterEachIt会在内部测试套中的测试用例执行结束后执行。 |
+| 7   | afterAll          | 在测试套内定义一个清理条件，在所有测试用例结束后执行且仅执行一次，支持一个参数：清理动作函数。                        |
+| 8   | beforeItSpecified | @since1.0.15在测试套内定义一个单元预置条件，仅在指定测试用例开始前执行，支持两个参数：单个用例名称或用例名称数组、预置动作函数。 |
+| 9   | afterItSpecified  | @since1.0.15在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行，支持两个参数：单个用例名称或用例名称数组、清理动作函数。 |
+| 10  | it                | 定义一条测试用例，支持三个参数：用例名称，过滤参数和用例函数。                                        |
+| 11  | expect            | 支持bool类型判断等多种断言方法。                                                     |
+| 12 | xdescribe    | @since1.0.17定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。                             |
+| 13 | xit                | @since1.0.17定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。                         |
 
 
 beforeItSpecified, afterItSpecified 示例代码：
@@ -77,6 +79,43 @@ export default function beforeItSpecifiedTest() {
       let b: string = 'b';
       expect(a).assertContain(b);
       expect(a).assertEqual(a);
+    })
+  })
+}
+```
+
+beforeEachIt, afterEachIt 示例代码：
+
+```javascript
+import { describe, beforeEach, afterEach, beforeEachIt, afterEachIt, it, expect } from '@ohos/hypium';
+let str = "";
+export default function test() {
+  describe('test0', () => {
+    beforeEach(async () => {
+      str += "A"
+    })
+    beforeEachIt(async () => {
+      str += "B"
+    })
+    afterEach(async () => {
+      str += "C"
+    })
+    afterEachIt(async () => {
+      str += "D"
+    })
+    it('test0000', 0, () => {
+      expect(str).assertEqual("BA");
+    })
+    describe('test1', () => {
+      beforeEach(async () => {
+        str += "E"
+      })
+      beforeEachIt(async () => {
+        str += "F"
+      })
+      it('test1111', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async () => {
+        expect(str).assertEqual("BACDBFE");
+      })
     })
   })
 }

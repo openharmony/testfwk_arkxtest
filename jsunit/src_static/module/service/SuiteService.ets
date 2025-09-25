@@ -200,6 +200,13 @@ class SuiteService {
     }
   }
 
+  beforeEachIt(func: HookFuncType) {
+    const core = this.coreContext;
+    if (core !== null) {
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.beforeEachIt.add(fn);
+    }
+  }
   beforeItSpecified(itDescs: string | string[], func: HookFuncType) {
     const core = this.coreContext;
     if (core !== null) {
@@ -229,6 +236,14 @@ class SuiteService {
     if (core) {
       const fn = this.handleHookFunction(core as Core, func);
       this.currentRunningSuite.afterEach.add(fn);
+    }
+  }
+
+  afterEachIt(func: HookFuncType) {
+    const core = this.coreContext;
+    if (core) {
+      const fn = this.handleHookFunction(core as Core, func);
+      this.currentRunningSuite.afterEachIt.add(fn);
     }
   }
 
@@ -584,11 +599,17 @@ class SuiteService {
       beforeEach: (func: HookFuncType) => {
         return _this.beforeEach(func);
       },
+      beforeEachIt: (func: HookFuncType) => {
+        return _this.beforeEachIt(func);
+      },
       afterAll: (func: HookFuncType) => {
         return _this.afterAll(func);
       },
       afterEach: (func: HookFuncType) => {
         return _this.afterEach(func);
+      },
+      afterEachIt: (func: HookFuncType) => {
+        return _this.afterEachIt(func);
       },
     };
   }
