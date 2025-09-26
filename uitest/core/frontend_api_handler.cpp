@@ -1065,10 +1065,6 @@ namespace OHOS::uitest {
         }
         eventOptionsInfo.windowType = windowChangeType;
 
-        if (paramInSize != FOUR) {
-            return;
-        }
-
         auto options = ReadCallArg<json>(in, INDEX_TWO);
         if (options.contains("bundleName")) {
             eventOptionsInfo.isExistbundleName = true;
@@ -1088,10 +1084,6 @@ namespace OHOS::uitest {
             return;
         }
         eventOptionsInfo.componentType = componentEventType;
-
-        if (paramInSize != FOUR) {
-            return;
-        }
 
         auto options = ReadCallArg<json>(in, INDEX_TWO);
         ParseCommonOptions(options, eventOptionsInfo, out);
