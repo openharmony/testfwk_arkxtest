@@ -588,7 +588,6 @@ namespace OHOS::uitest {
     constexpr FrontendMethodDef UI_EVENT_OBSERVER_METHODS[] = {
 	    // callback<UIElementInfo> saved in js, works as callbackRef in c++.
         {"UIEventObserver.once", "(string, string):void", false, true},
-        {"UIEventObserver.once", "(string, int, string):void", false, true, true},
         {"UIEventObserver.once", "(string, int, WindowChangeOptions, string):void", false, true, true},
         {"UIEventObserver.once", "(string, int, ComponentEventOptions, string):void", false, true, true},
     };
