@@ -14,9 +14,10 @@
  */
 
 function assertFalse(actualValue) {
+    let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue : actualValue.toString();
     return {
         pass: (actualValue) === false,
-        message: 'expect false, actualValue is ' + actualValue
+        message: 'expect false, actualValue is ' + actualValueStr
     };
 }
 

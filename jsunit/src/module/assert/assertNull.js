@@ -14,9 +14,10 @@
  */
 
 function assertNull(actualValue) {
+    let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue : actualValue.toString();
     return {
         pass: (actualValue) === null,
-        message: 'expect null, actualValue is ' + (actualValue)
+        message: 'expect null, actualValue is ' + (actualValueStr)
     };
 }
 
