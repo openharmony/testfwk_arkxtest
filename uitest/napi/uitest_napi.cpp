@@ -163,6 +163,17 @@ namespace OHOS::uitest {
             NAPI_CALL_BASE(env, napi_get_null(env, pOut), NAPI_ERR);
             return napi_ok;
         }
+        if (type == nlohmann::detail::value_t::object) {
+            NAPI_CALL_BASE(env, napi_create_object(env, pOut), NAPI_ERR);
+      
+            for (auto& [key, value] : in.items()) {
+                napi_value jsKey, jsValue;
+                NAPI_CALL_BASE(env, napi_create_string_utf8(env, key.c_str(), NAPI_AUTO_LENGTH, &jsKey), NAPI_ERR);
+                NAPI_CALL_BASE(env, UnmarshalObject(env, value, &jsValue, jsThis), NAPI_ERR);
+                NAPI_CALL_BASE(env, napi_set_property(env, *pOut, jsKey, jsValue), NAPI_ERR);
+            }
+            return napi_ok;
+        }
         if (type != nlohmann::detail::value_t::string) { // non-string value, convert and return object
             NAPI_CALL_BASE(env, napi_create_string_utf8(env, in.dump().c_str(), NAPI_AUTO_LENGTH, pOut), NAPI_ERR);
             NAPI_CALL_BASE(env, ValueStringConvert(env, *pOut, pOut, false), NAPI_ERR);
@@ -363,6 +374,43 @@ namespace OHOS::uitest {
         }
     }
 
+    static napi_status DeepConvertObject(napi_env env, napi_value in, napi_value* out)
+    {
+        napi_valuetype type;
+        NAPI_CALL_BASE(env, napi_typeof(env, in, &type), NAPI_ERR);
+        if (type == napi_object) {
+            napi_value refValue;
+            if (GetBackendObjRefProp(env, in, &refValue) == napi_ok && refValue != nullptr) {
+                *out = refValue;
+                return napi_ok;
+            }
+        }
+        if (type == napi_object) {
+            napi_value jsonObj;
+            NAPI_CALL_BASE(env, napi_create_object(env, &jsonObj), NAPI_ERR);
+            napi_value properties;
+            NAPI_CALL_BASE(env, napi_get_property_names(env, in, &properties), NAPI_ERR);
+
+            uint32_t length;
+            NAPI_CALL_BASE(env, napi_get_array_length(env, properties, &length), NAPI_ERR);
+
+            for (uint32_t i = 0; i < length; i++) {
+                napi_value key;
+                napi_value value;
+                napi_value convertedValue;
+                NAPI_CALL_BASE(env, napi_get_element(env, properties, i, &key), NAPI_ERR);
+                NAPI_CALL_BASE(env, napi_get_property(env, in, key, &value), NAPI_ERR);
+                NAPI_CALL_BASE(env, DeepConvertObject(env, value, &convertedValue), NAPI_ERR);
+                NAPI_CALL_BASE(env, napi_set_property(env, jsonObj, key, convertedValue), NAPI_ERR);
+            }
+            *out = jsonObj;
+            return napi_ok;
+        }
+  
+        *out = in;
+        return napi_ok;
+    }
+
     /**Generic js-api callback.*/
     static napi_value GenericCallback(napi_env env, napi_callback_info info)
     {
@@ -382,14 +430,13 @@ namespace OHOS::uitest {
         if (count > NAPI_MAX_ARG_COUNT) {
             count = NAPI_MAX_ARG_COUNT;
         }
+
         for (size_t idx = 0; idx < count; idx++) {
-            napi_value item = nullptr; // convert to backendObjRef if any
-            NAPI_CALL(env, GetBackendObjRefProp(env, argv[idx], &item));
-            if (item == nullptr) {
-                item = argv[idx];
-            }
-            NAPI_CALL(env, napi_set_element(env, paramArray, idx, item));
+            napi_value convertedArg = nullptr;
+            NAPI_CALL(env, DeepConvertObject(env, argv[idx], &convertedArg));
+            NAPI_CALL(env, napi_set_element(env, paramArray, idx, convertedArg));
         }
+
         napi_value jsTempObj = nullptr;
         NAPI_CALL(env, ValueStringConvert(env, paramArray, &jsTempObj, true));
         ctx.callInfo_.paramList_ = nlohmann::json::parse(JsStrToCppStr(env, jsTempObj));
@@ -521,6 +568,8 @@ namespace OHOS::uitest {
         NAPI_CALL(env, ExportClass(env, exports, UI_WINDOW_DEF));
         NAPI_CALL(env, ExportClass(env, exports, POINTER_MATRIX_DEF));
         NAPI_CALL(env, ExportClass(env, exports, UI_EVENT_OBSERVER_DEF));
+        NAPI_CALL(env, ExportEnumerator(env, exports, WINDOW_CHANGE_TYPE_DEF));
+        NAPI_CALL(env, ExportEnumerator(env, exports, COMPONENT_EVENT_TYPE_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, MATCH_PATTERN_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, RESIZE_DIRECTION_DEF));
         NAPI_CALL(env, ExportEnumerator(env, exports, WINDOW_MODE_DEF));

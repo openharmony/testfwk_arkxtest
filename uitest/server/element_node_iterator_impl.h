@@ -35,6 +35,7 @@ namespace OHOS::uitest {
         void ClearDFSNext() override;
         void RemoveInvisibleWidget() override;
         static std::string GenerateNodeHashCode(const OHOS::Accessibility::AccessibilityElementInfo &element);
+        void WrapperNodeAttrToVec(Widget &widget, const OHOS::Accessibility::AccessibilityElementInfo &element);
 
     protected:
         void WrapperElement(Widget &widget) override;
@@ -43,7 +44,6 @@ namespace OHOS::uitest {
         bool VisitNodeByChildAndBrother(Widget &widget);
         bool VisitChildren(Widget& widget);
         bool VisitBrother(Widget &widget, int parentIndex, int tempCurrentIndex);
-        void WrapperNodeAttrToVec(Widget &widget, const OHOS::Accessibility::AccessibilityElementInfo &element);
         void WrapperNodeActionAttrToVec(Widget &widget, const OHOS::Accessibility::AccessibilityElementInfo &element);
         std::vector<OHOS::Accessibility::AccessibilityElementInfo> elementInfoLists_;
     };
