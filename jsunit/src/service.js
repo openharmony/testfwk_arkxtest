@@ -19,19 +19,22 @@ import LogExpectError from './module/report/LogExpectError';
 import { NestFilter } from './module/config/Filter';
 
 function assertTrueFun(actualValue) {
+    let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue :actualValue.toString();
     let result = {
         pass: (actualValue) === true,
-        message: 'expect true, actualValue is ' + actualValue
+        message: 'expect true, actualValue is ' + actualValueStr
     };
     return result;
 }
 
 function assertEqualFun(actualValue, args) {
-    let msg = 'expect ' + actualValue.toString() + ' equals ' + args[0].toString();
+    let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue : actualValue.toString();
+    let argsStr = (args[0] === null || args[0] === undefined) ? args[0] : args[0].toString();
+    let msg = 'expect ' + actualValueStr + ' equals ' + argsStr;
     if (actualValue === args[0]) { // 数值相同,提示数据类型
         const aClassName = Object.prototype.toString.call(actualValue);
         const bClassName = Object.prototype.toString.call(args[0]);
-        msg = 'expect ' + actualValue.toString() + aClassName + ' equals ' + args[0].toString() + bClassName + 'strict mode inspect type';
+        msg = 'expect ' + actualValueStr + aClassName + ' equals ' + argsStr + bClassName + 'strict mode inspect type';
     }
     let result = {
         pass: (actualValue) === args[0],
