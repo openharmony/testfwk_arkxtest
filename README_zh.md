@@ -113,7 +113,7 @@ export default function test() {
       beforeEachIt(async () => {
         str += "F"
       })
-      it('test1111', TestType.FUNCTION | Size.MEDIUMTEST | Level.LEVEL3, async () => {
+      it('test1111', 0, async () => {
         expect(str).assertEqual("BACDBFE");
       })
     })

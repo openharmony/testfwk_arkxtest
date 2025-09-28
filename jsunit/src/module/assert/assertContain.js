@@ -26,9 +26,11 @@ function assertContain(actualValue, expect) {
     if (type === '[object String]') {
         result = actualValue.indexOf(expect[0]) >= 0;
     }
+    let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue : actualValue.toString();
+    let expectStr = (expect[0] === null || expect[0] === undefined) ? expect[0] : expect[0].toString();
     return {
         pass: result,
-        message: 'expect false, ' + actualValue + ' do not have  ' + expect[0]
+        message: 'expect false, ' + actualValueStr + ' do not have  ' + expectStr
     };
 }
 
