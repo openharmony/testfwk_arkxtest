@@ -14,6 +14,8 @@
  */
 
 function assertInstanceOf(actualValue, expected) {
+    let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue : actualValue.toString();
+    let expectStr = (expect[0] === null || expect[0] === undefined) ? expect[0] : expect[0].toString();
     if (Object.prototype.toString.call(actualValue) == '[object ' + expected[0] + ']') {
         return {
             pass: true
@@ -21,7 +23,7 @@ function assertInstanceOf(actualValue, expected) {
     } else {
         return {
             pass: false,
-            message: actualValue + ' is ' + Object.prototype.toString.call(actualValue) + 'not  ' + expected[0]
+            message: actualValueStr + ' is ' + Object.prototype.toString.call(actualValueStr) + 'not  ' + expectStr
         };
     }
 }
