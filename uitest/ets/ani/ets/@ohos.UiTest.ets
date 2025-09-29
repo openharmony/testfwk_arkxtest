@@ -1532,7 +1532,7 @@ export class Component {
             let pointCount = points.length;
             if (pointCount < 1 || pointCount > 2) {
                 let err = new BusinessError();
-                err.code = 401;
+                err.code = 17000007;
                 err.name = "Error";
                 err.message = "Point counts must be 1 to 2.";
                 reject(err);
