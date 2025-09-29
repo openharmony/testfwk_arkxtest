@@ -14,9 +14,10 @@
  */
 
 function assertNaN(actualValue) {
+    let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue : actualValue.toString();
     return {
         pass: actualValue !== actualValue,
-        message: 'expect NaN, actualValue  is ' + actualValue
+        message: 'expect NaN, actualValue  is ' + actualValueStr
     };
 }
 

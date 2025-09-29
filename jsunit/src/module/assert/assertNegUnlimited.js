@@ -14,9 +14,10 @@
 */
 
 function assertNegUnlimited(actualValue) {
+    let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue : actualValue.toString();
     return {
         pass: actualValue === Number.NEGATIVE_INFINITY,
-        message: 'Expected actualValue not to be -Infinity.  actualValue is,' + actualValue
+        message: 'Expected actualValue not to be -Infinity.  actualValue is,' + actualValueStr
     };
 }
 
