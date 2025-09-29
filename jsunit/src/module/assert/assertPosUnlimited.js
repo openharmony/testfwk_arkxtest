@@ -14,9 +14,10 @@
 */
 
 function assertPosUnlimited(actualValue) {
+    let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue : actualValue.toString();
     return {
         pass: actualValue === Number.POSITIVE_INFINITY,
-        message: 'Expected actualValue is POSITIVE_INFINITY.  actualValue is,' + actualValue
+        message: 'Expected actualValue is POSITIVE_INFINITY.  actualValue is,' + actualValueStr
     };
 }
 
