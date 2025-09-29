@@ -668,7 +668,7 @@ namespace OHOS::uitest {
         uiController_->InjectTouchEventSequence(events);
         return;
 #endif
-        err = ApiCallErr(ERR_NO_SYSTEM_CAPABILITY, "Capability not support");
+        err = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "Capability not support");
         return;
     }
 
