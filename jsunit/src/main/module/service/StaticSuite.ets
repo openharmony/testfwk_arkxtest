@@ -156,8 +156,8 @@ class StaticSuite {
             this.afterEachIt.forEach((func: (() => void) | (() => Promise<void>)) => {
               try {
                 (func as () => void)();
-              } catch (e: Error) {
-                console.error(`${TAG}${e.stack}`);
+              } catch (e) {
+                console.error(`${TAG}${(e as Error).stack}`);
               }
             });
           }

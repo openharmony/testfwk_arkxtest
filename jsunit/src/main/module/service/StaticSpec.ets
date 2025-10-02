@@ -19,7 +19,8 @@ import { Core } from '../../core';
 import { SpecService } from './SpecService';
 import DataDriver from '../config/DataDriver';
 import { getFunctionArgumentsCount } from '../../util';
-import { AnyType } from '../types/common';
+import { AnyType, ItfnType } from '../types/common';
+
 class StaticSpec {
   public description: string;
   public fi: int;
@@ -93,8 +94,10 @@ class StaticSpec {
       const dataDriver = dataDriverMap.get('dataDriver') as DataDriver;
       const suiteParams = dataDriver.getSuiteParams();
       const specParams = dataDriver.getSpecParams();
-      const funcStr = Type.of(this.asyncFn as object).getLiteral();
-      const argsCount = getFunctionArgumentsCount(funcStr)
+      let argsCount = 0;
+      if (this.asyncFn !== null) {
+        argsCount = getFunctionArgumentsCount(this.asyncFn as ItfnType)
+      }
       if(argsCount === 1) {
         if(specParams.length === 0) {
           await (this.asyncFn as ((params: AnyType) => Promise<void>))(suiteParams);
