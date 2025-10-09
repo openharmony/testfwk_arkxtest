@@ -20,134 +20,9 @@
 #include <string_view>
 #include <map>
 #include "nlohmann/json.hpp"
+#include "frontend_type_defines.h"
 
 namespace OHOS::uitest {
-    enum ErrCode : uint32_t {
-        /**Old ErrorCode*/
-        NO_ERROR = 0,
-        /**Internal error, not expected to happen.*/
-        INTERNAL_ERROR = 1,
-        /**Widget that is expected to be exist lost.*/
-        WIDGET_LOST = 2,
-        /**Window that is expected to be exist lost.*/
-        WINDOW_LOST = 3,
-        /**The user assertion failure.*/
-        ASSERTION_FAILURE = 4,
-        USAGE_ERROR = 5,
-        /**New ErrorCode*/
-        /**Initialize failed.*/
-        ERR_INITIALIZE_FAILED = 17000001,
-        /**API does not allow calling concurrently.*/
-        ERR_API_USAGE = 17000002,
-        /**Component existence assertion failed.*/
-        ERR_ASSERTION_FAILED = 17000003,
-        /**Component lost/UiWindow lost.*/
-        ERR_COMPONENT_LOST = 17000004,
-        /**This operation is not supported.*/
-        ERR_OPERATION_UNSUPPORTED = 17000005,
-        /**Internal error.*/
-        ERR_INTERNAL = 17000006,
-        /**Invalid input parameter.*/
-        ERR_INVALID_INPUT = 401,
-        /**The specified SystemCapability name was not found.*/
-        ERR_NO_SYSTEM_CAPABILITY = 801,
-        /**Invalid input parameter.*/
-        ERR_INVALID_PARAM = 17000007,
-    };
-
-    const std::map<ErrCode, std::string> ErrDescMap = {
-        /**Correspondence between error codes and descriptions*/
-        {NO_ERROR, "No Error"},
-        {ERR_INITIALIZE_FAILED, "Initialization failed."},
-        {ERR_API_USAGE, "The async function is not called with await."},
-        {ERR_ASSERTION_FAILED, "Assertion failed."},
-        {ERR_COMPONENT_LOST, "The window or component is invisible or destroyed."},
-        {ERR_OPERATION_UNSUPPORTED, "This operation is not supported."},
-        {ERR_INTERNAL, "Internal error."},
-        {ERR_NO_SYSTEM_CAPABILITY, "The specified SystemCapability name was not found."},
-        {ERR_INVALID_INPUT, "Invalid input parameter."},
-    };
-
-    /**API invocation error detail wrapper.*/
-    struct ApiCallErr {
-    public:
-        ErrCode code_;
-        std::string message_ = "";
-
-        ApiCallErr() = delete;
-
-        explicit ApiCallErr(ErrCode ec)
-        {
-            code_ = ec;
-            message_ = ErrDescMap.find(ec)->second;
-        }
-
-        ApiCallErr(ErrCode ec, std::string_view msg)
-        {
-            code_ = ec;
-            message_ = std::string(msg);
-        }
-    };
-
-    /**Structure wraps the api-call data.*/
-    struct ApiCallInfo {
-        std::string apiId_;
-        std::string callerObjRef_;
-        nlohmann::json paramList_ = nlohmann::json::array();
-        int32_t fdParamIndex_ = -1; // support fd as param
-        bool convertError_ = false;
-    };
-
-    /**Structure wraps the api-call reply.*/
-    struct ApiReplyInfo {
-        nlohmann::json resultValue_ = nullptr;
-        ApiCallErr exception_ = ApiCallErr(NO_ERROR);
-        bool convertError_ = false;
-    };
-
-    /** Specifications of a frontend enumerator value.*/
-    struct FrontendEnumValueDef {
-        std::string_view name_;
-        std::string_view valueJson_;
-    };
-
-    /** Specifications of a frontend enumerator.*/
-    struct FrontendEnumeratorDef {
-        std::string_view name_;
-        const FrontendEnumValueDef *values_;
-        size_t valueCount_;
-    };
-
-    /** Specifications of a frontend json data property.*/
-    struct FrontEndJsonPropDef {
-        std::string_view name_;
-        std::string_view type_;
-        bool required_;
-    };
-    /** Specifications of a frontend json object.*/
-    struct FrontEndJsonDef {
-        std::string_view name_;
-        const FrontEndJsonPropDef *props_;
-        size_t propCount_;
-    };
-
-    /** Specifications of a frontend class method.*/
-    struct FrontendMethodDef {
-        std::string_view name_;
-        std::string_view signature_;
-        bool static_;
-        bool fast_;
-        bool convertError_ = false;
-    };
-
-    /** Specifications of a frontend class.*/
-    struct FrontEndClassDef {
-        std::string_view name_;
-        const FrontendMethodDef *methods_;
-        size_t methodCount_;
-        bool bindUiDriver_;
-    };
-
     /** MatchPattern enumerator definition.*/
     constexpr FrontendEnumValueDef PATTERN_VALUES[] = {
         {"EQUALS", "0"},
@@ -504,6 +379,7 @@ namespace OHOS::uitest {
         {"Driver.penSwipe", "(Point,Point,int?,float?):void", false, false},
         {"Driver.injectPenPointerAction", "(PointerMatrix,int?,float?):void", false, false},
         {"Driver.crownRotate", "(signedInt,int?):void", false, false, true},
+        {"Driver.touchPadTwoFingersScroll", "(Point,int,int,int?):void", false, false, true},
     };
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",

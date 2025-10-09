@@ -435,7 +435,12 @@ namespace OHOS::uitest {
         recv.push_back(MouseEvent {ActionStage::MOVE, point_, MouseButton::BUTTON_NONE, {}, 0});
         constexpr int32_t thousandMilliseconds = 1000;
         auto focusTimeMs = thousandMilliseconds / speed_ / 2;
-        auto stage  = (scrollValue_ > 0) ? AXIS_DOWN : AXIS_UP;
+        ActionStage stage;
+        if (isVertical_) {
+            stage = (scrollValue_ > 0) ? AXIS_DOWN : AXIS_UP;
+        } else {
+            stage = (scrollValue_ > 0) ? AXIS_RIGHT : AXIS_LEFT;
+        }
         vector<KeyEvent> keyAction1;
         keyAction1.push_back(KeyEvent {ActionStage::DOWN, key1_, opt.keyHoldMs_});
         keyAction1.push_back(KeyEvent {ActionStage::DOWN, key2_, opt.keyHoldMs_});
@@ -458,6 +463,11 @@ namespace OHOS::uitest {
         } else {
             recv.push_back(MouseEvent {ActionStage::NONE, point_, MouseButton::BUTTON_NONE, keyAction2, focusTimeMs});
         }
+    }
+
+    void MouseScroll::SetIsVertical(const bool isVertical)
+    {
+        isVertical_ = isVertical;
     }
 
     void GenericAtomicAction::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
