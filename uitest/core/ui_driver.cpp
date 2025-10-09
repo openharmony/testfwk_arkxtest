@@ -668,7 +668,7 @@ namespace OHOS::uitest {
         uiController_->InjectTouchEventSequence(events);
         return;
 #endif
-        err = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "Capability not support");
+        err = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This action is not support.");
         return;
     }
 
@@ -716,11 +716,17 @@ namespace OHOS::uitest {
 
     bool UiDriver::IsKnuckleSnapshotEnable()
     {
+#ifdef ARKXTEST_KNUCKLE_ACTION_ENABLE
         return uiController_->IsKnuckleSnapshotEnable();
+#endif
+        return false;
     }
 
     bool UiDriver::IsKnuckleRecordEnable()
     {
+#ifdef ARKXTEST_KNUCKLE_ACTION_ENABLE
         return uiController_->IsKnuckleRecordEnable();
+#endif
+        return false;
     }
 } // namespace OHOS::uitest
