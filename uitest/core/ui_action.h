@@ -158,7 +158,7 @@ namespace OHOS::uitest {
 
         bool IsSyncInject() const;
 
-        void SeTSyncInject();
+        void SetSyncInject();
     private:
         std::unique_ptr<TouchEvent[]> data_ = nullptr;
         uint32_t capacity_ = 0;

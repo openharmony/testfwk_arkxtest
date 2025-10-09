@@ -1285,7 +1285,11 @@ namespace OHOS::uitest {
         string knuckleSnapshotKey = "fingersense_smartshot_enabled";
         auto value = OHOS::testserver::TestServerClient::GetInstance().GetValueFromDataShare(uri, knuckleSnapshotKey);
         LOG_D("key = %{public}s, value = %{public}s", knuckleSnapshotKey.c_str(), value.c_str());
-        return atoi(value.c_str()) != 0;
+        if (value == "") {
+            return true;
+        } else {
+            return atoi(value.c_str()) != 0;
+        }
     }
 
     bool SysUiController::IsKnuckleRecordEnable() const
@@ -1294,6 +1298,10 @@ namespace OHOS::uitest {
         string knuckleRecordKey = "fingersense_screen_recording_enabled";
         auto value = OHOS::testserver::TestServerClient::GetInstance().GetValueFromDataShare(uri, knuckleRecordKey);
         LOG_D("key = %{public}s, value = %{public}s", knuckleRecordKey.c_str(), value.c_str());
-        return atoi(value.c_str()) != 0;
+        if (value == "") {
+            return true;
+        } else {
+            return atoi(value.c_str()) != 0;
+        }
     }
 } // namespace OHOS::uitest

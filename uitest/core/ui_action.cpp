@@ -136,7 +136,7 @@ namespace OHOS::uitest {
                 pointer.PushAction(TouchEvent {ActionStage::UP, points_[finger], options.clickHoldMs_, msInterval});
             }
         }
-        pointer.SeTSyncInject();
+        pointer.SetSyncInject();
         recv = move(pointer);
     }
     void GenericSwipe::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
@@ -191,7 +191,7 @@ namespace OHOS::uitest {
             constexpr uint32_t unitConversionConstant = 1000;
             for (uint32_t step = 0; step < pointers_.GetSteps() - 1; step++) {
                 if (pointers_.At(finger, step + 1).point_.displayId_ != pointers_.At(finger, step).point_.displayId_) {
-                    LOG_W("Cross-screen operation is not suypport.");
+                    LOG_W("Cross-screen operation is not support.");
                     return;
                 }
                 auto displayId = pointers_.At(finger, step).point_.displayId_;
@@ -372,7 +372,7 @@ namespace OHOS::uitest {
         return syncInject_;
     }
 
-    void PointerMatrix::SeTSyncInject()
+    void PointerMatrix::SetSyncInject()
     {
         syncInject_ = true;
     }

@@ -1854,7 +1854,7 @@ static void RegisterExtensionHandler()
                 auto pointJson1 = ReadCallArg<json>(in, INDEX_ONE);
                 auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
                 if (displayId0 != displayId1) {
-                    out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Cross-screen operation is not suypport.");
+                    out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Cross-screen operation is not support.");
                     return;
                 }
                 auto point1 = Point(pointJson1["x"], pointJson1["y"], displayId1);
