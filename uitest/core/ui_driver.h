@@ -94,6 +94,8 @@ namespace OHOS::uitest {
 
         void InputText(string_view text, ApiCallErr &error, const UiOpArgs &opt, int32_t displayId = -1);
 
+        bool IsTouchPadExist();
+
         void PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error);
 
         void PerformPenTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);

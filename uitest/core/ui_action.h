@@ -47,7 +47,9 @@ namespace OHOS::uitest {
         AXIS_DOWN = 5,
         AXIS_STOP = 6,
         PROXIMITY_IN = 7,
-        PROXIMITY_OUT = 8
+        PROXIMITY_OUT = 8,
+        AXIS_LEFT = 9,
+        AXIS_RIGHT = 10
     };
 
     enum TouchToolType : uint8_t { FINGER = 0, PEN = 1 };
@@ -430,11 +432,13 @@ namespace OHOS::uitest {
     class MouseScroll : public MouseAction {
     public:
         explicit MouseScroll(const Point &point, int32_t scrollValue, int32_t key1, int32_t key2, uint32_t speed)
-            : point_(point),  scrollValue_(scrollValue), key1_(key1), key2_(key2),  speed_(speed) {};
+            : point_(point), scrollValue_(scrollValue), key1_(key1), key2_(key2), speed_(speed) {};
 
         void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const override;
 
         ~MouseScroll() = default;
+
+        void SetIsVertical(const bool isVertical);
 
     private:
         const Point point_;
@@ -442,6 +446,7 @@ namespace OHOS::uitest {
         const int32_t key1_;
         const int32_t key2_;
         const uint32_t speed_;
+        bool isVertical_ = true;
     };
 
     /**
