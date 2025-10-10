@@ -1553,6 +1553,50 @@ static ani_boolean touchPadMultiFingerSwipeSync(ani_env *env, ani_object obj, an
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
+
+static ani_boolean kunckleClickOnePointSync(ani_env *env, ani_object obj, ani_object p, ani_int times)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.knuckleKnock";
+    auto point = getPoint(env, p);
+    callInfo_.paramList_.push_back(point);
+    callInfo_.paramList_.push_back(times);
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
+static ani_boolean kunckleClickTwoPointSync(ani_env *env, ani_object obj, ani_object p0, ani_object p1, ani_int times)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.knuckleKnock";
+    auto point0 = getPoint(env, p0);
+    auto point1 = getPoint(env, p1);
+    callInfo_.paramList_.push_back(point0);
+    callInfo_.paramList_.push_back(point1);
+    callInfo_.paramList_.push_back(times);
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
+static ani_boolean injectKnucklePointerActionSync(ani_env *env, ani_object obj, ani_object pointers, ani_object speed)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.injectKnucklePointerAction";
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, pointers, "nativePointerMatrix")));
+    pushParam(env, speed, callInfo_, true);
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
 static ani_boolean BindDriver(ani_env *env)
 {
     ani_class cls;
@@ -1615,6 +1659,10 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function{"injectMultiPointerActionSync", nullptr, reinterpret_cast<void *>(injectMultiPointerActionSync)},
         ani_native_function{"injectPenPointerActionSync", nullptr, reinterpret_cast<void *>(injectPenPointerActionSync)},
         ani_native_function{"touchPadMultiFingerSwipeSync", nullptr, reinterpret_cast<void *>(touchPadMultiFingerSwipeSync)},
+        ani_native_function{"kunckleClickOnePointSync", nullptr, reinterpret_cast<void *>(kunckleClickOnePointSync)},
+        ani_native_function{"kunckleClickTwoPointSync", nullptr, reinterpret_cast<void *>(kunckleClickTwoPointSync)},
+        ani_native_function{"injectKnucklePointerActionSync", nullptr,
+            reinterpret_cast<void *>(injectKnucklePointerActionSync)},
     };
 
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {

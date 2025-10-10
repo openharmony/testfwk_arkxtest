@@ -56,6 +56,10 @@ namespace OHOS::uitest {
 
         bool IsWearable() const override;
 
+        bool IsKnuckleSnapshotEnable() const override;
+
+        bool IsKnuckleRecordEnable() const override;
+
         bool IsAdjustWindowModeEnable() const override;
 
         // setup method, connect to system ability AAMS

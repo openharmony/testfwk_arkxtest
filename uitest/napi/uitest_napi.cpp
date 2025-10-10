@@ -371,6 +371,22 @@ namespace OHOS::uitest {
             if (err.code_ != NO_ERROR) {
                 error = CreateJsException(env, err.code_, err.message_);
             }
+        } else if (id == "Driver.knuckleKnock") {
+            auto param0 = paramList.at(0);
+            auto times = paramList.at(1);
+            auto pointCount = param0.size();
+            if (pointCount < ONE || pointCount > TWO) {
+                error = CreateJsException(env, ERR_INVALID_PARAM, "Point counts must be 1 to 2.");
+                return;
+            }
+            auto p0 = param0.at(0);
+            paramList[0] = p0;
+            if (pointCount == 1) {
+                paramList[1] = times;
+            } else {
+                paramList[1] = param0.at(1);
+                paramList[TWO] = times;
+            }
         }
     }
 
