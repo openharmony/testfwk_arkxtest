@@ -427,8 +427,8 @@ namespace OHOS::testserver {
             return nullptr;
         }
         sptr<IRemoteObject> remoteObj = samgr->CheckSystemAbility(TEST_SERVER_SA_ID);
-        std::pair<int, std::shared_ptr<DataShare::DataShareHelper>> ret;
-        ret = DataShare::DataShareHelper::Create(remoteObj, uri, "");
+        std::pair<int, std::shared_ptr<DataShare::DataShareHelper>> ret =
+            DataShare::DataShareHelper::Create(remoteObj, uri, "");
         return ret.second;
     }
 
