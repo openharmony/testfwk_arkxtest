@@ -781,17 +781,12 @@ namespace OHOS::uitest {
         }
     }
 
-    void SysUiController::InjectMouseEvent(const MouseEvent &event) const
+    static void SetMousePointerAction(shared_ptr<PointerEvent> pointerEvent, const ActionStage stage,
+                                      PointerEvent::PointerItem &item)
     {
-        auto pointerEvent = PointerEvent::Create();
-        if (pointerEvent == nullptr) {
-            return;
-        }
-        PointerEvent::PointerItem item;
-        SetMousePointerEventAttr(pointerEvent, event);
         constexpr double axialValue = 15;
         static double injectAxialValue = 0;
-        switch (event.stage_) {
+        switch (stage) {
             case ActionStage::DOWN:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_DOWN);
                 item.SetPressed(true);
@@ -812,6 +807,16 @@ namespace OHOS::uitest {
                 pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, axialValue);
                 injectAxialValue = injectAxialValue + axialValue;
                 break;
+            case ActionStage::AXIS_LEFT:
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
+                pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_HORIZONTAL, -axialValue);
+                injectAxialValue = injectAxialValue - axialValue;
+                break;
+            case ActionStage::AXIS_RIGHT:
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
+                pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_HORIZONTAL, axialValue);
+                injectAxialValue = injectAxialValue + axialValue;
+                break;
             case ActionStage::AXIS_STOP:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_END);
                 pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, injectAxialValue);
@@ -820,6 +825,17 @@ namespace OHOS::uitest {
             default:
                 return;
         }
+    }
+
+    void SysUiController::InjectMouseEvent(const MouseEvent &event) const
+    {
+        auto pointerEvent = PointerEvent::Create();
+        if (pointerEvent == nullptr) {
+            return;
+        }
+        PointerEvent::PointerItem item;
+        SetMousePointerEventAttr(pointerEvent, event);
+        SetMousePointerAction(pointerEvent, event.stage_, item);
         SetMousePointerItemAttr(event, item);
         pointerEvent->AddPointerItem(item);
         auto displayId = GetValidDisplayId(event.point_.displayId_);
