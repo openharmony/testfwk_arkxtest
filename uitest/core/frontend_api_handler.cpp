@@ -1473,7 +1473,7 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.crownRotate", mouseScroll);
     }
 
-    static void RegisterUiDriverTouchPadOperators()
+    static void RegisterUiDriverTouchPadSwipeOperators()
     {
         auto &server = FrontendApiServer::Get();
         auto touchPadMultiFingerSwipe = [](const ApiCallInfo &in, ApiReplyInfo &out) {
@@ -1509,6 +1509,40 @@ namespace OHOS::uitest {
             driver.PerformTouchPadAction(touch, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.touchPadMultiFingerSwipe", touchPadMultiFingerSwipe);
+    }
+
+    static void RegisterUiDriverTouchPadScrollOperators()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto touchPadTwoFingersScroll = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto pointJson = ReadCallArg<json>(in, INDEX_ZERO);
+            auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
+            Point point = Point(pointJson["x"], pointJson["y"], displayId);
+            auto direction = ReadCallArg<json>(in, INDEX_ONE);
+            if (direction < TO_LEFT || direction > TO_DOWN) {
+                out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Illegal direction");
+                return;
+            }
+            if (!driver.IsTouchPadExist()) {
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This device can not support this action");
+                return;
+            }
+            int32_t scrollValue = ReadCallArg<int32_t>(in, INDEX_TWO);
+            scrollValue = (direction == TO_LEFT || direction == TO_UP) ? scrollValue : -scrollValue;
+            const uint32_t maxScrollSpeed = 500;
+            const uint32_t defaultScrollSpeed = 20;
+            int32_t speed = ReadCallArg<uint32_t>(in, INDEX_THREE, defaultScrollSpeed);
+            if (speed < 1 || speed > maxScrollSpeed) {
+                speed = defaultScrollSpeed;
+            }
+            uiOpArgs.swipeVelocityPps_ = speed;
+            auto touch = MouseScroll(point, scrollValue, KEYCODE_NONE, KEYCODE_NONE, speed);
+            touch.SetIsVertical(direction == TO_UP || direction == TO_DOWN);
+            driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
+        };
+        server.AddHandler("Driver.touchPadTwoFingersScroll", touchPadTwoFingersScroll);
     }
 
     static void RegisterUiDriverPenOperators()
@@ -2093,7 +2127,8 @@ static void RegisterExtensionHandler()
         RegisterUiDriverMouseScrollOperators();
         RegisterUiEventObserverMethods();
         RegisterExtensionHandler();
-        RegisterUiDriverTouchPadOperators();
+        RegisterUiDriverTouchPadSwipeOperators();
+        RegisterUiDriverTouchPadScrollOperators();
         RegisterUiDriverPenOperators();
         RegisterKnuckleKnock();
         RegisterKnucklePointerAction();
