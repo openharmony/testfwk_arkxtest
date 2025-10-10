@@ -24,6 +24,7 @@ ohos_fuzztest("SetPasteDataFuzzTest") {
   external_deps = [
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
+    "data_share:datashare_consumer",
     "hilog:libhilog",
     "hiview:libucollection_utility",
     "ipc:ipc_core",

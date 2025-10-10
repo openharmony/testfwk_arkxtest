@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import systemDateTime from '@ohos.systemDateTime';
 import abilityDelegatorRegistry from '@ohos.app.ability.abilityDelegatorRegistry';
 import { BusinessError } from '@ohos.base';
 import { TAG } from '../../Constant';
@@ -105,21 +104,22 @@ class SysTestKit {
 
   static getRealTime(): number {
     let current = new Date().getTime();
+    try {
+      console.info(`${TAG} systemDateTime.getUptime success`);
+    } catch (err: Error) {
+      console.error(`${TAG} failed to systemDateTime.getUptime because ` + err.message);
+    }
     return current;
   }
 
   static async existKeyword(keyword: string, timeout?: number): Promise<boolean> {
-    let reg = new RegExp('^[a-zA-Z0-9]{1,}$');
-    if (!reg.test(keyword)) {
-      throw new Error('keyword must contain more than one string, and only letters and numbers are supported.');
-    }
-    let time = 4.0;
+    let time: long = 4;
     if (timeout !== undefined) {
-      time = timeout;
+      time = timeout.toLong();
     }
 
     let searchResult = false;
-    let cmd = "hilog -x | grep -i '" + keyword + "' | wc -l";
+    let cmd = "hilog -x | grep -i '" + keyword + "'";
     try {
       const data = await executePromise(cmd, time);
       searchResult = data;
@@ -128,9 +128,20 @@ class SysTestKit {
     }
     return searchResult;
   }
+
+  static async clearLog(): Promise<boolean> {
+    let cmd = "hilog -r | hilog -G 16M";
+    const delegator = SysTestKit.delegator;
+    try {
+      await (delegator as abilityDelegatorRegistry.AbilityDelegator).executeShellCommand(cmd);
+      return true;
+    } catch (err: Error) {
+      throw err;
+    }
+  }
 }
 
-function executePromise(cmd: string, timeout: number) {
+function executePromise(cmd: string, timeout: long) {
   return new Promise<boolean>((resolve: (value: boolean) => void, reject: (value: Error) => void) => {
     const delegator = SysTestKit.delegator;
     if (!delegator) {
@@ -146,8 +157,14 @@ function executePromise(cmd: string, timeout: number) {
           console.info(`${TAG}existKeyword CallBack: err : ${e.message}`);
         } else if(data) {
           const result = data as abilityDelegatorRegistry.ShellCmdResult;
-          console.info(`${TAG}existKeyword CallBack: data : ${JSON.stringify(result)}`);
-          resolve(parseInt(result.stdResult) > 3 ? true : false);
+          let lines = result.stdResult.split("\n");
+          let num = lines.length;
+          for (let line of lines) {
+            if (line.includes("C01330") || line.includes("C01303") || line ==="") {
+              num--;
+            }
+          }
+          resolve(num > 0 ? true : false);
         }
       }
     );
