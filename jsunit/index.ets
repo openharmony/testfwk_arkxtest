@@ -52,7 +52,11 @@ export declare function afterItSpecified(testCaseNames: Array<string> | string, 
 
 export declare function beforeEach(callback: Function): void
 
+export declare function beforeEachIt(callback: Function): void
+
 export declare function afterEach(callback: Function): void
+
+export declare function afterEachIt(callback: Function): void
 
 export declare function beforeAll(callback: Function): void
 
@@ -121,9 +125,11 @@ export declare class MockKit {
     mockFunc(obj: Object, func: Function): Function
     mockObject(obj: Object): Object
     verify(methodName: String, argsArray: Array<allExpectType>): VerificationMode
-    ignoreMock(obj: Object, func: Function): void
+    ignoreMock(obj: Object, func: Function | String): void
     clear(obj: Object): void
     clearAll(): void
+    mockPrivateFunc(originalObject: Object, method: String): Function
+    mockProperty(obj: Object, propertyName: String, value: allExpectType): void
 }
 
 export declare class SysTestKit {
@@ -133,5 +139,6 @@ export declare class SysTestKit {
     static actionStart(tag: string): void
     static actionEnd(tag: string): void
     static existKeyword(keyword: string, timeout?: number): boolean
+    static clearLog(): boolean
 }
 

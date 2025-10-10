@@ -49,8 +49,9 @@ namespace OHOS::uitest {
         }
         auto event = paramList.at(0).get<string>();
         napi_valuetype type = napi_undefined;
+        size_t callbackIndex = paramList.size() - 1;
         if (paramList.size() > 1) {
-            NAPI_CALL_RETURN_VOID(env, napi_typeof(env, argv[1], &type));
+            NAPI_CALL_RETURN_VOID(env, napi_typeof(env, argv[callbackIndex], &type));
         }
         if (type != napi_function) {
             LOG_E("Invalid callback function argument");
@@ -64,7 +65,7 @@ namespace OHOS::uitest {
             LOG_D("Hold reference of %{public}s", call.callerObjRef_.c_str());
             g_jsRefs.insert({ call.callerObjRef_, ref });
         }
-        auto jsCallback = argv[1];
+        auto jsCallback = argv[callbackIndex];
         const auto jsCbId = string("js_callback#") + to_string(++g_incJsCbId);
         // hold the const  to avoid it be recycled, it's needed in performing callback
         napi_ref ref = nullptr;
@@ -73,7 +74,7 @@ namespace OHOS::uitest {
         LOG_D("Hold reference of %{public}s", jsCbId.c_str());
         g_jsRefs.insert({ jsCbId, ref });
         // pass jsCbId instread of the function body
-        paramList.at(1) = jsCbId; // observer.once(type, cllbackId)
+        paramList.at(callbackIndex) = jsCbId; // observer.once(type, cllbackId)
     }
 
     struct EventCallbackContext {

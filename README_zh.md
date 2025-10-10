@@ -41,14 +41,16 @@ arkxtest
 | 1   | describe          | 定义一个测试套，支持两个参数：测试套名称和测试套函数。其中测试套函数不能是异步函数。                             |
 | 2   | beforeAll         | 在测试套内定义一个预置条件，在所有测试用例开始前执行且仅执行一次，支持一个参数：预置动作函数。                        |
 | 3   | beforeEach        | 在测试套内定义一个单元预置条件，在每条测试用例开始前执行，执行次数与it定义的测试用例数一致，支持一个参数：预置动作函数。          |
-| 4   | afterEach         | 在测试套内定义一个单元清理条件，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致，支持一个参数：清理动作函数。          |
-| 5   | afterAll          | 在测试套内定义一个清理条件，在所有测试用例结束后执行且仅执行一次，支持一个参数：清理动作函数。                        |
-| 6   | beforeItSpecified | @since1.0.15在测试套内定义一个单元预置条件，仅在指定测试用例开始前执行，支持两个参数：单个用例名称或用例名称数组、预置动作函数。 |
-| 7   | afterItSpecified  | @since1.0.15在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行，支持两个参数：单个用例名称或用例名称数组、清理动作函数。 |
-| 8   | it                | 定义一条测试用例，支持三个参数：用例名称，过滤参数和用例函数。                                        |
-| 9   | expect            | 支持bool类型判断等多种断言方法。                                                     |
-| 10  | xdescribe    | @since1.0.17定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。                             |
-| 11  | xit                | @since1.0.17定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。                         |
+| 4 | beforeEachIt | @since1.0.25 在测试套内定义一个单元预置条件，在每条测试用例开始前执行，支持一个参数：预置动作函数。<br />外层测试套定义的beforeEachIt会在内部测试套中的测试用例执行前执行。 |
+| 5   | afterEach         | 在测试套内定义一个单元清理条件，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致，支持一个参数：清理动作函数。          |
+| 6 | afterEachIt | @since1.0.25 在测试套内定义一个单元预置条件，在每条测试用例结束后执行，支持一个参数：预置动作函数。<br />外层测试套定义的afterEachIt会在内部测试套中的测试用例执行结束后执行。 |
+| 7   | afterAll          | 在测试套内定义一个清理条件，在所有测试用例结束后执行且仅执行一次，支持一个参数：清理动作函数。                        |
+| 8   | beforeItSpecified | @since1.0.15在测试套内定义一个单元预置条件，仅在指定测试用例开始前执行，支持两个参数：单个用例名称或用例名称数组、预置动作函数。 |
+| 9   | afterItSpecified  | @since1.0.15在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行，支持两个参数：单个用例名称或用例名称数组、清理动作函数。 |
+| 10  | it                | 定义一条测试用例，支持三个参数：用例名称，过滤参数和用例函数。                                        |
+| 11  | expect            | 支持bool类型判断等多种断言方法。                                                     |
+| 12 | xdescribe    | @since1.0.17定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。                             |
+| 13 | xit                | @since1.0.17定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。                         |
 
 
 beforeItSpecified, afterItSpecified 示例代码：
@@ -77,6 +79,43 @@ export default function beforeItSpecifiedTest() {
       let b: string = 'b';
       expect(a).assertContain(b);
       expect(a).assertEqual(a);
+    })
+  })
+}
+```
+
+beforeEachIt, afterEachIt 示例代码：
+
+```javascript
+import { describe, beforeEach, afterEach, beforeEachIt, afterEachIt, it, expect } from '@ohos/hypium';
+let str = "";
+export default function test() {
+  describe('test0', () => {
+    beforeEach(async () => {
+      str += "A"
+    })
+    beforeEachIt(async () => {
+      str += "B"
+    })
+    afterEach(async () => {
+      str += "C"
+    })
+    afterEachIt(async () => {
+      str += "D"
+    })
+    it('test0000', 0, () => {
+      expect(str).assertEqual("BA");
+    })
+    describe('test1', () => {
+      beforeEach(async () => {
+        str += "E"
+      })
+      beforeEachIt(async () => {
+        str += "F"
+      })
+      it('test1111', 0, async () => {
+        expect(str).assertEqual("BACDBFE");
+      })
     })
   })
 }
@@ -450,7 +489,8 @@ export default function callBackTestTest() {
 | 3   | getItAttribute        | 获取当初测试用例等级。       |
 | 4   | actionStart        | 添加用例执行过程打印自定义日志。  |
 | 5   | actionEnd        | 添加用例执行过程打印自定义日志。  |
-| 6   | existKeyword        | 检测hilog日志中是否打印。   |
+| 6   | existKeyword        | 检测hilog日志中是否打印，仅支持检测单行日志。 |
+| 7 | clearLog | 清理被测样机的hilog缓存。 |
 
 ##### 获取当前测试用例所属的测试套名称
 
@@ -549,13 +589,14 @@ const domain = 0;
 const tag = 'SysTestKitTest'
 
 function logTest() {
-  hilog.debug(domain, 'test', `logTest called selfTest`);
+  hilog.info(domain, 'test', `logTest called selfTest`);
 }
 
 export default function abilityTest() {
   describe('SysTestKitTest', () => {
 
     it("testExistKeyword", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, async () => {
+      await SysTestKit.clearLog();
       hilog.debug(domain, tag, `testExistKeyword start `);
       logTest();
       const isCalled = await SysTestKit.existKeyword('logTest');
@@ -598,8 +639,10 @@ export default function abilityTest() {
 | 18 | atLeast(count) | 验证行为至少调用过count次。                                                                                                                                |
 | 19 | atMost(count) | 验证行为至多调用过count次。                                                                                                                                |
 | 20 | never | 验证行为从未发生过。                                                                                                                                      |
-| 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数，对被mock后的函数有效。                                                                                                   |
-| 22 | clearAll() | 用例执行完毕后，进行数据和内存清理,不会还原obj对象中被mock后的函数。                                                                                                                  |                                                                                                                            |
+| 21 | ignoreMock(obj, method) | 使用ignoreMock可以还原obj对象中被mock后的函数/属性，对被mock后的函数/属性有效。                                                                                       |
+| 22 | clearAll() | 用例执行完毕后，进行数据和内存清理,不会还原obj对象中被mock后的函数。                                                                                                                  |
+| 23 | mockPrivateFunc | mock某个类的对象的私有函数。 |
+| 24 | mockProperty | mock某个类的对象的成员变量，将其值设置为预期值，支持私有成员变量。 |
 
 -  **使用示例：**
 
@@ -1055,7 +1098,6 @@ export default function verifyTimesTest() {
 }
 ```
 
-
 **示例12：verify atLeast函数的使用(验证函数调用次数)**
 
 ```javascript
@@ -1126,6 +1168,94 @@ export default function staticTest() {
       mocker.clear(ClassName);
       let really_result1 = ClassName.method_1();
       expect(really_result1).assertEqual('ClassName_method_1_call');
+    })
+  })
+}
+```
+
+**示例14：mock私有函数**
+
+> @since1.0.25 支持
+
+```javascript
+import { describe, it, expect, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
+
+class ClassName {
+  constructor() {
+  }
+  method(arg: number):number {
+    return this.method_1(arg);
+  }
+  private method_1(arg: number) {
+    return arg;
+  }
+}
+
+export default function staticTest() {
+  describe('privateTest', () => {
+    it('private_001', 0, () => {
+      let claser: ClassName = new ClassName(); 
+      let really_result = claser.method(123);
+      expect(really_result).assertEqual(123);
+      // 1.创建MockKit对象
+      let mocker: MockKit = new MockKit();
+      // 2.mock  类ClassName对象的私有方法，比如method_1
+      let func_1: Function = mocker.mockPrivateFunc(claser, "method_1");
+      // 3.期望被mock后的函数返回结果456
+      when(func_1)(ArgumentMatchers.any).afterReturn(456);
+      let mock_result = claser.method(123);
+      expect(mock_result).assertEqual(456);
+      // 清除mock能力
+      mocker.clear(claser);
+      let really_result1 = claser.method(123);
+      expect(really_result1).assertEqual(123);
+    })
+  })
+}
+```
+
+**示例14：mock成员变量**
+
+> @since1.0.25 支持
+
+```javascript
+import { describe, it, expect, MockKit, when, ArgumentMatchers } from '@ohos/hypium';
+
+class ClassName {
+  constructor() {
+  }
+  data = 1;
+  private priData = 2;
+  method() {
+    return this.priData;
+  }
+}
+
+export default function staticTest() {
+  describe('propertyTest', () => {
+    it('property_001', 0, () => {
+      let claser: ClassName = new ClassName(); 
+      let data = claser.data;
+      expect(data).assertEqual(1);
+      let priData = claser.method();
+      expect(priData).assertEqual(2);
+      // 1.创建MockKit对象
+      let mocker: MockKit = new MockKit();
+      // 2.mock  类ClassName对象的成员变量data
+      mocker.mockProperty(claser, "data", 3);
+      mocker.mockProperty(claser, "priData", 4);
+      // 3.期望被mock后的成员和私有成员的值分别为3，4
+      let mock_result = claser.data;
+      let mock_private_result = claser.method();
+      expect(mock_result).assertEqual(3);
+      expect(mock_private_result).assertEqual(4);
+      // 清除mock能力
+      mocker.ignoreMock(claser, "data");
+      mocker.ignoreMock(claser, "priData");
+      let really_result = claser.data;
+      expect(really_result).assertEqual(1);
+      let really_private_result = claser.method();
+      expect(really_private_result).assertEqual(2);
     })
   })
 }
@@ -2086,7 +2216,7 @@ import { PerfMetric, PerfTest, PerfTestStrategy, PerfMeasureResult } from '@kit.
   import { describe, it, expect } from '@ohos/hypium';
   import { PerfMetric, PerfTest, PerfTestStrategy, PerfMeasureResult } from '@kit.TestKit';
   import { PerfUtils } from '../../../main/ets/utils/PerfUtils';
-
+  
   export default function PerfTestTest() {
     describe('PerfTestTest', () => {
       it('testExample0', 0, async (done: Function) => {
@@ -2162,7 +2292,7 @@ import { PerfMetric, PerfTest, PerfTestStrategy, PerfMeasureResult } from '@kit.
   import { PerfMetric, PerfTest, PerfTestStrategy, PerfMeasureResult } from '@kit.TestKit';
   import { abilityDelegatorRegistry, Driver, ON } from '@kit.TestKit';
   import { Want } from '@kit.AbilityKit';
-
+  
   const delegator: abilityDelegatorRegistry.AbilityDelegator = abilityDelegatorRegistry.getAbilityDelegator();
   export default function PerfTestTest() {
     describe('PerfTestTest', () => {

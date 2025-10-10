@@ -97,6 +97,7 @@ namespace OHOS::uitest {
         void PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error);
 
         void PerformPenTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
+        void PerformKnuckleAction(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
 
         void SetAamsWorkMode(const AamsWorkMode mode);
 
@@ -122,6 +123,10 @@ namespace OHOS::uitest {
 
         bool IsComponentPresentWhenSwipe(const WidgetSelector& selector, const TouchAction& action,
             const UiOpArgs& uiOpArgs, ApiCallErr& error);
+
+        bool IsKnuckleSnapshotEnable();
+
+        bool IsKnuckleRecordEnable();
 
     private:
         // Struct to group timeout-related parameters

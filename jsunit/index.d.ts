@@ -54,7 +54,11 @@ export function afterItSpecified(testCaseNames: Array<string> | string, callback
 
 export function beforeEach(callback: Function): void
 
+export function beforeEachIt(callback: Function): void
+
 export function afterEach(callback: Function): void
+
+export function afterEachIt(callback: Function): void
 
 export function beforeAll(callback: Function): void
 
@@ -123,9 +127,11 @@ export class MockKit {
   mockFunc(obj: Object, func: Function): Function
   mockObject(obj: Object): Object
   verify(methodName: String, argsArray: Array<any>): VerificationMode
-  ignoreMock(obj: Object, func: Function): void
+  ignoreMock(obj: Object, func: Function | String): void
   clear(obj: Object): void
   clearAll(): void
+  mockPrivateFunc(originalObject: Object, method: String): Function
+  mockProperty(obj: Object, propertyName: String, value: any): void
 }
 
 export class SysTestKit {
@@ -135,6 +141,7 @@ export class SysTestKit {
   static actionStart(tag: string): void
   static actionEnd(tag: string): void
   static existKeyword(keyword: string, timeout?: number): boolean
+  static clearLog(): boolean
 }
 
 export class Hypium {

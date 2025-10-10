@@ -236,6 +236,18 @@ namespace OHOS::testserver {
         }
         return iTestServerInterface_->CollectProcessCpu(pid, isNeedUpdate, processCpuInfo);
     }
+
+    std::string TestServerClient::GetValueFromDataShare(const std::string &uri, const std::string &key)
+    {
+        std::string value;
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return value;
+        }
+        iTestServerInterface_->GetValueFromDataShare(uri, key, value);
+        return value;
+    }
 } // namespace OHOS::testserver
 
 void FrequencyLockPlugin()

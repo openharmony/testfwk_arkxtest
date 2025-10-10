@@ -163,14 +163,16 @@ export interface FilterParamIF {
 
 export interface ApiIF {
   name: string;
-  describe?: (desc: string, func: () => void) => Promise<undefined>;
-  xdescribe?: (desc: string, func: () => void, reason: string) => Promise<void>;
+  describe?: (desc: string, func: () => void) => void;
+  xdescribe?: (desc: string, func: () => void, reason: string) => void;
   beforeItSpecified?: (itDescs: string | string[], func: HookFuncType) => void;
   afterItSpecified?: (itDescs: string | string[], func: HookFuncType) => void;
   beforeAll?: (func: HookFuncType) => void;
   beforeEach?: (func: HookFuncType) => void;
+  beforeEachIt?: (func: HookFuncType) => void;
   afterAll?: (func: HookFuncType) => void;
   afterEach?: (func: HookFuncType) => void;
+  afterEachIt?: (func: HookFuncType) => void;
   it?: (desc: string, filter: int, func: ItfnType) => void;
   xit?: (desc: string, filter: int, func: ItfnType, reason: string) => void;
   expect?: (actualValue?: AnyType) => AssertMatcher;

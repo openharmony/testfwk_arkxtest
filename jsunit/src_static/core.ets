@@ -48,14 +48,16 @@ class Core {
 
   public services: Map<string, Map<string, ServiceType>>;
   public events: Map<string, Map<string, EventType>>;
-  public describe: (desc: string, func: () => void) => Promise<undefined>;
-  public xdescribe: (desc: string, func: () => void, reason: string) => Promise<void>;
+  public describe: (desc: string, func: () => void) => void;
+  public xdescribe: (desc: string, func: () => void, reason: string) => void;
   public beforeItSpecified: (itDescs: string | string[], func: HookFuncType) => void;
   public afterItSpecified: (itDescs: string | string[], func: HookFuncType) => void;
   public beforeAll: (func: HookFuncType) => void;
   public beforeEach: (func: HookFuncType) => void;
+  public beforeEachIt: (func: HookFuncType) => void;
   public afterAll: (func: HookFuncType) => void;
   public afterEach: (func: HookFuncType) => void;
+  public afterEachIt: (func: HookFuncType) => void;
   public it: (desc: string, filter: int, func: ItfnType) => void;
   public xit: (desc: string, filter: int, func: ItfnType, reason: string) => void;
   public expect: ((actualValue?: AnyType) => AssertMatcher) | null;
@@ -66,18 +68,16 @@ class Core {
   constructor() {
     this.services = new Map<string, Map<string, ServiceType>>();
     this.events = new Map<string, Map<string, EventType>>();
-    this.describe = (desc: string, func: () => void): Promise<undefined> => {
-      return Promise.resolve(undefined);
-    };
-    this.xdescribe = (desc: string, func: () => void, reason: string) => {
-      return Promise.resolve();
-    };
+    this.describe = (desc: string, func: () => void): void => {};
+    this.xdescribe = (desc: string, func: () => void, reason: string) => {};
     this.beforeItSpecified = (itDescs: string | string[], func: HookFuncType) => { };
     this.afterItSpecified = (itDescs: string | string[], func: HookFuncType) => { };
     this.beforeAll = (func: HookFuncType) => { };
     this.beforeEach = (func: HookFuncType) => { };
+    this.beforeEachIt = (func: HookFuncType) => { };
     this.afterAll = (func: HookFuncType) => { };
     this.afterEach = (func: HookFuncType) => { };
+    this.afterEachIt = (func: HookFuncType) => { };
     this.it = (desc: string, filter: int, func: ItfnType) => { };
     this.xit = (desc: string, filter: int, func: ItfnType, reason: string) => { };
     this.expect = null;
@@ -220,6 +220,10 @@ class Core {
     if (beforeEach) {
       this.beforeEach = beforeEach;
     }
+    const beforeEachIt = apis.beforeEachIt;
+    if (beforeEachIt) {
+      this.beforeEachIt = beforeEachIt;
+    }
     const afterAll = apis.afterAll;
     if (afterAll) {
       this.afterAll = afterAll;
@@ -227,6 +231,10 @@ class Core {
     const afterEach = apis.afterEach;
     if (afterEach) {
       this.afterEach = afterEach;
+    }
+    const afterEachIt = apis.afterEachIt;
+    if (afterEachIt) {
+      this.afterEachIt = afterEachIt;
     }
     const it = apis.it;
     if (it) {

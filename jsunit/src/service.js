@@ -19,19 +19,22 @@ import LogExpectError from './module/report/LogExpectError';
 import { NestFilter } from './module/config/Filter';
 
 function assertTrueFun(actualValue) {
+    let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue :actualValue.toString();
     let result = {
         pass: (actualValue) === true,
-        message: 'expect true, actualValue is ' + actualValue
+        message: 'expect true, actualValue is ' + actualValueStr
     };
     return result;
 }
 
 function assertEqualFun(actualValue, args) {
-    let msg = 'expect ' + actualValue + ' equals ' + args[0];
+    let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue : actualValue.toString();
+    let argsStr = (args[0] === null || args[0] === undefined) ? args[0] : args[0].toString();
+    let msg = 'expect ' + actualValueStr + ' equals ' + argsStr;
     if (actualValue === args[0]) { // 数值相同,提示数据类型
         const aClassName = Object.prototype.toString.call(actualValue);
         const bClassName = Object.prototype.toString.call(args[0]);
-        msg = 'expect ' + actualValue + aClassName + ' equals ' + args[0] + bClassName + 'strict mode inspect type';
+        msg = 'expect ' + actualValueStr + aClassName + ' equals ' + argsStr + bClassName + 'strict mode inspect type';
     }
     let result = {
         pass: (actualValue) === args[0],
@@ -270,6 +273,10 @@ class SuiteService {
         this.currentRunningSuite.beforeEach.push(processFunc(this.coreContext, func));
     }
 
+    beforeEachIt(func) {
+        this.currentRunningSuite.beforeEachIt.push(processFunc(this.coreContext, func));
+    }
+
     beforeItSpecified(itDescs, func) {
         this.currentRunningSuite.beforeItSpecified.set(itDescs, processFunc(this.coreContext, func));
     }
@@ -284,6 +291,10 @@ class SuiteService {
 
     afterEach(func) {
         this.currentRunningSuite.afterEach.push(processFunc(this.coreContext, func));
+    }
+
+    afterEachIt(func) {
+        this.currentRunningSuite.afterEachIt.push(processFunc(this.coreContext, func));
     }
 
     getCurrentRunningSuite() {
@@ -564,11 +575,17 @@ class SuiteService {
             beforeEach: function (func) {
                 return _this.beforeEach(func);
             },
+            beforeEachIt: function (func) {
+                return _this.beforeEachIt(func);
+            },
             afterAll: function (func) {
                 return _this.afterAll(func);
             },
             afterEach: function (func) {
                 return _this.afterEach(func);
+            },
+            afterEachIt: function (func) {
+                return _this.afterEachIt(func);
             }
         };
     }
@@ -584,7 +601,9 @@ SuiteService.Suite = class {
         this.beforeItSpecified = new Map();
         this.afterItSpecified = new Map();
         this.beforeEach = [];
+        this.beforeEachIt = [];
         this.afterEach = [];
+        this.afterEachIt = [];
         this.duration = 0;
         this.hookError = null;
         this.isSkip = false;
@@ -628,18 +647,30 @@ SuiteService.Suite = class {
                     return +('0.' + (+ new Date() + '').split('').reverse().join('')) > 0.5 ? -1 : 1;
                 });
             }
-            for (let spec in this.specs) {
+            for (let i = 0; i < this.specs.length; i++) {
+                let spec = this.specs[i];
                 let isBreakOnError = this.isRun(coreContext);
                 if (isBreakOnError) {
                     break;
                 }
+                this.runHookFunc('beforeEachIt');
                 this.runHookFunc('beforeEach');
                 spec.run(coreContext);
                 this.runHookFunc('afterEach');
+                this.runHookFunc('afterEachIt');
             }
         }
         if (this.childSuites.length > 0) {
-            for (let suite in this.childSuites) {
+            let beforeEachItSize = this.beforeEachIt.length;
+            let afterEachItSize = this.afterEachIt.length;
+            for (let i = 0; i < this.childSuites.length; i++) {
+                let suite = this.childSuites[i];
+                for (let j = 1; j <= beforeEachItSize; j++) {
+                    suite.beforeEachIt.splice(0, 0, this.beforeEachIt[beforeEachItSize - j]);
+                }
+                for (let j = 0; j < afterEachItSize; j++) {
+                    suite.afterEachIt.push(this.afterEachIt[j]);
+                }
                 let isBreakOnError = this.isRun(coreContext);
                 if (isBreakOnError) {
                     break;
@@ -693,10 +724,12 @@ SuiteService.Suite = class {
             await coreContext.fireEvents('spec', 'specStart', specItem);
             try {
                 await this.runBeforeItSpecified(this.beforeItSpecified, specItem);
+                await this.runAsyncHookFunc('beforeEachIt');
                 await this.runAsyncHookFunc('beforeEach');
                 await specItem.asyncRun(coreContext);
                 await this.runAfterItSpecified(this.afterItSpecified, specItem);
                 await this.runAsyncHookFunc('afterEach');
+                await this.runAsyncHookFunc('afterEachIt');
             } catch (e) {
                 console.error(`${TAG}stack:${e?.stack}`);
                 console.error(`${TAG}stack end`);
@@ -714,8 +747,16 @@ SuiteService.Suite = class {
     }
 
     async asyncRunChildSuites(coreContext) {
+        let beforeEachItSize = this.beforeEachIt.length;
+        let afterEachItSize = this.afterEachIt.length;
         for (let i = 0; i < this.childSuites.length; i++) {
             // 遇错即停模式, 发现用例有问题，直接返回，不在执行后面的description
+            for (let j = 1; j <= beforeEachItSize; j++) {
+                this.childSuites[i].beforeEachIt.splice(0, 0, this.beforeEachIt[beforeEachItSize - j]);
+            }
+            for (let j = 0; j < afterEachItSize; j++) {
+                this.childSuites[i].afterEachIt.push(this.afterEachIt[j]);
+            }
             let isBreakOnError = this.isRun(coreContext);
             if (isBreakOnError) {
                 console.info(`${TAG}break description : ${this.description}`);

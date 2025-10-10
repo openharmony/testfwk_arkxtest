@@ -56,6 +56,8 @@ namespace OHOS::uitest {
     using namespace OHOS::Media;
     using namespace OHOS::HiviewDFX;
     using namespace OHOS;
+    using OHOS::Accessibility::WindowUpdateType;
+    using OHOS::Accessibility::EventType;
 
     class UiEventMonitor final : public AccessibleAbilityListener {
     public:
@@ -91,10 +93,19 @@ namespace OHOS::uitest {
         atomic<uint64_t> lastScrollBeginEventMillis_ = 0;
         atomic<bool> scrollCompelete_ = true;
         vector<shared_ptr<UiEventListener>> listeners_;
+        
+        // Helper functions
+        void NotifyListeners(const std::string& capturedEvent, const UiEventSourceInfo& uiEventSourceInfo,
+            Widget* widget = nullptr);
     };
 
     struct EventSpec {
         std::string_view componentTyep;
+        int32_t eventType;
+        std::string_view event;
+    };
+
+    struct EventTypeSpec {
         int32_t eventType;
         std::string_view event;
     };
@@ -143,6 +154,57 @@ namespace OHOS::uitest {
         {"AlertDialog", WindowsContentChangeTypes::CONTENT_CHANGE_TYPE_SUBTREE, "dialogShow"}
     };
 
+    static constexpr EventTypeSpec WATCHED_COMPONENT_EVENTS[] = {
+        { EventType::TYPE_VIEW_CLICKED_EVENT, "componentEventOccur"},
+        { EventType::TYPE_VIEW_LONG_CLICKED_EVENT, "componentEventOccur"},
+        { EventType::TYPE_VIEW_SCROLLED_START, "componentEventOccur"},
+        { EventType::TYPE_VIEW_SCROLLED_EVENT, "componentEventOccur"},
+        { EventType::TYPE_VIEW_TEXT_UPDATE_EVENT, "componentEventOccur"},
+        { EventType::TYPE_VIEW_HOVER_ENTER_EVENT, "componentEventOccur"},
+        { EventType::TYPE_VIEW_HOVER_EXIT_EVENT, "componentEventOccur"}
+    };
+
+    static constexpr EventTypeSpec WATCHED_WINDOW_EVENTS[] = {
+        { WindowUpdateType::WINDOW_UPDATE_ADDED, "windowChange"},
+        { WindowUpdateType::WINDOW_UPDATE_REMOVED, "windowChange"},
+        { WindowUpdateType::WINDOW_UPDATE_BOUNDS, "windowChange"}
+    };
+
+    static int32_t GetWindowChangeType(WindowUpdateType eventType)
+    {
+        switch (eventType) {
+            case WindowUpdateType::WINDOW_UPDATE_ADDED:
+                return WindowChangeType::WINDOW_ADDED;
+            case WindowUpdateType::WINDOW_UPDATE_REMOVED:
+                return WindowChangeType::WINDOW_REMOVED;
+            case WindowUpdateType::WINDOW_UPDATE_BOUNDS:
+                return WindowChangeType::WINDOW_BOUNDS_CHANGED;
+            default:
+                return WindowChangeType::WINDOW_UNDEFINED;
+        }
+    }
+
+    static int32_t GetComPonentEventType(EventType eventType)
+    {
+        switch (eventType) {
+            case EventType::TYPE_VIEW_CLICKED_EVENT:
+                return ComponentEventType::COMPONENT_CLICKED;
+            case EventType::TYPE_VIEW_LONG_CLICKED_EVENT:
+                return ComponentEventType::COMPONENT_LONG_CLICKED;
+            case EventType::TYPE_VIEW_SCROLLED_START:
+                return ComponentEventType::COMPONENT_SCROLL_START;
+            case EventType::TYPE_VIEW_SCROLLED_EVENT:
+                return ComponentEventType::COMPONENT_SCROLL_END;
+            case EventType::TYPE_VIEW_TEXT_UPDATE_EVENT:
+                return ComponentEventType::COMPONENT_TEXT_CHANGED;
+            case EventType::TYPE_VIEW_HOVER_ENTER_EVENT:
+                return ComponentEventType::COMPONENT_HOVER_ENTER;
+            case EventType::TYPE_VIEW_HOVER_EXIT_EVENT:
+                return ComponentEventType::COMPONENT_HOVER_EXIT;
+            default:
+                return ComponentEventType::COMPONENT_UNDEFINED;
+        }
+    }
     static std::string GetWatchedEvent(const AccessibilityEventInfo &eventInfo)
     {
         auto eventCounts = sizeof(WATCHED_EVENTS) / sizeof(EventSpec);
@@ -153,6 +215,23 @@ namespace OHOS::uitest {
                 return string(WATCHED_EVENTS[index].event);
             }
         }
+
+        static constexpr size_t componentEventCount = sizeof(WATCHED_COMPONENT_EVENTS) / sizeof(EventTypeSpec);
+        auto componentType = static_cast<uint32_t>(eventInfo.GetEventType());
+        for (size_t i = 0; i < componentEventCount; ++i) {
+            if (static_cast<uint32_t>(WATCHED_COMPONENT_EVENTS[i].eventType) == componentType) {
+                return std::string(WATCHED_COMPONENT_EVENTS[i].event);
+            }
+        }
+
+        auto windowUpdateType = static_cast<uint32_t>(eventInfo.GetWindowChangeTypes());
+        static constexpr size_t windowEventCount = sizeof(WATCHED_WINDOW_EVENTS) / sizeof(EventTypeSpec);
+        for (size_t i = 0; i < windowEventCount; ++i) {
+            if (static_cast<uint32_t>(WATCHED_WINDOW_EVENTS[i].eventType) == windowUpdateType) {
+                return std::string(WATCHED_WINDOW_EVENTS[i].event);
+            }
+        }
+
         return "undefine";
     }
 
@@ -212,15 +291,40 @@ namespace OHOS::uitest {
             LOG_I("Capture scroll end");
             scrollCompelete_.store(true);
         }
+
         if (capturedEvent != "undefine") {
+            LOG_D("testfwk Capture event: %{public}s", capturedEvent.c_str());
             auto bundleName = eventInfo.GetBundleName();
             auto contentList = eventInfo.GetContentList();
             auto text = !contentList.empty() ? contentList[0] : "";
             auto type = eventInfo.GetComponentType();
-            UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type};
-            for (auto &listener : listeners_) {
-                listener->OnEvent(capturedEvent, uiEventSourceInfo);
+            int32_t windowChangeType = GetWindowChangeType(eventInfo.GetWindowChangeTypes());
+            int32_t componentEventType = GetComPonentEventType(eventInfo.GetEventType());
+            int32_t windowId = eventInfo.GetWindowId();
+            Rect componentRect;
+            AccessibilityWindowInfo windowInfo;
+            if (AccessibilityUITestAbility::GetInstance()->GetWindow(windowId, windowInfo) == RET_OK) {
+                bundleName = bundleName.empty() ? windowInfo.GetBundleName() : bundleName;
+                componentRect.displayId_ = windowInfo.GetDisplayId();
             }
+            LOG_D("testfwk OnAccessibilityEvent bundleName: %{public}s", bundleName.c_str());
+            const auto& elemInfo = eventInfo.GetElementInfo();
+            auto componentId = elemInfo.GetInspectorKey();
+            auto bounds = elemInfo.GetRectInScreen();
+            componentRect.left_ = bounds.GetLeftTopXScreenPostion();
+            componentRect.top_ = bounds.GetLeftTopYScreenPostion();
+            componentRect.right_ = bounds.GetRightBottomXScreenPostion();
+            componentRect.bottom_ = bounds.GetRightBottomYScreenPostion();
+
+            UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type, windowChangeType, componentEventType,
+                windowId, componentId, componentRect};
+            std::unique_ptr<Widget> widget = nullptr;
+            if (capturedEvent == "componentEventOccur") {
+                widget = std::make_unique<Widget>("");
+                ElementNodeIteratorImpl iterator;
+                iterator.WrapperNodeAttrToVec(*widget, elemInfo);
+            }
+            NotifyListeners(capturedEvent, uiEventSourceInfo, widget.get());
         }
         if (std::find(EVENT_MASK.begin(), EVENT_MASK.end(), eventInfo.GetEventType()) != EVENT_MASK.end()) {
             lastEventMillis_.store(GetCurrentMillisecond());
@@ -273,6 +377,15 @@ namespace OHOS::uitest {
             return false;
         }
         return WaitEventIdle(idleThresholdMs, timeoutMs - sliceMs);
+    }
+
+    void UiEventMonitor::NotifyListeners(const std::string& capturedEvent,
+        const UiEventSourceInfo& uiEventSourceInfo, Widget* widget)
+    {
+        LOG_D("testfwk NotifyListeners capturedEvent: %{public}s", capturedEvent.c_str());
+        for (auto &listener : listeners_) {
+            listener->OnEvent(capturedEvent, uiEventSourceInfo, widget);
+        }
     }
 
     SysUiController::SysUiController() : UiController() {}
@@ -535,56 +648,59 @@ namespace OHOS::uitest {
         return displayMgr.GetDisplayById(displayId) != nullptr;
     }
 
-    static void SetItemByType(PointerEvent::PointerItem &pinterItem, const PointerMatrix &events)
+    static void SetItemByType(PointerEvent::PointerItem &pinterItem, const PointerMatrix &events,
+        uint32_t finger, bool pressed, const Point &point)
     {
         switch (events.GetToolType()) {
-            case PointerEvent::TOOL_TYPE_FINGER:
+            case TouchToolType::FINGER:
                 pinterItem.SetToolType(PointerEvent::TOOL_TYPE_FINGER);
                 break;
-            case PointerEvent::TOOL_TYPE_PEN:
+            case TouchToolType::PEN:
                 pinterItem.SetToolType(PointerEvent::TOOL_TYPE_PEN);
                 pinterItem.SetPressure(events.GetTouchPressure());
+                break;
+            case TouchToolType::KNUCKLE:
+                pinterItem.SetToolType(PointerEvent::TOOL_TYPE_KNUCKLE);
                 break;
             default:
                 return;
         }
+        pinterItem.SetPointerId(finger);
+        pinterItem.SetOriginPointerId(finger);
+        pinterItem.SetDisplayX(point.px_);
+        pinterItem.SetDisplayY(point.py_);
+        pinterItem.SetRawDisplayX(point.px_);
+        pinterItem.SetRawDisplayY(point.py_);
+        pinterItem.SetPressed(pressed);
+        LOG_I("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
+            finger, pressed, point.px_, point.py_);
     }
 
     static void AddPointerItems(PointerEvent &event, const vector<pair<bool, Point>> &fingerStatus,
-        uint32_t currentFinger, const PointerMatrix &events)
+        const PointerMatrix &events, uint32_t currentFinger, uint32_t currentStep)
     {
-        PointerEvent::PointerItem pinterItem1;
-        pinterItem1.SetPointerId(currentFinger);
-        pinterItem1.SetOriginPointerId(currentFinger);
-        pinterItem1.SetDisplayX(fingerStatus[currentFinger].second.px_);
-        pinterItem1.SetDisplayY(fingerStatus[currentFinger].second.py_);
-        pinterItem1.SetRawDisplayX(fingerStatus[currentFinger].second.px_);
-        pinterItem1.SetRawDisplayY(fingerStatus[currentFinger].second.py_);
-        pinterItem1.SetPressed(fingerStatus[currentFinger].first);
-        SetItemByType(pinterItem1, events);
-        event.UpdatePointerItem(currentFinger, pinterItem1);
-        LOG_I("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
-            currentFinger, fingerStatus[currentFinger].first, fingerStatus[currentFinger].second.px_,
-            fingerStatus[currentFinger].second.py_);
-        // update pinterItem of other fingers which in pressed state.
-        for (uint32_t index = 0; index < fingerStatus.size(); index++) {
-            if (index == currentFinger) {
-                continue;
-            }
-            if (fingerStatus[index].first) {
+        if (events.IsSyncInject()) {
+            for (auto finger = 0; finger < events.GetFingers(); finger++) {
                 PointerEvent::PointerItem pinterItem;
-                pinterItem.SetPointerId(index);
-                pinterItem.SetOriginPointerId(index);
-                pinterItem.SetDisplayX(fingerStatus[index].second.px_);
-                pinterItem.SetDisplayY(fingerStatus[index].second.py_);
-                pinterItem.SetRawDisplayX(fingerStatus[index].second.px_);
-                pinterItem.SetRawDisplayY(fingerStatus[index].second.py_);
-                pinterItem.SetPressed(true);
-                SetItemByType(pinterItem, events);
-                event.UpdatePointerItem(index, pinterItem);
-                LOG_I("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
-                    index, fingerStatus[index].first, fingerStatus[index].second.px_,
-                    fingerStatus[index].second.py_);
+                SetItemByType(pinterItem, events, finger, fingerStatus[finger].first,
+                    events.At(finger, currentStep).point_);
+                event.UpdatePointerItem(finger, pinterItem);
+            }
+        } else {
+            PointerEvent::PointerItem pinterItem;
+            SetItemByType(pinterItem, events, currentFinger, fingerStatus[currentFinger].first,
+                fingerStatus[currentFinger].second);
+            event.UpdatePointerItem(currentFinger, pinterItem);
+            // update pinterItem of other fingers which in pressed state.
+            for (uint32_t index = 0; index < fingerStatus.size(); index++) {
+                if (index == currentFinger) {
+                    continue;
+                }
+                if (fingerStatus[index].first) {
+                    PointerEvent::PointerItem pinterItemForOther;
+                    SetItemByType(pinterItemForOther, events, index, true, fingerStatus[index].second);
+                    event.UpdatePointerItem(index, pinterItemForOther);
+                }
             }
         }
     }
@@ -623,7 +739,7 @@ namespace OHOS::uitest {
                     default:
                         return;
                 }
-                AddPointerItems(*pointerEvent, fingerStatus, finger, events);
+                AddPointerItems(*pointerEvent, fingerStatus, events, finger, step);
                 pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
                 auto displayId = GetValidDisplayId(events.At(finger, step).point_.displayId_);
                 pointerEvent->SetTargetDisplayId(displayId);
@@ -836,7 +952,7 @@ namespace OHOS::uitest {
             }
             fingerStatus[0] = make_pair(false, event.point);
             PointerMatrix pointer;
-            AddPointerItems(*pointerEvent, fingerStatus, 0, pointer);
+            AddPointerItems(*pointerEvent, fingerStatus, pointer, 0, 0);
             pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHPAD);
             pointerEvent->SetFingerCount(event.fingerCount);
             auto displayId = GetValidDisplayId(event.point.displayId_);
@@ -1274,5 +1390,31 @@ namespace OHOS::uitest {
         *buf = nullptr;
         len = 0;
 #endif
+    }
+
+    bool SysUiController::IsKnuckleSnapshotEnable() const
+    {
+        string uri = "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_SECURE_100?Proxy=true";
+        string knuckleSnapshotKey = "fingersense_smartshot_enabled";
+        auto value = OHOS::testserver::TestServerClient::GetInstance().GetValueFromDataShare(uri, knuckleSnapshotKey);
+        LOG_D("key = %{public}s, value = %{public}s", knuckleSnapshotKey.c_str(), value.c_str());
+        if (value == "") {
+            return true;
+        } else {
+            return atoi(value.c_str()) != 0;
+        }
+    }
+
+    bool SysUiController::IsKnuckleRecordEnable() const
+    {
+        string uri = "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_SECURE_100?Proxy=true";
+        string knuckleRecordKey = "fingersense_screen_recording_enabled";
+        auto value = OHOS::testserver::TestServerClient::GetInstance().GetValueFromDataShare(uri, knuckleRecordKey);
+        LOG_D("key = %{public}s, value = %{public}s", knuckleRecordKey.c_str(), value.c_str());
+        if (value == "") {
+            return true;
+        } else {
+            return atoi(value.c_str()) != 0;
+        }
     }
 } // namespace OHOS::uitest
