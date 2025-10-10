@@ -14,9 +14,10 @@
  */
 
 function assertUndefined(actualValue) {
+    let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue : actualValue.toString();
     return {
         pass: undefined === (actualValue),
-        message: 'expect Undefined, actualValue is ' + (actualValue)
+        message: 'expect Undefined, actualValue is ' + (actualValueStr)
     };
 }
 
