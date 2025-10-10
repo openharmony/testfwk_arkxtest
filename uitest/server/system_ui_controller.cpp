@@ -648,56 +648,59 @@ namespace OHOS::uitest {
         return displayMgr.GetDisplayById(displayId) != nullptr;
     }
 
-    static void SetItemByType(PointerEvent::PointerItem &pinterItem, const PointerMatrix &events)
+    static void SetItemByType(PointerEvent::PointerItem &pinterItem, const PointerMatrix &events,
+        uint32_t finger, bool pressed, const Point &point)
     {
         switch (events.GetToolType()) {
-            case PointerEvent::TOOL_TYPE_FINGER:
+            case TouchToolType::FINGER:
                 pinterItem.SetToolType(PointerEvent::TOOL_TYPE_FINGER);
                 break;
-            case PointerEvent::TOOL_TYPE_PEN:
+            case TouchToolType::PEN:
                 pinterItem.SetToolType(PointerEvent::TOOL_TYPE_PEN);
                 pinterItem.SetPressure(events.GetTouchPressure());
+                break;
+            case TouchToolType::KNUCKLE:
+                pinterItem.SetToolType(PointerEvent::TOOL_TYPE_KNUCKLE);
                 break;
             default:
                 return;
         }
+        pinterItem.SetPointerId(finger);
+        pinterItem.SetOriginPointerId(finger);
+        pinterItem.SetDisplayX(point.px_);
+        pinterItem.SetDisplayY(point.py_);
+        pinterItem.SetRawDisplayX(point.px_);
+        pinterItem.SetRawDisplayY(point.py_);
+        pinterItem.SetPressed(pressed);
+        LOG_I("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
+            finger, pressed, point.px_, point.py_);
     }
 
     static void AddPointerItems(PointerEvent &event, const vector<pair<bool, Point>> &fingerStatus,
-        uint32_t currentFinger, const PointerMatrix &events)
+        const PointerMatrix &events, uint32_t currentFinger, uint32_t currentStep)
     {
-        PointerEvent::PointerItem pinterItem1;
-        pinterItem1.SetPointerId(currentFinger);
-        pinterItem1.SetOriginPointerId(currentFinger);
-        pinterItem1.SetDisplayX(fingerStatus[currentFinger].second.px_);
-        pinterItem1.SetDisplayY(fingerStatus[currentFinger].second.py_);
-        pinterItem1.SetRawDisplayX(fingerStatus[currentFinger].second.px_);
-        pinterItem1.SetRawDisplayY(fingerStatus[currentFinger].second.py_);
-        pinterItem1.SetPressed(fingerStatus[currentFinger].first);
-        SetItemByType(pinterItem1, events);
-        event.UpdatePointerItem(currentFinger, pinterItem1);
-        LOG_I("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
-            currentFinger, fingerStatus[currentFinger].first, fingerStatus[currentFinger].second.px_,
-            fingerStatus[currentFinger].second.py_);
-        // update pinterItem of other fingers which in pressed state.
-        for (uint32_t index = 0; index < fingerStatus.size(); index++) {
-            if (index == currentFinger) {
-                continue;
-            }
-            if (fingerStatus[index].first) {
+        if (events.IsSyncInject()) {
+            for (auto finger = 0; finger < events.GetFingers(); finger++) {
                 PointerEvent::PointerItem pinterItem;
-                pinterItem.SetPointerId(index);
-                pinterItem.SetOriginPointerId(index);
-                pinterItem.SetDisplayX(fingerStatus[index].second.px_);
-                pinterItem.SetDisplayY(fingerStatus[index].second.py_);
-                pinterItem.SetRawDisplayX(fingerStatus[index].second.px_);
-                pinterItem.SetRawDisplayY(fingerStatus[index].second.py_);
-                pinterItem.SetPressed(true);
-                SetItemByType(pinterItem, events);
-                event.UpdatePointerItem(index, pinterItem);
-                LOG_I("Add touchItem, finger:%{public}d, pressed:%{public}d, location:%{public}d, %{public}d",
-                    index, fingerStatus[index].first, fingerStatus[index].second.px_,
-                    fingerStatus[index].second.py_);
+                SetItemByType(pinterItem, events, finger, fingerStatus[finger].first,
+                    events.At(finger, currentStep).point_);
+                event.UpdatePointerItem(finger, pinterItem);
+            }
+        } else {
+            PointerEvent::PointerItem pinterItem;
+            SetItemByType(pinterItem, events, currentFinger, fingerStatus[currentFinger].first,
+                fingerStatus[currentFinger].second);
+            event.UpdatePointerItem(currentFinger, pinterItem);
+            // update pinterItem of other fingers which in pressed state.
+            for (uint32_t index = 0; index < fingerStatus.size(); index++) {
+                if (index == currentFinger) {
+                    continue;
+                }
+                if (fingerStatus[index].first) {
+                    PointerEvent::PointerItem pinterItemForOther;
+                    SetItemByType(pinterItemForOther, events, index, true, fingerStatus[index].second);
+                    event.UpdatePointerItem(index, pinterItemForOther);
+                }
             }
         }
     }
@@ -736,7 +739,7 @@ namespace OHOS::uitest {
                     default:
                         return;
                 }
-                AddPointerItems(*pointerEvent, fingerStatus, finger, events);
+                AddPointerItems(*pointerEvent, fingerStatus, events, finger, step);
                 pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHSCREEN);
                 auto displayId = GetValidDisplayId(events.At(finger, step).point_.displayId_);
                 pointerEvent->SetTargetDisplayId(displayId);
@@ -949,7 +952,7 @@ namespace OHOS::uitest {
             }
             fingerStatus[0] = make_pair(false, event.point);
             PointerMatrix pointer;
-            AddPointerItems(*pointerEvent, fingerStatus, 0, pointer);
+            AddPointerItems(*pointerEvent, fingerStatus, pointer, 0, 0);
             pointerEvent->SetSourceType(PointerEvent::SOURCE_TYPE_TOUCHPAD);
             pointerEvent->SetFingerCount(event.fingerCount);
             auto displayId = GetValidDisplayId(event.point.displayId_);
@@ -1387,5 +1390,31 @@ namespace OHOS::uitest {
         *buf = nullptr;
         len = 0;
 #endif
+    }
+
+    bool SysUiController::IsKnuckleSnapshotEnable() const
+    {
+        string uri = "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_SECURE_100?Proxy=true";
+        string knuckleSnapshotKey = "fingersense_smartshot_enabled";
+        auto value = OHOS::testserver::TestServerClient::GetInstance().GetValueFromDataShare(uri, knuckleSnapshotKey);
+        LOG_D("key = %{public}s, value = %{public}s", knuckleSnapshotKey.c_str(), value.c_str());
+        if (value == "") {
+            return true;
+        } else {
+            return atoi(value.c_str()) != 0;
+        }
+    }
+
+    bool SysUiController::IsKnuckleRecordEnable() const
+    {
+        string uri = "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_SECURE_100?Proxy=true";
+        string knuckleRecordKey = "fingersense_screen_recording_enabled";
+        auto value = OHOS::testserver::TestServerClient::GetInstance().GetValueFromDataShare(uri, knuckleRecordKey);
+        LOG_D("key = %{public}s, value = %{public}s", knuckleRecordKey.c_str(), value.c_str());
+        if (value == "") {
+            return true;
+        } else {
+            return atoi(value.c_str()) != 0;
+        }
     }
 } // namespace OHOS::uitest

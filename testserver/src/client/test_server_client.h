@@ -37,6 +37,7 @@ namespace OHOS::testserver {
         int32_t SpDaemonProcess(int daemonCommand, std::string extraInfo);
         int32_t CollectProcessMemory(int32_t &pid, ProcessMemoryInfo &processMemoryInfo);
         int32_t CollectProcessCpu(int32_t &pid, bool isNeedUpdate, ProcessCpuInfo &processCpuInfo);
+        std::string GetValueFromDataShare(const std::string &uri, const std::string &key);
     private:
         TestServerClient();
         ~TestServerClient() = default;

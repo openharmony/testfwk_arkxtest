@@ -124,6 +124,21 @@ namespace OHOS::uitest {
         }
     }
 
+    void GenericMultiClick::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
+    {
+        auto fingers = points_.size();
+        auto steps = times_ * TWO;
+        const auto msInterval = options.doubleClickIntervalMs_;
+        PointerMatrix pointer(fingers, steps);
+        for (auto finger = 0; finger < fingers; finger++) {
+            for (auto time = 0; time < times_; time++) {
+                pointer.PushAction(TouchEvent {ActionStage::DOWN, points_[finger], 0, options.clickHoldMs_});
+                pointer.PushAction(TouchEvent {ActionStage::UP, points_[finger], options.clickHoldMs_, msInterval});
+            }
+        }
+        pointer.SetSyncInject();
+        recv = move(pointer);
+    }
     void GenericSwipe::Decompose(PointerMatrix &recv, const UiOpArgs &options) const
     {
         DCHECK(type_ >= TouchOp::SWIPE && type_ <= TouchOp::FLING);
@@ -176,7 +191,7 @@ namespace OHOS::uitest {
             constexpr uint32_t unitConversionConstant = 1000;
             for (uint32_t step = 0; step < pointers_.GetSteps() - 1; step++) {
                 if (pointers_.At(finger, step + 1).point_.displayId_ != pointers_.At(finger, step).point_.displayId_) {
-                    LOG_W("Cross-screen operation is not suypport.");
+                    LOG_W("Cross-screen operation is not support.");
                     return;
                 }
                 auto displayId = pointers_.At(finger, step).point_.displayId_;
@@ -280,6 +295,7 @@ namespace OHOS::uitest {
         this->stepNum_ = other.stepNum_;
         this->capacity_ = other.capacity_;
         this->size_ = other.size_;
+        this->syncInject_ = other.syncInject_;
         other.fingerNum_ = 0;
         other.stepNum_ = 0;
         other.capacity_ = 0;
@@ -349,6 +365,16 @@ namespace OHOS::uitest {
     float PointerMatrix::GetTouchPressure() const
     {
         return touchPressure_;
+    }
+
+    bool PointerMatrix::IsSyncInject() const
+    {
+        return syncInject_;
+    }
+
+    void PointerMatrix::SetSyncInject()
+    {
+        syncInject_ = true;
     }
 
     void PointerMatrix::ConvertToPenEvents(PointerMatrix &recv) const

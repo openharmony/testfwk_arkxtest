@@ -97,6 +97,7 @@ namespace OHOS::uitest {
         void PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error);
 
         void PerformPenTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
+        void PerformKnuckleAction(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
 
         void SetAamsWorkMode(const AamsWorkMode mode);
 
@@ -113,6 +114,10 @@ namespace OHOS::uitest {
         void ChangeWindowMode(int32_t windowId, WindowMode mode);
 
         bool GetEventObserverEnable();
+
+        bool IsKnuckleSnapshotEnable();
+
+        bool IsKnuckleRecordEnable();
 
     private:
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);

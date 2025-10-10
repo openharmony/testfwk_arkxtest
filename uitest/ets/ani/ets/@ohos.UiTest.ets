@@ -1145,6 +1145,9 @@ export class Component {
     private native injectMultiPointerActionSync(pointers: PointerMatrix, speed?: int): boolean;
     private native injectPenPointerActionSync(pointers: PointerMatrix, speed?: int, pressure?: double): boolean;
     private native touchPadMultiFingerSwipeSync(fingers: int, direction: UiDirection, options?: TouchPadSwipeOptions): boolean;
+    private native kunckleClickOnePointSync(p: Point, times: int):boolean;
+    private native kunckleClickTwoPointSync(p0: Point, p1: Point, times: int):boolean;
+    private native injectKnucklePointerActionSync(pointers: PointerMatrix, speed?: int): boolean;
   
     delayMs(t: int): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
@@ -1514,6 +1517,52 @@ export class Component {
     touchPadMultiFingerSwipe(fingers: int, direction: UiDirection, options?: TouchPadSwipeOptions): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.touchPadMultiFingerSwipeSync(fingers, direction, options));
+            promise1.then((e:NullishType)=>{
+              resolve(Promise.resolve());
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
+
+    knuckleKnock(points: Array<Point>, times: int):Promise<void> {
+        let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+            let pointCount = points.length;
+            if (pointCount < 1 || pointCount > 2) {
+                let err = new BusinessError();
+                err.code = 17000007;
+                err.name = "Error";
+                err.message = "Point counts must be 1 to 2.";
+                reject(err);
+            }
+            let p0 = points[0];
+            if (pointCount != 1){
+                let p1 = points[1];
+                let promise1 = taskpool.execute(():boolean => this.kunckleClickTwoPointSync(p0, p1, times));
+                promise1.then((e:NullishType)=>{
+                    resolve(Promise.resolve());
+                }, (err: Error): void => {
+                    let br = err as BusinessError<void>;
+                    reject(br);
+                });
+            } else {
+                let promise1 = taskpool.execute(():boolean => this.kunckleClickOnePointSync(p0, times));
+                promise1.then((e:NullishType)=>{
+                    resolve(Promise.resolve());
+                }, (err: Error): void => {
+                    let br = err as BusinessError<void>;
+                    reject(br);
+                });
+            }
+        });
+        return promise;
+    }
+
+    injectKnucklePointerAction(pointers: PointerMatrix, speed?: int): Promise<void> {
+        let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+        let promise1 = taskpool.execute(():boolean => this.injectKnucklePointerActionSync(pointers, speed));
             promise1.then((e:NullishType)=>{
               resolve(Promise.resolve());
             }, (err: Error): void => {
