@@ -1411,26 +1411,26 @@ namespace OHOS::uitest {
     bool SysUiController::IsKnuckleSnapshotEnable() const
     {
         string uri = "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_SECURE_100?Proxy=true";
-        string knuckleSnapshotKey = "fingersense_smartshot_enabled";
-        // auto value = OHOS::testserver::TestServerClient::GetInstance().GetValueFromDataShare(uri, knuckleSnapshotKey);
-        // LOG_D("key = %{public}s, value = %{public}s", knuckleSnapshotKey.c_str(), value.c_str());
-        // if (value == "") {
-            return true;
-        // } else {
-        //     return atoi(value.c_str()) != 0;
-        // }
-    }
+        string knuckleSnapshotKey = "fingersense_smartshot_enabled";	
+        auto value = OHOS::testserver::TestServerClient::GetInstance().GetValueFromDataShare(uri, knuckleSnapshotKey);	
+        LOG_D("key = %{public}s, value = %{public}s", knuckleSnapshotKey.c_str(), value.c_str());	
+        if (value == "") {	
+            return true;	
+        } else {	
+            return atoi(value.c_str()) != 0;	
+        }	
+    }	
 
-    bool SysUiController::IsKnuckleRecordEnable() const
-    {
-        string uri = "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_SECURE_100?Proxy=true";
-        string knuckleRecordKey = "fingersense_screen_recording_enabled";
-        // auto value = OHOS::testserver::TestServerClient::GetInstance().GetValueFromDataShare(uri, knuckleRecordKey);
-        // LOG_D("key = %{public}s, value = %{public}s", knuckleRecordKey.c_str(), value.c_str());
-        // if (value == "") {
-            return true;
-        // } else {
-        //     return atoi(value.c_str()) != 0;
-        // }
+    bool SysUiController::IsKnuckleRecordEnable() const	
+    {	
+        string uri = "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_SECURE_100?Proxy=true";	
+        string knuckleRecordKey = "fingersense_screen_recording_enabled";	
+        auto value = OHOS::testserver::TestServerClient::GetInstance().GetValueFromDataShare(uri, knuckleRecordKey);	
+        LOG_D("key = %{public}s, value = %{public}s", knuckleRecordKey.c_str(), value.c_str());	
+        if (value == "") {	
+            return true;	
+        } else {	
+            return atoi(value.c_str()) != 0;	
+        }
     }
 } // namespace OHOS::uitest
