@@ -61,13 +61,13 @@ static void pushParam(ani_env *env, ani_object input, ApiCallInfo &callInfo_, bo
     if (ret == ANI_FALSE) {
         if (isInt) {
             ani_int param;
-            env->Object_CallMethodByName_Int(input, "unboxed", nullptr, &param);
+            env->Object_CallMethodByName_Int(input, "toInt", nullptr, &param);
             callInfo_.paramList_.push_back(param);
         } else {
             ani_double param;
             arkts::ani_signature::SignatureBuilder rd{};
             rd.SetReturnDouble();
-            env->Object_CallMethodByName_Double(input, "unboxed", rd.BuildSignatureDescriptor().c_str(), &param);
+            env->Object_CallMethodByName_Double(input, "toDouble", rd.BuildSignatureDescriptor().c_str(), &param);
             callInfo_.paramList_.push_back(param);
         }
     } else {
@@ -413,7 +413,7 @@ static json getInputTextModeOptions(ani_env *env, ani_object f)
         }
         ani_boolean b;
         compareAndReport(ANI_OK,
-                         env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
+                         env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "toBoolean", nullptr, &b),
                          "Object_CallMethodByName_Boolean Failed",
                          "get boolean value");
         HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
@@ -552,7 +552,7 @@ static void pushBool(ani_env *env, ani_object input, nlohmann::json &params)
     if (ret == ANI_FALSE) {
         ani_boolean param;
         HiLog::Info(LABEL, "%{public}s ani_boolean !!!", __func__);
-        env->Object_CallMethodByName_Boolean(input, "unboxed", ":Z", &param);
+        env->Object_CallMethodByName_Boolean(input, "toBoolean", ":Z", &param);
         HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(param));
         params.push_back(static_cast<bool>(param));
     }
@@ -945,14 +945,14 @@ static json getWindowFilter(ani_env *env, ani_object f)
         } else if (i < FOUR) {
             ani_boolean b;
             compareAndReport(ANI_OK,
-                             env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
+                             env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "toBoolean", nullptr, &b),
                              "CallMethodByName_Boolean Failed",
                              "get boolean value");
             HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
             filter[list[i]] = static_cast<bool>(b);
         } else {
             ani_int intVal;
-            env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "unboxed", nullptr, &intVal);
+            env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "toInt", nullptr, &intVal);
             filter[list[i]] = static_cast<int>(intVal);
         }
     }
@@ -981,7 +981,7 @@ static json getWindowChangeOptions(ani_env *env, ani_object opt)
         } else {
             ani_int timeout;
             compareAndReport(ANI_OK,
-                             env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "unboxed", nullptr, &timeout),
+                             env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "toInt", nullptr, &timeout),
                              "Object_CallMethodByName_Int Failed",
                              "get timeout value");
             HiLog::Info(LABEL, "%{public}d ani_int !!!", timeout);
@@ -1014,7 +1014,7 @@ static json getComponentEventOptions(ani_env *env, ani_object opt)
         } else {
             ani_int timeout;
             compareAndReport(ANI_OK,
-                             env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "unboxed", nullptr, &timeout),
+                             env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "toInt", nullptr, &timeout),
                              "Object_CallMethodByName_Int Failed",
                              "get timeout value");
             HiLog::Info(LABEL, "%{public}d ani_int !!!", timeout);
@@ -1561,14 +1561,14 @@ static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
         if (i == ONE) {
             ani_int speed;
             compareAndReport(ANI_OK,
-                             env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "unboxed", nullptr, &speed),
+                             env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "toInt", nullptr, &speed),
                              "Object_CallMethodByName_Boolean Failed",
                              "get boolean value");
             options[list[i]] = speed;
         } else {
             ani_boolean b;
             compareAndReport(ANI_OK,
-                             env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "unboxed", nullptr, &b),
+                             env->Object_CallMethodByName_Boolean(static_cast<ani_object>(value), "toBoolean", nullptr, &b),
                              "Object_CallMethodByName_Boolean Failed",
                              "get boolean value");
             HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(b));
