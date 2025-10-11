@@ -180,14 +180,14 @@ namespace OHOS::uitest {
         for (int i = 0; i < EIGHT; i++) {
             char *cstr = new char[list[i].length() + 1];
             strcpy(cstr, list[i].c_str());
-            if (i == 3){
+            if (i == THREE){
                 ani_enum enumType;
                 if (ANI_OK != env->FindEnum(Builder::BuildEnum({"@ohos", "UiTest", "WindowChangeType"}).Descriptor().c_str(), &enumType)) {
                     HiLog::Error(LABEL, "Not found enum item: %{public}s", __func__);
                 }
                 uint8_t index = static_cast<uint8_t>(context->elmentInfo[list[i]].get<int>());
                 SetEnum(vm, env, enumType, obj, cstr, index);
-            } else if (i == 4){
+            } else if (i == FOUR){
                 ani_enum enumType;
                 if (ANI_OK != env->FindEnum(Builder::BuildEnum({"@ohos", "UiTest", "ComponentEventType"}).Descriptor().c_str(), &enumType)) {
                     HiLog::Error(LABEL, "Not found enum item: %{public}s", __func__);
@@ -201,14 +201,14 @@ namespace OHOS::uitest {
                     vm->DetachCurrentThread();
                     return;
                 }
-            } else if (i == 5){
+            } else if (i == FIVE){
                 auto windowId = static_cast<uint8_t>(context->elmentInfo[list[i]].get<int>());
                 if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(windowId))) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
                     return;
                 }
-            } else if (i == 7){
+            } else if (i == SEVEN){
                 ani_object componentRect = newRect(env, obj, context->elmentInfo[list[i]]);
                 if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(componentRect))) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
