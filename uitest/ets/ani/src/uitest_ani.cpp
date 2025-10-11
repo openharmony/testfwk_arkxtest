@@ -31,6 +31,7 @@
 #include "test_server_client.h"
 #include "error_handler.h"
 #include "ui_event_observer_ani.h"
+#include "utils.h"
 #include <cstring>
 #include <cstdio>
 
@@ -69,6 +70,8 @@ static void pushParam(ani_env *env, ani_object input, ApiCallInfo &callInfo_, bo
             env->Object_CallMethodByName_Double(input, "unboxed", rd.BuildSignatureDescriptor().c_str(), &param);
             callInfo_.paramList_.push_back(param);
         }
+    } else {
+        callInfo_.paramList_.push_back(nullptr);
     }
 }
 
@@ -82,38 +85,17 @@ static string aniStringToStdString([[maybe_unused]] ani_env *env, ani_string str
     env->String_GetUTF8(string_object, utf8_buffer, strSize + 1, &bytes_written);
     utf8_buffer[bytes_written] = '\0';
     std::string s = std::string(utf8_buffer);
-    std::cout << s << std::endl;
     return s;
 }
 
-static ani_class findCls(ani_env *env, const char *className)
-{
-    ani_class cls;
-    ani_ref nullref;
-    env->GetNull(&nullref);
-    if (ANI_OK != env->FindClass(className, &cls)) {
-        HiLog::Error(LABEL, "Not found className: %{public}s", className);
-    }
-    return cls;
-}
-
-static ani_method findCtorMethod(ani_env *env, ani_class cls, const char *name)
-{
-    ani_method ctor = nullptr;
-    if (ANI_OK != env->Class_FindMethod(cls, Builder::BuildConstructorName().c_str(), name, &ctor)) {
-        HiLog::Error(LABEL, "Not found ctor: %{public}s", name);
-    }
-    return ctor;
-}
-
-static ani_int getEnumValue(ani_env *env, ani_enum_item pattern)
+static ani_int getEnumValue(ani_env *env, ani_enum_item item)
 {
     ani_boolean ret;
-    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(pattern), &ret);
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(item), &ret);
     ani_int enumValue = 0;
     if (ret == ANI_FALSE) {
-        if (ANI_OK != env->EnumItem_GetValue_Int(pattern, &enumValue)) {
-            HiLog::Error(LABEL, "%{public}s Not get pattern !!!", __func__);
+        if (ANI_OK != env->EnumItem_GetValue_Int(item, &enumValue)) {
+            HiLog::Error(LABEL, "%{public}s Not get enum item !!!", __func__);
         }
     }
     return enumValue;
@@ -342,45 +324,6 @@ ani_object createInt(ani_env *env, ani_int displayId)
     return obj;
 }
 
-static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num)
-{
-    ani_object rect_obj = {};
-    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "RectInner"}).Descriptor().c_str());
-    ani_method ctor = nullptr;
-    if (cls != nullptr) {
-        static const char *name = nullptr;
-        ctor = findCtorMethod(env, cls, name);
-    }
-    if (cls == nullptr || ctor == nullptr) {
-        return nullptr;
-    }
-    if (ANI_OK != env->Object_New(cls, ctor, &rect_obj)) {
-        HiLog::Error(LABEL, "Create Rect object failed");
-        return rect_obj;
-    }
-    ani_method setter;
-    string direct[] = {"left", "top", "right", "bottom", "displayId"};
-    for (int index = 0; index < FIVE; index++) {
-        string tag = direct[index];
-        if (index == FOUR) {
-            auto ret1 = env->Object_SetPropertyByName_Ref(rect_obj, "displayId",
-                reinterpret_cast<ani_ref>(createInt(env, ani_int(num[tag]))));
-            if (ANI_OK != ret1) {
-                HiLog::Error(LABEL, "Object_SetPropertyByName_Ref  failed, %{public}d", ret1);
-            }
-        } else {
-            char *setter_name = strdup((Builder::BuildSetterName(tag)).c_str());
-            if (ANI_OK != env->Class_FindMethod(cls, setter_name, nullptr, &setter)) {
-                HiLog::Error(LABEL, "Find Method <set>tag failed");
-            }
-            if (ANI_OK != env->Object_CallMethod_Void(rect_obj, setter, ani_int(num[tag]))) {
-                HiLog::Error(LABEL, "call setter failed %{public}s", direct[index].c_str());
-                return rect_obj;
-            }
-        }
-    }
-    return rect_obj;
-}
 
 static ani_object newPoint(ani_env *env, ani_object obj, int x, int y, int displayId)
 {
@@ -413,7 +356,7 @@ static ani_object newPoint(ani_env *env, ani_object obj, int x, int y, int displ
             string tag = direct[index];
             char *method_name = strdup((Builder::BuildSetterName(tag)).c_str());
             if (ANI_OK != env->Class_FindMethod(cls, method_name, nullptr, &setter)) {
-                HiLog::Error(LABEL, "Find Method <set>tag failed");
+                HiLog::Error(LABEL, "Find Method %{public}s failed", method_name);
             }
             if (ANI_OK != env->Object_CallMethod_Void(point_obj, setter, ani_int(num[index]))) {
                 HiLog::Error(LABEL, "call setter failed %{public}s", direct[index].c_str());
@@ -1033,6 +976,73 @@ static json getWindowFilter(ani_env *env, ani_object f)
     return filter;
 }
 
+static json getWindowChangeOptions(ani_env *env, ani_object opt)
+{
+    auto window_change_opts = json();
+    string list[] = {"timeout", "bundleName"};
+    for (int i = 0; i < 2; i++) {
+        char *cstr = new char[list[i].length() + 1];
+        strcpy(cstr, list[i].c_str());
+        ani_ref value;
+        if (env->Object_GetPropertyByName_Ref(opt, cstr, &value) != ANI_OK) {
+            HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
+            continue;
+        }
+        ani_boolean ret;
+        env->Reference_IsUndefined(value, &ret);
+        if (ret == ANI_TRUE) {
+            continue;
+        }
+        if (i == 1) {
+            window_change_opts[list[i]] = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
+        } else {
+            ani_int timeout;
+            compareAndReport(ANI_OK,
+                             env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "unboxed", nullptr, &timeout),
+                             "Object_CallMethodByName_Int Failed",
+                             "get timeout value");
+            HiLog::Info(LABEL, "%{public}d ani_int !!!", timeout);
+            window_change_opts[list[i]] = timeout;
+        }
+    }
+    return window_change_opts;
+}
+
+static json getComponentEventOptions(ani_env *env, ani_object opt)
+{
+    auto com_event_opts = json();
+    string list[] = {"timeout", "on"};
+    for (int i = 0; i < 2; i++) {
+        char *cstr = new char[list[i].length() + 1];
+        strcpy(cstr, list[i].c_str());
+        ani_ref value;
+        if (env->Object_GetPropertyByName_Ref(opt, cstr, &value) != ANI_OK) {
+            HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
+            continue;
+        }
+        ani_boolean ret;
+        env->Reference_IsUndefined(value, &ret);
+        if (ret == ANI_TRUE) {
+            continue;
+        }
+        if (i == 1) {
+            ani_object on = static_cast<ani_object>(value);
+            com_event_opts[list[i]] = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
+        } else {
+            ani_int timeout;
+            compareAndReport(ANI_OK,
+                             env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "unboxed", nullptr, &timeout),
+                             "Object_CallMethodByName_Int Failed",
+                             "get timeout value");
+            HiLog::Info(LABEL, "%{public}d ani_int !!!", timeout);
+            com_event_opts[list[i]] = timeout;
+        }
+    }
+    return com_event_opts;
+}
+
+
+
 static ani_object findWindowSync(ani_env *env, ani_object obj, ani_object filter)
 {
     ApiCallInfo callInfo_;
@@ -1646,7 +1656,6 @@ static ani_boolean injectKnucklePointerActionSync(ani_env *env, ani_object obj, 
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
-
 static ani_boolean clickAtSync(ani_env *env, ani_object obj, ani_object p)
 {
     ApiCallInfo callInfo_;
@@ -1751,6 +1760,61 @@ static ani_boolean touchPadTwoFingersScrollSync(ani_env *env, ani_object obj, an
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
+static ani_boolean isComponentPresentWhenLongClickSync(ani_env *env, ani_object obj, ani_object on_obj, ani_object p, ani_object duration)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.isComponentPresentWhenLongClick";
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativeOn")));
+    callInfo_.paramList_.push_back(getPoint(env, p));
+    pushParam(env, duration, callInfo_, true);
+    Transact(callInfo_, reply_);
+    ani_ref ret = UnmarshalReply(env, callInfo_, reply_);
+    if (ret == nullptr) {
+        return false;
+    }
+    return reply_.resultValue_.get<bool>();
+}
+
+
+static ani_boolean isComponentPresentWhenDragSync(ani_env *env, ani_object obj, ani_object on_obj, ani_object from, 
+                                                  ani_object to, ani_object speed, ani_object duration)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.isComponentPresentWhenDrag";
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativeOn")));
+    callInfo_.paramList_.push_back(getPoint(env, from));
+    callInfo_.paramList_.push_back(getPoint(env, to));
+    pushParam(env, speed, callInfo_, true);
+    pushParam(env, duration, callInfo_, true);
+    Transact(callInfo_, reply_);
+    ani_ref ret = UnmarshalReply(env, callInfo_, reply_);
+    if (ret == nullptr) {
+        return false;
+    }
+    return reply_.resultValue_.get<bool>();
+}
+static ani_boolean isComponentPresentWhenSwipeSync(ani_env *env, ani_object obj, ani_object on_obj, ani_object from, 
+                                                  ani_object to, ani_object speed)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.isComponentPresentWhenSwipe";
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativeOn")));
+    callInfo_.paramList_.push_back(getPoint(env, from));
+    callInfo_.paramList_.push_back(getPoint(env, to));
+    pushParam(env, speed, callInfo_, true);
+    Transact(callInfo_, reply_);
+    ani_ref ret = UnmarshalReply(env, callInfo_, reply_);
+    if (ret == nullptr) {
+        return false;
+    }
+    return reply_.resultValue_.get<bool>();
+}
 
 static ani_boolean BindDriver(ani_env *env)
 {
@@ -1826,6 +1890,9 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function{"crownRotateSync", nullptr, reinterpret_cast<void *>(crownRotateSync)},
         ani_native_function{"touchPadTwoFingersScrollSync", nullptr,
                             reinterpret_cast<void *>(touchPadTwoFingersScrollSync)},
+        ani_native_function{"isComponentPresentWhenLongClickSync", nullptr, reinterpret_cast<void *>(isComponentPresentWhenLongClickSync)},
+        ani_native_function{"isComponentPresentWhenDragSync", nullptr, reinterpret_cast<void *>(isComponentPresentWhenDragSync)},
+        ani_native_function{"isComponentPresentWhenSwipeSync", nullptr, reinterpret_cast<void *>(isComponentPresentWhenSwipeSync)},
     };
 
     ani_status status;
@@ -2366,16 +2433,42 @@ static ani_boolean BindComponent(ani_env *env)
     }
     return true;
 }
-static void once(ani_env *env, ani_object obj, ani_string type, ani_object callback)
+static void once(ani_env *env, ani_object obj, nlohmann::json paramList, ani_object callback)
 {
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeUIEventObserver"));
     callInfo_.apiId_ = "UIEventObserver.once";
-    callInfo_.paramList_.push_back(aniStringToStdString(env, type));
+    callInfo_.paramList_ = paramList;
     UiEventObserverAni::Get().PreprocessCallOnce(env, callInfo_, obj, callback, reply_);
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
+}
+static void onceToastShow(ani_env *env, ani_object obj, ani_object callback)
+{    
+    nlohmann::json paramList_ = nlohmann::json::array();
+    paramList_.push_back("toastShow");
+    once(env, obj, paramList_, callback);
+}
+static void onceDialogShow(ani_env *env, ani_object obj, ani_object callback)
+{
+    nlohmann::json paramList_ = nlohmann::json::array();
+    paramList_.push_back("dialogShow");
+    once(env, obj, paramList_, callback);
+}
+static void onceWindowChangeWithOpts(ani_env *env, ani_object obj, ani_enum_item window_change_type, ani_object window_change_opt, ani_object callback)
+{
+    nlohmann::json paramList_ = nlohmann::json::array();
+    paramList_.push_back(getEnumValue(env, window_change_type));
+    paramList_.push_back(getWindowChangeOptions(env, window_change_opt));
+    once(env, obj, paramList_, callback);
+}
+static void onceComponentEventOccurWithOpts(ani_env *env, ani_object obj, ani_enum_item com_event_type, ani_object com_event_opt, ani_object callback)
+{
+    nlohmann::json paramList_ = nlohmann::json::array();
+    paramList_.push_back(getEnumValue(env, com_event_type));
+    paramList_.push_back(getComponentEventOptions(env, com_event_opt));
+    once(env, obj, paramList_, callback);
 }
 static ani_boolean BindUiEventObserver(ani_env *env)
 {
@@ -2385,7 +2478,10 @@ static ani_boolean BindUiEventObserver(ani_env *env)
         return false;
     }
     std::array methods = {
-        ani_native_function{"once", nullptr, reinterpret_cast<void *>(once)},
+        ani_native_function{"onceToastShow", nullptr, reinterpret_cast<void *>(onceToastShow)},
+        ani_native_function{"onceDialogShow", nullptr, reinterpret_cast<void *>(onceDialogShow)},
+        ani_native_function{"onceWindowChange", nullptr, reinterpret_cast<void *>(onceWindowChangeWithOpts)},
+        ani_native_function{"onceComponentEventOccur", nullptr, reinterpret_cast<void *>(onceComponentEventOccurWithOpts)},
     };
 
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {

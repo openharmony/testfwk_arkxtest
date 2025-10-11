@@ -12,9 +12,9 @@
 # limitations under the License.
 
 base_root = "../../../.."
+import("//build/config/components/ets_frontend/es2abc_config.gni")
 import("//build/config/components/ets_frontend/ets2abc_config.gni")
 import("//test/testfwk/arkxtest/arkxtest_config.gni")
-import("//build/config/components/ets_frontend/es2abc_config.gni")
 import("$base_root/build/ohos.gni")
 
 source_root = "$base_root/test/testfwk/arkxtest/uitest"
