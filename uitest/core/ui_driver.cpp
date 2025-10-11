@@ -607,6 +607,11 @@ namespace OHOS::uitest {
         }
     }
 
+    bool UiDriver::IsTouchPadExist()
+    {
+        return uiController_->IsTouchPadExist();
+    }
+
     void UiDriver::PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error)
     {
         if (!CheckStatus(false, error)) {
