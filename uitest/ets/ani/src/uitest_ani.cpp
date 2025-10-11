@@ -308,23 +308,6 @@ static json getRect(ani_env *env, ani_object p)
     return rect;
 }
 
-ani_object createInt(ani_env *env, ani_int displayId)
-{
-    static constexpr const char *className = "std.core.Int";
-    ani_class IntCls {};
-    env->FindClass(className, &IntCls);
-    ani_method ctor {};
-    env->Class_FindMethod(IntCls, "<ctor>", "i:", &ctor);
-    ani_object obj {};
-    if (env->Object_New(IntCls, ctor, &obj, displayId)!=ANI_OK) {
-        ani_ref unRef;
-        env->GetUndefined(&unRef);
-        return reinterpret_cast<ani_object>(unRef);
-    }
-    return obj;
-}
-
-
 static ani_object newPoint(ani_env *env, ani_object obj, int x, int y, int displayId)
 {
     ani_object point_obj = {};
