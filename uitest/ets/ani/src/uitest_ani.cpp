@@ -976,7 +976,7 @@ static json getWindowChangeOptions(ani_env *env, ani_object opt)
         if (ret == ANI_TRUE) {
             continue;
         }
-        if (i == 1) {
+        if (i == ONE) {
             window_change_opts[list[i]] = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
         } else {
             ani_int timeout;
@@ -1008,7 +1008,7 @@ static json getComponentEventOptions(ani_env *env, ani_object opt)
         if (ret == ANI_TRUE) {
             continue;
         }
-        if (i == 1) {
+        if (i == ONE) {
             ani_object on = static_cast<ani_object>(value);
             com_event_opts[list[i]] = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
         } else {
