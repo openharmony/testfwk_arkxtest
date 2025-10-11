@@ -20,12 +20,12 @@
 #include "hilog/log.h"
 #include <string>
 #include <cstdint>
+#include "utils.h"
 
 namespace OHOS::uitest {
     using namespace nlohmann;
     using namespace std;
     using namespace OHOS::HiviewDFX;
-    constexpr OHOS::HiviewDFX::HiLogLabel LABEL = {LogType::LOG_CORE, 0xD003100, "UiTestKit"};
 
     constexpr const char* BUSINESS_ERROR_CLASS = "L@ohos/base/BusinessError;";
     class ErrorHandler {

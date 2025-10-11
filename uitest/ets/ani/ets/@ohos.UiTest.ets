@@ -19,10 +19,10 @@ let domain: int = 0x0000;
 let tag: string = 'uitestTag';
 
 let currentState = 0;
-let executeTime = 3;
+let executeTime: long = 3;
 
 export default namespace UiTest {
-  loadLibrary("uitest_ani");
+  loadLibraryWithPermissionCheck("uitest_ani", "@ohos.UiTest");
   export native function ScheduleEstablishConnection(tokken: String): boolean;
   export native function GetConnectionStat(): int;
 }
@@ -54,8 +54,8 @@ export function loadAndSetUpUiTest(): boolean {
             UiTest.ScheduleEstablishConnection('default');
             return false;
         }
-    } catch(error){
-        hilog.error(domain, 'uitestTag', "loadAndSetUpUiTest failed" + (error as Error).stack);
+    } catch(error: Error){
+        hilog.error(domain, 'uitestTag', "loadAndSetUpUiTest failed" + error.stack);
         hilog.error(domain, 'uitestTag', "Uitest.GetConnectionStat(): "+UiTest.GetConnectionStat());
         return false;
     }
@@ -109,10 +109,28 @@ enum MouseButton {
     MOUSE_BUTTON_MIDDLE = 2,
 }
 
+enum WindowChangeType {
+  WINDOW_UNDEFINED = 0,
+  WINDOW_ADDED = 1,
+  WINDOW_REMOVED = 2,
+  WINDOW_BOUNDS_CHANGED = 3,
+}
+
+enum ComponentEventType {
+  COMPONENT_UNDEFINED = 0,
+  COMPONENT_CLICKED = 1,
+  COMPONENT_LONG_CLICKED = 2,
+  COMPONENT_SCROLL_START = 3,
+  COMPONENT_SCROLL_END = 4,
+  COMPONENT_TEXT_CHANGED = 5,
+  COMPONENT_HOVER_ENTER = 6,
+  COMPONENT_HOVER_EXIT = 7,
+}
+
 interface Point {
-  x: int;
-  y: int;
-  displayId?: int;
+ x: int;
+ y: int;
+ displayId?: int;
 }
   
 class PointInner implements Point {
@@ -153,18 +171,48 @@ class WindowFilterInner implements WindowFilter {
   displayId?: int = undefined;
 }
 
+
 interface UIElementInfo {
   bundleName: string;
   type: string;
   text: string;
+  windowChangeType?: WindowChangeType;
+  componentEventType?: ComponentEventType;
+  windowId?: int;
+  componentId?: string;
+  componentRect?: Rect;
 }
 
 class UIElementInfoInner implements UIElementInfo {
   bundleName: string = "";
   type: string = "";
   text: string = "";
+  windowChangeType?: WindowChangeType = undefined;
+  componentEventType?: ComponentEventType = undefined;
+  windowId?: int = undefined;
+  componentId?: string = undefined;
+  componentRect?: Rect = undefined;
 }
 
+interface WindowChangeOptions {
+  timeout?: int;
+  bundleName?: string;
+}
+
+class WindowChangeOptionsInner implements WindowChangeOptions {
+  timeout?: int = undefined;
+  bundleName?: string = undefined;
+}
+
+interface ComponentEventOptions {
+  timeout?: int;
+  on?: On;
+}
+
+class ComponentEventOptionsInner implements ComponentEventOptions {
+  timeout?: int = undefined;
+  on?: On = undefined;
+}
 interface InputTextMode {
   paste?: boolean;
   addition?: boolean;
@@ -228,7 +276,7 @@ export class Component {
 
     click(): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
-        let promise1 = taskpool.execute((): boolean => this.comClickSync());
+        let promise1 = taskpool.execute(():boolean => this.comClickSync());
             promise1.then((e:NullishType) => {
                 resolve(Promise.resolve());
             }, (err: Error): void => {
@@ -239,7 +287,7 @@ export class Component {
         return promise;
     }
   
-    longClick(): Promise<void> {
+    longClick():Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.comLongClickSync());
             promise1.then((e:NullishType)=>{
@@ -252,7 +300,7 @@ export class Component {
         return promise;
     }
   
-    doubleClick(): Promise<void> {
+    doubleClick():Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.comDoubleClickSync());
           promise1.then((e:NullishType)=>{
@@ -265,7 +313,7 @@ export class Component {
       return promise;
     }
     
-    scrollSearch(on: On, vertical?: boolean, offset?: int): Promise<Component|null> {
+    scrollSearch(on: On, vertical?: boolean, offset?: int):Promise<Component|null> {
       let promise = new Promise<Component|null>((resolve, reject) => {
       let promise1 = taskpool.execute(():Component|null => this.scrollSearchSync(on, vertical, offset));
           promise1.then((e:NullishType)=>{
@@ -283,7 +331,7 @@ export class Component {
       return promise;
     }
     
-    scrollSearch(on: On): Promise<Component|null> {
+    scrollSearch(on: On):Promise<Component|null> {
         let promise = new Promise<Component|null>((resolve, reject) => {
         let promise1 = taskpool.execute(():Component|null => this.scrollSearchSync(on, true, 80));
             promise1.then((e:NullishType)=>{
@@ -301,7 +349,7 @@ export class Component {
         return promise;
       }
   
-    pinchIn(scale: double): Promise<void> {
+    pinchIn(scale: double):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.pinchInSync(scale));
           promise1.then((e:NullishType)=>{
@@ -313,7 +361,7 @@ export class Component {
       });
       return promise;
     }  
-    pinchOut(scale: double): Promise<void> {
+    pinchOut(scale: double):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.pinchOutSync(scale));
           promise1.then((e:NullishType)=>{
@@ -326,7 +374,7 @@ export class Component {
       return promise;
     }
     
-    scrollToTop(speed?: int): Promise<void> {
+    scrollToTop(speed?: int):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.scrollToTopSync(speed));
           promise1.then((e:NullishType)=>{
@@ -339,7 +387,7 @@ export class Component {
       return promise;
     }
     
-    scrollToBottom(speed?: int): Promise<void> {
+    scrollToBottom(speed?: int):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.scrollToBottomSync(speed));
           promise1.then((e:NullishType)=>{
@@ -352,7 +400,7 @@ export class Component {
       return promise;
     }
     
-    inputText(text: string): Promise<void> {
+    inputText(text: string):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.comInputTextSync(text));
           promise1.then((e:NullishType)=>{
@@ -365,7 +413,7 @@ export class Component {
       return promise;
     }
 
-    inputText(text: string, mode: InputTextMode): Promise<void> {
+    inputText(text: string, mode: InputTextMode):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.comInputTextWithModeSync(text, mode));
           promise1.then((e:NullishType)=>{
@@ -378,7 +426,7 @@ export class Component {
       return promise;
     }
     
-    dragTo(target: Component): Promise<void> {
+    dragTo(target: Component):Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.comDragToSync(target));
           promise1.then((e:NullishType)=>{
@@ -391,7 +439,7 @@ export class Component {
       return promise;
     }
   
-    clearText(): Promise<void> {
+    clearText():Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.clearTextSync());
             promise1.then((e:NullishType)=>{
@@ -404,7 +452,7 @@ export class Component {
         return promise;
     }
   
-    getHint(): Promise<string> {
+    getHint():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():string => this.getHintSync());
             promise1.then((e:NullishType)=>{
@@ -418,7 +466,7 @@ export class Component {
         return promise;
     }
   
-    getDescription(): Promise<string> {
+    getDescription():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():string => this.getDescriptionSync());
             promise1.then((e:NullishType)=>{
@@ -432,7 +480,7 @@ export class Component {
         return promise;
     }
   
-    getType(): Promise<string> {
+    getType():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():string => this.getTypeSync());
             promise1.then((e:NullishType)=>{
@@ -446,7 +494,7 @@ export class Component {
         return promise;
     }
   
-    getText(): Promise<string> {
+    getText():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():string => this.getTextSync());
             promise1.then((e:NullishType)=>{
@@ -460,7 +508,7 @@ export class Component {
         return promise;
     }
   
-    getId(): Promise<string> {
+    getId():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():string => this.getIdSync());
             promise1.then((e:NullishType)=>{
@@ -474,7 +522,7 @@ export class Component {
         return promise;
     }
 
-    isChecked(): Promise<boolean> {
+    isChecked():Promise<boolean> {
       let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.isCheckedSync());
           promise1.then((e:NullishType)=>{
@@ -487,7 +535,7 @@ export class Component {
       });
       return promise;
     }
-    isCheckable(): Promise<boolean> {
+    isCheckable():Promise<boolean> {
       let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.isCheckableSync());
           promise1.then((e:NullishType)=>{
@@ -500,7 +548,7 @@ export class Component {
       });
       return promise;
     }
-    isScrollable(): Promise<boolean> {
+    isScrollable():Promise<boolean> {
       let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.isScrollableSync());
           promise1.then((e:NullishType)=>{
@@ -513,7 +561,7 @@ export class Component {
       });
       return promise;
     }
-    isFocused(): Promise<boolean> {
+    isFocused():Promise<boolean> {
       let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.isFocusedSync());
           promise1.then((e:NullishType)=>{
@@ -526,7 +574,7 @@ export class Component {
       });
       return promise;
     }
-    isEnabled(): Promise<boolean> {
+    isEnabled():Promise<boolean> {
       let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.isEnabledSync());
           promise1.then((e:NullishType)=>{
@@ -539,7 +587,7 @@ export class Component {
       });
       return promise;
     }
-    isSelected(): Promise<boolean> {
+    isSelected():Promise<boolean> {
       let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.isSelectedSync());
           promise1.then((e:NullishType)=>{
@@ -552,7 +600,7 @@ export class Component {
       });
       return promise;
     }
-    isLongClickable(): Promise<boolean> {
+    isLongClickable():Promise<boolean> {
       let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.isLongClickableSync());
           promise1.then((e:NullishType)=>{
@@ -565,7 +613,7 @@ export class Component {
       });
       return promise;
     }
-    isClickable(): Promise<boolean> {
+    isClickable():Promise<boolean> {
       let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.isClickableSync());
           promise1.then((e:NullishType)=>{
@@ -578,7 +626,7 @@ export class Component {
       });
       return promise;
     }
-    getBounds(): Promise<Rect> {
+    getBounds():Promise<Rect> {
       let promise = new Promise<Rect>((resolve: (value: Rect) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():Rect => this.comGetBoundsSync());
           promise1.then((e:NullishType)=>{
@@ -591,9 +639,9 @@ export class Component {
       });
       return promise;
     }
-    getBoundsCenter(): Promise<Point> {
+    getBoundsCenter():Promise<Point> {
       let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Error) => void) => {
-      let promise1 = taskpool.execute((): Point => this.getBoundsCenterSync());
+      let promise1 = taskpool.execute(():Point => this.getBoundsCenterSync());
           promise1.then((e:NullishType)=>{
               let value : Point = e as Point;
               resolve(value);
@@ -604,7 +652,6 @@ export class Component {
       });
       return promise;
     }
-
     getDisplayId(): Promise<int> {
         let promise = new Promise<int>((resolve: (value: int) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute((): int => this.getDisplayIdSync());
@@ -672,7 +719,7 @@ export class Component {
         return promise;
     }
   
-    resume(): Promise<void> {
+    resume():Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.resumeSync());
             promise1.then((e:NullishType)=>{
@@ -685,7 +732,7 @@ export class Component {
         return promise;
     }
   
-    close(): Promise<void> {
+    close():Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.closeSync());
             promise1.then((e:NullishType)=>{
@@ -698,7 +745,7 @@ export class Component {
         return promise;
     }
   
-    minimize(): Promise<void> {
+    minimize():Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.minimizeSync());
             promise1.then((e:NullishType)=>{
@@ -711,7 +758,7 @@ export class Component {
         return promise;
     }
   
-    maximize(): Promise<void> {
+    maximize():Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.maximizeSync());
             promise1.then((e:NullishType)=>{
@@ -724,7 +771,7 @@ export class Component {
         return promise;
     }
   
-    focus(): Promise<void> {
+    focus():Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.focusSync());
             promise1.then((e:NullishType)=>{
@@ -737,7 +784,7 @@ export class Component {
         return promise;
     }
   
-    isFocused(): Promise<boolean> {
+    isFocused():Promise<boolean> {
         let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.isFocusedSync());
             promise1.then((e:NullishType)=>{
@@ -751,7 +798,7 @@ export class Component {
         return promise;
     }
   
-    isActive(): Promise<boolean> {
+    isActive():Promise<boolean> {
         let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.isActiveSync());
             promise1.then((e:NullishType)=>{
@@ -765,7 +812,7 @@ export class Component {
         return promise;
     }
   
-    resize(w:int, h:int, d:ResizeDirection): Promise<void> {
+    resize(w:int, h:int, d:ResizeDirection):Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.resizeSync(w, h, d));
             promise1.then((e:NullishType)=>{
@@ -778,7 +825,7 @@ export class Component {
         return promise;
     }
   
-    moveTo(x:int, y:int): Promise<void> {
+    moveTo(x:int, y:int):Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.moveToSync(x, y));
             promise1.then((e:NullishType)=>{
@@ -791,7 +838,7 @@ export class Component {
         return promise;
     }
   
-    getWindowMode(): Promise<WindowMode> {
+    getWindowMode():Promise<WindowMode> {
         let promise = new Promise<WindowMode>((resolve: (value: WindowMode) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():WindowMode => this.getWindowModeSync());
             promise1.then((e:NullishType)=>{
@@ -805,7 +852,7 @@ export class Component {
         return promise;
     }
   
-    getBundleName(): Promise<string> {
+    getBundleName():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():string => this.getBundleNameSync());
             promise1.then((e:NullishType)=>{
@@ -819,7 +866,7 @@ export class Component {
         return promise;
     }
   
-    getTitle(): Promise<string> {
+    getTitle():Promise<string> {
         let promise = new Promise<string>((resolve: (value: string) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():string => this.getTitleSync());
             promise1.then((e:NullishType)=>{
@@ -833,7 +880,7 @@ export class Component {
         return promise;
     }
   
-    getBounds(): Promise<Rect> {
+    getBounds():Promise<Rect> {
         let promise = new Promise<Rect>((resolve: (value: Rect) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():Rect => this.winGetBoundsSync());
             promise1.then((e:NullishType)=>{
@@ -864,9 +911,8 @@ export class Component {
     private native clickSync(x:int, y:int):boolean;
     private native longClickSync(x:int, y:int):boolean;
     private native doubleClickSync(x:int, y:int):boolean;
-    private native flingSync(from: Point, to: Point, stepLen: int, speed: int):boolean;
-
-    fling(from: Point, to: Point, stepLen: int, speed: int): Promise<void> {
+    private native flingSync(from:Point, to: Point, stepLen: int, speed: int):boolean;
+    fling(from:Point, to: Point, stepLen: int, speed: int): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.flingSync(from, to, stepLen, speed));
           promise1.then((e:NullishType)=>{
@@ -878,7 +924,7 @@ export class Component {
       });
       return promise;
     }
-    private native flingSyncDirection(direction: UiDirection, speed: int):boolean;
+    private native flingSyncDirection(direction:UiDirection, speed: int):boolean;
     fling(direction:UiDirection, speed: int): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.flingSyncDirection(direction, speed));
@@ -891,7 +937,7 @@ export class Component {
       });
       return promise;
     }
-    private native flingWithDisplayIdSync(direction: UiDirection, speed: int, displayId: int):boolean;
+    private native flingWithDisplayIdSync(direction:UiDirection, speed: int, displayId: int):boolean;
     fling(direction:UiDirection, speed: int, displayId: int): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.flingWithDisplayIdSync(direction, speed, displayId));
@@ -1043,7 +1089,7 @@ export class Component {
     native createUIEventObserver():UIEventObserver;
 
     private native wakeUpDisplaySync():boolean;
-    wakeUpDisplay(): Promise<void> {
+     wakeUpDisplay(): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.wakeUpDisplaySync());
           promise1.then((e:NullishType)=>{
@@ -1056,7 +1102,7 @@ export class Component {
       return promise;
     }
     private native pressHomeSync():boolean;
-    pressHome(): Promise<void> {
+     pressHome(): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.pressHomeSync());
           promise1.then((e:NullishType)=>{
@@ -1069,7 +1115,7 @@ export class Component {
       return promise;
     }
     private native pressHomeWithDisplayIdSync(displayId: int):boolean;
-    pressHome(displayId: int): Promise<void> {
+     pressHome(displayId: int): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
       let promise1 = taskpool.execute(():boolean => this.pressHomeWithDisplayIdSync(displayId));
           promise1.then((e:NullishType)=>{
@@ -1081,10 +1127,10 @@ export class Component {
       });
       return promise;
     }
-    private native getDisplaySizeSync(): Point;
-    getDisplaySize(): Promise<Point> {
+    private native getDisplaySizeSync():Point;
+     getDisplaySize(): Promise<Point> {
       let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Error) => void) => {
-          let promise1 = taskpool.execute((): Point => this.getDisplaySizeSync());
+          let promise1 = taskpool.execute(():Point => this.getDisplaySizeSync());
           promise1.then((e:NullishType)=>{
               let value : Point = e as Point;
               resolve(value);
@@ -1095,10 +1141,10 @@ export class Component {
       });
       return promise;
     }
-    private native getDisplaySizeWithDisplayIdSync(displayId: int): Point;
-    getDisplaySize(displayId: int): Promise<Point> {
+    private native getDisplaySizeWithDisplayIdSync(displayId: int):Point;
+     getDisplaySize(displayId: int): Promise<Point> {
       let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Error) => void) => {
-          let promise1 = taskpool.execute((): Point => this.getDisplaySizeWithDisplayIdSync(displayId));
+          let promise1 = taskpool.execute(():Point => this.getDisplaySizeWithDisplayIdSync(displayId));
           promise1.then((e:NullishType)=>{
               let value : Point = e as Point;
               resolve(value);
@@ -1112,14 +1158,14 @@ export class Component {
     private native getDisplayDensitySync(displayId?: int): Point;
     getDisplayDensity(): Promise<Point> {
       let promise = new Promise<Point>((resolve: (value: Point) => void, reject: (error: Error) => void) => {
-        let promise1 = taskpool.execute((): Point => this.getDisplayDensitySync());
+    let promise1 = taskpool.execute(():Point => this.getDisplayDensitySync());
         promise1.then((e:NullishType)=>{
             let value : Point = e as Point;
             resolve(value);
         }, (err: Error): void => {
             let br = err as BusinessError<void>;
             reject(br);
-        });
+    });
       });
       return promise;
     }    
@@ -1729,6 +1775,48 @@ export class Component {
         });
         return promise;
     }
+    private native isComponentPresentWhenLongClickSync(on: On, point: Point, duration?: int): boolean;
+    isComponentPresentWhenLongClick(on: On, point: Point, duration?: int): Promise<boolean> {
+        let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
+        let promise1 = taskpool.execute(():boolean => this.isComponentPresentWhenLongClickSync(on, point, duration));
+            promise1.then((e:NullishType)=>{
+                let value : boolean = e as boolean;
+                resolve(value);
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
+    private native isComponentPresentWhenDragSync(on: On, from: Point, to: Point, speed?: int, duration?: int): boolean;
+    isComponentPresentWhenDrag(on: On, from: Point, to: Point, speed?: int, duration?: int): Promise<boolean> {
+        let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
+        let promise1 = taskpool.execute(():boolean => this.isComponentPresentWhenDragSync(on, from, to, speed, duration));
+            promise1.then((e:NullishType)=>{
+                let value : boolean = e as boolean;
+                resolve(value);
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
+    private native isComponentPresentWhenSwipeSync(on: On, from: Point, to: Point, speed?: int): boolean;
+    isComponentPresentWhenSwipe(on: On, from: Point, to: Point, speed?: int): Promise<boolean> {
+        let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
+        let promise1 = taskpool.execute(():boolean => this.isComponentPresentWhenSwipeSync(on, from, to, speed));
+            promise1.then((e:NullishType)=>{
+                let value : boolean = e as boolean;
+                resolve(value);
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
   }
   
   export class PointerMatrix {
@@ -1800,8 +1888,10 @@ export class UIEventObserver {
             this.nativeUIEventObserver = UIEventObserver;
         }
     }
-    native once(type: String, callback: Callback<UIElementInfo>): void;
-
+    native onceToastShow(callback: Callback<UIElementInfo>): void;
+    native onceDialogShow(callback: Callback<UIElementInfo>): void;
+    native onceWindowChange(windowChangeType: WindowChangeType, options: WindowChangeOptions, callback: Callback<UIElementInfo>): void;
+    native onceComponentEventOccur(componentEventType: ComponentEventType, options: ComponentEventOptions, callback: Callback<UIElementInfo>): void;
 }
 
 export const ON: On = new On();
