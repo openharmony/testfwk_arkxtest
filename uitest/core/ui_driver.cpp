@@ -14,6 +14,8 @@
  */
 
 #include <future>
+#include <thread>
+#include <atomic>
 #include "ui_model.h"
 #include "ui_driver.h"
 
@@ -316,10 +318,12 @@ namespace OHOS::uitest {
     }
 
     void UiDriver::FindWidgets(const WidgetSelector &selector, vector<unique_ptr<Widget>> &rev,
-        ApiCallErr &err, bool updateUi)
+        ApiCallErr &err, bool updateUi, bool skipWaitForUiSteady)
     {
         UiOpArgs opt;
-        uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
+        if (!skipWaitForUiSteady) {
+            uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
+        }
         if (updateUi) {
             UpdateUIWindows(err, selector.GetDisplayLocator());
             if (err.code_ != NO_ERROR) {
@@ -717,6 +721,174 @@ namespace OHOS::uitest {
     void UiDriver::ChangeWindowMode(int32_t windowId, WindowMode mode)
     {
         return uiController_->ChangeWindowMode(windowId, mode);
+    }
+
+    // Common helper method to check component presence with timeout
+    bool UiDriver::CheckComponentPresenceWithTimeout(const WidgetSelector& selector,
+        const TimeoutParams& timeoutParams, ApiCallErr& error)
+    {
+        bool componentFound = false;
+        int32_t currentTime;
+        do {
+            std::this_thread::sleep_for(std::chrono::milliseconds(timeoutParams.uiOpArgs.pollingInterval_));
+            std::vector<std::unique_ptr<Widget>> foundWidgets;
+            this->FindWidgets(selector, foundWidgets, error, true, true);
+            componentFound = !foundWidgets.empty();
+            currentTime = static_cast<int32_t>(GetCurrentMillisecond());
+        } while (!componentFound && (currentTime - timeoutParams.startTime) < timeoutParams.totalTimeout);
+        
+        if (componentFound) {
+            int32_t elapsedTime = currentTime - timeoutParams.startTime;
+            int32_t remainingTime = timeoutParams.operationTime - elapsedTime;
+            if (remainingTime > 0) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(remainingTime));
+            }
+        }
+        return componentFound;
+    }
+
+    // Common helper method to calculate operation time based on distance and speed
+    int32_t UiDriver::CalculateOperationTime(const Point& from, const Point& to,
+        int32_t speed, const UiOpArgs& uiOpArgs)
+    {
+        double distance = std::sqrt(std::pow(to.px_ - from.px_, TWO) + std::pow(to.py_ - from.py_, TWO));
+        if (speed != 0) {
+            return static_cast<int32_t>((distance / speed) * uiOpArgs.oneThousand_);
+        }
+        return 0;
+    }
+
+    bool UiDriver::IsComponentPresentWhenLongClick(const WidgetSelector& selector, const TouchAction& action,
+        const UiOpArgs& uiOpArgs, ApiCallErr& error)
+    {
+        try {
+            // Calculate operation time based on the action type
+            int32_t operationTime = uiOpArgs.longClickHoldMs_;
+            int32_t totalTimeout = operationTime + uiOpArgs.delayTime_;
+            int32_t startTime = static_cast<int32_t>(GetCurrentMillisecond());
+            
+            // Start component presence checking in a separate thread
+            std::atomic<bool> componentFound(false);
+            std::atomic<bool> touchCompleted(false);
+            std::thread checkThread([this, &componentFound, &selector, startTime, totalTimeout,
+                operationTime, &uiOpArgs, &touchCompleted]() {
+                TimeoutParams timeoutParams(startTime, totalTimeout, operationTime, uiOpArgs);
+                ApiCallErr threadError(NO_ERROR);
+                componentFound = CheckComponentPresenceWithTimeout(selector, timeoutParams, threadError);
+                if (threadError.code_ != NO_ERROR) {
+                    LOG_W("Component presence check thread encountered error: %{public}s (code: %{public}d)",
+                          threadError.message_.c_str(), threadError.code_);
+                }
+            });
+            
+            // Start touch operation in a separate thread
+            std::thread touchThread([this, &action, &uiOpArgs, &error, &touchCompleted]() {
+                this->PerformTouch(action, uiOpArgs, error);
+                touchCompleted = true;
+            });
+            
+            // Wait for both threads to finish
+            if (touchThread.joinable()) {
+                touchThread.join();
+            }
+            if (checkThread.joinable()) {
+                checkThread.join();
+            }
+            
+            return componentFound;
+        } catch (const std::exception& e) {
+            error = ApiCallErr(ERR_INTERNAL, "LongClick operation failed: " + std::string(e.what()));
+            return false;
+        }
+    }
+
+    bool UiDriver::IsComponentPresentWhenDrag(const WidgetSelector& selector, const TouchAction& action,
+        const UiOpArgs& uiOpArgs, ApiCallErr& error)
+    {
+        try {
+            // Calculate operation time based on the action type
+            int32_t operationTime = uiOpArgs.longClickHoldMs_;
+            int32_t totalTimeout = operationTime + uiOpArgs.delayTime_;
+            int32_t startTime = static_cast<int32_t>(GetCurrentMillisecond());
+            
+            // Start component presence checking in a separate thread
+            std::atomic<bool> componentFound(false);
+            std::atomic<bool> touchCompleted(false);
+            std::thread checkThread([this, &componentFound, &selector, startTime, totalTimeout,
+                operationTime, &uiOpArgs, &touchCompleted]() {
+                TimeoutParams timeoutParams(startTime, totalTimeout, operationTime, uiOpArgs);
+                ApiCallErr threadError(NO_ERROR);
+                componentFound = CheckComponentPresenceWithTimeout(selector, timeoutParams, threadError);
+                if (threadError.code_ != NO_ERROR) {
+                    LOG_W("Component presence check thread encountered error: %{public}s (code: %{public}d)",
+                          threadError.message_.c_str(), threadError.code_);
+                }
+            });
+            
+            // Start touch operations in a separate thread
+            std::thread touchThread([this, &action, &uiOpArgs, &error, &touchCompleted]() {
+                this->PerformTouch(action, uiOpArgs, error);
+                touchCompleted = true;
+            });
+            
+            // Wait for both threads to finish
+            if (touchThread.joinable()) {
+                touchThread.join();
+            }
+            if (checkThread.joinable()) {
+                checkThread.join();
+            }
+            
+            return componentFound;
+        } catch (const std::exception& e) {
+            error = ApiCallErr(ERR_INTERNAL, "Drag operation failed: " + std::string(e.what()));
+            return false;
+        }
+    }
+
+    bool UiDriver::IsComponentPresentWhenSwipe(const WidgetSelector& selector, const TouchAction& action,
+        const UiOpArgs& uiOpArgs, ApiCallErr& error)
+    {
+        try {
+            // Calculate operation time based on swipe velocity and distance
+            int32_t operationTime = uiOpArgs.swipeVelocityPps_ > 0 ?
+                static_cast<int32_t>(1000 / uiOpArgs.swipeVelocityPps_) : uiOpArgs.defaultDuration_;
+            int32_t totalTimeout = operationTime + uiOpArgs.delayTime_;
+            int32_t startTime = static_cast<int32_t>(GetCurrentMillisecond());
+            
+            // Start component presence checking in a separate thread
+            std::atomic<bool> componentFound(false);
+            std::atomic<bool> touchCompleted(false);
+            std::thread checkThread([this, &componentFound, &selector, startTime, totalTimeout,
+                operationTime, &uiOpArgs, &touchCompleted]() {
+                TimeoutParams timeoutParams(startTime, totalTimeout, operationTime, uiOpArgs);
+                ApiCallErr threadError(NO_ERROR);
+                componentFound = CheckComponentPresenceWithTimeout(selector, timeoutParams, threadError);
+                if (threadError.code_ != NO_ERROR) {
+                    LOG_W("Component presence check thread encountered error: %{public}s (code: %{public}d)",
+                          threadError.message_.c_str(), threadError.code_);
+                }
+            });
+            
+            // Start touch operation in a separate thread
+            std::thread touchThread([this, &action, &uiOpArgs, &error, &touchCompleted]() {
+                this->PerformTouch(action, uiOpArgs, error);
+                touchCompleted = true;
+            });
+            
+            // Wait for both threads to finish
+            if (touchThread.joinable()) {
+                touchThread.join();
+            }
+            if (checkThread.joinable()) {
+                checkThread.join();
+            }
+            
+            return componentFound;
+        } catch (const std::exception& e) {
+            error = ApiCallErr(ERR_INTERNAL, "Swipe operation failed: " + std::string(e.what()));
+            return false;
+        }
     }
 
     bool UiDriver::IsKnuckleSnapshotEnable()

@@ -183,6 +183,10 @@ namespace OHOS::uitest {
         const uint32_t maxMultiTouchFingers = 10;
         const uint32_t maxMultiTouchSteps = 1000;
         const uint32_t defaultTouchPadSwipeVelocityPps_ = 2000;
+        const uint32_t delayTime_ = 2000;
+        const uint32_t pollingInterval_ = 100;
+        const uint32_t oneThousand_ = 1000;
+        const uint32_t defaultDuration_ = 1500;
         uint32_t clickHoldMs_ = 100;
         uint32_t longClickHoldMs_ = 1500;
         uint32_t doubleClickIntervalMs_ = 200;
