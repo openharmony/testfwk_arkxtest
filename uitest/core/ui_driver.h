@@ -36,7 +36,7 @@ namespace OHOS::uitest {
          * @returns the widget object.
          **/
         void FindWidgets(const WidgetSelector &select, vector<unique_ptr<Widget>> &rev,
-            ApiCallErr &err, bool updateUi = true);
+            ApiCallErr &err, bool updateUi = true, bool skipWaitForUiSteady = false);
 
         /**Wait for the matching widget appear in the given timeout.*/
         std::unique_ptr<Widget> WaitForWidget(const WidgetSelector &select, const UiOpArgs &opt, ApiCallErr &err);
@@ -117,11 +117,36 @@ namespace OHOS::uitest {
 
         bool GetEventObserverEnable();
 
+        bool IsComponentPresentWhenLongClick(const WidgetSelector& selector, const TouchAction& action,
+            const UiOpArgs& uiOpArgs, ApiCallErr& error);
+
+        bool IsComponentPresentWhenDrag(const WidgetSelector& selector, const TouchAction& action,
+            const UiOpArgs& uiOpArgs, ApiCallErr& error);
+
+        bool IsComponentPresentWhenSwipe(const WidgetSelector& selector, const TouchAction& action,
+            const UiOpArgs& uiOpArgs, ApiCallErr& error);
+
         bool IsKnuckleSnapshotEnable();
 
         bool IsKnuckleRecordEnable();
 
     private:
+        // Struct to group timeout-related parameters
+        struct TimeoutParams {
+            int32_t startTime;
+            int32_t totalTimeout;
+            int32_t operationTime;
+            const UiOpArgs& uiOpArgs;
+            
+            TimeoutParams(int32_t start, int32_t total, int32_t operation, const UiOpArgs& args)
+                : startTime(start), totalTimeout(total), operationTime(operation), uiOpArgs(args) {}
+        };
+        
+        // Common helper methods for component presence checking
+        bool CheckComponentPresenceWithTimeout(const WidgetSelector& selector,
+            const TimeoutParams& timeoutParams, ApiCallErr& error);
+        int32_t CalculateOperationTime(const Point& from, const Point& to,
+            int32_t speed, const UiOpArgs& uiOpArgs);
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction
         void UpdateUIWindows(ApiCallErr &error, int32_t targetDisplay = -1);
