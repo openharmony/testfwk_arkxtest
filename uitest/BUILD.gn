@@ -12,9 +12,9 @@
 # limitations under the License.
 
 base_root = "../../../.."
-import("//build/config/components/ets_frontend/es2abc_config.gni")
 import("//build/config/components/ets_frontend/ets2abc_config.gni")
 import("//test/testfwk/arkxtest/arkxtest_config.gni")
+import("//build/config/components/ets_frontend/es2abc_config.gni")
 import("$base_root/build/ohos.gni")
 
 source_root = "$base_root/test/testfwk/arkxtest/uitest"
@@ -54,8 +54,7 @@ ohos_static_library("uitest_core") {
   if (arkxtest_product_feature == "tablet") {
     defines += [ "ARKXTEST_TABLET_FEATURE_ENABLE" ]
   }
-  if (arkxtest_product_feature == "phone" ||
-      arkxtest_product_feature == "tablet") {
+  if (arkxtest_product_feature == "phone" || arkxtest_product_feature == "tablet") {
     defines += [ "ARKXTEST_KNUCKLE_ACTION_ENABLE" ]
   }
   subsystem_name = "testfwk"
@@ -150,16 +149,18 @@ ohos_static_library("uitest_addon") {
     "${source_root}/core",
     "${source_root}/record",
   ]
-  deps = [ ":uitest_core" ]
+  deps = [
+    ":uitest_core",
+  ]
   external_deps = [
     "graphic_2d:librender_service_base",
     "image_framework:image_native",
     "input:libmmi-client",
     "ipc:ipc_single",
     "json:nlohmann_json_static",
-    "libjpeg-turbo:turbojpeg_static",
     "window_manager:libdm",
     "window_manager:libwm",
+    "libjpeg-turbo:turbojpeg_static",
   ]
   external_deps += common_external_deps
 
@@ -202,16 +203,16 @@ ohos_executable("uitest_server") {
     "ability_runtime:ability_manager",
     "accessibility:accessibility_common",
     "accessibility:accessibleability",
-    "graphic_2d:librender_service_client",
     "hisysevent:libhisysevent",
     "image_framework:image_native",
     "image_framework:image_packer",
     "init:libbegetutil",
     "input:libmmi-client",
     "ipc:ipc_single",
-    "libpng:libpng",
     "window_manager:libdm",
     "window_manager:libwm",
+    "libpng:libpng",
+    "graphic_2d:librender_service_client"
   ]
 
   subsystem_name = "testfwk"
@@ -235,8 +236,7 @@ ohos_executable("uitest_server") {
   if (arkxtest_product_feature == "watch") {
     defines += [ "ARKXTEST_WATCH_FEATURE_ENABLE" ]
   }
-  if (arkxtest_product_feature == "pc" ||
-      arkxtest_product_feature == "tablet") {
+  if (arkxtest_product_feature == "pc" || arkxtest_product_feature == "tablet") {
     defines += [ "ARKXTEST_ADJUST_WINDOWMODE_ENABLE" ]
   }
 }
@@ -309,11 +309,13 @@ ohos_unittest("uitest_core_unittest") {
     "${source_root}/test/widget_operator_test.cpp",
     "${source_root}/test/widget_selector_test.cpp",
   ]
-  deps = [ ":uitest_core" ]
+  deps = [
+    ":uitest_core",
+  ]
   external_deps = [
-    "googletest:gtest_main",
     "hilog:libhilog",
     "json:nlohmann_json_static",
+    "googletest:gtest_main",
   ]
   include_dirs = [ "${source_root}/core" ]
   cflags = [ "-g" ]
@@ -370,7 +372,9 @@ ohos_prebuilt_etc("uitest_etc") {
 
 ohos_unittest("uitest_ipc_unittest") {
   sources = [ "${source_root}/test/ipc_transactor_test.cpp" ]
-  deps = [ ":uitest_ipc" ]
+  deps = [
+    ":uitest_ipc",
+  ]
   include_dirs = [
     "${source_root}/connection",
     "${source_root}/core",
@@ -378,9 +382,9 @@ ohos_unittest("uitest_ipc_unittest") {
   external_deps = [
     "ability_base:base",
     "ability_base:want",
-    "googletest:gtest_main",
-    "hilog:libhilog",
     "ipc:ipc_single",
+    "hilog:libhilog",
+    "googletest:gtest_main",
   ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
