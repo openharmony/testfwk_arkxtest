@@ -49,8 +49,8 @@ namespace OHOS::uitest {
         }
         return ctor;
     }
-	
-	ani_object createInt(ani_env *env, ani_int displayId)
+
+	inline ani_object createInt(ani_env *env, ani_int displayId)
 	{
 		static constexpr const char *className = "std.core.Int";
 		ani_class IntCls {};
