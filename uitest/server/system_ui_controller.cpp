@@ -501,7 +501,7 @@ namespace OHOS::uitest {
         auto ability = AccessibilityUITestAbility::GetInstance();
         if (!skipWaitForUiSteady) {
             LOG_D("Wait scroll compelete");
-        g_monitorInstance_->WaitScrollCompelete();
+            g_monitorInstance_->WaitScrollCompelete();
         }
         auto ret = ability->GetWindows(displayId, windows);
         if (ret != RET_OK) {
