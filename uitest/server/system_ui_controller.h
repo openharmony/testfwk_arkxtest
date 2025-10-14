@@ -28,7 +28,8 @@ namespace OHOS::uitest {
 
         bool Initialize(ApiCallErr &error) override;
 
-        void GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay = -1) override;
+        void GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay = -1,
+            bool skipWaitForUiSteady = false) override;
 
         bool GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator,
             AamsWorkMode mode) override;

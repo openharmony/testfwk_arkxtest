@@ -149,7 +149,7 @@ namespace OHOS::uitest {
             int32_t speed, const UiOpArgs& uiOpArgs);
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction
-        void UpdateUIWindows(ApiCallErr &error, int32_t targetDisplay = -1);
+        void UpdateUIWindows(ApiCallErr &error, int32_t targetDisplay = -1, bool skipWaitForUiSteady = false);
         void DumpWindowsInfo(const DumpOption &option, Rect &mergeBounds, nlohmann::json &childDom);
         static std::unique_ptr<UiController> uiController_;
         // CacheModel:
