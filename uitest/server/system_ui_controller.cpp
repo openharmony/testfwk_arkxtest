@@ -494,11 +494,15 @@ namespace OHOS::uitest {
         }
     }
 
-    static bool GetAamsWindowInfos(vector<AccessibilityWindowInfo> &windows, int32_t displayId)
+    static bool GetAamsWindowInfos(vector<AccessibilityWindowInfo> &windows, int32_t displayId,
+        bool skipWaitForUiSteady)
     {
         LOG_D("Get Window root info in display %{public}d", displayId);
         auto ability = AccessibilityUITestAbility::GetInstance();
+        if (!skipWaitForUiSteady) {
+            LOG_D("Wait scroll compelete");
         g_monitorInstance_->WaitScrollCompelete();
+        }
         auto ret = ability->GetWindows(displayId, windows);
         if (ret != RET_OK) {
             LOG_W("GetWindows in display %{public}d from AccessibilityUITestAbility failed, ret: %{public}d",
@@ -549,7 +553,8 @@ namespace OHOS::uitest {
         }
     }
 
-    void SysUiController::GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay)
+    void SysUiController::GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay,
+        bool skipWaitForUiSteady)
     {
         std::lock_guard<std::mutex> dumpLocker(dumpMtx); // disallow concurrent dumpUi
         ApiCallErr error = ApiCallErr(NO_ERROR);
@@ -565,7 +570,7 @@ namespace OHOS::uitest {
                 continue;
             }
             vector<AccessibilityWindowInfo> windows;
-            if (!GetAamsWindowInfos(windows, displayId)) {
+            if (!GetAamsWindowInfos(windows, displayId, skipWaitForUiSteady)) {
                 continue;
             }
             auto screenSize = GetDisplaySize(displayId);
