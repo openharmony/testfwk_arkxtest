@@ -277,6 +277,14 @@ namespace OHOS::uitest {
         listeners_.emplace_back(listerner);
     }
 
+    static void GetElementBounds(const AccessibilityElementInfo &element, Rect &componentRect)
+    {
+        auto bounds = element.GetRectInScreen();
+        componentRect.left_ = bounds.GetLeftTopXScreenPostion();
+        componentRect.top_ = bounds.GetLeftTopYScreenPostion();
+        componentRect.right_ = bounds.GetRightBottomXScreenPostion();
+        componentRect.bottom_ = bounds.GetRightBottomYScreenPostion();
+    }
     void UiEventMonitor::OnAccessibilityEvent(const AccessibilityEventInfo &eventInfo)
     {
         auto eventType = eventInfo.GetEventType();
@@ -310,22 +318,18 @@ namespace OHOS::uitest {
             LOG_D("testfwk OnAccessibilityEvent bundleName: %{public}s", bundleName.c_str());
             const auto& elemInfo = eventInfo.GetElementInfo();
             auto componentId = elemInfo.GetInspectorKey();
-            auto bounds = elemInfo.GetRectInScreen();
-            componentRect.left_ = bounds.GetLeftTopXScreenPostion();
-            componentRect.top_ = bounds.GetLeftTopYScreenPostion();
-            componentRect.right_ = bounds.GetRightBottomXScreenPostion();
-            componentRect.bottom_ = bounds.GetRightBottomYScreenPostion();
+            GetElementBounds(elemInfo, componentRect);
 
             UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type, windowChangeType, componentEventType,
                 windowId, componentId, componentRect};
             std::unique_ptr<Widget> widget = nullptr;
-            widget->SetDisplayId(windowInfo.GetDisplayId());
-            widget->SetAttr(UiAttr::BUNDLENAME, bundleName);
             if (capturedEvent == "componentEventOccur") {
                 widget = std::make_unique<Widget>("");
                 ElementNodeIteratorImpl iterator;
                 iterator.WrapperNodeAttrToVec(*widget, elemInfo);
             }
+            widget->SetDisplayId(windowInfo.GetDisplayId());
+            widget->SetAttr(UiAttr::BUNDLENAME, bundleName);
             NotifyListeners(capturedEvent, uiEventSourceInfo, widget.get());
         }
         if (std::find(EVENT_MASK.begin(), EVENT_MASK.end(), eventInfo.GetEventType()) != EVENT_MASK.end()) {
