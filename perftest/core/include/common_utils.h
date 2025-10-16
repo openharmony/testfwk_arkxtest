@@ -40,6 +40,9 @@ namespace OHOS::perftest {
     constexpr int32_t ONE = 1;
     constexpr int32_t TWO = 2;
     constexpr int32_t THREE = 3;
+    constexpr int32_t FOUR = 4;
+    constexpr int32_t FIVE = 5;
+    constexpr int32_t SIX = 6;
     constexpr int32_t ONE_HUNDRED = 100;
 
     template <typename T> T ReadArgFromJson(const nlohmann::json &json, const std::string arg, const T defValue)
