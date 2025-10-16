@@ -20,7 +20,7 @@ import { StaticSuite } from './StaticSuite';
 import { StaticSpec } from './StaticSpec';
 import { TAG } from '../../Constant';
 import { Core } from '../../core';
-import { processFunc, processAsyncFunc, processAsyncFuncWithArgOne, processFuncWithArgOne, checkIsAsyncFunction, getFunctionArgumentsCount } from '../../util';
+import { processFunc, processFuncWithArgOne, getFunctionArgumentsCount } from '../../util';
 import { SysTestKit } from '../kit/SysTestKit';
 import { AssertException } from './AssertException';
 import { ConfigService } from '../config/configService';
@@ -165,22 +165,12 @@ class SuiteService {
   }
 
   handleHookFunction(core: Core, func: HookFuncType) {
-    const funcStr = Type.of(func as object).getLiteral();
-    const isAsyncFunc = checkIsAsyncFunction(funcStr);
-    const argsCount = getFunctionArgumentsCount(funcStr);
+    const argsCount = getFunctionArgumentsCount(func);
     let fn = (): Promise<void> => { }
     if (argsCount === 1) {
-      if (isAsyncFunc) {
-        fn = processAsyncFuncWithArgOne(core, func as ((done: () => void) => Promise<void>));
-      } else {
-        fn = processFuncWithArgOne(core, func as ((done: () => void) => void));
-      }
+      fn = processFuncWithArgOne(core, func as ((done: () => void) => void));
     } else {
-      if (isAsyncFunc) {
-        fn = processAsyncFunc(core, func as (() => Promise<void>));
-      } else {
-        fn = processFunc(core, func as (() => void));
-      }
+      fn = processFunc(core, func as (() => void));
     }
     return fn
   }
