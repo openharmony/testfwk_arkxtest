@@ -327,9 +327,9 @@ namespace OHOS::uitest {
                 widget = std::make_unique<Widget>("");
                 ElementNodeIteratorImpl iterator;
                 iterator.WrapperNodeAttrToVec(*widget, elemInfo);
+                widget->SetDisplayId(windowInfo.GetDisplayId());
+                widget->SetAttr(UiAttr::BUNDLENAME, bundleName);
             }
-            widget->SetDisplayId(windowInfo.GetDisplayId());
-            widget->SetAttr(UiAttr::BUNDLENAME, bundleName);
             NotifyListeners(capturedEvent, uiEventSourceInfo, widget.get());
         }
         if (std::find(EVENT_MASK.begin(), EVENT_MASK.end(), eventInfo.GetEventType()) != EVENT_MASK.end()) {
