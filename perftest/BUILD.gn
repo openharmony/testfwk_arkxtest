@@ -14,6 +14,7 @@
 import("//build/config/components/ets_frontend/es2abc_config.gni")
 import("//build/ohos.gni")
 import("//test/testfwk/arkxtest/arkxtest_config.gni")
+import("//build/config/components/ets_frontend/ets2abc_config.gni")
 
 config("perftest_common_configs") {
   cflags = [
@@ -177,10 +178,63 @@ ohos_shared_library("perftest_client") {
   }
 }
 
+ohos_shared_library("perftest_ani") {
+  shlib_type = "ani"
+  configs = [ ":perftest_common_configs" ]
+  external_deps = common_external_deps
+  include_dirs = [
+    "./core/include",
+    "./connection/include",
+    "./ani/include",
+  ]
+  sources = [
+    "./ani/src/callback_code_ani.cpp",
+    "./ani/src/perftest_ani.cpp",
+  ]
+  deps = [
+    ":perftest_ipc",
+  ]
+  external_deps += [
+    "ability_base:want",
+    "common_event_service:cesfwk_innerkits",
+    "runtime_core:ani",
+    "runtime_core:ani_helpers",
+    "runtime_core:libarkruntime",
+  ]
+  output_extension = "so"
+  part_name = "arkxtest"
+  subsystem_name = "testfwk"
+  if (arkxtest_product_feature == "watch" || arkxtest_product_feature == "glasses") {
+    install_enable = false
+  }
+}
+
+generate_static_abc("perftest_abc") {
+  base_url = "./ani/ets"
+  files = [ "./ani/ets/@ohos.test.PerfTest.ets" ]
+  is_boot_abc = "True"
+  dst_file = "$target_out_dir/@ohos.test.PerfTest.abc"
+  out_puts = [ "$target_out_dir/@ohos.test.PerfTest.abc" ]
+  device_dst_file = "/system/framework/@ohos.test.PerfTest.abc"
+}
+
+ohos_prebuilt_etc("perftest_etc") {
+  source = "$target_out_dir/@ohos.test.PerfTest.abc"
+  module_install_dir = "framework"
+  part_name = "arkxtest"
+  subsystem_name = "testfwk"
+  deps = [ ":perftest_abc" ]
+  if (arkxtest_product_feature == "watch" || arkxtest_product_feature == "glasses") {
+    install_enable = false
+  }
+}
+
 group("perftestkit") {
   deps = [
     ":perftest_client",
     ":perftest_server",
+    ":perftest_ani",
+    ":perftest_etc",
   ]
 }
 
