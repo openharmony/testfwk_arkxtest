@@ -319,6 +319,8 @@ namespace OHOS::uitest {
             UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type, windowChangeType, componentEventType,
                 windowId, componentId, componentRect};
             std::unique_ptr<Widget> widget = nullptr;
+            widget->SetDisplayId(windowInfo.GetDisplayId());
+            widget->SetAttr(UiAttr::BUNDLENAME, bundleName);
             if (capturedEvent == "componentEventOccur") {
                 widget = std::make_unique<Widget>("");
                 ElementNodeIteratorImpl iterator;

@@ -70,6 +70,8 @@ namespace OHOS::uitest {
         bool isExistOn = false;
         std::vector<WidgetMatchModel> selfMatchers = {};
         EventOptionsInfo() = default;
+        string appLocator_ = "";
+        int32_t displayLocator_ = -1;
     };
 
     class UiEventListener {
