@@ -2158,16 +2158,16 @@ static void RegisterExtensionHandler()
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             UiOpArgs uiOpArgs;
             vector<Point> points;
-            auto clickTimes = 0;
+            auto clickTimes = ReadCallArg<int32_t>(in, in.paramList_.size() - 1);
+            if (clickTimes < ONE || clickTimes > TWO) {
+                out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "click times must be 1 to 2.");
+                return;
+            }
             auto pointJson0 = ReadCallArg<json>(in, INDEX_ZERO);
             auto displayId0 = ReadArgFromJson<int32_t>(pointJson0, "displayId", UNASSIGNED);
             auto point0 = Point(pointJson0["x"], pointJson0["y"], displayId0);
             points.push_back(point0);
             if (in.paramList_.size() == THREE) {
-                if (!driver.IsKnuckleRecordEnable()) {
-                    out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This action is not support.");
-                    return;
-                }
                 auto pointJson1 = ReadCallArg<json>(in, INDEX_ONE);
                 auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
                 if (displayId0 != displayId1) {
@@ -2176,13 +2176,15 @@ static void RegisterExtensionHandler()
                 }
                 auto point1 = Point(pointJson1["x"], pointJson1["y"], displayId1);
                 points.push_back(point1);
-                clickTimes = ReadCallArg<int32_t>(in, INDEX_TWO);
+                if (!driver.IsKnuckleRecordEnable()) {
+                    out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This action is not support.");
+                    return;
+                }
             } else {
                 if (!driver.IsKnuckleSnapshotEnable()) {
                     out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This action is not support.");
                     return;
                 }
-                clickTimes = ReadCallArg<int32_t>(in, INDEX_ONE);
             }
             auto touch = GenericMultiClick(points, clickTimes);
             driver.PerformKnuckleAction(touch, uiOpArgs, out.exception_);
