@@ -70,6 +70,8 @@ namespace OHOS::uitest {
         bool isExistOn = false;
         std::vector<WidgetMatchModel> selfMatchers = {};
         EventOptionsInfo() = default;
+        string appLocator_ = "";
+        int32_t displayLocator_ = -1;
     };
 
     class UiEventListener {
@@ -91,7 +93,8 @@ namespace OHOS::uitest {
             return true;
         };
 
-        virtual void GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay = -1){};
+        virtual void GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay = -1,
+            bool skipWaitForUiSteady = false) {};
 
         virtual bool GetWidgetsInWindow(const Window &winInfo, unique_ptr<ElementNodeIterator> &elementIterator,
             AamsWorkMode mode)

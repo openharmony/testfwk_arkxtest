@@ -277,6 +277,14 @@ namespace OHOS::uitest {
         listeners_.emplace_back(listerner);
     }
 
+    static void GetElementBounds(const AccessibilityElementInfo &element, Rect &componentRect)
+    {
+        auto bounds = element.GetRectInScreen();
+        componentRect.left_ = bounds.GetLeftTopXScreenPostion();
+        componentRect.top_ = bounds.GetLeftTopYScreenPostion();
+        componentRect.right_ = bounds.GetRightBottomXScreenPostion();
+        componentRect.bottom_ = bounds.GetRightBottomYScreenPostion();
+    }
     void UiEventMonitor::OnAccessibilityEvent(const AccessibilityEventInfo &eventInfo)
     {
         auto eventType = eventInfo.GetEventType();
@@ -310,11 +318,7 @@ namespace OHOS::uitest {
             LOG_D("testfwk OnAccessibilityEvent bundleName: %{public}s", bundleName.c_str());
             const auto& elemInfo = eventInfo.GetElementInfo();
             auto componentId = elemInfo.GetInspectorKey();
-            auto bounds = elemInfo.GetRectInScreen();
-            componentRect.left_ = bounds.GetLeftTopXScreenPostion();
-            componentRect.top_ = bounds.GetLeftTopYScreenPostion();
-            componentRect.right_ = bounds.GetRightBottomXScreenPostion();
-            componentRect.bottom_ = bounds.GetRightBottomYScreenPostion();
+            GetElementBounds(elemInfo, componentRect);
 
             UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type, windowChangeType, componentEventType,
                 windowId, componentId, componentRect};
@@ -323,6 +327,8 @@ namespace OHOS::uitest {
                 widget = std::make_unique<Widget>("");
                 ElementNodeIteratorImpl iterator;
                 iterator.WrapperNodeAttrToVec(*widget, elemInfo);
+                widget->SetDisplayId(windowInfo.GetDisplayId());
+                widget->SetAttr(UiAttr::BUNDLENAME, bundleName);
             }
             NotifyListeners(capturedEvent, uiEventSourceInfo, widget.get());
         }
@@ -494,11 +500,15 @@ namespace OHOS::uitest {
         }
     }
 
-    static bool GetAamsWindowInfos(vector<AccessibilityWindowInfo> &windows, int32_t displayId)
+    static bool GetAamsWindowInfos(vector<AccessibilityWindowInfo> &windows, int32_t displayId,
+        bool skipWaitForUiSteady)
     {
         LOG_D("Get Window root info in display %{public}d", displayId);
         auto ability = AccessibilityUITestAbility::GetInstance();
-        g_monitorInstance_->WaitScrollCompelete();
+        if (!skipWaitForUiSteady) {
+            LOG_D("Wait scroll compelete");
+            g_monitorInstance_->WaitScrollCompelete();
+        }
         auto ret = ability->GetWindows(displayId, windows);
         if (ret != RET_OK) {
             LOG_W("GetWindows in display %{public}d from AccessibilityUITestAbility failed, ret: %{public}d",
@@ -549,7 +559,8 @@ namespace OHOS::uitest {
         }
     }
 
-    void SysUiController::GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay)
+    void SysUiController::GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay,
+        bool skipWaitForUiSteady)
     {
         std::lock_guard<std::mutex> dumpLocker(dumpMtx); // disallow concurrent dumpUi
         ApiCallErr error = ApiCallErr(NO_ERROR);
@@ -565,7 +576,7 @@ namespace OHOS::uitest {
                 continue;
             }
             vector<AccessibilityWindowInfo> windows;
-            if (!GetAamsWindowInfos(windows, displayId)) {
+            if (!GetAamsWindowInfos(windows, displayId, skipWaitForUiSteady)) {
                 continue;
             }
             auto screenSize = GetDisplaySize(displayId);

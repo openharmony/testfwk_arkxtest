@@ -68,7 +68,7 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void UiDriver::UpdateUIWindows(ApiCallErr &error, int32_t targetDisplay)
+    void UiDriver::UpdateUIWindows(ApiCallErr &error, int32_t targetDisplay, bool skipWaitForUiSteady)
     {
         visitWidgets_.clear();
         targetWidgetsIndex_.clear();
@@ -77,7 +77,7 @@ namespace OHOS::uitest {
             return;
         }
         std::map<int32_t, vector<Window>> currentDisplayAndWindowCacheMap;
-        uiController_->GetUiWindows(currentDisplayAndWindowCacheMap, targetDisplay);
+        uiController_->GetUiWindows(currentDisplayAndWindowCacheMap, targetDisplay, skipWaitForUiSteady);
         if (currentDisplayAndWindowCacheMap.empty()) {
             LOG_E("Get Windows Failed");
             error = ApiCallErr(ERR_INTERNAL, "Get window nodes failed");
@@ -325,7 +325,7 @@ namespace OHOS::uitest {
             uiController_->WaitForUiSteady(opt.uiSteadyThresholdMs_, opt.waitUiSteadyMaxMs_);
         }
         if (updateUi) {
-            UpdateUIWindows(err, selector.GetDisplayLocator());
+            UpdateUIWindows(err, selector.GetDisplayLocator(), skipWaitForUiSteady);
             if (err.code_ != NO_ERROR) {
                 return;
             }
