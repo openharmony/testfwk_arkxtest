@@ -30,7 +30,7 @@ namespace OHOS::uitest {
     using namespace arkts::ani_signature;
     constexpr OHOS::HiviewDFX::HiLogLabel LABEL = {LogType::LOG_CORE, 0xD003100, "UiTestKit"};
 
-    inline static ani_class findCls(ani_env *env, const char *className)
+    inline ani_class findCls(ani_env *env, const char *className)
     {
         ani_class cls;
         ani_ref nullref;
@@ -41,7 +41,7 @@ namespace OHOS::uitest {
         return cls;
     }
 
-    inline static ani_method findCtorMethod(ani_env *env, ani_class cls, const char *name)
+    inline ani_method findCtorMethod(ani_env *env, ani_class cls, const char *name)
     {
         ani_method ctor = nullptr;
         if (ANI_OK != env->Class_FindMethod(cls, Builder::BuildConstructorName().c_str(), name, &ctor)) {
@@ -65,7 +65,7 @@ namespace OHOS::uitest {
 		}
 		return obj;
 	}
-	inline static ani_object newRect(ani_env *env, ani_object object, nlohmann::json num)
+	inline ani_object newRect(ani_env *env, ani_object object, nlohmann::json num)
 	{
 	    ani_object rect_obj = {};
 	    ani_class cls = findCls(env, Builder::BuildClass({"@ohos", "UiTest", "RectInner"}).Descriptor().c_str());
