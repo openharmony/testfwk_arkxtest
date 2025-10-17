@@ -963,7 +963,7 @@ static json getWindowChangeOptions(ani_env *env, ani_object opt)
 {
     auto window_change_opts = json();
     string list[] = {"timeout", "bundleName"};
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < TWO; i++) {
         char *cstr = new char[list[i].length() + 1];
         strcpy(cstr, list[i].c_str());
         ani_ref value;
@@ -974,7 +974,7 @@ static json getWindowChangeOptions(ani_env *env, ani_object opt)
         ani_boolean ret;
         env->Reference_IsUndefined(value, &ret);
         if (ret == ANI_TRUE) {
-                window_change_opts["timeout"] = 10000;
+                window_change_opts["timeout"] = TIMEOUT;
                 continue;
             }
         if (i == ONE) {
@@ -996,7 +996,7 @@ static json getComponentEventOptions(ani_env *env, ani_object opt)
 {
     auto com_event_opts = json();
     string list[] = {"timeout", "on"};
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < TWO; i++) {
         char *cstr = new char[list[i].length() + 1];
         strcpy(cstr, list[i].c_str());
         ani_ref value;
@@ -1007,7 +1007,7 @@ static json getComponentEventOptions(ani_env *env, ani_object opt)
         ani_boolean ret;
         env->Reference_IsUndefined(value, &ret);
         if (ret == ANI_TRUE) {
-            com_event_opts["timeout"] = 10000;
+            com_event_opts["timeout"] = TIMEOUT;
             continue;
         }
         if (i == ONE) {
