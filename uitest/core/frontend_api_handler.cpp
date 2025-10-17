@@ -119,6 +119,12 @@ namespace OHOS::uitest {
                 if (!widget->MatchSelector(options.selfMatchers)) {
                     return false;
                 }
+                if (options.appLocator_ != "" && options.appLocator_ != widget->GetAttr(UiAttr::BUNDLENAME)) {
+                    return false;
+                }
+                if (options.displayLocator_ != -1 && options.displayLocator_ != widget->GetDisplayId()) {
+                    return false;
+                }
             }
             return true;
         }
@@ -615,6 +621,7 @@ namespace OHOS::uitest {
             if (find == sApiArgTypesMap.end()) {
                 return;
             }
+            out.convertError_ = find->second.convertError_;
             bool checkArgNum = false;
             bool checkArgType = true;
             out.exception_ = {NO_ERROR, "No Error"};
@@ -1095,6 +1102,8 @@ namespace OHOS::uitest {
             for (const auto& matcher : selfMatchers) {
                 eventOptionsInfo.selfMatchers.push_back(matcher);
             }
+            eventOptionsInfo.displayLocator_ = selector.GetDisplayLocator();
+            eventOptionsInfo.appLocator_ = selector.GetAppLocator();
         }
     }
 
