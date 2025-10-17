@@ -974,8 +974,9 @@ static json getWindowChangeOptions(ani_env *env, ani_object opt)
         ani_boolean ret;
         env->Reference_IsUndefined(value, &ret);
         if (ret == ANI_TRUE) {
-            continue;
-        }
+                window_change_opts["timeout"] = 10000;
+                continue;
+            }
         if (i == ONE) {
             window_change_opts[list[i]] = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
         } else {
@@ -1006,12 +1007,13 @@ static json getComponentEventOptions(ani_env *env, ani_object opt)
         ani_boolean ret;
         env->Reference_IsUndefined(value, &ret);
         if (ret == ANI_TRUE) {
+            com_event_opts["timeout"] = 10000;
             continue;
         }
         if (i == ONE) {
             ani_object on = static_cast<ani_object>(value);
             com_event_opts[list[i]] = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
-        } else {
+        } else {            
             ani_int timeout;
             compareAndReport(ANI_OK,
                              env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "toInt", nullptr, &timeout),
@@ -2442,6 +2444,7 @@ static void onceDialogShow(ani_env *env, ani_object obj, ani_object callback)
 static void onceWindowChangeWithOpts(ani_env *env, ani_object obj, ani_enum_item window_change_type, ani_object window_change_opt, ani_object callback)
 {
     nlohmann::json paramList_ = nlohmann::json::array();
+    paramList_.push_back("windowChange");
     paramList_.push_back(getEnumValue(env, window_change_type));
     paramList_.push_back(getWindowChangeOptions(env, window_change_opt));
     once(env, obj, paramList_, callback);
@@ -2449,6 +2452,7 @@ static void onceWindowChangeWithOpts(ani_env *env, ani_object obj, ani_enum_item
 static void onceComponentEventOccurWithOpts(ani_env *env, ani_object obj, ani_enum_item com_event_type, ani_object com_event_opt, ani_object callback)
 {
     nlohmann::json paramList_ = nlohmann::json::array();
+    paramList_.push_back("componentEventOccur");
     paramList_.push_back(getEnumValue(env, com_event_type));
     paramList_.push_back(getComponentEventOptions(env, com_event_opt));
     once(env, obj, paramList_, callback);
