@@ -27,6 +27,14 @@ export default namespace UiTest {
   export native function GetConnectionStat(): int;
 }
 
+// this function will call concurrency cannot be called in static block or global scope
+function doSetupIfNeeded() {
+  if (UiTest.GetConnectionStat() == 0) {
+    let domain: int = 0x0000;
+    hilog.info(domain, 'uitestTag', 'On static loadAndSetUpUiTest: ' + loadAndSetUpUiTest());
+  }
+}
+
 export function loadAndSetUpUiTest(): boolean {
   let domain: int = 0x0000;
   let connectedState = 1;
@@ -182,12 +190,9 @@ class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
 }
 
 export class Component {
-    static {
-        currentState = UiTest.GetConnectionStat();
-        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
-    }
   nativeComponent:string = '';
   public constructor(Component:string) {
+    doSetupIfNeeded();
     if (this.nativeComponent == '') {
       this.nativeComponent = Component;
     }
@@ -583,12 +588,9 @@ export class Component {
   }
   
   export class UiWindow {
-    static {
-        currentState = UiTest.GetConnectionStat();
-        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
-    }
     nativeWindow:string = '';
     public constructor(Window:string) {
+      doSetupIfNeeded();
       this.nativeWindow = Window;
     }
     private native splitSync(): boolean;
@@ -796,18 +798,19 @@ export class Component {
   }
   
   export class Driver {
-    static {
-        currentState = UiTest.GetConnectionStat();
-        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState )
-    }
     private nativeDriver:string = '';
     public constructor(driver:string) {
+        doSetupIfNeeded();
         hilog.info(domain, tag, 'driver:'+driver);
         this.nativeDriver = driver;
     }
     private native delayMsSync(t:int):boolean;
     private native findComponentSync(on: On):Component;
-    native static create():Driver;
+    public static create():Driver{
+        doSetupIfNeeded();
+        return Driver.createInner();
+    }
+    native static createInner():Driver;
     private native clickSync(x:int, y:int):boolean;
     private native longClickSync(x:int, y:int):boolean;
     private native doubleClickSync(x:int, y:int):boolean;
@@ -1495,33 +1498,31 @@ export class Component {
   }
   
   export class PointerMatrix {
-    static {
-        currentState = UiTest.GetConnectionStat();
-        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
-    }
     private nativePointerMatrix:string = '';
     public constructor(PointerMatrix:string) {
+      doSetupIfNeeded();
       if (this.nativePointerMatrix == '') {
         this.nativePointerMatrix = PointerMatrix;
       }
     }
   
-    native static create(fingers: int, steps: int): PointerMatrix;
+    public static create(fingers: int, steps: int): PointerMatrix{
+      doSetupIfNeeded();
+      return PointerMatrix.createInner(fingers, steps);
+    }
+    native static createInner(fingers: int, steps: int): PointerMatrix;
     native setPoint(finger: int, step: int, point: Point): void;
   }
+
   export class On {
-    static {
-        if (UiTest.GetConnectionStat() == 0) {
-            let domain: int = 0x0000;
-            hilog.info(domain, 'uitestTag', 'On static loadAndSetUpUiTest: ' + loadAndSetUpUiTest());
-        }
-    }
     private nativeOn:String = '';
     public constructor(on:string) {
+      doSetupIfNeeded();
       hilog.info(domain, tag, "nativeOn: " + on);
       this.nativeOn = on;
     }
     public constructor() {
+      doSetupIfNeeded();
     }
     native within(on:On): On;
     native clickable(b?: boolean): On;
@@ -1550,12 +1551,9 @@ export class Component {
   }
 
 export class UIEventObserver {
-    static {
-        currentState = UiTest.GetConnectionStat();
-        hilog.info(domain, tag, "Uitest ConnectionStat: "+ currentState)
-    }
     private nativeUIEventObserver: string = '';
     public constructor(UIEventObserver: string) {
+        doSetupIfNeeded();
         hilog.info(domain, tag, 'UIEventObserver:' + UIEventObserver);
         if (this.nativeUIEventObserver == '') {
             this.nativeUIEventObserver = UIEventObserver;
@@ -1565,4 +1563,108 @@ export class UIEventObserver {
     native onceDialogShow(callback: Callback<UIElementInfo>): void;
 }
 
-export const ON: On = new On();
+export namespace ON {
+    export let ONInner: On | undefined = undefined; 
+    
+    function initializeONinnerIfNeeded() {
+        if (ONInner === undefined) {
+            ONInner = new On();
+        }
+    }
+
+    // need to wrap all On class using ONinner instance
+    export function within(on:On): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.within(on);
+    }
+
+    export function clickable(b?: boolean): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.clickable(b);
+    }
+
+    export function longClickable(b?: boolean): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.longClickable(b);
+    }
+
+    export function scrollable(b?: boolean): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.scrollable(b);
+    }
+
+    export function enabled(b?: boolean): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.enabled(b);
+    }
+
+    export function focused(b?: boolean): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.focused(b);
+    }
+
+    export function selected(b?: boolean): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.selected(b);
+    }
+
+    export function checked(b?: boolean): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.checked(b);
+    }
+
+    export function checkable(b?: boolean): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.checkable(b);
+    }
+
+    export function isBefore(on: On): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.isBefore(on);
+    }
+
+    export function isAfter(on: On): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.isAfter(on);
+    }
+
+    export function inWindow(bundleName: string): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.inWindow(bundleName);
+    }
+
+    export function text(txt: string, pattern?: MatchPattern): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.text(txt, pattern);
+    }
+
+    export function description(val: string, pattern?: MatchPattern): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.description(val, pattern);
+    }
+
+    export function id(id: string, pattern?: MatchPattern): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.id(id, pattern);
+    }
+
+    export function type(tp: string, pattern?: MatchPattern): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.type(tp, pattern);
+    }
+
+    export function hint(val: string, pattern?: MatchPattern): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.hint(val, pattern);
+    }
+
+    export function id(id: string): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.id(id);
+    }
+
+    export function type(tp: string): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.type(tp);
+    }
+}
