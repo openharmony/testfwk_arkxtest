@@ -20,9 +20,10 @@
 #include "common_utilities_hpp.h"
 #include "ui_event_observer_ani.h"
 #include "hilog/log.h"
-using namespace OHOS::HiviewDFX;
+#include "utils.h"
 
-constexpr OHOS::HiviewDFX::HiLogLabel LABEL = {LogType::LOG_CORE, 0xD003100, "UiTestKit"};
+using namespace OHOS::HiviewDFX;
+using namespace arkts::ani_signature;
 
 namespace OHOS::uitest {
     using namespace nlohmann;
@@ -126,6 +127,15 @@ namespace OHOS::uitest {
         ctx.releaseCallback = in.paramList_.at(INDEX_THREE).get<bool>();
     }
 
+    void SetEnum(ani_vm *vm, ani_env *env, ani_enum enumType, ani_object &obj, char *cstr, uint8_t index) {
+        ani_enum_item enumItem;
+        env->Enum_GetEnumItemByIndex(enumType, index, &enumItem);
+        if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(enumItem))) {
+            HiLog::Error(LABEL,"SetProperty fail: %{public}s", cstr);
+            vm->DetachCurrentThread();
+            return;
+        }
+    }
     /**Handle api callback from server end.*/
     void UiEventObserverAni::HandleEventCallback(ani_vm *vm, const ApiCallInfo &in, ApiReplyInfo &out)
     {
@@ -142,21 +152,6 @@ namespace OHOS::uitest {
         if (out.exception_.code_ != NO_ERROR) {
             delete context;
             HiLog::Warn(LABEL,"InitCallbackContext failed, cannot perform callback");
-            vm->DetachCurrentThread();
-            return;
-        }
-        auto bundleName = context->elmentInfo["bundleName"].get<string>();
-        auto cType = context->elmentInfo["type"].get<string>();
-        auto text = context->elmentInfo["text"].get<string>();
-        ani_string strBundleName;
-        ani_string strType;
-        ani_string strText;
-        auto re1 = env->String_NewUTF8(bundleName.c_str(), bundleName.size(), &strBundleName);
-        auto re2 = env->String_NewUTF8(cType.c_str(), cType.size(), &strType);
-        auto re3 = env->String_NewUTF8(text.c_str(), text.size(), &strText);
-        if (re1 != ANI_OK || re2 != ANI_OK || re3 != ANI_OK) {
-            HiLog::Error(LABEL,"Analysis uielementInfo fail");
-            out.exception_ = ApiCallErr(ERR_INTERNAL, "Analysis uielementInfo fail");
             vm->DetachCurrentThread();
             return;
         }
@@ -180,20 +175,62 @@ namespace OHOS::uitest {
             vm->DetachCurrentThread();
             return;
         }
-        if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, "bundleName", reinterpret_cast<ani_ref>(strBundleName))) {
-            HiLog::Error(LABEL,"SetProperty  bundleName fail");
-            vm->DetachCurrentThread();
-            return;
-        }
-        if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, "type", reinterpret_cast<ani_ref>(strType))) {
-            HiLog::Error(LABEL,"SetProperty  type fail");
-            vm->DetachCurrentThread();
-            return;
-        }
-        if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, "text", reinterpret_cast<ani_ref>(strText))) {
-            HiLog::Error(LABEL,"SetProperty  bundleName fail");
-            vm->DetachCurrentThread();
-            return;
+        string list[] = {"bundleName", "type", "text", "windowChangeType", 
+            "componentEventType", "windowId", "componentId", "componentRect"};
+        for (int i = 0; i < EIGHT; i++) {
+            char *cstr = new char[list[i].length() + 1];
+            strcpy(cstr, list[i].c_str());
+            if (i == THREE){
+                ani_enum enumType;
+                if (ANI_OK != env->FindEnum(Builder::BuildEnum({"@ohos", "UiTest", "WindowChangeType"}).Descriptor().c_str(), &enumType)) {
+                    HiLog::Error(LABEL, "Not found enum item: %{public}s", __func__);
+                }
+                uint8_t index = static_cast<uint8_t>(context->elmentInfo[list[i]].get<int>());
+                SetEnum(vm, env, enumType, obj, cstr, index);
+            } else if (i == FOUR){
+                ani_enum enumType;
+                if (ANI_OK != env->FindEnum(Builder::BuildEnum({"@ohos", "UiTest", "ComponentEventType"}).Descriptor().c_str(), &enumType)) {
+                    HiLog::Error(LABEL, "Not found enum item: %{public}s", __func__);
+                }
+                ani_enum_item enumItem;
+                auto index = static_cast<uint8_t>(context->elmentInfo[list[i]].get<int>());
+                env->Enum_GetEnumItemByIndex(enumType, index, &enumItem);
+                HiLog::Info(LABEL, " getComponentEventType:  %{public}d ", index);
+                if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(enumItem))) {
+                    HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
+                    vm->DetachCurrentThread();
+                    return;
+                }
+            } else if (i == FIVE){
+                auto windowId = static_cast<uint8_t>(context->elmentInfo[list[i]].get<int>());
+                if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(windowId))) {
+                    HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
+                    vm->DetachCurrentThread();
+                    return;
+                }
+            } else if (i == SEVEN){
+                ani_object componentRect = newRect(env, obj, context->elmentInfo[list[i]]);
+                if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(componentRect))) {
+                    HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
+                    vm->DetachCurrentThread();
+                    return;
+                }
+            } else {
+                const auto s = context->elmentInfo[list[i]].get<string>();
+                ani_string ani_str;
+                auto ret = env->String_NewUTF8(s.c_str(), s.size(), &ani_str);
+                if (ret != ANI_OK) {
+                    HiLog::Error(LABEL,"Analysis uielementInfo fail");
+                    out.exception_ = ApiCallErr(ERR_INTERNAL, "Analysis uielementInfo fail");
+                    vm->DetachCurrentThread();
+                    return;
+                }
+                if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(ani_str))) {
+                    HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
+                    vm->DetachCurrentThread();
+                    return;
+                }
+            }
         }
         ani_ref argvRef = static_cast<ani_ref>(obj);
         std::vector<ani_ref> tmp = {argvRef};
