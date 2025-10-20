@@ -1431,7 +1431,6 @@ namespace OHOS::uitest {
             return atoi(value.c_str()) != 0;
         }
     }
-
     bool SysUiController::IsKnuckleRecordEnable() const
     {
         string uri = "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_SECURE_100?Proxy=true";
