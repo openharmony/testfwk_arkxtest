@@ -301,8 +301,6 @@ class AfterWhen{
   }
 
   checkIsEqualOfArgs(args1: Object[], args2: Object[]) {
-    hilog.info(domain, tag, '%{public}s', 'zzzz start run AfterWhen  checkIsEqualOfArgs')
-
     if (args1.length !== args2.length) {
       return false;
     }
@@ -406,7 +404,6 @@ class AfterWhen{
 export function when(mockFunc: Function) {
   hilog.info(domain, tag, '%{public}s', 'start run when')
   const mockFuncResult: MockFuncResult = (mockFunc as () => MockFuncResult) ()
-  hilog.info(domain, tag, 'zzzz when  %{public}s', mockFuncResult.className)
   return (...args: object[]) => {
     const methodName = mockFuncResult.methodName
     const className = mockFuncResult.className
