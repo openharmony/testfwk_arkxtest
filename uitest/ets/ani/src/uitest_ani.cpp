@@ -33,6 +33,7 @@
 #include "ui_event_observer_ani.h"
 #include <cstring>
 #include <cstdio>
+#include <memory>
 
 using namespace OHOS::uitest;
 using namespace nlohmann;
@@ -489,7 +490,7 @@ static ani_boolean BindPointMatrix(ani_env *env)
         HiLog::Error(LABEL, "%{public}s Cannot bind native methods to !!!", __func__);
         return false;
     }
-    ani_native_function createMethod {"create", nullptr, reinterpret_cast<void *>(createMatrix)};
+    ani_native_function createMethod {"createInner", nullptr, reinterpret_cast<void *>(createMatrix)};
     if (ANI_OK != env->Class_BindStaticNativeMethods(cls, &createMethod, 1)) {
         HiLog::Error(LABEL, "%{public}s Cannot bind static native methods to !!!", __func__);
         return false;
@@ -713,11 +714,11 @@ static ani_ref create([[maybe_unused]] ani_env *env, [[maybe_unused]] ani_class 
         HiLog::Error(LABEL, "Driver Ctor Not found !!!");
         return nullref;
     }
-    ApiCallInfo callInfo_;
-    ApiReplyInfo reply_;
-    callInfo_.apiId_ = "Driver.create";
-    Transact(callInfo_, reply_);
-    ani_ref nativeDriver = UnmarshalReply(env, callInfo_, reply_);
+    auto  callInfo_ = make_shared<ApiCallInfo>();
+    auto  reply_ = make_shared<ApiReplyInfo>();
+    callInfo_->apiId_ = "Driver.create";
+    Transact(*callInfo_, *reply_);
+    ani_ref nativeDriver = UnmarshalReply(env, *callInfo_, *reply_);
     if (nativeDriver == nullptr) {
         return nullref;
     }
@@ -1623,7 +1624,7 @@ static ani_boolean BindDriver(ani_env *env)
         HiLog::Error(LABEL, "%{public}s Cannot bind native methods to !!!", __func__);
         return false;
     }
-    ani_native_function createMethod {"create", ":C{@ohos.UiTest.Driver}", reinterpret_cast<void *>(create)};
+    ani_native_function createMethod {"createInner", ":C{@ohos.UiTest.Driver}", reinterpret_cast<void *>(create)};
     if (ANI_OK != env->Class_BindStaticNativeMethods(cls, &createMethod, 1)) {
         HiLog::Error(LABEL, "%{public}s Cannot bind static native methods to !!!", __func__);
         return false;
