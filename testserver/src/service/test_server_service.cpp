@@ -25,6 +25,9 @@
 #ifdef ARKXTEST_PASTEBOARD_ENABLE
 #include "pasteboard_client.h"
 #endif
+#ifdef ARKXTEST_KNUCKLE_ACTION_ENABLE
+#include "datashare_helper.h"
+#endif
 #include "session_manager_lite.h"
 #include "wm_common.h"
 #include "ws_common.h"
@@ -414,37 +417,23 @@ namespace OHOS::testserver {
         return ret == OHOS::Rosen::WSError::WS_OK ? TEST_SERVER_OK : TEST_SERVER_OPERATE_WINDOW_FAILED;
     }
 
-    std::shared_ptr<DataShare::DataShareHelper> TestServerService::CreateDataShareHelper(const std::string &uri)
+    ErrCode TestServerService::GetValueFromDataShare(const std::string &uri, const std::string &key, std::string &value)
     {
+#ifdef ARKXTEST_KNUCKLE_ACTION_ENABLE
         auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (samgr == nullptr) {
             HiLog::Error(LABEL_SERVICE, "samgr is nullptr");
-            return nullptr;
+            return TEST_SERVER_DATASHARE_FAILED;
         }
         auto datashareSA = samgr->CheckSystemAbility(DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID);
         if (datashareSA == nullptr) {
             HiLog::Error(LABEL_SERVICE, "datashareSA is null");
-            return nullptr;
+            return TEST_SERVER_DATASHARE_FAILED;
         }
         sptr<IRemoteObject> remoteObj = samgr->CheckSystemAbility(TEST_SERVER_SA_ID);
-        std::pair<int, std::shared_ptr<DataShare::DataShareHelper>> ret =
+        std::pair<int, std::shared_ptr<DataShare::DataShareHelper>> ret0 =
             DataShare::DataShareHelper::Create(remoteObj, uri, "");
-        return ret.second;
-    }
-
-    Uri TestServerService::AssembleUri(const std::string &uri, const std::string &key)
-    {
-        return Uri(uri + "&key=" + key);
-    }
-
-    void TestServerService::ReleaseDataShareHelper(std::shared_ptr<DataShare::DataShareHelper> &helper)
-    {
-        helper->Release();
-    }
-
-    ErrCode TestServerService::GetValueFromDataShare(const std::string &uri, const std::string &key, std::string &value)
-    {
-        auto helper = CreateDataShareHelper(uri);
+        auto helper = ret0.second;
         if (helper == nullptr) {
             HiLog::Error(LABEL_SERVICE, "dataShareHelper is nullptr");
             return TEST_SERVER_DATASHARE_FAILED;
@@ -454,9 +443,9 @@ namespace OHOS::testserver {
         std::vector<std::string> columns = { columnKeyWordName };
         DataShare::DataSharePredicates predicates;
         predicates.EqualTo(columnKeyWordName, key);
-        Uri queryUri(AssembleUri(uri, key));
+        Uri queryUri = Uri(uri + "&key=" + key);
         auto resultSet = helper->Query(queryUri, predicates, columns);
-        ReleaseDataShareHelper(helper);
+        helper->Release();
         if (resultSet == nullptr) {
             HiLog::Error(LABEL_SERVICE, "resultSet is nullptr");
             return TEST_SERVER_DATASHARE_FAILED;
@@ -468,13 +457,15 @@ namespace OHOS::testserver {
             return TEST_SERVER_OK;
         }
         resultSet->GoToRow(0);
-        int32_t ret = resultSet->GetString(0, value);
-        if (ret != 0) {
+        if (resultSet->GetString(0, value) != 0) {
             HiLog::Error(LABEL_SERVICE, "ret is not ok");
             return TEST_SERVER_DATASHARE_FAILED;
         }
         HiLog::Debug(LABEL_SERVICE, "key = %{public}s, value = %{public}s", key.c_str(), value.c_str());
         resultSet->Close();
+#else
+        value = "0";
+#endif
         return TEST_SERVER_OK;
     }
 } // namespace OHOS::testserver
