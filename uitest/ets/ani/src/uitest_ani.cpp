@@ -977,7 +977,7 @@ static json getWindowChangeOptions(ani_env *env, ani_object opt)
             if (ret != ANI_TRUE) {
                 window_change_opts[list[i]] = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
             }
-        } else {        
+        } else {
             if (ret == ANI_TRUE) {
                 window_change_opts["timeout"] = TIMEOUT;
                 continue;
