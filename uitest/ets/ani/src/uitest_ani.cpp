@@ -1751,7 +1751,7 @@ static ani_boolean isComponentPresentWhenLongClickSync(ani_env *env, ani_object 
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.isComponentPresentWhenLongClick";
-    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativeOn")));
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on_obj, "nativeOn")));
     callInfo_.paramList_.push_back(getPoint(env, p));
     pushParam(env, duration, callInfo_, true);
     Transact(callInfo_, reply_);
@@ -1770,7 +1770,7 @@ static ani_boolean isComponentPresentWhenDragSync(ani_env *env, ani_object obj, 
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.isComponentPresentWhenDrag";
-    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativeOn")));
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on_obj, "nativeOn")));
     callInfo_.paramList_.push_back(getPoint(env, from));
     callInfo_.paramList_.push_back(getPoint(env, to));
     pushParam(env, speed, callInfo_, true);
@@ -1789,7 +1789,7 @@ static ani_boolean isComponentPresentWhenSwipeSync(ani_env *env, ani_object obj,
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.isComponentPresentWhenSwipe";
-    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativeOn")));
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on_obj, "nativeOn")));
     callInfo_.paramList_.push_back(getPoint(env, from));
     callInfo_.paramList_.push_back(getPoint(env, to));
     pushParam(env, speed, callInfo_, true);
