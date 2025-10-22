@@ -973,13 +973,15 @@ static json getWindowChangeOptions(ani_env *env, ani_object opt)
         }
         ani_boolean ret;
         env->Reference_IsUndefined(value, &ret);
-        if (ret == ANI_TRUE) {
+        if (i == ONE) {
+            if (ret != ANI_TRUE) {
+                window_change_opts[list[i]] = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
+            }
+        } else {        
+            if (ret == ANI_TRUE) {
                 window_change_opts["timeout"] = TIMEOUT;
                 continue;
             }
-        if (i == ONE) {
-            window_change_opts[list[i]] = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
-        } else {
             ani_int timeout;
             compareAndReport(ANI_OK,
                              env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "toInt", nullptr, &timeout),
@@ -1006,14 +1008,16 @@ static json getComponentEventOptions(ani_env *env, ani_object opt)
         }
         ani_boolean ret;
         env->Reference_IsUndefined(value, &ret);
-        if (ret == ANI_TRUE) {
-            com_event_opts["timeout"] = TIMEOUT;
-            continue;
-        }
         if (i == ONE) {
-            ani_object on = static_cast<ani_object>(value);
-            com_event_opts[list[i]] = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
-        } else {            
+            if (ret != ANI_TRUE) {
+                ani_object on = static_cast<ani_object>(value);
+                com_event_opts[list[i]] = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
+            }
+        } else {
+            if (ret == ANI_TRUE) {
+                com_event_opts["timeout"] = TIMEOUT;
+                continue;
+            }
             ani_int timeout;
             compareAndReport(ANI_OK,
                              env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "toInt", nullptr, &timeout),
