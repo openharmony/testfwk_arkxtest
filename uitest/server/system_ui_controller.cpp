@@ -161,7 +161,8 @@ namespace OHOS::uitest {
         { EventType::TYPE_VIEW_SCROLLED_EVENT, "componentEventOccur"},
         { EventType::TYPE_VIEW_TEXT_UPDATE_EVENT, "componentEventOccur"},
         { EventType::TYPE_VIEW_HOVER_ENTER_EVENT, "componentEventOccur"},
-        { EventType::TYPE_VIEW_HOVER_EXIT_EVENT, "componentEventOccur"}
+        { EventType::TYPE_VIEW_HOVER_EXIT_EVENT, "componentEventOccur"},
+        { EventType::TYPE_VIEW_TEXT_UPDATE_EVENT, "componentEventOccur"}
     };
 
     static constexpr EventTypeSpec WATCHED_WINDOW_EVENTS[] = {
@@ -285,6 +286,7 @@ namespace OHOS::uitest {
         componentRect.right_ = bounds.GetRightBottomXScreenPostion();
         componentRect.bottom_ = bounds.GetRightBottomYScreenPostion();
     }
+
     void UiEventMonitor::OnAccessibilityEvent(const AccessibilityEventInfo &eventInfo)
     {
         auto eventType = eventInfo.GetEventType();
@@ -299,7 +301,6 @@ namespace OHOS::uitest {
             LOG_I("Capture scroll end");
             scrollCompelete_.store(true);
         }
-
         if (capturedEvent != "undefine") {
             LOG_D("testfwk Capture event: %{public}s", capturedEvent.c_str());
             auto bundleName = eventInfo.GetBundleName();
@@ -319,7 +320,6 @@ namespace OHOS::uitest {
             const auto& elemInfo = eventInfo.GetElementInfo();
             auto componentId = elemInfo.GetInspectorKey();
             GetElementBounds(elemInfo, componentRect);
-
             UiEventSourceInfo uiEventSourceInfo = {bundleName, text, type, windowChangeType, componentEventType,
                 windowId, componentId, componentRect};
             std::unique_ptr<Widget> widget = nullptr;
