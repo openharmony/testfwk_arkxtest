@@ -199,36 +199,44 @@ namespace OHOS::uitest {
                 if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(enumItem))) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
-                    return;
+                    continue;
                 }
             } else if (i == FIVE){
                 auto windowId = static_cast<uint8_t>(context->elmentInfo[list[i]].get<int>());
+                HiLog::Info(LABEL, " getWindowId:  %{public}d ", windowId);
                 if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(windowId))) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
-                    return;
+                    continue;
                 }
             } else if (i == SEVEN){
                 ani_object componentRect = newRect(env, obj, context->elmentInfo[list[i]]);
                 if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(componentRect))) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
-                    return;
+                    continue;
                 }
             } else {
                 const auto s = context->elmentInfo[list[i]].get<string>();
                 ani_string ani_str;
                 auto ret = env->String_NewUTF8(s.c_str(), s.size(), &ani_str);
+                HiLog::Info(LABEL, " elmentInfo:  %{public}s ", list[i]);
                 if (ret != ANI_OK) {
                     HiLog::Error(LABEL,"Analysis uielementInfo fail");
                     out.exception_ = ApiCallErr(ERR_INTERNAL, "Analysis uielementInfo fail");
                     vm->DetachCurrentThread();
-                    return;
+                    continue;
+                }
+                ani_boolean ret;
+                env->Reference_IsUndefined(reinterpret_cast<ani_ref>(ani_str), &ret);
+                if (ret == ANI_TRUE) {
+                    HiLog::Error(LABEL,"Property is undefined: %{public}d", i);
+                    continue;
                 }
                 if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(ani_str))) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
-                    return;
+                    continue;
                 }
             }
         }
