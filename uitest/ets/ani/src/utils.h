@@ -87,10 +87,8 @@ namespace OHOS::uitest {
 	        string tag = direct[index];
 	        if (index == FOUR) {
 	            auto ret1 = env->Object_SetPropertyByName_Ref(rect_obj, "displayId",
-	                reinterpret_cast<ani_ref>(createInt(env, ani_int(num[tag]))));
-	            if (ANI_OK != ret1) {
-	                HiLog::Error(LABEL, "Object_SetPropertyByName_Ref  failed, %{public}d", ret1);
-	            }
+					reinterpret_cast<ani_ref>(createInt(env, ani_int(num[tag]))));
+				HiLog::Info(LABEL, "Object_SetPropertyByName_Ref status, %{public}d", ret1);
 	        } else {
 	            char *setter_name = strdup((Builder::BuildSetterName(tag)).c_str());
 	            if (ANI_OK != env->Class_FindMethod(cls, setter_name, nullptr, &setter)) {
@@ -104,7 +102,6 @@ namespace OHOS::uitest {
 	    }
 	    return rect_obj;
 	}
-
 }
 
 #endif
