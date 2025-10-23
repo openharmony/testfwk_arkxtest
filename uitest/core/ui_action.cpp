@@ -461,20 +461,17 @@ namespace OHOS::uitest {
         recv.push_back(MouseEvent {ActionStage::MOVE, point_, MouseButton::BUTTON_NONE, {}, 0});
         constexpr int32_t thousandMilliseconds = 1000;
         auto focusTimeMs = thousandMilliseconds / speed_ / 2;
-        ActionStage stage;
-        if (isVertical_) {
-            stage = (scrollValue_ > 0) ? AXIS_DOWN : AXIS_UP;
-        } else {
-            stage = (scrollValue_ > 0) ? AXIS_RIGHT : AXIS_LEFT;
-        }
+        ActionStage stage = (scrollValue_ > 0) ? AXIS_DOWN : AXIS_UP;
         vector<KeyEvent> keyAction1;
         keyAction1.push_back(KeyEvent {ActionStage::DOWN, key1_, opt.keyHoldMs_});
         keyAction1.push_back(KeyEvent {ActionStage::DOWN, key2_, opt.keyHoldMs_});
-        recv.push_back(MouseEvent {stage, point_, MouseButton::BUTTON_NONE, keyAction1, focusTimeMs});
+        recv.push_back(MouseEvent {ActionStage::AXIS_BEGIN, point_, MouseButton::BUTTON_NONE, keyAction1, focusTimeMs});
+        recv.push_back(MouseEvent {stage, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
         recv.push_back(MouseEvent {ActionStage::AXIS_STOP, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
 
         auto steps = abs(scrollValue_);
         for (auto index = 1; index < steps - 1; index++) {
+            recv.push_back(MouseEvent {ActionStage::AXIS_BEGIN, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
             recv.push_back(MouseEvent {stage, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
             recv.push_back(MouseEvent {ActionStage::AXIS_STOP, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
         }
@@ -483,6 +480,7 @@ namespace OHOS::uitest {
         keyAction2.push_back(KeyEvent {ActionStage::UP, key1_, opt.keyHoldMs_});
         keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
         if (steps > 1) {
+            recv.push_back(MouseEvent {ActionStage::AXIS_BEGIN, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
             recv.push_back(MouseEvent {stage, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs});
             recv.push_back(MouseEvent {ActionStage::AXIS_STOP, point_, MouseButton::BUTTON_NONE, keyAction2,
                                        focusTimeMs});
@@ -491,9 +489,26 @@ namespace OHOS::uitest {
         }
     }
 
-    void MouseScroll::SetIsVertical(const bool isVertical)
+    void TouchPadScroll::Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const
     {
-        isVertical_ = isVertical;
+        recv.push_back(MouseEvent {ActionStage::MOVE, point_, MouseButton::BUTTON_NONE, {}, 0});
+        constexpr int32_t thousandMilliseconds = 1000;
+        auto focusTimeMs = thousandMilliseconds / speed_ / 2;
+        ActionStage stage;
+        if (isVertical_) {
+            stage = (scrollValue_ > 0) ? AXIS_DOWN : AXIS_UP;
+        } else {
+            stage = (scrollValue_ > 0) ? AXIS_RIGHT : AXIS_LEFT;
+        }
+        recv.push_back(MouseEvent {ActionStage::AXIS_BEGIN, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs,
+                                   TouchToolType::TOUCHPAD});
+        auto steps = abs(scrollValue_);
+        for (auto index = 0; index < steps; index++) {
+            recv.push_back(MouseEvent {stage, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs,
+                                       TouchToolType::TOUCHPAD});
+        }
+        recv.push_back(MouseEvent {ActionStage::AXIS_STOP, point_, MouseButton::BUTTON_NONE, {}, focusTimeMs,
+                                   TouchToolType::TOUCHPAD});
     }
 
     void GenericAtomicAction::Decompose(PointerMatrix &recv, const UiOpArgs &options) const

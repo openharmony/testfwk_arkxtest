@@ -49,10 +49,11 @@ namespace OHOS::uitest {
         PROXIMITY_IN = 7,
         PROXIMITY_OUT = 8,
         AXIS_LEFT = 9,
-        AXIS_RIGHT = 10
+        AXIS_RIGHT = 10,
+        AXIS_BEGIN = 11
     };
 
-    enum TouchToolType : uint8_t { FINGER = 0, PEN = 1, KNUCKLE = 8 };
+    enum TouchToolType : uint8_t { FINGER = 0, PEN = 1, MOUSE = 6, KNUCKLE = 8, TOUCHPAD = 9 };
 
     enum ResizeDirection : uint8_t {
         LEFT,
@@ -106,6 +107,7 @@ namespace OHOS::uitest {
         MouseButton button_;
         vector<KeyEvent> keyEvents_;
         uint32_t holdMs_;
+        TouchToolType touchToolType = TouchToolType::MOUSE;
     };
 
     struct TouchPadEvent {
@@ -460,15 +462,28 @@ namespace OHOS::uitest {
 
         ~MouseScroll() = default;
 
-        void SetIsVertical(const bool isVertical);
-
     private:
         const Point point_;
         const int32_t scrollValue_;
         const int32_t key1_;
         const int32_t key2_;
         const uint32_t speed_;
-        bool isVertical_ = true;
+    };
+
+    class TouchPadScroll : public MouseAction {
+    public:
+        explicit TouchPadScroll(const Point &point, int32_t scrollValue, uint32_t speed, bool isVertical)
+            : point_(point), scrollValue_(scrollValue), speed_(speed), isVertical_(isVertical) {};
+
+        void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const override;
+
+        ~TouchPadScroll() = default;
+
+    private:
+        const Point point_;
+        const int32_t scrollValue_;
+        const uint32_t speed_;
+        bool isVertical_;
     };
 
     /**

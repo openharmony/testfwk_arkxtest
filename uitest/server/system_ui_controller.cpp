@@ -767,7 +767,7 @@ namespace OHOS::uitest {
     {
         item.SetPointerId(0);
         item.SetOriginPointerId(0);
-        item.SetToolType(PointerEvent::TOOL_TYPE_MOUSE);
+        item.SetToolType(event.touchToolType);
         item.SetDisplayX(event.point_.px_);
         item.SetDisplayY(event.point_.py_);
         item.SetRawDisplayX(event.point_.px_);
@@ -796,7 +796,6 @@ namespace OHOS::uitest {
                                       PointerEvent::PointerItem &item)
     {
         constexpr double axialValue = 15;
-        static double injectAxialValue = 0;
         switch (stage) {
             case ActionStage::DOWN:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_DOWN);
@@ -808,30 +807,27 @@ namespace OHOS::uitest {
             case ActionStage::UP:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_BUTTON_UP);
                 break;
-            case ActionStage::AXIS_UP:
+            case ActionStage::AXIS_BEGIN:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
+                break;
+            case ActionStage::AXIS_UP:
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_UPDATE);
                 pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, -axialValue);
-                injectAxialValue = injectAxialValue - axialValue;
                 break;
             case ActionStage::AXIS_DOWN:
-                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_UPDATE);
                 pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, axialValue);
-                injectAxialValue = injectAxialValue + axialValue;
                 break;
             case ActionStage::AXIS_LEFT:
-                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_UPDATE);
                 pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_HORIZONTAL, -axialValue);
-                injectAxialValue = injectAxialValue - axialValue;
                 break;
             case ActionStage::AXIS_RIGHT:
-                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_BEGIN);
+                pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_UPDATE);
                 pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_HORIZONTAL, axialValue);
-                injectAxialValue = injectAxialValue + axialValue;
                 break;
             case ActionStage::AXIS_STOP:
                 pointerEvent->SetPointerAction(OHOS::MMI::PointerEvent::POINTER_ACTION_AXIS_END);
-                pointerEvent->SetAxisValue(OHOS::MMI::PointerEvent::AXIS_TYPE_SCROLL_VERTICAL, injectAxialValue);
-                injectAxialValue = 0;
                 break;
             default:
                 return;
