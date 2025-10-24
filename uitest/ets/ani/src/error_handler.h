@@ -51,12 +51,12 @@ namespace OHOS::uitest {
             }
             ani_ref undefRef;
             env->GetUndefined(&undefRef);
-            ani_status status = env->FindClass("Lescompat/Error;", &cls);
+            ani_status status = env->FindClass("escompat.Error", &cls);
             if (status != ANI_OK) {
                 HiLog::Error(LABEL, "FindClass : %{public}d", status);
                 return nullptr;
             }
-            status = env->Class_FindMethod(cls, "<ctor>", "Lstd/core/String;Lescompat/ErrorOptions;:V", &method);
+            status = env->Class_FindMethod(cls, "<ctor>", "C{std.core.String}C{escompat.ErrorOptions}:", &method);
             if (status != ANI_OK) {
                 HiLog::Error(LABEL, "Class_FindMethod : %{public}d", status);
                 return nullptr;
@@ -81,7 +81,7 @@ namespace OHOS::uitest {
                 return ANI_ERROR;
             }
             ani_method method;
-            if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", "ILescompat/Error;:V", &method)) {
+            if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", "iC{escompat.Error}:", &method)) {
                 HiLog::Error(LABEL, "Not found method of BusinessError");
                 return ANI_ERROR;
             }
