@@ -200,7 +200,7 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
             if (ANI_OK != env->Object_New(cls, com_ctor, &com_obj, reinterpret_cast<ani_object>(item))) {
                 HiLog::Error(LABEL, "%{public}s component Object new failed !!!", __func__);
             }
-            if (ANI_OK != env->Object_CallMethodByName_Void(arrayObj, "$_set", "ILstd/core/Object;:V", index, com_obj)) {
+            if (ANI_OK != env->Object_CallMethodByName_Void(arrayObj, "$_set", "iC{std.core.Object}:", index, com_obj)) {
                 HiLog::Error(LABEL, "%{public}s Object_CallMethodByName_Void set Failed", __func__);
                 break;
             }
