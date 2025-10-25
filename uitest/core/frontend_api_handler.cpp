@@ -1658,8 +1658,7 @@ namespace OHOS::uitest {
                 speed = defaultScrollSpeed;
             }
             uiOpArgs.swipeVelocityPps_ = speed;
-            auto touch = MouseScroll(point, scrollValue, KEYCODE_NONE, KEYCODE_NONE, speed);
-            touch.SetIsVertical(direction == TO_UP || direction == TO_DOWN);
+            auto touch = TouchPadScroll(point, scrollValue, speed, direction == TO_UP || direction == TO_DOWN);
             driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.touchPadTwoFingersScroll", touchPadTwoFingersScroll);
