@@ -71,7 +71,7 @@ ohos_shared_library("test_server_service") {
     "ability_runtime:app_manager",
   ]
 
-  if (defined(global_parts_info) && defined(global_parts_info.distributeddatamgr_udmf)) {
+  if (arkxtest_product_feature == "phone" || arkxtest_product_feature == "tablet") {
     external_deps += [
       "data_share:datashare_consumer",
     ]
