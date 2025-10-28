@@ -281,6 +281,13 @@ static json getPoint(ani_env *env, ani_object p)
             if (ret == ANI_TRUE) {
                 continue;
             }
+            ani_int value;
+            compareAndReport(ANI_OK,
+                             env->Object_CallMethodByName_Int(static_cast<ani_object>(ref), "toInt", nullptr, &value),
+                             "Object_CallMethodByName_Int Failed '" + std::string(cstr) + "'",
+                             "Successful!!get int proprty");
+            point[list[index]] = value;
+            continue;
         }
         ani_int value;
         compareAndReport(ANI_OK,
