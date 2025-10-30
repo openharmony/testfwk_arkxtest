@@ -187,7 +187,7 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
         return nullptr;
     } else if (resultType == nlohmann::detail::value_t::array) {
         ani_class arrayCls = nullptr;
-        if (ANI_OK != env->FindClass(Builder::BuildClass({"escompat", "Array"}).Descriptor().c_str(), &arrayCls)) {
+        if (ANI_OK != env->FindClass(Builder::BuildClass({"std", "core", "Array"}).Descriptor().c_str(), &arrayCls)) {
             HiLog::Error(LABEL, "%{public}s FindClass Array Failed", __func__);
         }
         ani_ref undefinedRef = nullptr;
