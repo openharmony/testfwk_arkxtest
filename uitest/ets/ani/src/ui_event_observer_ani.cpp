@@ -185,7 +185,6 @@ namespace OHOS::uitest {
                 if (ANI_OK != env->FindEnum(Builder::BuildEnum({"@ohos", "UiTest", "WindowChangeType"}).Descriptor().c_str(), &enumType)) {
                     HiLog::Error(LABEL, "Not found enum item: %{public}s", __func__);
                 }
-                ani_boolean ret;
                 uint8_t index = static_cast<uint8_t>(context->elmentInfo[list[i]].get<int>());
                 SetEnum(vm, env, enumType, obj, cstr, index);
             } else if (i == FOUR){
