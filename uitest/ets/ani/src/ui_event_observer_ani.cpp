@@ -238,16 +238,16 @@ namespace OHOS::uitest {
                 const auto s = context->elmentInfo[list[i]].get<string>();
                 ani_string ani_str;
                 auto ret = env->String_NewUTF8(s.c_str(), s.size(), &ani_str);
-                HiLog::Info(LABEL, " elmentInfo:  %{public}s ", list[i]);
+                HiLog::Info(LABEL, " elmentInfo:  %{public}s ", list[i].c_str());
                 if (ret != ANI_OK) {
                     HiLog::Error(LABEL,"Analysis uielementInfo fail");
                     out.exception_ = ApiCallErr(ERR_INTERNAL, "Analysis uielementInfo fail");
                     vm->DetachCurrentThread();
                     continue;
                 }
-                ani_boolean ret;
-                env->Reference_IsUndefined(reinterpret_cast<ani_ref>(ani_str), &ret);
-                if (ret == ANI_TRUE) {
+                ani_boolean r;
+                env->Reference_IsUndefined(reinterpret_cast<ani_ref>(ani_str), &r);
+                if (r == ANI_TRUE) {
                     HiLog::Error(LABEL,"Property is undefined: %{public}d", i);
                     continue;
                 }
