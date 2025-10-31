@@ -44,6 +44,19 @@ export default class OpenHarmonyTestRunner implements TestRunner {
     let mResourceManager = context.resourceManager;
     await checkMock(abilityDelegator, mResourceManager);
     hilog.info(domain, tag, '%{public}s', 'start run testcase!!!');
+    mResourceManager.getRawFileContent('data.json').then((fileData: Uint8Array) => {
+      const buffer = fileData.buffer;
+      const textDecoder = util.TextDecoder.create('utf-8', { ignoreBOM: true });
+      const jsonData= textDecoder.decodeToString(fileData, { stream: true });
+      try {
+        Hypium.setData(jsonData)
+        hilog.info(domain, tag, '%{public}s', 'OpenHarmonyTestRunner onRun end');
+      }catch(error){
+        let code = (error as BusinessError).code;
+        let message = (error as BusinessError).message;
+        hilog.error(domain, tag, `Hypium.setData failed, error code: ${code}, message: ${message}.`);
+      }
+    });
     Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
     hilog.info(domain, tag, '%{public}s', 'OpenHarmonyTestRunner onRun end');
   }
