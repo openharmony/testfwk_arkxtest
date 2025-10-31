@@ -104,7 +104,7 @@ async function startAbility(
       );
       abilityDelegator.finishTest('', UNLOCK_ERROR, () => {});
     }
-  } catch (err: Error) {
+  } catch (err) {
     hilog.info(
       0x0000,
       'testTag',
