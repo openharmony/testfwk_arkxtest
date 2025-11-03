@@ -17,11 +17,7 @@ import { Core } from '../../core';
 import { SuiteService } from '../service/SuiteService';
 import { SpecService } from '../service/SpecService';
 import { StaticSpec } from '../service/StaticSpec';
-import {
-  DataDriverData,
-  DataDriverAttr,
-  DataDriverSuite,
-} from '../../interface';
+import { DataDriverAttr, DataDriverData, DataDriverSuite, } from '../../interface';
 import { AnyType } from '../types/common';
 
 class DataDriver {
@@ -30,6 +26,7 @@ class DataDriver {
   public suiteService: SuiteService | null;
   public specService: SpecService | null;
   public data: DataDriverData;
+
   constructor(attr: DataDriverAttr) {
     this.id = 'dataDriver';
     this.data = attr.data;
