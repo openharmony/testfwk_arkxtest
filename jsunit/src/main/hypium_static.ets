@@ -22,44 +22,38 @@ import DataDriver from './module/config/DataDriver';
 import { ExpectExtend } from './module/assert/ExpectExtend';
 import { OhReport } from './module/report/OhReport';
 import { SysTestKit } from './module/kit/SysTestKit';
-import { DataDriverData, TestcaseSummaryIF } from './interface';
+import { DataDriverAttr, DataDriverData, DataDriverSuite, TestcaseSummaryIF } from './interface';
 import { AnyType } from './module/types/common';
 import { ConfigService } from './module/config/configService';
 import { SpecService } from './module/service/SpecService';
 import { SuiteService } from './module/service/SuiteService';
-import { DataDriverData, DataDriverSuite,DataDriverAttr} from './interface'
-
 
 
 export class Hypium {
   public static context = new Map<string, AnyType>();
 
-  static parseValue(value:jsonx.JsonElement) {
-    if(value.tryAsString()) {
+  static parseValue(value: jsonx.JsonElement) {
+    if (value.tryAsString()) {
       return value.tryAsString()
-    } else if(value.tryAsInteger()) {
+    } else if (value.tryAsInteger()) {
       return value.tryAsInteger()
-    } else if(value.tryAsDouble()) {
+    } else if (value.tryAsDouble()) {
       return value.tryAsDouble()
-    } else if(value.tryAsBoolean()) {
-      return  value.tryAsBoolean()
-    } else if(value.tryAsArray()) {
+    } else if (value.tryAsBoolean()) {
+      return value.tryAsBoolean()
+    } else if (value.tryAsArray()) {
       const valueArray = value.tryAsArray() as Array<jsonx.JsonElement>
-      const parsedValue: Array<object | undefined | null>= []
-      for(const val of valueArray) {
+      const parsedValue: Array<object | undefined | null> = []
+      for (const val of valueArray) {
         parsedValue.push(Hypium.parseValue(val))
       }
       return parsedValue;
     } else {
       try {
         return Hypium.parseParams(value)
-      } catch(error) {
-        let code = (error as BusinessError).code;
-        let message = (error as BusinessError).message;
-        hilog.error(domain, tag, `Hypium.parseParams failed, error code: ${code}, message: ${message}.`);
+      } catch (error) {
         return null;
       }
-
     }
   }
 
@@ -73,29 +67,27 @@ export class Hypium {
       }
       const key = v.value![0]
       const value = v.value![1]
-
       tempRecord[key] = Hypium.parseValue(value)
     }
-
     return tempRecord;
   }
 
-  static parseSuite(item:jsonx.JsonElement): DataDriverSuite {
-    let describe: string[]|undefined = []
-    if(item.tryGetElement("describe")!==undefined) {
+  static parseSuite(item: jsonx.JsonElement): DataDriverSuite {
+    let describe: string[] | undefined = []
+    if (item.tryGetElement("describe") !== undefined) {
       const describeValue = item.getArray("describe")
       for (const describeItem of describeValue) {
         const describeName = describeItem.asString()
         console.log("describeName" + describeName)
         describe?.push(describeName)
       }
-    }else{
-      describe=undefined
+    } else {
+      describe = undefined
     }
 
-    let params:  Record<string, AnyType> = {};
+    let params: Record<string, AnyType> = {};
     let paramsArray: Record<string, AnyType>[] = []
-    if(item.tryGetElement("params")!==undefined) {
+    if (item.tryGetElement("params") !== undefined) {
       const paramsElement = item.getElement("params");
       const paramsValue = paramsElement.tryAsArray();
       if (Array.isArray(paramsValue)) {
@@ -107,32 +99,32 @@ export class Hypium {
       } else {
         params = Hypium.parseParams(paramsElement)
       }
-    }else{
+    } else {
       params = {}
       console.error(" params in data cannot be undefined");
     }
 
-    let items: DataDriverSuite[]|undefined= [];
-    if (item.tryGetElement("items")!==undefined) {
-      const itemsValue =item.getArray("items");
+    let items: DataDriverSuite[] | undefined = [];
+    if (item.tryGetElement("items") !== undefined) {
+      const itemsValue = item.getArray("items");
       for (const childItem of itemsValue) {
-        const parsedChild =Hypium.parseSuite(childItem);
+        const parsedChild = Hypium.parseSuite(childItem);
         items?.push(parsedChild);
       }
-    }else{
-      items=undefined;
+    } else {
+      items = undefined;
     }
 
-    let stress:Double|undefined=1;
-    if(item.tryGetElement("stress")!==undefined) {
+    let stress: Double | undefined = 1;
+    if (item.tryGetElement("stress") !== undefined) {
       stress = item.getElement("stress").asDouble()
     }
 
-    let it:string|undefined=" ";
-    if(item.tryGetElement("it")!==undefined) {
+    let it: string | undefined = " ";
+    if (item.tryGetElement("it") !== undefined) {
       it = item.getElement("it").asString();
-    }else{
-      it=undefined;
+    } else {
+      it = undefined;
     }
 
     return {
@@ -147,19 +139,19 @@ export class Hypium {
   static setData(JsonData: string) {
     const core = Core.getInstance();
     let jsonData = JSON.parseJsonElement(JsonData);
-    let suitesValue: Array<jsonx.JsonElement>|undefined =[];
-    if(jsonData.tryGetElement("suites")!==undefined){
+    let suitesValue: Array<jsonx.JsonElement> | undefined = [];
+    if (jsonData.tryGetElement("suites") !== undefined) {
       suitesValue = jsonData.getArray("suites");
-    }else{
-      suitesValue=undefined;
+    } else {
+      suitesValue = undefined;
       throw Error('suites is null');
     }
-    const dataDriverSuite:DataDriverSuite[] = []
-    for(const item of suitesValue) {
-      const parseSuite=Hypium.parseSuite(item);
+    const dataDriverSuite: DataDriverSuite[] = []
+    for (const item of suitesValue) {
+      const parseSuite = Hypium.parseSuite(item);
       dataDriverSuite.push(parseSuite);
     }
-    const data:DataDriverData = {
+    const data: DataDriverData = {
       suites: dataDriverSuite
     }
     const dataDriver = new DataDriver({ data });
@@ -169,6 +161,7 @@ export class Hypium {
       throw Error('core is not created');
     }
   }
+
   static setTimeConfig(systemTime: number) {
     SysTestKit.systemTime = systemTime;
   }
