@@ -216,7 +216,7 @@ namespace OHOS::uitest {
                     HiLog::Error(LABEL,"Property is undefined: %{public}d", i);
                     continue;
                 }
-                if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(windowId))) {
+                if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(createInt(env, ani_int(windowId))))) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
                     continue;
