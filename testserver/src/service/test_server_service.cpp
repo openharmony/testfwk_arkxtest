@@ -391,6 +391,10 @@ namespace OHOS::testserver {
     {
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         auto sceneSessionManager = Rosen::SessionManagerLite::GetInstance().GetSceneSessionManagerLiteProxy();
+        if (sceneSessionManager == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "SceneSessionManagerProxy is nullptr");
+            return TEST_SERVER_OPERATE_WINDOW_FAILED;
+        }
         HiLog::Info(LABEL_SERVICE, "Begin to updateWindowModeById %{public}d, mode: %{public}d.", windowId, mode);
         auto ret = sceneSessionManager->UpdateWindowModeByIdForUITest(windowId, mode);
         HiLog::Info(LABEL_SERVICE, "updateWindowModeById over, ret: %{public}d", ret);
@@ -401,6 +405,10 @@ namespace OHOS::testserver {
     {
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         auto sceneSessionManager = Rosen::SessionManagerLite::GetInstance().GetSceneSessionManagerLiteProxy();
+        if (sceneSessionManager == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "SceneSessionManagerProxy is nullptr");
+            return TEST_SERVER_OPERATE_WINDOW_FAILED;
+        }
         HiLog::Info(LABEL_SERVICE, "Begin to terminateWindow %{public}d", windowId);
         auto ret = sceneSessionManager->TerminateSessionByPersistentId(windowId);
         HiLog::Info(LABEL_SERVICE, "TerminateWindow over, ret: %{public}d", ret);
@@ -411,6 +419,10 @@ namespace OHOS::testserver {
     {
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         auto sceneSessionManager = Rosen::SessionManagerLite::GetInstance().GetSceneSessionManagerLiteProxy();
+        if (sceneSessionManager == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "SceneSessionManagerProxy is nullptr");
+            return TEST_SERVER_OPERATE_WINDOW_FAILED;
+        }
         HiLog::Info(LABEL_SERVICE, "Begin to minimizeWindow %{public}d", windowId);
         auto ret = sceneSessionManager->PendingSessionToBackgroundByPersistentId(windowId);
         HiLog::Info(LABEL_SERVICE, "MinimizeWindow over, ret: %{public}d", ret);
