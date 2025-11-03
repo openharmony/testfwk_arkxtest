@@ -196,12 +196,6 @@ namespace OHOS::uitest {
                 auto index = static_cast<uint8_t>(context->elmentInfo[list[i]].get<int>());
                 env->Enum_GetEnumItemByIndex(enumType, index, &enumItem);
                 HiLog::Info(LABEL, " getComponentEventType:  %{public}d ", index);
-                ani_boolean ret;
-                env->Reference_IsUndefined(reinterpret_cast<ani_ref>(enumItem), &ret);
-                if (ret == ANI_TRUE) {
-                    HiLog::Error(LABEL,"Property is undefined: %{public}d", i);
-                    continue;
-                }
                 if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(enumItem))) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
@@ -210,12 +204,6 @@ namespace OHOS::uitest {
             } else if (i == FIVE){
                 auto windowId = static_cast<uint8_t>(context->elmentInfo[list[i]].get<int>());
                 HiLog::Info(LABEL, " getWindowId:  %{public}d ", windowId);
-                ani_boolean ret;
-                env->Reference_IsUndefined(reinterpret_cast<ani_ref>(windowId), &ret);
-                if (ret == ANI_TRUE) {
-                    HiLog::Error(LABEL,"Property is undefined: %{public}d", i);
-                    continue;
-                }
                 if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(createInt(env, ani_int(windowId))))) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
@@ -223,12 +211,6 @@ namespace OHOS::uitest {
                 }
             } else if (i == SEVEN){
                 ani_object componentRect = newRect(env, obj, context->elmentInfo[list[i]]);
-                ani_boolean ret;
-                env->Reference_IsUndefined(reinterpret_cast<ani_ref>(componentRect), &ret);
-                if (ret == ANI_TRUE) {
-                    HiLog::Error(LABEL,"Property is undefined: %{public}d", i);
-                    continue;
-                }
                 if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(componentRect))) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
