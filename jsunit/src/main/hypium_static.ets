@@ -27,7 +27,6 @@ import { AnyType } from './module/types/common';
 import { ConfigService } from './module/config/configService';
 import { SpecService } from './module/service/SpecService';
 import { SuiteService } from './module/service/SuiteService';
-import { jsonx } from "std/core"
 import { DataDriverData, DataDriverSuite,DataDriverAttr} from './interface'
 
 
