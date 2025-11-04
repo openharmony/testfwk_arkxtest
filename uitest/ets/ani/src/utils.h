@@ -87,9 +87,8 @@ namespace OHOS::uitest {
 	    for (int index = 0; index < FIVE; index++) {
 	        string tag = direct[index];
 	        if (index == FOUR) {
-	            auto ret1 = env->Object_SetPropertyByName_Ref(rect_obj, "displayId",
-					reinterpret_cast<ani_ref>(createInt(env, ani_int(num[tag]))));
-				HiLog::Info(LABEL, "Object_SetPropertyByName_Ref status, %{public}d", ret1);
+	            auto ret1 = env->Object_SetPropertyByName_Ref(rect_obj, "displayId", reinterpret_cast<ani_ref>(createInt(env, ani_int(num[tag]))));
+	            HiLog::Info(LABEL, "Object_SetPropertyByName_Ref status, %{public}d", ret1);
 	        } else {
 	            char *setter_name = strdup((Builder::BuildSetterName(tag)).c_str());
 	            if (ANI_OK != env->Class_FindMethod(cls, setter_name, nullptr, &setter)) {
