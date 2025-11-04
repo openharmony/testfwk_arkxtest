@@ -65,6 +65,7 @@ namespace OHOS::uitest {
 		}
 		return obj;
 	}
+	
 	inline ani_object newRect(ani_env *env, ani_object object, nlohmann::json num)
 	{
 	    ani_object rect_obj = {};
