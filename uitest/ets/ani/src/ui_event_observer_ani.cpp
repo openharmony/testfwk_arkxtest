@@ -155,7 +155,7 @@ namespace OHOS::uitest {
             vm->DetachCurrentThread();
             return;
         }
-        static const char *className = "L@ohos/UiTest/UIElementInfoInner;";
+        static const char *className = "@ohos.UiTest.UIElementInfoInner";
         ani_class cls;
         if (ANI_OK != env->FindClass(className, &cls)) {
             HiLog::Error(LABEL,"Not found class UIElementInfoInner");
@@ -164,7 +164,7 @@ namespace OHOS::uitest {
             return;
         }
         ani_method method;
-        if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", ":V", &method)) {
+        if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", ":", &method)) {
             HiLog::Error(LABEL,"Not found method of UIElementInfoInner");
             vm->DetachCurrentThread();
             return;
@@ -199,36 +199,40 @@ namespace OHOS::uitest {
                 if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(enumItem))) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
-                    return;
+                    break;
                 }
             } else if (i == FIVE){
                 auto windowId = static_cast<uint8_t>(context->elmentInfo[list[i]].get<int>());
-                if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(windowId))) {
+                HiLog::Info(LABEL, " getWindowId:  %{public}d ", windowId);
+                auto status = env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(createInt(env, ani_int(windowId))));
+                if (ANI_OK != status) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
-                    return;
+                    break;
                 }
             } else if (i == SEVEN){
                 ani_object componentRect = newRect(env, obj, context->elmentInfo[list[i]]);
                 if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(componentRect))) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
-                    return;
+                    break;
                 }
             } else {
                 const auto s = context->elmentInfo[list[i]].get<string>();
                 ani_string ani_str;
                 auto ret = env->String_NewUTF8(s.c_str(), s.size(), &ani_str);
+                HiLog::Info(LABEL, " elmentInfo:  %{public}s ", list[i].c_str());
                 if (ret != ANI_OK) {
                     HiLog::Error(LABEL,"Analysis uielementInfo fail");
                     out.exception_ = ApiCallErr(ERR_INTERNAL, "Analysis uielementInfo fail");
                     vm->DetachCurrentThread();
-                    return;
+                    break;
                 }
-                if (ANI_OK != env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(ani_str))) {
+                auto status = env->Object_SetPropertyByName_Ref(obj, cstr, reinterpret_cast<ani_ref>(ani_str));
+                if (ANI_OK != status) {
                     HiLog::Error(LABEL,"SetProperty fail: %{public}d", i);
                     vm->DetachCurrentThread();
-                    return;
+                    break;
                 }
             }
         }

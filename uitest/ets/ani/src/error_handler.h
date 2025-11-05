@@ -17,6 +17,7 @@
 #define ERROR_HANDLER_H
 
 #include "ani.h"
+#include <ani_signature_builder.h>
 #include "hilog/log.h"
 #include <string>
 #include <cstdint>
@@ -27,7 +28,7 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace OHOS::HiviewDFX;
 
-    constexpr const char* BUSINESS_ERROR_CLASS = "L@ohos/base/BusinessError;";
+    const char* BUSINESS_ERROR_CLASS = Builder::BuildClass({"@ohos", "base", "BusinessError"}).Descriptor().c_str();
     class ErrorHandler {
     public:
         static ani_status Throw(ani_env *env, int32_t code, const string &errMsg)
@@ -50,12 +51,12 @@ namespace OHOS::uitest {
             }
             ani_ref undefRef;
             env->GetUndefined(&undefRef);
-            ani_status status = env->FindClass("Lescompat/Error;", &cls);
+            ani_status status = env->FindClass("escompat.Error", &cls);
             if (status != ANI_OK) {
                 HiLog::Error(LABEL, "FindClass : %{public}d", status);
                 return nullptr;
             }
-            status = env->Class_FindMethod(cls, "<ctor>", "Lstd/core/String;Lescompat/ErrorOptions;:V", &method);
+            status = env->Class_FindMethod(cls, "<ctor>", "C{std.core.String}C{escompat.ErrorOptions}:", &method);
             if (status != ANI_OK) {
                 HiLog::Error(LABEL, "Class_FindMethod : %{public}d", status);
                 return nullptr;
@@ -80,7 +81,7 @@ namespace OHOS::uitest {
                 return ANI_ERROR;
             }
             ani_method method;
-            if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", "ILescompat/Error;:V", &method)) {
+            if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", "iC{escompat.Error}:", &method)) {
                 HiLog::Error(LABEL, "Not found method of BusinessError");
                 return ANI_ERROR;
             }

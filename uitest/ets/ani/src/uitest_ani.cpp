@@ -200,7 +200,8 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
             if (ANI_OK != env->Object_New(cls, com_ctor, &com_obj, reinterpret_cast<ani_object>(item))) {
                 HiLog::Error(LABEL, "%{public}s component Object new failed !!!", __func__);
             }
-            if (ANI_OK != env->Object_CallMethodByName_Void(arrayObj, "$_set", "ILstd/core/Object;:V", index, com_obj)) {
+            auto status = env->Object_CallMethodByName_Void(arrayObj, "$_set", "iC{std.core.Object}:", index, com_obj);
+            if (ANI_OK != status) {
                 HiLog::Error(LABEL, "%{public}s Object_CallMethodByName_Void set Failed", __func__);
                 break;
             }
@@ -987,13 +988,15 @@ static json getWindowChangeOptions(ani_env *env, ani_object opt)
         }
         ani_boolean ret;
         env->Reference_IsUndefined(value, &ret);
-        if (ret == ANI_TRUE) {
+        if (i == ONE) {
+            if (ret != ANI_TRUE) {
+                window_change_opts[list[i]] = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
+            }
+        } else {
+            if (ret == ANI_TRUE) {
                 window_change_opts["timeout"] = TIMEOUT;
                 continue;
             }
-        if (i == ONE) {
-            window_change_opts[list[i]] = aniStringToStdString(env, reinterpret_cast<ani_string>(value));
-        } else {
             ani_int timeout;
             compareAndReport(ANI_OK,
                              env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "toInt", nullptr, &timeout),
@@ -1020,14 +1023,16 @@ static json getComponentEventOptions(ani_env *env, ani_object opt)
         }
         ani_boolean ret;
         env->Reference_IsUndefined(value, &ret);
-        if (ret == ANI_TRUE) {
-            com_event_opts["timeout"] = TIMEOUT;
-            continue;
-        }
         if (i == ONE) {
-            ani_object on = static_cast<ani_object>(value);
-            com_event_opts[list[i]] = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
-        } else {            
+            if (ret != ANI_TRUE) {
+                ani_object on = static_cast<ani_object>(value);
+                com_event_opts[list[i]] = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
+            }
+        } else {
+            if (ret == ANI_TRUE) {
+                com_event_opts["timeout"] = TIMEOUT;
+                continue;
+            }
             ani_int timeout;
             compareAndReport(ANI_OK,
                              env->Object_CallMethodByName_Int(static_cast<ani_object>(value), "toInt", nullptr, &timeout),
@@ -1765,7 +1770,7 @@ static ani_boolean isComponentPresentWhenLongClickSync(ani_env *env, ani_object 
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.isComponentPresentWhenLongClick";
-    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativeOn")));
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on_obj, "nativeOn")));
     callInfo_.paramList_.push_back(getPoint(env, p));
     pushParam(env, duration, callInfo_, true);
     Transact(callInfo_, reply_);
@@ -1784,7 +1789,7 @@ static ani_boolean isComponentPresentWhenDragSync(ani_env *env, ani_object obj, 
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.isComponentPresentWhenDrag";
-    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativeOn")));
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on_obj, "nativeOn")));
     callInfo_.paramList_.push_back(getPoint(env, from));
     callInfo_.paramList_.push_back(getPoint(env, to));
     pushParam(env, speed, callInfo_, true);
@@ -1803,7 +1808,7 @@ static ani_boolean isComponentPresentWhenSwipeSync(ani_env *env, ani_object obj,
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
     callInfo_.apiId_ = "Driver.isComponentPresentWhenSwipe";
-    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, obj, "nativeOn")));
+    callInfo_.paramList_.push_back(aniStringToStdString(env, unwrapp(env, on_obj, "nativeOn")));
     callInfo_.paramList_.push_back(getPoint(env, from));
     callInfo_.paramList_.push_back(getPoint(env, to));
     pushParam(env, speed, callInfo_, true);
