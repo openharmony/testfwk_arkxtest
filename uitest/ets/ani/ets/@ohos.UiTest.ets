@@ -117,7 +117,7 @@ enum MouseButton {
     MOUSE_BUTTON_MIDDLE = 2,
 }
   
-interface Point {
+export interface Point {
   x: int;
   y: int;
   displayId?: int;
@@ -129,7 +129,7 @@ class PointInner implements Point {
   displayId?: int = undefined;
 }
   
-interface Rect {
+export interface Rect {
   left: int;
   top: int;
   right: int;
@@ -143,7 +143,7 @@ class RectInner implements Rect {
   bottom: int = 0;
 }
   
-interface WindowFilter {
+export interface WindowFilter {
   bundleName?: string;
   title?: string;
   focused?: boolean;
@@ -157,7 +157,7 @@ class WindowFilterInner implements WindowFilter {
   active?: boolean = undefined;
 }
 
-interface UIElementInfo {
+export interface UIElementInfo {
   bundleName: string;
   type: string;
   text: string;
@@ -169,7 +169,7 @@ class UIElementInfoInner implements UIElementInfo {
   text: string = "";
 }
 
-interface InputTextMode {
+export interface InputTextMode {
   paste?: boolean;
   addition?: boolean;
 }
@@ -179,7 +179,7 @@ class InputTextModeInner implements InputTextMode {
   addition?: boolean = undefined;
 }
 
-interface TouchPadSwipeOptions {
+export interface TouchPadSwipeOptions {
   stay?: boolean;
   speed?: int;
 }
