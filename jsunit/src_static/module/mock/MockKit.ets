@@ -23,13 +23,15 @@ let tag: string = 'testTag';
 interface MapKey {
   className: string,
   methodName: string,
-  args: object[]
+  args: object[],
+  classObj: object
 }
 
 interface MockFuncResult {
   className: string,
   methodName: string,
-  mocker: MockKit
+  mocker: MockKit,
+  classObj: object
 }
 
 export class NoResult {
@@ -76,7 +78,8 @@ export class MockKit {
       const res: MockFuncResult = {
         className: className,
         methodName: name,
-        mocker: that
+        mocker: that,
+        classObj: instance
       }
       return res
     }
@@ -177,10 +180,11 @@ export class MockKit {
       const keyClassName = key.className
       const keyMethodName = key.methodName
       const keyArgs = key.args
-      if (!keyClassName || ! keyMethodName || !keyArgs) {
+      const keyClassObj = key.classObj
+      if (!keyClassName || ! keyMethodName || !keyArgs || !keyClassObj) {
         continue
       }
-      if (keyClassName === className && keyMethodName === methodName && this.checkIsEqualOfArgs(keyArgs, args)) {
+      if (keyClassName === className && keyMethodName === methodName && this.checkIsEqualOfArgs(keyArgs, args) && keyClassObj === instance) {
         const returnValue = this.resultMap.get(hashKey)
         if (returnValue instanceof Error) {
           throw (returnValue as Error)
@@ -219,10 +223,11 @@ export class MockKit {
     this.resultMap = new Map<string, object | null | undefined>()
   }
 
-  ignoreMock(instance: object, method: Function, name: string) {
-    if (!instance || !name) {
+  ignoreMock(instance: object, method: Function) {
+    if (!instance || !method) {
       throw Error("parameters is invalid")
     }
+    const name = method.name
     const globalClassName = Class.of(instance).getName()
     if (!globalClassName) {
       throw Error("Cannot get the className of the instance")
@@ -327,13 +332,15 @@ class AfterWhen{
       const keyClassName = key.className
       const keyMethodName = key.methodName
       const keyArgs = key.args
+      const keyClassObj = key.classObj
       if (!keyClassName || ! keyMethodName || !keyArgs) {
         continue
       }
       const className = this.keyInfo.className
       const methodName = this.keyInfo.methodName
       const args = this.keyInfo.args
-      if (keyClassName === className && keyMethodName === methodName && this.checkIsEqualOfArgs(keyArgs, args)) {
+      const classObj = this.keyInfo.classObj
+      if (keyClassName === className && keyMethodName === methodName && this.checkIsEqualOfArgs(keyArgs, args) && keyClassObj === classObj) {
         found = true
         this.hashKey = hashValue
         break
@@ -407,10 +414,12 @@ export function when(mockFunc: Function) {
   return (...args: object[]) => {
     const methodName = mockFuncResult.methodName
     const className = mockFuncResult.className
+    const classObj = mockFuncResult.classObj
     const key:MapKey = {
       className,
       methodName,
-      args
+      args,
+      classObj
     }
     return new AfterWhen(key, mockFuncResult.mocker)
   }
