@@ -56,6 +56,12 @@ export function loadAndSetUpPerfTest(): boolean {
     }
 }
 
+function doSetupIfNeeded() {
+    if (PerfTestInit.GetConnectionStat() == 0) {
+        hilog.info(domain, 'perftestTag', 'On static loadAndSetUpPerfTest: ' + loadAndSetUpPerfTest());
+    }
+}
+
 enum PerfMetric {
     DURATION = 0,
     CPU_LOAD = 1,
@@ -94,18 +100,19 @@ class PerfMeasureResultInner implements PerfMeasureResult {
 }
 
 export class PerfTest {
-    static {
-        if (PerfTestInit.GetConnectionStat() == 0) {
-            hilog.info(domain, 'perftestTag', 'On static loadAndSetUpPerfTest: ' + loadAndSetUpPerfTest());
-        }
-    }
     nativePerfTest: string = '';
     public constructor(perfTest: string) {
+        doSetupIfNeeded();
         if (this.nativePerfTest == '') {
             this.nativePerfTest = perfTest;
         }
     }
-    native static create(perfTestStrategy: PerfTestStrategy): PerfTest;
+
+    public static create(perfTestStrategy: PerfTestStrategy): PerfTest {
+        doSetupIfNeeded();
+        return PerfTest.createInner(perfTestStrategy);
+    }
+    native static createInner(perfTestStrategy: PerfTestStrategy): PerfTest;
 
     private native runSync(): boolean;
     run(): Promise<void> {

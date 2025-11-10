@@ -222,8 +222,7 @@ static ani_int GetEnumValue(ani_env *env, ani_enum_item item)
 static ani_object NewPerfMeasureResult(ani_env *env, ani_object object, nlohmann::json datas)
 {
     ani_object resultObj = {};
-    const char *className = Builder::BuildClass({"@ohos", "test", "PerfTest", "PerfMeasureResultInner"})
-                            .Descriptor().c_str();
+    const char *className = "@ohos.test.PerfTest.PerfMeasureResultInner";
     ani_class cls = FindCls(env, className);
     ani_method ctor = FindCtorMethod(env, cls, nullptr);
     if (cls == nullptr || ctor == nullptr) {
@@ -418,7 +417,7 @@ static ani_boolean BindPerfTest(ani_env *env)
         return false;
     }
     ani_native_function createMethod {
-        "create", "C{@ohos/test/PerfTest/PerfTestStrategy}:C{@ohos/test/PerfTest/PerfTest}",
+        "createInner", "C{@ohos/test/PerfTest/PerfTestStrategy}:C{@ohos/test/PerfTest/PerfTest}",
          reinterpret_cast<void *>(Create)};
     if (env->Class_BindStaticNativeMethods(cls, &createMethod, ONE) != ANI_OK) {
         HiLog::Error(LABEL, "%{public}s Cannot bind static native method", __func__);
