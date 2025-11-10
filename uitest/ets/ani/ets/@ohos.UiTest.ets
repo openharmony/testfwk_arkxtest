@@ -1830,8 +1830,11 @@ export class Component {
         this.nativePointerMatrix = PointerMatrix;
       }
     }
-  
-    native static create(fingers: int, steps: int): PointerMatrix;
+    public static create(fingers: int, steps: int): PointerMatrix{
+      doSetupIfNeeded();
+      return PointerMatrix.createInner(fingers, steps);
+    }
+    native static createInner(fingers: int, steps: int): PointerMatrix;
     native setPoint(finger: int, step: int, point: Point): void;
   }
   export class On {
