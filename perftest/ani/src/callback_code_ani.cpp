@@ -54,8 +54,7 @@ namespace OHOS::perftest {
         DCHECK(env != nullptr);
         const auto jsCbId = string("js_callback#") + to_string(++g_incJsCbId);
         ani_status res;
-        const char *className = Builder::BuildClass({"@ohos", "test", "PerfTest", "FinishCallback"})
-                                .Descriptor().c_str();
+        const char *className = "@ohos.test.PerfTest.FinishCallback";
         if ((res = env->FindClass(className, &finishCallbackClass_)) != ANI_OK) {
             out.exception_ = ApiCallErr(ERR_INTERNAL, "PreprocessCallback failed");
             HiLog::Error(LABEL, "Can not find className: %{public}s, %{public}d", className, res);
@@ -66,8 +65,14 @@ namespace OHOS::perftest {
             HiLog::Error(LABEL, "Can not find ctor of class %{public}s", className);
             return "";
         }
-        HiLog::Info(LABEL, "CbId = %{public}s, CbRef = %{public}p", jsCbId.c_str(), callbackRef);
-        g_jsRefs.insert({ jsCbId, callbackRef });
+        ani_ref globalCallbackRef;
+        if (env->GlobalReference_Create(callbackRef, &globalCallbackRef) != ANI_OK) {
+            out.exception_ = ApiCallErr(ERR_INTERNAL, "Create observerRef fail");
+            HiLog::Error(LABEL, "Create globalCallbackRef failed");
+            return "";
+        }
+        HiLog::Info(LABEL, "CbId = %{public}s, CbRef = %{public}p", jsCbId.c_str(), globalCallbackRef);
+        g_jsRefs.insert({ jsCbId, globalCallbackRef });
         return jsCbId;
     }
 
