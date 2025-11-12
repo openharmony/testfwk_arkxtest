@@ -16,8 +16,8 @@
 function assertContain(actualValue, expect) {
     let result = false;
     if (Object.prototype.toString.call(actualValue).indexOf('Array')) {
-        for (let i in actualValue) {
-            if (actualValue[i] == expect[0]) {
+        for (let value of actualValue) {
+            if (value === expect[0]) {
                 result = true;
             }
         }

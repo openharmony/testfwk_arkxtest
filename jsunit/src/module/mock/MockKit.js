@@ -44,16 +44,17 @@ class MockKit {
 
   clearAll() {
     this.reset();
-    var props = Object.keys(this);
-    for (var i = 0; i < props.length; i++) {
+    let props = Object.keys(this);
+    for (const i = 0; i < props.length; i++) {
       delete this[props[i]];
     }
 
-    var props = Object.getOwnPropertyNames(this);
-    for (var i = 0; i < props.length; i++) {
+    props = Object.getOwnPropertyNames(this);
+    for (const i = 0; i < props.length; i++) {
       delete this[props[i]];
     }
-    for (var key in this) {
+    const keys = Object.keys(this)
+    for (const key of keys) {
       delete this[key];
     }
   }
