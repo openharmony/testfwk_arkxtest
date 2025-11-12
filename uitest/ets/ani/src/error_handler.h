@@ -28,7 +28,7 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace OHOS::HiviewDFX;
 
-    const char* BUSINESS_ERROR_CLASS = Builder::BuildClass({"@ohos", "base", "BusinessError"}).Descriptor().c_str();
+    constexpr const char* BUSINESS_ERROR_CLASS = "@ohos.base.BusinessError";
     class ErrorHandler {
     public:
         static ani_status Throw(ani_env *env, int32_t code, const string &errMsg)
