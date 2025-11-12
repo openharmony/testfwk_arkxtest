@@ -335,11 +335,11 @@ class SuiteService {
         }
         const targetArray = configServiceClass.split(',').map(item => item.trim()).filter(item => item !== '');
         if (this.targetSuiteArray.length === 0) {
-            for (let index in targetArray) {
-                if (targetArray[index].includes('#')) {
-                    this.targetSpecArray.push(targetArray[index]);
+            for (const target of targetArray) {
+                if (target.includes('#')) {
+                    this.targetSpecArray.push(target);
                 } else {
-                    this.targetSuiteArray.push(targetArray[index]);
+                    this.targetSuiteArray.push(target);
                 }
             }
 
@@ -1071,16 +1071,17 @@ class ExpectService {
     }
 
     addMatchers(matchers) {
-        for (const matcherName in matchers) {
+
+        for (const [matcherName, matcher] of Object.entries(matchers)) {
             if (Object.prototype.hasOwnProperty.call(matchers, matcherName)) {
-                this.matchers[matcherName] = matchers[matcherName];
+                this.matchers[matcherName] = matcher;
             }
         }
     }
 
     removeMatchers(customAssertionName) {
         if (customAssertionName === 'all') {
-            for (const matcherName in this.matchers) {
+            for (const [matcherName, matcher] of Object.entries(this.matchers)) {
                 this.matchers[matcherName] = this.customMatchers.includes(matcherName)
                     ? (() => {throw new Error(`${matcherName} is unregistered`)}) : undefined;
             }
@@ -1169,8 +1170,8 @@ class ExpectService {
         const specService = _this.coreContext.getDefaultService('spec');
         const currentRunningSpec = specService.getCurrentRunningSpec();
         const wrappedMatchers = this.initWrapMatchers(currentRunningSpec);
-        const currentRunningSuite = _this.coreContext.getDefaultService('suite').getCurrentRunningSuite();
-        for (const matcherName in this.matchers) {
+        
+        for (const [matcherName, matcher] of Object.entries(this.matchers)) {
             let result = Object.prototype.hasOwnProperty.call(this.matchers, matcherName);
             if (!result) {
                 continue;

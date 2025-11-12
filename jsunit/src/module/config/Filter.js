@@ -83,8 +83,8 @@ class TestTypesFilter {
 class NestFilter {
     filterNestName(targetSuiteArray, targetSpecArray, suiteStack, desc) {
         let targetSuiteName = '';
-        for (let key in suiteStack) {
-            targetSuiteName = targetSuiteName + '.' + suiteStack[key].description;
+        for (let suite of suiteStack) {
+            targetSuiteName = targetSuiteName + '.' + suite.description;
         }
         targetSuiteName = targetSuiteName.substring(2);
         const targetSpecName = targetSuiteName + '#' + desc;
@@ -92,8 +92,8 @@ class NestFilter {
         if (targetSpecArray.includes(targetSpecName)) {
             return false;
         }
-        for (let index in targetSuiteArray) {
-            if (targetSuiteName.startsWith(targetSuiteArray[index])) {
+        for (let targetSuite of targetSuiteArray) {
+            if (targetSuiteName.startsWith(targetSuite)) {
                 return false;
             }
         }
@@ -105,8 +105,8 @@ class NestFilter {
         if (notClass != null) {
             let notClassArray = notClass.split(',');
             let targetSuiteName = '';
-            for (let key in suiteStack) {
-                targetSuiteName = targetSuiteName + '.' + suiteStack[key].description;
+            for (let suite of suiteStack) {
+                targetSuiteName = targetSuiteName + '.' + suite.description;
             }
             targetSuiteName = targetSuiteName.substring(2);
             const targetSpecName = targetSuiteName + '#' + desc;

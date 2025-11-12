@@ -254,10 +254,10 @@ class ConfigService {
     translateParams(parameters) {
         const keySet = new Set(KEYSET);
         let targetParams = {};
-        for (const key in parameters) {
+        for (const [key, param] of Object.entries(parameters)) {
             if (keySet.has(key)) {
                 var newKey = key.replace('-s ', '');
-                targetParams[newKey] = parameters[key];
+                targetParams[newKey] = param;
             }
         }
         return targetParams;
@@ -265,9 +265,9 @@ class ConfigService {
     translateParamsToString(parameters) {
         const keySet = new Set(KEYSET);
         let targetParams = '';
-        for (const key in parameters) {
+        for (const [key, param] of Object.entries(parameters)) {
             if (keySet.has(key)) {
-                targetParams += ' ' + key + ' ' + parameters[key];
+                targetParams += ' ' + key + ' ' + param;
             }
         }
         return targetParams.trim();

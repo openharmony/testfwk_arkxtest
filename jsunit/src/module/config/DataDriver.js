@@ -22,13 +22,10 @@ const STRESS_KEY = 'stress';
 
 class ObjectUtils {
     static get(object, name, defaultValue) {
-        let result = defaultValue;
-        for (const key in object) {
-            if (key === name) {
-                return object[key];
-            }
+        if (Object.hasOwn(object, name)) {
+            return object[name];
         }
-        return result;
+        return defaultValue;
     }
 
     static has(object, key) {
