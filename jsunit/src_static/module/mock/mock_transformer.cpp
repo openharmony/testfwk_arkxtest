@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <map>
 #include <cstring>
 #include <memory>
 using namespace std;
@@ -39,8 +40,8 @@ const static string MOCKKIT_CLASS_NAME = "MockKit";
 const static string MOCKKIT_FUNC_NAME =
     "mockFunc:" + MOCKKIT_MODULE_NAME + "." + MOCKKIT_CLASS_NAME +
     ";std.core.Object;std.core.Function;std.core.Function0;";
-const static string STUB_FIELD_NAME = "LocalMocker";
-const static string SETMOCKER_NAME = "setMocker";
+const static string STUB_FIELD_NAME = "__LocalMocker__";
+const static string SETMOCKER_NAME = "__setMocker__";
 const static int32_t TWO = 2;
 const static int32_t THREE = 3;
 const static int32_t FOUR = 4;
@@ -66,6 +67,8 @@ static AbckitCoreClass *objectClass;
 static AbckitType *objectType;
 static AbckitCoreClass *doubleClass;
 static AbckitType *doubleType;
+static AbckitArktsModule *stdCoreArktsModule;
+static AbckitArktsModule *escompatArktsModule;
 
 // Convert AbckitString to string
 static std::string GetString(AbckitString *str)
@@ -144,7 +147,7 @@ static AbckitCoreFunction *FindFunction(AbckitFile *file, string moduleName, str
     return targetFunction;
 }
 
-// Find the method with the specified name in the class
+// Find the method with the specified name in the module
 static AbckitCoreFunction *ClassFindFunction(AbckitCoreClass *targetClass, string functionName)
 {
     AbckitCoreFunction *targetFunction = nullptr;
@@ -221,12 +224,13 @@ static void FindOperatorFuncInsts(AbckitGraph *graph, vector<AbckitInst*>& mockF
 }
 
 // Parse the mocked method through specific instruction
-static AbckitCoreFunction* GetMockedFunction(AbckitInst *mockedClassCtorInst, AbckitInst *lambdaClassCtorInst)
+static void GetMockedFunction(AbckitInst *mockedClassCtorInst, AbckitInst *lambdaClassCtorInst,
+                              map<AbckitCoreFunction*, vector<AbckitCoreClass*>> &mockedFunctions)
 {
     AbckitCoreFunction *mockedClassCtor = g_implG->iGetFunction(mockedClassCtorInst);
     if (g_impl->getLastError() != ABCKIT_STATUS_NO_ERROR || mockedClassCtor == nullptr) {
         std::cerr << "Get mockedClassCtor failed" << std::endl;
-        return nullptr;
+        return;
     }
     AbckitCoreClass *mockedClass = g_implI->functionGetParentClass(mockedClassCtor);
     auto mockedClassName = g_implI->classGetName(mockedClass);
@@ -234,33 +238,39 @@ static AbckitCoreFunction* GetMockedFunction(AbckitInst *mockedClassCtorInst, Ab
     AbckitCoreFunction *lambdaClassCtor = g_implG->iGetFunction(lambdaClassCtorInst);
     if (g_impl->getLastError() != ABCKIT_STATUS_NO_ERROR || lambdaClassCtor == nullptr) {
         std::cerr << "Get lambdaClassCtor failed" << std::endl;
-        return nullptr;
+        return;
     }
     AbckitCoreClass *lambdaClass = g_implI->functionGetParentClass(lambdaClassCtor);
     AbckitCoreFunction *lambdaInvokeFunc = ClassFindFunction(lambdaClass, "$_invoke");
     if (lambdaInvokeFunc == nullptr) {
-        return nullptr;
+        return;
     }
     AbckitGraph *graph = g_implI->createGraphFromFunction(lambdaInvokeFunc);
     std::vector<AbckitInst*> mockedFuncInsts;
     FindOperatorFuncInsts(graph, mockedFuncInsts, ABCKIT_ISA_API_STATIC_OPCODE_CALL_VIRTUAL);
     if (mockedFuncInsts.size() != 1) {
-        return nullptr;
+        return;
     }
     AbckitCoreFunction *calledVirtMethod = g_implG->iGetFunction(mockedFuncInsts[0]);
     AbckitCoreClass *calledVirtClass = g_implI->functionGetParentClass(calledVirtMethod);
     auto calledVirtClassName = g_implI->classGetName(calledVirtClass);
     auto calledVirtClassNameStr = GetString(calledVirtClassName);
     if (calledVirtClassNameStr != mockedClassNameStr) {
-        return nullptr;
+        return;
     }
-    return calledVirtMethod;
+    vector<AbckitCoreClass*> lambdaClasses;
+    auto it = mockedFunctions.find(calledVirtMethod);
+    if (it != mockedFunctions.end()) {
+        lambdaClasses = it->second;
+    }
+    lambdaClasses.push_back(lambdaClass);
+    mockedFunctions[calledVirtMethod] = lambdaClasses;
 }
 
 // Scan and search for mocked methods
-static vector<AbckitCoreFunction*> ScanMockFunctions(AbckitFile *file)
+static map<AbckitCoreFunction*, vector<AbckitCoreClass*>> ScanMockFunctions(AbckitFile *file)
 {
-    std::vector<AbckitInst*> mockFuncInsts;
+    map<AbckitCoreFunction*, vector<AbckitCoreClass*>> mockedFunctions;
     std::function<bool(AbckitInst *)> findIf = [&](AbckitInst *callVirtInst) {
         AbckitCoreFunction *calledVirtMethod = g_implG->iGetFunction(callVirtInst);
         auto methodName = g_implI->functionGetName(calledVirtMethod);
@@ -275,7 +285,18 @@ static vector<AbckitCoreFunction*> ScanMockFunctions(AbckitFile *file)
             return !g_hasError;
         }
         AbckitGraph *graph = g_implI->createGraphFromFunction(func);
+        std::vector<AbckitInst*> mockFuncInsts;
         FindOperatorFuncInsts(graph, mockFuncInsts, ABCKIT_ISA_API_STATIC_OPCODE_CALL_VIRTUAL, findIf);
+        for (auto mockFuncInst : mockFuncInsts) {
+            uint32_t inputCount = g_implG->iGetInputCount(mockFuncInst);
+            if (inputCount != THREE) {
+                continue;
+            }
+            AbckitInst *mockedClassCtorInst = g_implG->iGetInput(mockFuncInst, 1);
+            AbckitInst *lambdaClassCtorInst = g_implG->iGetInput(mockFuncInst, 2);
+            GetMockedFunction(mockedClassCtorInst, lambdaClassCtorInst, mockedFunctions);
+        }
+        g_impl->destroyGraph(graph);
         return !g_hasError;
     };
     std::function<void(AbckitCoreModule *)> cbModule = [&](AbckitCoreModule *mod) {
@@ -291,19 +312,6 @@ static vector<AbckitCoreFunction*> ScanMockFunctions(AbckitFile *file)
     g_implI->fileEnumerateModules(file, &cbModule, [](AbckitCoreModule *mod, void *cb) {
         return (*reinterpret_cast<std::function<bool(AbckitCoreModule *)> *>(cb))(mod);
     });
-    vector<AbckitCoreFunction*> mockedFunctions;
-    for (auto mockFuncInst : mockFuncInsts) {
-        uint32_t inputCount = g_implG->iGetInputCount(mockFuncInst);
-        if (inputCount != THREE) {
-            continue;
-        }
-        AbckitInst *mockedClassCtorInst = g_implG->iGetInput(mockFuncInst, 1);
-        AbckitInst *lambdaClassCtorInst = g_implG->iGetInput(mockFuncInst, 2);
-        AbckitCoreFunction *mockedFunction = GetMockedFunction(mockedClassCtorInst, lambdaClassCtorInst);
-        if (mockedFunction != nullptr) {
-            mockedFunctions.emplace_back(mockedFunction);
-        }
-    }
     return mockedFunctions;
 }
 
@@ -327,8 +335,6 @@ static void Initializer(AbckitFile *file)
     const char *nullTypeName = "std.core.Null";
     nullType = g_implM->createType(file, ABCKIT_TYPE_ID_REFERENCE);
     g_implM->typeSetName(nullType, nullTypeName, strlen(nullTypeName));
-    AbckitCoreClass *cls3 = g_implI->typeGetReferenceClass(nullType);
-    std::cout << "Create Null type: " << GetString(g_implI->classGetName(cls3)) << std::endl;
 
     string objectClassName = "Object";
     objectClass = FindClass(file, coreMoudleName, objectClassName);
@@ -341,6 +347,14 @@ static void Initializer(AbckitFile *file)
     doubleType = g_implM->createReferenceType(file, doubleClass);
     AbckitCoreClass *cls5 = g_implI->typeGetReferenceClass(doubleType);
     std::cout << "Create Double type: " << GetString(g_implI->classGetName(cls5)) << std::endl;
+
+    string stdCoreModuleName = "std.core";
+    AbckitCoreModule *stdCoreModule = FindModule(file, stdCoreModuleName);
+    stdCoreArktsModule = g_implArkI->coreModuleToArktsModule(stdCoreModule);
+
+    string escompatModuleName = "escompat";
+    AbckitCoreModule *escompatModule = FindModule(file, escompatModuleName);
+    escompatArktsModule = g_implArkI->coreModuleToArktsModule(escompatModule);
 }
 
 static string PraseFunctionName(string originalFunctionName)
@@ -350,6 +364,41 @@ static string PraseFunctionName(string originalFunctionName)
         return "";
     }
     return originalFunctionName.substr(0, pos1);
+}
+
+static void AnnotationModify(AbckitFile *file, vector<AbckitCoreClass*> lambdaClasses,
+                             AbckitArktsFunction *arktsFunction)
+{
+    AbckitCoreFunction *coreFunction = g_implArkI->arktsFunctionToCoreFunction(arktsFunction);
+    for (auto lambdaClass : lambdaClasses) {
+        cout << "AnnotationModify lambdaClass = " << GetString(g_implI->classGetName(lambdaClass)) << endl;
+        AbckitCoreAnnotation *targetAnno;
+        std::function<void(AbckitCoreAnnotationElement *)> cbAnnoElem = [&](AbckitCoreAnnotationElement *annoElem) {
+            auto arktsAnno = g_implArkI->coreAnnotationToArktsAnnotation(targetAnno);
+            auto arktsAnnoElem = g_implArkI->coreAnnotationElementToArktsAnnotationElement(annoElem);
+            g_implArkM->annotationRemoveAnnotationElement(arktsAnno, arktsAnnoElem);
+            struct AbckitArktsAnnotationElementCreateParams annoElementCreateParams {};
+            auto value = g_implM->createValueMethod(file, coreFunction);
+            annoElementCreateParams.value = value;
+            annoElementCreateParams.name = "value";
+            g_implArkM->annotationAddAnnotationElement(arktsAnno, &annoElementCreateParams);
+            return !g_hasError;
+        };
+        std::function<void(AbckitCoreAnnotation *)> cbAnno = [&](AbckitCoreAnnotation *anno) {
+            targetAnno = anno;
+            if (GetString(g_implI->annotationGetName(anno)) != "FunctionalReference") {
+                return !g_hasError;
+            }
+            g_implI->annotationEnumerateElements(anno, &cbAnnoElem,
+                [](AbckitCoreAnnotationElement *annoElem, void *cb) {
+                return (*reinterpret_cast<std::function<bool(AbckitCoreAnnotationElement *)> *>(cb))(annoElem);
+            });
+            return !g_hasError;
+        };
+        g_implI->classEnumerateAnnotations(lambdaClass, &cbAnno, [](AbckitCoreAnnotation *anno, void *cb) {
+            return (*reinterpret_cast<std::function<bool(AbckitCoreAnnotation *)> *>(cb))(anno);
+        });
+    }
 }
 
 // Insert CheckLocalMocker block in the mocked method
@@ -378,6 +427,52 @@ static AbckitBasicBlock *CheckLocalMockerBlock(AbckitFile *file, AbckitGraph *gr
     return checkBlock;
 }
 
+static AbckitInst *ObjectTypePackage(AbckitGraph *graph, AbckitInst *functionParam, AbckitBasicBlock *callBlock)
+{
+    AbckitType *paramType = g_implG->iGetType(functionParam);
+    AbckitTypeId paramTypeId = g_implI->typeGetTypeId(paramType);
+    AbckitArktsFunction *ctorArktsFunc;
+    bool isPackaged = true;
+    if (paramTypeId == ABCKIT_TYPE_ID_U1) {
+        const char* param[] = {"u1"};
+        ctorArktsFunc = g_implArkM->moduleImportClassMethodFromArktsV2ToArktsV2(
+            stdCoreArktsModule, "Boolean", "_ctor_", "void", param, 1);
+    } else if (paramTypeId == ABCKIT_TYPE_ID_I32) {
+        const char* param[] = {"i32"};
+        ctorArktsFunc = g_implArkM->moduleImportClassMethodFromArktsV2ToArktsV2(
+            stdCoreArktsModule, "Int", "_ctor_", "void", param, 1);
+    } else if (paramTypeId == ABCKIT_TYPE_ID_I64) {
+        const char* param[] = {"i64"};
+        ctorArktsFunc = g_implArkM->moduleImportClassMethodFromArktsV2ToArktsV2(
+            stdCoreArktsModule, "Long", "_ctor_", "void", param, 1);
+    } else if (paramTypeId == ABCKIT_TYPE_ID_F64) {
+        const char* param[] = {"f64"};
+        ctorArktsFunc = g_implArkM->moduleImportClassMethodFromArktsV2ToArktsV2(
+            stdCoreArktsModule, "Double", "_ctor_", "void", param, 1);
+    } else if (paramTypeId == ABCKIT_TYPE_ID_I16) {
+        const char* param[] = {"i16"};
+        ctorArktsFunc = g_implArkM->moduleImportClassMethodFromArktsV2ToArktsV2(
+            stdCoreArktsModule, "Short", "_ctor_", "void", param, 1);
+    } else if (paramTypeId == ABCKIT_TYPE_ID_F32) {
+        const char* param[] = {"f32"};
+        ctorArktsFunc = g_implArkM->moduleImportClassMethodFromArktsV2ToArktsV2(
+            stdCoreArktsModule, "Float", "_ctor_", "void", param, 1);
+    } else if (paramTypeId == ABCKIT_TYPE_ID_U16) {
+        const char* param[] = {"u16"};
+        ctorArktsFunc = g_implArkM->moduleImportClassMethodFromArktsV2ToArktsV2(
+            stdCoreArktsModule, "Char", "_ctor_", "void", param, 1);
+    } else {
+        isPackaged = false;
+    }
+    if (isPackaged) {
+        AbckitCoreFunction *ctorCoreFunc = g_implArkI->arktsFunctionToCoreFunction(ctorArktsFunc);
+        AbckitInst *callCtorInst = g_statG->iCreateInitObject(graph, ctorCoreFunc, 1, functionParam);
+        g_implG->bbAddInstBack(callBlock, callCtorInst);
+        return callCtorInst;
+    }
+    return functionParam;
+}
+
 // Insert CallGetReturnInfo block in the mocked method
 static AbckitBasicBlock *CallGetReturnInfoBlock(AbckitGraph *graph, vector<AbckitInst*> functionParams,
                                                 vector<AbckitInst*> nameStrInsts, AbckitInst *ldobjInst,
@@ -389,26 +484,35 @@ static AbckitBasicBlock *CallGetReturnInfoBlock(AbckitGraph *graph, vector<Abcki
     g_implG->bbAddInstBack(callBlock, nameStrInsts[0]);
     g_implG->bbAddInstBack(callBlock, nameStrInsts[1]);
     AbckitInst *paramLengthInst = g_implG->gFindOrCreateConstantI32(graph, functionParams.size() - 1);
-    AbckitInst *newArrayInst = g_statG->iCreateNewArray(graph, objectClass, paramLengthInst);
-    g_implG->bbAddInstBack(callBlock, newArrayInst);
-    AbckitInst *paramSetInst;
-    for (int32_t paramIndex = 1; paramIndex < functionParams.size(); paramIndex++) {
-        AbckitInst *paramIndexInst = g_implG->gFindOrCreateConstantI32(graph, paramIndex - 1);
-        AbckitType *paramType = g_implG->iGetType(functionParams[paramIndex]);
-        AbckitTypeId paramTypeId = g_implI->typeGetTypeId(paramType);
-        AbckitInst *paramSetInst = g_statG->iCreateStoreArray(graph, newArrayInst, paramIndexInst,
-                                                              functionParams[paramIndex], paramTypeId);
-        g_implG->bbAddInstBack(callBlock, paramSetInst);
+    const char *arrayCtorParams[] = {"i32"};
+    auto arrayCtorFunc = g_implArkM->moduleImportClassMethodFromArktsV2ToArktsV2(escompatArktsModule, "Array", "_ctor_",
+                                                                                 "void", arrayCtorParams, 1);
+    auto arrayCtorCoreFunc = g_implArkI->arktsFunctionToCoreFunction(arrayCtorFunc);
+    auto callArrayCtorInst = g_statG->iCreateInitObject(graph, arrayCtorCoreFunc, 1, paramLengthInst);
+    g_implG->bbAddInstBack(callBlock, callArrayCtorInst);
+    for (int32_t paramIndex = 0; paramIndex < functionParams.size() -1; paramIndex++) {
+        const char *arraySetParams[] = {"i32", "std.core.Object"};
+        auto arraySetFunc = g_implArkM->moduleImportClassMethodFromArktsV2ToArktsV2(escompatArktsModule, "Array",
+                                                                                    "$_set", "void", arraySetParams, 2);
+        AbckitCoreFunction *arraySetCoreFunc = g_implArkI->arktsFunctionToCoreFunction(arraySetFunc);
+        AbckitInst *paramIndexInst = g_implG->gFindOrCreateConstantI32(graph, paramIndex);
+        AbckitTypeId objectTypeId = g_implI->typeGetTypeId(objectType);
+        AbckitInst *paramObjectInst = ObjectTypePackage(graph, functionParams[paramIndex + 1], callBlock);
+        AbckitInst *callArraySetInst = g_statG->iCreateCallVirtual(graph, callArrayCtorInst, arraySetCoreFunc, TWO,
+                                                                   paramIndexInst, paramObjectInst);
+        g_implG->bbAddInstBack(callBlock, paramIndexInst);
+        g_implG->bbAddInstBack(callBlock, callArraySetInst);
     }
+
     AbckitCoreFunction *getReturnInfoFunc = ClassFindFunction(mockKitClass, "getReturnInfo");
     callGetReturnInfoInst = g_statG->iCreateCallVirtual(graph, ldobjInst, getReturnInfoFunc, FOUR, functionParams[0],
-                                                        nameStrInsts[0], nameStrInsts[1], newArrayInst);
+                                                        nameStrInsts[0], nameStrInsts[1], callArrayCtorInst);
     g_implG->bbAddInstBack(callBlock, callGetReturnInfoInst);
     AbckitInst *isNoResultInst = g_statG->iCreateIsInstance(graph, callGetReturnInfoInst, noResultType);
     g_implG->bbAddInstBack(callBlock, isNoResultInst);
     AbckitInst *zeroInst = g_implG->gFindOrCreateConstantI32(graph, 0);
     AbckitInst *ifInst = g_statG->iCreateIf(graph, isNoResultInst, zeroInst,
-        AbckitIsaApiStaticConditionCode::ABCKIT_ISA_API_STATIC_CONDITION_CODE_CC_EQ);
+        AbckitIsaApiStaticConditionCode::ABCKIT_ISA_API_STATIC_CONDITION_CODE_CC_NE);
     g_implG->bbAddInstBack(callBlock, ifInst);
     return callBlock;
 }
@@ -471,7 +575,7 @@ static AbckitGraph *GraphModify(AbckitFile *file, AbckitGraph *graph, AbckitCore
 
 // Stub in the mocked method
 static void FunctionStub(AbckitFile *file, AbckitCoreFunction *mockedFunction, AbckitCoreClass *mockedClass,
-                         string className, string functionName)
+                         vector<AbckitCoreClass*> lambdaClasses)
 {
     // Change the return value type to union type
     auto *unionTypes = new AbckitType *[2];
@@ -496,16 +600,21 @@ static void FunctionStub(AbckitFile *file, AbckitCoreFunction *mockedFunction, A
         std::cerr << "Cannot set return union type of mocked function" << std::endl;
         return;
     }
+    AnnotationModify(file, lambdaClasses, arktsFunction);
     AbckitGraph *graph = g_implI->createGraphFromFunction(mockedFunction);
+    string className = GetString(g_implI->classGetName(mockedClass));
+    string functionName = PraseFunctionName(GetString(g_implI->functionGetName(mockedFunction)));
     AbckitGraph *modifiedGraph = GraphModify(file, graph, mockedClass, className, functionName);
     if (modifiedGraph == nullptr) {
+        cout << "modifiedGraph is nullptr" << endl;
         return;
     }
     g_implM->functionSetGraph(mockedFunction, modifiedGraph);
+    g_impl->destroyGraph(graph);
     cout << functionName << " has beened stubbed" << endl;
 }
 
-// Add 'setMocker' method to the mocked class and stub in
+// Add '__setMocker__' method to the mocked class and stub in
 static void SetMockerStub(AbckitFile *file, AbckitCoreClass *mockedClass)
 {
     // Add method
@@ -548,6 +657,7 @@ static void SetMockerStub(AbckitFile *file, AbckitCoreClass *mockedClass)
     AbckitInst *originalRet = FindFirstOperatorFuncInst(graph, ABCKIT_ISA_API_STATIC_OPCODE_RETURN_VOID);
     g_implG->iInsertBefore(stobj, originalRet);
     g_implM->functionSetGraph(setMocker, graph);
+    g_impl->destroyGraph(graph);
 }
 
 // Stub in _Ctor_ of the mocked class
@@ -573,9 +683,10 @@ static void CtorFuncStub(AbckitFile *file, AbckitCoreClass *mockedClass)
     g_implG->iInsertBefore(stobj, originalRet);
     g_implG->iInsertBefore(nullInst, stobj);
     g_implM->functionSetGraph(ctorFunc, graph);
+    g_impl->destroyGraph(graph);
 }
 
-// Add 'LocalMocker' field to the mocked class
+// Add '__LocalMocker__' field to the mocked class
 static void ClassFiledStub(AbckitFile *file, AbckitCoreClass *mockedClass)
 {
     if (mockKitClass == nullptr || nullClass == nullptr) {
@@ -611,29 +722,33 @@ static void ClassFiledStub(AbckitFile *file, AbckitCoreClass *mockedClass)
 }
 
 // stub in the mocked class and method
-static void StubInMockedFunc(AbckitFile *file, AbckitCoreFunction* mockedFunction)
+static void StubInMockedFunc(AbckitFile *file, AbckitCoreFunction* mockedFunction,
+                             vector<AbckitCoreClass*> lambdaClasses)
 {
     AbckitCoreClass *mockedClass = g_implI->functionGetParentClass(mockedFunction);
     ClassFiledStub(file, mockedClass);
-    string className = GetString(g_implI->classGetName(mockedClass));
-    string functionName = PraseFunctionName(GetString(g_implI->functionGetName(mockedFunction)));
-    FunctionStub(file, mockedFunction, mockedClass, className, functionName);
+    FunctionStub(file, mockedFunction, mockedClass, lambdaClasses);
 }
 
 // Entry function, scan the mocked method and stub
 static void MockTransformer(AbckitFile *file)
 {
-    vector<AbckitCoreFunction*> mockedFunctions = ScanMockFunctions(file);
+    map<AbckitCoreFunction*, vector<AbckitCoreClass*>> mockedFunctions = ScanMockFunctions(file);
     Initializer(file);
     set<string> mockedFunctionNames;
-    for (auto mockedFunction : mockedFunctions) {
+    for (auto it = mockedFunctions.begin(); it != mockedFunctions.end(); ++it) {
+        AbckitCoreFunction *mockedFunction = it->first;
+        vector<AbckitCoreClass*> lambdaClasses = it->second;
         string mockedFunctionName = GetString(g_implI->functionGetName(mockedFunction));
         if (mockedFunctionNames.find(mockedFunctionName) != mockedFunctionNames.end()) {
-            cout << "Function has been mocked" << endl;
+            cout << "Function: "<< mockedFunctionName <<" has been mocked" << endl;
             continue;
         }
         cout << "mockedFunction = " << mockedFunctionName << endl;
-        StubInMockedFunc(file, mockedFunction);
+        for (auto lambdaClass : lambdaClasses) {
+            cout << "lambdaClass = " << GetString(g_implI->classGetName(lambdaClass)) << endl;
+        }
+        StubInMockedFunc(file, mockedFunction, lambdaClasses);
         mockedFunctionNames.insert(mockedFunctionName);
     }
 }
