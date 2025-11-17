@@ -107,7 +107,7 @@ class Core {
             }
         }
         for (const [api, value] of Object.entries(apis)) {
-            globalThis[api] = value;
+            this[api] = value;
         }
     }
 
