@@ -84,7 +84,7 @@ class Core {
     subscribeEvent(serviceName, serviceObj) {
         const eventObj = this.events[serviceName];
         if (eventObj) {
-            for (const attr in eventObj) {
+            for (const [attr, event] of Object.entries(eventObj)) {
                 eventObj[attr]['subscribeEvent'](serviceObj);
             }
         }
@@ -95,19 +95,19 @@ class Core {
         if (!eventObj) {
             return;
         }
-        for (const attr in eventObj) {
+        for (const [attr, event] of Object.entries(eventObj)) {
             await eventObj[attr][eventName]();
         }
     }
 
     addToGlobal(apis) {
         if (typeof globalThis !== 'undefined') {
-            for (let api in apis) {
-                globalThis[api] = apis[api];
+            for (const [api, value] of Object.entries(apis)) {
+                globalThis[api] = value;
             }
         }
-        for (const api in apis) {
-            this[api] = apis[api];
+        for (const [api, value] of Object.entries(apis)) {
+            this[api] = value;
         }
     }
 
@@ -124,10 +124,9 @@ class Core {
         this.subscribeEvent('suite', this.getDefaultService('report'));
         this.subscribeEvent('task', this.getDefaultService('report'));
         const context = this;
-        for (const key in this.services) {
-            const serviceObj = this.services[key];
-            for (const serviceID in serviceObj) {
-                const service = serviceObj[serviceID];
+        
+        for (const [key, serviceObj] of Object.entries(this.services)) {
+            for (const [serviceID, service] of Object.entries(serviceObj)) {
                 service.init(context);
 
                 if (typeof service.apis !== 'function') {

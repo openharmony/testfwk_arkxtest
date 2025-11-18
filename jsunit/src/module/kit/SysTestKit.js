@@ -74,7 +74,7 @@ export default class SysTestKit {
     }
   }
   static async print(message) {
-    if ('printSync' in SysTestKit.delegator) {
+    if (Object.hasOwn(SysTestKit.delegator, 'printSync')) {
       console.info(`${TAG}printSync called ...`);
       SysTestKit.delegator.printSync(message);
     } else {
