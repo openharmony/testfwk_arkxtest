@@ -340,11 +340,11 @@ class MockKit {
         originalObject,
         f.propName
       );
+      f.mocker = this;
+      this.mFunctions.push(f);
+      this.extend(f, new ExtendInterface(this));
+      this.mockFuncResultMap.set(info, f);
     }
-    f.mocker = this;
-    this.mFunctions.push(f);
-    this.extend(f, new ExtendInterface(this));
-    this.mockFuncResultMap.set(info, f);
     return f;
   }
 
@@ -358,8 +358,8 @@ class MockKit {
 
   mockProperty(obj, propertyName, value) {
     let originalValue = obj[propertyName];
-    if (!originalValue) {
-        throw new Error('No such property:' + propertyName);
+    if (originalValue === undefined) {
+      throw new Error('No such property:' + propertyName);
     }
     let isMocked = false;
     for (const [key, value] of this.propertyValueMap) {
