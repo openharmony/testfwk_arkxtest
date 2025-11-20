@@ -17,13 +17,6 @@ import ExtendInterface from './ExtendInterface';
 import VerificationMode from './VerificationMode';
 import ArgumentMatchers from './ArgumentMatchers';
 
-class mockFuncInfo {
-  constructor(obj, methodName) {
-    this.obj = obj;
-    this.methodName = methodName;
-  }
-}
-
 class MockKit {
   constructor() {
     this.mFunctions = [];
@@ -331,7 +324,10 @@ class MockKit {
           return value;  
         }
       }
-      const info = new mockFuncInfo(originalObject, name);
+      const info = {
+        obj : originalObject,
+        methodName : name
+      };
       originalObject[name] = f;
       this.recordMockedMethod.set(info, originalMethod);
       f.propName = name;
@@ -369,7 +365,10 @@ class MockKit {
       }
     }
     if (!isMocked) {
-      const info = new mockFuncInfo(obj, propertyName)  
+      const info = {
+        obj : obj,
+        methodName : propertyName
+      };
       this.propertyValueMap.set(info, originalValue);
     }
     obj[propertyName] = value;
