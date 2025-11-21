@@ -26,6 +26,7 @@ class MockKit {
     this.mockObj = null;
     this.recordMockedMethod = new Map();
     this.propertyValueMap = new Map();
+    this.mockFuncResultMap = new Map();
   }
 
   init() {
@@ -67,13 +68,13 @@ class MockKit {
       throw new Error('Not a object or static class');
     }
     this.recordMockedMethod.forEach(function (value, key, map) {
-      if (key) {
-        obj[key] = value;
+      if (key.obj === obj) {
+        obj[key.methodName] = value;
       }
     });
     this.propertyValueMap.forEach(function (value, key, map) {
-      if (key) {
-        obj[key] = value;
+      if (key.obj === obj) {
+        obj[key.methodName] = value;
       }
     });
   }
@@ -89,14 +90,17 @@ class MockKit {
     if (typeof method !== 'string') {
       name = method.propName;
     }
-    let og = this.recordMockedMethod.get(name);
-    if (og) {
-      obj[name] = og;
-      this.recordMockedMethod.set(name, undefined);
+    for (const [key, value] of this.recordMockedMethod) {
+      if (key.obj === obj && key.methodName === name) {
+        obj[name] = value;
+        this.recordMockedMethod.delete(key);
+      }
     }
-    let op = this.propertyValueMap.get(name);
-    if (op) {
-      obj[name] = op;
+    for (const [key, value] of this.propertyValueMap) {
+      if (key.obj === obj && key.methodName === name) {
+        obj[name] = value;
+        this.propertyValueMap.delete(key);
+      }
     }
   }
 
@@ -289,6 +293,11 @@ class MockKit {
 
   mockFunc(originalObject, originalMethod) {
     let tmp = this;
+    let methodName = originalMethod.name;
+    if (originalMethod.propName) {
+      methodName = originalMethod.propName;
+      originalMethod = originalObject[methodName];
+    }
     this.originalMethod = originalMethod;
     let f = function () {
       let args = arguments;
@@ -298,6 +307,8 @@ class MockKit {
       }
       if (action) {
         return action.apply(this, args);
+      } else {
+        return originalMethod.apply(this, args);
       }
     };
 
@@ -309,18 +320,28 @@ class MockKit {
         throw new Error('Not a function');
       }
       var name = this.findName(originalObject, originalMethod);
+      for (const [key, value] of this.mockFuncResultMap) {
+        if (key.obj === originalObject && key.methodName === name) {
+          return value;  
+        }
+      }
+      const info = {
+        obj : originalObject,
+        methodName : name
+      };
       originalObject[name] = f;
-      this.recordMockedMethod.set(name, originalMethod);
+      this.recordMockedMethod.set(info, originalMethod);
       f.propName = name;
       f.originalFromPrototype = this.isFunctionFromPrototype(
         f.original,
         originalObject,
         f.propName
       );
+      f.mocker = this;
+      this.mFunctions.push(f);
+      this.extend(f, new ExtendInterface(this));
+      this.mockFuncResultMap.set(info, f);
     }
-    f.mocker = this;
-    this.mFunctions.push(f);
-    this.extend(f, new ExtendInterface(this));
     return f;
   }
 
@@ -334,10 +355,23 @@ class MockKit {
 
   mockProperty(obj, propertyName, value) {
     let originalValue = obj[propertyName];
-    if (!originalValue) {
-        throw new Error('No such property:' + propertyName);
+    if (originalValue === undefined) {
+      throw new Error('No such property:' + propertyName);
     }
-    this.propertyValueMap.set(propertyName, originalValue);
+    let isMocked = false;
+    for (const [key, value] of this.propertyValueMap) {
+      if (key.obj === obj && key.methodName === propertyName) {
+        isMocked = true;
+        break;
+      }
+    }
+    if (!isMocked) {
+      const info = {
+        obj : obj,
+        methodName : propertyName
+      };
+      this.propertyValueMap.set(info, originalValue);
+    }
     obj[propertyName] = value;
   }
 
