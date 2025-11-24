@@ -395,14 +395,18 @@ ohos_unittest("uitest_extension_unittest") {
   deps = [
     ":uitest_addon",
     ":uitest_core",
+    ":uitest_record",
   ]
   include_dirs = [
     "${source_root}/addon",
     "${source_root}/core",
+    "${source_root}/record",
   ]
   external_deps = [
     "hilog:libhilog",
     "json:nlohmann_json_static",
+    "input:libmmi-client",
+    "ipc:ipc_single",
   ]
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
