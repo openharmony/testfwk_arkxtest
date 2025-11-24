@@ -706,8 +706,22 @@ export class Component {
     private native getBundleNameSync(): string;
     private native getTitleSync(): string;
     private native winGetBoundsSync(): Rect;
-    private native getDisplayIdSync(): int;
+    private native winGetDisplayIdSync(): int;
 
+    getDisplayId(): Promise<int> {
+        let promise = new Promise<int>((resolve: (value: int) => void, reject: (error: Error) => void) => {
+        let promise1 = taskpool.execute((): int => this.winGetDisplayIdSync());
+            promise1.then((e: NullishType) => {
+                let value : int = e as int;
+                resolve(value);
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
+    
     split(): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.splitSync());
