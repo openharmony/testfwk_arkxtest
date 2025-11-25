@@ -275,7 +275,11 @@ do { \
             auto layout = tree.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
             callback(Text{layout.c_str(), layout.length()});
         } else if (strcmp(name.data, "copyScreen") == 0) {
-            float scale = ReadArgFromJson<float>(options, "scale", 1.0f);
+            float scale = ReadArgFromJson<float>(options, "scale", 0.5f);
+            if (scale <= 0 || scale >= 1.0f) {
+                LOG_E("scale must br range between 0 and 1");
+                return RETCODE_FAIL;
+            }
             int32_t displayId = ReadArgFromJson<int32_t>(options, "displayId", UNASSIGNED);
             StartScreenCopy(scale, displayId, [callback](uint8_t *data, size_t len) {
                 callback(Text{reinterpret_cast<const char *>(data), len});
