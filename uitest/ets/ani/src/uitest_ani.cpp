@@ -2077,6 +2077,20 @@ static ani_ref getBoundsSync(ani_env *env, ani_object obj)
     return r;
 }
 
+static ani_int winGetDisplayIdSync(ani_env *env, ani_object obj)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.apiId_ = "UiWindow.getDisplayId";
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeWindow"));
+    Transact(callInfo_, reply_);
+    ani_ref result = UnmarshalReply(env, callInfo_, reply_);
+    if (result == nullptr) {
+        return 0;
+    }
+    return reply_.resultValue_.get<int32_t>();
+}
+
 static ani_boolean BindWindow(ani_env *env)
 {
     ani_class cls;
@@ -2100,6 +2114,7 @@ static ani_boolean BindWindow(ani_env *env)
         ani_native_function{"getBundleNameSync", nullptr, reinterpret_cast<void *>(getBundleNameSync)},
         ani_native_function{"getTitleSync", nullptr, reinterpret_cast<void *>(getTitleSync)},
         ani_native_function{"winGetBoundsSync", nullptr, reinterpret_cast<void *>(getBoundsSync)},
+        ani_native_function{"winGetDisplayIdSync", nullptr, reinterpret_cast<void *>(winGetDisplayIdSync)},
     };
 
     if (ANI_OK != env->Class_BindNativeMethods(cls, methods.data(), methods.size())) {
