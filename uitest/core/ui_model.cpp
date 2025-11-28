@@ -28,6 +28,11 @@ namespace OHOS::uitest {
         bounds_.displayId_ = displayId_;
     }
 
+    void Widget::SetOrigBounds(const Rect &bounds)
+    {
+        origBounds_ = bounds;
+    }
+
     string Widget::ToStr() const
     {
         stringstream os;
