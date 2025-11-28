@@ -222,6 +222,7 @@ namespace OHOS::uitest {
         Rect visibleRect{nodeOriginRect.GetLeftTopXScreenPostion(), nodeOriginRect.GetRightBottomXScreenPostion(),
                          nodeOriginRect.GetLeftTopYScreenPostion(), nodeOriginRect.GetRightBottomYScreenPostion()};
         widget.SetBounds(visibleRect);
+        widget.SetOrigBounds(visibleRect);
         widget.SetAttr(UiAttr::ACCESSIBILITY_ID, std::to_string(element.GetAccessibilityId()));
         widget.SetAttr(UiAttr::ID, element.GetInspectorKey());
         widget.SetAttr(UiAttr::TEXT, element.GetContent());

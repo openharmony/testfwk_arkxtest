@@ -1162,6 +1162,22 @@ namespace OHOS::uitest {
         }
     }
 
+    static bool CheckPointDisplayId(Point &from, Point &to, ApiCallErr &err)
+    {
+        if (from.displayId_ == UNASSIGNED && to.displayId_ != UNASSIGNED) {
+            from.displayId_ = to.displayId_;
+        }
+        if (from.displayId_ != UNASSIGNED && to.displayId_ == UNASSIGNED) {
+            to.displayId_ = from.displayId_;
+        }
+        if (from.displayId_ != UNASSIGNED) {
+            out.exception_ = ApiCallErr(ERR_INVALID_PARAM,
+                "The start point and end point must belong to the same display.");
+            return false;
+        }
+        return true;
+    }
+
     static void TouchParamsConverts(const ApiCallInfo &in, Point &point0, Point &point1, UiOpArgs &uiOpArgs)
     {
         auto params = in.paramList_;
@@ -1246,9 +1262,7 @@ namespace OHOS::uitest {
         if (out.exception_.code_ != NO_ERROR) {
             return;
         }
-        if (fromPoint.displayId_ != toPoint.displayId_) {
-            out.exception_ = ApiCallErr(ERR_INVALID_INPUT,
-                "The start point and end point must belong to the same display.");
+        if (!CheckPointDisplayId(fromPoint, toPoint)) {
             return;
         }
         uiOpArgs.swipeVelocityPps_ = speed;
@@ -1268,9 +1282,7 @@ namespace OHOS::uitest {
         Point fromPoint = ParsePointFromJson(fromPointJson);
         Point toPoint = ParsePointFromJson(toPointJson);
         speed = ValidateAndGetSpeed(speed);
-        if (fromPoint.displayId_ != toPoint.displayId_) {
-            out.exception_ = ApiCallErr(ERR_INVALID_INPUT,
-                "The start point and end point must belong to the same display.");
+        if (!CheckPointDisplayId(fromPoint, toPoint)) {
             return;
         }
         uiOpArgs.swipeVelocityPps_ = speed;
@@ -1327,9 +1339,7 @@ namespace OHOS::uitest {
                 return;
             }
             if (op == TouchOp::SWIPE || op == TouchOp::DRAG) {
-                if (point0.displayId_ != point1.displayId_) {
-                    out.exception_ = ApiCallErr(ERR_INVALID_PARAM,
-                        "The start point and end point must belong to the same display.");
+                if (!CheckPointDisplayId(point0, point1))
                     return;
                 }
                 auto touch = GenericSwipe(op, point0, point1);
@@ -1430,9 +1440,7 @@ namespace OHOS::uitest {
                 uiOpArgs.swipeStepsCounts_ = distance / stepLength;
             }
             CheckSwipeVelocityPps(uiOpArgs);
-            if (from.displayId_ != to.displayId_) {
-                out.exception_ = ApiCallErr(ERR_INVALID_INPUT,
-                    "The start point and end point must belong to the same display.");
+            if (!CheckPointDisplayId(from, to)) {
                 return;
             }
             auto touch = GenericSwipe(op, from, to);
@@ -1514,9 +1522,7 @@ namespace OHOS::uitest {
             auto displayId2 = ReadArgFromJson<int32_t>(pointJson2, "displayId", UNASSIGNED);
             auto from = Point(pointJson1["x"], pointJson1["y"], displayId1);
             auto to = Point(pointJson2["x"], pointJson2["y"], displayId2);
-            if (from.displayId_ != to.displayId_) {
-                out.exception_ = ApiCallErr(ERR_INVALID_INPUT,
-                    "The start point and end point must belong to the same display.");
+            if (!CheckPointDisplayId(from, to)) {
                 return;
             }
             UiOpArgs uiOpArgs;
@@ -1700,6 +1706,9 @@ namespace OHOS::uitest {
                 uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_THREE, uiOpArgs.touchPressure_);
             }
             if (op == TouchOp::SWIPE) {
+                if (!CheckPointDisplayId(point0, point1)) {
+                    return;
+                }
                 auto touch = GenericSwipe(op, point0, point1);
                 driver.PerformPenTouch(touch, uiOpArgs, out.exception_);
             } else {

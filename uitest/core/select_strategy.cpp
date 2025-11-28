@@ -141,7 +141,7 @@ namespace OHOS::uitest {
             widget.SetAttr(UiAttr::VISIBLE, "true");
         }
         if (widget.GetAttr(UiAttr::CLIP) == "true") {
-            clipers_.insert(make_pair(widget.GetAttr(UiAttr::HIERARCHY), widget.GetBounds()));
+            clipers_.insert(make_pair(widget.GetAttr(UiAttr::HIERARCHY), widget.GetOrigBounds()));
         }
     }
 
