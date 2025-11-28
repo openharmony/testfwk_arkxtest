@@ -1162,7 +1162,7 @@ namespace OHOS::uitest {
         }
     }
 
-    static bool CheckPointDisplayId(Point &from, Point &to, ApiCallErr &err)
+    static bool CheckPointDisplayId(Point &from, Point &to, ApiReplyInfo &out)
     {
         if (from.displayId_ == UNASSIGNED && to.displayId_ != UNASSIGNED) {
             from.displayId_ = to.displayId_;
@@ -1171,7 +1171,7 @@ namespace OHOS::uitest {
             to.displayId_ = from.displayId_;
         }
         if (from.displayId_ != UNASSIGNED) {
-            out.exception_ = ApiCallErr(ERR_INVALID_PARAM,
+            out.exception_ = ApiCallErr(ERR_INVALID_INPUT,
                 "The start point and end point must belong to the same display.");
             return false;
         }
@@ -1262,7 +1262,7 @@ namespace OHOS::uitest {
         if (out.exception_.code_ != NO_ERROR) {
             return;
         }
-        if (!CheckPointDisplayId(fromPoint, toPoint)) {
+        if (!CheckPointDisplayId(fromPoint, toPoint, out)) {
             return;
         }
         uiOpArgs.swipeVelocityPps_ = speed;
@@ -1282,7 +1282,7 @@ namespace OHOS::uitest {
         Point fromPoint = ParsePointFromJson(fromPointJson);
         Point toPoint = ParsePointFromJson(toPointJson);
         speed = ValidateAndGetSpeed(speed);
-        if (!CheckPointDisplayId(fromPoint, toPoint)) {
+        if (!CheckPointDisplayId(fromPoint, toPoint, out)) {
             return;
         }
         uiOpArgs.swipeVelocityPps_ = speed;
@@ -1339,7 +1339,7 @@ namespace OHOS::uitest {
                 return;
             }
             if (op == TouchOp::SWIPE || op == TouchOp::DRAG) {
-                if (!CheckPointDisplayId(point0, point1))
+                if (!CheckPointDisplayId(point0, point1, out)) {
                     return;
                 }
                 auto touch = GenericSwipe(op, point0, point1);
@@ -1440,7 +1440,7 @@ namespace OHOS::uitest {
                 uiOpArgs.swipeStepsCounts_ = distance / stepLength;
             }
             CheckSwipeVelocityPps(uiOpArgs);
-            if (!CheckPointDisplayId(from, to)) {
+            if (!CheckPointDisplayId(from, to, out)) {
                 return;
             }
             auto touch = GenericSwipe(op, from, to);
@@ -1522,7 +1522,7 @@ namespace OHOS::uitest {
             auto displayId2 = ReadArgFromJson<int32_t>(pointJson2, "displayId", UNASSIGNED);
             auto from = Point(pointJson1["x"], pointJson1["y"], displayId1);
             auto to = Point(pointJson2["x"], pointJson2["y"], displayId2);
-            if (!CheckPointDisplayId(from, to)) {
+            if (!CheckPointDisplayId(from, to, out)) {
                 return;
             }
             UiOpArgs uiOpArgs;
@@ -1678,7 +1678,7 @@ namespace OHOS::uitest {
             UiOpArgs uiOpArgs;
             auto point0Json = ReadCallArg<json>(in, INDEX_ZERO);
             auto displayId = ReadArgFromJson<int32_t>(point0Json, "displayId", UNASSIGNED);
-            const auto point0 = Point(point0Json["x"], point0Json["y"], displayId);
+            auto point0 = Point(point0Json["x"], point0Json["y"], displayId);
             const auto screenSize = driver.GetDisplaySize(out.exception_, displayId);
             const auto screen = Rect(0, screenSize.px_, 0, screenSize.py_);
             if (!RectAlgorithm::IsInnerPoint(screen, point0)) {
@@ -1706,7 +1706,7 @@ namespace OHOS::uitest {
                 uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_THREE, uiOpArgs.touchPressure_);
             }
             if (op == TouchOp::SWIPE) {
-                if (!CheckPointDisplayId(point0, point1)) {
+                if (!CheckPointDisplayId(point0, point1, out)) {
                     return;
                 }
                 auto touch = GenericSwipe(op, point0, point1);
