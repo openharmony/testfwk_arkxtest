@@ -17,60 +17,70 @@
 import { Core } from './core';
 import { AnyType, HookFuncType, ItfnType } from './module/types/common';
 
-const core = Core.getInstance();
 const hypiumDescribe = (desc: string, func: () => void): void => {
+  const core = Core.getInstance();
   if (core) {
     (core as Core).describe(desc, func);
   }
 };
 
 const hypiumIt = (desc: string, filter: int, func: ItfnType) => {
+  const core = Core.getInstance();
   if (core) {
     (core as Core).it(desc, filter, func);
   }
 };
 const hypiumBeforeItSpecified = (itDescs: string | string[], func: HookFuncType) => {
+  const core = Core.getInstance();
   if (core) {
     (core as Core).beforeItSpecified(itDescs, func);
   }
 };
 
 const hypiumAfterItSpecified = (itDescs: string | string[], func: HookFuncType) => {
+  const core = Core.getInstance();
   if (core) {
     (core as Core).afterItSpecified(itDescs, func);
   }
 };
 const hypiumBeforeEach = (func: HookFuncType) => {
+  const core = Core.getInstance();
   if (core) {
     (core as Core).beforeEach(func);
   }
 };
 const hypiumBeforeEachIt = (func: HookFuncType) => {
+  const core = Core.getInstance();
   if (core) {
     (core as Core).beforeEachIt(func);
   }
 };
 const hypiumAfterEach = (func: HookFuncType) => {
+  const core = Core.getInstance();
   if (core) {
     (core as Core).afterEach(func);
   }
 };
 const hypiumAfterEachIt = (func: HookFuncType) => {
+  const core = Core.getInstance();
   if (core) {
     (core as Core).afterEachIt(func);
   }
 };
 const hypiumBeforeAll = (func: HookFuncType) => {
+  const core = Core.getInstance();
   if (core) {
     (core as Core).beforeAll(func);
   }
 };
 const hypiumAfterAll = (func: HookFuncType) => {
+  const core = Core.getInstance();
   if (core) {
     (core as Core).afterAll(func);
   }
 };
 const hypiumExpect = (actualValue?: AnyType) => {
+  const core = Core.getInstance();
   if (core) {
     const expect = (core as Core).expect;
     if (expect) {
@@ -80,11 +90,13 @@ const hypiumExpect = (actualValue?: AnyType) => {
 };
 
 const hypiumXdescribe = (desc: string, func: () => void) => {
+  const core = Core.getInstance();
   if (core) {
     (core as Core).xdescribe(desc, func, '');
   }
 };
 const hypiumXdescribeReason = (reason: string) => {
+  const core = Core.getInstance();
   return (desc: string, func: () => void) => {
     if (core) {
       (core as Core).xdescribe(desc, func, reason);
@@ -92,11 +104,13 @@ const hypiumXdescribeReason = (reason: string) => {
   };
 };
 const hypiumXit = (desc: string, filter: int, func: ItfnType) => {
+  const core = Core.getInstance();
   if (core) {
     (core as Core).xit(desc, filter, func, '');
   }
 };
 const hypiumXitReason = (reason: string) => {
+  const core = Core.getInstance();
   return (desc: string, filter: int, func: (() => void) | (() => Promise<void>)) => {
     if (core) {
       (core as Core).xit(desc, filter, func, reason);
