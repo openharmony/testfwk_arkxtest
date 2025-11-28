@@ -1170,7 +1170,7 @@ namespace OHOS::uitest {
         if (from.displayId_ != UNASSIGNED && to.displayId_ == UNASSIGNED) {
             to.displayId_ = from.displayId_;
         }
-        if (from.displayId_ != UNASSIGNED) {
+        if (from.displayId_ != to.displayId_) {
             out.exception_ = ApiCallErr(ERR_INVALID_INPUT,
                 "The start point and end point must belong to the same display.");
             return false;
