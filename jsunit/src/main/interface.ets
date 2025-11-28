@@ -251,3 +251,17 @@ export interface DataDriverData {
 export interface DataDriverAttr {
   data: DataDriverData;
 }
+
+export interface SendData {
+  currentThreadName: string;
+  summary: TestcaseSummaryIF;
+}
+
+export interface TestcaseRet {
+  total: int;
+  failure: int;
+  error: int;
+  pass: int;
+  ignore: int;
+  duration: int;
+}
