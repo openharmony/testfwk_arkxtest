@@ -321,7 +321,7 @@ export class Hypium {
         let data = msg.getObject() as SendData;
         let currentThreadName = data.currentThreadName;
         hilog.info(domain, tag, 'zzz receview data from ' + currentThreadName +" " + JSON.stringify(data))
-        worker.quitSafely();
+        worker.quit();
         let flag: boolean = worker.isAlive();
         resolve(data.summary);
       }
@@ -337,7 +337,7 @@ export class Hypium {
       worker.setUncaughtExceptionHandler((e: Error) => {
         hilog.info(domain, tag, 'worker error: ' + JSON.stringify(e))
         reject(e);
-        worker.quitSafely();
+        worker.quit();
       });
     });
     return workerPromise;
