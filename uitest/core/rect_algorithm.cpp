@@ -62,14 +62,9 @@ namespace OHOS::uitest {
             }
             current = next;
         }
-        for (auto rect : current) {
-            if (rect.IsValid()) {
-                result.push_back(rect);
-            }
-        }
         Rect maxRect(0, 0, 0, 0);
-        for (auto rect : result) {
-            if (rect.GetArea() > maxRect.GetArea()) {
+        for (auto rect : current) {
+            if (rect.IsValid() && rect.GetArea() > maxRect.GetArea()) {
                 maxRect = rect;
             }
         }
