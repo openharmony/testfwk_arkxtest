@@ -47,17 +47,17 @@ namespace OHOS::uitest {
                     next.push_back(rect);
                     continue;
                 }
-                    if (intersection.bottom_ < rect.bottom_) {
-                        next.push_back(Rect(rect.left_, rect.right_, intersection.bottom_, rect.bottom_));
-                    }
-                    if (rect.top_ < intersection.top_) {
-                        next.push_back(Rect(rect.left_, rect.right_, rect.top_, intersection.top_));
-                    }
-                    if (rect.left_ < intersection.left_) {
-                        next.push_back(Rect(rect.left_, intersection.left_, rect.top_, rect.bottom_));
-                    }
-                    if (intersection.right_ < rect.right_) {
-                        next.push_back(Rect(intersection.right_, rect.right_, rect.top_, rect.bottom_));
+                if (intersection.bottom_ < rect.bottom_) {
+                    next.push_back(Rect(rect.left_, rect.right_, intersection.bottom_, rect.bottom_));
+                }
+                if (rect.top_ < intersection.top_) {
+                    next.push_back(Rect(rect.left_, rect.right_, rect.top_, intersection.top_));
+                }
+                if (rect.left_ < intersection.left_) {
+                    next.push_back(Rect(rect.left_, intersection.left_, rect.top_, rect.bottom_));
+                }
+                if (intersection.right_ < rect.right_) {
+                    next.push_back(Rect(intersection.right_, rect.right_, rect.top_, rect.bottom_));
                 }
             }
             current = next;
