@@ -181,10 +181,6 @@ export class Hypium {
     abilityDelegator: abilityDelegatorRegistry.AbilityDelegator,
     abilityDelegatorArguments: abilityDelegatorRegistry.AbilityDelegatorArgs
   ) {
-    if (!Core.isInit) {
-      let core = new Core();
-      Core.instance.set(core);
-    }
     const core = Core.getInstance();
     const expectExtend = new ExpectExtend({
       id: 'extend',
@@ -269,6 +265,7 @@ export class Hypium {
   ) {
     let workerPromiseArray: Promise<TestcaseSummaryIF>[] = [];
     let startTime = SysTestKit.getRealTime();
+    Core.getInstance();
     for (let i = 0; i < workerNum; i++) {
       const workerPromise: Promise<TestcaseSummaryIF> = Hypium.createEAWorkerPromise(i, testsuite, abilityDelegator,
         abilityDelegatorArguments) as Promise<TestcaseSummaryIF>;
@@ -329,8 +326,7 @@ export class Hypium {
       worker.postTask(()=> {
         let core = new Core();
         core.msgHandle = msgHandler;
-        Core.instance.set(core);
-        Core.isInit = true;
+        Core.instance!.set(core);
         hilog.info(domain, tag, 'zzzz Run test in Worker ' + worker.getName())
         Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
       })
