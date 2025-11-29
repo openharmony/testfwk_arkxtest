@@ -39,10 +39,13 @@ type ServiceType = SuiteService
   | DataDriver;
 type EventType = SuiteEvent | SpecEvent | TaskEvent;
 class Core {
-  public static isInit = false;
-  public static instance: WorkerLocal<Core> = new WorkerLocal<Core>();
+  public static instance: WorkerLocal<Core> | null = null;
   public static getInstance() {
-    return Core.instance.get();
+    if (!Core.instance) {
+      let core = new Core();
+      Core.instance = new WorkerLocal<Core>(() => core)
+    }
+    return Core.instance!.get() as Core;
   }
 
   public services: Map<string, Map<string, ServiceType>>;
