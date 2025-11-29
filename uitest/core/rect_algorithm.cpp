@@ -43,7 +43,10 @@ namespace OHOS::uitest {
             vector<Rect> next;
             for (auto rect : current) {
                 Rect intersection(0, 0, 0, 0) ;
-                if (RectAlgorithm::ComputeIntersection(rect, obstacle, intersection)) {
+                if (!RectAlgorithm::ComputeIntersection(rect, obstacle, intersection)) {
+                    next.push_back(rect);
+                    continue;
+                }
                     if (intersection.bottom_ < rect.bottom_) {
                         next.push_back(Rect(rect.left_, rect.right_, intersection.bottom_, rect.bottom_));
                     }
@@ -55,9 +58,6 @@ namespace OHOS::uitest {
                     }
                     if (intersection.right_ < rect.right_) {
                         next.push_back(Rect(intersection.right_, rect.right_, rect.top_, rect.bottom_));
-                    }
-                } else {
-                    next.push_back(rect);
                 }
             }
             current = next;
