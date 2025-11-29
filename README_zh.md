@@ -485,8 +485,8 @@ export default function callBackTestTest() {
 | No. | API                | 功能说明              |
 |:----| :------------------|-------------------|
 | 1   | getDescribeName        | 获取当前测试用例所属的测试套名称。 |
-| 2   | getItName        | 获取当初测试用例名称。       |
-| 3   | getItAttribute        | 获取当初测试用例等级。       |
+| 2   | getItName        | 获取当前测试用例名称。       |
+| 3   | getItAttribute        | 获取当前测试用例等级。       |
 | 4   | actionStart        | 添加用例执行过程打印自定义日志。  |
 | 5   | actionEnd        | 添加用例执行过程打印自定义日志。  |
 | 6   | existKeyword        | 检测hilog日志中是否打印，仅支持检测单行日志。 |
@@ -514,7 +514,7 @@ export default function abilityTest() {
 }
 ```
 
-##### 获取当初测试用例名称
+##### 获取当前测试用例名称
 
 示例代码：
 ```javascript
@@ -536,7 +536,7 @@ export default function abilityTest() {
 }
 ```
 
-##### 获取当初测试用例级别
+##### 获取当前测试用例级别
 
 示例代码：
 ```javascript
