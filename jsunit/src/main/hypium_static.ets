@@ -317,7 +317,7 @@ export class Hypium {
       const currentCB = (msg: concurrency.Message) => {
         let data = msg.getObject() as SendData;
         let currentThreadName = data.currentThreadName;
-        hilog.info(domain, tag, 'zzz receview data from ' + currentThreadName +" " + JSON.stringify(data))
+        hilog.info(domain, tag, 'receview data from ' + currentThreadName +" " + JSON.stringify(data))
         worker.quit();
         let flag: boolean = worker.isAlive();
         resolve(data.summary);
@@ -327,14 +327,18 @@ export class Hypium {
         let core = new Core();
         core.msgHandle = msgHandler;
         Core.instance!.set(core);
-        hilog.info(domain, tag, 'zzzz Run test in Worker ' + worker.getName())
+        hilog.info(domain, tag, 'Run test in Worker ' + worker.getName())
         Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
       })
       worker.setUncaughtExceptionHandler((e: Error) => {
-        hilog.info(domain, tag, 'worker error: ' + JSON.stringify(e))
+        hilog.error(domain, tag, 'worker error: ' + JSON.stringify(e));
+        try {
+          worker.quit();
+        } catch (quitError) {
+          hilog.error(domain, tag, 'Failed to quit worker: ' + JSON.stringify(quitError));
+        }
         reject(e);
-        worker.quit();
-      });
+        });
     });
     return workerPromise;
   }
@@ -358,7 +362,7 @@ export class Hypium {
       const currentThreadName = itItem.currentThreadName;
       const item = allItemList.find((it: ItItemIF) => (it.description === description));
       if (item) {
-        if (item.result === 0) {
+        if (item.result === 0 || (item.result !== 0 && result === 0)) {
           item.result = result;
           item.currentThreadName = currentThreadName;
         }
@@ -402,7 +406,7 @@ export class Hypium {
       if (itArray.length > 1) {
         des = itArray[0];
         itName = itArray[1];
-      } else if (itArray.length > 1) {
+      } else if (itArray.length === 1) {
         des = itArray[0];
         itName = itArray[0];
       }

@@ -43,7 +43,7 @@ class Core {
   public static getInstance() {
     if (!Core.instance) {
       let core = new Core();
-      Core.instance = new WorkerLocal<Core>(() => core)
+      Core.instance = new WorkerLocal<Core>(() => core);
     }
     return Core.instance!.get() as Core;
   }
