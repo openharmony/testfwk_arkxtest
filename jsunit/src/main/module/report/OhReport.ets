@@ -22,7 +22,7 @@ import { Core } from '../../core';
 import { SuiteService } from '../service/SuiteService';
 import { SpecService } from '../service/SpecService';
 import { StaticSpec } from '../service/StaticSpec';
-import { ReportAttrIF, TestcaseSummaryIF } from '../../interface';
+import { ReportAttrIF, TestcaseSummaryIF, SendData } from '../../interface';
 import { ConfigService } from '../config/configService';
 
 class OhReport {
@@ -36,6 +36,7 @@ class OhReport {
   public suiteService: SuiteService | null;
   public specService: SpecService | null;
   private taskDoneTime: number;
+  public msgHandle: concurrency.MessageHandler |null = null;
   constructor(attr: ReportAttrIF) {
     this.delegator = attr.delegator;
     this.abilityDelegatorArguments = attr.abilityDelegatorArguments;
@@ -57,6 +58,13 @@ class OhReport {
     const spec = coreContext.getDefaultService('spec');
     if (spec !== null) {
       this.specService = spec as SpecService;
+    }
+    this.msgHandle = coreContext.msgHandle
+    if (this.msgHandle !== null) {
+      let worker: EAWorker = (this.msgHandle as concurrency.MessageHandler).getWorker() as EAWorker;
+      if (worker !== null) {
+        this.currentThreadName = worker.getName();
+      }
     }
   }
 
@@ -104,8 +112,17 @@ class OhReport {
         console.info(`${message}`);
         await SysTestKit.print(message);
       }
-      console.info(`${TAG}report print success`);
-      this.delegator.finishTest('your test finished!!!', 0);
+      if (!this.msgHandle) {  
+        console.info(`${TAG}report print success`);
+        this.delegator.finishTest('your test finished!!!', 0);
+      } else {
+        let sendData: SendData = {
+          currentThreadName: this.currentThreadName,
+          summary: summary
+        };
+        let resultMessage = new concurrency.Message(1, sendData, this.msgHandle as concurrency.MessageHandler);
+        resultMessage.sendToTarget();
+      }
     }
   }
 
@@ -151,6 +168,9 @@ class OhReport {
         if (suite.currentRunningSuite.isSkip) {
           message += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + suite.currentRunningSuite.skipReason + '\n';
         }
+        if (this.msgHandle) {
+          message +=`${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName= ` + this.currentThreadName;
+        }
         console.info(`${message}`);
         await SysTestKit.print(message);
         console.info(`${TAG}${suite.getCurrentRunningSuite().description} suiteStart print success`);
@@ -179,6 +199,9 @@ class OhReport {
           message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: ${hookError.message}`;
         }
         message += '\n';
+        if (this.msgHandle) {
+          message +=`${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName= ` + this.currentThreadName;
+        }
         console.info(`${message}`);
         await SysTestKit.print(message);
         console.info(`${TAG}${currentRunningSuite.description} suiteDone print success`);
@@ -204,6 +227,9 @@ class OhReport {
             message += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 1` + '\n';
             if (staticSpec.isSkip) {
               message += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + staticSpec.skipReason + '\n';
+            }
+            if (this.msgHandle) {
+              message +=`${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName= ` + this.currentThreadName;
             }
             console.info(`${message}`);
             await SysTestKit.print(message);
@@ -279,9 +305,11 @@ class OhReport {
           } else {
             messageCode += '\n';
           }
-          await SysTestKit.print(message);
-          await SysTestKit.print(messageStack);
-          await SysTestKit.print(messageCode);
+          if (this.msgHandle) {
+            message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName= ` + this.currentThreadName;
+          }
+          let totalMsg = message + '\n' + messageStack + '\n' + messageCode;
+          await SysTestKit.print(totalMsg)
           if (currentRunningSpec) {
             console.info(`${TAG}${currentRunningSpec.description} specDone end print success`);
           }

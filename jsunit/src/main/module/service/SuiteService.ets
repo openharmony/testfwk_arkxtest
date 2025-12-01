@@ -41,6 +41,7 @@ class SuiteService {
   public targetSuiteArray: Array<string>;
   public targetSpecArray: Array<string>;
   private dryrunResult: DryrunResultIF;
+  public msgHandle: concurrency.MessageHandler |null = null;
   constructor(attr: ServiceAttrIF) {
     this.id = attr.id;
     this.rootSuite = new StaticSuite({
@@ -55,6 +56,7 @@ class SuiteService {
     this.isSkipSuite = false;
     this.suiteSkipReason = '';
     this.coreContext = null;
+    this.msgHandle = null;
     const suites = new Array<Map<string, Array<ConfigIf>>>();
     const skipSuites = new Array<Map<string, Array<ConfigIf>>>();
     this.dryrunResult = {
@@ -305,6 +307,10 @@ class SuiteService {
           description: suite.description + '#' + itItem.description,
           result: -3,
         };
+        if (this.msgHandle) {    
+          let msgHandle:concurrency.MessageHandler = this.msgHandle as concurrency.MessageHandler
+          itInfo.currentThreadName = msgHandle.getWorker().getName();
+        }
         obj.itItemList.push(itInfo);
         if (breakOnError && (obj.error > 0 || obj.failure > 0)) {
           // breakOnError模式
