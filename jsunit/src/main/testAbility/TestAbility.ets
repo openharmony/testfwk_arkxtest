@@ -49,11 +49,14 @@ export default class TestAbility extends UIAbility {
     let abilityDelegatorArguments: abilityDelegatorRegistry.AbilityDelegatorArgs;
     abilityDelegatorArguments = abilityDelegatorRegistry.getArguments();
     hilog.info(0x0000, 'testTag', '%{public}s', 'start run testcase!!!');
-    Hypium.hypiumTest(
-      this.abilityDelegator,
-      abilityDelegatorArguments,
-      testsuite
-    );
+    let woker = abilityDelegatorArguments.parameters['-s worker']
+    if (woker) {
+      let workerNum : int = Number(woker) as int;
+      hilog.info(0x0000, 'testTag', '%{public}s', 'run in workers, woker number:' + workerNum);
+      Hypium.hypiumInitEAWorkers(this.abilityDelegator, abilityDelegatorArguments, workerNum, testsuite);
+    } else {
+      Hypium.hypiumTest(this.abilityDelegator, abilityDelegatorArguments, testsuite);
+    }
   }
 
   onDestroy() {
