@@ -41,9 +41,9 @@ function logMsg(actualValue: AnyType, expected: AnyType): string {
 function getObjectDesc(value: AnyType) {
   const aClassName = DeepTypeUtils.getType(value);
   let message = '';
-  const numberType: string[] = ["Number", "Int", "Short", "Long", "Float", "Byte"];
-  if (numberType.includes(aClassName)) {
-    message = aClassName + " " + JSON.stringify(value);
+  const numericTypes: string[] = ["Number", "Int", "Short", "Long", "Float", "Byte"];
+  if (numericTypes.includes(aClassName)) {
+    message = aClassName + " " + value!.toString();
   } else if (aClassName === 'Function' || aClassName === 'Promise') {
     message = 'actualValue ' + aClassName;
   } else if (aClassName === 'Set') {
