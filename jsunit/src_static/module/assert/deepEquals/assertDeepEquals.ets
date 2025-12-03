@@ -40,7 +40,10 @@ function logMsg(actualValue: AnyType, expected: AnyType): string {
 function getObjectDesc(value: AnyType) {
   const aClassName = DeepTypeUtils.getType(value);
   let message = '';
-  if (aClassName === 'Function' || aClassName === 'Promise') {
+  const numericTypes: string[] = ["Number", "Int", "Short", "Long", "Float", "Byte"];
+  if (numericTypes.includes(aClassName)) {
+    message = aClassName + " " + value!.toString();
+  } else if (aClassName === 'Function' || aClassName === 'Promise') {
     message = 'actualValue ' + aClassName;
   } else if (aClassName === 'Set') {
     const typeValue = value as Set<AnyType>;
@@ -56,7 +59,7 @@ function getObjectDesc(value: AnyType) {
     message = 'Error ' + (value as Error).message;
   } else if (aClassName == 'ArrayBuffer') {
   } else {
-    message = 'Bigint ' + JSON.stringify(value);
+    message = JSON.stringify(value);
   }
   return message;
 }
