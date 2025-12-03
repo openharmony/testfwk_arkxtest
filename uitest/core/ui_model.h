@@ -157,6 +157,16 @@ namespace OHOS::uitest {
             return bottom_ - top_;
         }
 
+        FORCE_INLINE int32_t GetArea() const
+        {
+            return (bottom_ - top_) * (right_ - left_);
+        }
+
+        FORCE_INLINE bool IsValid() const
+        {
+            return left_ < right_ && top_ < bottom_;
+        }
+
         std::string Describe() const
         {
             std::stringstream ss;
@@ -193,7 +203,7 @@ namespace OHOS::uitest {
         FORCE_INLINE static bool IsInnerPoint(const Rect &rect, const Point &point);
         FORCE_INLINE static bool IsPointOnEdge(const Rect &rect, const Point &point);
         static bool ComputeIntersection(const Rect &ra, const Rect &rb, Rect &result);
-        static bool ComputeMaxVisibleRegion(const Rect &rect, const std::vector<Rect> &overlays, Rect &out);
+        static bool ComputeMaxVisibleRegion(const Rect &origRect, const std::vector<Rect> &overlays, Rect &out);
     };
 
     FORCE_INLINE bool RectAlgorithm::CheckEqual(const Rect &ra, const Rect &rb)
@@ -254,6 +264,11 @@ namespace OHOS::uitest {
             return bounds_;
         }
 
+        Rect GetOrigBounds() const
+        {
+            return origBounds_;
+        }
+
         std::string GetHierarchy() const
         {
             return hierarchy_;
@@ -271,6 +286,8 @@ namespace OHOS::uitest {
         }
 
         void SetBounds(const Rect &bounds);
+
+        void SetOrigBounds(const Rect &bounds);
 
         std::string ToStr() const;
 
@@ -298,6 +315,7 @@ namespace OHOS::uitest {
         std::string hierarchy_;
         std::vector<string> attributeVec_ = std::vector<string>(UiAttr::MAX + 1);
         Rect bounds_ = {0, 0, 0, 0};
+        Rect origBounds_ = {0, 0, 0, 0};
         std::int32_t displayId_ = 0;
     };
 
