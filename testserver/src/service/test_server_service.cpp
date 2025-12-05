@@ -452,7 +452,7 @@ namespace OHOS::testserver {
         }
         string columnKeyWordName = "KEYWORD";
         string columnValueName = "VALUE";
-        std::vector<std::string> columns = { columnKeyWordName };
+        std::vector<std::string> columns = { columnValueName };
         DataShare::DataSharePredicates predicates;
         predicates.EqualTo(columnKeyWordName, key);
         Uri queryUri = Uri(uri + "&key=" + key);
