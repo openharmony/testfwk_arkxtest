@@ -398,12 +398,12 @@ namespace OHOS::uitest {
     {
         std::string opt = argv[TWO];
         RecordOption option;
-        if (argc < INDEX_THREE) {
+        if ((size_t)argc < INDEX_THREE) {
             PrintToConsole("Missing parameter. \n");
             PrintToConsole(HELP_MSG);
             return EXIT_FAILURE;
         }
-        if (argc >= INDEX_FOUR) {
+        if ((size_t)argc >= INDEX_FOUR) {
             if (strcmp(argv[THREE], "point") == 0) {
                 option.saveWidget = false;
             }
@@ -434,7 +434,7 @@ namespace OHOS::uitest {
             return OHOS::ERR_OK;
         } else {
             PrintToConsole("Illegal argument: " + opt);
-            PrintToConsole(usage);
+            PrintToConsole(HELP_MSG);
             return EXIT_FAILURE;
         }
     }
