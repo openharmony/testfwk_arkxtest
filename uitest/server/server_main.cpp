@@ -407,7 +407,7 @@ namespace OHOS::uitest {
             "  read                                                                    print file content to the console\n";
         std::string opt = argv[TWO];
         RecordOption option;
-        if (argc < INDEX_THREE) {
+        if (argc < 3) {
             PrintToConsole("Missing parameter. \n");
             PrintToConsole(usage);
             return EXIT_FAILURE;
