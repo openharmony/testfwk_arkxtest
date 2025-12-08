@@ -396,9 +396,22 @@ namespace OHOS::uitest {
 
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
-        static constexpr string_view usage = "USAGE: uitest uiRecord <read|record>";
+        static constexpr string_view usage = 
+            "USAGE: uitest uiRecord                                                                                     \n"
+            "  record                                                           Write Ui event information into csv file\n"
+            "    -W <true/false>                                     whether save widget information, true means to save\n" 
+            "                                                                       set it true when not use this option\n"
+            "    -l                                             Save the current layout information after each operation\n"
+            "    -c <true/false>              whether print the Ui event information to the console, true means to print\n" 
+            "                                                                       set it true when not use this option\n"
+            "  read                                                                    print file content to the console\n";
         std::string opt = argv[TWO];
         RecordOption option;
+        if (argc < INDEX_THREE) {
+            PrintToConsole("Missing parameter. \n");
+            PrintToConsole(usage);
+            return EXIT_FAILURE;
+        }
         if (argc >= 4) {
             if (strcmp(argv[THREE], "point") == 0) {
                 option.saveWidget = false;
