@@ -403,7 +403,6 @@ namespace OHOS::uitest {
         }
         std::string opt = argv[TWO];
         RecordOption option;
-
         if ((size_t)argc >= INDEX_FOUR) {
             if (strcmp(argv[THREE], "point") == 0) {
                 option.saveWidget = false;
@@ -417,8 +416,10 @@ namespace OHOS::uitest {
             option.saveLayout = params.find('l') != params.end();
             auto iter = params.find('c');
             option.terminalCout = (iter != params.end()) ?iter->second == "true" : true;
-            auto w = params.find('W');
-            option.saveWidget = (w != params.end()) ?w->second == "true" : true;
+            if (option.saveWidget) {
+                auto w = params.find('W');
+                option.saveWidget = (w != params.end()) ?w->second == "true" : true;
+            }
             auto controller = make_unique<SysUiController>();
             ApiCallErr error = ApiCallErr(NO_ERROR);
             if (option.saveWidget || option.saveLayout) {
