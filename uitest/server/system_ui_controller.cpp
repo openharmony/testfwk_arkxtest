@@ -160,8 +160,6 @@ namespace OHOS::uitest {
         { EventType::TYPE_VIEW_SCROLLED_START, "componentEventOccur"},
         { EventType::TYPE_VIEW_SCROLLED_EVENT, "componentEventOccur"},
         { EventType::TYPE_VIEW_TEXT_SELECTION_UPDATE_EVENT, "componentEventOccur"},
-        { EventType::TYPE_VIEW_HOVER_ENTER_EVENT, "componentEventOccur"},
-        { EventType::TYPE_VIEW_HOVER_EXIT_EVENT, "componentEventOccur"}
     };
 
     static constexpr EventTypeSpec WATCHED_WINDOW_EVENTS[] = {
@@ -197,10 +195,6 @@ namespace OHOS::uitest {
                 return ComponentEventType::COMPONENT_SCROLL_END;
             case EventType::TYPE_VIEW_TEXT_SELECTION_UPDATE_EVENT:
                 return ComponentEventType::COMPONENT_TEXT_CHANGED;
-            case EventType::TYPE_VIEW_HOVER_ENTER_EVENT:
-                return ComponentEventType::COMPONENT_HOVER_ENTER;
-            case EventType::TYPE_VIEW_HOVER_EXIT_EVENT:
-                return ComponentEventType::COMPONENT_HOVER_EXIT;
             default:
                 return ComponentEventType::COMPONENT_UNDEFINED;
         }

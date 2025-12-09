@@ -45,8 +45,6 @@ namespace OHOS::uitest {
         COMPONENT_SCROLL_START,
         COMPONENT_SCROLL_END,
         COMPONENT_TEXT_CHANGED,
-        COMPONENT_HOVER_ENTER,
-        COMPONENT_HOVER_EXIT,
     };
   
     struct UiEventSourceInfo {
