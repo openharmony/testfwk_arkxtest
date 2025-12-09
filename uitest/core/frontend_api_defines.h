@@ -59,8 +59,6 @@ namespace OHOS::uitest {
         {"COMPONENT_SCROLL_START", "3"},
         {"COMPONENT_SCROLL_END", "4"},
         {"COMPONENT_TEXT_CHANGED", "5"},
-        {"COMPONENT_HOVER_ENTER", "6"},
-        {"COMPONENT_HOVER_EXIT", "7"},
     };
     constexpr FrontendEnumeratorDef COMPONENT_EVENT_TYPE_DEF = {
         "ComponentEventType",
