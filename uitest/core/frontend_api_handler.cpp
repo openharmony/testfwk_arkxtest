@@ -1085,7 +1085,7 @@ namespace OHOS::uitest {
     {
         auto componentEventType = ReadCallArg<int32_t>(in, INDEX_ONE);
         if (componentEventType <= ComponentEventType::COMPONENT_UNDEFINED ||
-            componentEventType > ComponentEventType::COMPONENT_HOVER_EXIT) {
+            componentEventType > ComponentEventType::COMPONENT_TEXT_CHANGED) {
             LOG_E("Please input right enum value!");
             out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invalid componentEventType.");
             return;
