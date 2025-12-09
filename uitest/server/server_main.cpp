@@ -396,13 +396,14 @@ namespace OHOS::uitest {
 
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
-        std::string opt = argv[TWO];
-        RecordOption option;
         if ((size_t)argc < INDEX_THREE) {
             PrintToConsole("Missing parameter. \n");
             PrintToConsole(HELP_MSG);
             return EXIT_FAILURE;
         }
+        std::string opt = argv[TWO];
+        RecordOption option;
+
         if ((size_t)argc >= INDEX_FOUR) {
             if (strcmp(argv[THREE], "point") == 0) {
                 option.saveWidget = false;
