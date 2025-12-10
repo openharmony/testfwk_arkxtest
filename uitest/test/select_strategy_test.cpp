@@ -810,7 +810,7 @@ void ConstructIterator2(std::unique_ptr<ElementNodeIterator> &iterator)
                         "componentType":"List",
                         "content":"Text List",
                         "rectInScreen":"0,200,0,150",
-                        "cliped": "true"
+                        "clip": "true"
                      },
                      "children":[
                         {
@@ -838,7 +838,7 @@ void ConstructIterator2(std::unique_ptr<ElementNodeIterator> &iterator)
                                 "accessibilityId":"7",
                                 "content":"Text List12",
                                 "rectInScreen":"0,200,0,200",
-                                "cliped": "true"
+                                "clip": "true"
                             },
                             "children":[
                                 {

@@ -40,7 +40,7 @@ namespace OHOS::uitest {
         Rect rectInScreen = Rect{0, 0, 0, 0};
         int parentIndex = -1;
         std::vector<int> childIndexVec;
-        bool cliped = false;
+        bool clip = false;
     };
 
     static void StringSplit(const string &str, const char split, std::vector<string> &res)
@@ -98,8 +98,8 @@ namespace OHOS::uitest {
         if (obj.find("windowId") != obj.end()) {
             eleRoot.windowId = obj["windowId"];
         }
-        if (obj.find("cliped") != obj.end()) {
-            eleRoot.cliped = (obj["cliped"] == "true");
+        if (obj.find("clip") != obj.end()) {
+            eleRoot.clip = (obj["clip"] == "true");
         }
         if (obj.find("rectInScreen") != obj.end()) {
             // 12,12,12,12
@@ -249,7 +249,7 @@ namespace OHOS::uitest {
             widget.SetAttr(UiAttr::SCROLLABLE, "false");
             widget.SetAttr(UiAttr::CHECKABLE, element.checkable ? "true" : "false");
             widget.SetAttr(UiAttr::CHECKED, element.checked ? "true" : "false");
-            widget.SetAttr(UiAttr::CLIP, element.cliped ? "true" : "false");
+            widget.SetAttr(UiAttr::CLIP, element.clip ? "true" : "false");
             widget.SetAttr(UiAttr::HOST_WINDOW_ID, element.windowId);
             widget.SetAttr(UiAttr::ORIGBOUNDS, boundStream.str());
             widget.SetAttr(UiAttr::HASHCODE, GenerateNodeHashCode(element));
