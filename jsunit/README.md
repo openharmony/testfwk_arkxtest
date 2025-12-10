@@ -3,8 +3,8 @@
 
 ## Hypium是什么?
 ***
-- Hypium是OpenHarmony上的测试框架，提供测试用例编写、执行、结果显示能力，用于OpenHarmony系统应用接口以及应用界面测试。
-- Hypium结构化模型：hypium工程主要由List.test.js与TestCase.test.js组成。
+- Hypium是OpenHarmony上的测试框架，提供单元测试用例执行能力，提供用例编写基础接口，生成对应报告，用于测试系统或应用接口。
+- Hypium结构化模型：hypium工程工程主要由List.test.ets与TestCase.test.ets组成。
 ```
 rootProject                  // Hypium工程根目录
 ├── moduleA
@@ -13,12 +13,12 @@ rootProject                  // Hypium工程根目录
 │      ├── ohosTest               // 测试用例目录
 │         ├── ets
 │            └── test
-│               └── List.test.js      // 测试用例加载脚本，ets目录下为.ets后缀
-│               └── TestCase.test.js  // 测试用例脚本，ets目录下为.ets后缀
+│               └── List.test.ets      
+│               └── TestCase.test.ets  
 └── moduleB
     ...
-│               └── List.test.js      // 测试用例加载脚本，ets目录下为.ets后缀
-│               └── TestCase.test.js  // 测试用例脚本，ets目录下为.ets后缀
+│               └── List.test.ets      
+│               └── TestCase.test.ets  
 ```
 
 ## 安装使用
@@ -65,10 +65,10 @@ describe(testSuiteName: string, func: Function): void
 
 **参数：**
 
-| 参数名 | 类型     | 必填 | 说明                                                       | 
-| --- |--------|----|----------------------------------------------------------|
-| testSuiteName | string | 是  | 指定测试套的名称。                                                 |
-| func | Function | 是  | 指定测试套函数，用于注册测试用例。**注意：测试套函数不支持异步函数**                     |
+| 参数名 | 类型     | 必填 | 说明                                  | 
+| --- |--------|----|-------------------------------------|
+| testSuiteName | string | 是  | 测试套的名称。                             |
+| func | Function | 是  | 测试套函数，用于注册测试用例。**注意：测试套函数不支持异步函数。** |
 
 **示例：**
 ```javascript
@@ -119,7 +119,7 @@ export default function customAssertTest() {
 
 beforeEach(func: Function): void
 
-在测试套内定义一个单元预置条件，在每条测试用例开始前执行,执行次数与it定义的测试用例数一致。
+在测试套内定义一个预置条件，在每条测试用例开始前执行，执行次数与it定义的测试用例数一致。
 
 **参数：**
 
@@ -147,7 +147,7 @@ export default function test() {
 
 afterEach(func: Function): void
 
-在测试套内定义一个单元清理条件，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致。
+在测试套内定义一个清理函数，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致。
 
 **参数：**
 
@@ -176,7 +176,7 @@ export default function test() {
 
 afterAll(func: Function): void
 
-在测试套内定义一个清理条件，在所有测试用例结束后执行且仅执行一次。
+在测试套内定义一个清理函数，在所有测试用例结束后执行且仅执行一次。
 
 **参数：**
 
@@ -201,18 +201,18 @@ export default function customAssertTest() {
 }
 ```
 
-### beforeItSpecified
+### beforeItSpecified<sup>1.0.15</sup>
 
 beforeItSpecified(testCaseNames: Array<string> | string, func: Function): void
 
-@since1.0.15在测试套内定义一个单元预置条件，仅在指定测试用例开始前执行。
+在测试套内定义一个预置条件，仅在指定测试用例开始前执行。
 
 **参数：**
 
-| 参数名 | 类型                   | 必填 | 说明 | 
-|------------|----------------------|----|----|
+| 参数名 | 类型                      | 必填 | 说明 | 
+|------------|-------------------------|----|----|
 | testCaseNames   | Array<string> 或 string | 是  | 单个用例名称或用例名称数组。 |
-|      func      |          Function            | 是  |  预置动作函数，在自定义的一组测试用例或单个测试用例开始执行之前运行。支持异步函数。  |
+|      func      | Function                | 是  |  预置动作函数，在自定义的一组测试用例或单个测试用例开始执行之前运行。支持异步函数。  |
 
 **示例：**
 ```javascript
@@ -230,25 +230,25 @@ export default function beforeItSpecifiedTest() {
 }
 ```
 
-### afterItSpecified
+### afterItSpecified<sup>1.0.15</sup>
 
 afterItSpecified(testCaseNames: Array<string> | string, func: Function): void
 
-@since1.0.15在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行。
+在测试套内定义一个清理函数，仅在指定测试用例结束后执行。
 
 **参数：**
 
-| 参数名 | 类型                   | 必填 | 说明 | 
-|------------|----------------------|----|----|
+| 参数名 | 类型                      | 必填 | 说明 | 
+|------------|-------------------------|----|----|
 | testCaseNames   | Array<string> 或 string | 是  | 单个用例名称或用例名称数组。|
-|      func      |          Function            | 是  |  清理动作函数，在自定义的一组测试用例或单个测试用例执行完成后运行。支持异步函数。 |
+|      func      | Function                | 是  |  清理动作函数，在自定义的一组测试用例或单个测试用例执行完成后运行。支持异步函数。 |
 
 
 **示例：**
 ```javascript
 import { describe, it, expect, afterItSpecified } from '@ohos/hypium';
-export default function beforeItSpecifiedTest() {
-    describe('beforeItSpecifiedTest', () => {
+export default function afterItSpecifiedTest() {
+    describe('afterItSpecifiedTest', () => {
         let a = 1
         afterItSpecified(['String_assertContain_success'], () => {
             expect(a).assertEqual(2);
@@ -268,11 +268,11 @@ it(testCaseName: string, attribute: number, func: Function): void
 
 **参数：**
 
-| 参数名 | 类型                 | 必填 | 说明                                                   | 
-|------------|--------------------|----|------------------------------------------------------|
-| testSuiteName      | string             | 是  | 指定测试套的名称。 |
+| 参数名 | 类型                 | 必填 | 说明                               | 
+|------------|--------------------|----|----------------------------------------------------|
+| testSuiteName      | string             | 是  | 测试套的名称。 |
 |      attribute    | number | 是  | 过滤参数，支持传0或Level、Size、TestType对象中的枚举值。若传0，则不过滤用例，若传其他参数，则可对用例的级别、规模、测试类型进行过滤，具体参见[专项能力](#专项能力)。 |
-|         func      |Function |  是  |        指定测试函数，用于注册测试用例。                                                            |
+|         func      |Function |  是  |        测试函数，用于注册测试用例。                                                          |
 
 **示例：**
 ```javascript
@@ -288,18 +288,18 @@ export default function attributeTest() {
 }
 ```
 
-### xdescribe
+### xdescribe<sup>1.0.17</sup>
 
 xdescribe(testSuiteName: string, func: Function): void
 
-指定跳过一个测试套。
+跳过一个测试套。
 
 **参数：**
 
-| 参数名 | 类型     | 必填| 说明            | 
-| --- | ------ |---|---------------|
-| testSuiteName | string | 是 | 指定跳过的测试套名称。    |
-| func | Function | 是 | 指定测试套函数，用于注册测试用例。**注意：测试套函数不支持异步函数。** |
+| 参数名 | 类型     | 必填| 说明           | 
+| --- | ------ |---|--------------|
+| testSuiteName | string | 是 | 跳过的测试套名称。    |
+| func | Function | 是 | 测试套函数，用于注册测试用例。**注意：测试套函数不支持异步函数。** |
 
 **示例：**
 ```javascript
@@ -316,7 +316,7 @@ import { expect, xdescribe, xit } from '@ohos/hypium';
   }
 ```
 
-### xit
+### xit<sup>1.0.17</sup>
 
 xit(testCaseName: string,attribute: number,func: Function): void
 
@@ -324,11 +324,11 @@ xit(testCaseName: string,attribute: number,func: Function): void
 
 **参数：**
 
-| 参数名 | 类型                 | 必填 | 说明                                                   | 
-|------------|--------------------|----|------------------------------------------------------|
-| testSuiteName      | string             | 是  | 指定跳过的测试用例名称 |
-|      attribute              | | 是  |   过滤参数，支持传0或Level、Size、TestType对象中的枚举值。若传0，则不过滤用例，若传其他参数，则可对用例的级别、规模、测试类型进行过滤，具体参见[专项能力](#专项能力)      |
-|         func                    |Function |  是  |       指定测试函数，用于注册测试用例。                                                       |
+| 参数名 | 类型                | 必填 | 说明                                                                                            | 
+|------------|-------------------|----|-----------------------------------------------------------------------------------------------|
+| testSuiteName      | string   | 是  | 跳过的测试用例名称。                                                                                    |
+|      attribute              | number| 是  | 过滤参数，支持传0或Level、Size、TestType对象中的枚举值。若传0，则不过滤用例，若传其他参数，则可对用例的级别、规模、测试类型进行过滤，具体参见[专项能力](#专项能力) |
+|         func                    |Function |  是  | 测试函数，用于注册测试用例。                                                                                |
 
 **示例：**
 ```javascript
@@ -391,10 +391,10 @@ assertClose(expectValue: number, precision: number): void;
 
 **参数：**
 
-| 参数名  | 类型          | 必填 | 说明                                                        |
-|---|---|----|-----------------------------------------------------------|
-| expectValue  | number         | 是  | 期望值，即预期的正确结果数值。               |
-| precision  | number       | 是   | 精度值（容差范围，delta），表示允许的最大误差。期望值和实际值的差值除以实际值的结果小于精度值则验证通过   |
+| 参数名  | 类型          | 必填 | 说明                                                      |
+|---|---|----|---------------------------------------------------------|
+| expectValue  | number         | 是  | 期望值，即预期的正确结果数值。                                         |
+| precision  | number       | 是   | 精度值（容差范围，delta），表示允许的最大误差。期望值和实际值的差值除以实际值的结果小于精度值则验证通过。 |
 
 
 **示例：**
@@ -493,7 +493,7 @@ describe('expectTest', ()=> {
 
 #### assertTrue
 
-assertFalse(): void;
+assertTrue(): void;
 
 检验实际值是否是true。
 
@@ -516,9 +516,9 @@ assertInstanceOf(expectValue: string): void;
 
 **参数：**
 
-| 参数名  | 类型          | 必填 | 说明                       |
-|---|---|----|--------------------------|
-| expectValue  | string         | 是  | 期望类型，必须是一个字符串类型 |
+| 参数名  | 类型          | 必填 | 说明               |
+|---|---|----|------------------|
+| expectValue  | string         | 是  | 期望类型，必须是一个字符串类型。 |
 
 **示例：**
 ```javascript
@@ -540,9 +540,9 @@ assertLarger(expectValue: number): void;
 
 **参数：**
 
-| 参数名  | 类型     | 必填 | 说明                      |
-|---|--------|----|-------------------------|
-| expectValue  | number | 是  | 期望值，参数必须是一个数字类型 |
+| 参数名  | 类型     | 必填 | 说明               |
+|---|--------|----|------------------|
+| expectValue  | number | 是  | 期望值，参数必须是一个数字类型。 |
 
 **示例：**
 ```javascript
@@ -563,9 +563,9 @@ assertLess(expectValue: number): void;
 
 **参数：**
 
-| 参数名  | 类型     | 必填 | 说明   |
-|---|--------|----|------|
-| expectValue  | number | 是  | 期望值，参数必须是一个数字类型 |
+| 参数名  | 类型     | 必填 | 说明               |
+|---|--------|----|------------------|
+| expectValue  | number | 是  | 期望值，参数必须是一个数字类型。 |
 
 
 **示例：**
@@ -604,9 +604,9 @@ assertThrowError(expectValue: string | Function): void;
 
 **参数：**
 
-| 参数名  | 类型              | 必填 | 说明                                         |
-|---|-----------------|----|--------------------------------------------|
-| expectValue  | string或function | 是  | 期望值，参数必须是一个字符串类型或者指定测试套函数 |
+| 参数名  | 类型                | 必填 | 说明                       |
+|---|-------------------|----|--------------------------|
+| expectValue  | string 或 function | 是  | 期望值，参数必须是一个字符串类型或者函数。 |
 
 
 **示例：**
@@ -644,11 +644,11 @@ describe('expectTest', ()=> {
 });
 ```
 
-#### assertNaN
+#### assertNaN<sup>1.0.4<sup>
 
 assertNaN(): void;
 
-@since1.0.4 检验实际值是否是一个NaN。
+检验实际值是否是一个NaN。
 
 **示例：**
 ```javascript
@@ -661,11 +661,11 @@ describe('expectTest', ()=> {
 });
 ```
 
-#### assertNegUnlimited
+#### assertNegUnlimited<sup>1.0.4<sup>
 
 assertNegUnlimited(): void;
 
-@since1.0.4 检验实际值是否等于Number.NEGATIVE_INFINITY。
+检验实际值是否等于Number.NEGATIVE_INFINITY。
 
 **示例：**
 ```javascript
@@ -678,11 +678,11 @@ describe('expectTest', ()=> {
 });
 ```
 
-#### assertPosUnlimited
+#### assertPosUnlimited<sup>1.0.4<sup>
 
 assertPosUnlimited(): void;
 
-@since1.0.4 检验实际值是否等于Number.POSITIVE_INFINITY。
+检验实际值是否等于Number.POSITIVE_INFINITY。
 
 **示例：**
 ```javascript
@@ -695,11 +695,11 @@ describe('expectTest', ()=> {
 });
 ```
 
-#### assertDeepEquals
+#### assertDeepEquals<sup>1.0.4<sup>
 
 assertDeepEquals(expectValue: any): void;
 
-@since1.0.4 检验实际值和expectvalue是否完全相等，用于对对象类型进行值相等的判断。
+检验实际值和expectvalue是否完全相等，用于对对象类型进行值相等的判断。
 
 **参数：**
 
@@ -721,11 +721,11 @@ describe('expectTest', ()=> {
 });
 ```
 
-#### assertPromiseIsPending
+#### assertPromiseIsPending<sup>1.0.4<sup>
 
 assertPromiseIsPending(): Promise<void>;
 
-@since1.0.4 判断实际值中的Promise是否处于Pending状态。
+判断实际值中的Promise是否处于Pending状态。
 
 
 **示例：**
@@ -740,11 +740,11 @@ describe('expectTest', ()=> {
 });
 ```
 
-#### assertPromiseIsRejected
+#### assertPromiseIsRejected<sup>1.0.4<sup>
 
 assertPromiseIsRejected(): Promise<void>;
 
-@since1.0.4 判断promise是否处于Rejected状态。
+判断promise是否处于Rejected状态。
 
 
 **示例：**
@@ -760,11 +760,11 @@ describe('expectTest', ()=> {
 });
 ```
 
-#### assertPromiseIsRejectedWith
+#### assertPromiseIsRejectedWith<sup>1.0.4<sup>
 
 assertPromiseIsRejectedWith(expectValue: any): Promise<void>;
 
-@since1.0.4 判断promise是否处于Rejected状态，并且比较抛出的Reject内容和预期值是否值相等。
+判断promise是否处于Rejected状态，并且比较抛出的Reject内容和预期值是否值相等。
 
 
 **参数：**
@@ -789,11 +789,11 @@ describe('expectTest', ()=> {
 
 
 
-#### assertPromiseIsRejectedWithError
+#### assertPromiseIsRejectedWithError<sup>1.0.4<sup>
 
 assertPromiseIsRejectedWithError(expectedErrorType: Function | string, expectedErrorMessage?: string): Promise<void>;
 
-@since1.0.4 判断promise是否处于Rejected状态并有异常，同时可以比较异常的类型和message值。只传一个参数时，可以校验Reject抛出的错误的类型或是message是否符合预期；传两个参数时，校验Reject抛出的错误的类型和message都符合预期。
+判断promise是否处于Rejected状态并有异常，同时可以比较异常的类型和message值。只传一个参数时，可以校验Reject抛出的错误的类型或是message是否符合预期；传两个参数时，校验Reject抛出的错误的类型和message都符合预期。
 
 **参数：**
 
@@ -815,11 +815,11 @@ describe('expectTest', ()=> {
 });
 ```
 
-#### assertPromiseIsResolved
+#### assertPromiseIsResolved<sup>1.0.4<sup>
 
 assertPromiseIsResolved(): Promise<void>;
 
-@since1.0.4 判断promise是否处于Resolved状态。
+判断promise是否处于Resolved状态。
 
 
 **示例：**
@@ -837,17 +837,17 @@ describe('expectTest', ()=> {
 
 
 
-#### assertPromiseIsResolvedWith
+#### assertPromiseIsResolvedWith<sup>1.0.4<sup>
 
 assertPromiseIsResolvedWith(expectValue: any): Promise<void>;
 
-@since1.0.4 判断promise是否处于Resolved状态，并且比较执行的结果值。
+判断promise是否处于Resolved状态，并且比较执行的结果值。
 
 **参数：**
 
-| 参数名  | 类型              | 必填 | 说明                                         |
-|---|-----------------|----|--------------------------------------------|
-| expectValue  | any | 是  | 期望promise函数在Resolved后返回的值  |
+| 参数名  | 类型              | 必填 | 说明                         |
+|---|-----------------|----|----------------------------|
+| expectValue  | any | 是  | 期望promise函数在Resolved后返回的值。 |
 
 
 **示例：**
@@ -863,11 +863,11 @@ describe('expectTest', ()=> {
 });
 ```
 
-#### not
+#### not<sup>1.0.4<sup>
 
 not(): Assert;
 
-@since1.0.4 对断言结果取反，支持所有的Assert断言功能。
+对断言结果取反，支持所有的Assert断言功能。
 
 
 **返回值：**
@@ -888,17 +888,17 @@ describe('assertNot', ()=> {
 });
 ```
 
-#### message
+#### message<sup>1.0.17<sup>
 
 message(msg: string): Assert;
 
-@since1.0.17自定义断言异常信息。
+自定义断言异常信息。
 
 **参数：**
 
-| 参数名  | 类型              | 必填 | 说明                                         |
-|---|-----------------|----|--------------------------------------------|
-| msg  | string | 是  | 设置断言失败时的自定义错误消息  |
+| 参数名  | 类型              | 必填 | 说明               |
+|---|-----------------|----|------------------|
+| msg  | string | 是  | 设置断言失败时的自定义错误消息。 |
 
 
 **返回值：**
@@ -931,16 +931,16 @@ existKeyword(keyword: string, timeout: number): boolean
 
 **参数：**
 
-| 参数名  | 类型     | 必填 | 说明                                       |
-|---|--------|----|------------------------------------------|
-| keyword  | string | 是  | 待查找关键字  |
-| timeout     | number | 否  |  设置的查找时间，单位秒（s）    |
+| 参数名  | 类型     | 必填 | 说明              |
+|---|--------|----|-----------------|
+| keyword  | string | 是  | 待查找关键字。         |
+| timeout     | number | 否  | 设置的查找时间，单位秒（s）。 |
 
 **返回值：**
 
-| 类型             | 说明                  |
-|----------------|---------------------|
-| boolean	 | 查找指定字段是否存在，true：存在；false：不存在 |
+| 类型             | 说明                          |
+|----------------|-----------------------------|
+| boolean	 | 查找字段是否存在，true：存在；false：不存在。 |
 
 
 **示例：**
@@ -979,9 +979,9 @@ actionStart(tag: string): void
 
 **参数：**
 
-| 参数名  | 类型     | 必填 | 说明      |
-|---|--------|----|---------|
-| tag  | string | 是  | 自定义日志信息 |
+| 参数名  | 类型     | 必填 | 说明       |
+|---|--------|----|----------|
+| tag  | string | 是  | 自定义日志信息。 |
 
 **示例：**
 ```javascript
@@ -1006,9 +1006,9 @@ actionEnd(tag: string): void
 
 **参数：**
 
-| 参数名  | 类型     | 必填 | 说明      |
-|---|--------|----|---------|
-| tag  | string | 是  | 自定义日志信息 |
+| 参数名  | 类型     | 必填 | 说明       |
+|---|--------|----|----------|
+| tag  | string | 是  | 自定义日志信息。 |
 
 **示例：**
 ```javascript
@@ -1033,9 +1033,9 @@ getDescribeName(): string
 
 **返回值：**
 
-| 类型             | 说明                  |
-|----------------|---------------------|
-| string	 | 返回当前测试套的名称 |
+| 类型             | 说明          |
+|----------------|-------------|
+| string	 | 返回当前测试套的名称。 |
 
 **示例：**
 ```javascript
@@ -1059,9 +1059,9 @@ getItName(): string
 
 **返回值：**
 
-| 类型             | 说明                  |
-|----------------|---------------------|
-| string	 | 返回当前测试用例的名称 |
+| 类型             | 说明           |
+|----------------|--------------|
+| string	 | 返回当前测试用例的名称。 |
 
 **示例：**
 ```javascript
@@ -1086,9 +1086,9 @@ getItAttribute(): number
 
 **返回值：**
 
-| 类型             | 说明                  |
-|----------------|---------------------|
-| number	 | 返回当前测试用例的级别、规划、类型等过滤参数 |
+| 类型             | 说明                      |
+|----------------|-------------------------|
+| number	 | 返回当前测试用例的级别、规划、类型等过滤参数。 |
 
 **示例：**
 ```javascript
@@ -1115,17 +1115,17 @@ Mock某个类的实例上的公共方法，支持使用异步函数
 
 **参数：**
 
-| 参数名    | 类型   | 必填 | 说明     |
-|--------|------|----|--------|
-| Object | obj | 是  | 某个类的实例 |
-| Function |func  | 是  | 类的实例上的公共方法   |
+| 参数名    | 类型   | 必填 | 说明          |
+|--------|------|----|-------------|
+| Object | obj | 是  | 某个类的实例。     |
+| Function |func  | 是  | 类的实例上的公共方法。 |
 
 
 **返回值：**
 
-| 类型             | 说明                  |
-|----------------|---------------------|
-| Function	 | 返回被Mock的函数。结合[when](#when)使用 |
+| 类型             | 说明                            |
+|----------------|-------------------------------|
+| Function	 | 返回被Mock的函数。结合[when](#when)使用。 |
 
 **示例：**
 ```javascript
@@ -1158,24 +1158,24 @@ export default function afterReturnTest() {
 }
 ```
 
-#### mockPrivateFunc
+#### mockPrivateFunc<sup>1.0.25<sup>
 
 mockPrivateFunc(originalObject: Object, method: String): Function
 
-@since1.0.25 Mock某个类的实例上的私有方法，支持使用异步函数。
+Mock某个类的实例上的私有方法，支持使用异步函数。
 
 **参数：**
 
-| 参数名    | 类型   | 必填 | 说明          |
-|--------|------|----|-------------|
-| originalObject | Object | 是  | 某个类的实例      |
-| method | String  | 是  | 类的实例上的私有方法名 |
+| 参数名    | 类型   | 必填 | 说明           |
+|--------|------|----|--------------|
+| originalObject | Object | 是  | 某个类的实例。      |
+| method | String  | 是  | 类的实例上的私有方法名。 |
 
 **返回值：**
 
-| 类型             | 说明                  |
-|----------------|---------------------|
-| Function	 | 返回被Mock的函数。结合[when](#when)使用  |
+| 类型             | 说明                            |
+|----------------|-------------------------------|
+| Function	 | 返回被Mock的函数。结合[when](#when)使用。 |
 
 
 **示例：**
@@ -1212,19 +1212,19 @@ export default function staticTest() {
 }
 ```
 
-#### mockProperty
+#### mockProperty<sup>1.0.25<sup>
 
 mockProperty(obj: Object, propertyName: String, value: any): void
 
-@since1.0.25 Mock某个类的实例上的属性，将其值设置为预期值，支持私有属性。
+Mock某个类的实例上的属性，将其值设置为预期值，支持私有属性。
 
 **参数：**
 
-| 参数名           | 类型   | 必填 | 说明                 |
-|---------------|------|----|--------------------|
-| Object        | obj | 是  | 某个类的实例             |
-| propertyName  |String  | 是  | 类的实例上的属性名称      |
-| value         |  any    |  是  | 期望被Mock后的属性值 |
+| 参数名           | 类型   | 必填 | 说明            |
+|---------------|------|----|---------------|
+| Object        | obj | 是  | 某个类的实例。       |
+| propertyName  |String  | 是  | 类的实例上的属性名称。   |
+| value         |  any    |  是  | 期望被Mock后的属性值。 |
 
 **示例：**
 ```javascript
@@ -1263,10 +1263,10 @@ ignoreMock(obj: Object, func: Function | String): void
 
 **参数：**
 
-| 参数名       | 类型         | 必填 | 说明               |
-|-----------|------------|----|------------------|
-| Object    | obj        | 是  | 某个类的实例           |
-| func | Function 或 String | 是  | 类的实例上的属性名字或者函数 |
+| 参数名       | 类型         | 必填 | 说明              |
+|-----------|------------|----|-----------------|
+| Object    | obj        | 是  | 某个类的实例。         |
+| func | Function 或 String | 是  | 类的实例上的属性名字或者函数。 |
 
 **示例**
 
@@ -1309,9 +1309,9 @@ verify(methodName: String, argsArray: Array<any>): VerificationMode
 
 **参数：**
 
-| 参数名       | 类型         | 必填 | 说明               |
-|-----------|------------|----|------------------|
-| methodName    | String        | 是  | 类的实例上的公共方法名      |
+| 参数名       | 类型          | 必填 | 说明                        |
+|-----------|-------------|----|---------------------------|
+| methodName    | String      | 是  | 类的实例上的公共方法名。              |
 | argsArray | Array<any> | 是  | 一个数组，表示期望该方法被调用时所传入的参数列表。 |
 
 **返回值：**
@@ -1447,9 +1447,9 @@ when(fn: Function): Function
 
 **参数：**
 
-| 参数名       | 类型         | 必填 | 说明               |
-|-----------|------------|----|------------------|
-| fn    | String        | 是  | 被MockKit处理后的函数      |
+| 参数名       | 类型         | 必填 | 说明              |
+|-----------|------------|----|-----------------|
+| fn    | String        | 是  | 被MockKit处理后的函数。 |
 
 
 **返回值：**
@@ -1498,9 +1498,9 @@ afterReturn(value: any): void
 
 **参数：**
 
-| 参数名       | 类型         | 必填 | 说明     |
-|-----------|------------|----|--------|
-| value    | any        | 是  | 期望返回的值 |
+| 参数名       | 类型         | 必填 | 说明      |
+|-----------|------------|----|---------|
+| value    | any        | 是  | 期望返回的值。 |
 
 
 **示例：**
@@ -1622,7 +1622,7 @@ export default function mockAfterActionTest() {
 
 ```
 
-#### afterThrow
+#### afterThrow 
 
 afterThrow(e_msg: string): void
 
@@ -1680,9 +1680,9 @@ times(count: Number): void
 
 **参数：**
 
-| 参数名       | 类型         | 必填 | 说明    |
-|-----------|------------|----|-------|
-| count    | Number        | 是  | 调用的次数 |
+| 参数名       | 类型         | 必填 | 说明     |
+|-----------|------------|----|--------|
+| count    | Number        | 是  | 调用的次数。 |
 
 
 **示例：**
@@ -1765,41 +1765,41 @@ atLeast(count: Number): void
 
 **参数：**
 
-| 参数名       | 类型         | 必填 | 说明    |
-|-----------|------------|----|-------|
-| count    | Number        | 是  | 最少调用的次数 |
+| 参数名       | 类型         | 必填 | 说明       |
+|-----------|------------|----|----------|
+| count    | Number        | 是  | 最少调用的次数。 |
 
 **示例：**
 ```javascript
 import { describe, it, MockKit, when } from '@ohos/hypium'
 
 class ClassName {
-  constructor() {
-  }
+    constructor() {
+    }
 
-  method_1(...arg: string[]) {
-    return '888888';
-  }
+    method_1(...arg: string[]) {
+      return '888888';
+    }
 }
 export default function verifyAtLeastTest() {
-  describe('verifyAtLeastTest', () => {
-    it('test_verify_atLeast', 0, () => {
-      // 1.创建MockKit对象
-      let mocker: MockKit = new MockKit();
-      // 2.创建类对象
-      let claser: ClassName = new ClassName();
-      // 3.Mock  类ClassName对象的某个方法，比如method_1
-      let func_1: Function = mocker.mockFunc(claser, claser.method_1);
-      // 4.期望被Mock后的函数返回结果'4'
-      when(func_1)('abc').afterReturn('4');
-      // 5.随机执行几次函数，参数如下
-      claser.method_1('abc');
-      claser.method_1('abc');
-      claser.method_1('abc');
-      // 6.验证函数method_1且参数为'abc'时，是否至少执行过2次
-      mocker.verify('method_1', ['abc']).atLeast(2);
+    describe('verifyAtLeastTest', () => {
+        it('test_verify_atLeast', 0, () => {
+            // 1.创建MockKit对象
+            let mocker: MockKit = new MockKit();
+            // 2.创建类对象
+            let claser: ClassName = new ClassName();
+            // 3.Mock  类ClassName对象的某个方法，比如method_1
+            let func_1: Function = mocker.mockFunc(claser, claser.method_1);
+            // 4.期望被Mock后的函数返回结果'4'
+            when(func_1)('abc').afterReturn('4');
+            // 5.随机执行几次函数，参数如下
+            claser.method_1('abc');
+            claser.method_1('abc');
+            claser.method_1('abc');
+            // 6.验证函数method_1且参数为'abc'时，是否至少执行过2次
+            mocker.verify('method_1', ['abc']).atLeast(2);
+        })
     })
-  })
 }
 ```
 
@@ -1811,9 +1811,9 @@ atMost(count: Number): void
 
 **参数：**
 
-| 参数名       | 类型         | 必填 | 说明    |
-|-----------|------------|----|-------|
-| count    | Number        | 是  | 最多调用的次数 |
+| 参数名       | 类型         | 必填 | 说明       |
+|-----------|------------|----|----------|
+| count    | Number        | 是  | 最多调用的次数。 |
 
 **示例：**
 ```javascript
@@ -1935,39 +1935,39 @@ export default function argumentMatchersAnyTest() {
 ### TestType
 用例类型，Hypium支持根据用例的类型筛选执行指定测试用例。
 
-| 名称      | 值     | 说明                                                                                                                                       |
-| -------- | ------------ | ------------------------------------------------------------------------------------------------------------- |
-| FUNCTION    | 0B1     | 功能用例                                    |
-| PERFORMANCE     | 0B1 << 1    | 性能用例                                    |
-| POWER | 0B1 << 2 | 功耗用例 |
-| RELIABILITY    | 0B1 << 3     | 可靠性用例                                    |
-| SECURITY     | 0B1 << 4    | 安全性用例                                    |
-| GLOBAL | 0B1 << 5 | 全球化用例 |
-| COMPATIBILITY     | 0B1 << 6    | 兼容性用例                                    |
-| USER | 0B1 << 7 | 用户相关用例 |
-| STANDARD    | 0B1 << 8     | 标准用例                                    |
-| SAFETY     | 0B1 << 9    | 安全用例                                    |
-| RESILIENCE | 0B1 << 10 | 韧性测试 |
+| 名称      | 值     | 说明      |
+| -------- | ------------ |---------|
+| FUNCTION    | 0B1     | 功能用例。   |
+| PERFORMANCE     | 0B1 << 1    | 性能用例。   |
+| POWER | 0B1 << 2 | 功耗用例。    |
+| RELIABILITY    | 0B1 << 3     | 可靠性用例。  |
+| SECURITY     | 0B1 << 4    | 安全性用例。  |
+| GLOBAL | 0B1 << 5 | 全球化用例。  |
+| COMPATIBILITY     | 0B1 << 6    | 兼容性用例。  |
+| USER | 0B1 << 7 | 用户相关用例。 |
+| STANDARD    | 0B1 << 8     | 标准用例。   |
+| SAFETY     | 0B1 << 9    | 安全用例。   |
+| RESILIENCE | 0B1 << 10 | 韧性测试。   |
 
 ### Size
 用例规模，Hypium支持根据用例的规模筛选执行指定测试用例。
 
-| 名称      | 值     | 说明                                                                                                                                       |
-| -------- | ------------ | ------------------------------------------------------------------------------------------------------------- |
-| SMALLTEST    | 0B1 << 16     | 小型用例                                    |
-| MEDIUMTEST     | 0B1 << 17    | 中型用例                                    |
-| LARGETEST | 0B1 << 18 | 大型用例 |
+| 名称      | 值     | 说明    |
+| -------- | ------------ |-------|
+| SMALLTEST    | 0B1 << 16     | 小型用例。 |
+| MEDIUMTEST     | 0B1 << 17    | 中型用例。 |
+| LARGETEST | 0B1 << 18 | 大型用例。 |
 
 ### Level
 用例规模，Hypium支持根据用例的规模筛选执行指定测试用例。
 
-| 名称      | 值     | 说明                                                                                                                                       |
-| -------- | ------------ | ------------------------------------------------------------------------------------------------------------- |
-| LEVEL0    | 0B1 << 24     | 0级用例                                    |
-| LEVEL1     | 0B1 << 25    | 1级用例                                 |
-| LEVEL2 | 0B1 << 26 | 2级用例 |
-| LEVEL3 | 0B1 << 27 | 3级用例 |
-| LEVEL4 | 0B1 << 28 | 4级用例 |
+| 名称      | 值     | 说明    |
+| -------- | ------------ |-------|
+| LEVEL0    | 0B1 << 24     | 0级用例。 |
+| LEVEL1     | 0B1 << 25    | 1级用例。 |
+| LEVEL2 | 0B1 << 26 | 2级用例。 |
+| LEVEL3 | 0B1 << 27 | 3级用例。 |
+| LEVEL4 | 0B1 << 28 | 4级用例。 |
 
 **示例：**
 
@@ -1987,30 +1987,7 @@ export default function attributeTest() {
 
 ### Hypium
 
-#### hypiumTest
-hypiumTest(abilityDelegator: object, abilityDelegatorArguments: object, testsuite: Function): void 
 
-启动测试框架运行
-
-**参数：**
-
-| 参数名       | 类型         | 必填 | 说明    |
-|-----------|------------|----|-------|
-| abilityDelegator    | object        | 是  | 实际为AbilityDelegator对象，可用于调度测试框架相关的功能。 |
-| abilityDelegatorArguments    | object        | 是  | 实际为AbilityDelegatorArgs对象，传递到框架中的参数。 |
-| testsuite    | Function        | 是  | 传递到框架中的用例脚本函数，对应List.test.ets文件中脚本 |
-
-**示例：**
-```javascript
-import AbilityDelegatorRegistry from '@ohos.application.abilityDelegatorRegistry'
-import testsuite from '../test/List.test';
-
-export default function startTest() {
-   const abilityDelegatorArguments = abilityDelegatorRegistry.getArguments();
-   const abilityDelegator = abilityDelegatorRegistry.getAbilityDelegator();
-   Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
-}
-```
 
 #### registerAssert
 
