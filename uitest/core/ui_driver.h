@@ -94,7 +94,7 @@ namespace OHOS::uitest {
 
         void InputText(string_view text, ApiCallErr &error, const UiOpArgs &opt, int32_t displayId = -1);
 
-        bool IsTouchPadExist();
+        bool IsTouchPadExist() const;
 
         void PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error);
 
@@ -103,19 +103,19 @@ namespace OHOS::uitest {
 
         void SetAamsWorkMode(const AamsWorkMode mode);
 
-        bool IsWearable();
+        bool IsWearable() const;
 
-        bool IsAdjustWindowModeEnable();
+        bool IsAdjustWindowModeEnable() const;
 
-        bool CheckDisplayExist(int32_t displayId);
+        bool CheckDisplayExist(int32_t displayId) const;
 
         void CloseAamsEvent();
 
         void OpenAamsEvent();
-        
-        void ChangeWindowMode(int32_t windowId, WindowMode mode);
 
-        bool GetEventObserverEnable();
+        void ChangeWindowMode(int32_t windowId, WindowMode mode) const;
+
+        bool GetEventObserverEnable() const;
 
         bool IsComponentPresentWhenLongClick(const WidgetSelector& selector, const TouchAction& action,
             const UiOpArgs& uiOpArgs, ApiCallErr& error);
@@ -126,9 +126,9 @@ namespace OHOS::uitest {
         bool IsComponentPresentWhenSwipe(const WidgetSelector& selector, const TouchAction& action,
             const UiOpArgs& uiOpArgs, ApiCallErr& error);
 
-        bool IsKnuckleSnapshotEnable();
+        bool IsKnuckleSnapshotEnable() const;
 
-        bool IsKnuckleRecordEnable();
+        bool IsKnuckleRecordEnable() const;
 
     private:
         // Struct to group timeout-related parameters
@@ -146,7 +146,7 @@ namespace OHOS::uitest {
         bool CheckComponentPresenceWithTimeout(const WidgetSelector& selector,
             const TimeoutParams& timeoutParams, ApiCallErr& error);
         int32_t CalculateOperationTime(const Point& from, const Point& to,
-            int32_t speed, const UiOpArgs& uiOpArgs);
+            int32_t speed, const UiOpArgs& uiOpArgs) const;
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);
         // UI objects that are needed to be updated before each interaction and used in the interaction
         void UpdateUIWindows(ApiCallErr &error, int32_t targetDisplay = -1, bool skipWaitForUiSteady = false);
