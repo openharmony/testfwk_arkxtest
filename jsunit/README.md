@@ -271,7 +271,7 @@ it(testCaseName: string, attribute: number, func: Function): void
 | 参数名 | 类型                 | 必填 | 说明                               | 
 |------------|--------------------|----|----------------------------------------------------|
 | testSuiteName      | string             | 是  | 测试套的名称。 |
-|      attribute    | number | 是  | 过滤参数，支持传0或Level、Size、TestType对象中的枚举值。若传0，则不过滤用例，若传其他参数，则可对用例的级别、规模、测试类型进行过滤，具体参见[专项能力](#专项能力)。 |
+|      attribute    | number | 是  | 过滤参数，支持传0或Level、Size、TestType对象中的枚举值。若传0，则不过滤用例，若传其他参数，则可对用例的级别、规模、测试类型进行过滤，具体参见[TestType, Size, Level相关介绍](#testtype)。 |
 |         func      |Function |  是  |        测试函数，用于注册测试用例。                                                          |
 
 **示例：**
@@ -327,7 +327,7 @@ xit(testCaseName: string,attribute: number,func: Function): void
 | 参数名 | 类型                | 必填 | 说明                                                                                            | 
 |------------|-------------------|----|-----------------------------------------------------------------------------------------------|
 | testSuiteName      | string   | 是  | 跳过的测试用例名称。                                                                                    |
-|      attribute              | number| 是  | 过滤参数，支持传0或Level、Size、TestType对象中的枚举值。若传0，则不过滤用例，若传其他参数，则可对用例的级别、规模、测试类型进行过滤，具体参见[专项能力](#专项能力) |
+|      attribute              | number| 是  | 过滤参数，支持传0或Level、Size、TestType对象中的枚举值。若传0，则不过滤用例，若传其他参数，则可对用例的级别、规模、测试类型进行过滤，具体参见[TestType, Size, Level相关介绍](#testtype) |
 |         func                    |Function |  是  | 测试函数，用于注册测试用例。                                                                                |
 
 **示例：**
