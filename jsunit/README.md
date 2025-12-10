@@ -2000,6 +2000,7 @@ registerAssert(customAssertion: Function): void
 | 参数名       | 类型         | 必填 | 说明    |
 |-----------|------------|----|-------|
 | customAssertion    | Function        | 是  | 用户自定义的断言函数。 |
+
 **示例：**
 
 参见[unregisterAssert](#unregisterassert)中示例
