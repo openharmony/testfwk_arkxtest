@@ -861,7 +861,7 @@ void ConstructIterator2(std::unique_ptr<ElementNodeIterator> &iterator)
     iterator = MockElementNodeIterator::ConstructIteratorByJson(afterDom);
 }
 
-TEST(SelectStrategyTest, 212131312)
+TEST(SelectStrategyTest, findWidgetsInCliperCoveredByWindows)
 {
     std::unique_ptr<ElementNodeIterator> iterator = nullptr;
     ConstructIterator2(iterator);
