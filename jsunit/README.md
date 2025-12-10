@@ -203,7 +203,7 @@ export default function customAssertTest() {
 
 ### beforeItSpecified<sup>1.0.15</sup>
 
-beforeItSpecified(testCaseNames: Array<string> | string, func: Function): void
+`beforeItSpecified(testCaseNames: Array<string> | string, func: Function): void`
 
 在测试套内定义一个预置条件，仅在指定测试用例开始前执行。
 
@@ -211,7 +211,7 @@ beforeItSpecified(testCaseNames: Array<string> | string, func: Function): void
 
 | 参数名 | 类型                      | 必填 | 说明 | 
 |------------|-------------------------|----|----|
-| testCaseNames   | Array<string> 或 string | 是  | 单个用例名称或用例名称数组。 |
+| testCaseNames   | `Array<string>` 或 string | 是  | 单个用例名称或用例名称数组。 |
 |      func      | Function                | 是  |  预置动作函数，在自定义的一组测试用例或单个测试用例开始执行之前运行。支持异步函数。  |
 
 **示例：**
@@ -232,7 +232,7 @@ export default function beforeItSpecifiedTest() {
 
 ### afterItSpecified<sup>1.0.15</sup>
 
-afterItSpecified(testCaseNames: Array<string> | string, func: Function): void
+`afterItSpecified(testCaseNames: Array<string> | string, func: Function): void`
 
 在测试套内定义一个清理函数，仅在指定测试用例结束后执行。
 
@@ -240,7 +240,7 @@ afterItSpecified(testCaseNames: Array<string> | string, func: Function): void
 
 | 参数名 | 类型                      | 必填 | 说明 | 
 |------------|-------------------------|----|----|
-| testCaseNames   | Array<string> 或 string | 是  | 单个用例名称或用例名称数组。|
+| testCaseNames   | `Array<string>` 或 string | 是  | 单个用例名称或用例名称数组。|
 |      func      | Function                | 是  |  清理动作函数，在自定义的一组测试用例或单个测试用例执行完成后运行。支持异步函数。 |
 
 
@@ -1303,7 +1303,7 @@ export default function staticTest() {
 
 #### verify
 
-verify(methodName: String, argsArray: Array<any>): VerificationMode
+`verify(methodName: String, argsArray: Array<any>): VerificationMode`
 
 验证函数在对应参数下的执行行为是否符合预期，返回一个[VerificationMode](#verificationmode)类。
 
@@ -1312,7 +1312,7 @@ verify(methodName: String, argsArray: Array<any>): VerificationMode
 | 参数名       | 类型          | 必填 | 说明                        |
 |-----------|-------------|----|---------------------------|
 | methodName    | String      | 是  | 类的实例上的公共方法名。              |
-| argsArray | Array<any> | 是  | 一个数组，表示期望该方法被调用时所传入的参数列表。 |
+| argsArray | `Array<any>` | 是  | 一个数组，表示期望该方法被调用时所传入的参数列表。 |
 
 **返回值：**
 
