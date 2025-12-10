@@ -396,14 +396,14 @@ namespace OHOS::uitest {
 
     static int32_t UiRecord(int32_t argc, char *argv[])
     {
-        if ((size_t)argc < INDEX_THREE) {
+        if (argc < THREE) {
             PrintToConsole("Missing parameter. \n");
             PrintToConsole(HELP_MSG);
             return EXIT_FAILURE;
         }
         std::string opt = argv[TWO];
         RecordOption option;
-        if ((size_t)argc >= INDEX_FOUR) {
+        if (argc >= FOUR) {
             if (strcmp(argv[THREE], "point") == 0) {
                 option.saveWidget = false;
             }
@@ -443,7 +443,7 @@ namespace OHOS::uitest {
 
     static int32_t UiInput(int32_t argc, char *argv[])
     {
-        if ((size_t)argc < INDEX_FOUR) {
+        if (argc < FOUR) {
             std::cout << "Missing parameter. \n" << std::endl;
             PrintInputMessage();
             return EXIT_FAILURE;
@@ -459,7 +459,7 @@ namespace OHOS::uitest {
 
     extern "C" int32_t main(int32_t argc, char *argv[])
     {
-        if ((size_t)argc < INDEX_TWO) {
+        if (argc < TWO) {
             PrintToConsole("Missing argument");
             PrintToConsole(HELP_MSG);
             _Exit(EXIT_FAILURE);
