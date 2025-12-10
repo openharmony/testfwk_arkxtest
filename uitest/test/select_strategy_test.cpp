@@ -561,6 +561,7 @@ TEST(SelectStrategyTest, plainStrategyForOnlyOneTarget)
     ASSERT_EQ(targets.size(), 1);
     ASSERT_EQ(visits[targets[0]].GetAttr(UiAttr::ACCESSIBILITY_ID), "4");
 }
+
 TEST(SelectStrategyTest, plainStrategyForMultiTarget)
 {
     std::unique_ptr<ElementNodeIterator> iterator = nullptr;
@@ -790,4 +791,109 @@ TEST(SelectStrategyTest, complexStrategyForAfterAndWithInMultiTarget)
     ASSERT_EQ(targets.size(), 2);
     ASSERT_EQ(visits.at(targets.at(0)).GetAttr(UiAttr::ACCESSIBILITY_ID), "5");
     ASSERT_EQ(visits.at(targets.at(1)).GetAttr(UiAttr::ACCESSIBILITY_ID), "4");
+}
+
+void ConstructIterator2(std::unique_ptr<ElementNodeIterator> &iterator)
+{
+    std::string afterDom = R"(
+        {
+            "attributes":{
+                "windowId":"12",
+                "componentType":"List",
+                "content":"Text List",
+                "rectInScreen":"0,200,0,200"
+            },
+            "children":[
+                {
+                     "attributes":{
+                        "windowId":"12",
+                        "componentType":"List",
+                        "content":"Text List",
+                        "rectInScreen":"0,200,0,150",
+                        "cliped": "true"
+                     },
+                     "children":[
+                        {
+                            "attributes":{
+                                "windowId":"12",
+                                "componentType":"Text",
+                                "content":"Text One",
+                                "rectInScreen":"0,200,0,10"
+                            },
+                            "children":[]
+                        },
+                        {
+                            "attributes":{
+                                "windowId":"12",
+                                "componentType":"Image",
+                                "content":"Text One",
+                                "rectInScreen":"0,200,80,90"
+                            },
+                            "children":[]
+                        },
+                        {
+                            "attributes":{
+                                "windowId":"12",
+                                "componentType":"List",
+                                "accessibilityId":"7",
+                                "content":"Text List12",
+                                "rectInScreen":"0,200,0,200",
+                                "cliped": "true"
+                            },
+                            "children":[
+                                {
+                                    "attributes":{
+                                        "windowId":"12",
+                                        "accessibilityId":"4",
+                                        "componentType":"Button",
+                                        "content":"Text One",
+                                        "rectInScreen":"0,200,160,170"
+                                    },
+                                    "children":[]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    )";
+    iterator = MockElementNodeIterator::ConstructIteratorByJson(afterDom);
+}
+
+TEST(SelectStrategyTest, 212131312)
+{
+    std::unique_ptr<ElementNodeIterator> iterator = nullptr;
+    ConstructIterator2(iterator);
+
+    Window w1{12};
+    w1.windowLayer_ = 2;
+    w1.bounds_ = Rect{0, 200, 0, 200};
+    Rect cover1(10, 200, 0, 20);
+    Rect cover2(0, 150, 10, 100);
+    w1.invisibleBoundsVec_.emplace_back(cover1);
+    w1.invisibleBoundsVec_.emplace_back(cover2);
+    std::vector<Widget> visits;
+    std::vector<int> targets;
+    WidgetMatchModel sef1{UiAttr::TEXT, "Text One", ValueMatchPattern::EQ};
+    std::vector<WidgetMatchModel> myselfMatchers;
+    myselfMatchers.emplace_back(sef1);
+    StrategyBuildParam buildParam;
+    buildParam.myselfMatcher = myselfMatchers;
+    std::unique_ptr<SelectStrategy> plainStrategy = SelectStrategy::BuildSelectStrategy(buildParam, true);
+    DumpOption option;
+    plainStrategy->LocateNode(w1, *iterator.get(), visits, targets, option);
+    ASSERT_EQ(targets.size(), 2);
+    ASSERT_EQ(visits[targets[0]].GetAttr(UiAttr::TYPE), "Text");
+    ASSERT_EQ(visits[targets[1]].GetAttr(UiAttr::TYPE), "Image");
+    auto rect0 = visits[targets[0]].GetBounds();
+    ASSERT_EQ(rect0.left_, 0);
+    ASSERT_EQ(rect0.right_, 10);
+    ASSERT_EQ(rect0.top_, 0);
+    ASSERT_EQ(rect0.bottom_, 10);
+    auto rect1 = visits[targets[1]].GetBounds();
+    ASSERT_EQ(rect1.left_, 150);
+    ASSERT_EQ(rect1.right_, 200);
+    ASSERT_EQ(rect1.top_, 80);
+    ASSERT_EQ(rect1.bottom_, 90);
 }
