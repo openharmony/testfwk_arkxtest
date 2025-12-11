@@ -1304,13 +1304,13 @@ export default function staticTest() {
       let claser: ClassName = new ClassName(); 
       // 1.创建MockKit对象
       let mocker: MockKit = new MockKit();
-      // 2.Mock  类ClassName对象的成员变量priData
+      // 2.Mock  类ClassName对象的私有属性priData
       mocker.mockProperty(claser, "priData", 4);
       // 3.期望被Mock后的私有属性的值为4
       expect(claser.method()).assertEqual(4);
-      
-       // 清除Mock能力
+      // 4.还原被Mock的属性
       mocker.ignoreMock(claser, "priData");
+      // 5.私有属性priData的值被还原
       expect(claser.method()).assertEqual(2);
     })
   })
