@@ -751,6 +751,10 @@ assertPromiseIsRejected(): Promise<void>;
 ```javascript
 import { describe, it, expect } from '@ohos/hypium';
 
+interface PromiseInfo {
+  res: string;
+}
+
 describe('expectTest', ()=> {
    it('assertPromiseIsRejectedTest', 0, async () => {
       let info: PromiseInfo = {res: "no"};
@@ -777,6 +781,10 @@ assertPromiseIsRejectedWith(expectValue: any): Promise<void>;
 **示例：**
 ```javascript
 import { describe, it, expect } from '@ohos/hypium';
+
+interface PromiseInfo {
+  res: string;
+}
 
 describe('expectTest', ()=> {
    it('assertPromiseIsRejectedWithTest', 0, async () => {
@@ -826,6 +834,10 @@ assertPromiseIsResolved(): Promise<void>;
 ```javascript
 import { describe, it, expect } from '@ohos/hypium';
 
+interface PromiseInfo {
+  res: string;
+}
+
 describe('expectTest', ()=> {
    it('assertPromiseIsResolvedTest', 0, async () => {
       let info: PromiseInfo = {res: "result value"};
@@ -853,6 +865,10 @@ assertPromiseIsResolvedWith(expectValue: any): Promise<void>;
 **示例：**
 ```javascript
 import { describe, it, expect } from '@ohos/hypium';
+
+interface PromiseInfo {
+  res: string;
+}
 
 describe('expectTest', ()=> {
    it('assertPromiseIsResolvedWithTest', 0, async () => {
@@ -991,7 +1007,7 @@ export default function actionTest() {
     describe('actionTest', function () {
         it('existKeyword',DEFAULT, async function () {
             let tag = '[MyTest]';
-			SysTestKit.actionStart(tag);
+			      SysTestKit.actionStart(tag);
             //do something
         })
     })
@@ -1132,29 +1148,29 @@ Mock某个类的实例上的公共方法，支持使用异步函数
 import { describe, expect, it, MockKit } from '@ohos/hypium';
 
 class ClassName {
-   constructor() {
-   }
-   method_1(arg: string) {
-   return '888888';
-}
+    constructor() {
+    }
+    method_1(arg: string) {
+        return '888888';
+    }
 }
 export default function afterReturnTest() {
-  describe('afterReturnTest', () => {
-    it('afterReturnTest', 0, () => {
-      console.info("it1 begin");
-      // 1.创建一个Mock能力的对象MockKit
-      let mocker: MockKit = new MockKit();
-      // 2.定类ClassName，里面两个函数，然后创建一个对象claser
-      let claser: ClassName = new ClassName();
-      // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
-      let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
-      // 4.期望claser.method_1函数被Mock后, 以'test'为入参时调用函数返回结果'1'
-      when(mockfunc)('test').afterReturn('1');
-      // 5.对Mock后的函数进行断言，看是否符合预期
-      // 执行成功案例，参数为'test'
-      expect(claser.method_1('test')).assertEqual('1'); // 执行通过
-    })
-  })
+    describe('afterReturnTest', () => {
+        it('afterReturnTest', 0, () => {
+            console.info("it1 begin");
+            // 1.创建一个Mock能力的对象MockKit
+            let mocker: MockKit = new MockKit();
+            // 2.定类ClassName，里面两个函数，然后创建一个对象claser
+            let claser: ClassName = new ClassName();
+            // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
+            let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
+            // 4.期望claser.method_1函数被Mock后, 以'test'为入参时调用函数返回结果'1'
+            when(mockfunc)('test').afterReturn('1');
+            // 5.对Mock后的函数进行断言，看是否符合预期
+            // 执行成功案例，参数为'test'
+            expect(claser.method_1('test')).assertEqual('1'); // 执行通过
+        })
+      })
 }
 ```
 
@@ -1389,6 +1405,8 @@ export default function clearTest() {
       let claser: ClassName = new ClassName();
       // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
       let func_1: Function = mocker.mockFunc(claser, claser.method_1);
+      // 4.期望被Mock后的函数返回结果'4'
+      when(func_1)(123).afterReturn('4');
       // 5.方法调用如下
       expect(claser.method_1(123)).assertEqual('4');
       // 6.清除obj上所有的Mock能力（原理是就是还原）
@@ -1427,6 +1445,8 @@ export default function clearTest() {
       let claser: ClassName = new ClassName();
       // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
       let func_1: Function = mocker.mockFunc(claser, claser.method_1);
+      // 4.期望被Mock后的函数返回结果'4'
+      when(func_1)(123).afterReturn('4');
       // 5.方法调用如下
       expect(claser.method_1(123)).assertEqual('4');
       // 6.进行数据和内存清理,不会还原实例中被Mock后的函数
@@ -1612,10 +1632,10 @@ export default function mockAfterActionTest() {
          // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
          let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
          // 4.期望claser.method_1函数被Mock后, 以'test'为入参时调用函数返回结果'1'
-         when(mockFunc)().afterAction(print);
+         when(mockfunc)().afterAction(print);
          // 5.对Mock后的函数进行断言，看是否符合预期
          // 执行成功案例，参数为'test','test1'
-         expect(classes.method_1()).assertEqual(123); // 执行通过
+         expect(claser.method_1()).assertEqual(123); // 执行通过
       })
    })
 }
