@@ -209,7 +209,7 @@ export default function customAssertTest() {
 
 ### beforeItSpecified<sup>1.0.15</sup>
 
-`beforeItSpecified(testCaseNames: Array<string> | string, func: Function): void`
+beforeItSpecified(testCaseNames: Array<string> | string, func: Function): void
 
 在测试套内定义一个预置条件，仅在指定测试用例开始前执行。
 
