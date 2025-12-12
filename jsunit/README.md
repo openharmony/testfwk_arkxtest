@@ -509,8 +509,8 @@ import { describe, expect, it } from '@ohos/hypium';
 
 describe('expectTest', () => {
     it('assertCloseTest', 0, () => {
-        let a:number = 100;
-        let b:number = 0.1;
+        let a: number = 100;
+        let b: number = 0.1;
         expect(a).assertClose(99, b);
     })
 })
@@ -632,7 +632,7 @@ import { describe, expect, it } from '@ohos/hypium';
 
 describe('expectTest', () => {
     it('assertInstanceOfTest', 0, () => {
-        let a:string = 'strTest';
+        let a: string = 'strTest';
         expect(a).assertInstanceOf('String');
     })
 })
@@ -894,8 +894,8 @@ interface PromiseInfo {
 
 describe('expectTest', () => {
     it('assertPromiseIsRejectedWithTest', 0, async () => {
-        let info:PromiseInfo = { res: "reject value" };
-        let p:Promise<PromiseInfo> = Promise.reject(info);
+        let info: PromiseInfo = { res: "reject value" };
+        let p: Promise<PromiseInfo> = Promise.reject(info);
         await expect(p).assertPromiseIsRejectedWith(info); // 返回Promise<void>类型，注意在异步函数中调用
     })
 })
@@ -1221,7 +1221,7 @@ export default function abilityTest() {
     describe('SysTestKitTest', () => {
 
         it("testGetItAttribute", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, () => {
-            const testType:TestType | Size | Level = SysTestKit.getItAttribute();
+            const testType: TestType | Size | Level = SysTestKit.getItAttribute();
             expect(testType).assertEqual(TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0);
         })
     })
@@ -1310,7 +1310,7 @@ import { ArgumentMatchers, describe, expect, it, MockKit, when } from '@ohos/hyp
 class ClassName {
   constructor() {
   }
-  method(arg: number):number {
+  method(arg: number): number {
     return this.method_1(arg);
   }
   private method_1(arg: number) {
