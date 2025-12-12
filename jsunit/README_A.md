@@ -177,6 +177,108 @@ export default function test() {
 }
 ```
 
+### beforeEachIt
+
+export function beforeEachIt(func: Function): void
+
+在测试套内定义一个单元预置条件，在每条测试用例开始前执行。外层测试套定义的beforeEachIt会在内部测试套中的测试用例执行前执行。
+
+**参数：**
+
+| 参数名 | 类型     | 必填    | 说明                                                  | 
+|------------| ------ |-------|-----------------------------------------------------|
+| func       | Function | 是     | 预置动作函数，在每条测试用例开始执行之前执行，支持异步函数。  |
+
+**示例：**
+
+```javascript
+import { afterEach, afterEachIt, beforeEach, beforeEachIt, describe, expect, it } from '@ohos/hypium';
+
+let str = "";
+
+export default function test() {
+    describe('test0', () => {
+        beforeEach(async () => {
+            str += "A";
+        })
+        beforeEachIt(async () => {
+            str += "B";
+        })
+        afterEach(async () => {
+            str += "C";
+        })
+        afterEachIt(async () => {
+            str += "D";
+        })
+        it('test0000', 0, () => {
+            expect(str).assertEqual("BA");
+        })
+        describe('test1', () => {
+            beforeEach(async () => {
+                str += "E";
+            })
+            beforeEachIt(async () => {
+                str += "F";
+            })
+            it('test1111', 0, async () => {
+                expect(str).assertEqual("BACDBFE");
+            })
+        })
+    })
+}
+```
+
+
+### afterEachIt
+
+export function afterEachIt(func: Function): void
+
+在测试套内定义一个单元预置条件，在每条测试用例结束后执行。外层测试套定义的afterEachIt会在内部测试套中的测试用例执行结束后执行。
+
+**参数：**
+
+| 参数名 | 类型     | 必填    | 说明                          | 
+|------------| ------ |-------|-----------------------------|
+| func       | Function | 是     | 清理动作函数，在每条测试用例执行完成后运行。支持异步函数。 |
+
+**示例：**
+```javascript
+import { afterEach, afterEachIt, beforeEach, beforeEachIt, describe, expect, it } from '@ohos/hypium';
+
+let str = "";
+
+export default function test() {
+    describe('test0', () => {
+        beforeEach(async () => {
+            str += "A";
+        })
+        beforeEachIt(async () => {
+            str += "B";
+        })
+        afterEach(async () => {
+            str += "C";
+        })
+        afterEachIt(async () => {
+            str += "D";
+        })
+        it('test0000', 0, () => {
+            expect(str).assertEqual("BA");
+        })
+        describe('test1', () => {
+            beforeEach(async () => {
+                str += "E";
+            })
+            beforeEachIt(async () => {
+                str += "F";
+            })
+            it('test1111', 0, async () => {
+                expect(str).assertEqual("BACDBFE");
+            })
+        })
+    })
+}
+```
+
 ### afterAll
 
 afterAll(func: Function): void
@@ -203,7 +305,7 @@ export default function customAssertTest() {
             let b = 0.1;
             expect(a).assertClose(99, b);
         })
-    });
+    })
 }
 ```
 
@@ -411,8 +513,8 @@ import { describe, expect, it } from '@ohos/hypium';
 
 describe('expectTest', () => {
     it('assertCloseTest', 0, () => {
-        let a:number = 100;
-        let b:number = 0.1;
+        let a: number = 100;
+        let b: number = 0.1;
         expect(a).assertClose(99, b);
     })
 })
@@ -534,7 +636,7 @@ import { describe, expect, it } from '@ohos/hypium';
 
 describe('expectTest', () => {
     it('assertInstanceOfTest', 0, () => {
-        let a:string = 'strTest';
+        let a: string = 'strTest';
         expect(a).assertInstanceOf('String');
     })
 })
@@ -722,8 +824,8 @@ import { describe, expect, it } from '@ohos/hypium';
 
 describe('expectTest', () => {
     it('deepEquals_array_not_have_true', 0, () => {
-        const a:Array<number> = [];
-        const b:Array<number> = [];
+        const a: Array<number> = [];
+        const b: Array<number> = [];
         expect(a).assertDeepEquals(b);
     })
 })
@@ -796,8 +898,8 @@ interface PromiseInfo {
 
 describe('expectTest', () => {
     it('assertPromiseIsRejectedWithTest', 0, async () => {
-        let info:PromiseInfo = { res: "reject value" };
-        let p:Promise<PromiseInfo> = Promise.reject(info);
+        let info: PromiseInfo = { res: "reject value" };
+        let p: Promise<PromiseInfo> = Promise.reject(info);
         await expect(p).assertPromiseIsRejectedWith(info); // 返回Promise<void>类型，注意在异步函数中调用
     })
 })
@@ -848,7 +950,7 @@ interface PromiseInfo {
 
 describe('expectTest', () => {
     it('assertPromiseIsResolvedTest', 0, async () => {
-        let info:PromiseInfo = { res: "result value" };
+        let info: PromiseInfo = { res: "result value" };
         let p: Promise<PromiseInfo> = Promise.resolve(info);
         await expect(p).assertPromiseIsResolved(); // 返回Promise<void>类型，注意在异步函数中调用
     })
@@ -1123,7 +1225,7 @@ export default function abilityTest() {
     describe('SysTestKitTest', () => {
 
         it("testGetItAttribute", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, () => {
-            const testType:TestType | Size | Level = SysTestKit.getItAttribute();
+            const testType: TestType | Size | Level = SysTestKit.getItAttribute();
             expect(testType).assertEqual(TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0);
         })
     })
@@ -1161,7 +1263,7 @@ class ClassName {
     }
 
     method_1(arg: string) {
-       return'888888';
+       return '888888';
     }
 }
 
@@ -1170,11 +1272,11 @@ export default function afterReturnTest() {
         it('afterReturnTest', 0, () => {
             console.info("it1 begin");
             // 1.创建一个Mock能力的对象MockKit
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.定类ClassName，里面两个函数，然后创建一个对象claser
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
-            let mockfunc:Function = mocker.mockFunc(claser, claser.method_1);
+            let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
             // 4.期望claser.method_1函数被Mock后, 以'test'为入参时调用函数返回结果'1'
             when(mockfunc)('test').afterReturn('1');
             // 5.对Mock后的函数进行断言，看是否符合预期
@@ -1223,13 +1325,13 @@ class ClassName {
 export default function staticTest() {
     describe('privateTest', () => {
         it('private_001', 0, () => {
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             let really_result = claser.method(123);
             expect(really_result).assertEqual(123);
             // 1.创建MockKit对象
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.Mock  类ClassName对象的私有方法，比如method_1
-            let func_1:Function = mocker.mockPrivateFunc(claser, "method_1");
+            let func_1: Function = mocker.mockPrivateFunc(claser, "method_1");
             // 3.期望被Mock后的函数返回结果456
             when(func_1)(ArgumentMatchers.any).afterReturn(456);
             let mock_result = claser.method(123);
@@ -1261,7 +1363,7 @@ class ClassName {
     constructor() {
     }
 
-    privatepriData = 2;
+    private priData = 2;
 
     method() {
         return this.priData;
@@ -1271,9 +1373,9 @@ class ClassName {
 export default function staticTest() {
     describe('propertyTest', () => {
         it('property_001', 0, () => {
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 1.创建MockKit对象
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.Mock  类ClassName对象的成员变量priData
             mocker.mockProperty(claser, "priData", 4);
             // 3.期望被Mock后的私有属性的值为4
@@ -1316,9 +1418,9 @@ class ClassName {
 export default function staticTest() {
     describe('propertyTest', () => {
         it('property_001', 0, () => {
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 1.创建MockKit对象
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.Mock  类ClassName对象的私有属性priData
             mocker.mockProperty(claser, "priData", 4);
             // 3.期望被Mock后的私有属性的值为4
@@ -1372,9 +1474,9 @@ export default function verifyTest() {
     describe('verifyTest', () => {
         it('testVerify', 0, () => {
             // 1.创建一个Mock能力的对象MockKit
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.然后创建一个对象claser
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.进行Mock操作,比如需要对ClassName类的method_1和method_2两个函数进行Mock
             mocker.mockFunc(claser, claser.method_1);
             mocker.mockFunc(claser, claser.method_2);
@@ -1419,11 +1521,11 @@ export default function clearTest() {
     describe('clearTest', () => {
         it('testMockfunc', 0, () => {
             // 1.创建一个Mock能力的对象MockKit
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.创建一个对象claser
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
-            let func_1:Function = mocker.mockFunc(claser, claser.method_1);
+            let func_1: Function = mocker.mockFunc(claser, claser.method_1);
             // 4.期望被Mock后的函数返回结果'4'
             when(func_1)(123).afterReturn('4');
             // 5.方法调用如下
@@ -1462,11 +1564,11 @@ export default function clearTest() {
     describe('clearAllTest', () => {
         it('testMockfunc', 0, () => {
             // 1.创建一个Mock能力的对象MockKit
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.创建一个对象claser
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
-            let func_1:Function = mocker.mockFunc(claser, claser.method_1);
+            let func_1: Function = mocker.mockFunc(claser, claser.method_1);
             // 4.期望被Mock后的函数返回结果'4'
             when(func_1)(123).afterReturn('4');
             // 5.方法调用如下
@@ -1517,11 +1619,11 @@ export default function verifyAtMostTest() {
     describe('verifyAtMostTest', () => {
         it('test_verify_atMost', 0, () => {
             // 1.创建MockKit对象
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.创建类对象
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.Mock  类ClassName对象的某个方法，比如method_1
-            let func_1:Function = mocker.mockFunc(claser, claser.method_1);
+            let func_1: Function = mocker.mockFunc(claser, claser.method_1);
             // 4.期望被Mock后的函数返回结果'4'
             when(func_1)('abc').afterReturn('4');
             // 5.随机执行几次函数，参数如下
@@ -1564,11 +1666,11 @@ export default function afterReturnTest() {
     describe('afterReturnTest', () => {
         it('afterReturnTest', 0, () => {
             // 1.创建一个Mock能力的对象MockKit
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.定类ClassName，里面两个函数，然后创建一个对象claser
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
-            let mockfunc:Function = mocker.mockFunc(claser, claser.method_1);
+            let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
             // 4.期望claser.method_1函数被Mock后, 以'test'为入参时调用函数返回结果'1'
             when(mockfunc)('test').afterReturn('1');
             // 5.对Mock后的函数进行断言，看是否符合预期
@@ -1604,11 +1706,11 @@ export default function afterReturnNothingTest() {
     describe('afterReturnNothingTest', () => {
         it('testMockfunc', 0, () => {
             // 1.创建一个Mock能力的对象MockKit
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.定类ClassName，里面两个函数，然后创建一个对象claser
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
-            let mockfunc:Function = mocker.mockFunc(claser, claser.method_1);
+            let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
             // 4.期望claser.method_1函数被Mock后, 以'test'为入参时调用函数返回结果undefined
             when(mockfunc)('test').afterReturnNothing();
             // 5.对Mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
@@ -1655,11 +1757,11 @@ export default function mockAfterActionTest() {
     describe('mockAfterActionTest', () => {
         it('mockAfterActionTest', 0, () => {
             // 1.创建一个Mock能力的对象MockKit
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.定类ClassName，里面两个函数，然后创建一个对象claser
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
-            let mockfunc:Function = mocker.mockFunc(claser, claser.method_1);
+            let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
             // 4.期望claser.method_1函数被Mock后, 以'test'为入参时调用函数返回结果'1'
             when(mockfunc)().afterAction(print);
             // 5.对Mock后的函数进行断言，看是否符合预期
@@ -1702,11 +1804,11 @@ export default function afterThrowTest() {
         it('testMockfunc', 0, () => {
             console.info("it1 begin");
             // 1.创建一个Mock能力的对象MockKit
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.创建一个对象claser
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
-            let mockfunc:Function = mocker.mockFunc(claser, claser.method_1);
+            let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
             // 4.期望claser.method_1函数被Mock后, 以'test'为参数调用函数时抛出error xxx异常
             when(mockfunc)('test').afterThrow('error xxx');
             // 5.执行Mock后的函数，捕捉异常并使用assertEqual对比msg否符合预期
@@ -1753,11 +1855,11 @@ export default function verifyTimesTest() {
     describe('verifyTimesTest', () => {
         it('test_verify_times', 0, () => {
             // 1.创建MockKit对象
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.创建类对象
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.Mock 类ClassName对象的某个方法，比如method_1
-            let func_1:Function = mocker.mockFunc(claser, claser.method_1);
+            let func_1: Function = mocker.mockFunc(claser, claser.method_1);
             // 4.期望被Mock后的函数返回结果'4'
             when(func_1)('abc').afterReturn('4');
             // 5.随机执行几次函数，参数如下
@@ -1798,9 +1900,9 @@ export default function verifyTest() {
         it('test_verify_once', 0, () => {
             console.info("it1 begin");
             // 1.创建一个Mock能力的对象MockKit
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.然后创建一个对象claser
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
             mocker.mockFunc(claser, claser.method_1);
             // 4.方法调用如下
@@ -1842,11 +1944,11 @@ export default function verifyAtLeastTest() {
     describe('verifyAtLeastTest', () => {
         it('test_verify_atLeast', 0, () => {
             // 1.创建MockKit对象
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.创建类对象
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.Mock  类ClassName对象的某个方法，比如method_1
-            let func_1:Function = mocker.mockFunc(claser, claser.method_1);
+            let func_1: Function = mocker.mockFunc(claser, claser.method_1);
             // 4.期望被Mock后的函数返回结果'4'
             when(func_1)('abc').afterReturn('4');
             // 5.随机执行几次函数，参数如下
@@ -1890,11 +1992,11 @@ export default function verifyAtMostTest() {
     describe('verifyAtMostTest', () => {
         it('test_verify_atMost', 0, () => {
             // 1.创建MockKit对象
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.创建类对象
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.Mock  类ClassName对象的某个方法，比如method_1
-            let func_1:Function = mocker.mockFunc(claser, claser.method_1);
+            let func_1: Function = mocker.mockFunc(claser, claser.method_1);
             // 4.期望被Mock后的函数返回结果'4'
             when(func_1)('abc').afterReturn('4');
             // 5.随机执行几次函数，参数如下
@@ -1932,9 +2034,9 @@ export default function verifyTest() {
         it('test_verify_never', 0, () => {
             console.info("it1 begin");
             // 1.创建一个Mock能力的对象MockKit
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.然后创建一个对象claser
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
             mocker.mockFunc(claser, claser.method_1);
             // 4.方法调用如下
@@ -1981,11 +2083,11 @@ export default function argumentMatchersAnyTest() {
         it('testMockfunc', 0, () => {
             console.info("it1 begin");
             // 1.创建一个Mock能力的对象MockKit
-            let mocker:MockKit = new MockKit();
+            let mocker: MockKit = new MockKit();
             // 2.定类ClassName，里面两个函数，然后创建一个对象claser
-            let claser:ClassName = new ClassName();
+            let claser: ClassName = new ClassName();
             // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
-            let mockfunc:Function = mocker.mockFunc(claser, claser.method_1);
+            let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
             // 4.期望claser.method_1函数被Mock后, 以任何参数调用函数时返回结果'1'
             when(mockfunc)(ArgumentMatchers.any).afterReturn('1');
             // 5.对Mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
@@ -2181,4 +2283,3 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
    不涉及。
 -  SDK版本更新声明
    为了向您提供最新的服务，我们会不时更新Hypium版本。我们强烈建议开发者集成使用最新版本的Hypium。
-
