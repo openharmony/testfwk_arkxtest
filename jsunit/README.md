@@ -177,7 +177,7 @@ export default function test() {
 }
 ```
 
-### beforeEachIt
+### beforeEachIt<sup>1.0.25</sup>
 
 export function beforeEachIt(func: Function): void
 
@@ -229,7 +229,7 @@ export default function test() {
 ```
 
 
-### afterEachIt
+### afterEachIt<sup>1.0.25</sup>
 
 export function afterEachIt(func: Function): void
 
