@@ -192,37 +192,39 @@ export function beforeEachIt(func: Function): void
 **示例：**
 
 ```javascript
-import { describe, beforeEach, afterEach, beforeEachIt, afterEachIt, it, expect } from '@ohos/hypium';
+import { afterEach, afterEachIt, beforeEach, beforeEachIt, describe, expect, it } from '@ohos/hypium';
+
 let str = "";
+
 export default function test() {
-  describe('test0', () => {
-    beforeEach(async () => {
-      str += "A"
+    describe('test0', () => {
+        beforeEach(async () => {
+            str += "A";
+        })
+        beforeEachIt(async () => {
+            str += "B";
+        })
+        afterEach(async () => {
+            str += "C";
+        })
+        afterEachIt(async () => {
+            str += "D";
+        })
+        it('test0000', 0, () => {
+            expect(str).assertEqual("BA");
+        })
+        describe('test1', () => {
+            beforeEach(async () => {
+                str += "E";
+            })
+            beforeEachIt(async () => {
+                str += "F";
+            })
+            it('test1111', 0, async () => {
+                expect(str).assertEqual("BACDBFE");
+            })
+        })
     })
-    beforeEachIt(async () => {
-      str += "B"
-    })
-    afterEach(async () => {
-      str += "C"
-    })
-    afterEachIt(async () => {
-      str += "D"
-    })
-    it('test0000', 0, () => {
-      expect(str).assertEqual("BA");
-    })
-    describe('test1', () => {
-      beforeEach(async () => {
-        str += "E"
-      })
-      beforeEachIt(async () => {
-        str += "F"
-      })
-      it('test1111', 0, async () => {
-        expect(str).assertEqual("BACDBFE");
-      })
-    })
-  })
 }
 ```
 
@@ -241,37 +243,39 @@ export function afterEachIt(func: Function): void
 
 **示例：**
 ```javascript
-import { describe, beforeEach, afterEach, beforeEachIt, afterEachIt, it, expect } from '@ohos/hypium';
+import { afterEach, afterEachIt, beforeEach, beforeEachIt, describe, expect, it } from '@ohos/hypium';
+
 let str = "";
+
 export default function test() {
-  describe('test0', () => {
-    beforeEach(async () => {
-      str += "A"
+    describe('test0', () => {
+        beforeEach(async () => {
+            str += "A";
+        })
+        beforeEachIt(async () => {
+            str += "B";
+        })
+        afterEach(async () => {
+            str += "C";
+        })
+        afterEachIt(async () => {
+            str += "D";
+        })
+        it('test0000', 0, () => {
+            expect(str).assertEqual("BA");
+        })
+        describe('test1', () => {
+            beforeEach(async () => {
+                str += "E";
+            })
+            beforeEachIt(async () => {
+                str += "F";
+            })
+            it('test1111', 0, async () => {
+                expect(str).assertEqual("BACDBFE");
+            })
+        })
     })
-    beforeEachIt(async () => {
-      str += "B"
-    })
-    afterEach(async () => {
-      str += "C"
-    })
-    afterEachIt(async () => {
-      str += "D"
-    })
-    it('test0000', 0, () => {
-      expect(str).assertEqual("BA");
-    })
-    describe('test1', () => {
-      beforeEach(async () => {
-        str += "E"
-      })
-      beforeEachIt(async () => {
-        str += "F"
-      })
-      it('test1111', 0, async () => {
-        expect(str).assertEqual("BACDBFE");
-      })
-    })
-  })
 }
 ```
 
@@ -301,7 +305,7 @@ export default function customAssertTest() {
             let b = 0.1;
             expect(a).assertClose(99, b);
         })
-    });
+    })
 }
 ```
 
@@ -1359,7 +1363,7 @@ class ClassName {
     constructor() {
     }
 
-    privatepriData = 2;
+    private priData = 2;
 
     method() {
         return this.priData;
@@ -2192,7 +2196,7 @@ interface customAssert extends Assert {
 //自定义断言实现
 let myAssertEqual = (actualValue: boolean, expectValue: boolean) => {
     
-  interface R {
+interface R {
   pass: boolean,
   message: string
 }
@@ -2279,3 +2283,4 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
    不涉及。
 -  SDK版本更新声明
    为了向您提供最新的服务，我们会不时更新Hypium版本。我们强烈建议开发者集成使用最新版本的Hypium。
+   
