@@ -209,7 +209,7 @@ export default function customAssertTest() {
 
 ### beforeItSpecified<sup>1.0.15</sup>
 
-beforeItSpecified(testCaseNames: Array<string> | string, func: Function): void
+`beforeItSpecified(testCaseNames: Array<string> | string, func: Function): void`
 
 在测试套内定义一个预置条件，仅在指定测试用例开始前执行。
 
@@ -355,7 +355,7 @@ export default function skip1() {
 
 ### expect
 
-expect(actualValue?: any): Assert;
+expect(actualValue?: any): Assert
 
 支持bool类型判断等多种断言方法
 
@@ -393,7 +393,7 @@ describe('Expect Basic Value Tests', function () {
 
 #### assertClose
 
-assertClose(expectValue: number, precision: number): void;
+assertClose(expectValue: number, precision: number): void
 
 检验实际值和预期值的接近程度是否达到预期。
 
@@ -420,7 +420,7 @@ describe('expectTest', () => {
 
 #### assertContain
 
-assertContain(expectValue: any): void;
+assertContain(expectValue: any): void
 
 检验实际值中是否包含expectvalue，如：验证数组中是否包含某一个元素，或验证字符串中是否包含某一个子串。
 
@@ -445,7 +445,7 @@ describe('expectTest', () => {
 
 #### assertEqual
 
-assertEqual(expectValue: any): void;
+assertEqual(expectValue: any): void
 
 检验实际值是否等于expectvalue。
 
@@ -468,7 +468,7 @@ describe('expectTest', () => {
 
 #### assertFail
 
-assertFail(): void;
+assertFail(): void
 
 抛出一个错误。
 
@@ -484,7 +484,7 @@ describe('expectTest', () => {
 ```
 #### assertFalse
 
-assertFalse(): void;
+assertFalse(): void
 
 检验实际值是否是false。
 
@@ -501,7 +501,7 @@ describe('expectTest', () => {
 
 #### assertTrue
 
-assertTrue(): void;
+assertTrue(): void
 
 检验实际值是否是true。
 
@@ -518,7 +518,7 @@ describe('expectTest', () => {
 
 #### assertInstanceOf
 
-assertInstanceOf(expectValue: string): void;
+assertInstanceOf(expectValue: string): void
 
 检验实际值是否是expectvalue类型，支持基础类型。
 
@@ -542,7 +542,7 @@ describe('expectTest', () => {
 
 #### assertLarger
 
-assertLarger(expectValue: number): void;
+assertLarger(expectValue: number): void
 
 检验实际值是否大于expectvalue。
 
@@ -565,7 +565,7 @@ describe('expectTest', () => {
 
 #### assertLess
 
-assertLess(expectValue: number): void;
+assertLess(expectValue: number): void
 
 检验实际值是否小于expectvalue。
 
@@ -589,7 +589,7 @@ describe('expectTest', () => {
 
 #### assertNull
 
-assertNull(): void;
+assertNull(): void
 
 检验实际值是否是null。
 
@@ -606,7 +606,7 @@ describe('expectTest', () => {
 
 #### assertThrowError
 
-assertThrowError(expectValue: string | Function): void;
+assertThrowError(expectValue: string | Function): void
 
 检验actualvalue抛出Error的message是否是expectValue，或者抛出的Error的类是否是expectValue。使用此断言时，actualvalue必须是一个函数。
 
@@ -637,7 +637,7 @@ describe('expectTest', () => {
 
 #### assertUndefined
 
-assertUndefined(): void;
+assertUndefined(): void
 
 检验实际值是否是undefined。
 
@@ -654,7 +654,7 @@ describe('expectTest', () => {
 
 #### assertNaN<sup>1.0.4<sup>
 
-assertNaN(): void;
+assertNaN(): void
 
 检验实际值是否是一个NaN。
 
@@ -671,7 +671,7 @@ describe('expectTest', () => {
 
 #### assertNegUnlimited<sup>1.0.4<sup>
 
-assertNegUnlimited(): void;
+assertNegUnlimited(): void
 
 检验实际值是否等于Number.NEGATIVE_INFINITY。
 
@@ -688,7 +688,7 @@ describe('expectTest', () => {
 
 #### assertPosUnlimited<sup>1.0.4<sup>
 
-assertPosUnlimited(): void;
+assertPosUnlimited(): void
 
 检验实际值是否等于Number.POSITIVE_INFINITY。
 
@@ -705,7 +705,7 @@ describe('expectTest', () => {
 
 #### assertDeepEquals<sup>1.0.4<sup>
 
-assertDeepEquals(expectValue: any): void;
+assertDeepEquals(expectValue: any): void
 
 检验实际值和expectvalue是否完全相等，用于对对象类型进行值相等的判断。
 
@@ -731,7 +731,7 @@ describe('expectTest', () => {
 
 #### assertPromiseIsPending<sup>1.0.4<sup>
 
-assertPromiseIsPending(): Promise<void>;
+assertPromiseIsPending(): Promise<void>
 
 判断实际值中的Promise是否处于Pending状态。
 
@@ -750,7 +750,7 @@ describe('expectTest', () => {
 
 #### assertPromiseIsRejected<sup>1.0.4<sup>
 
-assertPromiseIsRejected(): Promise<void>;
+assertPromiseIsRejected(): Promise<void>
 
 判断promise是否处于Rejected状态。
 
@@ -774,7 +774,7 @@ describe('expectTest', () => {
 
 #### assertPromiseIsRejectedWith<sup>1.0.4<sup>
 
-assertPromiseIsRejectedWith(expectValue: any): Promise<void>;
+assertPromiseIsRejectedWith(expectValue: any): Promise<void>
 
 判断promise是否处于Rejected状态，并且比较抛出的Reject内容和预期值是否值相等。
 
@@ -807,7 +807,7 @@ describe('expectTest', () => {
 
 #### assertPromiseIsRejectedWithError<sup>1.0.4<sup>
 
-assertPromiseIsRejectedWithError(expectedErrorType: Function | string, expectedErrorMessage?: string): Promise<void>;
+assertPromiseIsRejectedWithError(expectedErrorType: Function | string, expectedErrorMessage?: string): Promise<void>
 
 判断promise是否处于Rejected状态并有异常，同时可以比较异常的类型和message值。只传一个参数时，可以校验Reject抛出的错误的类型或是message是否符合预期；传两个参数时，校验Reject抛出的错误的类型和message都符合预期。
 
@@ -833,7 +833,7 @@ describe('expectTest', () => {
 
 #### assertPromiseIsResolved<sup>1.0.4<sup>
 
-assertPromiseIsResolved(): Promise<void>;
+assertPromiseIsResolved(): Promise<void>
 
 判断promise是否处于Resolved状态。
 
@@ -859,7 +859,7 @@ describe('expectTest', () => {
 
 #### assertPromiseIsResolvedWith<sup>1.0.4<sup>
 
-assertPromiseIsResolvedWith(expectValue: any): Promise<void>;
+assertPromiseIsResolvedWith(expectValue: any): Promise<void>
 
 判断promise是否处于Resolved状态，并且比较执行的结果值。
 
@@ -889,7 +889,7 @@ describe('expectTest', ()=> {
 
 #### not<sup>1.0.4<sup>
 
-not(): Assert;
+not(): Assert
 
 对断言结果取反，支持所有的Assert断言功能。
 
@@ -914,7 +914,7 @@ describe('assertNot', () => {
 
 #### message<sup>1.0.17<sup>
 
-message(msg: string): Assert;
+message(msg: string): Assert
 
 自定义断言异常信息。
 
