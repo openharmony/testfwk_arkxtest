@@ -2274,13 +2274,17 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
 ## Hypium开放能力隐私声明
 
 -  我们如何收集和使用您的个人信息
+
    您在使用集成了Hypium开放能力的测试应用时，Hypium不会处理您的个人信息。
 -  SDK处理的个人信息
+
    不涉及。
 -  SDK集成第三方服务声明
+
    不涉及。
 -  SDK数据安全保护
+
    不涉及。
 -  SDK版本更新声明
+
    为了向您提供最新的服务，我们会不时更新Hypium版本。我们强烈建议开发者集成使用最新版本的Hypium。
-   
