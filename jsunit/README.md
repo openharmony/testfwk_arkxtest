@@ -51,10 +51,10 @@ import { describe, it, expect } from '@ohos/hypium';
 | 1    | 基础流程 | 支持编写及异步执行基础用例。                                    |
 | 2    | 断言库   | 判断用例实际结果值与预期值是否相符。                                |
 | 3    | 异步代码测试   | 等待异步任务完成之后再判断测试是否成功。                                |
-| 4    | 公共能力   | 支持获取用例信息的基础能力以及日志打印、清楚等能力。                                |
+| 4    | 公共能力   | 支持获取用例信息的基础能力以及日志打印、清除等能力。                                |
 | 5    | Mock能力 | 支持函数级Mock能力，对定义的函数进行Mock后修改函数的行为，使其返回指定的值或者执行某种动作。 |
 | 6    | 数据驱动 | 提供数据驱动能力，支持复用同一个测试脚本，使用不同输入数据驱动执行。                |
-| 7    | 专项能力 | 支持测试套与用例筛选、随机执行、压力测试、超时设置、遇错即停模式，跳过，支持测试套嵌套等。     |
+| 7    | 专项能力 | 支持筛选测试套/测试用例；支持配置跳过指定测试套/测试用例；支持配置超时时间；提供随机执行、压力测试、遇错即停等测试模式。     |
 
 ## 接口
 ### describe
@@ -430,7 +430,7 @@ export default function skip1() {
 
 xit(testCaseName: string,attribute: number,func: Function): void
 
-定义一条测试用例。
+跳过一条测试用例。
 
 **参数：**
 
@@ -1053,14 +1053,14 @@ describe('assertMessage', () => {
 
 existKeyword(keyword: string, timeout: number): boolean
 
-检测hilog日志中是否打印，仅支持检测单行日志。
+检测hilog日志中是否打印，仅支持检测单行日志。若指定时间内找到指定的日志关键字，则返回true，否则返回false。
 
 **参数：**
 
 | 参数名  | 类型     | 必填 | 说明              |
 |---|--------|----|-----------------|
 | keyword  | string | 是  | 待查找关键字。         |
-| timeout     | number | 否  | 设置的查找时间，单位秒（s）。 |
+| timeout     | number | 否  | 设置的查找时间，单位秒（s），默认值4s。 |
 
 **返回值：**
 
@@ -1918,7 +1918,7 @@ export default function verifyTest() {
 
 atLeast(count: Number): void
 
-验证函数至少被调用的次数符合预期。
+验证函数被调用次数等于或超过指定值。
 
 **参数：**
 
@@ -1966,7 +1966,7 @@ export default function verifyAtLeastTest() {
 
 atMost(count: Number): void
 
-验证函数至多被调用的次数符合预期。
+验证函数被调用次数等于或小于指定值。
 
 **参数：**
 
@@ -2110,7 +2110,7 @@ export default function argumentMatchersAnyTest() {
 | SECURITY     | 0B1 << 4    | 安全性用例。  |
 | GLOBAL | 0B1 << 5 | 全球化用例。  |
 | COMPATIBILITY     | 0B1 << 6    | 兼容性用例。  |
-| USER | 0B1 << 7 | 用户相关用例。 |
+| USER | 0B1 << 7 | 用户体验相关用例。 |
 | STANDARD    | 0B1 << 8     | 标准用例。   |
 | SAFETY     | 0B1 << 9    | 安全用例。   |
 | RESILIENCE | 0B1 << 10 | 韧性测试。   |
@@ -2129,11 +2129,11 @@ export default function argumentMatchersAnyTest() {
 
 | 名称      | 值     | 说明    |
 | -------- | ------------ |-------|
-| LEVEL0    | 0B1 << 24     | 0级用例。 |
-| LEVEL1     | 0B1 << 25    | 1级用例。 |
-| LEVEL2 | 0B1 << 26 | 2级用例。 |
-| LEVEL3 | 0B1 << 27 | 3级用例。 |
-| LEVEL4 | 0B1 << 28 | 4级用例。 |
+| LEVEL0    | 0B1 << 24     | 0级用例，一般是冒烟测试用例。 |
+| LEVEL1     | 0B1 << 25    | 1级用例，一般是高优先级的核心功能用例。 |
+| LEVEL2 | 0B1 << 26 | 2级用例，一般是中优先级的主要功能与异常场景用例。 |
+| LEVEL3 | 0B1 << 27 | 3级用例，一般是低优先级边缘功能和复杂场景用例。 |
+| LEVEL4 | 0B1 << 28 | 4级用例，一般是极低优先级的用户体验与探索性用例。 |
 
 **示例：**
 
