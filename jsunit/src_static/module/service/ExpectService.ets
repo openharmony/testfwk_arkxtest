@@ -39,7 +39,7 @@ class ExpectService {
 
   expect(actualValue?: AnyType): AssertMatcher {
     const core = this.coreContext;
-    let currentRunningSpec = new StaticSpec({ description: '' });
+    let currentRunningSpec = new StaticSpec({ description: '', fi: 0 });
     let currentRunningSuite = new StaticSuite({ description: '' });
     if (core) {
       const specService = core.getDefaultService('spec');
