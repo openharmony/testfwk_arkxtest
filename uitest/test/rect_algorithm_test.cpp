@@ -174,3 +174,13 @@ TEST(RectAlgorithmTest, computeVisibleRegionSpecialCases)
         ASSERT_EQ(expectedRegion.GetHeight() > 0 && expectedRegion.GetWidth() > 0, visible);
     }
 }
+
+TEST(RectAlgorithmTest, computeMaxVisibleRegion)
+{
+    Rect rect(1289, 2560, 0, 1600);
+    vector<Rect> overlaySet = {Rect(1244, 1316, 688, 913), Rect(1817, 2033, 0, 72)};
+    auto region = Rect(0, 0, 0, 0);
+    auto expectedVisibleRegion = Rect(1316, 2560, 72, 1600);
+    RectAlgorithm::ComputeMaxVisibleRegion(rect, overlaySet, region);
+    ASSERT_TRUE(RectAlgorithm::CheckEqual(region, expectedVisibleRegion));
+}

@@ -94,12 +94,11 @@ namespace OHOS::perftest {
             return;
         }
         ani_status res;
-        const char *className = Builder::BuildClass({"@ohos", "test", "PerfTest", "FinishCallback"})
-                                .Descriptor().c_str();
+        auto className = Builder::BuildClass({"@ohos", "test", "PerfTest", "FinishCallback"}).Descriptor();
         ani_object classObj = {};
         if ((res = env->Object_New(finishCallbackClass_, finishCallbackCtor_, &classObj)) != ANI_OK) {
             out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, "Execute callback %{public}d failed" + callbackId);
-            HiLog::Error(LABEL, "New object of %{public}s failed, %{public}d", className, res);
+            HiLog::Error(LABEL, "New object of %{public}s failed, %{public}d", className.c_str(), res);
             return;
         }
         ani_ref cb;
