@@ -1871,7 +1871,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function{"penSwipeSync", nullptr, reinterpret_cast<void *>(penSwipeSync)},
         ani_native_function{"penClickSync", nullptr, reinterpret_cast<void *>(penClickSync)},
         ani_native_function{"penDoubleClickSync", nullptr, reinterpret_cast<void *>(penDoubleClickSync)},
-        ani_native_function{"penLongClickSync", "L@ohos/UiTest/Point;Lstd/core/Double;:Z", reinterpret_cast<void *>(penLongClickSync)},
+        ani_native_function{"penLongClickSync", "C{@ohos.UiTest.Point}C{std.core.Double}:z", reinterpret_cast<void *>(penLongClickSync)},
         ani_native_function{"mouseScrollSync", nullptr, reinterpret_cast<void *>(mouseScrollSync)},
         ani_native_function{"mouseMoveWithTrackSync", nullptr, reinterpret_cast<void *>(mouseMoveWithTrackSync)},
         ani_native_function{"mouseMoveToSync", nullptr, reinterpret_cast<void *>(mouseMoveToSync)},
@@ -1904,7 +1904,7 @@ static ani_boolean BindDriver(ani_env *env)
         HiLog::Error(LABEL, "%{public}s Cannot bind native methods to %{public}d !!!", __func__, status);
         return false;
     }
-    ani_native_function createMethod {"createInner", ":L@ohos/UiTest/Driver;", reinterpret_cast<void *>(create)};
+    ani_native_function createMethod {"createInner", ":@ohos.UiTest.Driver", reinterpret_cast<void *>(create)};
     if (ANI_OK != env->Class_BindStaticNativeMethods(cls, &createMethod, 1)) {
         HiLog::Error(LABEL, "%{public}s Cannot bind static native methods to !!!", __func__);
         return false;
