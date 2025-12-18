@@ -24,7 +24,6 @@ class SysTestKit {
   public index: short;
   public static delegator: abilityDelegatorRegistry.AbilityDelegator | null = null;
   public static systemTime: number;
-  // public static workerPort: worker.ThreadWorker;
   constructor() {
     this.id = 'sysTestKit';
     this.index = 0;
