@@ -611,7 +611,7 @@ namespace OHOS::uitest {
         }
     }
 
-    bool UiDriver::IsTouchPadExist()
+    bool UiDriver::IsTouchPadExist() const
     {
         return uiController_->IsTouchPadExist();
     }
@@ -686,17 +686,17 @@ namespace OHOS::uitest {
         mode_ = mode;
     }
 
-    bool UiDriver::IsWearable()
+    bool UiDriver::IsWearable() const
     {
         return uiController_->IsWearable();
     }
 
-    bool UiDriver::IsAdjustWindowModeEnable()
+    bool UiDriver::IsAdjustWindowModeEnable() const
     {
         return uiController_->IsAdjustWindowModeEnable();
     }
 
-    bool UiDriver::CheckDisplayExist(int32_t displayId)
+    bool UiDriver::CheckDisplayExist(int32_t displayId) const
     {
         return uiController_->CheckDisplayExist(displayId);
     }
@@ -713,12 +713,12 @@ namespace OHOS::uitest {
         return uiController_->OpenAamsEvent();
     }
 
-    bool UiDriver::GetEventObserverEnable()
+    bool UiDriver::GetEventObserverEnable() const
     {
         return eventObserverEnable_;
     }
-    
-    void UiDriver::ChangeWindowMode(int32_t windowId, WindowMode mode)
+
+    void UiDriver::ChangeWindowMode(int32_t windowId, WindowMode mode) const
     {
         return uiController_->ChangeWindowMode(windowId, mode);
     }
@@ -749,7 +749,7 @@ namespace OHOS::uitest {
 
     // Common helper method to calculate operation time based on distance and speed
     int32_t UiDriver::CalculateOperationTime(const Point& from, const Point& to,
-        int32_t speed, const UiOpArgs& uiOpArgs)
+        int32_t speed, const UiOpArgs& uiOpArgs) const
     {
         double distance = std::sqrt(std::pow(to.px_ - from.px_, TWO) + std::pow(to.py_ - from.py_, TWO));
         if (speed != 0) {
@@ -891,7 +891,7 @@ namespace OHOS::uitest {
         }
     }
 
-    bool UiDriver::IsKnuckleSnapshotEnable()
+    bool UiDriver::IsKnuckleSnapshotEnable() const
     {
 #ifdef ARKXTEST_KNUCKLE_ACTION_ENABLE
         return uiController_->IsKnuckleSnapshotEnable();
@@ -899,7 +899,7 @@ namespace OHOS::uitest {
         return false;
     }
 
-    bool UiDriver::IsKnuckleRecordEnable()
+    bool UiDriver::IsKnuckleRecordEnable() const
     {
 #ifdef ARKXTEST_KNUCKLE_ACTION_ENABLE
         return uiController_->IsKnuckleRecordEnable();
