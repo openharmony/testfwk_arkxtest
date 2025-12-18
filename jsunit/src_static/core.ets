@@ -38,12 +38,13 @@ type ServiceType = SuiteService
   | DataDriver;
 type EventType = SuiteEvent | SpecEvent | TaskEvent;
 class Core {
-  public static instance: Core | null = null;
+  public static instance: WorkerLocal<Core> | null = null;
   public static getInstance() {
     if (!Core.instance) {
-      Core.instance = new Core();
+      let core = new Core();
+      Core.instance = new WorkerLocal<Core>(() => core);
     }
-    return Core.instance;
+    return Core.instance!.get() as Core;
   }
 
   public services: Map<string, Map<string, ServiceType>>;
@@ -65,6 +66,7 @@ class Core {
   public suiteEvent: SuiteEvent;
   public taskEvent: TaskEvent;
   public sService: SuiteService | null;
+  public msgHandle: concurrency.MessageHandler |null = null;
   constructor() {
     this.services = new Map<string, Map<string, ServiceType>>();
     this.events = new Map<string, Map<string, EventType>>();
@@ -251,7 +253,9 @@ class Core {
   }
 
   init() {
-    this.addService('suite', new SuiteService({ id: 'default' }));
+    let suiteService = new SuiteService({ id: 'default' })
+    suiteService.msgHandle = this.msgHandle;
+    this.addService('suite', suiteService);
     this.addService('spec', new SpecService({ id: 'default' }));
     this.addService('expect', new ExpectService({ id: 'default' }));
     this.addService('report', new ReportService({ id: 'default' }));
@@ -269,7 +273,7 @@ class Core {
     const context = this;
     for (const serviceMap of this.services.values()) {
       for (const service of serviceMap.values()) {
-        let apis: ApiIF = { name: '' };
+        let apis: ApiIF = { name: ''};
         if (service instanceof SuiteService) {
           const typeService = service as SuiteService;
           typeService.init(context);

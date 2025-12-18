@@ -242,8 +242,8 @@ static ani_object NewPerfMeasureResult(ani_env *env, ani_object object, nlohmann
             return resultObj;
         }
         if (index == ZERO) {
-            const char *enumName = Builder::BuildEnum({"@ohos", "test", "PerfTest", "PerfMetric"}).Descriptor().c_str();
-            ani_enum_item enumItem = FindEnumItem(env, enumName, static_cast<ani_int>(datas[tag]));
+            auto enumName = Builder::BuildEnum({"@ohos", "test", "PerfTest", "PerfMetric"}).Descriptor();
+            ani_enum_item enumItem = FindEnumItem(env, enumName.c_str(), static_cast<ani_int>(datas[tag]));
             if (env->Object_CallMethod_Void(resultObj, setter, enumItem) != ANI_OK) {
                 HiLog::Error(LABEL, "Call setter failed %{public}s", attrs[index].c_str());
                 return resultObj;
