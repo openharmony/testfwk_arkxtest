@@ -36,7 +36,14 @@ export class OpenHarmonyTestRunner implements TestRunner {
     abilityDelegatorArguments = abilityDelegatorRegistry.getArguments();
     abilityDelegator = abilityDelegatorRegistry.getAbilityDelegator();
     hilog.info(domain, tag, '%{public}s', 'start run testcase!!!');
-    Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
+    let woker = abilityDelegatorArguments.parameters['-s worker']
+    if (woker) {
+      let workerNum : int = Number(woker) as int;
+      hilog.info(0x0000, 'testTag', '%{public}s', 'run in workers, woker number:' + workerNum);
+      Hypium.hypiumInitEAWorkers(abilityDelegator, abilityDelegatorArguments, workerNum, testsuite);
+    } else {
+      Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
+    }
     hilog.info(domain, tag, '%{public}s', 'OpenHarmonyTestRunner onRun end');
   }
 }
