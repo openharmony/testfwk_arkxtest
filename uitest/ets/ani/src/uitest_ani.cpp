@@ -643,10 +643,11 @@ static ani_boolean BindOn(ani_env *env)
         HiLog::Error(LABEL, "%{public}s Not found className !!!", __func__);
         return false;
     }
+    static constexpr const char *SIGNATURE = "C{std.core.String}E{@ohos.UiTest.MatchPattern}:C{@ohos.UiTest.On}";
     std::array methods = {
-        ani_native_function{"id", nullptr, reinterpret_cast<void *>(id)},
+        ani_native_function{"id", SIGNATURE, reinterpret_cast<void *>(id)},
         ani_native_function{"text", nullptr, reinterpret_cast<void *>(text)},
-        ani_native_function{"type", nullptr, reinterpret_cast<void *>(type)},
+        ani_native_function{"type", SIGNATURE, reinterpret_cast<void *>(type)},
         ani_native_function{"hint", nullptr, reinterpret_cast<void *>(hint)},
         ani_native_function{"description", nullptr, reinterpret_cast<void *>(description)},
         ani_native_function{"inWindow", nullptr, reinterpret_cast<void *>(inWindow)},
