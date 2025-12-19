@@ -127,7 +127,7 @@ namespace OHOS::uitest {
             from = Point(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
         } else {
             auto rect = window_.bounds_;
-            static constexpr uint32_t step = 40;
+            constexpr uint32_t step = 40;
             from = Point(rect.GetCenterX(), rect.top_ + step, window_.displayId_);
         }
         auto touch = GenericSwipe(TouchOp::DRAG, from, to);
@@ -140,7 +140,7 @@ namespace OHOS::uitest {
         if (!CheckOperational(RESIZE, window_.mode_, out)) {
             return;
         }
-        if (driver_.IsPcWindowMode()) {
+        if (!driver_.IsPcWindowMode()) {
             if (direction == D_UP || direction == LEFT_UP || direction == RIGHT_UP) {
                 out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
                 return;
@@ -274,6 +274,7 @@ namespace OHOS::uitest {
         }
 #ifdef ARKXTEST_PC_FEATURE_ENABLE
         driver_.ChangeWindowMode(window_.id_, WindowMode::SPLIT_PRIMARY);
+        return;
 #endif
         auto isPcWindowMode = driver_.IsPcWindowMode();
         if (isPcWindowMode) {
@@ -300,6 +301,7 @@ namespace OHOS::uitest {
         Focus(out);
 #ifdef ARKXTEST_PC_FEATURE_ENABLE
         driver_.ChangeWindowMode(window_.id_, WindowMode::FULLSCREEN);
+        return;
 #endif
         auto isPcWindowMode = driver_.IsPcWindowMode();
         if (isPcWindowMode) {
@@ -384,6 +386,7 @@ namespace OHOS::uitest {
                 return;
             }
             FloatWindowInPhoneMode(out);
+            return;
         }
         if (window_.mode_ == WindowMode::FLOATING) {
             const auto maximizeBtnId = "floatingButtonMaximize";

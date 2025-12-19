@@ -54,6 +54,9 @@ ohos_static_library("uitest_core") {
   if (arkxtest_product_feature == "tablet") {
     defines += [ "ARKXTEST_TABLET_FEATURE_ENABLE" ]
   }
+  if (arkxtest_product_feature == "pc") {
+    defines += [ "ARKXTEST_PC_FEATURE_ENABLE" ]
+  }
   if (arkxtest_product_feature == "phone" ||
       arkxtest_product_feature == "tablet") {
     defines += [ "ARKXTEST_KNUCKLE_ACTION_ENABLE" ]
