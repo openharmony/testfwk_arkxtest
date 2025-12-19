@@ -470,6 +470,10 @@ namespace OHOS::uitest {
                         info.bounds_.top_  + area.GetRightBottomYScreenPostion() };
             info.touchHotAreas_.push_back(rect);
         }
+        if (node.GetBundleName().find("SCBMiniCover" == 0)) {
+            info.touchHotAreas_.clear();
+            info.touchHotAreas_.push_back(Rect(0, 0, 0, 0));
+        }
         const auto origMode = static_cast<OHOS::Rosen::WindowMode>(node.GetWindowMode());
         switch (origMode) {
             case OHOS::Rosen::WindowMode::WINDOW_MODE_FULLSCREEN:
@@ -1455,7 +1459,7 @@ namespace OHOS::uitest {
     bool SysUiController::IsPcWindowMode() const
     {
         string uri = "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_100?Proxy=true";
-        string knuckleRecordKey = "window_pcmode_swtich_status";
+        string knuckleRecordKey = "window_pcmode_switch_status";
         auto value = OHOS::testserver::TestServerClient::GetInstance().GetValueFromDataShare(uri, knuckleRecordKey);
         LOG_D("key = %{public}s, value = %{public}s", knuckleRecordKey.c_str(), value.c_str());
         if (value == "") {
