@@ -473,16 +473,18 @@ namespace OHOS::uitest {
         return nullptr;
     }
 
-    const Window *UiDriver::RetrieveWindow(const Window &window, ApiCallErr &err)
+    Window *UiDriver::RetrieveWindow(const Window &window, ApiCallErr &err)
     {
-        UpdateUIWindows(err, window.displayId_);
+        const auto winId = window.id_;
+        const auto displayId = window.displayId_;
+        UpdateUIWindows(err, displayId);
         if (err.code_ != NO_ERROR) {
             return nullptr;
         }
-        auto dm = displayToWindowCacheMap_.find(window.displayId_);
+        auto dm = displayToWindowCacheMap_.find(displayId);
         auto &windowCacheVec = dm->second;
         for (auto &winCache : windowCacheVec) {
-            if (winCache.window_.id_ != window.id_) {
+            if (winCache.window_.id_ != winId) {
                 continue;
             }
             return &winCache.window_;
@@ -510,6 +512,14 @@ namespace OHOS::uitest {
             return ROTATION_0;
         }
         return uiController_->GetDisplayRotation(displayId);
+    }
+
+    int32_t UiDriver::GetScreenOrientation(ApiCallErr &error, int32_t displayId)
+    {
+        if (!CheckStatus(false, error)) {
+            return 0;
+        }
+        return uiController_->GetScreenOrientation(displayId);
     }
 
     void UiDriver::SetDisplayRotationEnabled(bool enabled, ApiCallErr &error)
@@ -905,5 +915,10 @@ namespace OHOS::uitest {
         return uiController_->IsKnuckleRecordEnable();
 #endif
         return false;
+    }
+
+    bool UiDriver::IsPcWindowMode() const
+    {
+        return uiController_->IsPcWindowMode();
     }
 } // namespace OHOS::uitest

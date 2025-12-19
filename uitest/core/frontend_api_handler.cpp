@@ -2064,10 +2064,15 @@ static void RegisterExtensionHandler()
                 wOp.Resize(width, highth, direction, out);
             } else if (action == "UiWindow.focus") {
                 wOp.Focus(out);
+            } else if (action == "UiWindow.moveTo") {
+                auto endX = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+                auto endY = ReadCallArg<uint32_t>(in, INDEX_ONE);
+                wOp.MoveTo(endX, endY, out);
             }
         };
         server.AddHandler("UiWindow.focus", genericWinOperationHandler);
         server.AddHandler("UiWindow.resize", genericWinOperationHandler);
+        server.AddHandler("UiWindow.moveTo", genericWinOperationHandler);
     }
 
     static void RegisterUiWinBarOperators()
@@ -2094,10 +2099,6 @@ static void RegisterExtensionHandler()
                     wOp.Minimize(out);
                 } else if (action == "UiWindow.close") {
                     wOp.Close(out);
-                } else if (action == "UiWindow.moveTo") {
-                    auto endX = ReadCallArg<uint32_t>(in, INDEX_ZERO);
-                    auto endY = ReadCallArg<uint32_t>(in, INDEX_ONE);
-                    wOp.MoveTo(endX, endY, out);
                 }
             } else {
                 out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
@@ -2108,7 +2109,6 @@ static void RegisterExtensionHandler()
         server.AddHandler("UiWindow.resume", genericWinBarOperationHandler);
         server.AddHandler("UiWindow.minimize", genericWinBarOperationHandler);
         server.AddHandler("UiWindow.close", genericWinBarOperationHandler);
-        server.AddHandler("UiWindow.moveTo", genericWinBarOperationHandler);
     }
 
     static void RegisterPointerMatrixOperators()

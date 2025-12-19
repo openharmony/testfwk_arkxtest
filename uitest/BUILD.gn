@@ -236,7 +236,8 @@ ohos_executable("uitest_server") {
     defines += [ "ARKXTEST_WATCH_FEATURE_ENABLE" ]
   }
   if (arkxtest_product_feature == "pc" ||
-      arkxtest_product_feature == "tablet") {
+      arkxtest_product_feature == "tablet" ||
+      arkxtest_product_feature == "phone") {
     defines += [ "ARKXTEST_ADJUST_WINDOWMODE_ENABLE" ]
   }
 }
