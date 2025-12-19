@@ -1244,6 +1244,25 @@ namespace OHOS::uitest {
         return rotation;
     }
 
+    int32_t SysUiController::GetScreenOrientation(int32_t displayId) const
+    {
+        DisplayManager &displayMgr = DisplayManager::GetInstance();
+        displayId = GetValidDisplayId(displayId);
+        auto display = displayMgr.GetDisplayById(displayId);
+        if (display == nullptr) {
+            LOG_E("DisplayManager init fail");
+            return 0;
+        }
+        auto screenId = display->GetScreenId();
+        ScreenManager &screenMgr = ScreenManager::GetInstance();
+        auto screen = screenMgr.GetScreenById(screenId);
+        if (screen == nullptr) {
+            LOG_E("ScreenManager init fail");
+            return 0;
+        }
+        return (int32_t) screen->GetOrientation();
+    }
+
     void SysUiController::SetDisplayRotationEnabled(bool enabled) const
     {
         ScreenManager &screenMgr = ScreenManager::GetInstance();
@@ -1430,6 +1449,19 @@ namespace OHOS::uitest {
             return true;
         } else {
             return atoi(value.c_str()) != 0;
+        }
+    }
+
+    bool SysUiController::IsPcWindowMode() const
+    {
+        string uri = "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_100?Proxy=true";
+        string knuckleRecordKey = "window_pcmode_swtich_status";
+        auto value = OHOS::testserver::TestServerClient::GetInstance().GetValueFromDataShare(uri, knuckleRecordKey);
+        LOG_D("key = %{public}s, value = %{public}s", knuckleRecordKey.c_str(), value.c_str());
+        if (value == "") {
+            return false;
+        } else {
+            return value == "true";
         }
     }
 } // namespace OHOS::uitest
