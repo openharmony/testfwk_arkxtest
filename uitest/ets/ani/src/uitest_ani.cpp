@@ -1905,7 +1905,7 @@ static ani_boolean BindDriver(ani_env *env)
         HiLog::Error(LABEL, "%{public}s Cannot bind native methods to %{public}d !!!", __func__, status);
         return false;
     }
-    ani_native_function createMethod {"createInner", ":@ohos.UiTest.Driver", reinterpret_cast<void *>(create)};
+    ani_native_function createMethod {"createInner", ":C{@ohos.UiTest.Driver}", reinterpret_cast<void *>(create)};
     if (ANI_OK != env->Class_BindStaticNativeMethods(cls, &createMethod, 1)) {
         HiLog::Error(LABEL, "%{public}s Cannot bind static native methods to !!!", __func__);
         return false;
