@@ -111,7 +111,7 @@ namespace OHOS::uitest {
             return;
         }
         auto from = Point(0, 0);
-        auto to = Point(endX, endY);
+        auto to = Point(0, 0);
         auto isPcWindowMode = driver_.IsPcWindowMode();
         if (!isPcWindowMode) {
             auto selector = WidgetSelector();
@@ -126,10 +126,12 @@ namespace OHOS::uitest {
             }
             auto rect = widgets[0]->GetBounds();
             from = Point(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
+            to = Point(endX + window_.bounds_.GetWidth() / TWO, endY + rect.GetHeight() / TWO, window_.displayId_);
         } else {
             auto rect = window_.bounds_;
             constexpr uint32_t step = 40;
-            from = Point(rect.GetCenterX(), rect.top_ + step, window_.displayId_);
+            from = Point(rect.left_ + step, rect.top_ + step, window_.displayId_);
+            to = Point(endX + step, endY + step, window_.displayId_);
         }
         auto touch = GenericSwipe(TouchOp::DRAG, from, to);
         driver_.PerformTouch(touch, options_, out.exception_);
