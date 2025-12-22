@@ -21,7 +21,7 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
 
-    const uint32_t WinOpSpeed = 6000;
+    const uint32_t WIN_OP_SPEED = 6000;
     enum WindowAction : uint8_t {
         FOCUS,
         MOVETO,
@@ -137,7 +137,8 @@ namespace OHOS::uitest {
         driver_.PerformTouch(touch, options_, out.exception_);
     }
 
-    void WindowOperator::CreateResizePoint(int32_t width, int32_t highth, ResizeDirection direction, Point &from, Point &to)
+    void WindowOperator::CreateResizePoint(int32_t width, int32_t highth, ResizeDirection direction, Point &from,
+        Point &to)
     {
         switch (direction) {
             case (LEFT):
@@ -250,7 +251,7 @@ namespace OHOS::uitest {
         constexpr auto bottomZone = 20;
         constexpr auto waitMs = 1000;
         auto from = Point(window_.bounds_.GetCenterX(), window_.bounds_.bottom_ - bottomZone, window_.displayId_);
-        options_.swipeVelocityPps_ = WinOpSpeed;
+        options_.swipeVelocityPps_ = WIN_OP_SPEED;
         auto drag = GenericSwipe(TouchOp::SWIPE, from, to);
         driver_.PerformTouch(drag, options_, out.exception_);
         this_thread::sleep_for(chrono::milliseconds(waitMs));
@@ -274,7 +275,7 @@ namespace OHOS::uitest {
         constexpr auto bottomZone = 20;
         constexpr auto waitMs = 1000;
         auto from = Point(window_.bounds_.GetCenterX(), window_.bounds_.bottom_ - bottomZone, window_.displayId_);
-        options_.swipeVelocityPps_ = WinOpSpeed;
+        options_.swipeVelocityPps_ = WIN_OP_SPEED;
         auto drag = GenericSwipe(TouchOp::SWIPE, from, to);
         driver_.PerformTouch(drag, options_, out.exception_);
         this_thread::sleep_for(chrono::milliseconds(waitMs));
@@ -334,7 +335,7 @@ namespace OHOS::uitest {
             return;
         }
         auto touch = GenericSwipe(TouchOp::SWIPE, from, to);
-        options_.swipeVelocityPps_ = WinOpSpeed;
+        options_.swipeVelocityPps_ = WIN_OP_SPEED;
         driver_.PerformTouch(touch, options_, out.exception_);
     }
 
