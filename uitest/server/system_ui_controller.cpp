@@ -461,7 +461,6 @@ namespace OHOS::uitest {
             info.abilityName_ = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
             info.pagePath_ = (app == foreAbility.GetBundleName()) ? element.GetPagePath() : "";
         }
-        info.mode_ = WindowMode::UNKNOWN;
         auto touchAreas = node.GetTouchHotAreas();
         for (auto area : touchAreas) {
             Rect rect { info.bounds_.left_ + area.GetLeftTopXScreenPostion(),
@@ -470,7 +469,7 @@ namespace OHOS::uitest {
                         info.bounds_.top_  + area.GetRightBottomYScreenPostion() };
             info.touchHotAreas_.push_back(rect);
         }
-        if (node.GetBundleName().find("SCBMiniCover" == 0)) {
+        if (node.GetBundleName().find("SCBMiniCover") == 0) {
             info.touchHotAreas_.clear();
             info.touchHotAreas_.push_back(Rect(0, 0, 0, 0));
         }

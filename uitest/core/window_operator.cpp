@@ -21,6 +21,7 @@ namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
 
+    const uint32_t WinOpSpeed = 6000;
     enum WindowAction : uint8_t {
         FOCUS,
         MOVETO,
@@ -134,20 +135,8 @@ namespace OHOS::uitest {
         driver_.PerformTouch(touch, options_, out.exception_);
     }
 
-    void WindowOperator::Resize(int32_t width, int32_t highth, ResizeDirection direction, ApiReplyInfo &out)
+    void WindowOperator::CreateResizePoint(int32_t width, int32_t highth, ResizeDirection direction, Point &from, Point &to)
     {
-        Focus(out);
-        if (!CheckOperational(RESIZE, window_.mode_, out)) {
-            return;
-        }
-        if (!driver_.IsPcWindowMode()) {
-            if (direction == D_UP || direction == LEFT_UP || direction == RIGHT_UP) {
-                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
-                return;
-            }
-        }
-        Point from;
-        Point to;
         switch (direction) {
             case (LEFT):
                 from = Point(window_.bounds_.left_, window_.bounds_.GetCenterY());
@@ -186,6 +175,23 @@ namespace OHOS::uitest {
         }
         from.displayId_ = window_.displayId_;
         to.displayId_ = window_.displayId_;
+    }
+
+    void WindowOperator::Resize(int32_t width, int32_t highth, ResizeDirection direction, ApiReplyInfo &out)
+    {
+        Focus(out);
+        if (!CheckOperational(RESIZE, window_.mode_, out)) {
+            return;
+        }
+        if (!driver_.IsPcWindowMode()) {
+            if (direction == D_UP || direction == LEFT_UP || direction == RIGHT_UP) {
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+                return;
+            }
+        }
+        Point from;
+        Point to;
+        CreateResizePoint(width, highth, direction, from, to);
         driver_.PerformTouch(GenericSwipe(TouchOp::DRAG, from, to), options_, out.exception_);
     }
 
@@ -233,11 +239,16 @@ namespace OHOS::uitest {
             return;
         }
         auto screenSize = driver_.GetDisplaySize(out.exception_, window_.displayId_);
+        if (out.exception_.code_ != NO_ERROR || screenSize.px_ == 0 || screenSize.py_ == 0) {
+            LOG_E("Get screenSize failed.");
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
         auto to = Point(screenSize.px_, 1, window_.displayId_);
         constexpr auto bottomZone = 20;
         constexpr auto waitMs = 1000;
         auto from = Point(window_.bounds_.GetCenterX(), window_.bounds_.bottom_ - bottomZone, window_.displayId_);
-        options_.swipeVelocityPps_ = 6000;
+        options_.swipeVelocityPps_ = WinOpSpeed;
         auto drag = GenericSwipe(TouchOp::SWIPE, from, to);
         driver_.PerformTouch(drag, options_, out.exception_);
         this_thread::sleep_for(chrono::milliseconds(waitMs));
@@ -261,7 +272,7 @@ namespace OHOS::uitest {
         constexpr auto bottomZone = 20;
         constexpr auto waitMs = 1000;
         auto from = Point(window_.bounds_.GetCenterX(), window_.bounds_.bottom_ - bottomZone, window_.displayId_);
-        options_.swipeVelocityPps_ = 6000;
+        options_.swipeVelocityPps_ = WinOpSpeed;
         auto drag = GenericSwipe(TouchOp::SWIPE, from, to);
         driver_.PerformTouch(drag, options_, out.exception_);
         this_thread::sleep_for(chrono::milliseconds(waitMs));
@@ -293,6 +304,38 @@ namespace OHOS::uitest {
         SplitWindowInPhoneMode(out);
     }
 
+    void WindowOperator::MaximizeSplitWindow(ApiReplyInfo &out)
+    {
+        auto selector = WidgetSelector();
+        auto attrMatcher = WidgetMatchModel(UiAttr::KEY, "SCBDividerFlex1", EQ);
+        selector.AddMatcher(attrMatcher);
+        selector.SetWantMulti(false);
+        vector<unique_ptr<Widget>> widgets;
+        driver_.FindWidgets(selector, widgets, out.exception_);
+        if (widgets.empty() || out.exception_.code_ != NO_ERROR) {
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        auto rect = widgets[0]->GetBounds();
+        Point from(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
+        auto to = Point(0, 0);
+        auto screenSize = driver_.GetDisplaySize(out.exception_, window_.displayId_);
+        auto screenOrientation = driver_.GetScreenOrientation(out.exception_, window_.displayId_);
+        if (screenOrientation == ONE || screenOrientation == THREE) {
+            to = (window_.mode_ == WindowMode::SPLIT_PRIMARY) ?
+                Point(from.px_, screenSize.py_, window_.displayId_) : Point(from.px_, 0, window_.displayId_);
+        } else if (screenOrientation == TWO || screenOrientation == FOUR) {
+            to = (window_.mode_ == WindowMode::SPLIT_PRIMARY) ?
+                Point(screenSize.px_, from.py_, window_.displayId_) : Point(0, from.py_, window_.displayId_);
+        } else {
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        auto touch = GenericSwipe(TouchOp::SWIPE, from, to);
+        options_.swipeVelocityPps_ = WinOpSpeed;
+        driver_.PerformTouch(touch, options_, out.exception_);
+    }
+
     void  WindowOperator::Maximize(ApiReplyInfo &out)
     {
         if (!CheckOperational(MAXIMIZE, window_.mode_, out)) {
@@ -319,34 +362,7 @@ namespace OHOS::uitest {
             return;
         }
         if (window_.mode_ == WindowMode::SPLIT_PRIMARY || window_.mode_ == WindowMode::SPLIT_SECONDARY) {
-            auto selector = WidgetSelector();
-            auto attrMatcher = WidgetMatchModel(UiAttr::KEY, "SCBDividerFlex1", EQ);
-            selector.AddMatcher(attrMatcher);
-            selector.SetWantMulti(false);
-            vector<unique_ptr<Widget>> widgets;
-            driver_.FindWidgets(selector, widgets, out.exception_);
-            if (widgets.empty() || out.exception_.code_ != NO_ERROR) {
-                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
-                return;
-            }
-            auto rect = widgets[0]->GetBounds();
-            Point from(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
-            auto to = Point(0, 0);
-            auto screenSize = driver_.GetDisplaySize(out.exception_, window_.displayId_);
-            auto screenOrientation = driver_.GetScreenOrientation(out.exception_, window_.displayId_);
-            if (screenOrientation == ONE || screenOrientation == THREE) {
-                to = (window_.mode_ == WindowMode::SPLIT_PRIMARY) ? 
-                    Point(from.px_, screenSize.py_, window_.displayId_) : Point(from.px_, 0, window_.displayId_);
-            } else if (screenOrientation == TWO || screenOrientation == FOUR) {
-                to = (window_.mode_ == WindowMode::SPLIT_PRIMARY) ? 
-                    Point(screenSize.px_, from.py_, window_.displayId_) : Point(0, from.py_, window_.displayId_);
-            } else {
-                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
-                return;
-            }
-            auto touch = GenericSwipe(TouchOp::DRAG, from, to);
-            options_.swipeVelocityPps_ = 6000;
-            driver_.PerformTouch(touch, options_, out.exception_);
+            MaximizeSplitWindow(out);
         } else {
             const auto maximizeBtnId = "floatingButtonMaximize";
             BarAction(maximizeBtnId, out);

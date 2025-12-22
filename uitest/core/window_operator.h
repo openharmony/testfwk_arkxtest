@@ -49,13 +49,15 @@ namespace OHOS::uitest {
 
     private:
         UiDriver &driver_;
-        Window &window_;
+        Window window_;
         UiOpArgs &options_;
         /**Click on the decoration bar of this window.*/
         void BarAction(string_view buttonId, ApiReplyInfo &out);
         void CallBar(ApiReplyInfo &out);
         void FloatWindowInPhoneMode(ApiReplyInfo &out);
         void SplitWindowInPhoneMode(ApiReplyInfo &out);
+        void CreateResizePoint(int32_t width, int32_t highth, ResizeDirection direction, Point &from, Point &to);
+        void MaximizeSplitWindow(ApiReplyInfo &out);
     };
 } // namespace OHOS::uitest
 
