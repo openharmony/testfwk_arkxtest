@@ -21,7 +21,7 @@
 namespace OHOS::uitest {
     class WindowOperator {
     public:
-       WindowOperator(UiDriver &driver, const Window &window, UiOpArgs &options);
+       WindowOperator(UiDriver &driver, Window &window, UiOpArgs &options);
 
        /**Focus the window.*/
        void Focus(ApiReplyInfo &out);
@@ -49,12 +49,15 @@ namespace OHOS::uitest {
 
     private:
         UiDriver &driver_;
-        const Window &window_;
+        Window window_;
         UiOpArgs &options_;
-#ifdef ARKXTEST_TABLET_FEATURE_ENABLE
         /**Click on the decoration bar of this window.*/
         void BarAction(string_view buttonId, ApiReplyInfo &out);
-#endif
+        void CallBar(ApiReplyInfo &out);
+        void FloatWindowInPhoneMode(ApiReplyInfo &out);
+        void SplitWindowInPhoneMode(ApiReplyInfo &out);
+        void CreateResizePoint(int32_t width, int32_t highth, ResizeDirection direction, Point &from, Point &to);
+        void MaximizeSplitWindow(ApiReplyInfo &out);
     };
 } // namespace OHOS::uitest
 

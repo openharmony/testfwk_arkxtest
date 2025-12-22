@@ -137,6 +137,11 @@ namespace OHOS::uitest {
             return ROTATION_0;
         };
 
+        virtual int32_t GetScreenOrientation(int32_t displayId) const
+        {
+            return 0;
+        };
+
         virtual void SetDisplayRotationEnabled(bool enabled) const {};
 
         virtual Point GetDisplaySize(int32_t displayId) const
@@ -179,6 +184,10 @@ namespace OHOS::uitest {
         virtual void CloseAamsEvent() const {};
         virtual void OpenAamsEvent() const {};
         virtual void ChangeWindowMode(int32_t windowId, WindowMode mode) const {};
+        virtual bool IsPcWindowMode() const
+        {
+            return false;
+        }
     };
 }
 

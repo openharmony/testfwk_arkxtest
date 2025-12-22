@@ -359,7 +359,7 @@ namespace OHOS::uitest {
         std::vector<Rect> invisibleBoundsVec_;
         std::string abilityName_ = "";
         std::string pagePath_ = "";
-        WindowMode mode_ = UNKNOWN;
+        WindowMode mode_ = WindowMode::UNKNOWN;
         int32_t displayId_ = 0;
         std::vector<Rect> touchHotAreas_;
         Point offset_ = {0, 0};

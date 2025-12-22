@@ -47,7 +47,7 @@ namespace OHOS::uitest {
         const Widget *RetrieveWidget(const Widget &widget, ApiCallErr &err, bool updateUi = true);
 
         /**Retrieve window from updated UI.*/
-        const Window *RetrieveWindow(const Window &window, ApiCallErr &err);
+        Window *RetrieveWindow(const Window &window, ApiCallErr &err);
 
         string GetHostApp(const Widget &widget);
 
@@ -75,6 +75,8 @@ namespace OHOS::uitest {
         void SetDisplayRotation(DisplayRotation rotation, ApiCallErr &error);
 
         DisplayRotation GetDisplayRotation(ApiCallErr &error, int32_t displayId = 0);
+
+        int32_t GetScreenOrientation(ApiCallErr &error, int32_t displayId = 0);
 
         void SetDisplayRotationEnabled(bool enabled, ApiCallErr &error);
 
@@ -129,6 +131,7 @@ namespace OHOS::uitest {
         bool IsKnuckleSnapshotEnable() const;
 
         bool IsKnuckleRecordEnable() const;
+        bool IsPcWindowMode() const;
 
     private:
         // Struct to group timeout-related parameters

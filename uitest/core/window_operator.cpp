@@ -15,11 +15,13 @@
 
 #include "window_operator.h"
 #include <map>
+#include <thread>
 
 namespace OHOS::uitest {
     using namespace std;
     using namespace nlohmann;
 
+    const uint32_t WIN_OP_SPEED = 6000;
     enum WindowAction : uint8_t {
         FOCUS,
         MOVETO,
@@ -84,7 +86,7 @@ namespace OHOS::uitest {
         return false;
     }
 
-    WindowOperator::WindowOperator(UiDriver &driver, const Window &window, UiOpArgs &options)
+    WindowOperator::WindowOperator(UiDriver &driver, Window &window, UiOpArgs &options)
         : driver_(driver), window_(window), options_(options)
     {
     }
@@ -108,24 +110,36 @@ namespace OHOS::uitest {
         if (!CheckOperational(MOVETO, window_.mode_, out)) {
             return;
         }
-        auto rect = window_.bounds_;
-        static constexpr uint32_t step = 40;
-        Point from(rect.left_ + step, rect.top_ + step);
-        Point to(endX + step, endY + step);
-        from.displayId_ = window_.displayId_;
-        to.displayId_ = window_.displayId_;
+        auto from = Point(0, 0);
+        auto to = Point(0, 0);
+        auto isPcWindowMode = driver_.IsPcWindowMode();
+        if (!isPcWindowMode) {
+            auto selector = WidgetSelector();
+            auto attrMatcher = WidgetMatchModel(UiAttr::KEY, std::string("SCBFloatTitleButton"), EQ);
+            selector.AddMatcher(attrMatcher);
+            selector.SetWantMulti(false);
+            vector<unique_ptr<Widget>> widgets;
+            driver_.FindWidgets(selector, widgets, out.exception_, false);
+            if (widgets.empty() || out.exception_.code_ != NO_ERROR) {
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+                return;
+            }
+            auto rect = widgets[0]->GetBounds();
+            from = Point(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
+            to = Point(endX + window_.bounds_.GetWidth() / TWO, endY + rect.GetHeight() / TWO, window_.displayId_);
+        } else {
+            auto rect = window_.bounds_;
+            constexpr uint32_t step = 40;
+            from = Point(rect.left_ + step, rect.top_ + step, window_.displayId_);
+            to = Point(endX + step, endY + step, window_.displayId_);
+        }
         auto touch = GenericSwipe(TouchOp::DRAG, from, to);
         driver_.PerformTouch(touch, options_, out.exception_);
     }
 
-    void WindowOperator::Resize(int32_t width, int32_t highth, ResizeDirection direction, ApiReplyInfo &out)
+    void WindowOperator::CreateResizePoint(int32_t width, int32_t highth, ResizeDirection direction, Point &from,
+        Point &to)
     {
-        Focus(out);
-        if (!CheckOperational(RESIZE, window_.mode_, out)) {
-            return;
-        }
-        Point from;
-        Point to;
         switch (direction) {
             case (LEFT):
                 from = Point(window_.bounds_.left_, window_.bounds_.GetCenterY());
@@ -164,23 +178,48 @@ namespace OHOS::uitest {
         }
         from.displayId_ = window_.displayId_;
         to.displayId_ = window_.displayId_;
+    }
+
+    void WindowOperator::Resize(int32_t width, int32_t highth, ResizeDirection direction, ApiReplyInfo &out)
+    {
+        Focus(out);
+        if (!CheckOperational(RESIZE, window_.mode_, out)) {
+            return;
+        }
+        if (!driver_.IsPcWindowMode()) {
+            if (direction == D_UP || direction == LEFT_UP || direction == RIGHT_UP) {
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+                return;
+            }
+        }
+        Point from;
+        Point to;
+        CreateResizePoint(width, highth, direction, from, to);
         driver_.PerformTouch(GenericSwipe(TouchOp::DRAG, from, to), options_, out.exception_);
     }
 
-#ifdef ARKXTEST_TABLET_FEATURE_ENABLE
-    void WindowOperator::BarAction(string_view buttonId, ApiReplyInfo &out)
+    void WindowOperator::CallBar(ApiReplyInfo &out)
     {
-        if (!window_.decoratorEnabled_) {
-            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+        Focus(out);
+        if (window_.mode_ == WindowMode::FLOATING) {
             return;
         }
+        auto rect = window_.bounds_;
+        constexpr int32_t step1 = 10;
+        constexpr int32_t step2 = 100;
+        constexpr int32_t waitMs = 100;
+        Point from(rect.GetCenterX(), rect.top_ + step1, window_.displayId_);
+        Point to(rect.GetCenterX(), rect.top_ + step2, window_.displayId_);
+        driver_.PerformTouch(GenericSwipe(TouchOp::DRAG, from, to), options_, out.exception_);
+        this_thread::sleep_for(chrono::milliseconds(waitMs));
+    }
+
+    void WindowOperator::BarAction(string_view buttonId, ApiReplyInfo &out)
+    {
         Focus(out);
         auto selector = WidgetSelector();
         auto attrMatcher = WidgetMatchModel(UiAttr::KEY, std::string(buttonId), EQ);
-        auto windowMatcher = WidgetMatchModel(UiAttr::HOST_WINDOW_ID, to_string(window_.id_), EQ);
         selector.AddMatcher(attrMatcher);
-        selector.AddMatcher(windowMatcher);
-        selector.AddAppLocator(window_.bundleName_);
         selector.SetWantMulti(false);
         vector<unique_ptr<Widget>> widgets;
         driver_.FindWidgets(selector, widgets, out.exception_);
@@ -192,15 +231,112 @@ namespace OHOS::uitest {
         Point widgetCenter(rect.GetCenterX(), rect.GetCenterY(), widgets[0]->GetDisplayId());
         auto touch = GenericClick(TouchOp::CLICK, widgetCenter);
         driver_.PerformTouch(touch, options_, out.exception_);
+        constexpr auto waitMs = 1000;
+        this_thread::sleep_for(chrono::milliseconds(waitMs));
     }
-#endif
+
+    void WindowOperator::FloatWindowInPhoneMode(ApiReplyInfo &out)
+    {
+        if (window_.mode_ != WindowMode::FULLSCREEN) {
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        auto screenSize = driver_.GetDisplaySize(out.exception_, window_.displayId_);
+        if (out.exception_.code_ != NO_ERROR || screenSize.px_ == 0 || screenSize.py_ == 0) {
+            LOG_E("Get screenSize failed.");
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        auto to = Point(screenSize.px_, 1, window_.displayId_);
+        constexpr auto bottomZone = 20;
+        constexpr auto waitMs = 1000;
+        auto from = Point(window_.bounds_.GetCenterX(), window_.bounds_.bottom_ - bottomZone, window_.displayId_);
+        options_.swipeVelocityPps_ = WIN_OP_SPEED;
+        auto drag = GenericSwipe(TouchOp::SWIPE, from, to);
+        driver_.PerformTouch(drag, options_, out.exception_);
+        this_thread::sleep_for(chrono::milliseconds(waitMs));
+        auto win = driver_.RetrieveWindow(window_, out.exception_);
+        if (win == nullptr || out.exception_.code_ != NO_ERROR) {
+            return;
+        }
+        auto center = Point(win->bounds_.GetCenterX(), win->bounds_.GetCenterY(), win->displayId_);
+        auto click = GenericClick(TouchOp::CLICK, center);
+        driver_.PerformTouch(click, options_, out.exception_);
+        this_thread::sleep_for(chrono::milliseconds(waitMs));
+    }
+
+    void WindowOperator::SplitWindowInPhoneMode(ApiReplyInfo &out)
+    {
+        if (window_.mode_ != WindowMode::FULLSCREEN) {
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        auto to = Point(1, 1, window_.displayId_);
+        constexpr auto bottomZone = 20;
+        constexpr auto waitMs = 1000;
+        auto from = Point(window_.bounds_.GetCenterX(), window_.bounds_.bottom_ - bottomZone, window_.displayId_);
+        options_.swipeVelocityPps_ = WIN_OP_SPEED;
+        auto drag = GenericSwipe(TouchOp::SWIPE, from, to);
+        driver_.PerformTouch(drag, options_, out.exception_);
+        this_thread::sleep_for(chrono::milliseconds(waitMs));
+    }
 
     void WindowOperator::Split(ApiReplyInfo &out)
     {
         if (!CheckOperational(SPLIT, window_.mode_, out)) {
             return;
         }
+#ifdef ARKXTEST_PC_FEATURE_ENABLE
         driver_.ChangeWindowMode(window_.id_, WindowMode::SPLIT_PRIMARY);
+        return;
+#endif
+        auto isPcWindowMode = driver_.IsPcWindowMode();
+        if (isPcWindowMode) {
+            driver_.ChangeWindowMode(window_.id_, WindowMode::SPLIT_PRIMARY);
+            return;
+        }
+        if (window_.mode_ != WindowMode::FULLSCREEN) {
+            Maximize(out);
+            auto win = driver_.RetrieveWindow(window_, out.exception_);
+            if (win != nullptr || out.exception_.code_ != NO_ERROR) {
+                window_ = *win;
+            } else {
+                return;
+            }
+        }
+        SplitWindowInPhoneMode(out);
+    }
+
+    void WindowOperator::MaximizeSplitWindow(ApiReplyInfo &out)
+    {
+        auto selector = WidgetSelector();
+        auto attrMatcher = WidgetMatchModel(UiAttr::KEY, "SCBDividerFlex1", EQ);
+        selector.AddMatcher(attrMatcher);
+        selector.SetWantMulti(false);
+        vector<unique_ptr<Widget>> widgets;
+        driver_.FindWidgets(selector, widgets, out.exception_);
+        if (widgets.empty() || out.exception_.code_ != NO_ERROR) {
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        auto rect = widgets[0]->GetBounds();
+        Point from(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
+        auto to = Point(0, 0);
+        auto screenSize = driver_.GetDisplaySize(out.exception_, window_.displayId_);
+        auto screenOrientation = driver_.GetScreenOrientation(out.exception_, window_.displayId_);
+        if (screenOrientation == ONE || screenOrientation == THREE) {
+            to = (window_.mode_ == WindowMode::SPLIT_PRIMARY) ?
+                Point(from.px_, screenSize.py_, window_.displayId_) : Point(from.px_, 0, window_.displayId_);
+        } else if (screenOrientation == TWO || screenOrientation == FOUR) {
+            to = (window_.mode_ == WindowMode::SPLIT_PRIMARY) ?
+                Point(screenSize.px_, from.py_, window_.displayId_) : Point(0, from.py_, window_.displayId_);
+        } else {
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        auto touch = GenericSwipe(TouchOp::SWIPE, from, to);
+        options_.swipeVelocityPps_ = WIN_OP_SPEED;
+        driver_.PerformTouch(touch, options_, out.exception_);
     }
 
     void  WindowOperator::Maximize(ApiReplyInfo &out)
@@ -208,12 +344,34 @@ namespace OHOS::uitest {
         if (!CheckOperational(MAXIMIZE, window_.mode_, out)) {
             return;
         }
-#ifdef ARKXTEST_TABLET_FEATURE_ENABLE
-        const auto maximizeBtnId = "EnhanceMaximizeBtn";
-        BarAction(maximizeBtnId, out);
+        Focus(out);
+#ifdef ARKXTEST_PC_FEATURE_ENABLE
+        driver_.ChangeWindowMode(window_.id_, WindowMode::FULLSCREEN);
         return;
 #endif
-        driver_.ChangeWindowMode(window_.id_, WindowMode::FULLSCREEN);
+        auto isPcWindowMode = driver_.IsPcWindowMode();
+        if (isPcWindowMode) {
+            const auto maximizeBtnId = "EnhanceMaximizeBtn";
+            BarAction(maximizeBtnId, out);
+            auto win = driver_.RetrieveWindow(window_, out.exception_);
+            if (win != nullptr || out.exception_.code_ != NO_ERROR) {
+                window_ = *win;
+            } else {
+                return;
+            }
+            if (window_.mode_ != WindowMode::FULLSCREEN) {
+                BarAction(maximizeBtnId, out);
+            }
+            return;
+        }
+        if (window_.mode_ == WindowMode::SPLIT_PRIMARY || window_.mode_ == WindowMode::SPLIT_SECONDARY) {
+            MaximizeSplitWindow(out);
+        } else {
+            const auto maximizeBtnId = "floatingButtonMaximize";
+            BarAction(maximizeBtnId, out);
+        }
+        constexpr auto waitMs = 1000;
+        this_thread::sleep_for(chrono::milliseconds(waitMs));
     }
 
     void WindowOperator::Resume(ApiReplyInfo &out)
@@ -221,15 +379,42 @@ namespace OHOS::uitest {
         if (!CheckOperational(RESUME, window_.mode_, out)) {
             return;
         }
-#ifdef ARKXTEST_TABLET_FEATURE_ENABLE
-        const auto resumeBtnId = "EnhanceMaximizeBtn";
-        BarAction(resumeBtnId, out);
-        return;
-#endif
+#ifdef ARKXTEST_PC_FEATURE_ENABLE
         if (window_.mode_ == WindowMode::FULLSCREEN) {
             driver_.ChangeWindowMode(window_.id_, WindowMode::FLOATING);
         } else {
             driver_.ChangeWindowMode(window_.id_, WindowMode::FULLSCREEN);
+        }
+        return;
+#endif
+        auto isPcWindowMode = driver_.IsPcWindowMode();
+        if (isPcWindowMode) {
+            const auto maximizeBtnId = "EnhanceMaximizeBtn";
+            if (window_.mode_ == WindowMode::FULLSCREEN) {
+                CallBar(out);
+            }
+            BarAction(maximizeBtnId, out);
+            return;
+        }
+        if (window_.mode_ == WindowMode::SPLIT_PRIMARY || window_.mode_ == WindowMode::SPLIT_SECONDARY) {
+            Maximize(out);
+            auto win = driver_.RetrieveWindow(window_, out.exception_);
+            if (win != nullptr || out.exception_.code_ != NO_ERROR) {
+                window_ = *win;
+            } else {
+                return;
+            }
+            FloatWindowInPhoneMode(out);
+            return;
+        }
+        if (window_.mode_ == WindowMode::FLOATING) {
+            const auto maximizeBtnId = "floatingButtonMaximize";
+            BarAction(maximizeBtnId, out);
+            return;
+        }
+        if (window_.mode_ == WindowMode::FULLSCREEN) {
+            FloatWindowInPhoneMode(out);
+            return;
         }
     }
 
