@@ -81,6 +81,7 @@ namespace OHOS::uitest {
         if (currentDisplayAndWindowCacheMap.empty()) {
             LOG_E("Get Windows Failed");
             error = ApiCallErr(ERR_INTERNAL, "Get window nodes failed");
+            return;
         }
         for (auto dm : currentDisplayAndWindowCacheMap) {
             auto currentWindowVec = dm.second;

@@ -184,7 +184,10 @@ namespace OHOS::uitest {
         virtual void CloseAamsEvent() const {};
         virtual void OpenAamsEvent() const {};
         virtual void ChangeWindowMode(int32_t windowId, WindowMode mode) const {};
-        virtual bool IsPcWindowMode() const = 0;
+        virtual bool IsPcWindowMode() const
+        {
+            return false;
+        }
     };
 }
 
