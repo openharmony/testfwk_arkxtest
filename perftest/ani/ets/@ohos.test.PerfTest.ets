@@ -39,7 +39,7 @@ export function loadAndSetUpPerfTest(): boolean {
                 hilog.info(domain, 'perftestTag', 'PerfTest_exporter: Got AbilityDelegator');
                 let result = PerfTestInit.ScheduleEstablishConnection("default");
                 hilog.info(domain, 'perftestTag', "PerfTestInit.ScheduleEstablishConnection(): " + result)
-                delegator.executeShellCommand(`perftest start-daemon default`, executeTime).then((value: NullishType) => {
+                delegator.executeShellCommand(`perftest start-daemon default`, executeTime).then((value: Any) => {
                     hilog.info(domain, 'perftestTag', `PerfTest_exporter: Start server-daemon finished`);
                 }).catch((error: Error) : void=> {
                     hilog.error(domain, 'perftestTag', "PerfTest_exporter: Start server-daemon failed:" + error)
@@ -118,7 +118,7 @@ export class PerfTest {
     run(): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute((): boolean => this.runSync());
-            promise1.then((e: NullishType) => {
+            promise1.then((e: Any) => {
                 resolve(Promise.resolve());
             }, (err: Error): void => {
                 let error = err as BusinessError<void>;

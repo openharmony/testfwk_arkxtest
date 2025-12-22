@@ -250,8 +250,10 @@ static ani_object NewPerfMeasureResult(ani_env *env, ani_object object, nlohmann
             }
         } else if (index == ONE) {
             auto valueArray = datas[tag];
-            ani_array_double aniValueArray;
-            env->Array_New_Double(valueArray.size(), &aniValueArray);
+            ani_ref uValue{};
+            ani_array aniValueArray;
+            env->GetUndefined(&uValue);
+            env->Array_New(valueArray.size(), uValue, &aniValueArray);
             for (int arrayIndex = 0; arrayIndex < valueArray.size(); arrayIndex++) {
                 ani_double aniDoubleValue = static_cast<ani_double>(valueArray[arrayIndex]);
                 env->Array_Set(aniValueArray, arrayIndex, CreateDouble(env, aniDoubleValue));
