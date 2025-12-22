@@ -92,6 +92,11 @@ namespace OHOS::uitest {
         void OpenAamsEvent() const override;
 
         void ChangeWindowMode(int32_t windowId, WindowMode mode) const override;
+
+        bool IsPcWindowMode() const override;
+
+        int32_t GetScreenOrientation(int32_t displayId) const override;
+
     private:
         void  InjectMouseEvent(const MouseEvent &event) const;
         int32_t GetValidDisplayId(int32_t id) const;
