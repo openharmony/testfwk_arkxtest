@@ -18,12 +18,10 @@ import { ReportService } from './ReportService';
 import { EventAttrIF } from '../../interface';
 class SpecEvent {
   public id: string;
-  public coreContext: Core;
   private eventMonitors: Array<ReportService>;
   private eventOhMonitors: Array<OhReport>;
   constructor(attr: EventAttrIF) {
     this.id = attr.id;
-    this.coreContext = attr.coreContext;
     this.eventMonitors = new Array<ReportService>();
     this.eventOhMonitors = new Array<OhReport>();
   }
@@ -57,12 +55,10 @@ class SpecEvent {
 
 class SuiteEvent {
   public id: string;
-  public coreContext: Core;
   private eventMonitors: Array<ReportService>;
   private eventOhMonitors: Array<OhReport>;
   constructor(attr: EventAttrIF) {
     this.id = attr.id;
-    this.coreContext = attr.coreContext;
     this.eventMonitors = new Array<ReportService>();
     this.eventOhMonitors = new Array<OhReport>();
   }
@@ -96,12 +92,10 @@ class SuiteEvent {
 
 class TaskEvent {
   public id: string;
-  public coreContext: Core;
   private eventMonitors: Array<ReportService>;
   private eventOhMonitors: Array<OhReport>;
   constructor(attr: EventAttrIF) {
     this.id = attr.id;
-    this.coreContext = attr.coreContext;
     this.eventMonitors = new Array<ReportService>();
     this.eventOhMonitors = new Array<OhReport>();
   }

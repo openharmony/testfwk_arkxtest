@@ -93,7 +93,6 @@ export interface CoreEventIF {
 
 export interface EventAttrIF {
   id: string;
-  coreContext: Core;
 }
 
 export interface SuiteReportIF {
