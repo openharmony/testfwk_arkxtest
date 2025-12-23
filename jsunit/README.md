@@ -296,14 +296,50 @@ afterAll(func: Function): void
 import { afterAll, describe, it } from '@ohos/hypium';
 
 export default function customAssertTest() {
-    describe('customAssertTest', () => {
-        afterAll(async () => {
+    describe('outerDescribe', () => {
+        beforeAll(( => {
+            console.info('beforeAll')
+        })
+        afterAll(() => {
             console.info('afterAll');
         })
-        it('assertClose_success', 0, function () {
+        beforeEach(() => {
+            console.info('outer beforeEach')
+        })
+        afterEach(() => {
+            console.info('outer afterEach')
+        })
+        beforeEachIt(() => {
+            console.info('outer beforeEachIt')
+        })
+        afterEachIt(() => {
+            console.info('outer afterEachIt')
+        })
+        it('outer_it', 0, function () {
+            console.info('outer it')
             let a = 100;
             let b = 0.1;
             expect(a).assertClose(99, b);
+        })
+        describe('innerDescribe', () => {
+            beforeEach(() => {
+                console.info('outer beforeEach')
+            })
+            afterEach(() => {
+                console.info('outer afterEach')
+            })
+            beforeEachIt(() => {
+                console.info('outer beforeEachIt')
+            })
+            afterEachIt(() => {
+                console.info('outer afterEachIt')
+            })
+            it('innter_it', 0, function () {
+                console.info('outer it')
+                let a = 100;
+                let b = 0.1;
+                expect(a).assertClose(99, b);
+            })
         })
     })
 }
