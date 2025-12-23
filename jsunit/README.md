@@ -75,8 +75,8 @@ describe(testSuiteName: string, func: Function): void
 import { describe, expect, it } from '@ohos/hypium';
 
 export default async function assertCloseTest() {
-    describe('assertClose', function () {
-        it('assertClose_success', 0, function () {
+    describe('assertClose', () => {
+        it('assertClose_success', 0, () => {
             let a = 100;
             let b = 0.1;
             expect(a).assertClose(99, b);
@@ -106,7 +106,7 @@ export default function customAssertTest() {
         beforeAll(() => {
             console.info('beforeAll')
         })
-        it('assertClose_success', 0, function () {
+        it('assertClose_success', 0, () => {
             let a = 100;
             let b = 0.1;
             expect(a).assertClose(99, b);
@@ -293,11 +293,11 @@ afterAll(func: Function): void
 
 **示例：**
 ```javascript
-import { afterAll, describe, it } from '@ohos/hypium';
+import { afterAll, describe, it, expect, beforeEach, beforeEachIt, afterEach, afterEachIt, beforeAll } from '@ohos/hypium';
 
 export default function customAssertTest() {
     describe('outerDescribe', () => {
-        beforeAll(( => {
+        beforeAll(() => {
             console.info('beforeAll')
         })
         afterAll(() => {
@@ -315,7 +315,7 @@ export default function customAssertTest() {
         afterEachIt(() => {
             console.info('outer afterEachIt')
         })
-        it('outer_it', 0, function () {
+        it('outer_it', 0, () => {
             console.info('outer it')
             let a = 100;
             let b = 0.1;
@@ -323,19 +323,19 @@ export default function customAssertTest() {
         })
         describe('innerDescribe', () => {
             beforeEach(() => {
-                console.info('outer beforeEach')
+                console.info('inner beforeEach')
             })
             afterEach(() => {
-                console.info('outer afterEach')
+                console.info('inner afterEach')
             })
             beforeEachIt(() => {
-                console.info('outer beforeEachIt')
+                console.info('inner beforeEachIt')
             })
             afterEachIt(() => {
-                console.info('outer afterEachIt')
+                console.info('inner afterEachIt')
             })
-            it('innter_it', 0, function () {
-                console.info('outer it')
+            it('innter_it', 0, () => {
+                console.info('inner it')
                 let a = 100;
                 let b = 0.1;
                 expect(a).assertClose(99, b);
@@ -343,6 +343,13 @@ export default function customAssertTest() {
         })
     })
 }
+// 执行顺序
+// beforeAll -> 
+// outer beforeEachIt -> outer beforeEach -> outer it -> outer afterEach -> outer afterEachIt ->
+// outer beforeEachIt -> inner beforeEachIt -> inner beforeEach -> inner it -> inner afterEach -> inner afterEachIt -> outer afterEachIt ->
+// afterAll
+// beforeEachIt在beforeEach前执行，afterEachIt在afterEach后执行
+// 父测试套的beforeEachIt和afterEachIt会在子测试套中执行，且父测试套的beforeEachIt会在子测试套的beforeEachIt之前执行，父测试套的afterEachIt会在子测试套的afterEachIt之后执行
 ```
 
 ### beforeItSpecified<sup>1.0.15</sup>
@@ -515,13 +522,13 @@ expect(actualValue?: any): Assert
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('Expect Basic Value Tests', function () {
-    it('expect_equalTo', function () {
+describe('Expect Basic Value Tests', () => {
+    it('expect_equalTo', () => {
         let result = 2 + 3;
         expect(result).assertEqual(5); // 断言相等
     })
 
-    it('expect_not_equalTo', function () {
+    it('expect_not_equalTo', () => {
         let name = 'Tom';
         expect(name).assertNotEqual('Jerry'); // 断言不相等
     })
@@ -1151,8 +1158,8 @@ actionStart(tag: string): void
 import { describe, expect, it, SysTestKit } from '@ohos/hypium';
 
 export default function actionTest() {
-    describe('actionTest', function () {
-        it('existKeyword', DEFAULT, async function () {
+    describe('actionTest', () => {
+        it('existKeyword', DEFAULT, () => {
             let tag = '[MyTest]';
             SysTestKit.actionStart(tag);
             //do something
@@ -1178,8 +1185,8 @@ actionEnd(tag: string): void
 import { describe, expect, it, SysTestKit } from '@ohos/hypium';
 
 export default function actionTest() {
-    describe('actionTest', function () {
-        it('existKeyword', DEFAULT, async function () {
+    describe('actionTest', () => {
+        it('existKeyword', DEFAULT, async () => {
             let tag = '[MyTest]';
             //do something
             SysTestKit.actionEnd(tag);
@@ -2179,8 +2186,8 @@ export default function argumentMatchersAnyTest() {
 import { describe, expect, it, Level, Size, TestType } from '@ohos/hypium';
 
 export default function attributeTest() {
-    describe('attributeTest', function () {
-        it("testAttributeIt", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, function () {
+    describe('attributeTest', () => {
+        it("testAttributeIt", TestType.FUNCTION | Size.SMALLTEST | Level.LEVEL0, () => {
             console.info('Hello Test');
         })
     })
