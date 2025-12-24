@@ -26,7 +26,7 @@ export function assertThrowError(actualValue: () => void, expected: string[]): A
       pass: result,
       message: ' An error is not thrown while it is expected!',
     };
-  } catch (err: Error) {
+  } catch (err) {
     const length = expected.length;
     const errorType = Class.of(err).getName();
     const errorTypeArr = errorType.split('.');

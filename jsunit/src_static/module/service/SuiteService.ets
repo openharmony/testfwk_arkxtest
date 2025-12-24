@@ -111,7 +111,7 @@ class SuiteService {
         this.suitesStack.push(suite);
         try {
           func()
-        } catch (err: Error) {
+        } catch (err) {
           console.info(`${TAG} describe ${desc} 执行报错： ${err.message}`);
           console.info(`${err.stack}`);
         }
