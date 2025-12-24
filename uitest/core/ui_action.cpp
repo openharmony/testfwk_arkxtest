@@ -395,9 +395,15 @@ namespace OHOS::uitest {
     {
         for (uint32_t finger = 0; finger < fingerNum_; finger++) {
             for (uint32_t step = 0; step < stepNum_; step++) {
+                auto prevTouchEvent = At(finger, step);
+                if (step > 0) {
+                    prevTouchEvent = At(finger, step - 1);
+                }
                 auto touchEvent = At(finger, step);
+                Point rawDelta(touchEvent.point_.px_ - prevTouchEvent.point_.px_,
+                               touchEvent.point_.py_ - prevTouchEvent.point_.py_);
                 recv.push_back(MouseEvent {touchEvent.stage_, touchEvent.point_, MouseButton::BUTTON_LEFT, {},
-                                           touchEvent.holdMs_});
+                                           touchEvent.holdMs_, TouchToolType::MOUSE, rawDelta});
             }
         }
     }
