@@ -74,7 +74,7 @@ describe(testSuiteName: string, func: Function): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-export default async function assertCloseTest() {
+export default function assertCloseTest() {
     describe('assertClose', () => {
         it('assertClose_success', 0, () => {
             let a = 100;
@@ -99,7 +99,7 @@ beforeAll(func: Function): void
 
 **示例：**
 ```javascript
-import { beforeAll, describe, it } from '@ohos/hypium';
+import { beforeAll, describe, it, expect } from '@ohos/hypium';
 
 export default function customAssertTest() {
     describe('customAssertTest', () => {
@@ -130,7 +130,7 @@ beforeEach(func: Function): void
 
 **示例：**
 ```javascript
-import { beforeEach, describe, it } from '@ohos/hypium';
+import { beforeEach, describe, it, expect } from '@ohos/hypium';
 
 let str = "";
 
@@ -160,7 +160,7 @@ afterEach(func: Function): void
 
 **示例：**
 ```javascript
-import { afterEach, describe, it } from '@ohos/hypium';
+import { afterEach, describe, it, expect } from '@ohos/hypium';
 
 let str = "B";
 
@@ -348,6 +348,7 @@ export default function customAssertTest() {
 // outer beforeEachIt -> outer beforeEach -> outer it -> outer afterEach -> outer afterEachIt ->
 // outer beforeEachIt -> inner beforeEachIt -> inner beforeEach -> inner it -> inner afterEach -> inner afterEachIt -> outer afterEachIt ->
 // afterAll
+
 // beforeEachIt在beforeEach前执行，afterEachIt在afterEach后执行
 // 父测试套的beforeEachIt和afterEachIt会在子测试套中执行，且父测试套的beforeEachIt会在子测试套的beforeEachIt之前执行，父测试套的afterEachIt会在子测试套的afterEachIt之后执行
 ```
@@ -522,17 +523,19 @@ expect(actualValue?: any): Assert
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('Expect Basic Value Tests', () => {
-    it('expect_equalTo', () => {
-        let result = 2 + 3;
-        expect(result).assertEqual(5); // 断言相等
-    })
+export default function expectTest() {
+    describe('Expect', () => {
+        it('expect_equalTo', 0, () => {
+            let result = 2 + 3;
+            expect(result).assertEqual(5); // 断言相等
+        })
 
-    it('expect_not_equalTo', () => {
-        let name = 'Tom';
-        expect(name).assertNotEqual('Jerry'); // 断言不相等
+        it('expect_not_equalTo', 0, () => {
+            let name = 'Tom';
+            expect(name).assertNotEqual('Jerry'); // 断言不相等
+        })
     })
-})
+}
 ```
 ### Assert
 
@@ -554,13 +557,15 @@ assertClose(expectValue: number, precision: number): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertCloseTest', 0, () => {
-        let a: number = 100;
-        let b: number = 0.1;
-        expect(a).assertClose(99, b);
+export default function assertTest() {
+    describe('expectTest', () => {
+        it('assertCloseTest', 0, () => {
+            let a: number = 100;
+            let b: number = 0.1;
+            expect(a).assertClose(99, b);
+        })
     })
-})
+}
 ```
 
 #### assertContain
@@ -580,12 +585,14 @@ assertContain(expectValue: any): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertContain_1', 0, () => {
-        let a = "abc";
-        expect(a).assertContain('b');
+export default assertContainTest() {
+    describe('expectTest', () => {
+        it('assertContain_1', 0, () => {
+            let a = "abc";
+            expect(a).assertContain('b');
+        })
     })
-})
+}
 ```
 
 #### assertEqual
@@ -604,11 +611,13 @@ assertEqual(expectValue: any): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertEqualTest', 0, () => {
-        expect(3).assertEqual(3);
+export default function assertEqualTest() {
+    describe('expectTest', () => {
+        it('assertEqualTest', 0, () => {
+            expect(3).assertEqual(3);
+        })
     })
-})
+}
 ```
 
 #### assertFail
@@ -621,11 +630,13 @@ assertFail(): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertFailTest', 0, () => {
-        expect().assertFail(); // 用例失败;
+export default function assertFailTest() {
+    describe('expectTest', () => {
+        it('assertFailTest', 0, () => {
+            expect().assertFail(); // 用例失败;
+        })
     })
-})
+}
 ```
 #### assertFalse
 
@@ -637,11 +648,13 @@ assertFalse(): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertFalseTest', 0, () => {
-        expect(false).assertFalse();
+export default function assertFalseTest() {
+    describe('expectTest', () => {
+        it('assertFalseTest', 0, () => {
+            expect(false).assertFalse();
+        })
     })
-})
+}
 ```
 
 #### assertTrue
@@ -654,11 +667,14 @@ assertTrue(): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertTrueTest', 0, () => {
-        expect(true).assertTrue();
+export default function assertTrueTest() {
+    describe('expectTest', () => {
+        it('assertTrueTest', 0, () => {
+            expect(true).assertTrue();
+        })
     })
-})
+}
+
 ```
 
 #### assertInstanceOf
@@ -677,12 +693,15 @@ assertInstanceOf(expectValue: string): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertInstanceOfTest', 0, () => {
-        let a: string = 'strTest';
-        expect(a).assertInstanceOf('String');
+export default function assertInstanceOfTest() {
+    describe('expectTest', () => {
+        it('assertInstanceOfTest', 0, () => {
+            let a: string = 'strTest';
+            expect(a).assertInstanceOf('String');
+        })
     })
-})
+}
+
 ```
 
 #### assertLarger
@@ -701,11 +720,13 @@ assertLarger(expectValue: number): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertLargerTest', 0, () => {
-        expect(3).assertLarger(2);
+export default function assertLargerTest() {
+    describe('expectTest', () => {
+        it('assertLargerTest', 0, () => {
+            expect(3).assertLarger(2);
+        })
     })
-})
+}
 ```
 
 #### assertLess
@@ -725,11 +746,14 @@ assertLess(expectValue: number): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertLessTest', 0, () => {
-        expect(2).assertLess(3);
+export default function assertLessTest() {
+    describe('expectTest', () => {
+        it('assertLessTest', 0, () => {
+            expect(2).assertLess(3);
+        })
     })
-})
+}
+
 ```
 
 #### assertNull
@@ -742,11 +766,13 @@ assertNull(): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertNullTest', 0, () => {
-        expect(null).assertNull();
+export default function assertNullTest() {
+    describe('expectTest', () => {
+        it('assertNullTest', 0, () => {
+            expect(null).assertNull();
+        })
     })
-})
+}
 ```
 
 #### assertThrowError
@@ -766,18 +792,21 @@ assertThrowError(expectValue: string | Function): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertThrowErrorTest', 0, () => {
-        expect(() => {
-            throw new Error('test');
-        }).assertThrowError('test');
+export default function assertThrowErrorTest() {
+    describe('expectTest', () => {
+        it('assertThrowErrorTest', 0, () => {
+            expect(() => {
+                throw new Error('test');
+            }).assertThrowError('test');
+        })
+        it('assertThrowErrorTypeTest', 0, () => {
+            expect(() => {
+                throw new TypeError('test');
+            }).assertThrowError(TypeError);
+        })
     })
-    it('assertThrowErrorTypeTest', 0, () => {
-        expect(() => {
-            throw new TypeError('test');
-        }).assertThrowError(TypeError);
-    })
-})
+}
+
 ```
 
 #### assertUndefined
@@ -790,11 +819,14 @@ assertUndefined(): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertUndefinedTest', 0, () => {
-        expect(undefined).assertUndefined();
+export default function assertUndefinedTest() {
+    describe('expectTest', () => {
+        it('assertUndefinedTest', 0, () => {
+            expect(undefined).assertUndefined();
+        })
     })
-})
+}
+
 ```
 
 #### assertNaN<sup>1.0.4<sup>
@@ -807,11 +839,13 @@ assertNaN(): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertNaNTest', 0, () => {
-        expect(Number.NaN).assertNaN(); // true
+export default function assertNaNTest() {
+    describe('expectTest', () => {
+        it('assertNaNTest', 0, () => {
+            expect(Number.NaN).assertNaN(); // true
+        })
     })
-})
+}
 ```
 
 #### assertNegUnlimited<sup>1.0.4<sup>
@@ -824,11 +858,13 @@ assertNegUnlimited(): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertNegUnlimitedTest', 0, () => {
-        expect(Number.NEGATIVE_INFINITY).assertNegUnlimited(); // true
+export default function assertNegUnlimitedTest() {
+    describe('expectTest', () => {
+        it('assertNegUnlimitedTest', 0, () => {
+            expect(Number.NEGATIVE_INFINITY).assertNegUnlimited(); // true
+        })
     })
-})
+}
 ```
 
 #### assertPosUnlimited<sup>1.0.4<sup>
@@ -841,11 +877,13 @@ assertPosUnlimited(): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertPosUnlimitedTest', 0, () => {
-        expect(Number.POSITIVE_INFINITY).assertPosUnlimited(); // true
+export default function assertPosUnlimitedTest() {
+    describe('expectTest', () => {
+        it('assertPosUnlimitedTest', 0, () => {
+            expect(Number.POSITIVE_INFINITY).assertPosUnlimited(); // true
+        })
     })
-})
+}
 ```
 
 #### assertDeepEquals<sup>1.0.4<sup>
@@ -865,13 +903,15 @@ assertDeepEquals(expectValue: any): void
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('deepEquals_array_not_have_true', 0, () => {
-        const a: Array<number> = [];
-        const b: Array<number> = [];
-        expect(a).assertDeepEquals(b);
+export default function assertDeepEqualsTest() {
+    describe('expectTest', () => {
+        it('deepEquals_array_not_have_true', 0, () => {
+            const a: Array<number> = [];
+            const b: Array<number> = [];
+            expect(a).assertDeepEquals(b);
+        })
     })
-})
+}
 ```
 
 #### assertPromiseIsPending<sup>1.0.4<sup>
@@ -885,12 +925,14 @@ assertPromiseIsPending(): Promise<void>
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertPromiseIsPendingTest', 0, async () => {
-       let p: Promise<void> = new Promise<void>(() => {});
-       await expect(p).assertPromiseIsPending(); // 返回Promise<void>类型，注意在异步函数中调用
-   })
-})
+export default function assertPromiseIsPendingTest() {
+    describe('expectTest', () => {
+        it('assertPromiseIsPendingTest', 0, async () => {
+            let p: Promise<void> = new Promise<void>(() => {});
+            await expect(p).assertPromiseIsPending(); // 返回Promise<void>类型，注意在异步函数中调用
+        })
+    })
+}
 ```
 
 #### assertPromiseIsRejected<sup>1.0.4<sup>
@@ -908,13 +950,16 @@ interface PromiseInfo {
   res: string;
 }
 
-describe('expectTest', () => {
-    it('assertPromiseIsRejectedTest', 0, async () => {
-      let info: PromiseInfo = {res: "no"};
-      let p: Promise<PromiseInfo> = Promise.reject(info);
-       await expect(p).assertPromiseIsRejected(); // 返回Promise<void>类型，注意在异步函数中调用
-   })
-})
+export default function assertPromiseIsRejectedTest() {
+    describe('expectTest', () => {
+        it('assertPromiseIsRejectedTest', 0, async () => {
+            let info: PromiseInfo = {res: "no"};
+            let p: Promise<PromiseInfo> = Promise.reject(info);
+            await expect(p).assertPromiseIsRejected(); // 返回Promise<void>类型，注意在异步函数中调用
+        })
+    })
+}
+
 ```
 
 #### assertPromiseIsRejectedWith<sup>1.0.4<sup>
@@ -939,13 +984,15 @@ interface PromiseInfo {
   res: string;
 }
 
-describe('expectTest', () => {
-    it('assertPromiseIsRejectedWithTest', 0, async () => {
-        let info: PromiseInfo = { res: "reject value" };
-        let p: Promise<PromiseInfo> = Promise.reject(info);
-        await expect(p).assertPromiseIsRejectedWith(info); // 返回Promise<void>类型，注意在异步函数中调用
+export default function assertPromiseIsRejectedWithTest() {
+    describe('expectTest', () => {
+        it('assertPromiseIsRejectedWithTest', 0, async () => {
+            let info: PromiseInfo = { res: "reject value" };
+            let p: Promise<PromiseInfo> = Promise.reject(info);
+            await expect(p).assertPromiseIsRejectedWith(info); // 返回Promise<void>类型，注意在异步函数中调用
+        })
     })
-})
+}
 ```
 
 
@@ -968,12 +1015,15 @@ assertPromiseIsRejectedWithError(expectedErrorType: Function | string, expectedE
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('expectTest', () => {
-    it('assertPromiseIsRejectedWithErrorTest', 0, async () => {
-       let p1: Promise<TypeError> = Promise.reject(new TypeError('number'));
-       await expect(p1).assertPromiseIsRejectedWithError(TypeError, 'number'); // 返回Promise<void>类型，注意在异步函数中调用
-   })
-})
+export default function assertPromiseIsRejectedWithErrorTest() {
+    describe('expectTest', () => {
+        it('assertPromiseIsRejectedWithErrorTest', 0, async () => {
+            let p1: Promise<TypeError> = Promise.reject(new TypeError('number'));
+            await expect(p1).assertPromiseIsRejectedWithError(TypeError, 'number'); // 返回Promise<void>类型，注意在异步函数中调用
+        })
+    })
+}
+
 ```
 
 #### assertPromiseIsResolved<sup>1.0.4<sup>
@@ -991,13 +1041,15 @@ interface PromiseInfo {
   res: string;
 }
 
-describe('expectTest', () => {
-    it('assertPromiseIsResolvedTest', 0, async () => {
-        let info: PromiseInfo = { res: "result value" };
-        let p: Promise<PromiseInfo> = Promise.resolve(info);
-        await expect(p).assertPromiseIsResolved(); // 返回Promise<void>类型，注意在异步函数中调用
+export default function assertPromiseIsResolvedTest() {
+    describe('expectTest', () => {
+        it('assertPromiseIsResolvedTest', 0, async () => {
+            let info: PromiseInfo = { res: "result value" };
+            let p: Promise<PromiseInfo> = Promise.resolve(info);
+            await expect(p).assertPromiseIsResolved(); // 返回Promise<void>类型，注意在异步函数中调用
+        })
     })
-})
+}
 ```
 
 
@@ -1023,13 +1075,16 @@ interface PromiseInfo {
   res: string;
 }
 
-describe('expectTest', ()=> {
-   it('assertPromiseIsResolvedWithTest', 0, async () => {
-       let info: PromiseInfo = {res: "result value"};
-       let p: Promise<PromiseInfo> = Promise.resolve(info);
-       await expect(p).assertPromiseIsResolvedWith(info); // 返回Promise<void>类型，注意在异步函数中调用
-   })
-})
+export default function assertPromiseIsResolvedWithTest() {
+    describe('expectTest', ()=> {
+        it('assertPromiseIsResolvedWithTest', 0, async () => {
+            let info: PromiseInfo = {res: "result value"};
+            let p: Promise<PromiseInfo> = Promise.resolve(info);
+            await expect(p).assertPromiseIsResolvedWith(info); // 返回Promise<void>类型，注意在异步函数中调用
+        })
+    })
+}
+
 ```
 
 #### not<sup>1.0.4<sup>
@@ -1050,11 +1105,13 @@ not(): Assert
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('assertNot', () => {
-    it('assertNot001', 0, () => {
-        expect(1).not().assertLargerOrEqual(2);
+export default function assertNotTest() {
+    describe('assertNot', () => {
+        it('assertNot001', 0, () => {
+            expect(1).not().assertLargerOrEqual(2);
+        })
     })
-})
+}
 ```
 
 #### message<sup>1.0.17<sup>
@@ -1080,14 +1137,16 @@ message(msg: string): Assert
 ```javascript
 import { describe, expect, it } from '@ohos/hypium';
 
-describe('assertMessage', () => {
-
-    it('assertMessage001', 0, () => {
-        let actualValue = 0;
-        let expectValue = 2;
-        expect(actualValue).message('0 != 2').assertEqual(expectValue);
+export default function assertMessageTest() {
+    describe('assertMessage', () => {
+        it('assertMessage001', 0, () => {
+            let actualValue = 0;
+            let expectValue = 2;
+            expect(actualValue).message('0 != 2').assertEqual(expectValue);
+        })
     })
-})
+}
+
 ```
 
 ### SysTestKit
@@ -1159,7 +1218,7 @@ import { describe, expect, it, SysTestKit } from '@ohos/hypium';
 
 export default function actionTest() {
     describe('actionTest', () => {
-        it('existKeyword', DEFAULT, () => {
+        it('existKeyword', 0, () => {
             let tag = '[MyTest]';
             SysTestKit.actionStart(tag);
             //do something
@@ -1186,7 +1245,7 @@ import { describe, expect, it, SysTestKit } from '@ohos/hypium';
 
 export default function actionTest() {
     describe('actionTest', () => {
-        it('existKeyword', DEFAULT, async () => {
+        it('existKeyword', 0, async () => {
             let tag = '[MyTest]';
             //do something
             SysTestKit.actionEnd(tag);
@@ -1299,7 +1358,7 @@ Mock某个类的实例上的公共方法，支持使用异步函数
 
 **示例：**
 ```javascript
-import { describe, expect, it, MockKit } from '@ohos/hypium';
+import { describe, expect, it, MockKit, when } from '@ohos/hypium';
 
 class ClassName {
     constructor() {
@@ -1355,14 +1414,13 @@ Mock某个类的实例上的私有方法，支持使用异步函数。
 import { ArgumentMatchers, describe, expect, it, MockKit, when } from '@ohos/hypium';
 
 class ClassName {
-  constructor() {
-  }
-  method(arg: number): number {
-    return this.method_1(arg);
-  }
-  private method_1(arg: number) {
-    return arg;
-  }
+    constructor() {}
+    method(arg: number): number {
+        return this.method_1(arg);
+    }
+    private method_1(arg: number) {
+        return arg;
+    }
 }
 
 export default function staticTest() {
@@ -1400,7 +1458,7 @@ Mock某个类的实例上的属性，将其值设置为预期值，支持私有�
 
 **示例：**
 ```javascript
-import { ArgumentMatchers, describe, expect, it, MockKit, when } from '@ohos/hypium';
+import { describe, expect, it, MockKit } from '@ohos/hypium';
 
 class ClassName {
     constructor() {
@@ -1445,11 +1503,10 @@ ignoreMock(obj: Object, func: Function | String): void
 **示例**
 
 ```javascript
-import { ArgumentMatchers, describe, expect, it, MockKit, when } from '@ohos/hypium';
+import { describe, expect, it, MockKit } from '@ohos/hypium';
 
 class ClassName {
-    constructor() {
-    }
+    constructor() {}
 
     private priData = 2;
 
@@ -1548,7 +1605,7 @@ clear(obj: Object): void
 
 **示例：**
 ```javascript
-import { ArgumentMatchers, describe, expect, it, MockKit, when } from '@ohos/hypium';
+import { describe, expect, it, MockKit, when } from '@ohos/hypium';
 
 class ClassName {
     
@@ -2183,7 +2240,7 @@ export default function argumentMatchersAnyTest() {
 示例代码
 
 ```javascript
-import { describe, expect, it, Level, Size, TestType } from '@ohos/hypium';
+import { describe, it, Level, Size, TestType } from '@ohos/hypium';
 
 export default function attributeTest() {
     describe('attributeTest', () => {
