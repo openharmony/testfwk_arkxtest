@@ -100,7 +100,7 @@ class StaticSuite {
         this.beforeAll.forEach((func: (() => void) | (() => Promise<void>)) => {
           try {
             (func as () => void)();
-          } catch (e: Error) {
+          } catch (e) {
             console.error(`${TAG}${e.stack}`);
           }
         });
@@ -122,7 +122,7 @@ class StaticSuite {
             this.beforeEachIt.forEach((func: (() => void) | (() => Promise<void>)) => {
               try {
                 (func as () => void)();
-              } catch (e: Error) {
+              } catch (e) {
                 console.error(`${TAG}${e.stack}`);
               }
             });
@@ -131,7 +131,7 @@ class StaticSuite {
             this.beforeEach.forEach((func: (() => void) | (() => Promise<void>)) => {
               try {
                 (func as () => void)();
-              } catch (e: Error) {
+              } catch (e) {
                 console.error(`${TAG}${e.stack}`);
               }
             });
@@ -142,7 +142,7 @@ class StaticSuite {
             this.afterEach.forEach((func: (() => void) | (() => Promise<void>)) => {
               try {
                 (func as () => void)();
-              } catch (e: Error) {
+              } catch (e) {
                 console.error(`${TAG}${e.stack}`);
               }
             });
@@ -151,7 +151,7 @@ class StaticSuite {
             this.afterEachIt.forEach((func: (() => void) | (() => Promise<void>)) => {
               try {
                 (func as () => void)();
-              } catch (e: Error) {
+              } catch (e) {
                 console.error(`${TAG}${e.stack}`);
               }
             });
@@ -186,7 +186,7 @@ class StaticSuite {
         this.afterAll.forEach((func: (() => void) | (() => Promise<void>)) => {
           try {
             (func as () => void)();
-          } catch (e: Error) {
+          } catch (e) {
             console.error(`${TAG}${e.stack}`);
           }
         });
@@ -223,7 +223,7 @@ class StaticSuite {
           break;
         }
       }
-    } catch (err: Error) {
+    } catch (err) {
       console.error(`${TAG}${err.stack}`);
     }
   }
@@ -254,7 +254,7 @@ class StaticSuite {
           break;
         }
       }
-    } catch (err: Error) {
+    } catch (err) {
       console.error(`${TAG}${err.stack}`);
 
     }
