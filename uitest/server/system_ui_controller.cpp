@@ -765,10 +765,13 @@ namespace OHOS::uitest {
         item.SetDisplayY(event.point_.py_);
         item.SetRawDisplayX(event.point_.px_);
         item.SetRawDisplayY(event.point_.py_);
+        item.SetRawDx(event.rawDelta.px_);
+        item.SetRawDy(event.rawDelta.py_);
         item.SetPressed(false);
         item.SetDownTime(0);
-        LOG_I("Inject mouseEvent, pressed:%{public}d, location:%{public}d, %{public}d",
-            event.stage_ == ActionStage::DOWN, event.point_.px_, event.point_.py_);
+        LOG_I("Inject mouseEvent, pressed:%{public}d, location:%{public}d, %{public}d, delta:%{public}d, %{public}d",
+            event.stage_ == ActionStage::DOWN, event.point_.px_, event.point_.py_,
+            event.rawDelta.px_, event.rawDelta.py_);
     }
 
     static void SetMousePointerEventAttr(shared_ptr<PointerEvent> pointerEvent, const MouseEvent &event)
@@ -830,7 +833,7 @@ namespace OHOS::uitest {
     void SysUiController::InjectMouseEvent(const MouseEvent &event) const
     {
         auto pointerEvent = PointerEvent::Create();
-        if (pointerEvent == nullptr) {
+        if (pointerEvent == nullptr || event.stage_ == ActionStage::NONE) {
             return;
         }
         PointerEvent::PointerItem item;
