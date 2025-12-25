@@ -1648,7 +1648,7 @@ clearAll(): void
 
 **示例：**
 ```javascript
-import { ArgumentMatchers, describe, expect, it, MockKit, when } from '@ohos/hypium';
+import { describe, expect, it, MockKit, when } from '@ohos/hypium';
 
 class ClassName {
     
