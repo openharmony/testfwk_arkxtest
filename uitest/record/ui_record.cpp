@@ -31,6 +31,8 @@ namespace OHOS::uitest {
     static std::shared_ptr<InputEventCallback> g_uiCallBackInstance = nullptr;
     const std::map <int32_t, TouchOpt> SPECIAL_KET_MAP = {
         {MMI::KeyEvent::KEYCODE_BACK, TouchOpt::OP_RETURN},
+        {MMI::KeyEvent::KEYCODE_FLOATING_BACK, TouchOpt::OP_RETURN},
+        {MMI::KeyEvent::KEYCODE_RECENT, TouchOpt::OP_RECENT},
         {MMI::KeyEvent::KEYCODE_HOME, TouchOpt::OP_HOME},
     };
 
