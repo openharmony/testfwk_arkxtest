@@ -299,6 +299,9 @@ class Core {
         } else if (service instanceof OhReport) {
           const typeService = service as OhReport;
           typeService.init(context);
+        } else if (service instanceof DataDriver) {
+          const typeService = service as DataDriver;
+          typeService.init(context);
         }
         this.addToGlobal(apis);
       }
