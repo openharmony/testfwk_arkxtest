@@ -108,6 +108,7 @@ namespace OHOS::uitest {
         vector<KeyEvent> keyEvents_;
         uint32_t holdMs_;
         TouchToolType touchToolType = TouchToolType::MOUSE;
+        Point rawDelta;
     };
 
     struct TouchPadEvent {
