@@ -200,7 +200,7 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
             if (ANI_OK != env->Object_New(cls, com_ctor, &com_obj, reinterpret_cast<ani_object>(item))) {
                 HiLog::Error(LABEL, "%{public}s component Object new failed !!!", __func__);
             }
-            auto status = env->Object_CallMethodByName_Void(arrayObj, "$_set", "iC{std.core.Object}:", index, com_obj);
+            auto status = env->Object_CallMethodByName_Void(arrayObj, "$_set", "iY:", index, com_obj);
             if (ANI_OK != status) {
                 HiLog::Error(LABEL, "%{public}s Object_CallMethodByName_Void set Failed", __func__);
                 break;
@@ -1783,7 +1783,7 @@ static ani_boolean isComponentPresentWhenLongClickSync(ani_env *env, ani_object 
 }
 
 
-static ani_boolean isComponentPresentWhenDragSync(ani_env *env, ani_object obj, ani_object on_obj, ani_object from, 
+static ani_boolean isComponentPresentWhenDragSync(ani_env *env, ani_object obj, ani_object on_obj, ani_object from,
                                                   ani_object to, ani_object speed, ani_object duration)
 {
     ApiCallInfo callInfo_;
@@ -1802,7 +1802,7 @@ static ani_boolean isComponentPresentWhenDragSync(ani_env *env, ani_object obj, 
     }
     return reply_.resultValue_.get<bool>();
 }
-static ani_boolean isComponentPresentWhenSwipeSync(ani_env *env, ani_object obj, ani_object on_obj, ani_object from, 
+static ani_boolean isComponentPresentWhenSwipeSync(ani_env *env, ani_object obj, ani_object on_obj, ani_object from,
                                                   ani_object to, ani_object speed)
 {
     ApiCallInfo callInfo_;
@@ -2465,7 +2465,7 @@ static void once(ani_env *env, ani_object obj, nlohmann::json paramList, ani_obj
     UnmarshalReply(env, callInfo_, reply_);
 }
 static void onceToastShow(ani_env *env, ani_object obj, ani_object callback)
-{    
+{
     nlohmann::json paramList_ = nlohmann::json::array();
     paramList_.push_back("toastShow");
     once(env, obj, paramList_, callback);
