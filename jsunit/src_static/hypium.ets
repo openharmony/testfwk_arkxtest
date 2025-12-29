@@ -101,7 +101,6 @@ export class Hypium {
       }
     } else {
       params = {}
-      console.error(" params in data cannot be undefined");
     }
 
     let items: DataDriverSuite[] | undefined = [];
