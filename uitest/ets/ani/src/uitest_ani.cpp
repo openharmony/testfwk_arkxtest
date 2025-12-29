@@ -567,7 +567,7 @@ static void pushBool(ani_env *env, ani_object input, nlohmann::json &params)
     if (ret == ANI_FALSE) {
         ani_boolean param;
         HiLog::Info(LABEL, "%{public}s ani_boolean !!!", __func__);
-        env->Object_CallMethodByName_Boolean(input, "toBoolean", ":Z", &param);
+        env->Object_CallMethodByName_Boolean(input, "toBoolean", ":z", &param);
         HiLog::Info(LABEL, "%{public}d ani_boolean !!!", static_cast<int>(param));
         params.push_back(static_cast<bool>(param));
     }
