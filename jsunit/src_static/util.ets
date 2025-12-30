@@ -18,23 +18,22 @@ import { AnyType } from './module/types/common';
 import { TAG } from './Constant';
 
 export function getAsyncFuncWithArgsZero(func: () => Promise<void>, timeout: int, isStressTest: boolean) {
-  return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (value: Error) => void) => {
+  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (value: Error) => void) => {
     let timer = 0;
     if (!isStressTest) {
       timer = setTimeout(() => {
         reject(new Error('execute timeout ' + timeout + 'ms'));
       }, timeout);
     }
-    try {
-      await func();
-    } catch (err: Error) {
+    func().then(() => {
+      if (!!timer) {
+        clearTimeout(timer);
+      }
+      resolve(Promise.resolve());
+    }).catch((err: Error) => {
       console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
       reject(err)
-    }
-    if (!!timer) {
-      clearTimeout(timer);
-    }
-    resolve(Promise.resolve());
+    })
   });
 }
 
@@ -64,7 +63,7 @@ export function getAsyncFuncWithArgsOne(
   timeout: int,
   isStressTest: boolean
 ) {
-  return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
+  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
     let timer = 0;
     if (!isStressTest) {
       timer = setTimeout(() => {
@@ -79,14 +78,12 @@ export function getAsyncFuncWithArgsOne(
       resolve(Promise.resolve());
     };
 
-    try {
-      await func(done);
-    } catch (err: Error) {
+    func(done).catch((err: Error) => {
       if (!!timer) {
         clearTimeout(timer);
       }
       reject(err);
-    }
+    })
   });
 }
 
@@ -123,7 +120,7 @@ export function getAsyncFuncWithArgsTwo(
   paramItem: AnyType,
   isStressTest: boolean
 ) {
-  return new Promise<void>(async (resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
+  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
     let timer = 0;
     if (!isStressTest) {
       timer = setTimeout(() => {
@@ -138,14 +135,12 @@ export function getAsyncFuncWithArgsTwo(
       resolve(Promise.resolve());
     };
 
-    try {
-      await func(done, paramItem);
-    } catch (err: Error) {
+    func(done, paramItem).catch((err: Error) => {
       if (!!timer) {
         clearTimeout(timer);
       }
       reject(err);
-    }
+    })
   });
 }
 
