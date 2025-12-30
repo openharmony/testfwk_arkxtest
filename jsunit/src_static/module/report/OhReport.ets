@@ -251,6 +251,7 @@ class OhReport {
           message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + specService.getTestTotal();
           let messageStack = '';
           let messageCode = '';
+          const MAX_MESSAGE_LENGTH = 9000;
           const currentRunningSpec = specService.currentRunningSpec;
           if (currentRunningSpec) {
             const error = currentRunningSpec.error;
@@ -266,8 +267,8 @@ class OhReport {
               if (message) {
                 errorMsg = message;
               }
-              if (errorMsg.length > 9000) {
-                errorMsg = errorMsg.substring(0, 9000);
+              if (errorMsg && errorMsg.length > MAX_MESSAGE_LENGTH) {
+                errorMsg = errorMsg.substring(0, MAX_MESSAGE_LENGTH);
               }
               messageStack = `${PrintTag.OHOS_REPORT_STATUS}: stack=` + errorStack;
               messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
@@ -287,8 +288,8 @@ class OhReport {
               if (fail.message) {
                 failMsg = fail.message;
               }
-              if (failMsg.length > 9000) {
-                failMsg = failMsg.substring(0, 9000);
+              if (failMsg && failMsg.length > MAX_MESSAGE_LENGTH) {
+                failMsg = failMsg.substring(0, MAX_MESSAGE_LENGTH);
               }
               messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + failStack;
               messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
