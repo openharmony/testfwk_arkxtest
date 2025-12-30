@@ -383,7 +383,8 @@ namespace OHOS::uitest {
             return;
         }
 #ifdef ARKXTEST_PC_FEATURE_ENABLE
-        if (window_.mode_ == WindowMode::FULLSCREEN) {
+        if (window_.mode_ == WindowMode::FULLSCREEN || window_.mode_ == WindowMode::SPLIT_PRIMARY ||
+            window_.mode_ == WindowMode::SPLIT_SECONDARY) {
             driver_.ChangeWindowMode(window_.id_, WindowMode::FLOATING);
         } else {
             driver_.ChangeWindowMode(window_.id_, WindowMode::FULLSCREEN);
