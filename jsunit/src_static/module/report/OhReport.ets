@@ -266,6 +266,9 @@ class OhReport {
               if (message) {
                 errorMsg = message;
               }
+              if (errorMsg.length > 9000) {
+                errorMsg = errorMsg.substring(0, 9000);
+              }
               messageStack = `${PrintTag.OHOS_REPORT_STATUS}: stack=` + errorStack;
               messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
               messageCode +=
@@ -283,6 +286,9 @@ class OhReport {
               let failMsg = '';
               if (fail.message) {
                 failMsg = fail.message;
+              }
+              if (failMsg.length > 9000) {
+                failMsg = failMsg.substring(0, 9000);
               }
               messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + failStack;
               messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
