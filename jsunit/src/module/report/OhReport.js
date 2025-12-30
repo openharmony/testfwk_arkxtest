@@ -177,10 +177,7 @@ class OhReport {
       if (this.specService.currentRunningSpec.error) {
         messageStack = `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.error?.stack?.slice(0, -1);
         messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-        let errorMessage = this.specService.currentRunningSpec.error?.message;
-        if (errorMessage && errorMessage.length > MAX_MESSAGE_LENGTH) {
-          errorMessage = errorMessage.substring(0, MAX_MESSAGE_LENGTH);
-        }
+        let errorMessage = this.specService.currentRunningSpec.error?.message?.slice(0, MAX_MESSAGE_LENGTH);
         messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
           `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${errorMessage}` :
           `Error in ${this.specService.currentRunningSpec.description}, ${errorMessage}`;
@@ -190,10 +187,7 @@ class OhReport {
         if (this.specService.currentRunningSpec.fail) {
           messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.fail?.stack?.slice(0, -1);
           messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-          let failMessage = this.specService.currentRunningSpec.fail?.message;
-          if (failMessage && failMessage.length > MAX_MESSAGE_LENGTH) {
-            failMessage = failMessage.substring(0, MAX_MESSAGE_LENGTH);
-          }
+          let failMessage = this.specService.currentRunningSpec.fail?.message?.slice(0, MAX_MESSAGE_LENGTH);
           messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
             `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${failMessage}` :
             `Error in ${this.specService.currentRunningSpec.description}, ${failMessage}`;

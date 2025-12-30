@@ -265,10 +265,7 @@ class OhReport {
               let errorMsg = '';
               const message = error.message;
               if (message) {
-                errorMsg = message;
-              }
-              if (errorMsg && errorMsg.length > MAX_MESSAGE_LENGTH) {
-                errorMsg = errorMsg.substring(0, MAX_MESSAGE_LENGTH);
+                errorMsg = message.slice(0, MAX_MESSAGE_LENGTH);
               }
               messageStack = `${PrintTag.OHOS_REPORT_STATUS}: stack=` + errorStack;
               messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
@@ -286,11 +283,9 @@ class OhReport {
               }
               let failMsg = '';
               if (fail.message) {
-                failMsg = fail.message;
+                failMsg = fail.message.slice(0, MAX_MESSAGE_LENGTH);
               }
-              if (failMsg && failMsg.length > MAX_MESSAGE_LENGTH) {
-                failMsg = failMsg.substring(0, MAX_MESSAGE_LENGTH);
-              }
+
               messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + failStack;
               messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
               messageCode +=
