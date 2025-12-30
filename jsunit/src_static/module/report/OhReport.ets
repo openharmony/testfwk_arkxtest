@@ -285,7 +285,6 @@ class OhReport {
               if (fail.message) {
                 failMsg = fail.message.slice(0, MAX_MESSAGE_LENGTH);
               }
-
               messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + failStack;
               messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
               messageCode +=
