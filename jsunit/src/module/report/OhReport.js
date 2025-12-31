@@ -173,21 +173,24 @@ class OhReport {
       message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + this.specService.getTestTotal();
       let messageStack = '';
       let messageCode = '';
+      const MAX_MESSAGE_LENGTH = 9000;
       if (this.specService.currentRunningSpec.error) {
         messageStack = `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.error?.stack?.slice(0, -1);
         messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
+        let errorMessage = this.specService.currentRunningSpec.error?.message?.slice(0, MAX_MESSAGE_LENGTH);
         messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
-          `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}` :
-          `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.error?.message}`;
+          `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${errorMessage}` :
+          `Error in ${this.specService.currentRunningSpec.description}, ${errorMessage}`;
         messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
         messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -1` + '\n';
       } else if (this.specService.currentRunningSpec) {
         if (this.specService.currentRunningSpec.fail) {
           messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.fail?.stack?.slice(0, -1);
           messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
+          let failMessage = this.specService.currentRunningSpec.fail?.message?.slice(0, MAX_MESSAGE_LENGTH);
           messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
-            `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}` :
-            `Error in ${this.specService.currentRunningSpec.description}, ${this.specService.currentRunningSpec.fail?.message}`;
+            `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${failMessage}` :
+            `Error in ${this.specService.currentRunningSpec.description}, ${failMessage}`;
           messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
           messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -2` + '\n';
         } else {
