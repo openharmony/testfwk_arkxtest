@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -49,7 +49,7 @@ export function getFuncWithArgsZero(func: () => void, timeout: int, isStressTest
       func()
     } catch (err) {
       console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
-      reject(err)
+      reject(err as Error)
     }
     if (!!timer) {
       clearTimeout(timer);
@@ -109,7 +109,7 @@ export function getFuncWithArgsOne(func: (params: () => void) => void, timeout: 
       if (!!timer) {
         clearTimeout(timer);
       }
-      reject(err);
+      reject(err as Error);
     }
   });
 }
@@ -171,7 +171,7 @@ export function getFuncWithArgsTwo(
       if (!!timer) {
         clearTimeout(timer);
       }
-      reject(err);
+      reject(err as Error);
     }
   });
 }
