@@ -31,8 +31,14 @@ let tag: string = 'testTag';
 
 export class Hypium {
   public static context = new Map<string, AnyType>();
+  private static readonly MAX_PARSE_DEPTH = 20;
+  private static currentParseDepth = 0;
 
   static parseValue(value: jsonx.JsonElement) {
+    if (Hypium.currentParseDepth > Hypium.MAX_PARSE_DEPTH) {
+      throw new Error('Maximum parsing depth exceeded. currentParseDepth is ' + Hypium.currentParseDepth);
+    }
+    Hypium.currentParseDepth++;
     if (value.tryAsString()) {
       return value.tryAsString()
     } else if (value.tryAsInteger()) {
@@ -53,6 +59,8 @@ export class Hypium {
         return Hypium.parseParams(value)
       } catch (error) {
         return null;
+      } finally {
+        Hypium.currentParseDepth--;
       }
     }
   }
