@@ -334,7 +334,7 @@ static ani_ref Create(ani_env *env, [[maybe_unused]] ani_class clazz, ani_object
     env->GetNull(&nullref);
     if (env->FindClass(Builder::BuildClass({"@ohos", "test", "PerfTest", "PerfTest"}).Descriptor().c_str(), &cls)
         != ANI_OK) {
-        HiLog::Error(LABEL, "@ohos/test/PerfTest/PerfTest Not found");
+        HiLog::Error(LABEL, "@ohos.test.PerfTest.PerfTest Not found");
         return nullref;
     }
     ani_method ctor = nullptr;
@@ -419,7 +419,7 @@ static ani_boolean BindPerfTest(ani_env *env)
         return false;
     }
     ani_native_function createMethod {
-        "createInner", "C{@ohos/test/PerfTest/PerfTestStrategy}:C{@ohos/test/PerfTest/PerfTest}",
+        "createInner", "C{@ohos.test.PerfTest.PerfTestStrategy}:C{@ohos.test.PerfTest.PerfTest}",
          reinterpret_cast<void *>(Create)};
     if (env->Class_BindStaticNativeMethods(cls, &createMethod, ONE) != ANI_OK) {
         HiLog::Error(LABEL, "%{public}s Cannot bind static native method", __func__);
