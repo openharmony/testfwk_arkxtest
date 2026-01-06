@@ -39,29 +39,27 @@ export class Hypium {
       throw new Error('Maximum parsing depth exceeded. currentParseDepth is ' + Hypium.currentParseDepth);
     }
     Hypium.currentParseDepth++;
-    if (value.tryAsString()) {
-      return value.tryAsString()
-    } else if (value.tryAsInteger()) {
-      return value.tryAsInteger()
-    } else if (value.tryAsDouble()) {
-      return value.tryAsDouble()
-    } else if (value.tryAsBoolean()) {
-      return value.tryAsBoolean()
-    } else if (value.tryAsArray()) {
-      const valueArray = value.tryAsArray() as Array<jsonx.JsonElement>
-      const parsedValue: Array<object | undefined | null> = []
-      for (const val of valueArray) {
-        parsedValue.push(Hypium.parseValue(val))
-      }
-      return parsedValue;
-    } else {
-      try {
+    try {
+      if (value.tryAsString()) {
+        return value.tryAsString()
+      } else if (value.tryAsInteger()) {
+        return value.tryAsInteger()
+      } else if (value.tryAsDouble()) {
+        return value.tryAsDouble()
+      } else if (value.tryAsBoolean()) {
+        return value.tryAsBoolean()
+      } else if (value.tryAsArray()) {
+        const valueArray = value.tryAsArray() as Array<jsonx.JsonElement>
+        const parsedValue: Array<object | undefined | null> = []
+        for (const val of valueArray) {
+          parsedValue.push(Hypium.parseValue(val))
+        }
+        return parsedValue;
+      } else {
         return Hypium.parseParams(value)
-      } catch (error) {
-        return null;
-      } finally {
-        Hypium.currentParseDepth--;
       }
+    } finally {
+      Hypium.currentParseDepth--;
     }
   }
 
@@ -75,7 +73,14 @@ export class Hypium {
       }
       const key = v.value![0]
       const value = v.value![1]
-      tempRecord[key] = Hypium.parseValue(value)
+      try {
+        tempRecord[key] = Hypium.parseValue(value)
+      } catch (error) {
+        // 如果是深度超限异常，抛出异常
+        if (error instanceof Error && error.message.includes('Maximum parsing depth exceeded')) {
+          throw error;
+        }
+      }
     }
     return tempRecord;
   }
