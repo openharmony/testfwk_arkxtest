@@ -47,7 +47,7 @@ export function getFuncWithArgsZero(func: () => void, timeout: int, isStressTest
     }
     try {
       func()
-    } catch (err: Error) {
+    } catch (err) {
       console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
       reject(err)
     }
@@ -105,7 +105,7 @@ export function getFuncWithArgsOne(func: (params: () => void) => void, timeout: 
 
     try {
       func(done);
-    } catch (err: Error) {
+    } catch (err) {
       if (!!timer) {
         clearTimeout(timer);
       }
@@ -167,7 +167,7 @@ export function getFuncWithArgsTwo(
 
     try {
       func(done, paramItem);
-    } catch (err: Error) {
+    } catch (err) {
       if (!!timer) {
         clearTimeout(timer);
       }
