@@ -80,6 +80,8 @@ export class Hypium {
         if (error instanceof Error && error.message.includes('Maximum parsing depth exceeded')) {
           throw error;
         }
+        // 其他错误场景，静默处理
+        tempRecord[key] = null
       }
     }
     return tempRecord;
