@@ -67,7 +67,7 @@
             "//test/testfwk/arkxtest/testserver/src:test_server_client",
             "//test/testfwk/arkxtest/perftest:perftestkit"
         ],
-        "inner_api": [
+        "inner_kits": [
           {
             "type": "none",
             "name": "//test/testfwk/arkxtest/testserver/src:test_server_client",
