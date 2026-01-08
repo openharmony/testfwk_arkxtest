@@ -298,6 +298,25 @@ namespace OHOS::uitest {
             driver_.ChangeWindowMode(window_.id_, WindowMode::SPLIT_PRIMARY);
             return;
         }
+        if (window_.mode_ == WindowMode::SPLIT_SECONDARY) {
+            constexpr auto topZone = 20;
+            Point from(window_.visibleBounds_.GetCenterX(), window_.visibleBounds_.top_ - topZone, window_.displayId_);
+            Point to(0, 0);
+            auto screenOrientation = driver_.GetScreenOrientation(out.exception_, window_.displayId_);
+            if (screenOrientation == ONE || screenOrientation == THREE) {
+                to = Point(from.px_, 0, window_.displayId_);
+            } else if (screenOrientation == TWO || screenOrientation == FOUR) {
+                to = Point(0, from.py_, window_.displayId_);
+            } else {
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+                return;
+            }
+            constexpr auto waitMs = 1000;
+            auto drag = GenericSwipe(TouchOp::SWIPE, from, to);
+            driver_.PerformTouch(drag, options_, out.exception_);
+            this_thread::sleep_for(chrono::milliseconds(waitMs));
+            return;
+        }
         if (window_.mode_ != WindowMode::FULLSCREEN) {
             Maximize(out);
             auto win = driver_.RetrieveWindow(window_, out.exception_);
