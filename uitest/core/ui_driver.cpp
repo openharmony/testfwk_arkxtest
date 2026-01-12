@@ -45,6 +45,8 @@ namespace OHOS::uitest {
 
     std::unique_ptr<UiController> UiDriver::uiController_;
 
+    AamsWorkMode UiDriver::mode_ = AamsWorkMode::NORMAL;
+
     void UiDriver::RegisterController(std::unique_ptr<UiController> controller)
     {
         uiController_ = move(controller);
