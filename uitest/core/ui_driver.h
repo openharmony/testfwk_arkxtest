@@ -160,7 +160,7 @@ namespace OHOS::uitest {
         // unique widget object save
         std::vector<Widget> visitWidgets_;
         std::vector<int> targetWidgetsIndex_;
-        AamsWorkMode mode_ = AamsWorkMode::NORMAL;
+        static AamsWorkMode mode_;
         bool eventObserverEnable_ = true;
     };
 } // namespace OHOS::uitest
