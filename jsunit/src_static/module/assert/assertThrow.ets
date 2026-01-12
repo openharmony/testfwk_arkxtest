@@ -24,7 +24,7 @@ export function assertThrow(actual: () => void, args: string[]): AssertResult {
     let throwError = new Error();
     try {
       actual();
-    } catch (e: Error) {
+    } catch (e) {
       hasThrow = true;
       throwError = e;
     }
