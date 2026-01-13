@@ -118,7 +118,6 @@ export class AssertMatcher {
   public assertPromiseIsRejectedWithError: (expectValue: string, expectValue2?: string) => Promise<void>;
   public assertPromiseIsResolved: () => Promise<void>;
   public assertPromiseIsResolvedWith: (expectValue: string) => Promise<void>;
-
   public customAssert: Record<string, Function> = {};
 
   constructor(
@@ -174,11 +173,13 @@ export class AssertMatcher {
     }
     this.addCustomAssert(customAssertion);
   }
+
   // 翻转方法
   not() {
     this.isNot = true;
     return this;
   }
+
   message(msg: string) {
     this.currentRunningSpec.expectMsg = msg;
     console.info(`${TAG} msg: ${msg}`);
@@ -186,45 +187,32 @@ export class AssertMatcher {
   }
 
   addCustomAssert(customMatcher: Map<string, Function>) {
-    for(const key of customMatcher.keys()) {
+    for (const key of customMatcher.keys()) {
       const customAssertFunc = customMatcher.get(key)
-      if(customAssertFunc && typeof customAssertFunc === 'function') {
-        const customFn = (matcherName: string, testFn: (actualValue: Object | undefined | null, ...expected: Array<Object | undefined | null>) => AssertResult) => {
+      if (customAssertFunc && typeof customAssertFunc === 'function') {
+        const customFn = (matcherName: string, testFn: (actualValue: Object | undefined | null,
+          ...expected: Array<Object | undefined | null>) => AssertResult) => {
           return (...args: Array<Object | undefined | null>) => {
-            try {
-              // 执行断言函数
-              const result = testFn(this.actualValue, ...args);
-              // 翻转结果
-              if (this.isNot) {
-                result.pass = !result.pass;
-                result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, args[0], result.message);
-              }
-              // 如果失败，抛出异常
-              if (!result.pass) {
-                const assertError = new AssertException(result.message);
-                const currentRunningSpec = this.currentRunningSpec;
-                const currentRunningSuite = this.currentRunningSuite;
-                if (currentRunningSpec) {
-                  // 返回fail有值，断言失败
-                  currentRunningSpec.fail = assertError;
-                } else {
-                  currentRunningSuite.hookError = assertError;
-                }
-                throw assertError;
-              }
-            } catch (error) {
-              const err = error as Error;
+            const result = testFn(this.actualValue, ...args);
+            if (this.isNot) {
+              result.pass = !result.pass;
+              result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, args[0], result.message);
+            }
+            if (!result.pass) {
+              const assertError = new AssertException(result.message);
               const currentRunningSpec = this.currentRunningSpec;
               const currentRunningSuite = this.currentRunningSuite;
               if (currentRunningSpec) {
-                currentRunningSpec.fail = err;
+                currentRunningSpec.fail = assertError;
               } else {
-                currentRunningSuite.hookError = err;
+                currentRunningSuite.hookError = assertError;
               }
+              throw assertError;
             }
           }
         }
-        this.customAssert.set(key, customFn(key, customAssertFunc as  (actualValue: Object | undefined | null, ...expected: Array<Object | undefined | null>) => AssertResult))
+        this.customAssert.set(key, customFn(key, customAssertFunc as (actualValue: Object | undefined | null,
+          ...expected: Array<Object | undefined | null>) => AssertResult))
       }
     }
   }
@@ -652,4 +640,5 @@ export class AssertMatcher {
     this.addPromiseWithError(matchers);
   }
 }
+
 export { ExpectService };
