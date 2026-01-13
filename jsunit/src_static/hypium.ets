@@ -40,6 +40,9 @@ export class Hypium {
     }
     Hypium.currentParseDepth++;
     try {
+      if (JSON.stringifyJsonElement(value) == 'null') {
+        return null
+      }
       if (value.tryAsString()) {
         return value.tryAsString()
       } else if (value.tryAsInteger()) {
@@ -73,16 +76,7 @@ export class Hypium {
       }
       const key = v.value![0]
       const value = v.value![1]
-      try {
-        tempRecord[key] = Hypium.parseValue(value)
-      } catch (error) {
-        // 如果是深度超限异常，抛出异常
-        if (error instanceof Error && error.message.includes('Maximum parsing depth exceeded')) {
-          throw error;
-        }
-        // 其他错误场景，静默处理
-        tempRecord[key] = null
-      }
+      tempRecord[key] = Hypium.parseValue(value)
     }
     return tempRecord;
   }
