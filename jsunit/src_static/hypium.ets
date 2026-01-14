@@ -32,41 +32,38 @@ let tag: string = 'testTag';
 export class Hypium {
   public static context = new Map<string, AnyType>();
   private static readonly MAX_PARSE_DEPTH = 20;
-  private static currentParseDepth = 0;
+  private static readonly INITIAL_DEPTH = 1;
 
-  static parseValue(value: jsonx.JsonElement) {
-    if (Hypium.currentParseDepth > Hypium.MAX_PARSE_DEPTH) {
-      throw new Error('Maximum parsing depth exceeded. currentParseDepth is ' + Hypium.currentParseDepth);
+  static parseValue(value: jsonx.JsonElement, currentDepth: number) {
+    if (currentDepth > Hypium.MAX_PARSE_DEPTH) {
+      throw new Error('Maximum parsing depth exceeded. currentParseDepth is ' + currentDepth);
     }
-    Hypium.currentParseDepth++;
-    try {
-      if (JSON.stringifyJsonElement(value) == 'null') {
-        return null
+    if (JSON.stringifyJsonElement(value) == 'null') {
+      return null
+    }
+    if (value.tryAsString()) {
+      return value.tryAsString()
+    } else if (value.tryAsInteger()) {
+      return value.tryAsInteger()
+    } else if (value.tryAsDouble()) {
+      return value.tryAsDouble()
+    } else if (value.tryAsBoolean()) {
+      return value.tryAsBoolean()
+    } else if (value.tryAsArray()) {
+      const valueArray = value.tryAsArray() as Array<jsonx.JsonElement>
+      const parsedValue: Array<object | undefined | null> = []
+      for (const val of valueArray) {
+        // 数组元素保持同一层数
+        parsedValue.push(Hypium.parseValue(val, currentDepth))
       }
-      if (value.tryAsString()) {
-        return value.tryAsString()
-      } else if (value.tryAsInteger()) {
-        return value.tryAsInteger()
-      } else if (value.tryAsDouble()) {
-        return value.tryAsDouble()
-      } else if (value.tryAsBoolean()) {
-        return value.tryAsBoolean()
-      } else if (value.tryAsArray()) {
-        const valueArray = value.tryAsArray() as Array<jsonx.JsonElement>
-        const parsedValue: Array<object | undefined | null> = []
-        for (const val of valueArray) {
-          parsedValue.push(Hypium.parseValue(val))
-        }
-        return parsedValue;
-      } else {
-        return Hypium.parseParams(value)
-      }
-    } finally {
-      Hypium.currentParseDepth--;
+      return parsedValue;
+    } else {
+      // 当时对象时，层数递增1位
+      return Hypium.parseParams(value, currentDepth + 1)
     }
   }
 
-  static parseParams(paramsItem: jsonx.JsonElement) {
+  static parseParams(paramsItem: jsonx.JsonElement, currentDepth: number) {
     const it = paramsItem.$_iterator()
     const tempRecord: Record<string, AnyType> = {}
     while (true) {
@@ -76,7 +73,7 @@ export class Hypium {
       }
       const key = v.value![0]
       const value = v.value![1]
-      tempRecord[key] = Hypium.parseValue(value)
+      tempRecord[key] = Hypium.parseValue(value, currentDepth)
     }
     return tempRecord;
   }
@@ -102,11 +99,11 @@ export class Hypium {
       if (Array.isArray(paramsValue)) {
         const paramArray = paramsValue as Array<jsonx.JsonElement>
         for (const paramsItem of paramArray) {
-          const tempRecord = Hypium.parseParams(paramsItem)
+          const tempRecord = Hypium.parseParams(paramsItem, Hypium.INITIAL_DEPTH)
           paramsArray.push(tempRecord)
         }
       } else {
-        params = Hypium.parseParams(paramsElement)
+        params = Hypium.parseParams(paramsElement, Hypium.INITIAL_DEPTH)
       }
     } else {
       params = {}
