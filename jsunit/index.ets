@@ -33,6 +33,14 @@ export declare class Hypium {
     static hypiumInitWorkers(abilityDelegator: Object, scriptURL: string, workerNum: number, params: Object): void;
 }
 
+export class SkipError extends Error {
+    constructor(message) {
+        super();
+        this.name = 'SkipError';
+        this.message = message;
+    }
+}
+
 export {
     Core,
     DataDriver,

@@ -78,6 +78,14 @@ class AssertException extends Error {
     }
 }
 
+export class SkipError extends Error {
+    constructor(message) {
+        super();
+        this.name = 'SkipError';
+        this.message = message;
+    }
+}
+
 function getFuncWithArgsZero(func, timeout, isStressTest) {
     return new Promise(async (resolve, reject) => {
         let timer = null;
@@ -735,6 +743,9 @@ SuiteService.Suite = class {
                 console.error(`${TAG}stack end`);
                 if (e instanceof AssertException) {
                     specItem.fail = e;
+                } else if (e instanceof SkipError) {
+                    specItem.isSkip = true;
+                    specItem.skipReason = e.message;
                 } else {
                     specItem.error = e;
                 }
@@ -987,6 +998,10 @@ SpecService.Spec = class {
     }
 
     setResult() {
+        if (this.isSkip) {
+            this.pass = false;
+            return;
+        }
         if (this.fail) {
             this.pass = false;
         } else {
