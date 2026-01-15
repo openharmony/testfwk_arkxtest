@@ -990,9 +990,16 @@ namespace OHOS::uitest {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto displayId = ReadCallArg<uint32_t>(in, INDEX_ZERO, UNASSIGNED);
             UiOpArgs uiOpArgs;
-            auto keyAction = CombinedKeys(KEYCODE_WIN, KEYCODE_D, KEYCODE_NONE);
-            driver.TriggerKey(keyAction, uiOpArgs, out.exception_);
-            driver.TriggerKey(Home(), uiOpArgs, out.exception_, displayId);
+            auto isPc = false;
+#ifdef ARKXTEST_PC_FEATURE_ENABLE
+            isPc = true;
+#endif
+            if (isPc) {
+                auto keyAction = CombinedKeys(KEYCODE_WIN, KEYCODE_D, KEYCODE_NONE);
+                driver.TriggerKey(keyAction, uiOpArgs, out.exception_, displayId);
+            } else {
+                driver.TriggerKey(Home(), uiOpArgs, out.exception_, displayId);
+            }
             ConvertError(out);
         };
         server.AddHandler("Driver.pressHome", pressHome);
