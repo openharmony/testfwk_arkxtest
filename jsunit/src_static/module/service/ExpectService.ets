@@ -33,7 +33,7 @@ class ExpectService {
   constructor(attr: ServiceAttrIF) {
     this.id = attr.id;
     this.matchers = null;
-    this.customMatchers = {};
+    this.customMatchers = new Map<string, Function>();
     this.coreContext = null;
   }
 
