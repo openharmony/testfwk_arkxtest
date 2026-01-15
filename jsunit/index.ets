@@ -34,7 +34,7 @@ export declare class Hypium {
 }
 
 export class SkipError extends Error {
-    constructor(message) {
+    constructor(message: string) {
         super();
         this.name = 'SkipError';
         this.message = message;
