@@ -45,18 +45,18 @@ export class Hypium {
   static registerAssert(customAssertion: Function): void {
     const core = Core.getInstance() as Core;
     const expectService = core.getDefaultService('expect');
-    if(expectService) {
+    if (expectService) {
       const eService = expectService as ExpectService
       eService.addCustomMatchers(customAssertion);
     }
   }
 
-  static unregisterAssert(customAssertion: Function): void {
+  static unregisterAssert(assertionName: string): void {
     const core = Core.getInstance() as Core;
     const expectService = core.getDefaultService('expect');
-    if (expectService && customAssertion.name) {
+    if (expectService && assertionName) {
       const eService = expectService as ExpectService;
-      eService.removeCustomMatchers(customAssertion.name);
+      eService.removeCustomMatchers(assertionName);
     }
   }
 
