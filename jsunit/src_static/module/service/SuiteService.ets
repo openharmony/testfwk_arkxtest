@@ -402,18 +402,23 @@ class SuiteService {
 
   getDryResultStr(dryrunResult: DryrunResultIF) {
     let message = '{';
-    for (const suiteEntries of Object.entries(dryrunResult)) {
-      if (!suiteEntries) {
+    const cls = Class.of(dryrunResult);
+    let keys = new Array<string>();
+    let values = new Array<Array<Map<string, Array<ConfigIf>>>>();
+    for (const field of reflect.getInstanceFieldsRecursive(cls)) {
+      const fieldValue = field.getValue(dryrunResult);
+      if (!fieldValue || !Array.isArray(fieldValue)) {
         continue;
       }
-      const suiteKey = suiteEntries[0];
-      const suiteValue = suiteEntries[1];
-      if (!suiteValue || !Array.isArray(suiteValue)) {
-        continue;
-      }
-      const suiteValueArray = suiteValue as Array<Map<string, Array<ConfigIf>>>;
+      const fieldName = field.getName();
+      keys.push(fieldName);
+      values.push(fieldValue as Array<Map<string, Array<ConfigIf>>>);
+    }
+    for (let i = 0; i < keys.length; i++) {
+      const suiteKey = keys[i];
+      const suiteValue = values[i];
       message += `"${suiteKey}":[`;
-      for (const itMap of suiteValueArray) {
+      for (const itMap of suiteValue) {
         message += '{';
         for (const itMapArray of itMap.entries()) {
           if (!itMapArray) {

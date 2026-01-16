@@ -115,10 +115,7 @@ export class DeepTypeUtils {
    * @param key 对象属性名称
    */
   static has(obj: object, key: string): boolean {
-    if (obj === null) {
-      return false;
-    }
-    return obj.hasOwnProperty(key);
+    return reflect.getInstanceFieldsRecursive(Class.of(obj)).find((e) => e.getName() == key) != undefined;
   }
 
   /**
@@ -158,9 +155,9 @@ export class DeepTypeUtils {
     if (obj === null) {
       return keyList;
     }
-    const keys = Object.keys(obj);
-    for (const key of keys) {
-      keyList.push(key);
+    const fields = reflect.getInstanceFieldsRecursive(Class.of(obj));
+    for (const field of fields) {
+      keyList.push(field.getName());
     }
     return keyList;
   }

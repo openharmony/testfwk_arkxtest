@@ -167,17 +167,14 @@ function eqOfObj(a: object, b: object): boolean {
   if (aKeys.length !== bKeys.length) {
     return false;
   }
-  for (const entries of Object.entries(a)) {
-    if(!entries) {
-      continue
+  for (const field of reflect.getInstanceFieldsRecursive(Class.of(a))) {
+    const aKey = field.getName();
+    if (!bKeys.includes(aKey)) {
+      return false;
     }
-    const aKey = entries[0]
-    const aValue = entries[1]
-    if(!bKeys.includes(aKey)) {
-      return false
-    }
-    if(!eq(aValue as object, (reflect.Value.of(b) as ClassValue).getFieldByName(aKey).getData() as object)) {
-      return false
+    const aValue = field.getValue(a);
+    if (!eq(aValue as Object, Class.of(b).getInstanceField(aKey)!.getValue(b) as Object)) {
+      return false;
     }
   }
   return true;
