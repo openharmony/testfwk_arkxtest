@@ -509,7 +509,7 @@ class ConfigService {
   translateParamsToString(parameters: Record<string, string>) {
     const keySet = new Set<string>(KEYSET);
     let targetParams = '';
-    for (const key of Object.keys(parameters)) {
+    for (const key of parameters.keySet()) {
       if (keySet.has(key)) {
         targetParams += ' ' + key + ' ' + parameters[key];
       }
