@@ -51,12 +51,12 @@ export class Hypium {
     }
   }
 
-  static unregisterAssert(assertionName: string): void {
+  static unregisterAssert(customAssertion: Function): void {
     const core = Core.getInstance() as Core;
     const expectService = core.getDefaultService('expect');
-    if (expectService && assertionName) {
+    if (expectService && customAssertion.name) {
       const eService = expectService as ExpectService;
-      eService.removeCustomMatchers(assertionName);
+      eService.removeCustomMatchers(customAssertion.name);
     }
   }
 
