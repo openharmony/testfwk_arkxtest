@@ -165,7 +165,7 @@ namespace OHOS::uitest {
         out[ATTR_NAMES[UiAttr::VISIBLE].data()] = attributeVec_[UiAttr::VISIBLE];
         out[ATTR_NAMES[UiAttr::HASHCODE].data()] = attributeVec_[UiAttr::HASHCODE];
         out[ATTR_NAMES[UiAttr::HINT].data()] = attributeVec_[UiAttr::HINT];
-        for (int i = UiAttr::UNIQUEID; i < HASHCODE; ++i) {
+        for (int i = UiAttr::UNIQUEID; i < UiAttr::HASHCODE; ++i) {
             if (extendedAttrs.find(ATTR_NAMES[i].data()) != std::string::npos) {
                 out[ATTR_NAMES[i].data()] = attributeVec_[i];
             }
