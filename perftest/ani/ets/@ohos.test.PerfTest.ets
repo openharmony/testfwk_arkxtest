@@ -101,6 +101,7 @@ class PerfMeasureResultInner implements PerfMeasureResult {
 
 export class PerfTest {
     nativePerfTest: string = '';
+    eaw = new EAWorker();
     public constructor(perfTest: string) {
         doSetupIfNeeded();
         if (this.nativePerfTest == '') {
@@ -117,12 +118,13 @@ export class PerfTest {
     private native runSync(): boolean;
     run(): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
-        let promise1 = taskpool.execute((): boolean => this.runSync());
-            promise1.then((e: Any) => {
-                resolve(Promise.resolve());
-            }, (err: Error): void => {
-                let error = err as BusinessError<void>;
+            this.eaw.start();
+            this.eaw.setUncaughtExceptionHandler((error: Error) => {
                 reject(error);
+            });
+            this.eaw.run<void>(() => {
+                this.runSync();
+                resolve(Promise.resolve());
             });
         });
         return promise;

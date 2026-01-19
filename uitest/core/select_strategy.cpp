@@ -132,6 +132,8 @@ namespace OHOS::uitest {
         auto bounds = widget.GetBounds();
         widget.SetBounds(Rect{ bounds.left_ + window.offset_.px_, bounds.right_ + window.offset_.px_,
             bounds.top_ + window.offset_.py_, bounds.bottom_ + window.offset_.py_ });
+        widget.SetOrigBounds(Rect{ bounds.left_ + window.offset_.px_, bounds.right_ + window.offset_.px_,
+            bounds.top_ + window.offset_.py_, bounds.bottom_ + window.offset_.py_ });
         CalcWidgetVisibleBounds(widget);
         auto widgetVisibleBounds = widget.GetBounds();
         if (widgetVisibleBounds.GetHeight() <= 0 || widgetVisibleBounds.GetWidth() <= 0) {

@@ -39,3 +39,4 @@ export { OhReport } from './module/report/OhReport';
 export { SysTestKit } from './module/kit/SysTestKit';
 export { DataDriver } from './module/config/DataDriver';
 export { MockKit, when, NoResult, ArgumentMatchers } from './module/mock/MockKit';
+export { SkipError } from './module/service/SkipError';

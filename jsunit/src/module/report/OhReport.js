@@ -193,11 +193,15 @@ class OhReport {
             `Error in ${this.specService.currentRunningSpec.description}, ${failMessage}`;
           messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
           messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -2` + '\n';
+        } else if (this.specService.currentRunningSpec.isSkip) {
+          messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
+          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
+          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -3` + '\n';
+          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.specService.currentRunningSpec.skipReason + '\n';
         } else {
           messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
           messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
           messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 0` + '\n';
-          messageCode += this.specService.currentRunningSpec.isSkip ? (`${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.specService.currentRunningSpec.skipReason + '\n') : '';
         }
       } else {
         messageCode += '\n';

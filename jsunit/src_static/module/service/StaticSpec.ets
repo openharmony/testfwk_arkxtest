@@ -60,6 +60,10 @@ class StaticSpec {
   }
 
   setResult() {
+    if (this.isSkip) {
+      this.pass = false;
+      return;
+    }
     if (this.fail) {
       this.pass = false;
     } else {
