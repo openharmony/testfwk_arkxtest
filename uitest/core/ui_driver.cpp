@@ -144,7 +144,7 @@ namespace OHOS::uitest {
                 LOG_E("Window %{public}s has no node, skip it", winCache.window_.bundleName_.data());
                 continue;
             } else {
-                DumpHandler::DumpWindowInfoToJson(visitWidgets_, child);
+                DumpHandler::DumpWindowInfoToJson(option, visitWidgets_, child);
             }
             child["attributes"]["abilityName"] = winCache.window_.abilityName_;
             child["attributes"]["bundleName"] = winCache.window_.bundleName_;
