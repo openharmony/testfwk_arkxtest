@@ -241,6 +241,22 @@ namespace OHOS::uitest {
         return;
     }
 
+    static void StringSplit(const string &str, const char split, std::vector<string> &res)
+    {
+        if (str == "") {
+            return;
+        }
+        string strs = str + split;
+        size_t pos = strs.find(split);
+
+        while (pos != strs.npos) {
+            std::string temp = strs.substr(0, pos);
+            res.emplace_back(temp);
+            strs = strs.substr(pos + 1, strs.size());
+            pos = strs.find(split);
+        }
+    }
+
     static bool ParseDumpOption(const map<char, string> &params, DumpOption &option)
     {
         option.listWindows_ = params.find('i') != params.end();
@@ -263,7 +279,7 @@ namespace OHOS::uitest {
         const vector<string> extendedAttrsVec = {"uniqueId"};
         if (iter6 != params.end()) {
             std::vector<std::string> argvVec;
-            StringSplit(iter6->second, argvVec);
+            StringSplit(iter6->second, ',', argvVec);
             for (auto argv : argvVec) {
                 if (std::find(extendedAttrsVec.begin(), extendedAttrsVec.end(), argv) == extendedAttrsVec.end()) {
                     PrintToConsole("Invalid attribute name, currently supported names are 'uniqueId'.");
