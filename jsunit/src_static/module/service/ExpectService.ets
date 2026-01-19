@@ -66,8 +66,14 @@ class ExpectService {
   }
 
   addCustomMatchers(customAssert: Function) {
-    const functionName = customAssert.name
-    this.customMatchers.set(functionName, customAssert)
+    if (typeof customAssert !== 'function') {
+      throw new Error('Custom assertion must be a function');
+    }
+    const customAssertName = customAssert.name;
+    if (!customAssertName || customAssertName.trim() == '') {
+      throw new Error('Please use a named function');
+    }
+    this.customMatchers.set(customAssertName, customAssert);
   }
 
   removeCustomMatchers(customAssertionName: string) {

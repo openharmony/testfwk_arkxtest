@@ -922,6 +922,9 @@ namespace OHOS::uitest {
 
     bool UiDriver::IsPcWindowMode() const
     {
+#ifdef ARKXTEST_PC_FEATURE_ENABLE
+        return true;
+#endif
         return uiController_->IsPcWindowMode();
     }
 } // namespace OHOS::uitest
