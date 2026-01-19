@@ -45,6 +45,8 @@ namespace OHOS::uitest {
 
     std::unique_ptr<UiController> UiDriver::uiController_;
 
+    AamsWorkMode UiDriver::mode_ = AamsWorkMode::NORMAL;
+
     void UiDriver::RegisterController(std::unique_ptr<UiController> controller)
     {
         uiController_ = move(controller);
@@ -920,6 +922,9 @@ namespace OHOS::uitest {
 
     bool UiDriver::IsPcWindowMode() const
     {
+#ifdef ARKXTEST_PC_FEATURE_ENABLE
+        return true;
+#endif
         return uiController_->IsPcWindowMode();
     }
 } // namespace OHOS::uitest

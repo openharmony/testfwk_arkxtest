@@ -256,6 +256,7 @@ class OhReport {
           if (currentRunningSpec) {
             const error = currentRunningSpec.error;
             const fail = currentRunningSpec.fail;
+            const isSkip = currentRunningSpec.isSkip;
             if (error) {
               let errorStack = '';
               const stack = error.stack;
@@ -293,13 +294,15 @@ class OhReport {
                   : `Error in ${currentRunningSpec.description}, ${failMsg}`;
               messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + currentRunningSpec.description;
               messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -2` + '\n';
+            } else if (isSkip) {
+              messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
+              messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + currentRunningSpec.description;
+              messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -3` + '\n';
+              messageCode += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + currentRunningSpec.skipReason + '\n';
             } else {
               messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
               messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + currentRunningSpec.description;
               messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 0` + '\n';
-              messageCode += currentRunningSpec.isSkip
-                ? `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + currentRunningSpec.skipReason + '\n'
-                : '';
             }
             messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=` + currentRunningSpec.duration + '\n';
           } else {

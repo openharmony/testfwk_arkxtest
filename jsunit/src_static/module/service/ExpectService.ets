@@ -174,31 +174,21 @@ export class AssertMatcher {
   addCloseAssert(matchers: AssertMatcherIF) {
     const numFn = (matcherName: string, assertFn: (actualValue: number, expected: number[]) => AssertResult) => {
       return (arg1: NumberType, arg2: NumberType) => {
-        try {
-          const result = assertFn((this.actualValue as NumberType).toDouble(), [arg1.toDouble(), arg2.toDouble()]);
-          if (this.isNot) {
-            result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg1, result.message);
-          }
-          if (!result.pass) {
-            const assertError = new AssertException(result.message);
-            const currentRunningSpec = this.currentRunningSpec;
-            const currentRunningSuite = this.currentRunningSuite;
-            if (currentRunningSpec) {
-              currentRunningSpec.fail = assertError;
-            } else {
-              currentRunningSuite.hookError = assertError;
-            }
-            throw assertError;
-          }
-        } catch (error) {
+        const result = assertFn((this.actualValue as NumberType).toDouble(), [arg1.toDouble(), arg2.toDouble()]);
+        if (this.isNot) {
+          result.pass = !result.pass;
+          result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg1, result.message);
+        }
+        if (!result.pass) {
+          const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
-            currentRunningSpec.fail = error;
+            currentRunningSpec.fail = assertError;
           } else {
-            currentRunningSuite.hookError = error;
+            currentRunningSuite.hookError = assertError;
           }
+          throw assertError;
         }
       };
     };
@@ -212,31 +202,21 @@ export class AssertMatcher {
   addNumAssert(matchers: AssertMatcherIF) {
     const numFn = (matcherName: string, assertFn: (actualValue: number, expected: number[]) => AssertResult) => {
       return (arg1: NumberType): void => {
-        try {
-          const result = assertFn((this.actualValue as NumberType).toDouble(), [arg1.toDouble()]);
-          if (this.isNot) {
-            result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg1, result.message);
-          }
-          if (!result.pass) {
-            const assertError = new AssertException(result.message);
-            const currentRunningSpec = this.currentRunningSpec;
-            const currentRunningSuite = this.currentRunningSuite;
-            if (currentRunningSpec) {
-              currentRunningSpec.fail = assertError;
-            } else {
-              currentRunningSuite.hookError = assertError;
-            }
-            throw assertError;
-          }
-        } catch (error) {
+        const result = assertFn((this.actualValue as NumberType).toDouble(), [arg1.toDouble()]);
+        if (this.isNot) {
+          result.pass = !result.pass;
+          result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg1, result.message);
+        }
+        if (!result.pass) {
+          const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
-            currentRunningSpec.fail = error;
+            currentRunningSpec.fail = assertError;
           } else {
-            currentRunningSuite.hookError = error;
+            currentRunningSuite.hookError = assertError;
           }
+          throw assertError;
         }
       };
     };
@@ -265,31 +245,21 @@ export class AssertMatcher {
   addFailAssert(matchers: AssertMatcherIF) {
     const voidFn = (matcherName: string, assertFn: () => AssertResult) => {
       return () => {
-        try {
-          const result = assertFn();
-          if (this.isNot) {
-            result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, 'undefined', result.message);
-          }
-          if (!result.pass) {
-            const assertError = new AssertException(result.message);
-            const currentRunningSpec = this.currentRunningSpec;
-            const currentRunningSuite = this.currentRunningSuite;
-            if (currentRunningSpec) {
-              currentRunningSpec.fail = assertError;
-            } else {
-              currentRunningSuite.hookError = assertError;
-            }
-            throw assertError;
-          }
-        } catch (error) {
+        const result = assertFn();
+        if (this.isNot) {
+          result.pass = !result.pass;
+          result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, 'undefined', result.message);
+        }
+        if (!result.pass) {
+          const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
-            currentRunningSpec.fail = error;
+            currentRunningSpec.fail = assertError;
           } else {
-            currentRunningSuite.hookError = error;
+            currentRunningSuite.hookError = assertError;
           }
+          throw assertError;
         }
       };
     };
@@ -303,31 +273,21 @@ export class AssertMatcher {
   addNumWithoutExpectAssert(matchers: AssertMatcherIF) {
     const nNumFn = (matcherName: string, assertFn: (actualValue: number) => AssertResult) => {
       return () => {
-        try {
-          const result = assertFn((this.actualValue as NumberType).toDouble());
-          if (this.isNot) {
-            result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, 'undefined', result.message);
-          }
-          if (!result.pass) {
-            const assertError = new AssertException(result.message);
-            const currentRunningSpec = this.currentRunningSpec;
-            const currentRunningSuite = this.currentRunningSuite;
-            if (currentRunningSpec) {
-              currentRunningSpec.fail = assertError;
-            } else {
-              currentRunningSuite.hookError = assertError;
-            }
-            throw assertError;
-          }
-        } catch (error) {
+        const result = assertFn((this.actualValue as NumberType).toDouble());
+        if (this.isNot) {
+          result.pass = !result.pass;
+          result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, 'undefined', result.message);
+        }
+        if (!result.pass) {
+          const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
-            currentRunningSpec.fail = error;
+            currentRunningSpec.fail = assertError;
           } else {
-            currentRunningSuite.hookError = error;
+            currentRunningSuite.hookError = assertError;
           }
+          throw assertError;
         }
       };
     };
@@ -350,31 +310,21 @@ export class AssertMatcher {
   addBooleanAssert(matchers: AssertMatcherIF) {
     const booleanFn = (matcherName: string, assertFn: (actualValue: boolean) => AssertResult) => {
       return () => {
-        try {
-          const result = assertFn(this.actualValue as boolean);
-          if (this.isNot) {
-            result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, 'undefined', result.message);
-          }
-          if (!result.pass) {
-            const assertError = new AssertException(result.message);
-            const currentRunningSpec = this.currentRunningSpec;
-            const currentRunningSuite = this.currentRunningSuite;
-            if (currentRunningSpec) {
-              currentRunningSpec.fail = assertError;
-            } else {
-              currentRunningSuite.hookError = assertError;
-            }
-            throw assertError;
-          }
-        } catch (error) {
+        const result = assertFn(this.actualValue as boolean);
+        if (this.isNot) {
+          result.pass = !result.pass;
+          result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, 'undefined', result.message);
+        }
+        if (!result.pass) {
+          const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
-            currentRunningSpec.fail = error;
+            currentRunningSpec.fail = assertError;
           } else {
-            currentRunningSuite.hookError = error;
+            currentRunningSuite.hookError = assertError;
           }
+          throw assertError;
         }
       };
     };
@@ -392,31 +342,21 @@ export class AssertMatcher {
   addAnytypeAssert(matchers: AssertMatcherIF) {
     const equalFn = (matcherName: string, assertFn: (actualValue: AnyType, expected: AnyType[]) => AssertResult) => {
       return (arg: AnyType) => {
-        try {
-          const result = assertFn(this.actualValue, [arg]);
-          if (this.isNot) {
-            result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg, result.message);
-          }
-          if (!result.pass) {
-            const assertError = new AssertException(result.message);
-            const currentRunningSpec = this.currentRunningSpec;
-            const currentRunningSuite = this.currentRunningSuite;
-            if (currentRunningSpec) {
-              currentRunningSpec.fail = assertError;
-            } else {
-              currentRunningSuite.hookError = assertError;
-            }
-            throw assertError;
-          }
-        } catch (error) {
+        const result = assertFn(this.actualValue, [arg]);
+        if (this.isNot) {
+          result.pass = !result.pass;
+          result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg, result.message);
+        }
+        if (!result.pass) {
+          const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
-            currentRunningSpec.fail = error;
+            currentRunningSpec.fail = assertError;
           } else {
-            currentRunningSuite.hookError = error;
+            currentRunningSuite.hookError = assertError;
           }
+          throw assertError;
         }
       };
     };
@@ -440,31 +380,21 @@ export class AssertMatcher {
   addInstanceOfAssert(matchers: AssertMatcherIF) {
     const equalFn = (matcherName: string, assertFn: (actualValue: AnyType, expected: string[]) => AssertResult) => {
       return (arg: string) => {
-        try {
-          const result = assertFn(this.actualValue, [arg]);
-          if (this.isNot) {
-            result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg, result.message);
-          }
-          if (!result.pass) {
-            const assertError = new AssertException(result.message);
-            const currentRunningSpec = this.currentRunningSpec;
-            const currentRunningSuite = this.currentRunningSuite;
-            if (currentRunningSpec) {
-              currentRunningSpec.fail = assertError;
-            } else {
-              currentRunningSuite.hookError = assertError;
-            }
-            throw assertError;
-          }
-        } catch (error) {
+        const result = assertFn(this.actualValue, [arg]);
+        if (this.isNot) {
+          result.pass = !result.pass;
+          result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg, result.message);
+        }
+        if (!result.pass) {
+          const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
-            currentRunningSpec.fail = error;
+            currentRunningSpec.fail = assertError;
           } else {
-            currentRunningSuite.hookError = error;
+            currentRunningSuite.hookError = assertError;
           }
+          throw assertError;
         }
       };
     };
@@ -478,31 +408,21 @@ export class AssertMatcher {
   addUndefinedAssert(matchers: AssertMatcherIF) {
     const undefinedFn = (matcherName: string, assertFn: (actualValue: AnyType) => AssertResult) => {
       return () => {
-        try {
-          const result = assertFn(this.actualValue);
-          if (this.isNot) {
-            result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, 'undefined', result.message);
-          }
-          if (!result.pass) {
-            const assertError = new AssertException(result.message);
-            const currentRunningSpec = this.currentRunningSpec;
-            const currentRunningSuite = this.currentRunningSuite;
-            if (currentRunningSpec) {
-              currentRunningSpec.fail = assertError;
-            } else {
-              currentRunningSuite.hookError = assertError;
-            }
-            throw assertError;
-          }
-        } catch (error) {
+        const result = assertFn(this.actualValue);
+        if (this.isNot) {
+          result.pass = !result.pass;
+          result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, 'undefined', result.message);
+        }
+        if (!result.pass) {
+          const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
-            currentRunningSpec.fail = error;
+            currentRunningSpec.fail = assertError;
           } else {
-            currentRunningSuite.hookError = error;
+            currentRunningSuite.hookError = assertError;
           }
+          throw assertError;
         }
       };
     };
@@ -519,35 +439,25 @@ export class AssertMatcher {
   addThrowAssert(matchers: AssertMatcherIF) {
     const throwFn = (matcherName: string, assertFn: (actualValue: () => void, args: string[]) => AssertResult) => {
       return (arg1: string, arg2?: string) => {
-        try {
-          let arr = [arg1];
-          if (arg2 !== undefined) {
-            arr = [arg1, arg2];
-          }
-          const result = assertFn(this.actualValue as () => void, arr);
-          if (this.isNot) {
-            result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg1, result.message);
-          }
-          if (!result.pass) {
-            const assertError = new AssertException(result.message);
-            const currentRunningSpec = this.currentRunningSpec;
-            const currentRunningSuite = this.currentRunningSuite;
-            if (currentRunningSpec) {
-              currentRunningSpec.fail = assertError;
-            } else {
-              currentRunningSuite.hookError = assertError;
-            }
-            throw assertError;
-          }
-        } catch (error) {
+        let arr = [arg1];
+        if (arg2 !== undefined) {
+          arr = [arg1, arg2];
+        }
+        const result = assertFn(this.actualValue as () => void, arr);
+        if (this.isNot) {
+          result.pass = !result.pass;
+          result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg1, result.message);
+        }
+        if (!result.pass) {
+          const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
-            currentRunningSpec.fail = error;
+            currentRunningSpec.fail = assertError;
           } else {
-            currentRunningSuite.hookError = error;
+            currentRunningSuite.hookError = assertError;
           }
+          throw assertError;
         }
       };
     };
@@ -564,31 +474,21 @@ export class AssertMatcher {
   addPromiseAssert(matchers: AssertMatcherIF) {
     const promiseFn = (matcherName: string, assertFn: (actualPromise: Promise<AnyType>) => Promise<AssertResult>) => {
       return async (): Promise<void> => {
-        try {
-          const result: AssertResult = await assertFn(this.actualValue as Promise<AnyType>);
-          if (this.isNot) {
-            result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, 'undefined', result.message);
-          }
-          if (!result.pass) {
-            const assertError = new AssertException(result.message);
-            const currentRunningSpec = this.currentRunningSpec;
-            const currentRunningSuite = this.currentRunningSuite;
-            if (currentRunningSpec) {
-              currentRunningSpec.fail = assertError;
-            } else {
-              currentRunningSuite.hookError = assertError;
-            }
-            throw assertError;
-          }
-        } catch (error) {
+        const result: AssertResult = await assertFn(this.actualValue as Promise<AnyType>);
+        if (this.isNot) {
+          result.pass = !result.pass;
+          result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, 'undefined', result.message);
+        }
+        if (!result.pass) {
+          const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
-            currentRunningSpec.fail = error;
+            currentRunningSpec.fail = assertError;
           } else {
-            currentRunningSuite.hookError = error;
+            currentRunningSuite.hookError = assertError;
           }
+          throw assertError;
         }
       };
     };
@@ -612,31 +512,21 @@ export class AssertMatcher {
       assertFn: (actualPromise: Promise<AnyType>, expectedValue: AnyType[]) => Promise<AssertResult>
     ) => {
       return async (arg: AnyType): Promise<void> => {
-        try {
-          const result: AssertResult = await assertFn(this.actualValue as Promise<AnyType>, [arg]);
-          if (this.isNot) {
-            result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg, result.message);
-          }
-          if (!result.pass) {
-            const assertError = new AssertException(result.message);
-            const currentRunningSpec = this.currentRunningSpec;
-            const currentRunningSuite = this.currentRunningSuite;
-            if (currentRunningSpec) {
-              currentRunningSpec.fail = assertError;
-            } else {
-              currentRunningSuite.hookError = assertError;
-            }
-            throw assertError;
-          }
-        } catch (error) {
+        const result: AssertResult = await assertFn(this.actualValue as Promise<AnyType>, [arg]);
+        if (this.isNot) {
+          result.pass = !result.pass;
+          result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg, result.message);
+        }
+        if (!result.pass) {
+          const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
-            currentRunningSpec.fail = error;
+            currentRunningSpec.fail = assertError;
           } else {
-            currentRunningSuite.hookError = error;
+            currentRunningSuite.hookError = assertError;
           }
+          throw assertError;
         }
       };
     };
@@ -656,35 +546,25 @@ export class AssertMatcher {
       assertFn: (actualPromise: Promise<AnyType>, expectedValue: string[]) => Promise<AssertResult>
     ) => {
       return async (arg: string, arg1?: string): Promise<void> => {
-        try {
-          let arr = [arg];
-          if (arg1 !== undefined) {
-            arr = [arg, arg1];
-          }
-          const result: AssertResult = await assertFn(this.actualValue as Promise<AnyType>, arr);
-          if (this.isNot) {
-            result.pass = !result.pass;
-            result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg, result.message);
-          }
-          if (!result.pass) {
-            const assertError = new AssertException(result.message);
-            const currentRunningSpec = this.currentRunningSpec;
-            const currentRunningSuite = this.currentRunningSuite;
-            if (currentRunningSpec) {
-              currentRunningSpec.fail = assertError;
-            } else {
-              currentRunningSuite.hookError = assertError;
-            }
-            throw assertError;
-          }
-        } catch (error) {
+        let arr = [arg];
+        if (arg1 !== undefined) {
+          arr = [arg, arg1];
+        }
+        const result: AssertResult = await assertFn(this.actualValue as Promise<AnyType>, arr);
+        if (this.isNot) {
+          result.pass = !result.pass;
+          result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, arg, result.message);
+        }
+        if (!result.pass) {
+          const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
           if (currentRunningSpec) {
-            currentRunningSpec.fail = error;
+            currentRunningSpec.fail = assertError;
           } else {
-            currentRunningSuite.hookError = error;
+            currentRunningSuite.hookError = assertError;
           }
+          throw assertError;
         }
       };
     };
