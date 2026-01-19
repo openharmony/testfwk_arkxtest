@@ -67,7 +67,7 @@ namespace OHOS::uitest {
     "  -w <windowId>                                                specifies the window id of the target window\n"
     "  -m <true/false>          whether merge windows, true means to merge, set it true when not use this option\n"
     "  -d <displayId>                                           specifies the locate screen of the target window\n"
-        "  -e <attributeName>                                               extend by adding the specified attribute\n"
+    "  -e <attributeName>                                               extend by adding the specified attribute\n"
     "start-daemon <token>                                                                 start the test process\n"
     "uiRecord                                                                            recording Ui Operations\n"
     "  record                                                           Write Ui event information into csv file\n"
