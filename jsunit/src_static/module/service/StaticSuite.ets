@@ -18,6 +18,7 @@ import { StaticServiceIF } from '../../interface';
 import { TAG } from '../../Constant';
 import { Core } from '../../core';
 import { AssertException } from './AssertException';
+import { SkipError } from './SkipError';
 import { ConfigService } from '../config/configService';
 import { SpecService } from './SpecService';
 import { SuiteService } from './SuiteService';
@@ -340,6 +341,9 @@ class StaticSuite {
               console.error(`${TAG}stack end`);
               if (err instanceof AssertException) {
                 specItem.fail = e;
+              } else if (err instanceof SkipError) {
+                specItem.isSkip = true;
+                specItem.skipReason = err.message;
               } else {
                 specItem.error = e;
               }

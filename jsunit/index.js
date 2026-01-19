@@ -23,6 +23,7 @@ import { describe, beforeAll, beforeEach, afterEach, beforeEachIt, afterEachIt, 
 import { MockKit, when } from './src/module/mock/MockKit';
 import ArgumentMatchers from './src/module/mock/ArgumentMatchers';
 import worker from '@ohos.worker';
+import { SkipError } from './src/service';
 
 class Hypium {
     static context = new Map();
@@ -257,5 +258,6 @@ export {
     SysTestKit,
     describe, beforeAll, beforeEach, afterEach, beforeEachIt, afterEachIt, afterAll, it, expect, beforeItSpecified, afterItSpecified, xdescribe, xit,
     MockKit, when,
-    ArgumentMatchers
+    ArgumentMatchers,
+    SkipError
 };
