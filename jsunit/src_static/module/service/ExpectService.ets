@@ -28,12 +28,12 @@ import { SuiteService } from './SuiteService';
 class ExpectService {
   public id: string;
   public matchers: AssertMatcherIF | null;
-  public customMatchers: Array<string>;
+  public customMatchers: Map<string, Function>;
   public coreContext: Core | null;
   constructor(attr: ServiceAttrIF) {
     this.id = attr.id;
     this.matchers = null;
-    this.customMatchers = new Array<string>();
+    this.customMatchers = new Map<string, Function>();
     this.coreContext = null;
   }
 
@@ -54,7 +54,7 @@ class ExpectService {
         currentRunningSuite = (suiteService as SuiteService).getCurrentRunningSuite();
       }
     }
-    return new AssertMatcher(actualValue, currentRunningSpec, currentRunningSuite, this.matchers);
+    return new AssertMatcher(actualValue, currentRunningSpec, currentRunningSuite, this.matchers, this.customMatchers);
   }
 
   init(coreContext: Core) {
@@ -65,8 +65,23 @@ class ExpectService {
     this.matchers = matchers;
   }
 
-  // @todo 不支持
-  removeMatchers(customAssertionName: string) {}
+  addCustomMatchers(customAssert: Function) {
+    if (typeof customAssert !== 'function') {
+      throw new Error('Custom assertion must be a function');
+    }
+    const customAssertName = customAssert.name;
+    if (!customAssertName || customAssertName.trim() == '') {
+      throw new Error('Please use a named function');
+    }
+    this.customMatchers.set(customAssertName, customAssert);
+  }
+
+  removeCustomMatchers(customAssertionName: string) {
+    const func = this.customMatchers.get(customAssertionName)
+    if(func) {
+      this.customMatchers.delete(customAssertionName)
+    }
+  }
 
   apis(): ApiIF {
     const _this = this;
@@ -109,11 +124,14 @@ export class AssertMatcher {
   public assertPromiseIsRejectedWithError: (expectValue: string, expectValue2?: string) => Promise<void>;
   public assertPromiseIsResolved: () => Promise<void>;
   public assertPromiseIsResolvedWith: (expectValue: string) => Promise<void>;
+  public customAssert: Record<string, Function> = {};
+
   constructor(
     actualValue: AnyType,
     currentRunningSpec: StaticSpec,
     currentRunningSuite: StaticSuite,
-    matchers: AssertMatcherIF | null
+    matchers: AssertMatcherIF | null,
+    customAssertion: Map<string, Function>
   ) {
     this.isNot = false;
     this.currentRunningSpec = currentRunningSpec;
@@ -159,17 +177,52 @@ export class AssertMatcher {
     if (matchers !== null) {
       this.addAssert(matchers);
     }
+    this.addCustomAssert(customAssertion);
   }
+
   // 翻转方法
   not() {
     this.isNot = true;
     return this;
   }
+
   message(msg: string) {
     this.currentRunningSpec.expectMsg = msg;
     console.info(`${TAG} msg: ${msg}`);
     return this;
   }
+
+  addCustomAssert(customMatcher: Map<string, Function>) {
+    for (const key of customMatcher.keys()) {
+      const customAssertFunc = customMatcher.get(key)
+      if (customAssertFunc && typeof customAssertFunc === 'function') {
+        const customFn = (matcherName: string, testFn: (actualValue: Object | undefined | null,
+          ...expected: Array<Object | undefined | null>) => AssertResult) => {
+          return (...args: Array<Object | undefined | null>) => {
+            const result = testFn(this.actualValue, ...args);
+            if (this.isNot) {
+              result.pass = !result.pass;
+              result.message = LogExpectError.getErrorMsg(matcherName, this.actualValue, args[0], result.message);
+            }
+            if (!result.pass) {
+              const assertError = new AssertException(result.message);
+              const currentRunningSpec = this.currentRunningSpec;
+              const currentRunningSuite = this.currentRunningSuite;
+              if (currentRunningSpec) {
+                currentRunningSpec.fail = assertError;
+              } else {
+                currentRunningSuite.hookError = assertError;
+              }
+              throw assertError;
+            }
+          }
+        }
+        this.customAssert.set(key, customFn(key, customAssertFunc as (actualValue: Object | undefined | null,
+          ...expected: Array<Object | undefined | null>) => AssertResult))
+      }
+    }
+  }
+
 
   addCloseAssert(matchers: AssertMatcherIF) {
     const numFn = (matcherName: string, assertFn: (actualValue: number, expected: number[]) => AssertResult) => {
@@ -593,4 +646,5 @@ export class AssertMatcher {
     this.addPromiseWithError(matchers);
   }
 }
+
 export { ExpectService };
