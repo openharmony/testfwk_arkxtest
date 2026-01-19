@@ -25,6 +25,7 @@ import { DataDriverAttr, DataDriverData, DataDriverSuite, TestcaseSummaryIF, Sen
 import { AnyType } from './module/types/common';
 import { ConfigService } from './module/config/configService';
 import hilog from '@ohos.hilog';
+import { ExpectService } from './module/service/ExpectService';
 
 let domain: int = 0x0000;
 let tag: string = 'testTag';
@@ -38,6 +39,24 @@ export class Hypium {
       core.addService('dataDriver', dataDriver);
     } else {
       throw Error('core is not created');
+    }
+  }
+
+  static registerAssert(customAssertion: Function): void {
+    const core = Core.getInstance() as Core;
+    const expectService = core.getDefaultService('expect');
+    if (expectService) {
+      const eService = expectService as ExpectService
+      eService.addCustomMatchers(customAssertion);
+    }
+  }
+
+  static unregisterAssert(customAssertion: Function): void {
+    const core = Core.getInstance() as Core;
+    const expectService = core.getDefaultService('expect');
+    if (expectService && customAssertion.name) {
+      const eService = expectService as ExpectService;
+      eService.removeCustomMatchers(customAssertion.name);
     }
   }
 
