@@ -66,21 +66,6 @@ namespace OHOS::uitest {
         return time_point_cast<microseconds>(steady_clock::now()).time_since_epoch().count();
     }
 
-    inline void StringSplit(const std::string &str, std::vector<std::string> &res)
-    {
-        if (str == "") {
-            return;
-        }
-        const char split = ',';
-        std::string strs = str + split;
-        size_t pos = strs.find(split);
-        while (pos != strs.npos) {
-            std::string temp = strs.substr(0, pos);
-            res.emplace_back(temp);
-            strs = strs.substr(pos + 1, strs.size());
-            pos = strs.find(split);
-        }
-    }
 
     inline void ReadInputModeFromJson(const nlohmann::json &json, bool &paste, bool &additional)
     {
@@ -101,6 +86,21 @@ namespace OHOS::uitest {
             return val.get<T>();
         }
         return defValue;
+    }
+    void StringSplit(const std::string &str, std::vector<std::string> &res)
+    {
+        if (str == "") {
+            return;
+        }
+        const char split = ',';
+        std::string strs = str + split;
+        size_t pos = strs.find(split);
+        while (pos != strs.npos) {
+            std::string temp = strs.substr(0, pos);
+            res.emplace_back(temp);
+            strs = strs.substr(pos + 1, strs.size());
+            pos = strs.find(split);
+        }
     }
 
     // log tag length limit
