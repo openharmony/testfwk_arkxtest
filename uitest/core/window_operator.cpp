@@ -113,9 +113,6 @@ namespace OHOS::uitest {
         auto from = Point(0, 0);
         auto to = Point(0, 0);
         auto isPcWindowMode = driver_.IsPcWindowMode();
-#ifdef ARKXTEST_PC_FEATURE_ENABLE
-        isPcWindowMode = true;
-#endif
         if (!isPcWindowMode) {
             auto selector = WidgetSelector();
             auto attrMatcher = WidgetMatchModel(UiAttr::KEY, std::string("SCBFloatTitleButton"), EQ);
