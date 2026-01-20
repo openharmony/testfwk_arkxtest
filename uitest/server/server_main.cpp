@@ -54,40 +54,40 @@ using namespace std::chrono;
 
 namespace OHOS::uitest {
     const std::string HELP_MSG =
-    "usage: uitest <command> [options]                                                                          \n"
-    "help                                                                                    print help messages\n"
-    "screenCap                                                                        capture the current screen\n"
-    "  -p <savePath>                                                                      specifies the savePath\n"
-    "  -d <displayId>                                                                       specifies the screen\n"
-    "dumpLayout                                                               get the current layout information\n"
-    "  -p <savePath>                                                                      specifies the savePath\n"
-    "  -i                                                                     not merge windows and filter nodes\n"
-    "  -a                                                                                include font attributes\n"
-    "  -b <bundleName>                                             specifies the bundleName of the target window\n"
-    "  -w <windowId>                                                specifies the window id of the target window\n"
-    "  -m <true/false>          whether merge windows, true means to merge, set it true when not use this option\n"
-    "  -d <displayId>                                           specifies the locate screen of the target window\n"
-    "  -e <attributeName>                                               extend by adding the specified attribute\n"
-    "start-daemon <token>                                                                 start the test process\n"
-    "uiRecord                                                                            recording Ui Operations\n"
-    "  record                                                           Write Ui event information into csv file\n"
-    "    -W <true/false>                                     whether save widget information, true means to save\n" 
-    "                                                                       set it true when not use this option\n"
-    "    -l                                             Save the current layout information after each operation\n"
-    "    -c <true/false>              whether print the Ui event information to the console, true means to print\n" 
-    "                                                                       set it true when not use this option\n"
-    "  read                                                                    print file content to the console\n"
-    "uiInput                                                                     inject Ui simulation operations\n"
-    "  help                                                                                  print uiInput usage\n"
-    "  dircFling  <direction> [velocity] [stepLength]      direction ranges from 0,1,2,3 (left, right, up, down)\n"
-    "  click/doubleClick/longClick <x> <y>                                       click on the target coordinates\n"
-    "  swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity]      velocity ranges from 200 to 40000, default 600\n"
-    "  fling <from_x> <from_y> <to_x> <to_y> [velocity] [stepLength]   velocity ranges from 200 to 40000, default 600\n"
-    "  keyEvent <keyID/Back/Home/Power>                                                          inject keyEvent\n"
-    "  keyEvent <keyID_0> <keyID_1> [keyID_2]                                           keyID_2 default to None \n"
-    "  inputText <x> <y> <text>                                         inputText at the target coordinate point\n"
-    "  text <text>                                           input text at the location where is already focused\n"
-    "--version                                                                        print current tool version\n";
+        "usage: uitest <command> [options]                                                                          \n"
+        "help                                                                                    print help messages\n"
+        "screenCap                                                                        capture the current screen\n"
+        "  -p <savePath>                                                                      specifies the savePath\n"
+        "  -d <displayId>                                                                       specifies the screen\n"
+        "dumpLayout                                                               get the current layout information\n"
+        "  -p <savePath>                                                                      specifies the savePath\n"
+        "  -i                                                                     not merge windows and filter nodes\n"
+        "  -a                                                                                include font attributes\n"
+        "  -b <bundleName>                                             specifies the bundleName of the target window\n"
+        "  -w <windowId>                                                specifies the window id of the target window\n"
+        "  -m <true/false>          whether merge windows, true means to merge, set it true when not use this option\n"
+        "  -d <displayId>                                           specifies the locate screen of the target window\n"
+        "  -e <attributeName>                                               extend by adding the specified attribute\n"
+        "start-daemon <token>                                                                 start the test process\n"
+        "uiRecord                                                                            recording Ui Operations\n"
+        "  record                                                           Write Ui event information into csv file\n"
+        "    -W <true/false>                                     whether save widget information, true means to save\n"
+        "                                                                       set it true when not use this option\n"
+        "    -l                                             Save the current layout information after each operation\n"
+        "    -c <true/false>              whether print the Ui event information to the console, true means to print\n"
+        "                                                                       set it true when not use this option\n"
+        "  read                                                                    print file content to the console\n"
+        "uiInput                                                                     inject Ui simulation operations\n"
+        "  help                                                                                  print uiInput usage\n"
+        "  dircFling  <direction> [velocity] [stepLength]      direction ranges from 0,1,2,3 (left, right, up, down)\n"
+        "  click/doubleClick/longClick <x> <y>                                       click on the target coordinates\n"
+        "  swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity]      velocity ranges from 200 to 40000, default 600\n"
+        "  fling <from_x> <from_y> <to_x> <to_y> [velocity] [stepLength]   velocity ranges from 200 to 40000, default 600\n"
+        "  keyEvent <keyID/Back/Home/Power>                                                          inject keyEvent\n"
+        "  keyEvent <keyID_0> <keyID_1> [keyID_2]                                           keyID_2 default to None \n"
+        "  inputText <x> <y> <text>                                         inputText at the target coordinate point\n"
+        "  text <text>                                           input text at the location where is already focused\n"
+        "--version                                                                        print current tool version\n";
 
     const std::string VERSION = "6.0.2.3";
     struct option g_longoptions[] = {
@@ -243,21 +243,21 @@ namespace OHOS::uitest {
 
    static void StringSplit(const std::string &str, char split, std::vector<std::string> &res)
    {
-       if (str.empty()) {
-           return;
-       }
-       size_t start = 0;
-       size_t pos = str.find(split);
-       while (pos != std::string::npos) {
-           if (pos > start) {
+        if (str.empty()) {
+            return;
+        }
+        size_t start = 0;
+        size_t pos = str.find(split);
+        while (pos != std::string::npos) {
+            if (pos > start) {
                res.emplace_back(str.substr(start, pos - start));
-           }
-           start = pos + 1;
-           pos = str.find(split, start);
-       }
-       if (start < str.length()) {
-           res.emplace_back(str.substr(start));
-       }
+            }
+            start = pos + 1;
+            pos = str.find(split, start);
+        }
+        if (start < str.length()) {
+            res.emplace_back(str.substr(start));
+        }
    }
 
     static bool ParseDumpOption(const map<char, string> &params, DumpOption &option)
