@@ -619,8 +619,7 @@ export default function abilityTest() {
 
 单元测试框架Mock能力从npm包[1.0.1版本](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fhypium)开始支持，需修改源码工程中package.info中配置依赖npm包版本号后使用。
 > -  仅支持Mock自定义对象,不支持Mock系统API对象。
-> -  不支持Mock对象的私有函数。 
--  **接口列表：**
+> -  **接口列表：**
 
 **MockKit相关接口**
 

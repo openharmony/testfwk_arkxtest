@@ -241,21 +241,24 @@ namespace OHOS::uitest {
         return;
     }
 
-    static void StringSplit(const string &str, const char split, std::vector<string> &res)
-    {
-        if (str == "") {
-            return;
-        }
-        string strs = str + split;
-        size_t pos = strs.find(split);
-
-        while (pos != strs.npos) {
-            std::string temp = strs.substr(0, pos);
-            res.emplace_back(temp);
-            strs = strs.substr(pos + 1, strs.size());
-            pos = strs.find(split);
-        }
-    }
+   static void StringSplit(const std::string &str, char split, std::vector<std::string> &res)
+   {
+       if (str.empty()) {
+           return;
+       }
+       size_t start = 0;
+       size_t pos = str.find(split);
+       while (pos != std::string::npos) {
+           if (pos > start) {
+               res.emplace_back(str.substr(start, pos - start));
+           }
+           start = pos + 1;
+           pos = str.find(split, start);
+       }
+       if (start < str.length()) {
+           res.emplace_back(str.substr(start));
+       }
+   }
 
     static bool ParseDumpOption(const map<char, string> &params, DumpOption &option)
     {
@@ -263,7 +266,7 @@ namespace OHOS::uitest {
         option.addExternAttr_ = params.find('a') != params.end();
         if (option.listWindows_ && option.addExternAttr_) {
             PrintToConsole("The -a and -i options cannot be used together.");
-            return EXIT_FAILURE;
+            return false;
         }
         auto iter = params.find('p');
         option.savePath_ = (iter != params.end()) ? iter->second : option.savePath_;
@@ -283,14 +286,15 @@ namespace OHOS::uitest {
             for (auto argv : argvVec) {
                 if (std::find(extendedAttrsVec.begin(), extendedAttrsVec.end(), argv) == extendedAttrsVec.end()) {
                     PrintToConsole("Invalid attribute name, currently supported names are 'uniqueId'.");
-                    return EXIT_FAILURE;
+                    return false;
                 } else {
-                    option.extendedAttrs_ += argv;
+                    option.extendedAttrs_ += argv + " ";
                 }
             }
         }
         return true;
     }
+
     static int32_t DumpLayout(int32_t argc, char *argv[])
     {
         DumpOption option;
@@ -301,7 +305,7 @@ namespace OHOS::uitest {
         if (GetParam(argc, argv, "p:w:b:m:e:d:ia", HELP_MSG, params) == EXIT_FAILURE) {
             return EXIT_FAILURE;
         }
-        if (ParseDumpOption(params, option)) {
+        if (!ParseDumpOption(params, option)) {
             return EXIT_FAILURE;
         }
         auto err = ApiCallErr(NO_ERROR);
