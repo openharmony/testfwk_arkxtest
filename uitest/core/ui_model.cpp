@@ -151,7 +151,7 @@ namespace OHOS::uitest {
         attributeVec_[UiAttr::HIERARCHY] = hierarch;
     }
 
-    void Widget::WrapperWidgetToJson(nlohmann::json &out)
+    void Widget::WrapperWidgetToJson(nlohmann::json &out, const std::string extendedAttrs)
     {
         for (int i = 0; i < UiAttr::HIERARCHY + 1; ++i) {
             if (i == UiAttr::BOUNDS && attributeVec_[UiAttr::BOUNDS].empty()) {
@@ -165,6 +165,11 @@ namespace OHOS::uitest {
         out[ATTR_NAMES[UiAttr::VISIBLE].data()] = attributeVec_[UiAttr::VISIBLE];
         out[ATTR_NAMES[UiAttr::HASHCODE].data()] = attributeVec_[UiAttr::HASHCODE];
         out[ATTR_NAMES[UiAttr::HINT].data()] = attributeVec_[UiAttr::HINT];
+        for (int i = UiAttr::UNIQUEID; i < UiAttr::HASHCODE; ++i) {
+            if (extendedAttrs.find(ATTR_NAMES[i].data()) != std::string::npos) {
+                out[ATTR_NAMES[i].data()] = attributeVec_[i];
+            }
+        }
     }
 
     string WidgetHierarchyBuilder::Build(string_view parentWidgetHierarchy, uint32_t childIndex)
