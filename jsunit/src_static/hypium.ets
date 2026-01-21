@@ -32,8 +32,134 @@ let tag: string = 'testTag';
 
 export class Hypium {
   public static context = new Map<string, AnyType>();
-  static setData(data: DataDriverData) {
+  private static readonly MAX_PARSE_DEPTH = 20;
+  private static readonly INITIAL_DEPTH = 1;
+
+  static parseValue(value: jsonx.JsonElement, currentDepth: number) {
+    if (currentDepth > Hypium.MAX_PARSE_DEPTH) {
+      throw new Error('Maximum parsing depth exceeded. currentParseDepth is ' + currentDepth);
+    }
+    if (JSON.stringifyJsonElement(value) == 'null') {
+      return null
+    }
+    if (value.tryAsString()) {
+      return value.tryAsString()
+    } else if (value.tryAsInteger()) {
+      return value.tryAsInteger()
+    } else if (value.tryAsDouble()) {
+      return value.tryAsDouble()
+    } else if (value.tryAsBoolean()) {
+      return value.tryAsBoolean()
+    } else if (value.tryAsArray()) {
+      const valueArray = value.tryAsArray() as Array<jsonx.JsonElement>
+      const parsedValue: Array<object | undefined | null> = []
+      for (const val of valueArray) {
+        // 数组元素保持同一层数
+        parsedValue.push(Hypium.parseValue(val, currentDepth))
+      }
+      return parsedValue;
+    } else {
+      // 当时对象时，层数递增1位
+      return Hypium.parseParams(value, currentDepth + 1)
+    }
+  }
+
+  static parseParams(paramsItem: jsonx.JsonElement, currentDepth: number) {
+    const it = paramsItem.$_iterator()
+    const tempRecord: Record<string, AnyType> = {}
+    while (true) {
+      const v = it.next()
+      if (v.done) {
+        break
+      }
+      const key = v.value![0]
+      const value = v.value![1]
+      tempRecord[key] = Hypium.parseValue(value, currentDepth)
+    }
+    return tempRecord;
+  }
+
+  static parseSuite(item: jsonx.JsonElement): DataDriverSuite {
+    let describe: string[] | undefined = []
+    if (item.tryGetElement("describe") !== undefined) {
+      const describeValue = item.getArray("describe")
+      for (const describeItem of describeValue) {
+        const describeName = describeItem.asString()
+        console.log("describeName" + describeName)
+        describe?.push(describeName)
+      }
+    } else {
+      describe = undefined
+    }
+
+    let params: Record<string, AnyType> = {};
+    let paramsArray: Record<string, AnyType>[] = []
+    if (item.tryGetElement("params") !== undefined) {
+      const paramsElement = item.getElement("params");
+      const paramsValue = paramsElement.tryAsArray();
+      if (Array.isArray(paramsValue)) {
+        const paramArray = paramsValue as Array<jsonx.JsonElement>
+        for (const paramsItem of paramArray) {
+          const tempRecord = Hypium.parseParams(paramsItem, Hypium.INITIAL_DEPTH)
+          paramsArray.push(tempRecord)
+        }
+      } else {
+        params = Hypium.parseParams(paramsElement, Hypium.INITIAL_DEPTH)
+      }
+    } else {
+      params = {}
+    }
+
+    let items: DataDriverSuite[] | undefined = [];
+    if (item.tryGetElement("items") !== undefined) {
+      const itemsValue = item.getArray("items");
+      for (const childItem of itemsValue) {
+        const parsedChild = Hypium.parseSuite(childItem);
+        items?.push(parsedChild);
+      }
+    } else {
+      items = undefined;
+    }
+
+    let stress: Double | undefined = 1;
+    if (item.tryGetElement("stress") !== undefined) {
+      stress = item.getElement("stress").asDouble()
+    }
+
+    let it: string | undefined = " ";
+    if (item.tryGetElement("it") !== undefined) {
+      it = item.getElement("it").asString();
+    } else {
+      it = undefined;
+    }
+
+    return {
+      describe,
+      stress,
+      it,
+      params: paramsArray.length ? paramsArray : params,
+      items
+    }
+  }
+
+  static setData(JsonData: string) {
     const core = Core.getInstance();
+    let jsonData = JSON.parseJsonElement(JsonData);
+    let suitesValue: Array<jsonx.JsonElement> | undefined = [];
+    if (jsonData.tryGetElement("suites") !== undefined) {
+      suitesValue = jsonData.getArray("suites");
+    } else {
+      suitesValue = undefined;
+      throw Error('suites is null');
+    }
+    const dataDriverSuite: DataDriverSuite[] = []
+    for (const item of suitesValue) {
+      const parseSuite = Hypium.parseSuite(item);
+      dataDriverSuite.push(parseSuite);
+    }
+    const data: DataDriverData = {
+      suites: dataDriverSuite
+    }
     const dataDriver = new DataDriver({ data });
     if (core) {
       core.addService('dataDriver', dataDriver);
