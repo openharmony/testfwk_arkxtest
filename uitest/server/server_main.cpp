@@ -16,6 +16,7 @@
 #include <chrono>
 #include <unistd.h>
 #include <memory>
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <getopt.h>
@@ -66,6 +67,7 @@ namespace OHOS::uitest {
     "  -w <windowId>                                                specifies the window id of the target window\n"
     "  -m <true/false>          whether merge windows, true means to merge, set it true when not use this option\n"
     "  -d <displayId>                                           specifies the locate screen of the target window\n"
+        "  -e <attributeName>                                               extend by adding the specified attribute\n"
     "start-daemon <token>                                                                 start the test process\n"
     "uiRecord                                                                            recording Ui Operations\n"
     "  record                                                           Write Ui event information into csv file\n"
@@ -87,7 +89,7 @@ namespace OHOS::uitest {
     "  text <text>                                           input text at the location where is already focused\n"
     "--version                                                                        print current tool version\n";
 
-    const std::string VERSION = "6.0.2.2";
+    const std::string VERSION = "6.0.2.3";
     struct option g_longoptions[] = {
         {nullptr, required_argument, nullptr, 'p'},
         {nullptr, required_argument, nullptr, 'd'},
@@ -96,6 +98,7 @@ namespace OHOS::uitest {
         {nullptr, required_argument, nullptr, 'b'},
         {nullptr, required_argument, nullptr, 'w'},
         {nullptr, required_argument, nullptr, 'm'},
+        {nullptr, required_argument, nullptr, 'e'},
         {nullptr, 0, nullptr, 0}};
     /* *Print to the console of this shell process. */
     static inline void PrintToConsole(string_view message)
@@ -238,29 +241,71 @@ namespace OHOS::uitest {
         return;
     }
 
+    static void StringSplit(const std::string &str, char split, std::vector<std::string> &res)
+    {
+        if (str.empty()) {
+            return;
+        }
+        size_t start = 0;
+        size_t pos = str.find(split);
+        while (pos != std::string::npos) {
+            if (pos > start) {
+                res.emplace_back(str.substr(start, pos - start));
+            }
+            start = pos + 1;
+            pos = str.find(split, start);
+        }
+        if (start < str.length()) {
+            res.emplace_back(str.substr(start));
+        }
+    }
+
+    static bool ParseDumpOption(const map<char, string> &params, DumpOption &option)
+    {
+        option.listWindows_ = params.find('i') != params.end();
+        option.addExternAttr_ = params.find('a') != params.end();
+        if (option.listWindows_ && option.addExternAttr_) {
+            PrintToConsole("The -a and -i options cannot be used together.");
+            return false;
+        }
+        auto iter = params.find('p');
+        option.savePath_ = (iter != params.end()) ? iter->second : option.savePath_;
+        auto iter2 = params.find('w');
+        option.windowId_ = (iter2 != params.end()) ? iter2->second : "";
+        auto iter3 = params.find('b');
+        option.bundleName_ = (iter3 != params.end()) ? iter3->second : "";
+        auto iter4 = params.find('m');
+        option.notMergeWindow_ = (iter4 != params.end()) ? iter4->second == "false" : false;
+        auto iter5 = params.find('d');
+        option.displayId_ = (iter5 != params.end()) ? std::atoi(iter5->second.c_str()): 0;
+        auto iter6 = params.find('e');
+        const vector<string> extendedAttrsVec = {"uniqueId"};
+        if (iter6 != params.end()) {
+            std::vector<std::string> argvVec;
+            StringSplit(iter6->second, ',', argvVec);
+            for (auto argv : argvVec) {
+                if (std::find(extendedAttrsVec.begin(), extendedAttrsVec.end(), argv) == extendedAttrsVec.end()) {
+                    PrintToConsole("Invalid attribute name, currently supported names are 'uniqueId'.");
+                    return false;
+                } else {
+                    option.extendedAttrs_ += argv + " ";
+                }
+            }
+        }
+        return true;
+    }
+
     static int32_t DumpLayout(int32_t argc, char *argv[])
     {
         DumpOption option;
         auto ts = to_string(GetCurrentMicroseconds());
         auto savePath = "/data/local/tmp/layout_" + ts + ".json";
+        option.savePath_ = savePath;
         map<char, string> params;
-        if (GetParam(argc, argv, "p:w:b:m:d:ia", HELP_MSG, params) == EXIT_FAILURE) {
+        if (GetParam(argc, argv, "p:w:b:m:e:d:ia", HELP_MSG, params) == EXIT_FAILURE) {
             return EXIT_FAILURE;
         }
-        auto iter = params.find('p');
-        option.savePath_ = (iter != params.end()) ? iter->second : savePath;
-        auto iter2 = params.find('w');
-        option.windowId_ = (iter2 != params.end()) ? iter2->second : "";
-        auto iter3 = params.find('b');
-        option.bundleName_ = (iter3 != params.end()) ? iter3->second : "";
-        option.listWindows_ = params.find('i') != params.end();
-        option.addExternAttr_ = params.find('a') != params.end();
-        auto iter4 = params.find('m');
-        option.notMergeWindow_ = (iter4 != params.end()) ? iter4->second == "false" : false;
-        auto iter5 = params.find('d');
-        option.displayId_ = (iter5 != params.end()) ? std::atoi(iter5->second.c_str()): 0;
-        if (option.listWindows_ && option.addExternAttr_) {
-            PrintToConsole("The -a and -i options cannot be used together.");
+        if (!ParseDumpOption(params, option)) {
             return EXIT_FAILURE;
         }
         auto err = ApiCallErr(NO_ERROR);
@@ -283,6 +328,7 @@ namespace OHOS::uitest {
         cmd.SetParam("windowId", string(option.windowId_));
         cmd.SetParam("mergeWindow", option.notMergeWindow_);
         cmd.SetParam("displayId", to_string(option.displayId_));
+        cmd.SetParam("extendedAttrs", string(option.extendedAttrs_));
         ApiTransactor::SendBroadcastCommand(cmd, err);
         if (err.code_ == NO_ERROR) {
             PrintToConsole("DumpLayout saved to:" + option.savePath_);
@@ -340,6 +386,7 @@ namespace OHOS::uitest {
         option.windowId_ = cmd.GetStringParam("windowId");
         option.notMergeWindow_ = cmd.GetBoolParam("mergeWindow", true);
         option.displayId_ = atoi(cmd.GetStringParam("displayId").c_str());
+        option.extendedAttrs_ = cmd.GetStringParam("extendedAttrs");
         return option;
     }
 
