@@ -149,7 +149,7 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
 {
     if (callInfo_.fdParamIndex_ >= 0) {
         auto fd = callInfo_.paramList_.at(INDEX_ZERO).get<int>();
-        (void)close(fd);
+        fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
     }
     HiLog::Info(LABEL, "%{public}s.Start to UnmarshalReply", __func__);
     const auto &message = reply_.exception_.message_;
@@ -1325,6 +1325,7 @@ static ani_boolean screenCaptureSync(ani_env *env, ani_object obj, ani_string pa
     if (fd == -1) {
         return false;
     }
+    fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
     HiLog::Info(LABEL, "savePath: %{public}d", fd);
     callInfo_.paramList_[INDEX_ZERO] = fd;
     callInfo_.paramList_[INDEX_ONE] = getRect(env, rect);
@@ -1349,6 +1350,7 @@ static ani_boolean screenCapSync(ani_env *env, ani_object obj, ani_string path, 
     if (fd == -1) {
         return false;
     }
+    fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
     HiLog::Info(LABEL, "savePath: %{public}d", fd);
     callInfo_.paramList_[INDEX_ZERO] = fd;
     callInfo_.fdParamIndex_ = INDEX_ZERO;

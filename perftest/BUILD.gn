@@ -212,10 +212,12 @@ ohos_shared_library("perftest_ani") {
 generate_static_abc("perftest_abc") {
   base_url = "./ani/ets"
   files = [ "./ani/ets/@ohos.test.PerfTest.ets" ]
-  is_boot_abc = "True"
+  if (arkxtest_product_feature != "watch" && arkxtest_product_feature != "glasses") {
+    is_boot_abc = "True"
+    device_dst_file = "/system/framework/@ohos.test.PerfTest.abc"
+  }
   dst_file = "$target_out_dir/@ohos.test.PerfTest.abc"
   out_puts = [ "$target_out_dir/@ohos.test.PerfTest.abc" ]
-  device_dst_file = "/system/framework/@ohos.test.PerfTest.abc"
 }
 
 ohos_prebuilt_etc("perftest_etc") {
