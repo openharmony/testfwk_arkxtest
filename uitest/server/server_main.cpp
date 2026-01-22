@@ -313,10 +313,16 @@ namespace OHOS::uitest {
         auto controller = SysUiController();
         stringstream errorRecv;
         int32_t fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
+        if (fd == -1) {
+            PrintToConsole("ScreenCap failed: " + errorRecv.str());
+            return EXIT_FAILURE;
+        }
+        fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         if (!controller.TakeScreenCap(fd, errorRecv, displayId)) {
             PrintToConsole("ScreenCap failed: " + errorRecv.str());
             return EXIT_FAILURE;
         }
+        fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         PrintToConsole("ScreenCap saved to " + savePath);
         ReportFileWriteEvent(savePath);
         return EXIT_SUCCESS;
