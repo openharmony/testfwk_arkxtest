@@ -200,7 +200,6 @@ namespace OHOS::uitest {
 
     void WindowOperator::CallBar(ApiReplyInfo &out)
     {
-        Focus(out);
         if (window_.mode_ == WindowMode::FLOATING) {
             return;
         }
@@ -216,7 +215,6 @@ namespace OHOS::uitest {
 
     void WindowOperator::BarAction(string_view buttonId, ApiReplyInfo &out)
     {
-        Focus(out);
         auto selector = WidgetSelector();
         auto attrMatcher = WidgetMatchModel(UiAttr::KEY, std::string(buttonId), EQ);
         selector.AddMatcher(attrMatcher);
@@ -317,11 +315,10 @@ namespace OHOS::uitest {
         if (window_.mode_ != WindowMode::FULLSCREEN) {
             Maximize(out);
             auto win = driver_.RetrieveWindow(window_, out.exception_);
-            if (win != nullptr || out.exception_.code_ != NO_ERROR) {
-                window_ = *win;
-            } else {
+            if (win == nullptr || out.exception_.code_ != NO_ERROR) {
                 return;
             }
+            window_ = *win;
         }
         SplitWindowInPhoneMode(out);
     }
@@ -373,11 +370,10 @@ namespace OHOS::uitest {
             const auto maximizeBtnId = "EnhanceMaximizeBtn";
             BarAction(maximizeBtnId, out);
             auto win = driver_.RetrieveWindow(window_, out.exception_);
-            if (win != nullptr || out.exception_.code_ != NO_ERROR) {
-                window_ = *win;
-            } else {
+            if (win == nullptr || out.exception_.code_ != NO_ERROR) {
                 return;
             }
+            window_ = *win;
             if (window_.mode_ != WindowMode::FULLSCREEN) {
                 BarAction(maximizeBtnId, out);
             }
@@ -398,6 +394,7 @@ namespace OHOS::uitest {
         if (!CheckOperational(RESUME, window_.mode_, out)) {
             return;
         }
+        Focus(out);
 #ifdef ARKXTEST_PC_FEATURE_ENABLE
         if (window_.mode_ == WindowMode::FULLSCREEN || window_.mode_ == WindowMode::SPLIT_PRIMARY ||
             window_.mode_ == WindowMode::SPLIT_SECONDARY) {
@@ -419,11 +416,10 @@ namespace OHOS::uitest {
         if (window_.mode_ == WindowMode::SPLIT_PRIMARY || window_.mode_ == WindowMode::SPLIT_SECONDARY) {
             Maximize(out);
             auto win = driver_.RetrieveWindow(window_, out.exception_);
-            if (win != nullptr || out.exception_.code_ != NO_ERROR) {
-                window_ = *win;
-            } else {
+            if (win == nullptr || out.exception_.code_ != NO_ERROR) {
                 return;
             }
+            window_ = *win;
             FloatWindowInPhoneMode(out);
             return;
         }
