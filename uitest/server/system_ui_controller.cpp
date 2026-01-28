@@ -1377,6 +1377,9 @@ namespace OHOS::uitest {
         auto winIdInUtf16 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(windowId);
         auto arg = u16string(u"-w ").append(winIdInUtf16).append(u" -default -lastpage");
         result.emplace_back(move(arg));
+        auto pidInUtf16 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(
+            to_string(getpid()));
+        result.emplace_back(pidInUtf16);
     }
 
     void SysUiController::GetHidumperInfo(std::string windowId, char **buf, size_t &len)
