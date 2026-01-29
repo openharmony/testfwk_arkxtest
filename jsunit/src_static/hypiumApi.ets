@@ -85,7 +85,9 @@ const hypiumExpect = (actualValue?: AnyType) => {
     if (expect) {
       return expect(actualValue);
     }
+    throw new Error('[hypium] expect() used before initialization');
   }
+  throw new Error('[hypium] core not initialized');
 };
 
 const hypiumXdescribe = (desc: string, func: () => void) => {
