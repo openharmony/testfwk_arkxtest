@@ -219,8 +219,8 @@ static ani_boolean ScheduleEstablishConnection(ani_env *env, ani_string connToke
     if (ANI_OK != env->GetVM(&vm)) {
         HiLog::Error(LABEL, "%{public}s GetVM failed", __func__);
     }
-    bool result = false;
-    g_establishConnectionFuture = async(launch::async, [vm, token, &result]() {
+    auto result = make_shared<bool>(false);
+ 	     g_establishConnectionFuture = async(launch::async, [vm, token, result]() {
         using namespace std::placeholders;
         auto &instance = UiEventObserverAni::Get();
         auto callbackHandler = std::bind(&UiEventObserverAni::HandleEventCallback, &instance, vm, _1, _2);
@@ -689,11 +689,11 @@ static ani_ref create([[maybe_unused]] ani_env *env, [[maybe_unused]] ani_class 
         HiLog::Error(LABEL, "Driver Ctor Not found !!!");
         return nullref;
     }
-    auto  callInfo_ = make_shared<ApiCallInfo>();
-    auto  reply_ = make_shared<ApiReplyInfo>();
-    callInfo_->apiId_ = "Driver.create";
-    Transact(*callInfo_, *reply_);
-    ani_ref nativeDriver = UnmarshalReply(env, *callInfo_, *reply_);
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.apiId_ = "Driver.create";
+    Transact(callInfo_, reply_);
+    ani_ref nativeDriver = UnmarshalReply(env, callInfo_, reply_);
     if (nativeDriver == nullptr) {
         return nullref;
     }
