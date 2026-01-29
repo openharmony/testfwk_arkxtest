@@ -220,7 +220,7 @@ static ani_boolean ScheduleEstablishConnection(ani_env *env, ani_string connToke
         HiLog::Error(LABEL, "%{public}s GetVM failed", __func__);
     }
     auto result = make_shared<bool>(false);
- 	     g_establishConnectionFuture = async(launch::async, [vm, token, result]() {
+ 	g_establishConnectionFuture = async(launch::async, [vm, token, result]() {
         using namespace std::placeholders;
         auto &instance = UiEventObserverAni::Get();
         auto callbackHandler = std::bind(&UiEventObserverAni::HandleEventCallback, &instance, vm, _1, _2);
