@@ -224,8 +224,8 @@ static ani_boolean ScheduleEstablishConnection(ani_env *env, ani_string connToke
         using namespace std::placeholders;
         auto &instance = UiEventObserverAni::Get();
         auto callbackHandler = std::bind(&UiEventObserverAni::HandleEventCallback, &instance, vm, _1, _2);
-        result = g_apiTransactClient.InitAndConnectPeer(token, callbackHandler);
-        HiLog::Error(LABEL, "End setup transaction connection, result=%{public}d", result);
+        *result = g_apiTransactClient.InitAndConnectPeer(token, callbackHandler);
+        HiLog::Error(LABEL, "End setup transaction connection, result=%{public}d", *result);
     });
     return result;
 }
