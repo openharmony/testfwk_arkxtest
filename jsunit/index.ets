@@ -52,7 +52,7 @@ export {
     DEFAULT
 };
 
-type allExpectType = Object | undefined | null
+type allExpectType = Object | undefined | null |void
 
 export declare function beforeItSpecified(testCaseNames: Array<string> | string, callback: Function): void
 
