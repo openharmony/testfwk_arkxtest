@@ -354,10 +354,10 @@ class MockKit {
   }
 
   mockProperty(obj, propertyName, value) {
-    let originalValue = obj[propertyName];
-    if (originalValue === undefined) {
-      throw new Error('No such property:' + propertyName);
+    if (!obj.hasOwnProperty(propertyName)) {
+        throw new Error('No such property:' + propertyName);
     }
+    let originalValue = obj[propertyName];
     let isMocked = false;
     for (const [key, value] of this.propertyValueMap) {
       if (key.obj === obj && key.methodName === propertyName) {
