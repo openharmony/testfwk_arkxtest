@@ -227,7 +227,7 @@ static ani_boolean ScheduleEstablishConnection(ani_env *env, ani_string connToke
         *result = g_apiTransactClient.InitAndConnectPeer(token, callbackHandler);
         HiLog::Error(LABEL, "End setup transaction connection, result=%{public}d", *result);
     });
-    return result;
+    return *result;
 }
 
 static ani_int GetConnectionStat(ani_env *env)
