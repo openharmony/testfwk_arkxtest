@@ -499,6 +499,32 @@ export default function skip1() {
 }
 ```
 
+### SkipError<sup>1.0.26</sup>
+
+SkipError(message: string): SkipError
+
+自定义的一个异常类；测试用例中抛出时结束用例，并将用例结果记为ignore；用于在特定条件下跳过用例。
+
+**参数：**
+
+| 参数名  | 类型   | 必填 | 说明                   |
+| ------- | ------ | ---- | ---------------------- |
+| message | string | 是   | 跳过用例时的跳过原因。 |
+
+**示例：**
+
+```javascript
+import { describe, expect, xit } from '@ohos/hypium';
+
+export default function abilityTest() {
+    describe('abilityTest', () => {
+        it('assertContain01', 0, () => {
+            throw new SkipError("test");
+        })
+    })
+}
+```
+
 ### expect
 
 expect(actualValue?: any): Assert
