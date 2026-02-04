@@ -54,7 +54,7 @@ arkxtest
 | 11  | expect            | 支持bool类型判断等多种断言方法。                                                     |
 | 12 | xdescribe    | @since1.0.17定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。                             |
 | 13 | xit                | @since1.0.17定义一条跳过的测试用例，支持三个参数：用例名称，过滤参数和用例函数。                         |
-| 14 | SkipError | @since1.0.26 自定义异常类；在测试用例中抛出，标识该用例跳过执行，结果记为ignore。 |
+| 14 | SkipError | @since1.0.26 让用例跳出执行的异常类，支持一个参数：跳出原因。通过SkipError 跳出执行的用例，在执行结果中标记为ignore。 |
 
 
 beforeItSpecified, afterItSpecified 示例代码：

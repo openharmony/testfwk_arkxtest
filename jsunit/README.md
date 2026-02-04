@@ -501,7 +501,7 @@ export default function skip1() {
 
 ### SkipError<sup>1.0.26</sup>
 
-SkipError(message: string): SkipError
+class SkipError { constructor(message: string); }
 
 自定义的一个异常类；测试用例中抛出时结束用例，并将用例结果记为ignore；用于在特定条件下跳过用例。
 
