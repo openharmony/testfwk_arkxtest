@@ -503,7 +503,7 @@ export default function skip1() {
 
 class SkipError { constructor(message: string); }
 
-自定义的一个异常类；测试用例中抛出时结束用例，并将用例结果记为ignore；用于在特定条件下跳过用例。
+让用例跳出执行的异常类，支持一个参数：跳出原因。通过SkipError 跳出执行的用例，在执行结果中标记为ignore。用于在特定条件下跳过用例。
 
 **参数：**
 
