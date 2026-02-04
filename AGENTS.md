@@ -1,4 +1,4 @@
-# CLAUDE.md
+# Arkxtest - AI Knowledge Base
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -68,7 +68,7 @@ cd /path/to/openharmony
 
 | Target | Description |
 |--------|-------------|
-| `uitestkit` | Main uitest build group (all components) |
+| `uitestkit` | Main uitest build group (all uitest components) |
 | `cj_ui_test_ffi` | CJ FFI bindings (libcj_ui_test_ffi.z.so) |
 | `perftestkit` | Performance testing framework |
 | `test_server_service` | Test server daemon (SA ID: 5502) |
@@ -134,7 +134,7 @@ arkxtest/
 - **Async Testing**: Promise-based async test support
 - **Special Features**: Test filtering, skipping, timeout, random execution, stress testing
 
-### Usage
+**Usage:**
 
 ```javascript
 import { describe, it, expect, beforeAll, beforeEach, afterEach, afterAll } from '@ohos/hypium'

@@ -1,4 +1,4 @@
-# CLAUDE.md
+# UiTest - AI Knowledge Base
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -286,7 +286,10 @@ uitest/
 | Build config | `BUILD.gn` |
 
 ## Shell Commands
-
+                                       
+During app development, if you need to quickly perform operations such as screen capture, screen recording, injecting UI simulations, or obtaining the widget tree, you can use shell commands to more conveniently complete
+the corresponding tests. After uitest development, the following shell commands need to be verified to prevent newly developed content from affecting existing functionality.        
+  
 **Location:** `/system/bin/uitest`
 
 **1. Screen Capture**
