@@ -235,6 +235,7 @@ Example output:
 3. Implement `StartCollection()` and `StopCollectionAndGetResult()`
 4. Register in frontend class definition of `FrontendApiHandler`
 5. Add TypeScript enum in `ani/ets/@ohos.test.PerfTest.ets`
+6. Add the new metric enum value definition to the `PerfMetric` interface in the interface documentation `"../../../../interface/sdk-js/api/@ohos.test.PerfTest.d.ts"`.
 
 ### Modifying IPC Protocol
 
@@ -245,7 +246,7 @@ Example output:
 
 ### Adding Server-side Interface
 
-1. Add interface handling logic in `core/include/perf_test.h` and `.cpp` files
+1. Add interface handling logic in `core/include/perf_test.h` and `.cpp` files or in other newly created `.h/.cpp` files
 2. Add static method to handle interface call in `core/src/frontend_api_handler.cpp`, register interface via `AddHandler()` method
 
 ### Unit Testing
