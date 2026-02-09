@@ -517,14 +517,6 @@ namespace OHOS::uitest {
         return uiController_->GetDisplayRotation(displayId);
     }
 
-    int32_t UiDriver::GetScreenOrientation(ApiCallErr &error, int32_t displayId)
-    {
-        if (!CheckStatus(false, error)) {
-            return 0;
-        }
-        return uiController_->GetScreenOrientation(displayId);
-    }
-
     void UiDriver::SetDisplayRotationEnabled(bool enabled, ApiCallErr &error)
     {
         if (!CheckStatus(false, error)) {
@@ -657,6 +649,9 @@ namespace OHOS::uitest {
         }
         PointerMatrix events;
         touch.Decompose(events, opt);
+        if (events.Empty()) {
+            return;
+        }
         PointerMatrix eventsInPen(1, events.GetSteps() + INDEX_TWO);
         eventsInPen.SetTouchPressure(opt.touchPressure_);
         events.ConvertToPenEvents(eventsInPen);
@@ -680,6 +675,9 @@ namespace OHOS::uitest {
         }
         PointerMatrix events;
         touch.Decompose(events, opt);
+        if (events.Empty()) {
+            return;
+        }
         events.SetToolType(TouchToolType::KNUCKLE);
         auto displayId = events.At(0, 0).point_.displayId_;
         if (!CheckDisplayExist(displayId)) {
