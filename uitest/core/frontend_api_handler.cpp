@@ -757,6 +757,7 @@ namespace OHOS::uitest {
         }
         return error;
     }
+
     template <UiAttr kAttr, typename T> static void GenericOnAttrBuilder(const ApiCallInfo &in, ApiReplyInfo &out)
     {
         // always create and return a new selector

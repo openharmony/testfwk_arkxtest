@@ -297,11 +297,22 @@ namespace OHOS::uitest {
             constexpr auto topZone = 20;
             Point from(window_.visibleBounds_.GetCenterX(), window_.visibleBounds_.top_ - topZone, window_.displayId_);
             Point to(0, 0);
-            auto screenOrientation = driver_.GetScreenOrientation(out.exception_, window_.displayId_);
-            if (screenOrientation == ONE || screenOrientation == THREE) {
-                to = Point(from.px_, 0, window_.displayId_);
-            } else if (screenOrientation == TWO || screenOrientation == FOUR) {
+            auto selector = WidgetSelector();
+            auto attrMatcher = WidgetMatchModel(UiAttr::KEY, "SCBDividerFlex1", EQ);
+            selector.AddMatcher(attrMatcher);
+            selector.SetWantMulti(false);
+            vector<unique_ptr<Widget>> widgets;
+            driver_.FindWidgets(selector, widgets, out.exception_);
+            if (widgets.empty() || out.exception_.code_ != NO_ERROR) {
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+                return;
+            }
+            auto rect = widgets[0]->GetBounds();
+            Point divider(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
+            if (divider.px_ < window_.bounds_.left_) {
                 to = Point(0, from.py_, window_.displayId_);
+            } else if (divider.py_ < window_.bounds_.top_) {
+                to = Point(from.px_, 0, window_.displayId_);
             } else {
                 out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
                 return;
@@ -339,16 +350,25 @@ namespace OHOS::uitest {
         Point from(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
         auto to = Point(0, 0);
         auto screenSize = driver_.GetDisplaySize(out.exception_, window_.displayId_);
-        auto screenOrientation = driver_.GetScreenOrientation(out.exception_, window_.displayId_);
-        if (screenOrientation == ONE || screenOrientation == THREE) {
-            to = (window_.mode_ == WindowMode::SPLIT_PRIMARY) ?
-                Point(from.px_, screenSize.py_, window_.displayId_) : Point(from.px_, 0, window_.displayId_);
-        } else if (screenOrientation == TWO || screenOrientation == FOUR) {
-            to = (window_.mode_ == WindowMode::SPLIT_PRIMARY) ?
-                Point(screenSize.px_, from.py_, window_.displayId_) : Point(0, from.py_, window_.displayId_);
-        } else {
-            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
-            return;
+        if (window_.mode_ == WindowMode::SPLIT_PRIMARY) {
+            if (from.px_ > window_.bounds_.right_) {
+                to = Point(screenSize.px_, from.py_, window_.displayId_);
+            } else if (from.py_ > window_.bounds_.bottom_) {
+                to = Point(from.px_, screenSize.py_, window_.displayId_);
+            } else {
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+                return;
+            }
+        }
+        if (window_.mode_ == WindowMode::SPLIT_SECONDARY) {
+            if (from.px_ < window_.bounds_.left_) {
+                to = Point(0, from.py_, window_.displayId_);
+            } else if (from.py_ < window_.bounds_.top_) {
+                to = Point(from.px_, 0, window_.displayId_);
+            } else {
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+                return;
+            }
         }
         auto touch = GenericSwipe(TouchOp::SWIPE, from, to);
         options_.swipeVelocityPps_ = WIN_OP_SPEED;

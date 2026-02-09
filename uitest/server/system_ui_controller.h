@@ -95,8 +95,6 @@ namespace OHOS::uitest {
 
         bool IsPcWindowMode() const override;
 
-        int32_t GetScreenOrientation(int32_t displayId) const override;
-
     private:
         void  InjectMouseEvent(const MouseEvent &event) const;
         int32_t GetValidDisplayId(int32_t id) const;
