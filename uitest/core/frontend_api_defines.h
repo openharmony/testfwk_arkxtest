@@ -380,8 +380,8 @@ namespace OHOS::uitest {
         {"Driver.isComponentPresentWhenLongClick", "(On,Point,int?):bool", false, false, true},
         {"Driver.isComponentPresentWhenDrag", "(On,Point,Point,int?,int?):bool", false, false, true},
         {"Driver.isComponentPresentWhenSwipe", "(On,Point,Point,int?):bool", false, false, true},
-        {"Driver.knuckleKnock", "(Point,int):void", false, false, true},
-        {"Driver.knuckleKnock", "(Point,Point,int):void", false, false, true},
+        {"Driver.knuckleKnock", "(Point,int?):void", false, false, true},
+        {"Driver.knuckleKnock", "(Point,Point,int?):void", false, false, true},
         {"Driver.injectKnucklePointerAction", "(PointerMatrix,int?):void", false, false, true},
         {"Driver.touchPadTwoFingersScroll", "(Point,int,int,int?):void", false, false, true},
     };
