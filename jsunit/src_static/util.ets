@@ -14,10 +14,10 @@
  */
 import { Core } from './core';
 import { ConfigService } from './module/config/configService';
-import { AnyType } from './module/types/common';
+import { ItfnType, AnyType } from './module/types/common';
 import { TAG } from './Constant';
 
-export function getAsyncFuncWithArgsZero(func: () => Promise<void>, timeout: int, isStressTest: boolean) {
+export function getFuncWithArgsZero(func: () => Any, timeout: int, isStressTest: boolean) {
   return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (value: Error) => void) => {
     let timer = 0;
     if (!isStressTest) {
@@ -25,69 +25,33 @@ export function getAsyncFuncWithArgsZero(func: () => Promise<void>, timeout: int
         reject(new Error('execute timeout ' + timeout + 'ms'));
       }, timeout);
     }
-    func().then(() => {
-      if (!!timer) {
-        clearTimeout(timer);
-      }
-      resolve(Promise.resolve());
-    }).catch((err: Error) => {
-      console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
-      reject(err)
-    })
-  });
-}
-
-export function getFuncWithArgsZero(func: () => void, timeout: int, isStressTest: boolean) {
-  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (value: Error) => void) => {
-    let timer = 0;
-    if (!isStressTest) {
-      timer = setTimeout(() => {
-        reject(new Error('execute timeout ' + timeout + 'ms'));
-      }, timeout);
-    }
+    let res: Any = undefined;
     try {
-      func()
+      res = func();
     } catch (err) {
       console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
-      reject(err as Error)
+      reject(err as Error);
     }
-    if (!!timer) {
-      clearTimeout(timer);
-    }
-    resolve(Promise.resolve());
-  });
-}
-
-export function getAsyncFuncWithArgsOne(
-  func: (params: () => void) => Promise<void>,
-  timeout: int,
-  isStressTest: boolean
-) {
-  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
-    let timer = 0;
-    if (!isStressTest) {
-      timer = setTimeout(() => {
-        reject(new Error('execute timeout ' + timeout + 'ms'));
-      }, timeout);
-    }
-
-    const done = () => {
+    if (res instanceof Promise) {
+      res.then(() => {
+        if (!!timer) {
+          clearTimeout(timer);
+        }
+        resolve(Promise.resolve());
+      }).catch((err: Error) => {
+        console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
+        reject(err);
+      });
+    } else {
       if (!!timer) {
         clearTimeout(timer);
       }
       resolve(Promise.resolve());
-    };
-
-    func(done).catch((err: Error) => {
-      if (!!timer) {
-        clearTimeout(timer);
-      }
-      reject(err);
-    })
+    }
   });
 }
 
-export function getFuncWithArgsOne(func: (params: () => void) => void, timeout: int, isStressTest: boolean) {
+export function getFuncWithArgsOne(func: (params: () => void) => Any, timeout: int, isStressTest: boolean) {
   return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
     let timer = 0;
     if (!isStressTest) {
@@ -104,7 +68,15 @@ export function getFuncWithArgsOne(func: (params: () => void) => void, timeout: 
     };
 
     try {
-      func(done);
+      const res = func(done);
+      if (res instanceof Promise) {
+        res.catch((err: Error) => {
+          if (!!timer) {
+            clearTimeout(timer);
+          }
+          reject(err);
+        });
+      }
     } catch (err) {
       if (!!timer) {
         clearTimeout(timer);
@@ -114,38 +86,8 @@ export function getFuncWithArgsOne(func: (params: () => void) => void, timeout: 
   });
 }
 
-export function getAsyncFuncWithArgsTwo(
-  func: (param1: () => void, param2: AnyType) => Promise<void>,
-  timeout: int,
-  paramItem: AnyType,
-  isStressTest: boolean
-) {
-  return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
-    let timer = 0;
-    if (!isStressTest) {
-      timer = setTimeout(() => {
-        reject(new Error('execute timeout ' + timeout + 'ms'));
-      }, timeout);
-    }
-
-    const done = () => {
-      if (!!timer) {
-        clearTimeout(timer);
-      }
-      resolve(Promise.resolve());
-    };
-
-    func(done, paramItem).catch((err: Error) => {
-      if (!!timer) {
-        clearTimeout(timer);
-      }
-      reject(err);
-    })
-  });
-}
-
 export function getFuncWithArgsTwo(
-  func: (param1: () => void, param2: AnyType) => void,
+  func: (param1: () => void, param2: AnyType) => Any,
   timeout: int,
   paramItem: AnyType,
   isStressTest: boolean
@@ -166,7 +108,15 @@ export function getFuncWithArgsTwo(
     };
 
     try {
-      func(done, paramItem);
+      const res = func(done, paramItem);
+      if (res instanceof Promise) {
+        res.catch((err: Error) => {
+          if (!!timer) {
+            clearTimeout(timer);
+          }
+          reject(err);
+        })
+      }
     } catch (err) {
       if (!!timer) {
         clearTimeout(timer);
@@ -178,7 +128,7 @@ export function getFuncWithArgsTwo(
 
 export function processFunc(
   coreContext: Core,
-  func: () => void
+  func: () => Any
 ) {
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
@@ -200,47 +150,7 @@ export function processFunc(
   };
 }
 
-export function processAsyncFunc(
-  coreContext: Core,
-  func: (() => Promise<void>)
-) {
-  const configService = coreContext.getDefaultService('config');
-  if (configService !== null) {
-    const config = configService as ConfigService;
-    config.setSupportAsync(true);
-    const timeout = !config.timeout ? 5000 : Number(config.timeout);
-    let isStressTest = false;
-    if (config.getStress() > 1 || coreContext.getServices('dataDriver')) {
-      isStressTest = true;
-    } else {
-      isStressTest = false;
-    }
-    return () => {
-      return getAsyncFuncWithArgsZero(func, timeout.toInt(), isStressTest);
-    };
-  }
-  return () => {
-    return getAsyncFuncWithArgsZero(func, 0, false);
-  };
-}
-
-export function processAsyncFuncWithArgOne(coreContext: Core, func: (done: () => void) => Promise<void>) {
-  const configService = coreContext.getDefaultService('config');
-  if (configService !== null) {
-    const config = configService as ConfigService;
-    config.setSupportAsync(true);
-    const timeout = !config.timeout ? 5000 : Number(config.timeout);
-    const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
-    return () => {
-      return getAsyncFuncWithArgsOne(func, timeout.toInt(), isStressTest);
-    };
-  }
-  return () => {
-    return getAsyncFuncWithArgsOne(func, 0, false);
-  };
-}
-
-export function processFuncWithArgOne(coreContext: Core, func: (done: () => void) => void) {
+export function processFuncWithArgOne(coreContext: Core, func: (done: () => void) => Any) {
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
     const config = configService as ConfigService;
@@ -256,26 +166,7 @@ export function processFuncWithArgOne(coreContext: Core, func: (done: () => void
   };
 }
 
-export function processAsyncFuncWithArgTwo(
-  coreContext: Core,
-  func: (param1: () => void, param2: AnyType) => Promise<void>
-) {
-  const configService = coreContext.getDefaultService('config');
-  if (configService !== null) {
-    const config = configService as ConfigService;
-    config.setSupportAsync(true);
-    const timeout = !config.timeout ? 5000 : Number(config.timeout);
-    const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
-    return (paramItem: AnyType) => {
-      return getAsyncFuncWithArgsTwo(func, timeout.toInt(), paramItem, isStressTest);
-    };
-  }
-  return (paramItem: AnyType) => {
-    return getAsyncFuncWithArgsTwo(func, 0, paramItem, false);
-  };
-}
-
-export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => void, param2: AnyType) => void) {
+export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => void, param2: AnyType) => Any) {
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
     const config = configService as ConfigService;
@@ -291,27 +182,13 @@ export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => vo
   };
 }
 
-export function getFunctionArgumentsCount(funcStr: string): number {
-  const regex = new RegExp('^[0123456789]$', 'g');
-  let count: string = '';
-  for (let s of funcStr) {
-    const str = new string(s);
-    if (regex.test(str)) {
-      count = str;
-    }
-  }
-  if (count.length) {
-    return Number(count);
+export function getFunctionArgumentsCount(func: ItfnType): int {
+  if (func instanceof (() => Any)) {
+    return 0;
+  } else if (func instanceof (((done: Any) => Any))) {
+    return 1;
+  } else if (func instanceof (((done: Any, arg2: Any) => Any))) {
+    return 2;
   }
   return 0;
-}
-
-export function checkIsAsyncFunction(funcStr: string): boolean {
-  const endIndex = funcStr.lastIndexOf('):');
-  const validStr = funcStr.slice(endIndex);
-  if (validStr.indexOf('Promise') !== -1) {
-    return true;
-  } else {
-    return false;
-  }
 }
