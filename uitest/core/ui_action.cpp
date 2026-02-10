@@ -418,6 +418,9 @@ namespace OHOS::uitest {
         DCHECK(type_ >= TouchOp::SWIPE && type_ <= TouchOp::DRAG);
         PointerMatrix touchEvents;
         DecomposeComputeSwipe(touchEvents, from_, to_, type_, opt);
+        if (touchEvents.Empty()) {
+            return;
+        }
         touchEvents.ConvertToMouseEvents(recv);
         if (type_ == TouchOp::SWIPE) {
             recv.front().stage_ = ActionStage::MOVE;
