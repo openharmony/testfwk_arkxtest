@@ -87,6 +87,7 @@ namespace OHOS::uitest {
         }
         return attributeVec_[attrId];
     }
+
     bool RegexMatchAttr(std::string_view value, std::string_view attrValue, int flags)
     {
         regex_t preg;
