@@ -279,21 +279,8 @@ namespace OHOS::uitest {
         this_thread::sleep_for(chrono::milliseconds(waitMs));
     }
 
-    void WindowOperator::Split(ApiReplyInfo &out)
+    void WindowOperator::SplitSecondary(ApiReplyInfo &out)
     {
-        if (!CheckOperational(SPLIT, window_.mode_, out)) {
-            return;
-        }
-#ifdef ARKXTEST_PC_FEATURE_ENABLE
-        driver_.ChangeWindowMode(window_.id_, WindowMode::SPLIT_PRIMARY);
-        return;
-#endif
-        auto isPcWindowMode = driver_.IsPcWindowMode();
-        if (isPcWindowMode) {
-            driver_.ChangeWindowMode(window_.id_, WindowMode::SPLIT_PRIMARY);
-            return;
-        }
-        if (window_.mode_ == WindowMode::SPLIT_SECONDARY) {
             constexpr auto topZone = 20;
             Point from(window_.visibleBounds_.GetCenterX(), window_.visibleBounds_.top_ - topZone, window_.displayId_);
             Point to(0, 0);
@@ -321,6 +308,27 @@ namespace OHOS::uitest {
             auto drag = GenericSwipe(TouchOp::SWIPE, from, to);
             driver_.PerformTouch(drag, options_, out.exception_);
             this_thread::sleep_for(chrono::milliseconds(waitMs));
+        return;
+    }
+
+    void WindowOperator::Split(ApiReplyInfo &out)
+    {
+        if (!CheckOperational(SPLIT, window_.mode_, out)) {
+            return;
+        }
+#ifdef ARKXTEST_PC_FEATURE_ENABLE
+        driver_.ChangeWindowMode(window_.id_, WindowMode::SPLIT_PRIMARY);
+        return;
+#endif
+        auto isPcWindowMode = driver_.IsPcWindowMode();
+        if (isPcWindowMode) {
+            driver_.ChangeWindowMode(window_.id_, WindowMode::SPLIT_PRIMARY);
+            return;
+        }
+        if (window_.mode_ == WindowMode::SPLIT_SECONDARY) {
+            SplitSecondary(out);
+        }
+        if (out.exception_.code_ != NO_ERROR) {
             return;
         }
         if (window_.mode_ != WindowMode::FULLSCREEN) {
