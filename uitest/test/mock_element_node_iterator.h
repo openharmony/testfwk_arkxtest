@@ -207,7 +207,7 @@ namespace OHOS::uitest {
         {
             visitAndVisibleIndexSet_.erase(currentIndex_);
         }
-        
+
         std::vector<MockAccessibilityElementInfo> elementInfoLists_;
 
     protected:

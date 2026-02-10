@@ -76,8 +76,6 @@ namespace OHOS::uitest {
 
         DisplayRotation GetDisplayRotation(ApiCallErr &error, int32_t displayId = 0);
 
-        int32_t GetScreenOrientation(ApiCallErr &error, int32_t displayId = 0);
-
         void SetDisplayRotationEnabled(bool enabled, ApiCallErr &error);
 
         bool WaitForUiSteady(uint32_t idleThresholdMs, uint32_t timeoutSec, ApiCallErr &error);
