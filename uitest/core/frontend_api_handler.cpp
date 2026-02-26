@@ -757,6 +757,7 @@ namespace OHOS::uitest {
         }
         return error;
     }
+
     template <UiAttr kAttr, typename T> static void GenericOnAttrBuilder(const ApiCallInfo &in, ApiReplyInfo &out)
     {
         // always create and return a new selector
@@ -990,16 +991,14 @@ namespace OHOS::uitest {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto displayId = ReadCallArg<uint32_t>(in, INDEX_ZERO, UNASSIGNED);
             UiOpArgs uiOpArgs;
-            auto isPc = false;
+            auto keyAction = CombinedKeys(KEYCODE_WIN, KEYCODE_D, KEYCODE_NONE);
 #ifdef ARKXTEST_PC_FEATURE_ENABLE
-            isPc = true;
+            driver.TriggerKey(keyAction, uiOpArgs, out.exception_, displayId);
+            ConvertError(out);
+            return;
 #endif
-            if (isPc) {
-                auto keyAction = CombinedKeys(KEYCODE_WIN, KEYCODE_D, KEYCODE_NONE);
-                driver.TriggerKey(keyAction, uiOpArgs, out.exception_, displayId);
-            } else {
-                driver.TriggerKey(Home(), uiOpArgs, out.exception_, displayId);
-            }
+            driver.TriggerKey(keyAction, uiOpArgs, out.exception_);
+            driver.TriggerKey(Home(), uiOpArgs, out.exception_, displayId);
             ConvertError(out);
         };
         server.AddHandler("Driver.pressHome", pressHome);

@@ -61,6 +61,8 @@ namespace OHOS::uitest {
         ORIGINALTEXT,
         // inner used attributes
         HIERARCHY,
+        // extenden attributes
+        UNIQUEID,
         HASHCODE,
         BOUNDSCENTER,
         VISIBLE,
@@ -70,6 +72,17 @@ namespace OHOS::uitest {
         DUMMY_ATTRNAME_SELECTION,
         HINT,
         MAX, // mark the max length
+    };
+
+    struct DumpOption {
+        string savePath_ = "";
+        bool listWindows_ = false;
+        bool addExternAttr_ = false;
+        string bundleName_ = "";
+        string windowId_ = "";
+        bool notMergeWindow_ = false;
+        int32_t displayId_ = 0;
+        string extendedAttrs_ = "";
     };
 
     /**Supported UiComponent attribute names. Ordered by <code>UiAttr</code> definition.*/
@@ -101,6 +114,7 @@ namespace OHOS::uitest {
         "clip", // CLIP
         "originalText",  // ORIGINALTEXT
         "hierarchy",     // HIERARCHY
+        "uniqueId",     // UNIQUEID
         "hashcode",      // HASHCODE
         "boundsCenter",  // BOUNDSCENTER
         "visible",       // VISIBLE
@@ -310,7 +324,7 @@ namespace OHOS::uitest {
 
         void SetHierarchy(const std::string& hierarch);
 
-        void WrapperWidgetToJson(nlohmann::json& out);
+        void WrapperWidgetToJson(nlohmann::json& out, const std::string extendedAttrs = "");
     private:
         std::string hierarchy_;
         std::vector<string> attributeVec_ = std::vector<string>(UiAttr::MAX + 1);
@@ -368,7 +382,7 @@ namespace OHOS::uitest {
     class DumpHandler {
     public:
         static void AddExtraAttrs(nlohmann::json &root, const map<int32_t, string_view> &elementTrees, size_t index);
-        static void DumpWindowInfoToJson(vector<Widget> &allWidget, nlohmann::json &root);
+        static void DumpWindowInfoToJson(const DumpOption &option, vector<Widget> &allWidget, nlohmann::json &root);
     };
     
     class WidgetHierarchyBuilder {
@@ -381,16 +395,6 @@ namespace OHOS::uitest {
 
     private:
         static constexpr auto HIERARCHY_SEPARATOR = ",";
-    };
-
-    struct DumpOption {
-        string savePath_ = "";
-        bool listWindows_ = false;
-        bool addExternAttr_ = false;
-        string bundleName_ = "";
-        string windowId_ = "";
-        bool notMergeWindow_ = false;
-        int32_t displayId_ = 0;
     };
 } // namespace OHOS::uitest
 

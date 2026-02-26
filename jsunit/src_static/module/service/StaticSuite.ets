@@ -153,7 +153,7 @@ class StaticSuite {
               try {
                 (func as () => void)();
               } catch (e) {
-                console.error(`${TAG}${e.stack}`);
+                console.error(`${TAG}${(e as Error).stack}`);
               }
             });
           }

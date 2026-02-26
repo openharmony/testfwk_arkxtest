@@ -77,6 +77,11 @@ class MockKit {
         obj[key.methodName] = value;
       }
     });
+    for (const [key, value] of this.mockFuncResultMap) {
+      if (key.obj === obj) {
+        this.mockFuncResultMap.delete(key);
+      }
+    }
   }
 
   ignoreMock(obj, method) {
@@ -100,6 +105,11 @@ class MockKit {
       if (key.obj === obj && key.methodName === name) {
         obj[name] = value;
         this.propertyValueMap.delete(key);
+      }
+    }
+    for (const [key, value] of this.mockFuncResultMap) {
+      if (key.obj === obj && key.methodName === name) {
+        this.mockFuncResultMap.delete(key);
       }
     }
   }
@@ -354,10 +364,10 @@ class MockKit {
   }
 
   mockProperty(obj, propertyName, value) {
-    let originalValue = obj[propertyName];
-    if (originalValue === undefined) {
-      throw new Error('No such property:' + propertyName);
+    if (!obj.hasOwnProperty(propertyName)) {
+        throw new Error('No such property:' + propertyName);
     }
+    let originalValue = obj[propertyName];
     let isMocked = false;
     for (const [key, value] of this.propertyValueMap) {
       if (key.obj === obj && key.methodName === propertyName) {

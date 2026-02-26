@@ -215,7 +215,7 @@ namespace OHOS::uitest {
     {
         if (ctx.callInfo_.fdParamIndex_ >= 0) {
             auto fd = ctx.callInfo_.paramList_.at(INDEX_ZERO).get<int>();
-            (void) close(fd);
+            fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         }
         LOG_I("Start to Unmarshal transaction result");
         const auto &message = reply.exception_.message_;
@@ -363,6 +363,7 @@ namespace OHOS::uitest {
                 error = CreateJsException(env, ERR_INVALID_INPUT, "Invalid file path:" + path);
                 return;
             }
+            fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
             paramList[INDEX_ZERO] = fd;
             ctx.callInfo_.fdParamIndex_ = INDEX_ZERO;
         } else if (id  == "UIEventObserver.once") {
