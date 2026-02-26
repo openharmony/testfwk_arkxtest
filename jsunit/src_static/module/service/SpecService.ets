@@ -81,7 +81,8 @@ class SpecService {
     this.specSkipReason = '';
   }
 
-  it(desc: string, filter: int, func: ItfnType): void {
+  it(desc: string, filter: int, func: ItfnType, timeout?: Number | undefined, tag?: string | undefined): void {
+    console.info("start it " + timeout + " " + tag);
     const coreContext = this.coreContext;
     if (coreContext !== null) {
       const suiteService = coreContext.getDefaultService('suite');
@@ -96,7 +97,11 @@ class SpecService {
           sService.suitesStack,
           desc
         );
-
+        if (cService.testTag.length > 0 && cService.filterWithTestTag(tag)) {
+          console.info(`${TAG} zzzzz filter it by tag:${desc}`);
+          this.initSpecService();
+          return;
+        }
         if (cService.filterWithNest(desc, filter)) {
           this.initSpecService();
           return;
@@ -200,8 +205,8 @@ class SpecService {
     const _this = this;
     return {
       name: 'SpecService',
-      it: (desc: string, filter: int, func: ItfnType) => {
-        return _this.it(desc, filter, func);
+      it: (desc: string, filter: int, func: ItfnType, timeout?: Number | undefined, tag?: string | undefined) => {
+        return _this.it(desc, filter, func, timeout, tag);
       },
       xit: (desc: string, filter: int, func: ItfnType, reason: string) => {
         return _this.xit(desc, filter, func, reason);
