@@ -82,7 +82,6 @@ class SpecService {
   }
 
   it(desc: string, filter: int, func: ItfnType, timeout?: Number | undefined, tag?: string | undefined): void {
-    console.info("start it " + timeout + " " + tag);
     const coreContext = this.coreContext;
     if (coreContext !== null) {
       const suiteService = coreContext.getDefaultService('suite');
@@ -98,7 +97,6 @@ class SpecService {
           desc
         );
         if (cService.testTag.length > 0 && cService.filterWithTestTag(tag)) {
-          console.info(`${TAG} zzzzz filter it by tag:${desc}`);
           this.initSpecService();
           return;
         }

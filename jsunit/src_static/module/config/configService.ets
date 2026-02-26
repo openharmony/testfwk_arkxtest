@@ -184,7 +184,6 @@ class ConfigService {
   }
 
   setConfig(params: ConfigIf) {
-    console.info("zzzzzzzz params "+ JSON.stringify(params));
     this.basicParamValidCheck(params);
     this.filterParamValidCheck(params);
     try {
@@ -247,7 +246,6 @@ class ConfigService {
     } catch (err) {
       console.info(`${TAG}setConfig error: ${err.message}`);
     }
-    console.info("zzzzzzzz setConfig tag "+ JSON.stringify(this.testTag));
   }
 
   parseParams() {
