@@ -149,7 +149,7 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
 {
     if (callInfo_.fdParamIndex_ >= 0) {
         auto fd = callInfo_.paramList_.at(INDEX_ZERO).get<int>();
-        (void)close(fd);
+        fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
     }
     HiLog::Info(LABEL, "%{public}s.Start to UnmarshalReply", __func__);
     const auto &message = reply_.exception_.message_;
@@ -219,15 +219,15 @@ static ani_boolean ScheduleEstablishConnection(ani_env *env, ani_string connToke
     if (ANI_OK != env->GetVM(&vm)) {
         HiLog::Error(LABEL, "%{public}s GetVM failed", __func__);
     }
-    bool result = false;
-    g_establishConnectionFuture = async(launch::async, [vm, token, &result]() {
+    auto result = make_shared<bool>(false);
+    g_establishConnectionFuture = async(launch::async, [vm, token, result]() {
         using namespace std::placeholders;
         auto &instance = UiEventObserverAni::Get();
         auto callbackHandler = std::bind(&UiEventObserverAni::HandleEventCallback, &instance, vm, _1, _2);
-        result = g_apiTransactClient.InitAndConnectPeer(token, callbackHandler);
-        HiLog::Error(LABEL, "End setup transaction connection, result=%{public}d", result);
+        *result = g_apiTransactClient.InitAndConnectPeer(token, callbackHandler);
+        HiLog::Error(LABEL, "End setup transaction connection, result=%{public}d", *result);
     });
-    return result;
+    return *result;
 }
 
 static ani_int GetConnectionStat(ani_env *env)
@@ -689,11 +689,11 @@ static ani_ref create([[maybe_unused]] ani_env *env, [[maybe_unused]] ani_class 
         HiLog::Error(LABEL, "Driver Ctor Not found !!!");
         return nullref;
     }
-    auto  callInfo_ = make_shared<ApiCallInfo>();
-    auto  reply_ = make_shared<ApiReplyInfo>();
-    callInfo_->apiId_ = "Driver.create";
-    Transact(*callInfo_, *reply_);
-    ani_ref nativeDriver = UnmarshalReply(env, *callInfo_, *reply_);
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.apiId_ = "Driver.create";
+    Transact(callInfo_, reply_);
+    ani_ref nativeDriver = UnmarshalReply(env, callInfo_, reply_);
     if (nativeDriver == nullptr) {
         return nullref;
     }
@@ -1325,6 +1325,7 @@ static ani_boolean screenCaptureSync(ani_env *env, ani_object obj, ani_string pa
     if (fd == -1) {
         return false;
     }
+    fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
     HiLog::Info(LABEL, "savePath: %{public}d", fd);
     callInfo_.paramList_[INDEX_ZERO] = fd;
     callInfo_.paramList_[INDEX_ONE] = getRect(env, rect);
@@ -1349,6 +1350,7 @@ static ani_boolean screenCapSync(ani_env *env, ani_object obj, ani_string path, 
     if (fd == -1) {
         return false;
     }
+    fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
     HiLog::Info(LABEL, "savePath: %{public}d", fd);
     callInfo_.paramList_[INDEX_ZERO] = fd;
     callInfo_.fdParamIndex_ = INDEX_ZERO;

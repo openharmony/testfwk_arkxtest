@@ -24,6 +24,7 @@ namespace OHOS::uitest {
         std::map<std::string, int> visitWidgetMap_;
         std::map<std::string, int> widgetCountMap_;
         std::set<std::string> visibleWidgetHies_;
+        std::string extendedAttrs_ = "";
     };
 
     static string_view GetMiddleStr(string_view str, size_t &index, string_view startStr, string_view endStr)
@@ -57,7 +58,7 @@ namespace OHOS::uitest {
         const DumperCache &cache)
     {
         auto attrData = json();
-        allWidget.at(index).WrapperWidgetToJson(attrData);
+        allWidget.at(index).WrapperWidgetToJson(attrData, cache.extendedAttrs_);
         auto childrenData = json::array();
         int childIndex = 0;
         int childCount = 0;
@@ -128,7 +129,7 @@ namespace OHOS::uitest {
         }
     }
 
-    void DumpHandler::DumpWindowInfoToJson(vector<Widget> &allWidget, nlohmann::json &root)
+    void DumpHandler::DumpWindowInfoToJson(const DumpOption &option, vector<Widget> &allWidget, nlohmann::json &root)
     {
         DumperCache cache;
         for (size_t i = 0; i < allWidget.size(); ++i) {
@@ -145,6 +146,7 @@ namespace OHOS::uitest {
                 cache.visibleWidgetHies_.insert(hie);
             }
         }
+        cache.extendedAttrs_ = option.extendedAttrs_;
         DFSMarshalWidget(allWidget, 0, root, cache);
     }
 } // namespace OHOS::uitest

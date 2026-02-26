@@ -21,13 +21,9 @@ import { StaticSuite } from './StaticSuite';
 import { TAG } from '../../Constant';
 import {
   processFunc,
-  processAsyncFunc,
   processFuncWithArgOne,
-  processAsyncFuncWithArgOne,
   processFuncWithArgTwo,
-  processAsyncFuncWithArgTwo,
-  getFunctionArgumentsCount,
-  checkIsAsyncFunction
+  getFunctionArgumentsCount
 } from '../../util';
 import { SuiteService } from './SuiteService';
 import { ConfigService } from '../config/configService';
@@ -109,37 +105,20 @@ class SpecService {
         if (cService.filterDesc(curSuite.description, desc, filter) && isFilter && !sService.fullRun) {
           this.initSpecService();
         } else {
-          const funcStr = Type.of(func as object).getLiteral();
-          const argsCount = getFunctionArgumentsCount(funcStr);
+          const argsCount = getFunctionArgumentsCount(func);
 
-          const isAsync = checkIsAsyncFunction(funcStr);
           let processedFunc: (() => Promise<void>) | ((paramItem: AnyType) => Promise<void>) = (): Promise<void> => {
             return Promise.resolve();
           };
           if (argsCount === 2) {
-            if (isAsync) {
-              const fn = func as (done: () => void, param: AnyType) => Promise<void>;
-              processedFunc = processAsyncFuncWithArgTwo(coreContext, fn);
-            } else {
-              const fn = func as (done: () => void, param: AnyType) => void;
-              processedFunc = processFuncWithArgTwo(coreContext, fn);
-            }
+            const fn = func as (done: () => void, param: AnyType) => void;
+            processedFunc = processFuncWithArgTwo(coreContext, fn);
           } else if (argsCount === 1) {
-            if (isAsync) {
-              const fn = func as (done: () => void) => Promise<void>;
-              processedFunc = processAsyncFuncWithArgOne(coreContext, fn);
-            } else {
-              const fn = func as (done: () => void) => void;
-              processedFunc = processFuncWithArgOne(coreContext, fn);
-            }
+            const fn = func as (done: () => void) => void;
+            processedFunc = processFuncWithArgOne(coreContext, fn);
           } else {
-            if (isAsync) {
-              const fn = func as () => Promise<void>;
-              processedFunc = processAsyncFunc(coreContext, fn);
-            } else {
-              const fn = func as () => void;
-              processedFunc = processFunc(coreContext, fn);
-            }
+            const fn = func as () => void;
+            processedFunc = processFunc(coreContext, fn);
           }
           const spec = new StaticSpec({ description: desc, fi: filter, asyncFn: processedFunc });
           if (this.isSkipSpec) {

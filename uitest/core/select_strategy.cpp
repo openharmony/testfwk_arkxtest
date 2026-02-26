@@ -210,6 +210,7 @@ namespace OHOS::uitest {
                 RefreshWidgetBounds(myselfWidget, window);
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     LOG_D("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
+                    elementNodeRef.RemoveInvisibleWidget();
                     continue;
                 }
                 visitWidgets.emplace_back(move(myselfWidget));
@@ -393,6 +394,7 @@ namespace OHOS::uitest {
                 RefreshWidgetBounds(myselfWidget, window);
                 if (myselfWidget.GetAttr(UiAttr::VISIBLE) == "false") {
                     LOG_D("Widget %{public}s is invisible", myselfWidget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
+                    elementNodeRef.RemoveInvisibleWidget();
                     continue;
                 }
                 visitWidgets.emplace_back(move(myselfWidget));

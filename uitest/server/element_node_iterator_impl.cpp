@@ -227,6 +227,7 @@ namespace OHOS::uitest {
         widget.SetAttr(UiAttr::ID, element.GetInspectorKey());
         widget.SetAttr(UiAttr::TEXT, element.GetContent());
         widget.SetAttr(UiAttr::ORIGINALTEXT, element.GetOriginalText());
+        widget.SetAttr(UiAttr::UNIQUEID, std::to_string(element.GetUniqueId()));
         widget.SetAttr(UiAttr::KEY, element.GetInspectorKey());
         widget.SetAttr(UiAttr::TYPE, element.GetComponentType());
         widget.SetAttr(UiAttr::DESCRIPTION, element.GetDescriptionInfo());

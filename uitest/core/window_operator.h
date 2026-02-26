@@ -56,6 +56,7 @@ namespace OHOS::uitest {
         void CallBar(ApiReplyInfo &out);
         void FloatWindowInPhoneMode(ApiReplyInfo &out);
         void SplitWindowInPhoneMode(ApiReplyInfo &out);
+        void SplitSecondary(ApiReplyInfo &out);
         void CreateResizePoint(int32_t width, int32_t highth, ResizeDirection direction, Point &from, Point &to);
         void MaximizeSplitWindow(ApiReplyInfo &out);
     };
