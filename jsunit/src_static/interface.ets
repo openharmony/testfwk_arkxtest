@@ -44,6 +44,7 @@ export interface ConfigIf {
   coverage?: string;
   skipMessage?: string;
   runSkipped?: string;
+  tag?: string | undefined;
 }
 
 export interface StaticServiceIF {
@@ -172,7 +173,7 @@ export interface ApiIF {
   afterAll?: (func: HookFuncType) => void;
   afterEach?: (func: HookFuncType) => void;
   afterEachIt?: (func: HookFuncType) => void;
-  it?: (desc: string, filter: int, func: ItfnType) => void;
+  it?: (desc: string,  filter: int, func: ItfnType, timeout?: Number | undefined, tag?: string | undefined) => void;
   xit?: (desc: string, filter: int, func: ItfnType, reason: string) => void;
   expect?: (actualValue?: AnyType) => AssertMatcher;
 }

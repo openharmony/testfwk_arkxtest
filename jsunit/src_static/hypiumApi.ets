@@ -23,10 +23,11 @@ const hypiumDescribe = (desc: string, func: () => void): void => {
   }
 };
 
-const hypiumIt = (desc: string, filter: int, func: ItfnType) => {
+const hypiumIt =
+  (desc: string, filter: int, func: ItfnType, timeout?: Number | undefined, tag?: string | undefined) => {
   const core = Core.getInstance();
   if (core) {
-    return (core as Core).it(desc, filter, func);
+    return (core as Core).it(desc, filter, func, timeout, tag);
   }
 };
 const hypiumBeforeItSpecified = (itDescs: string | string[], func: HookFuncType) => {

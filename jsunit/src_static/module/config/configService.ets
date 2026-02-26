@@ -44,6 +44,7 @@ class ConfigService {
   public coverage: string;
   public coreContext: Core;
   private filterParam: FilterParamIF | null;
+  public testTag: Array<object | undefined | null> = []
   constructor(attr: ServiceAttrIF) {
     this.id = attr.id;
     this.supportAsync = true; // 默认异步处理测试用例
@@ -70,6 +71,7 @@ class ConfigService {
     this.filterXdescribe = new Array<string>();
     this.filterParam = null;
     this.coreContext = new Core();
+    this.testTag = [];
   }
 
   init(coreContext: Core) {
@@ -182,6 +184,7 @@ class ConfigService {
   }
 
   setConfig(params: ConfigIf) {
+    console.info("zzzzzzzz params "+ JSON.stringify(params));
     this.basicParamValidCheck(params);
     this.filterParamValidCheck(params);
     try {
@@ -240,9 +243,11 @@ class ConfigService {
         size: SIZE,
       } as FilterParamIF;
       this.parseParams();
+      this.setTestTag(params.tag);
     } catch (err) {
       console.info(`${TAG}setConfig error: ${err.message}`);
     }
+    console.info("zzzzzzzz setConfig tag "+ JSON.stringify(this.testTag));
   }
 
   parseParams() {
@@ -496,6 +501,8 @@ class ConfigService {
           targetParams.skipMessage = parameters[key];
         } else if (newKey === 'runSkipped') {
           targetParams.runSkipped = parameters[key];
+        } else if (newKey === 'tag') {
+          targetParams.tag = parameters[key];
         }
       }
     }
@@ -544,6 +551,109 @@ class ConfigService {
         return desc.startsWith(item + '.') || desc.startsWith(item + '#') || this.runSkipped === 'skipped';
       }
     });
+  }
+
+  setTestTag(tagStr: string | undefined): void {
+    console.info(`[TagFilter] setTestTag input: "${tagStr}"`);
+    // 情况1：未传入标签 或 传入空字符串（含纯空白）
+    if (tagStr === undefined || tagStr.trim() === '') {
+      console.info('[TagFilter] Empty or undefined tag provided. Will run ALL test cases.');
+      this.testTag = []; // 清空标签列表，表示不过滤
+      return;
+    }
+
+    // 定义合法字符正则：只允许字母、数字、空格、逗号、加号
+    // 注意：不允许多余符号如 @、#、|、: 等（| 是用例端使用的分隔符，命令行不用）
+    const regex = new RegExp('^[a-zA-Z0-9, +]*$', 'g');
+    if (!regex.test(tagStr)) {
+      throw new Error(
+        `[TagFilter] Invalid characters detected in tag string: "${tagStr}". ` +
+          `Allowed characters: letters, digits, space, comma (,), plus (+). ` +
+          `Ignoring tag filter and running ALL test cases.`
+      );
+    }
+    // 按逗号分割，得到多个“条件组”
+    const commaTags = tagStr.split(',')
+      .map(item => item.trim())
+      .filter(item => item !== '');
+    console.info(`[TagFilter] Split by ',': ${JSON.stringify(commaTags)}`);
+    // 如果分割后没有有效条件，也视为无过滤
+    if (commaTags.length === 0) {
+      console.info('[TagFilter] No valid tag conditions after parsing. Running all test cases.');
+      this.testTag = [];
+      return;
+    }
+
+    for (let item of commaTags) {
+      if (item.includes('+')) {
+        const andTags = item
+          .split('+')
+          .map(item => item.trim())
+          .filter(item => item !== '');
+        // 只有非空 AND 组才加入
+        if (andTags.length > 0) {
+          console.info(`[TagFilter] Detected AND condition group: ${JSON.stringify(andTags)}`);
+          this.testTag.push(andTags);
+        }
+      } else {
+        // 不含 '+' → 单个 OR 标签
+        console.info(`[TagFilter] Detected OR tag: "${item}"`);
+        this.testTag.push(item)
+      }
+    }
+  }
+
+  filterWithTestTag(itTestTag: string | undefined): boolean {
+    // 情况1：未配置任何有效标签 → 不过滤，执行所有用例
+    if (this.testTag.length === 0) {
+      return false;
+    }
+    // 情况2：用例未声明标签（itTestTag 为 undefined）
+    if (itTestTag === undefined) {
+      console.warn('[TagFilter] Test case has no tag, but global tag filter is active. Skipping this test case.');
+      return true;
+    }
+    // 定义用例标签合法字符：字母、数字、空格、竖线 |
+    const regex = new RegExp('^[a-zA-Z0-9 |]*$', 'g');
+    let itTagArray: string[] = [];
+    // 验证并解析用例标签
+    if (itTagArray && typeof itTestTag === 'string' && regex.test(itTestTag)) {
+      itTagArray = itTestTag.split('|')
+        .map(item => item.trim())
+        .filter(item => item !== '');
+    } else {
+      // 用例标签格式非法（如包含 @、, 等）
+      console.warn(`[TagFilter] Invalid format in test case tag: "${itTestTag}". Skipping this test case.`);
+      return true; // 保守策略：无法识别标签 → 跳过
+    }
+    // 调试日志
+    console.info(
+      `[TagFilter] Parsed test case tags: ${JSON.stringify(itTagArray)}, ` +
+        `Global filter rules: ${JSON.stringify(this.testTag)}`
+    );
+    for (const tag of this.testTag) {
+      if (!tag) {
+        continue;
+      }
+
+      // AND 条件：要求用例标签包含数组中所有项
+      if (Array.isArray(tag)) {
+        const stringArray = tag as string[];
+        if (stringArray.every(item => itTagArray.includes(item))) {
+          console.info(`[TagFilter] Matched AND condition: ${JSON.stringify(tag)}`);
+          return false;
+        }
+      } else if (typeof tag === 'string') {
+        // OR 条件：只要用例标签包含该字符串即可
+        const stringTag = tag as string
+        if (itTagArray.includes(stringTag)) {
+          console.info(`[TagFilter] Matched OR tag: "${tag}"`);
+          return false;
+        }
+      }
+    }
+    console.info(`[FILTER] No condition matched. Skipping this test case`);
+    return true;
   }
 }
 

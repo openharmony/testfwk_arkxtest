@@ -59,7 +59,8 @@ class Core {
   public afterAll: (func: HookFuncType) => void;
   public afterEach: (func: HookFuncType) => void;
   public afterEachIt: (func: HookFuncType) => void;
-  public it: (desc: string, filter: int, func: ItfnType) => void;
+  public it: (desc: string, filter: int, func: ItfnType, timeout?: Number | undefined,
+    tag?: string | undefined) => void;
   public xit: (desc: string, filter: int, func: ItfnType, reason: string) => void;
   public expect: ((actualValue?: AnyType) => AssertMatcher) | null;
   public specEvent: SpecEvent;
@@ -80,7 +81,8 @@ class Core {
     this.afterAll = (func: HookFuncType) => { };
     this.afterEach = (func: HookFuncType) => { };
     this.afterEachIt = (func: HookFuncType) => { };
-    this.it = (desc: string, filter: int, func: ItfnType) => { };
+    this.it = (desc: string, filter: int, func: ItfnType, timeout?: Number | undefined, tag?: string | undefined) => {
+    };
     this.xit = (desc: string, filter: int, func: ItfnType, reason: string) => { };
     this.expect = null;
     this.specEvent = new SpecEvent({ id: '' });
