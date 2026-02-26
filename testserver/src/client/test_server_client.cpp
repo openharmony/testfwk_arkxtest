@@ -151,7 +151,9 @@ namespace OHOS::testserver {
             HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
             return TEST_SERVER_GET_INTERFACE_FAILED;
         }
-        return iTestServerInterface_->SetPasteData(text);
+        int32_t setResult = 0;
+        iTestServerInterface_->SetPasteData(text, setResult);
+        return setResult;
     }
 
     int32_t TestServerClient::ChangeWindowMode(int windowId, uint32_t mode)
@@ -247,6 +249,66 @@ namespace OHOS::testserver {
         }
         iTestServerInterface_->GetValueFromDataShare(uri, key, value);
         return value;
+    }
+
+    int32_t TestServerClient::SetTime(int64_t timeMs)
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t setTimeResult = 0;
+        iTestServerInterface_->SetTime(timeMs, setTimeResult);
+        return setTimeResult;
+    }
+
+    int32_t TestServerClient::SetTimezone(const std::string& timezoneId)
+    {
+        HiLog::Info(LABEL, "%{public}s called. timezoneId=%{public}s", __func__, timezoneId.c_str());
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t setTimezoneResult = 0;
+        iTestServerInterface_->SetTimezone(timezoneId, setTimezoneResult);
+        return setTimezoneResult;
+    }
+
+    int32_t TestServerClient::GetPasteData(std::string& pasteText)
+    {
+        HiLog::Info(LABEL, "%{public}s called", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t getResult = 0;
+        iTestServerInterface_->GetPasteData(pasteText, getResult);
+        return getResult;
+    }
+
+    int32_t TestServerClient::ClearPasteData()
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t clearResult = 0;
+        iTestServerInterface_->ClearPasteData(clearResult);
+        return clearResult;
+    }
+
+    int32_t TestServerClient::HideKeyboard()
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t hideResult = 0;
+        iTestServerInterface_->HideKeyboard(hideResult);
+        return hideResult;
     }
 } // namespace OHOS::testserver
 

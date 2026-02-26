@@ -20,7 +20,7 @@ sequenceable SessionToken..OHOS.testserver.SessionToken;
 sequenceable CommonEventData..OHOS.EventFwk.CommonEventData;
 interface OHOS.testserver.ITestServerInterface {
     void CreateSession([in] SessionToken sessionToken);
-    void SetPasteData([in] String text);
+    void SetPasteData([in] String text, [out] int setResult);
     void ChangeWindowMode([in] int windowId, [in] unsigned int mode);
     void TerminateWindow([in] int windowId);
     void MinimizeWindow([in] int windowId);
@@ -30,4 +30,9 @@ interface OHOS.testserver.ITestServerInterface {
     void CollectProcessMemory([in] int pid, [out] ProcessMemoryInfo processMemoryInfo);
     void CollectProcessCpu([in] int pid, [in] boolean isNeedUpdate, [out] ProcessCpuInfo processCpuInfo);
     void GetValueFromDataShare([in] String url, [in] String key, [out] String value);
+    void SetTime([in] long timeMs, [out] int setTimeResult);
+    void SetTimezone([in] String timezoneId, [out] int setTimezoneResult);
+    void GetPasteData([out] String pasteText, [out] int getResult);
+    void ClearPasteData([out] int clearResult);
+    void HideKeyboard([out] int hideResult);
 }

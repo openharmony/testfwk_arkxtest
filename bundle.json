@@ -54,7 +54,9 @@
           "hisysevent",
           "data_share",
           "libjpeg-turbo",
-          "libpng"
+          "libpng",
+          "time_service",
+          "imf"
         ]
       },
       "build": {
@@ -65,7 +67,8 @@
             "//test/testfwk/arkxtest/testserver/sa_profile:testserver_sa_profile",
             "//test/testfwk/arkxtest/testserver/src:test_server_service",
             "//test/testfwk/arkxtest/testserver/src:test_server_client",
-            "//test/testfwk/arkxtest/perftest:perftestkit"
+            "//test/testfwk/arkxtest/perftest:perftestkit",
+            "//test/testfwk/arkxtest/testhelper:testhelperkit"
         ],
         "inner_kits": [
           {

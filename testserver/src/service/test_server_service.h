@@ -42,7 +42,7 @@ namespace OHOS::testserver {
         ErrCode CreateSession(const SessionToken &sessionToken) override;
 
         // Declare the logical interfaces here
-        ErrCode SetPasteData(const std::string& text) override;
+        ErrCode SetPasteData(const std::string& text, int32_t& setResult) override;
 
         ErrCode ChangeWindowMode(int windowId, uint32_t mode) override;
 
@@ -61,6 +61,16 @@ namespace OHOS::testserver {
         ErrCode CollectProcessCpu(const int32_t pid, bool isNeedUpdate, ProcessCpuInfo &processCpuInfo) override;
 
         ErrCode GetValueFromDataShare(const std::string &uri, const std::string &key, std::string &value) override;
+
+        ErrCode SetTime(int64_t timeMs, int32_t& setTimeResult) override;
+
+        ErrCode SetTimezone(const std::string& timezoneId, int32_t& setTimezoneResult) override;
+
+        ErrCode GetPasteData(std::string& pasteText, int32_t& getResult) override;
+
+        ErrCode ClearPasteData(int32_t& clearResult) override;
+
+        ErrCode HideKeyboard(int32_t& result) override;
 
     protected:
         void OnStart() override;
@@ -102,6 +112,7 @@ namespace OHOS::testserver {
 
         CallerDetectTimer* callerDetectTimer_;
         std::shared_ptr<HiviewDFX::UCollectUtil::CpuCollector> cpuCollector_;
+        bool IsValidTimezoneId(const std::string& timezoneId);
     };
 } // namespace OHOS::testserver
 
