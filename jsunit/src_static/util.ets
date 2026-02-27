@@ -128,13 +128,20 @@ export function getFuncWithArgsTwo(
 
 export function processFunc(
   coreContext: Core,
-  func: () => Any
+  func: () => Any,
+  itTimeout?: number | undefined
 ) {
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = !config.timeout ? 5000 : Number(config.timeout);
+    const runnerTimeout = !config.timeout ? 5000 : Number(config.timeout);
+    let timeout = runnerTimeout;
+    if (itTimeout !== undefined) {
+      if (Number.isFinite(itTimeout) && itTimeout > 0) {
+        timeout = itTimeout;
+      }
+    }
     let isStressTest = false;
     if (config.getStress() > 1 || coreContext.getServices('dataDriver')) {
       isStressTest = true;
