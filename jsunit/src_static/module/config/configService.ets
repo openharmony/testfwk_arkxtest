@@ -624,7 +624,6 @@ class ConfigService {
       console.warn(`[TagFilter] Invalid format in test case tag: "${itTestTag}". Skipping this test case.`);
       return true; // 保守策略：无法识别标签 → 跳过
     }
-    // 调试日志
     console.info(
       `[TagFilter] Parsed test case tags: ${JSON.stringify(itTagArray)}, ` +
         `Global filter rules: ${JSON.stringify(this.testTag)}`
