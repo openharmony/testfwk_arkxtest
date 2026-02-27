@@ -38,6 +38,11 @@ namespace OHOS::testserver {
         int32_t CollectProcessMemory(int32_t &pid, ProcessMemoryInfo &processMemoryInfo);
         int32_t CollectProcessCpu(int32_t &pid, bool isNeedUpdate, ProcessCpuInfo &processCpuInfo);
         std::string GetValueFromDataShare(const std::string &uri, const std::string &key);
+        int32_t SetTime(int64_t timeMs);
+        int32_t SetTimezone(const std::string& timezoneId);
+        int32_t GetPasteData(std::string& pasteText);
+        int32_t ClearPasteData();
+        int32_t HideKeyboard();
     private:
         TestServerClient();
         ~TestServerClient() = default;

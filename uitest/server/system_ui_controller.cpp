@@ -993,7 +993,7 @@ namespace OHOS::uitest {
         if (ret != OHOS::testserver::TEST_SERVER_OK) {
             LOG_E("Set pasteBoard data failed.");
             error = ApiCallErr(ERR_INTERNAL, "Set pasteBoard data failed.");
-            if (ret != OHOS::testserver::TEST_SERVER_SET_PASTE_DATA_FAILED) {
+            if (ret == OHOS::testserver::TEST_SERVER_NOT_SUPPORTED) {
                 error.code_ = ERR_NO_SYSTEM_CAPABILITY;
             }
             return;

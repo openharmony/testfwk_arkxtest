@@ -69,7 +69,17 @@ ohos_shared_library("test_server_service") {
     "soc_perf:socperf_client",
     "window_manager:session_manager_lite",
     "ability_runtime:app_manager",
+    "time_service:time_client",
+    "ability_runtime:wantagent_innerkits",
+    "input:libmmi-client",
   ]
+
+  if (defined(global_parts_info) && defined(global_parts_info.inputmethod_imf)) {
+    external_deps += [
+      "imf:inputmethod_client",
+    ]
+    defines += [ "ARKXTEST_IMF_ENABLE" ]
+  }
 
   if (arkxtest_product_feature == "phone" || arkxtest_product_feature == "tablet") {
     external_deps += [

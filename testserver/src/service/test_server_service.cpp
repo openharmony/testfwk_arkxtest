@@ -14,7 +14,6 @@
  */
 
 #include "test_server_service.h"
-
 #include "iremote_object.h"
 #include "system_ability_definition.h"
 #include "hilog/log.h"
@@ -24,6 +23,7 @@
 #include "test_server_error_code.h"
 #ifdef ARKXTEST_PASTEBOARD_ENABLE
 #include "pasteboard_client.h"
+#include "paste_data.h"
 #endif
 #ifdef ARKXTEST_KNUCKLE_ACTION_ENABLE
 #include "datashare_helper.h"
@@ -32,11 +32,18 @@
 #include "wm_common.h"
 #include "ws_common.h"
 #include "socperf_client.h"
+#include "time_service_client.h"
+#ifdef ARKXTEST_IMF_ENABLE
+#include "input_method_controller.h"
+#endif
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include "accesstoken_kit.h"
 #include "tokenid_kit.h"
 #include "memory_collector.h"
+#include <fstream>
+#include <set>
+#include <sys/stat.h>
 
 namespace OHOS::testserver {
     // TEST_SERVER_SA_ID
@@ -131,21 +138,36 @@ namespace OHOS::testserver {
         return TEST_SERVER_OK;
     }
 
-    ErrCode TestServerService::SetPasteData(const std::string& text)
+    ErrCode TestServerService::SetPasteData(const std::string& text, int32_t& setResult)
     {
 #ifdef ARKXTEST_PASTEBOARD_ENABLE
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
+        if (!pasteBoardMgr) {
+            HiLog::Error(LABEL_SERVICE, "pasteBoardMgr is nullptr");
+            setResult = TEST_SERVER_PASTEBOARD_FAILED;
+            return TEST_SERVER_OK;
+        }
         pasteBoardMgr->Clear();
         auto pasteData = pasteBoardMgr->CreatePlainTextData(text);
         if (pasteData == nullptr) {
-            return TEST_SERVER_CREATE_PASTE_DATA_FAILED;
+            HiLog::Error(LABEL_SERVICE, "CreatePlainTextData failed");
+            setResult = TEST_SERVER_CREATE_PASTE_DATA_FAILED;
+            return TEST_SERVER_OK;
         }
         int32_t ret = pasteBoardMgr->SetPasteData(*pasteData);
         int32_t successErrCode = 27787264;
-        return ret == successErrCode ? TEST_SERVER_OK : TEST_SERVER_SET_PASTE_DATA_FAILED;
+        if (ret == successErrCode) {
+            setResult = TEST_SERVER_OK;
+            return TEST_SERVER_OK;
+        } else {
+            HiLog::Error(LABEL_SERVICE, "SetPasteData failed with error: %{public}d", ret);
+            setResult = TEST_SERVER_SET_PASTE_DATA_FAILED;
+            return TEST_SERVER_OK;
+        }
 #else
-        HiLog::Warn(LABEL_SERVICE, "pasteboard is not supported, ignored.", __func__);
+        HiLog::Warn(LABEL_SERVICE, "pasteboard is not supported");
+        setResult = TEST_SERVER_NOT_SUPPORTED;
         return TEST_SERVER_OK;
 #endif
     }
@@ -479,5 +501,180 @@ namespace OHOS::testserver {
         value = "0";
 #endif
         return TEST_SERVER_OK;
+    }
+
+    ErrCode TestServerService::SetTime(int64_t timeMs, int32_t& setTimeResult)
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        auto timeService = MiscServices::TimeServiceClient::GetInstance();
+        if (timeService == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "timeService is nullptr");
+            setTimeResult = TEST_SERVER_TIME_SERVICE_FAILED;
+            return TEST_SERVER_OK;
+        }
+        auto ret = timeService->SetTime(timeMs);
+        if (!ret) {
+            HiLog::Error(LABEL_SERVICE, "SetTime failed");
+            setTimeResult = TEST_SERVER_TIME_SERVICE_FAILED;
+            return TEST_SERVER_OK;
+        }
+        HiLog::Debug(LABEL_SERVICE, "SetTime success");
+        return TEST_SERVER_OK;
+    }
+
+    bool TestServerService::IsValidTimezoneId(const std::string& timezoneId)
+    {
+        std::set<std::string> availableIds;
+        const char* distroPath = "/system/etc/tzdata_distro/timezone_list.cfg";
+        const char* defaultPath = "/system/etc/zoneinfo/timezone_list.cfg";
+        struct stat s;
+        const char* path = (stat(distroPath, &s) == 0) ? distroPath : defaultPath;
+        std::ifstream file = std::ifstream(path);
+        if (!file) {
+            return true;
+        }
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line.empty()) {
+                continue;
+            }
+            line.resize(line.find_last_not_of("\r\n") + 1);
+            availableIds.insert(line);
+        }
+        if (availableIds.find(timezoneId) != availableIds.end()) {
+            return true;
+        }
+        std::ifstream convertFile("/system/etc/zoneinfo/timezone_convert.txt");
+        if (!convertFile) {
+            return false;
+        }
+        while (std::getline(convertFile, line)) {
+            if (line.empty()) {
+                break;
+            }
+            size_t pos = line.find(':');
+            if (pos != std::string::npos && line.substr(0, pos) == timezoneId) {
+                std::string converted = line.substr(pos + 1);
+                converted.resize(converted.find_last_not_of("\r\n") + 1);
+                return availableIds.find(converted) != availableIds.end();
+            }
+        }
+        return false;
+    }
+
+    ErrCode TestServerService::SetTimezone(const std::string& timezoneId, int32_t& setTimezoneResult)
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called. timezoneId=%{public}s", __func__, timezoneId.c_str());
+        if (!IsValidTimezoneId(timezoneId)) {
+            HiLog::Error(LABEL_SERVICE, "Invalid timezone ID: %{public}s", timezoneId.c_str());
+            setTimezoneResult = TEST_SERVER_INVALID_TIMEZONE_ID;
+            return TEST_SERVER_OK;
+        }
+        auto timeService = MiscServices::TimeServiceClient::GetInstance();
+        if (timeService == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "timeService is nullptr");
+            setTimezoneResult = TEST_SERVER_TIME_SERVICE_FAILED;
+            return TEST_SERVER_OK;
+        }
+        auto ret = timeService->SetTimeZone(timezoneId);
+        if (!ret) {
+            HiLog::Error(LABEL_SERVICE, "SetTimezone failed");
+            setTimezoneResult = TEST_SERVER_TIME_SERVICE_FAILED;
+            return TEST_SERVER_OK;
+        }
+        HiLog::Debug(LABEL_SERVICE, "SetTimezone success");
+        return TEST_SERVER_OK;
+    }
+
+    ErrCode TestServerService::GetPasteData(std::string& pasteText, int32_t& getResult)
+    {
+#ifdef ARKXTEST_PASTEBOARD_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called", __func__);
+        auto pasteboardClient = OHOS::MiscServices::PasteboardClient::GetInstance();
+        if (!pasteboardClient) {
+            HiLog::Error(LABEL_SERVICE, "pasteboardClient is nullptr");
+            getResult = TEST_SERVER_PASTEBOARD_FAILED;
+            return TEST_SERVER_OK;
+        }
+        int32_t successErrCode = 27787264;
+        int32_t emptyDataErrCode = 27787283;
+        OHOS::MiscServices::PasteData pasteData;
+        int32_t result = pasteboardClient->GetPasteData(pasteData);
+        if (result == emptyDataErrCode) {
+            HiLog::Debug(LABEL_SERVICE, "Pasteboard is empty");
+            pasteText = "";
+            getResult = TEST_SERVER_OK;
+            return TEST_SERVER_OK;
+        }
+        if (result != successErrCode) {
+            HiLog::Error(LABEL_SERVICE, "GetPasteData failed with error: %{public}d", result);
+            getResult = TEST_SERVER_PASTEBOARD_FAILED;
+            return TEST_SERVER_OK;
+        }
+        auto text = pasteData.GetPrimaryText();
+        if (!text || text->empty()) {
+            HiLog::Debug(LABEL_SERVICE, "Pasteboard is empty");
+            pasteText = "";
+            getResult = TEST_SERVER_OK;
+            return TEST_SERVER_OK;
+        }
+        pasteText = *text;
+        getResult = TEST_SERVER_OK;
+        return TEST_SERVER_OK;
+#else
+        HiLog::Error(LABEL_SERVICE, "Pasteboard feature is not enabled");
+        getResult = TEST_SERVER_NOT_SUPPORTED;
+        return TEST_SERVER_OK;
+#endif
+    }
+
+    ErrCode TestServerService::ClearPasteData(int32_t& clearResult)
+    {
+#ifdef ARKXTEST_PASTEBOARD_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        auto pasteboardClient = MiscServices::PasteboardClient::GetInstance();
+        if (!pasteboardClient) {
+            HiLog::Error(LABEL_SERVICE, "pasteboardClient is nullptr");
+            clearResult = TEST_SERVER_PASTEBOARD_FAILED;
+            return TEST_SERVER_OK;
+        }
+        pasteboardClient->Clear();
+        clearResult = TEST_SERVER_OK;
+        return TEST_SERVER_OK;
+#else
+        HiLog::Warn(LABEL_SERVICE, "pasteboard is not supported");
+        clearResult = TEST_SERVER_NOT_SUPPORTED;
+        return TEST_SERVER_OK;
+#endif
+    }
+
+    ErrCode TestServerService::HideKeyboard(int32_t& result)
+    {
+#ifdef ARKXTEST_IMF_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        int32_t imeHideNoActiveClient = 62;
+        auto controller = OHOS::MiscServices::InputMethodController::GetInstance();
+        if (!controller) {
+            HiLog::Error(LABEL_SERVICE, "InputMethodController is nullptr");
+            result = TEST_SERVER_HIDE_KEYBOARD_FAILED;
+            return TEST_SERVER_OK;
+        }
+        auto ret = controller->HideSoftKeyboard();
+        if (ret == imeHideNoActiveClient) {
+            HiLog::Warn(LABEL_SERVICE, "No active IME client");
+            result = TEST_SERVER_NO_ACTIVE_IME;
+            return TEST_SERVER_OK;
+        } else if (ret != 0) {
+            HiLog::Error(LABEL_SERVICE, "HideSoftKeyboard failed with error: %{public}d", ret);
+            result = TEST_SERVER_HIDE_KEYBOARD_FAILED;
+            return TEST_SERVER_OK;
+        }
+        result = TEST_SERVER_OK;
+        return TEST_SERVER_OK;
+#else
+        HiLog::Warn(LABEL_SERVICE, "IMF feature is not supported");
+        result = TEST_SERVER_NOT_SUPPORTED;
+        return TEST_SERVER_OK;
+#endif
     }
 } // namespace OHOS::testserver
