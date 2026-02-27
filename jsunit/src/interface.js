@@ -20,8 +20,8 @@ const core = Core.getInstance();
 const describe = function (desc, func) {
     return Reflect.has(core, 'describe') ? core.describe(desc, func) : (desc, func) => { };
 };
-const it = function (desc, filter, func) {
-    return Reflect.has(core, 'it') ? core.it(desc, filter, func) : (desc, filter, func) => { };
+const it = function (desc, filter, func, timeout, tag) {
+    return Reflect.has(core, 'it') ? core.it(desc, filter, func, timeout, tag) : (desc, filter, func, timeout, tag) => { };
 };
 const beforeItSpecified = function (itDescs, func) {
     return Reflect.has(core, 'beforeItSpecified') ? core.beforeItSpecified(itDescs, func) : (itDescs, func) => { };
