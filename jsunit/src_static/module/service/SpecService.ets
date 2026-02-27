@@ -81,7 +81,7 @@ class SpecService {
     this.specSkipReason = '';
   }
 
-  it(desc: string, filter: int, func: ItfnType, timeout?: Number | undefined, tag?: string | undefined): void {
+  it(desc: string, filter: int, func: ItfnType, timeout?: number | undefined, tag?: string | undefined): void {
     const coreContext = this.coreContext;
     if (coreContext !== null) {
       const suiteService = coreContext.getDefaultService('suite');
@@ -121,7 +121,7 @@ class SpecService {
             processedFunc = processFuncWithArgOne(coreContext, fn);
           } else {
             const fn = func as () => void;
-            processedFunc = processFunc(coreContext, fn);
+            processedFunc = processFunc(coreContext, fn, timeout);
           }
           const spec = new StaticSpec({ description: desc, fi: filter, asyncFn: processedFunc });
           if (this.isSkipSpec) {
@@ -203,7 +203,7 @@ class SpecService {
     const _this = this;
     return {
       name: 'SpecService',
-      it: (desc: string, filter: int, func: ItfnType, timeout?: Number | undefined, tag?: string | undefined) => {
+      it: (desc: string, filter: int, func: ItfnType, timeout?: number | undefined, tag?: string | undefined) => {
         return _this.it(desc, filter, func, timeout, tag);
       },
       xit: (desc: string, filter: int, func: ItfnType, reason: string) => {
