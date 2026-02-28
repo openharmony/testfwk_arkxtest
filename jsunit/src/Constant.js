@@ -96,5 +96,5 @@ export const KEYSET = [
     'class', 'notClass', 'suite', 'itName',
     'level', 'testType', 'size', 'timeout', 'dryRun', 'random',
     'breakOnError', 'stress', 'coverage', 'skipMessage', 'runSkipped',
-    '-s tag'
+    '-s tag', 'tag'
 ];

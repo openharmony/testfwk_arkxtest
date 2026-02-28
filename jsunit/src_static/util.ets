@@ -129,7 +129,7 @@ export function getFuncWithArgsTwo(
 export function processFunc(
   coreContext: Core,
   func: () => Any,
-  itTimeout?: number | undefined
+  itTimeout?: number
 ) {
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
@@ -157,12 +157,18 @@ export function processFunc(
   };
 }
 
-export function processFuncWithArgOne(coreContext: Core, func: (done: () => void) => Any) {
+export function processFuncWithArgOne(coreContext: Core, func: (done: () => void) => Any, itTimeout?: number) {
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = !config.timeout ? 5000 : Number(config.timeout);
+    const runnerTimeout = !config.timeout ? 5000 : Number(config.timeout);
+    let timeout = runnerTimeout;
+    if (itTimeout !== undefined) {
+      if (Number.isFinite(itTimeout) && itTimeout > 0) {
+        timeout = itTimeout;
+      }
+    }
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return () => {
       return getFuncWithArgsOne(func, timeout.toInt(), isStressTest);
@@ -173,12 +179,19 @@ export function processFuncWithArgOne(coreContext: Core, func: (done: () => void
   };
 }
 
-export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => void, param2: AnyType) => Any) {
+export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => void, param2: AnyType) => Any,
+  itTimeout?: number) {
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
     const config = configService as ConfigService;
     config.setSupportAsync(true);
-    const timeout = !config.timeout ? 5000 : Number(config.timeout);
+    const runnerTimeout = !config.timeout ? 5000 : Number(config.timeout);
+    let timeout = runnerTimeout;
+    if (itTimeout !== undefined) {
+      if (Number.isFinite(itTimeout) && itTimeout > 0) {
+        timeout = itTimeout;
+      }
+    }
     const isStressTest = coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1;
     return (paramItem: AnyType) => {
       return getFuncWithArgsTwo(func, timeout.toInt(), paramItem, isStressTest);

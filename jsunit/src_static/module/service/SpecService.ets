@@ -81,7 +81,7 @@ class SpecService {
     this.specSkipReason = '';
   }
 
-  it(desc: string, filter: int, func: ItfnType, timeout?: number | undefined, tag?: string | undefined): void {
+  it(desc: string, filter: int, func: ItfnType, timeout?: number, tag?: string): void {
     const coreContext = this.coreContext;
     if (coreContext !== null) {
       const suiteService = coreContext.getDefaultService('suite');
@@ -115,10 +115,10 @@ class SpecService {
           };
           if (argsCount === 2) {
             const fn = func as (done: () => void, param: AnyType) => void;
-            processedFunc = processFuncWithArgTwo(coreContext, fn);
+            processedFunc = processFuncWithArgTwo(coreContext, fn, timeout);
           } else if (argsCount === 1) {
             const fn = func as (done: () => void) => void;
-            processedFunc = processFuncWithArgOne(coreContext, fn);
+            processedFunc = processFuncWithArgOne(coreContext, fn, timeout);
           } else {
             const fn = func as () => void;
             processedFunc = processFunc(coreContext, fn, timeout);
@@ -203,7 +203,7 @@ class SpecService {
     const _this = this;
     return {
       name: 'SpecService',
-      it: (desc: string, filter: int, func: ItfnType, timeout?: number | undefined, tag?: string | undefined) => {
+      it: (desc: string, filter: int, func: ItfnType, timeout?: number, tag?: string) => {
         return _this.it(desc, filter, func, timeout, tag);
       },
       xit: (desc: string, filter: int, func: ItfnType, reason: string) => {
