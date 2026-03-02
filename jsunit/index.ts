@@ -29,4 +29,7 @@ export declare namespace xit {
     function reason(reason: string): any;
 };
 
-export declare function it(testCaseName: string, attribute: TestType | Size | Level, func: Function, timeout?: number, tag?: string): void;
+export declare function it(testCaseName: string, attribute: TestType | Size | Level, func: Function): void;
+
+// export declare function it(testCaseName: string, attribute: TestType | Size | Level, func: Function, timeout?: number,
+//     tag?: string): void;
