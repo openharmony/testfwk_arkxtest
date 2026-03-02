@@ -44,7 +44,7 @@ class ConfigService {
   public coverage: string;
   public coreContext: Core;
   private filterParam: FilterParamIF | null;
-  public testTag: Array<object>  = []
+  public testTag: Array<Array<string>> = []
   constructor(attr: ServiceAttrIF) {
     this.id = attr.id;
     this.supportAsync = true; // 默认异步处理测试用例
@@ -552,10 +552,10 @@ class ConfigService {
   }
 
   setTestTag(tagStr: string | undefined): void {
-    console.info(`[Tag] setTestTag input: "${tagStr}"`);
+    console.info(`${TAG} setTestTag input: "${tagStr}"`);
     // 情况1：未传入标签 或 传入空字符串（含纯空白）
     if (tagStr === undefined || tagStr.trim() === '') {
-      console.info('[Tag] Empty or undefined tag provided. Will run ALL test cases.');
+      console.info(`${TAG} Empty or undefined tag provided. Will run ALL test cases.`);
       this.testTag = []; // 清空标签列表，表示不过滤
       return;
     }
@@ -565,7 +565,7 @@ class ConfigService {
     const regex = new RegExp('^[a-zA-Z0-9, +]*$', 'g');
     if (!regex.test(tagStr)) {
       throw new Error(
-        `[Tag] Invalid characters detected in tag string: "${tagStr}". ` +
+        `${TAG} Invalid characters detected in tag string: "${tagStr}". ` +
           `Allowed characters: letters, digits, space, comma (,), plus (+). ` +
           `Ignoring tag filter and running ALL test cases.`
       );
@@ -574,30 +574,20 @@ class ConfigService {
     const commaTags = tagStr.split(',')
       .map(item => item.trim())
       .filter(item => item !== '');
-    console.info(`[Tag] Split by ',': ${JSON.stringify(commaTags)}`);
+    console.info(`${TAG} Split by ',': ${JSON.stringify(commaTags)}`);
     // 如果分割后没有有效条件，也视为无过滤
     if (commaTags.length === 0) {
-      console.info('[Tag] No valid tag conditions after parsing. Running all test cases.');
+      console.info(`${TAG} No valid tag conditions after parsing. Running all test cases.`);
       this.testTag = [];
       return;
     }
 
     for (let item of commaTags) {
-      if (item.includes('+')) {
-        const andTags = item
-          .split('+')
-          .map(item => item.trim())
-          .filter(item => item !== '');
-        // 只有非空 AND 组才加入
-        if (andTags.length > 0) {
-          console.info(`[Tag] Detected AND condition group: ${JSON.stringify(andTags)}`);
-          this.testTag.push(andTags);
-        }
-      } else {
-        // 不含 '+' → 单个 OR 标签
-        console.info(`[Tag] Detected OR tag: "${item}"`);
-        this.testTag.push(item)
-      }
+      const andTags = item
+        .split('+')
+        .map(item => item.trim())
+        .filter(item => item !== '');
+      this.testTag.push(andTags);
     }
   }
 
@@ -608,24 +598,24 @@ class ConfigService {
     }
     // 情况2：用例未声明标签（itTestTag 为 undefined）
     if (itTestTag === undefined) {
-      console.warn('[Tag] Test case has no tag, but global tag filter is active. Skipping this test case.');
+      console.warn(`${TAG} Test case has no tag, but global tag filter is active. Skipping this test case.`);
       return true;
     }
     // 定义用例标签合法字符：字母、数字、空格、竖线 |
     const regex = new RegExp('^[a-zA-Z0-9 |]*$', 'g');
     let itTagArray: string[] = [];
     // 验证并解析用例标签
-    if (itTagArray && typeof itTestTag === 'string' && regex.test(itTestTag)) {
+    if (typeof itTestTag === 'string' && regex.test(itTestTag)) {
       itTagArray = itTestTag.split('|')
         .map(item => item.trim())
         .filter(item => item !== '');
     } else {
       // 用例标签格式非法（如包含 @、, 等）
-      console.warn(`[Tag] Invalid format in test case tag: "${itTestTag}". Skipping this test case.`);
+      console.warn(`${TAG} Invalid format in test case tag: "${itTestTag}". Skipping this test case.`);
       return true; // 保守策略：无法识别标签 → 跳过
     }
     console.info(
-      `[Tag] Parsed test case tags: ${JSON.stringify(itTagArray)}, ` +
+      `${TAG} Parsed test case tags: ${JSON.stringify(itTagArray)}, ` +
         `Global filter rules: ${JSON.stringify(this.testTag)}`
     );
     for (const tag of this.testTag) {
@@ -637,19 +627,12 @@ class ConfigService {
       if (Array.isArray(tag)) {
         const stringArray = tag as string[];
         if (stringArray.every(item => itTagArray.includes(item))) {
-          console.info(`[Tag] Matched AND condition: ${JSON.stringify(tag)}`);
-          return false;
-        }
-      } else if (typeof tag === 'string') {
-        // OR 条件：只要用例标签包含该字符串即可
-        const stringTag = tag as string
-        if (itTagArray.includes(stringTag)) {
-          console.info(`[Tag] Matched OR tag: "${tag}"`);
+          console.info(`${TAG} Matched AND condition: ${JSON.stringify(tag)}`);
           return false;
         }
       }
     }
-    console.info(`[FILTER] No condition matched. Skipping this test case`);
+    console.info(`${TAG} No condition matched. Skipping this test case`);
     return true;
   }
 }

@@ -82,6 +82,7 @@ class SpecService {
   }
 
   it(desc: string, filter: int, func: ItfnType, timeout?: number, tag?: string): void {
+    console.info("start it " + timeout + " " + tag);
     const coreContext = this.coreContext;
     if (coreContext !== null) {
       const suiteService = coreContext.getDefaultService('suite');

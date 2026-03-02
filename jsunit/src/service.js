@@ -918,7 +918,7 @@ class SpecService {
             console.info(`${TAG}filter it :${desc}`);
             this.initSpecService();
         } else {
-            let processedFunc = processFunc(this.coreContext, func);
+            let processedFunc = processFunc(this.coreContext, func, timeout);
             const spec = new SpecService.Spec({ description: desc, fi: filter, fn: processedFunc });
             if (this.isSkipSpec) {
                 spec.isSkip = true;
@@ -983,8 +983,8 @@ class SpecService {
     apis() {
         const _this = this;
         return {
-            it: function (desc, filter, func) {
-                return _this.it(desc, filter, func);
+            it: function (desc, filter, func, timeout, tag) {
+                return _this.it(desc, filter, func, timeout, tag);
             },
             xit: function (desc, filter, func, reason) {
                 return _this.xit(desc, filter, func, reason);
