@@ -40,6 +40,7 @@ class ConfigService {
         this.skipMessage = false;
         this.runSkipped = '';
         this.filterXdescribe = [];
+        this.testTag = [];
     }
 
     init(coreContext) {
@@ -116,6 +117,45 @@ class ConfigService {
         }
     }
 
+    setTestTag(tagStr) {
+        console.info(`${TAG} setTestTag input: "${tagStr}"`);
+        // 情况1：未传入标签 或 传入空字符串（含纯空白）
+        if (tagStr === undefined || tagStr.trim() === '') {
+            console.info(`${TAG} Empty or undefined tag provided. Will run ALL test cases.`);
+            this.testTag = []; // 清空标签列表，表示不过滤
+            return;
+        }
+
+        // 定义合法字符正则：只允许字母、数字、空格、逗号、加号
+        // 注意：不允许多余符号如 @、#、|、: 等（| 是用例端使用的分隔符，命令行不用）
+        const regex = new RegExp('^[a-zA-Z0-9, +]*$', 'g');
+        if (!regex.test(tagStr)) {
+            throw new Error(
+                `${TAG} Invalid characters detected in tag string: "${tagStr}". ` +
+                    `Allowed characters: letters, digits, space, comma (,), plus (+). ` +
+                    `Ignoring tag filter and running ALL test cases.`
+            );
+        }
+        // 按逗号分割，得到多个“条件组”
+        const commaTags = tagStr.split(',')
+            .map(item => item.trim())
+            .filter(item => item !== '');
+        console.info(`${TAG} Split by ',': ${JSON.stringify(commaTags)}`);
+        // 如果分割后没有有效条件，也视为无过滤
+        if (commaTags.length === 0) {
+            console.info(`${TAG} No valid tag conditions after parsing. Running all test cases.`);
+            this.testTag = [];
+            return;
+        }
+        for (let item of commaTags) {
+            const andTags = item
+                .split('+')
+                .map(item => item.trim())
+                .filter(item => item !== '');
+            this.testTag.push(andTags);
+        }
+    }
+
     setConfig(params) {
         this.basicParamValidCheck(params);
         this.filterParamValidCheck(params);
@@ -143,6 +183,7 @@ class ConfigService {
                 size: SIZE
             };
             this.parseParams();
+            this.setTestTag(params.tag);
         } catch (err) {
             console.info(`${TAG}setConfig error: ${err.message}`);
         }
@@ -233,6 +274,51 @@ class ConfigService {
         }
         return nestFilter.filterNotClass(this.notClass, suiteStack, desc);
 
+    }
+
+    filterWithTestTag(itTestTag) {
+        // 情况1：未配置任何有效标签 → 不过滤，执行所有用例
+        if (this.testTag.length === 0) {
+            return false;
+        }
+        // 情况2：用例未声明标签（itTestTag 为 undefined）
+        if (itTestTag === undefined) {
+            console.warn(`${TAG} Test case has no tag, but global tag filter is active. Skipping this test case.`);
+            return true;
+        }
+        // 定义用例标签合法字符：字母、数字、空格、竖线 |
+        const regex = new RegExp('^[a-zA-Z0-9 |]*$', 'g');
+        let itTagArray = [];
+        // 验证并解析用例标签
+        if (typeof itTestTag === 'string' && regex.test(itTestTag)) {
+            itTagArray = itTestTag.split('|')
+                .map(item => item.trim())
+                .filter(item => item !== '');
+        } else {
+            // 用例标签格式非法（如包含 @、, 等）
+            console.warn(`${TAG} Invalid format in test case tag: "${itTestTag}". Skipping this test case.`);
+            return true; // 保守策略：无法识别标签 → 跳过
+        }
+        console.info(
+            `${TAG} Parsed test case tags: ${JSON.stringify(itTagArray)}, ` +
+                `Global filter rules: ${JSON.stringify(this.testTag)}`
+        );
+        for (const tag of this.testTag) {
+            if (!tag) {
+                continue;
+            }
+
+            // AND 条件：要求用例标签包含数组中所有项
+            if (Array.isArray(tag)) {
+                const stringArray = tag
+                if (stringArray.every(item => itTagArray.includes(item))) {
+                    console.info(`${TAG} Matched AND condition: ${JSON.stringify(tag)}`);
+                    return false;
+                }
+            }
+        }
+        console.info(`${TAG} No condition matched. Skipping this test case`);
+        return true;
     }
 
     isRandom() {

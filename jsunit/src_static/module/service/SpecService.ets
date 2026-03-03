@@ -81,7 +81,7 @@ class SpecService {
     this.specSkipReason = '';
   }
 
-  it(desc: string, filter: int, func: ItfnType): void {
+  it(desc: string, filter: int, func: ItfnType, timeout?: number, tag?: string): void {
     const coreContext = this.coreContext;
     if (coreContext !== null) {
       const suiteService = coreContext.getDefaultService('suite');
@@ -96,7 +96,10 @@ class SpecService {
           sService.suitesStack,
           desc
         );
-
+        if (cService.testTag.length > 0 && cService.filterWithTestTag(tag)) {
+          this.initSpecService();
+          return;
+        }
         if (cService.filterWithNest(desc, filter)) {
           this.initSpecService();
           return;
@@ -112,13 +115,13 @@ class SpecService {
           };
           if (argsCount === 2) {
             const fn = func as (done: () => void, param: AnyType) => void;
-            processedFunc = processFuncWithArgTwo(coreContext, fn);
+            processedFunc = processFuncWithArgTwo(coreContext, fn, timeout);
           } else if (argsCount === 1) {
             const fn = func as (done: () => void) => void;
-            processedFunc = processFuncWithArgOne(coreContext, fn);
+            processedFunc = processFuncWithArgOne(coreContext, fn, timeout);
           } else {
             const fn = func as () => void;
-            processedFunc = processFunc(coreContext, fn);
+            processedFunc = processFunc(coreContext, fn, timeout);
           }
           const spec = new StaticSpec({ description: desc, fi: filter, asyncFn: processedFunc });
           if (this.isSkipSpec) {
@@ -200,8 +203,8 @@ class SpecService {
     const _this = this;
     return {
       name: 'SpecService',
-      it: (desc: string, filter: int, func: ItfnType) => {
-        return _this.it(desc, filter, func);
+      it: (desc: string, filter: int, func: ItfnType, timeout?: number, tag?: string) => {
+        return _this.it(desc, filter, func, timeout, tag);
       },
       xit: (desc: string, filter: int, func: ItfnType, reason: string) => {
         return _this.xit(desc, filter, func, reason);
