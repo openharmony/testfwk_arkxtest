@@ -150,7 +150,7 @@ function getFuncWithArgsTwo(func, timeout, paramItem, isStressTest) {
     });
 }
 
-function processFunc(coreContext, func) {
+function processFunc(coreContext, func, itTimeout) {
     let argNames = ((func || '').toString()
         .replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, '')
         .match(/^(function)?\s*[^\(]*\(\s*([^\)]*)\)/m) || ['', '', ''])[2]
@@ -161,7 +161,13 @@ function processFunc(coreContext, func) {
     let processedFunc;
     const config = coreContext.getDefaultService('config');
     config.setSupportAsync(true);
-    const timeout = + (config.timeout === undefined ? 5000 : config.timeout);
+    const runnerTimeout = + (config.timeout === undefined ? 5000 : config.timeout);
+    let timeout = runnerTimeout;
+    if (itTimeout !== undefined) {
+        if (Number.isFinite(itTimeout) && itTimeout > 0) {
+            timeout = itTimeout;
+        }
+    }
     const isStressTest = (coreContext.getServices('dataDriver') !== undefined || config.getStress() > 1);
     switch (funcLen) {
         case 0: {
@@ -893,10 +899,16 @@ class SpecService {
         this.specSkipReason = '';
     }
 
-    it(desc, filter, func) {
+    it(desc, filter, func, timeout, tag) {
         const suiteService = this.coreContext.getDefaultService('suite');
         const configService = this.coreContext.getDefaultService('config');
         let isFilter = new NestFilter().filterNestName(suiteService.targetSuiteArray, suiteService.targetSpecArray, suiteService.suitesStack, desc);
+
+        if (configService.testTag.length > 0 && configService.filterWithTestTag(tag)) {
+            console.info(`${TAG} filter it by tag:${desc}`);
+            this.initSpecService();
+            return;
+        }
         if (configService.filterWithNest(desc, filter)) {
             console.info(`${TAG}filter it :${desc}`);
             this.initSpecService();
@@ -906,7 +918,7 @@ class SpecService {
             console.info(`${TAG}filter it :${desc}`);
             this.initSpecService();
         } else {
-            let processedFunc = processFunc(this.coreContext, func);
+            let processedFunc = processFunc(this.coreContext, func, timeout);
             const spec = new SpecService.Spec({ description: desc, fi: filter, fn: processedFunc });
             if (this.isSkipSpec) {
                 spec.isSkip = true;
@@ -971,8 +983,8 @@ class SpecService {
     apis() {
         const _this = this;
         return {
-            it: function (desc, filter, func) {
-                return _this.it(desc, filter, func);
+            it: function (desc, filter, func, timeout, tag) {
+                return _this.it(desc, filter, func, timeout, tag);
             },
             xit: function (desc, filter, func, reason) {
                 return _this.xit(desc, filter, func, reason);
