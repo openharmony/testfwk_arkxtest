@@ -292,13 +292,14 @@ class MockKit {
     if (typeof originalMethod !== "string") {
         name = originalMethod.getName();
     }
-    let arglistString = name + '(' + Array.from(args).toString() + ')';
-    let records = this.recordCalls.get(arglistString);
-    if (!records) {
-      records = 0;
+    for (const [key, value] of this.recordCalls) {
+        if (name === key.methodName && this.checkIsEqual(key.args, args)) {
+            this.recordCalls.set(key, value + 1);
+            return;
+        }
     }
-    records++;
-    this.recordCalls.set(arglistString, records);
+    
+    this.recordCalls.set({ methodName: name, args: args }, 1);
   }
 
   mockFunc(originalObject, originalMethod) {
@@ -313,7 +314,7 @@ class MockKit {
       let args = arguments;
       let action = tmp.getReturnInfo(f, args);
       if (originalMethod) {
-        tmp.recordMethodCall(originalMethod, args);
+        tmp.recordMethodCall(originalMethod, Array.from(args));
       }
       if (action) {
         return action.apply(this, args);
@@ -389,8 +390,14 @@ class MockKit {
     if (!methodName) {
       throw Error('not a function name');
     }
-    let a = this.recordCalls.get(methodName + '(' + argsArray.toString() + ')');
-    return new VerificationMode(a ? a : 0);
+    let invokeTime = 0;
+    for (const [key, value] of this.recordCalls) {
+        if (methodName === key.methodName && this.checkIsRightValue(args, key.args)) {
+            invokeTime = value;
+            break;
+        }
+    }
+    return new VerificationMode(invokeTime);
   }
 
   mockObject(object) {
