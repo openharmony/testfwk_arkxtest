@@ -392,7 +392,7 @@ class MockKit {
     }
     let invokeTime = 0;
     for (const [key, value] of this.recordCalls) {
-        if (methodName === key.methodName && this.checkIsRightValue(args, key.args)) {
+        if (methodName === key.methodName && this.checkIsRightValue(argsArray, key.args)) {
             invokeTime = value;
             break;
         }
