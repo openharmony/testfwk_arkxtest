@@ -23,7 +23,7 @@ let tag: string = 'testTag';
 
 export interface MapKey {
   methodName: string,
-  args: object[],
+  args: Object[],
   classObj: object
 }
 
@@ -36,6 +36,12 @@ export interface MockFuncResult {
 export class NoResult {
   message: string = ""
   code: number
+}
+
+export interface CallRecord {
+  methodName: string,
+  args: Object[],
+  classObj: object
 }
 
 export class MockKit {
@@ -77,10 +83,10 @@ export class MockKit {
       for (let i = 0; i < classType.getMethodsNum(); i++) {
         let method = classType.getMethod(i)
         if (method.getName() === getValueMethod) {
-          const args: FixedArray<Object> =  []
+          const args: FixedArray<Object> = []
           try {
             let oriValue = method.invoke(instance, args) as Object
-            const args0: Array<Object> =  []
+            const args0: Array<Object> = []
             const key: MapKey = {
               methodName: name,
               args: args0,
@@ -98,7 +104,7 @@ export class MockKit {
     for (let i = 0; i < classType.getMethodsNum(); i++) {
       let method = classType.getMethod(i)
       if (method.getName() === setValueMethod) {
-        const args: FixedArray<Object> =  [value]
+        const args: FixedArray<Object> = [value]
         try {
           method.invoke(instance, args)
         } catch (e) {
@@ -240,7 +246,6 @@ export class MockKit {
 
   verify(methodName: string, args: Object[]) {
     let invokeTime = 0;
-    
     for (const record of this.recordCalls) {
       if (record.methodName === methodName && this.checkIsRightValue(args, record.args)) {
         invokeTime++;
