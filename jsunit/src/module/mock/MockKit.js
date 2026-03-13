@@ -192,11 +192,8 @@ class MockKit {
   checkIsRightValue(paramsKey, params) {
     const matcher = new ArgumentMatchers();
     return paramsKey.every((key, j) => {
-      if (ArgumentMatchers.isRegExp(key) && typeof params[j] === 'string') {
-        return key.test(params[j]);
-      }
       const matchKey = matcher.matcheReturnKey(params[j], undefined, key);
-      if (matchKey && matchKey === key) {
+      if (matchKey) {
         return true;
       } else if (this.checkIsEqual(params[j], key)) {
         return true;
@@ -386,15 +383,30 @@ class MockKit {
     obj[propertyName] = value;
   }
 
+  convertParams(argsArray) {
+    let result = [];
+    const matcher = new ArgumentMatchers();
+    for (let i = 0; i < argsArray.length; i++) {
+        const param = argsArray[i];
+        const matchKey = matcher.matcheStubKey(param);
+        if (matchKey) {
+            result.push(matchKey);
+        } else {
+            result.push(param);
+        }
+    }
+    return result;
+  }
+
   verify(methodName, argsArray) {
     if (!methodName) {
       throw Error('not a function name');
     }
+    let args = this.convertParams(argsArray);
     let invokeTime = 0;
     for (const [key, value] of this.recordCalls) {
-        if (methodName === key.methodName && this.checkIsRightValue(argsArray, key.args)) {
-            invokeTime = value;
-            break;
+        if (methodName === key.methodName && this.checkIsRightValue(args, key.args)) {
+            invokeTime += value;
         }
     }
     return new VerificationMode(invokeTime);

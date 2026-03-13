@@ -21,6 +21,14 @@ class ArgumentMatchers {
     ANY_OBJECT = '<any Object>';
     ANY_FUNCTION = '<any Function>';
     MATCH_REGEXS = '<match regexs>';
+    NOT_STRING = '<not String>';
+    NOT_BOOLEAN = '<not boolean>';
+    NOT_NUMBER = '<not Number>';
+    NOT_OBJECT = '<not Object>';
+    NOT_FUNCTION = '<not Function>';
+    static CONTAIN_ELEMENT = '<contain element>';
+    static CONTAIN_SUBSTRING = '<contain subString>';
+    static CONTAIN_SUBARRAY = '<contain subArray>';
 
     static any() {
     }
@@ -40,12 +48,79 @@ class ArgumentMatchers {
     static anyFunction() {
     }
 
+    static notString() {
+    }
+
+    static notBoolean() {
+    }
+
+    static notNumber() {
+    }
+
+    static notObj() {
+    }
+
+    static notFunction() {
+    }
+
     static matchRegexs() {
         let regex = arguments[0];
         if (ArgumentMatchers.isRegExp(regex)) {
+            regex.needMatch = true;
             return regex;
         }
         throw Error('not a regex');
+    }
+
+    static notMatchRegexs() {
+        let regex = arguments[0];
+        if (ArgumentMatchers.isRegExp(regex)) {
+            regex.needMatch = false;
+            return regex;
+        }
+        throw Error('not a regex');
+    }
+
+    static containSubstring() {
+        let substring = arguments[0];
+        if (typeof (substring) !== "string") {
+            return { type_ : ArgumentMatchers.CONTAIN_SUBSTRING, value: substring, needMatch: true };
+        }
+        throw Error('not a string');
+    }
+
+    static notContainSubstring() {
+        let substring = arguments[0];
+        if (typeof (substring) !== "string") {
+            return { type_: ArgumentMatchers.CONTAIN_SUBSTRING, value: substring, needMatch: false };
+        }
+        throw Error('not a string');
+    }
+
+    static containElement() {
+        let element = arguments[0];
+        return { type_: ArgumentMatchers.CONTAIN_SUBSTRING, value: element, needMatch: true };
+    }
+
+    static notContainElement() {
+        let element = arguments[0];
+        return { type_: ArgumentMatchers.CONTAIN_SUBSTRING, value: element, needMatch: false };
+    }
+
+    static containSubArray() {
+        let subArray = arguments[0];
+        if (subArray?.constructor?.name !== "Array") {
+            return { type_: ArgumentMatchers.CONTAIN_SUBSTRING, value: subArray, needMatch: true };
+        }
+        throw Error('not a Array');
+    }
+
+    static notContainSubArray() {
+        let subArray = arguments[0];
+        if (subArray?.constructor?.name !== "Array") {
+            return { type_: ArgumentMatchers.CONTAIN_SUBSTRING, value: subArray, needMatch: false };
+        }
+        throw Error('not a Array');
     }
 
     static isRegExp(value) {
@@ -57,28 +132,68 @@ class ArgumentMatchers {
         let regex = arguments[1];
         let stubSetKey = arguments[2];
 
-        if (stubSetKey && stubSetKey == this.ANY) {
-            return this.ANY;
+        if (ArgumentMatchers.isRegExp(stubSetKey) && typeof arg === 'string') {
+            let needMatch = stubSetKey.needMatch !== false;
+            return stubSetKey.test(arg) === needMatch;
         }
 
-        if (typeof arg === 'string' && !regex) {
-            return this.ANY_STRING;
+        if (stubSetKey && stubSetKey == this.ANY && arg) {
+            return true;
         }
 
-        if (typeof arg === 'boolean' && !regex) {
-            return this.ANY_BOOLEAN;
+        if (typeof arg === 'string' && !regex && stubSetKey == this.ANY_STRING) {
+            return true;
         }
 
-        if (typeof arg === 'number' && !regex) {
-            return this.ANY_NUMBER;
+        if (typeof arg === 'boolean' && !regex && stubSetKey == this.ANY_BOOLEAN) {
+            return true;
         }
 
-        if (typeof arg === 'object' && !regex) {
-            return this.ANY_OBJECT;
+        if (typeof arg === 'number' && !regex && stubSetKey == this.ANY_NUMBER) {
+            return true;
         }
 
-        if (typeof arg === 'function' && !regex) {
-            return this.ANY_FUNCTION;
+        if (typeof arg === 'object' && !regex && stubSetKey == this.ANY_OBJECT) {
+            return true;
+        }
+
+        if (typeof arg === 'function' && !regex && stubSetKey == this.ANY_FUNCTION) {
+            return true;
+        }
+
+        if (typeof arg !== 'string' && !regex && stubSetKey == this.NOT_STRING) {
+            return true;
+        }
+
+        if (typeof arg !== 'boolean' && !regex && stubSetKey == this.NOT_BOOLEAN) {
+            return true;
+        }
+
+        if (typeof arg !== 'number' && !regex && stubSetKey == this.NOT_NUMBER) {
+            return true;
+        }
+
+        if (typeof arg !== 'object' && !regex && stubSetKey == this.NOT_OBJECT) {
+            return true;
+        }
+
+        if (typeof arg !== 'function' && !regex && stubSetKey == this.NOT_FUNCTION) {
+            return true;
+        }
+
+        if (Array.isArray(arg) && stubSetKey && stubSetKey?.type_ === ArgumentMatchers.CONTAIN_ELEMENT) {
+            let needMatch = stubSetKey.needMatch !== false;
+            return arg.includes(stubSetKey.value) === needMatch;
+        }
+
+        if (Array.isArray(arg) && stubSetKey && stubSetKey?.type_ === ArgumentMatchers.CONTAIN_SUBARRAY) {
+            let needMatch = stubSetKey.needMatch !== false;
+            return stubSetKey.value.every(item => arg.includes(item)) === needMatch;
+        }
+
+        if (typeof(arg) == "string" && stubSetKey && stubSetKey?.type_ === ArgumentMatchers.CONTAIN_SUBSTRING) {
+            let needMatch = stubSetKey.needMatch !== false;
+            return arg.includes(stubSetKey.value) === needMatch;
         }
 
         if (typeof arg === 'string' && regex) {
@@ -111,10 +226,37 @@ class ArgumentMatchers {
             return this.ANY_FUNCTION;
         }
 
+        if (key === ArgumentMatchers.notString) {
+            return this.NOT_STRING;
+        }
+        if (key === ArgumentMatchers.notBoolean) {
+            return this.NOT_BOOLEAN;
+        }
+        if (key === ArgumentMatchers.notNumber) {
+            return this.NOT_NUMBER;
+        }
+        if (key === ArgumentMatchers.notObj) {
+            return this.NOT_OBJECT;
+        }
+        if (key === ArgumentMatchers.notFunction) {
+            return this.NOT_FUNCTION;
+        }
+
         if (ArgumentMatchers.isRegExp(key)) {
             return key;
         }
 
+        if (key && key.type_ === ArgumentMatchers.CONTAIN_ELEMENT) {
+            return key;
+        }
+
+        if (key && key.type_ === ArgumentMatchers.CONTAIN_SUBARRAY) {
+            return key;
+        }
+
+        if (key && key.type_ === ArgumentMatchers.CONTAIN_SUBSTRING) {
+            return key;
+        }
         return null;
     }
 }

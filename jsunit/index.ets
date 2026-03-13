@@ -108,7 +108,19 @@ export declare class ArgumentMatchers {
     public static anyNumber: Number;
     public static anyObj: Object;
     public static anyFunction: Function;
+    public static notString: allExpectType;
+    public static notBoolean: allExpectType;
+    public static notNumber: allExpectType;
+    public static notObj: allExpectType;
+    public static notFunction: allExpectType;
     public static matchRegexs(regex: RegExp): void
+    public static notMatchRegexs(regex: RegExp): void
+    public static containSubString(subString: string): void
+    public static notContainSubString(subString: string): void
+    public static containSubArray(subArray: []): void
+    public static notContainSubArray(subArray: []): void
+    public static containElement(value: any): void
+    public static notContainElement(value: any): void
 }
 
 declare interface whenResult {
