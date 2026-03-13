@@ -73,3 +73,37 @@ group("testhelperkit") {
     ":testhelper",
   ]
 }
+
+import("//build/test.gni")
+
+ohos_unittest("testhelper_unittest") {
+  sources = [
+    "./test/unittest/common_utils_test.cpp",
+    "./test/unittest/testhelper_core_test.cpp",
+    "./src/testhelper_core.cpp",
+    "./src/common_utils.cpp",
+  ]
+  include_dirs = [
+    "./include",
+  ]
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"TestHelper\"",
+  ]
+  deps = [
+    "../testserver/src:test_server_client",
+  ]
+  external_deps = [
+    "hilog:libhilog",
+    "c_utils:utils",
+    "time_service:time_client",
+    "ability_runtime:wantagent_innerkits",
+  ]
+  cflags = [ "-g" ]
+  cflags_cc = [ "-g" ]
+  use_exceptions = true
+  module_out_path = "arkxtest/testhelper"
+  testonly = true
+  subsystem_name = "testfwk"
+  part_name = "arkxtest"
+}
