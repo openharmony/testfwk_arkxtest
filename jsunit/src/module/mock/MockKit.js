@@ -192,7 +192,7 @@ class MockKit {
   checkIsRightValue(paramsKey, params) {
     const matcher = new ArgumentMatchers();
     return paramsKey.every((key, j) => {
-      const matchKey = matcher.matcheReturnKey(params[j], undefined, key);
+      const matchKey = matcher.matcheReturnKey(params[j], key);
       if (matchKey) {
         return true;
       } else if (this.checkIsEqual(params[j], key)) {
@@ -290,10 +290,10 @@ class MockKit {
         name = originalMethod.getName();
     }
     for (const [key, value] of this.recordCalls) {
-        if (name === key.methodName && this.checkIsEqual(key.args, args)) {
-            this.recordCalls.set(key, value + 1);
-            return;
-        }
+      if (name === key.methodName && this.checkIsEqual(key.args, args)) {
+        this.recordCalls.set(key, value + 1);
+        return;
+      }
     }
     
     this.recordCalls.set({ methodName: name, args: args }, 1);
@@ -387,13 +387,13 @@ class MockKit {
     let result = [];
     const matcher = new ArgumentMatchers();
     for (let i = 0; i < argsArray.length; i++) {
-        const param = argsArray[i];
-        const matchKey = matcher.matcheStubKey(param);
-        if (matchKey) {
-            result.push(matchKey);
-        } else {
-            result.push(param);
-        }
+      const param = argsArray[i];
+      const matchKey = matcher.matcheStubKey(param);
+      if (matchKey) {
+        result.push(matchKey);
+      } else {
+        result.push(param);
+      }
     }
     return result;
   }
@@ -402,12 +402,12 @@ class MockKit {
     if (!methodName) {
       throw Error('not a function name');
     }
-    let args = this.convertParams(argsArray);
     let invokeTime = 0;
+    let args = this.convertParams(argsArray);
     for (const [key, value] of this.recordCalls) {
-        if (methodName === key.methodName && this.checkIsRightValue(args, key.args)) {
-            invokeTime += value;
-        }
+      if (methodName === key.methodName && this.checkIsRightValue(args, key.args)) {
+        invokeTime += value;
+      }
     }
     return new VerificationMode(invokeTime);
   }
