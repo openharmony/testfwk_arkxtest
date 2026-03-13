@@ -129,7 +129,7 @@ class ArgumentMatchers {
 
     matcheReturnKey() {
         let arg = arguments[0];
-        let stubSetKey = arguments[2];
+        let stubSetKey = arguments[1];
 
         if (stubSetKey && stubSetKey === this.any && arg) {
             return true;
