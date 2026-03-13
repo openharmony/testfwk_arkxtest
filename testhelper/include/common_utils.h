@@ -56,6 +56,10 @@ namespace OHOS::testhelper {
     constexpr int32_t MIN_SECOND = 0;
     constexpr int32_t MAX_SECOND = 59;
     constexpr int64_t MAX_TIMESTAMP_SECONDS = 2147483647;
+    // parse time error codes
+    constexpr int32_t PARSE_TIME_SUCCESS = 0;
+    constexpr int32_t PARSE_TIME_INVALID_FORMAT = 1;
+    constexpr int32_t PARSE_TIME_INVALID_VALUE = 2;
 
     // 打印到控制台
     void PrintToConsole(const std::string& message);
@@ -66,13 +70,18 @@ namespace OHOS::testhelper {
         constexpr uint8_t MAX_CONTENT_LEN = MAX_LOG_TAG_LEN - 1;
         std::array<char, MAX_LOG_TAG_LEN> chars = {0};
         size_t pos = fp.find_last_of('/');
-        if (pos == std::string_view::npos) {
-            pos = 0;
+        size_t offset = 0;
+        if (pos != std::string_view::npos) {
+            offset = pos + 1;
         }
         uint8_t writeCursor = 0;
-        chars[writeCursor++] = '[';
-        for (size_t offSet = pos + 1; offSet < fp.length() && writeCursor < MAX_CONTENT_LEN; offSet++) {
-            chars[writeCursor++] = fp[offSet];
+        if (writeCursor < MAX_CONTENT_LEN) {
+            chars[writeCursor++] = '[';
+        }
+        for (size_t offSet = offset; offSet < fp.length() && writeCursor < MAX_CONTENT_LEN; offSet++) {
+            if (writeCursor < MAX_CONTENT_LEN) {
+                chars[writeCursor++] = fp[offSet];
+            }
         }
         if (writeCursor < MAX_CONTENT_LEN) {
             chars[writeCursor++] = ':';
@@ -81,7 +90,9 @@ namespace OHOS::testhelper {
             chars[writeCursor++] = '(';
         }
         for (size_t offSet = 0; offSet < func.length() && writeCursor < MAX_CONTENT_LEN; offSet++) {
-            chars[writeCursor++] = func[offSet];
+            if (writeCursor < MAX_CONTENT_LEN) {
+                chars[writeCursor++] = func[offSet];
+            }
         }
         if (writeCursor < MAX_CONTENT_LEN) {
             chars[writeCursor++] = ')';

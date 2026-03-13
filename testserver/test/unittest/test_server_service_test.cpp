@@ -14,6 +14,9 @@
  */
 
 #include <chrono>
+#include <memory>
+#include <string>
+#include <vector>
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "system_ability_definition.h"
@@ -26,8 +29,8 @@
 #ifdef ARKXTEST_PASTEBOARD_ENABLE
 #include "pasteboard_client.h"
 #endif
-#include <common_event_manager.h>
-#include <common_event_subscribe_info.h>
+#include "common_event_manager.h"
+#include "common_event_subscribe_info.h"
 
 using namespace std;
 using namespace testing::ext;
@@ -223,4 +226,133 @@ HWTEST_F(CallerDetectTimerTest, testCallerDetectTimerWithoutCaller, TestSize.Lev
     EXPECT_NE(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
     this_thread::sleep_for(chrono::milliseconds(CALLER_DECTECT_TIMER_WAITTIME));
     EXPECT_EQ(samgr_->CheckSystemAbility(SYSTEM_ABILITY_ID), nullptr);
+}
+
+HWTEST_F(ServiceTest, testSetTime, TestSize.Level1)
+{
+    int64_t timeMs = 1739085000000;
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetTime(timeMs, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, 0);
+}
+
+HWTEST_F(ServiceTest, testSetTimeInvalid, TestSize.Level1)
+{
+    int64_t timeMs = -1;
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetTime(timeMs, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_TIME_SERVICE_FAILED);
+}
+
+HWTEST_F(ServiceTest, testSetTimezone, TestSize.Level1)
+{
+    string timezoneId = "Asia/Shanghai";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetTimezone(timezoneId, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, 0);
+}
+
+HWTEST_F(ServiceTest, testSetTimezoneInvalid, TestSize.Level1)
+{
+    string timezoneId = "Invalid/Timezone";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetTimezone(timezoneId, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_INVALID_TIMEZONE_ID);
+}
+
+HWTEST_F(ServiceTest, testGetPasteData, TestSize.Level1)
+{
+#ifdef ARKXTEST_PASTEBOARD_ENABLE
+    string text = "Test Content";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetPasteData(text, ret);
+    EXPECT_EQ(resCode, 0);
+    string pasteText;
+    int32_t getResult;
+    int32_t resCode2 = testServerServiceMock_->GetPasteData(pasteText, getResult);
+    EXPECT_EQ(resCode2, 0);
+    EXPECT_EQ(getResult, 0);
+    EXPECT_EQ(pasteText, text);
+#else
+    string pasteText;
+    int32_t getResult;
+    int32_t resCode = testServerServiceMock_->GetPasteData(pasteText, getResult);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(getResult, OHOS::testserver::TEST_SERVER_NOT_SUPPORTED);
+#endif
+}
+
+HWTEST_F(ServiceTest, testClearPasteData, TestSize.Level1)
+{
+#ifdef ARKXTEST_PASTEBOARD_ENABLE
+    string text = "Test Content";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetPasteData(text, ret);
+    EXPECT_EQ(resCode, 0);
+    auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
+    EXPECT_TRUE(pasteBoardMgr->HasPasteData());
+    int32_t clearRet;
+    int32_t resCode2 = testServerServiceMock_->ClearPasteData(clearRet);
+    EXPECT_EQ(resCode2, 0);
+    EXPECT_EQ(clearRet, 0);
+    EXPECT_FALSE(pasteBoardMgr->HasPasteData());
+#else
+    int32_t clearRet;
+    int32_t resCode = testServerServiceMock_->ClearPasteData(clearRet);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(clearRet, OHOS::testserver::TEST_SERVER_NOT_SUPPORTED);
+#endif
+}
+
+HWTEST_F(ServiceTest, testHideKeyboard, TestSize.Level1)
+{
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->HideKeyboard(ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_NO_ACTIVE_IME);
+}
+
+HWTEST_F(ServiceTest, testSetTimezoneCommon, TestSize.Level1)
+{
+    vector<string> timezones = {
+        "America/New_York",
+        "Europe/London",
+        "Asia/Tokyo",
+        "Australia/Sydney"
+    };
+    for (const auto& tz : timezones) {
+        int32_t ret;
+        int32_t resCode = testServerServiceMock_->SetTimezone(tz, ret);
+        EXPECT_EQ(resCode, 0) << "Failed for timezone: " << tz;
+        EXPECT_EQ(ret, 0) << "Failed for timezone: " << tz;
+    }
+}
+
+HWTEST_F(ServiceTest, testSetPasteDataEmpty, TestSize.Level1)
+{
+#ifdef ARKXTEST_PASTEBOARD_ENABLE
+    string text = "";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetPasteData(text, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, 0);
+#else
+    string text = "";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetPasteData(text, ret);
+    EXPECT_EQ(resCode, 0);
+#endif
+}
+
+HWTEST_F(ServiceTest, testSetTimeBoundary, TestSize.Level1)
+{
+    int64_t timeMs = 0;
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetTime(timeMs, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_TIME_SERVICE_FAILED);
 }

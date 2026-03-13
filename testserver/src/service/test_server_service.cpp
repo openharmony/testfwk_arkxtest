@@ -653,6 +653,7 @@ namespace OHOS::testserver {
 #ifdef ARKXTEST_IMF_ENABLE
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         int32_t imeHideNoActiveClient = 62;
+        int32_t imeHideNoActiveInputType = 65;
         auto controller = OHOS::MiscServices::InputMethodController::GetInstance();
         if (!controller) {
             HiLog::Error(LABEL_SERVICE, "InputMethodController is nullptr");
@@ -660,7 +661,7 @@ namespace OHOS::testserver {
             return TEST_SERVER_OK;
         }
         auto ret = controller->HideSoftKeyboard();
-        if (ret == imeHideNoActiveClient) {
+        if (ret == imeHideNoActiveClient || ret == imeHideNoActiveInputType) {
             HiLog::Warn(LABEL_SERVICE, "No active IME client");
             result = TEST_SERVER_NO_ACTIVE_IME;
             return TEST_SERVER_OK;
