@@ -41,22 +41,22 @@ export class NoResult {
 export class MockKit {
   flag: boolean
   hashMap: Map<MapKey, string>
-  resultMap: Map<string, object | null | undefined>
-  propertyMap:Map<string, object | null | undefined>
-  countMap: Map<string, Map<object, object[][]>>
+  resultMap: Map<string, Object | null | undefined>
+  propertyMap:Map<string, Object | null | undefined>
+  countMap: Map<string, Map<object, Object[][]>>
   recordCalls: Array<CallRecord>
   functionHashCodeList: Array<string>
   constructor() {
     this.flag = false
     this.hashMap = new Map<MapKey, string>()
-    this.resultMap = new Map<string, object | null | undefined>()
-    this.propertyMap = new Map<string, object | null | undefined>()
-    this.countMap = new Map<string, Map<object, object[][]>>()
+    this.resultMap = new Map<string, Object | null | undefined>()
+    this.propertyMap = new Map<string, Object | null | undefined>()
+    this.countMap = new Map<string, Map<object, Object[][]>>()
     this.recordCalls = new Array<CallRecord>()
     this.functionHashCodeList = new Array<string>()
   }
 
-  mockProperty(instance: object, name: string, value: object)
+  mockProperty(instance: object, name: string, value: Object)
   {
     const that = this
     let isMocked = false;
@@ -77,10 +77,10 @@ export class MockKit {
       for (let i = 0; i < classType.getMethodsNum(); i++) {
         let method = classType.getMethod(i)
         if (method.getName() === getValueMethod) {
-          const args:  FixedArray<object> =  []
+          const args: FixedArray<Object> =  []
           try {
-            let oriValue = method.invoke(instance, args) as object
-            const args0:  Array<object> =  []
+            let oriValue = method.invoke(instance, args) as Object
+            const args0: Array<Object> =  []
             const key: MapKey = {
               methodName: name,
               args: args0,
@@ -98,7 +98,7 @@ export class MockKit {
     for (let i = 0; i < classType.getMethodsNum(); i++) {
       let method = classType.getMethod(i)
       if (method.getName() === setValueMethod) {
-        const args:  FixedArray<object> =  [value]
+        const args: FixedArray<Object> =  [value]
         try {
           method.invoke(instance, args)
         } catch (e) {
@@ -139,7 +139,7 @@ export class MockKit {
       hilog.info(domain, tag, 'method %{public}s', method.getName())
       if (method.getName() === "__setMocker__") {
         hilog.info(domain, tag, '%{public}s', '__setMocker__ in')
-        const args:  FixedArray<MockKit> =  [mocker]
+        const args: FixedArray<MockKit> = [mocker]
         try {
           method.invoke(instance, args)
         } catch (e) {
@@ -190,7 +190,7 @@ export class MockKit {
         instanceMap?.set(instance, [args])
       }
     } else {
-      const instanceMap = new Map<object, object[][]>()
+      const instanceMap = new Map<object, Object[][]>()
       instanceMap.set(instance, [args])
       countMap.set(key, instanceMap)
     }
@@ -238,7 +238,7 @@ export class MockKit {
     return noResult
   }
 
-  verify(methodName: string, args: object[]) {
+  verify(methodName: string, args: Object[]) {
     let invokeTime = 0;
     
     for (const record of this.recordCalls) {
@@ -262,14 +262,14 @@ export class MockKit {
       if (instance === keyObject) {
         const hashValue = this.hashMap.get(key) as string
         if (this.propertyMap.has(hashValue)) {
-          const oriValue = this.propertyMap.get(hashValue) as object
+          const oriValue = this.propertyMap.get(hashValue) as Object
           let name = key.methodName
           const classType = Type.of(instance) as ClassType
           const setValueMethod = "__setProperty_" + name + "__";
           for (let i = 0; i < classType.getMethodsNum(); i++) {
             let method = classType.getMethod(i)
             if (method.getName() === setValueMethod) {
-              const args: FixedArray<object> = [oriValue]
+              const args: FixedArray<Object> = [oriValue]
               try {
                 method.invoke(instance, args)
               } catch (e) {
@@ -297,13 +297,13 @@ export class MockKit {
       const keyObject = key.classObj
       if (instance === keyObject && keyMethodName === name) {
         const hashValue = this.hashMap.get(key) as string
-        const oriValue = this.propertyMap.get(hashValue) as object
+        const oriValue = this.propertyMap.get(hashValue) as Object
         const classType = Type.of(instance) as ClassType
         const setValueMethod = "__setProperty_" + name + "__";
         for (let i = 0; i < classType.getMethodsNum(); i++) {
           let method = classType.getMethod(i)
           if (method.getName() === setValueMethod) {
-            const args: FixedArray<object> = [oriValue]
+            const args: FixedArray<Object> = [oriValue]
             try {
               method.invoke(instance, args)
             } catch (e) {
@@ -440,7 +440,7 @@ export class AfterWhen{
     }
   }
 
-  afterReturn(value: object) {
+  afterReturn(value: Object) {
     hilog.info(domain, tag, '%{public}s', 'start run afterReturn, hashKey: ' + this.hashKey)
     hilog.info(domain, tag, '%{public}s', 'start run afterReturn, keyInfo: ' + string(this.keyInfo.args))
     let map = this.mocker.resultMap
@@ -484,7 +484,7 @@ export class AfterWhen{
 export function when(mockFunc: Function) {
   hilog.info(domain, tag, '%{public}s', 'start run when')
   const mockFuncResult: MockFuncResult = (mockFunc as () => MockFuncResult) ()
-  return (...args: object[]) => {
+  return (...args: Object[]) => {
     const methodName = mockFuncResult.methodName
     const classObj = mockFuncResult.classObj
     const key:MapKey = {

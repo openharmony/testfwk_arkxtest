@@ -83,7 +83,7 @@ class ArgumentMatchers {
 
     static containSubstring() {
         let substring = arguments[0];
-        if (typeof (substring) !== "string") {
+        if (typeof (substring) === "string") {
             return { type_ : ArgumentMatchers.CONTAIN_SUBSTRING, value: substring, needMatch: true };
         }
         throw Error('not a string');
@@ -91,7 +91,7 @@ class ArgumentMatchers {
 
     static notContainSubstring() {
         let substring = arguments[0];
-        if (typeof (substring) !== "string") {
+        if (typeof (substring) === "string") {
             return { type_: ArgumentMatchers.CONTAIN_SUBSTRING, value: substring, needMatch: false };
         }
         throw Error('not a string');
@@ -99,26 +99,26 @@ class ArgumentMatchers {
 
     static containElement() {
         let element = arguments[0];
-        return { type_: ArgumentMatchers.CONTAIN_SUBSTRING, value: element, needMatch: true };
+        return { type_: ArgumentMatchers.CONTAIN_ELEMENT, value: element, needMatch: true };
     }
 
     static notContainElement() {
         let element = arguments[0];
-        return { type_: ArgumentMatchers.CONTAIN_SUBSTRING, value: element, needMatch: false };
+        return { type_: ArgumentMatchers.CONTAIN_ELEMENT, value: element, needMatch: false };
     }
 
     static containSubArray() {
         let subArray = arguments[0];
-        if (subArray?.constructor?.name !== "Array") {
-            return { type_: ArgumentMatchers.CONTAIN_SUBSTRING, value: subArray, needMatch: true };
+        if (subArray?.constructor?.name === "Array") {
+            return { type_: ArgumentMatchers.CONTAIN_SUBARRAY, value: subArray, needMatch: true };
         }
         throw Error('not a Array');
     }
 
     static notContainSubArray() {
         let subArray = arguments[0];
-        if (subArray?.constructor?.name !== "Array") {
-            return { type_: ArgumentMatchers.CONTAIN_SUBSTRING, value: subArray, needMatch: false };
+        if (subArray?.constructor?.name === "Array") {
+            return { type_: ArgumentMatchers.CONTAIN_SUBARRAY, value: subArray, needMatch: false };
         }
         throw Error('not a Array');
     }
@@ -129,55 +129,49 @@ class ArgumentMatchers {
 
     matcheReturnKey() {
         let arg = arguments[0];
-        let regex = arguments[1];
         let stubSetKey = arguments[2];
-
-        if (ArgumentMatchers.isRegExp(stubSetKey) && typeof arg === 'string') {
-            let needMatch = stubSetKey.needMatch !== false;
-            return stubSetKey.test(arg) === needMatch;
-        }
 
         if (stubSetKey && stubSetKey == this.ANY && arg) {
             return true;
         }
 
-        if (typeof arg === 'string' && !regex && stubSetKey == this.ANY_STRING) {
+        if (typeof arg === 'string' && stubSetKey == this.ANY_STRING) {
             return true;
         }
 
-        if (typeof arg === 'boolean' && !regex && stubSetKey == this.ANY_BOOLEAN) {
+        if (typeof arg === 'boolean' && stubSetKey == this.ANY_BOOLEAN) {
             return true;
         }
 
-        if (typeof arg === 'number' && !regex && stubSetKey == this.ANY_NUMBER) {
+        if (typeof arg === 'number' && stubSetKey == this.ANY_NUMBER) {
             return true;
         }
 
-        if (typeof arg === 'object' && !regex && stubSetKey == this.ANY_OBJECT) {
+        if (typeof arg === 'object' && stubSetKey == this.ANY_OBJECT) {
             return true;
         }
 
-        if (typeof arg === 'function' && !regex && stubSetKey == this.ANY_FUNCTION) {
+        if (typeof arg === 'function' && stubSetKey == this.ANY_FUNCTION) {
             return true;
         }
 
-        if (typeof arg !== 'string' && !regex && stubSetKey == this.NOT_STRING) {
+        if (typeof arg !== 'string' && stubSetKey == this.NOT_STRING) {
             return true;
         }
 
-        if (typeof arg !== 'boolean' && !regex && stubSetKey == this.NOT_BOOLEAN) {
+        if (typeof arg !== 'boolean' && stubSetKey == this.NOT_BOOLEAN) {
             return true;
         }
 
-        if (typeof arg !== 'number' && !regex && stubSetKey == this.NOT_NUMBER) {
+        if (typeof arg !== 'number' && stubSetKey == this.NOT_NUMBER) {
             return true;
         }
 
-        if (typeof arg !== 'object' && !regex && stubSetKey == this.NOT_OBJECT) {
+        if (typeof arg !== 'object' && stubSetKey == this.NOT_OBJECT) {
             return true;
         }
 
-        if (typeof arg !== 'function' && !regex && stubSetKey == this.NOT_FUNCTION) {
+        if (typeof arg !== 'function' && stubSetKey == this.NOT_FUNCTION) {
             return true;
         }
 
@@ -196,11 +190,12 @@ class ArgumentMatchers {
             return arg.includes(stubSetKey.value) === needMatch;
         }
 
-        if (typeof arg === 'string' && regex) {
-            return regex.test(arg);
+        if (ArgumentMatchers.isRegExp(stubSetKey) && typeof arg === 'string') {
+            let needMatch = stubSetKey.needMatch !== false;
+            return stubSetKey.test(arg) === needMatch;
         }
 
-        return null;
+        return false;
     }
 
     matcheStubKey() {
