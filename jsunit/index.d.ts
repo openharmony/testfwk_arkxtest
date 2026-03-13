@@ -110,8 +110,8 @@ export class ArgumentMatchers {
   static notObj;
   static notFunction;
   static notMatchRegexs(Regex: RegExp): void;
-  static containSubString(subString: string): void;
-  static notContainSubString(subString: string): void;
+  static containSubstring(subString: string): void;
+  static notContainSubstring(subString: string): void;
   static containSubArray(subArray: []): void;
   static notContainSubArray(subArray: []): void;
   static containElement(value: any): void;

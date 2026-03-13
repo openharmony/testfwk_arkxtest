@@ -131,47 +131,47 @@ class ArgumentMatchers {
         let arg = arguments[0];
         let stubSetKey = arguments[2];
 
-        if (stubSetKey && stubSetKey === this.ANY && arg) {
+        if (stubSetKey && stubSetKey === this.any && arg) {
             return true;
         }
 
-        if (typeof arg === 'string' && stubSetKey === this.ANY_STRING) {
+        if (typeof arg === 'string' && stubSetKey === this.anyString) {
             return true;
         }
 
-        if (typeof arg === 'boolean' && stubSetKey === this.ANY_BOOLEAN) {
+        if (typeof arg === 'boolean' && stubSetKey === this.anyBoolean) {
             return true;
         }
 
-        if (typeof arg === 'number' && stubSetKey === this.ANY_NUMBER) {
+        if (typeof arg === 'number' && stubSetKey === this.anyNumber) {
             return true;
         }
 
-        if (typeof arg === 'object' && stubSetKey === this.ANY_OBJECT) {
+        if (typeof arg === 'object' && stubSetKey === this.anyObj) {
             return true;
         }
 
-        if (typeof arg === 'function' && stubSetKey === this.ANY_FUNCTION) {
+        if (typeof arg === 'function' && stubSetKey === this.anyFunction) {
             return true;
         }
 
-        if (typeof arg !== 'string' && stubSetKey === this.NOT_STRING) {
+        if (typeof arg !== 'string' && stubSetKey === this.notString) {
             return true;
         }
 
-        if (typeof arg !== 'boolean' && stubSetKey === this.NOT_BOOLEAN) {
+        if (typeof arg !== 'boolean' && stubSetKey === this.notBoolean) {
             return true;
         }
 
-        if (typeof arg !== 'number' && stubSetKey === this.NOT_NUMBER) {
+        if (typeof arg !== 'number' && stubSetKey === this.notNumber) {
             return true;
         }
 
-        if (typeof arg !== 'object' && stubSetKey === this.NOT_OBJECT) {
+        if (typeof arg !== 'object' && stubSetKey === this.notObj) {
             return true;
         }
 
-        if (typeof arg !== 'function' && stubSetKey === this.NOT_FUNCTION) {
+        if (typeof arg !== 'function' && stubSetKey === this.notFunction) {
             return true;
         }
 

@@ -88,14 +88,14 @@ export class ArgumentMatchers {
     throw Error('not a regex');
   }
 
-  static containSubString(subString: string): MatcherInfo {
+  static containSubstring(subString: string): MatcherInfo {
     if (typeof subString === "string") {
       return new MatcherInfo(ArgumentMatchers.CONTAIN_SUBSTRING, subString, true);
     }
     throw Error('not a string');
   }
 
-  static notContainSubString(subString: string): MatcherInfo {
+  static notContainSubstring(subString: string): MatcherInfo {
     if (typeof subString === "string") {
       return new MatcherInfo(ArgumentMatchers.CONTAIN_SUBSTRING, subString, false);
     }

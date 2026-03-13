@@ -115,8 +115,8 @@ export declare class ArgumentMatchers {
     public static notFunction: allExpectType;
     public static matchRegexs(regex: RegExp): void;
     public static notMatchRegexs(regex: RegExp): void;
-    public static containSubString(subString: string): void;
-    public static notContainSubString(subString: string): void;
+    public static containSubstring(subString: string): void;
+    public static notContainSubstring(subString: string): void;
     public static containSubArray(subArray: allExpectType[]): void;
     public static notContainSubArray(subArray: allExpectType[]): void;
     public static containElement(value: allExpectType): void;
