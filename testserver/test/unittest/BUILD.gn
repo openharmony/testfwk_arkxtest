@@ -15,7 +15,7 @@ import("//build/ohos.gni")
 import("//build/test.gni")
 source_root = "//test/testfwk/arkxtest/testserver"
 
-ohos_unittest("testserver_unittest") {
+ohos_unittest("TestSA_unittest") {
   sources = [
     "${source_root}/test/unittest/mock_permission.cpp",
     "${source_root}/test/unittest/start_test_server.cpp",
@@ -29,6 +29,7 @@ ohos_unittest("testserver_unittest") {
   external_deps = [
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
+    "ability_base:want",
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
     "data_share:datashare_consumer",
@@ -40,6 +41,7 @@ ohos_unittest("testserver_unittest") {
     "samgr:samgr_proxy",
     "googletest:gmock_main",
     "googletest:gtest_main",
+    "time_service:time_client",
   ]
 
   if (defined(global_parts_info) && defined(global_parts_info.distributeddatamgr_pasteboard)) {
@@ -60,7 +62,7 @@ ohos_unittest("testserver_unittest") {
   cflags = [ "--coverage" ]
   cflags_cc = [ "--coverage" ]
   use_exceptions = true
-  module_out_path = "arkxtest/testserver"
+  module_out_path = "arkxtest/TestSA"
   testonly = true
   subsystem_name = "testfwk"
   part_name = "arkxtest"

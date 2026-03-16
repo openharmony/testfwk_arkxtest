@@ -16,6 +16,7 @@
 #include <iostream>
 #include <string>
 #include <ctime>
+#include <regex>
 #include "common_utils.h"
 #include "testhelper_core.h"
 #include "time_service_client.h"
@@ -49,9 +50,14 @@ namespace OHOS::testhelper {
     {
         LOG_I("HandleSetTime called with time: %{public}s", timeStr.c_str());
         int64_t timeMs = 0;
-        if (!ParseTimeToMs(timeStr, timeMs)) {
-            LOG_E("Invalid time format: %{public}s", timeStr.c_str());
-            PrintToConsole("Error: Invalid time format. Time must be in 'YYYY-MM-DD HH:MM:SS' format.");
+        int32_t parseResult = ParseTimeToMs(timeStr, timeMs);
+        if (parseResult != PARSE_TIME_SUCCESS) {
+            LOG_E("Invalid time: %{public}s", timeStr.c_str());
+            if (parseResult == PARSE_TIME_INVALID_FORMAT) {
+                PrintToConsole("Error: Invalid time format. Time must be in 'YYYY-MM-DD HH:MM:SS' format.");
+            } else if (parseResult == PARSE_TIME_INVALID_VALUE) {
+                PrintToConsole("Error: Invalid time value. " + timeStr + " is not a valid date and time.");
+            }
             return EXIT_FAILURE;
         }
         auto result = OHOS::testserver::TestServerClient::GetInstance().SetTime(timeMs);
@@ -101,34 +107,52 @@ namespace OHOS::testhelper {
         }
     }
 
-    bool TestHelperCore::ParseTimeToMs(const std::string& timeStr, int64_t& timeMs)
+    bool TestHelperCore::ValidateTimeRanges(int year, int month, int day, int hour, int minute, int second)
     {
-        struct tm timeinfo = {};
-        char* result = strptime(timeStr.c_str(), "%Y-%m-%d %H:%M:%S", &timeinfo);
+        return year >= MIN_YEAR && month >= MIN_MONTH && month <= MAX_MONTH && day >= MIN_DAY &&
+               day <= MAX_DAY && hour >= MIN_HOUR && hour <= MAX_HOUR && minute >= MIN_MINUTE &&
+               minute <= MAX_MINUTE && second >= MIN_SECOND && second <= MAX_SECOND;
+    }
+
+    int32_t TestHelperCore::ParseTimeToMs(const std::string& timeStr, int64_t& timeMs)
+    {
+        if (!std::regex_match(timeStr, std::regex("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"))) {
+            return PARSE_TIME_INVALID_FORMAT;
+        }
+        struct tm originalTimeinfo = {};
+        char* result = strptime(timeStr.c_str(), "%Y-%m-%d %H:%M:%S", &originalTimeinfo);
         if (result == nullptr || *result != '\0') {
-            return false;
+            return PARSE_TIME_INVALID_VALUE;
         }
-        int year = timeinfo.tm_year + BASE_YEAR;
-        int month = timeinfo.tm_mon + BASE_MONTH;
-        int day = timeinfo.tm_mday;
-        int hour = timeinfo.tm_hour;
-        int minute = timeinfo.tm_min;
-        int second = timeinfo.tm_sec;
-        if (year < MIN_YEAR || month < MIN_MONTH || month > MAX_MONTH || day < MIN_DAY || day > MAX_DAY ||
-            hour < MIN_HOUR || hour > MAX_HOUR || minute < MIN_MINUTE || minute > MAX_MINUTE || second < MIN_SECOND ||
-            second > MAX_SECOND) {
-            return false;
+        int year = originalTimeinfo.tm_year + BASE_YEAR;
+        int month = originalTimeinfo.tm_mon + BASE_MONTH;
+        int day = originalTimeinfo.tm_mday;
+        int hour = originalTimeinfo.tm_hour;
+        int minute = originalTimeinfo.tm_min;
+        int second = originalTimeinfo.tm_sec;
+        if (!ValidateTimeRanges(year, month, day, hour, minute, second)) {
+            return PARSE_TIME_INVALID_VALUE;
         }
-        timeinfo.tm_isdst = -1;
-        time_t seconds = mktime(&timeinfo);
-        if (seconds == -1) {
-            return false;
+        struct tm inputTimeinfo = originalTimeinfo;
+        inputTimeinfo.tm_isdst = -1;
+        time_t seconds = mktime(&inputTimeinfo);
+        if (seconds < 0 || seconds > MAX_TIMESTAMP_SECONDS) {
+            return PARSE_TIME_INVALID_VALUE;
+        }
+        struct tm* convertedTimeinfo = localtime(&seconds);
+        if (convertedTimeinfo == nullptr) {
+            return PARSE_TIME_INVALID_VALUE;
+        }
+        if (originalTimeinfo.tm_sec != convertedTimeinfo->tm_sec ||
+            originalTimeinfo.tm_min != convertedTimeinfo->tm_min ||
+            originalTimeinfo.tm_hour != convertedTimeinfo->tm_hour ||
+            originalTimeinfo.tm_mday != convertedTimeinfo->tm_mday ||
+            originalTimeinfo.tm_mon != convertedTimeinfo->tm_mon ||
+            originalTimeinfo.tm_year != convertedTimeinfo->tm_year) {
+            return PARSE_TIME_INVALID_VALUE;
         }
         timeMs = static_cast<int64_t>(seconds) * MS_PER_SECOND;
-        if (timeMs / MS_PER_SECOND > MAX_TIMESTAMP_SECONDS) {
-            return false;
-        }
-        return true;
+        return PARSE_TIME_SUCCESS;
     }
 
     int32_t TestHelperCore::HandleGetPasteData()

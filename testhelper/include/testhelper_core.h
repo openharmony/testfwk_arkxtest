@@ -29,9 +29,10 @@ namespace OHOS::testhelper {
         int32_t HandleSetPasteData(const std::string& text);
         int32_t HandleClearPasteData();
         int32_t HandleHideKeyboard();
- 
+        int32_t ParseTimeToMs(const std::string& timeStr, int64_t& timeMs);
+
     private:
-        bool ParseTimeToMs(const std::string& timeStr, int64_t& timeMs);
+        bool ValidateTimeRanges(int year, int month, int day, int hour, int minute, int second);
     };
 }
 
