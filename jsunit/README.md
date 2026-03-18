@@ -1571,7 +1571,7 @@ export default function staticTest() {
 | 参数名       | 类型          | 必填 | 说明                        |
 |-----------|-------------|----|---------------------------|
 | methodName    | String      | 是  | 类的实例上的公共方法名。              |
-| argsArray | `Array<any>` | 是  | 一个数组，表示期望该方法被调用时所传入的参数列表。 |
+| argsArray | `Array<any>` | 是  | 一个数组，表示期望该方法被调用时所传入的参数列表。@since1.0.28，参数可传入ArgumentMatchers进行模糊匹配。 |
 
 **返回值：**
 
@@ -2187,6 +2187,18 @@ ArgumentMatchers用于在Mock函数时自定义函数参数，它的接口以枚
 | anyNumber     | -    | 设定用户传任何数字类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyNumber方式调用。                                   |
 | anyObj | - | 设定用户传任何对象类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyObj方式调用。  |
 | matchRegexs     | -    | 设定用户传任何符合正则表达式验证的参数，执行的结果都是预期的值，使用ArgumentMatchers.matchRegexs(Regex)方式调用。                  |
+| notString | - | @since1.0.28，设定用户传任何非字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.notString方式调用。 |
+| notBoolean | - | @since1.0.28，设定用户传任何非boolean类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notBoolean方式调用。 |
+| notNumber | - | @since1.0.28，设定用户传任何非数字类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notNumber方式调用。 |
+| notObj | - | @since1.0.28，设定用户传任何非对象类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notObj方式调用。 |
+| notFunction | - | @since1.0.28，设定用户传任何非function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyFunction方式调用。 |
+| notMatchRegexs | - | @since1.0.28，设定用户传任何不符合正则表达式验证的参数，执行的结果都是预期的值，使用ArgumentMatchers.notMatchRegexs(Regex)方式调用。 |
+| containSubstring | - | @since1.0.28，设定用户传任何包含特定子串的字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.containSubstring(subString)方式调用。 |
+| notContainSubstring | - | @since1.0.28，设定用户传任何不包含特定子串的字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainSubArray(subString)方式调用。 |
+| containSubArray | - | @since1.0.28，设定用户传任何包含特定数组的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.containSubArray(subArray)方式调用。 |
+| notContainSubArray | - | @since1.0.28，设定用户传任何不包含特定数组的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainSubArray(subString)方式调用。 |
+| containElement | - | @since1.0.28，设定用户传任何包含特定值的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.containElement(value)方式调用。 |
+| notContainElement | - | @since1.0.28，设定用户传任何不包含特定值的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainElement(value)方式调用。 |
 
 
 **示例：**
