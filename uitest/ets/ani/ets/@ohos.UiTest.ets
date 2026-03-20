@@ -215,6 +215,17 @@ interface ComponentEventOptions {
   on?: On;
 }
 
+interface TouchOptions {
+  speed?: int;
+  duration?: int;
+  pressure?: double;
+}
+class TouchOptionsInner implements TouchOptions {
+  speed?: int = undefined;
+  duration?: int = undefined;
+  pressure?: double = undefined;
+}
+
 class ComponentEventOptionsInner implements ComponentEventOptions {
   timeout?: int = undefined;
   on?: On = undefined;
@@ -1273,10 +1284,14 @@ export class Component {
     private native kunckleClickTwoPointSync(p0: Point, p1: Point, times: int):boolean;
     private native injectKnucklePointerActionSync(pointers: PointerMatrix, speed?: int): boolean;
     private native clickAtSync(point: Point): boolean;
+    private native clickAtTouchOptionsSync(point: Point, options?: TouchOptions): boolean;
     private native doubleClickAtSync(point: Point): boolean;
     private native longClickAtSync(point: Point, duration?: int): boolean;
+    private native longClickAtTouchOptionsSync(point: Point, options?: TouchOptions): boolean;
     private native swipeBetweenSync(from: Point, to: Point, speed?: int): boolean;
+    private native swipeBetweenTouchOptionsSync(from: Point, to: Point, options?: TouchOptions): boolean;
     private native dragBetweenSync(from: Point, to: Point, speed?: int, duration?: int): boolean;
+    private native dragBetweenTouchOptionsSync(from: Point, to: Point, options?: TouchOptions): boolean;
     private native crownRotateSync(d: int, speed?: int): boolean;
     private native touchPadTwoFingersScrollSync(point: Point, direction: UiDirection, d: int, speed?: int): boolean;
 
@@ -1672,6 +1687,18 @@ export class Component {
         });
         return promise;
     }
+    clickAt(point: Point, options?: TouchOptions): Promise<void> {
+        let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+            let promise1 = taskpool.execute((): boolean => this.clickAtTouchOptionsSync(point, options));
+            promise1.then((e: Any)=>{
+                resolve(Promise.resolve());
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
     doubleClickAt(point: Point): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
             let promise1 = taskpool.execute((): boolean => this.doubleClickAtSync(point));
@@ -1696,6 +1723,18 @@ export class Component {
         });
         return promise;
     }
+    longClickAt(point: Point, options?: TouchOptions): Promise<void> {
+        let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+            let promise1 = taskpool.execute(():boolean => this.longClickAtTouchOptionsSync(point, options));
+            promise1.then((e: Any) => {
+                resolve(Promise.resolve());
+            }, (err: Error) => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
     swipeBetween(from: Point, to: Point, speed?: int): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
             let promise1 = taskpool.execute((): boolean => this.swipeBetweenSync(from, to, speed));
@@ -1708,9 +1747,36 @@ export class Component {
         });
         return promise;
     }
+    swipeBetween(from: Point, to: Point, options?: TouchOptions): Promise<void> {
+        let promise = new Promise<void>(
+            (resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+            let promise1 = taskpool.execute((): boolean => this.swipeBetweenTouchOptionsSync(from, to, options));
+            promise1.then((e: Any)=>{
+                resolve(Promise.resolve());
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
     dragBetween(from: Point, to: Point, speed?: int, duration?: int): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
             let promise1 = taskpool.execute((): boolean => this.dragBetweenSync(from, to, speed, duration));
+            promise1.then((e: Any)=>{
+                resolve(Promise.resolve());
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
+    dragBetween(from: Point, to: Point, options?: TouchOptions): Promise<void> {
+        let promise = new Promise<void>(
+            (resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+            let promise1 = taskpool.execute((): boolean =>
+                this.dragBetweenTouchOptionsSync(from, to, options));
             promise1.then((e: Any)=>{
                 resolve(Promise.resolve());
             }, (err: Error): void => {
