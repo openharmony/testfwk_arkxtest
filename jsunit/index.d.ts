@@ -114,8 +114,8 @@ export class ArgumentMatchers {
   static notContainSubstring(subString: string): void;
   static containSubArray(subArray: []): void;
   static notContainSubArray(subArray: []): void;
-  static containElement(value: any): void;
-  static notContainElement(value: any): void;
+  static containValue(value: any): void;
+  static notContainValue(value: any): void;
 }
 
 declare interface when {

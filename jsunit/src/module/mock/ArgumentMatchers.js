@@ -26,7 +26,7 @@ class ArgumentMatchers {
     NOT_NUMBER = '<not Number>';
     NOT_OBJECT = '<not Object>';
     NOT_FUNCTION = '<not Function>';
-    static CONTAIN_ELEMENT = '<contain element>';
+    static CONTAIN_VALUE = '<contain value>';
     static CONTAIN_SUBSTRING = '<contain subString>';
     static CONTAIN_SUBARRAY = '<contain subArray>';
 
@@ -97,14 +97,14 @@ class ArgumentMatchers {
         throw Error('not a string');
     }
 
-    static containElement() {
+    static containValue() {
         let element = arguments[0];
-        return { type_: ArgumentMatchers.CONTAIN_ELEMENT, value: element, needMatch: true };
+        return { type_: ArgumentMatchers.CONTAIN_VALUE, value: element, needMatch: true };
     }
 
-    static notContainElement() {
+    static notContainValue() {
         let element = arguments[0];
-        return { type_: ArgumentMatchers.CONTAIN_ELEMENT, value: element, needMatch: false };
+        return { type_: ArgumentMatchers.CONTAIN_VALUE, value: element, needMatch: false };
     }
 
     static containSubArray() {
@@ -175,7 +175,7 @@ class ArgumentMatchers {
             return true;
         }
 
-        if (Array.isArray(arg) && stubSetKey && stubSetKey?.type_ === ArgumentMatchers.CONTAIN_ELEMENT) {
+        if (Array.isArray(arg) && stubSetKey && stubSetKey?.type_ === ArgumentMatchers.CONTAIN_VALUE) {
             let needMatch = stubSetKey.needMatch !== false;
             return arg.includes(stubSetKey.value) === needMatch;
         }
@@ -241,7 +241,7 @@ class ArgumentMatchers {
             return key;
         }
 
-        if (key && key.type_ === ArgumentMatchers.CONTAIN_ELEMENT) {
+        if (key && key.type_ === ArgumentMatchers.CONTAIN_VALUE) {
             return key;
         }
 
