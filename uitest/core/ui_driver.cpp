@@ -415,6 +415,7 @@ namespace OHOS::uitest {
             err = ApiCallErr(ERR_INVALID_INPUT, "Invalid display id.");
             return;
         }
+        events.SetTouchPressure(opt.touchPressure_);
         uiController_->InjectTouchEventSequence(events);
     }
 
