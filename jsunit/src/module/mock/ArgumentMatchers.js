@@ -135,43 +135,43 @@ class ArgumentMatchers {
             return true;
         }
 
-        if (typeof arg === 'string' && stubSetKey === this.anyString) {
+        if (typeof arg === 'string' && stubSetKey === this.ANY) {
             return true;
         }
 
-        if (typeof arg === 'boolean' && stubSetKey === this.anyBoolean) {
+        if (typeof arg === 'boolean' && stubSetKey === this.ANY_BOOLEAN) {
             return true;
         }
 
-        if (typeof arg === 'number' && stubSetKey === this.anyNumber) {
+        if (typeof arg === 'number' && stubSetKey === this.ANY_NUMBER) {
             return true;
         }
 
-        if (typeof arg === 'object' && stubSetKey === this.anyObj) {
+        if (typeof arg === 'object' && stubSetKey === this.ANY_OBJECT) {
             return true;
         }
 
-        if (typeof arg === 'function' && stubSetKey === this.anyFunction) {
+        if (typeof arg === 'function' && stubSetKey === this.ANY_FUNCTION) {
             return true;
         }
 
-        if (typeof arg !== 'string' && stubSetKey === this.notString) {
+        if (typeof arg !== 'string' && stubSetKey === this.NOT_STRING) {
             return true;
         }
 
-        if (typeof arg !== 'boolean' && stubSetKey === this.notBoolean) {
+        if (typeof arg !== 'boolean' && stubSetKey === this.NOT_BOOLEAN) {
             return true;
         }
 
-        if (typeof arg !== 'number' && stubSetKey === this.notNumber) {
+        if (typeof arg !== 'number' && stubSetKey === this.NOT_NUMBER) {
             return true;
         }
 
-        if (typeof arg !== 'object' && stubSetKey === this.notObj) {
+        if (typeof arg !== 'object' && stubSetKey === this.NOT_OBJECT) {
             return true;
         }
 
-        if (typeof arg !== 'function' && stubSetKey === this.notFunction) {
+        if (typeof arg !== 'function' && stubSetKey === this.NOT_FUNCTION) {
             return true;
         }
 
