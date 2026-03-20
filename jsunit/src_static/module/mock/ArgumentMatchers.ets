@@ -33,7 +33,7 @@ export class MatcherInfo {
 
 export class ArgumentMatchers {
   static MATCH_REGEXS = "<match regexs>";
-  static CONTAIN_ELEMENT = "<contain element>";
+  static CONTAIN_VALUE = "<contain value>";
   static CONTAIN_SUBSTRING = "<contain subString>";
   static CONTAIN_SUBARRAY = "<contain subArray>";
 
@@ -102,12 +102,12 @@ export class ArgumentMatchers {
     throw Error('not a string');
   }
 
-  static containElement(element: Object): MatcherInfo {
-    return new MatcherInfo(ArgumentMatchers.CONTAIN_ELEMENT, element, true);
+  static containValue(element: Object): MatcherInfo {
+    return new MatcherInfo(ArgumentMatchers.CONTAIN_VALUE, element, true);
   }
 
-  static notContainElement(element: Object): MatcherInfo {
-    return new MatcherInfo(ArgumentMatchers.CONTAIN_ELEMENT, element, false);
+  static notContainValue(element: Object): MatcherInfo {
+    return new MatcherInfo(ArgumentMatchers.CONTAIN_VALUE, element, false);
   }
 
   static containSubArray(subArray: Array<Object>): MatcherInfo {
@@ -158,17 +158,14 @@ export class ArgumentMatchers {
       let regexValue = (stubSetKey as MatcherInfo).value as RegExp;
       return regexValue.test(arg as string) === needMatch;
     } else if (stubSetKey instanceof MatcherInfo && (stubSetKey as MatcherInfo).type_ === ArgumentMatchers.CONTAIN_SUBSTRING && typeof arg === 'string') {
-      console.info("zzzz CONTAIN_SUBSTRING")
       let needMatch = (stubSetKey as MatcherInfo).needMatch !== false;
       let isContained = (arg as string).includes ((stubSetKey as MatcherInfo).value as string);
       return isContained === needMatch
     } else if (stubSetKey instanceof MatcherInfo && (stubSetKey as MatcherInfo).type_ === ArgumentMatchers.CONTAIN_SUBARRAY && Array.isArray(arg)) {
-      console.info("zzzz CONTAIN_SUBARRAY")
       let needMatch = (stubSetKey as MatcherInfo).needMatch !== false;
       let isContained = false;
       let containedValue: Array<Object> = (stubSetKey as MatcherInfo).value as Object[]
       let value: Array<Object> = arg as Object[]
-      console.info("zzzzzzz type1 " + typeof value[0] + " " + "type2 " + typeof containedValue[0]) // number 跟int
       isContained = containedValue.every((item: Object) => {
         for (let index = 0; index < value.length; index++) {
           if (value[index] === item) {
@@ -177,10 +174,8 @@ export class ArgumentMatchers {
         }
         return false;
       })
-      console.info("zzzzzzz isContained" + JSON.stringify(value) + " " +isContained + " " + JSON.stringify(containedValue))
       return isContained === needMatch
-    } else if (stubSetKey instanceof MatcherInfo && (stubSetKey as MatcherInfo).type_ === ArgumentMatchers.CONTAIN_ELEMENT && Array.isArray(arg)) {
-      console.info("zzzz CONTAIN_ELEMENT")
+    } else if (stubSetKey instanceof MatcherInfo && (stubSetKey as MatcherInfo).type_ === ArgumentMatchers.CONTAIN_VALUE && Array.isArray(arg)) {
       let needMatch = (stubSetKey as MatcherInfo).needMatch !== false;
       let isContained = false;
       let arr = arg as Object[]
@@ -191,7 +186,6 @@ export class ArgumentMatchers {
           break;
         }
       }
-      console.info("zzzzzzz isContained" + JSON.stringify(arg) + " " +isContained + " " + (stubSetKey as MatcherInfo).value)
       return isContained === needMatch
     }
     return false;

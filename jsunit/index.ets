@@ -119,8 +119,8 @@ export declare class ArgumentMatchers {
     public static notContainSubstring(subString: string): void;
     public static containSubArray(subArray: allExpectType[]): void;
     public static notContainSubArray(subArray: allExpectType[]): void;
-    public static containElement(value: allExpectType): void;
-    public static notContainElement(value: allExpectType): void;
+    public static containValue(value: allExpectType): void;
+    public static notContainValue(value: allExpectType): void;
 }
 
 declare interface whenResult {
