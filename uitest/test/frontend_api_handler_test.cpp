@@ -767,3 +767,533 @@ TEST_F(FrontendApiHandlerTest, touchPadMultiFingerSwipeParameterPreChecks)
     ASSERT_EQ(USAGE_ERROR, reply4.exception_.code_);
     ASSERT_TRUE(reply4.exception_.message_.find("Number of illegal fingers") != string::npos);
 }
+
+TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsValidSpeedTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto validSpeed = 1000;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["speed"] = validSpeed;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsValidPressureTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto validPressure = 0.5;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["pressure"] = validPressure;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsValidDurationTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto validDuration = 2000;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["duration"] = validDuration;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, ClickAtTouchOptionsValidPressureTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.clickAt", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto pointX = 100;
+    auto pointY = 200;
+    auto validPressure = 0.5;
+    auto point1 = json();
+    point1["x"] = pointX;
+    point1["y"] = pointY;
+    auto touchOptions = json();
+    touchOptions["pressure"] = validPressure;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, LongClickAtTouchOptionsValidDurationTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.longClickAt", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto pointX = 100;
+    auto pointY = 200;
+    auto validDuration = 2000;
+    auto point1 = json();
+    point1["x"] = pointX;
+    point1["y"] = pointY;
+    auto touchOptions = json();
+    touchOptions["duration"] = validDuration;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, SwipeBetweenTouchOptionsValidSpeedTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto validSpeed = 1000;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["speed"] = validSpeed;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsInvalidDurationTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto invalidDuration = 1000;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["duration"] = invalidDuration;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(ERR_INVALID_PARAM, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsInvalidSpeedTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto invalidSpeed = -100;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["speed"] = invalidSpeed;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(ERR_INVALID_PARAM, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsInvalidPressureTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto invalidPressure = 2.0;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["pressure"] = invalidPressure;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(ERR_INVALID_PARAM, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, ClickAtTouchOptionsInvalidPressureTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.clickAt", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto pointX = 100;
+    auto pointY = 200;
+    auto invalidPressure = 2.0;
+    auto point1 = json();
+    point1["x"] = pointX;
+    point1["y"] = pointY;
+    auto touchOptions = json();
+    touchOptions["pressure"] = invalidPressure;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(ERR_INVALID_PARAM, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsBoundarySpeedMinTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto validSpeedMin = 200;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["speed"] = validSpeedMin;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsBoundarySpeedMaxTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto validSpeedMax = 40000;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["speed"] = validSpeedMax;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsBoundaryPressureMinTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto validPressureMin = 0.0;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["pressure"] = validPressureMin;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsBoundaryPressureMaxTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto validPressureMax = 1.0;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["pressure"] = validPressureMax;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, SwipeBetweenTouchOptionsBoundarySpeedMinTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto validSpeedMin = 200;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["speed"] = validSpeedMin;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, SwipeBetweenTouchOptionsBoundarySpeedMaxTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto validSpeedMax = 40000;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["speed"] = validSpeedMax;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, SwipeBetweenTouchOptionsBoundaryPressureMinTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto validPressureMin = 0.0;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["pressure"] = validPressureMin;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, SwipeBetweenTouchOptionsBoundaryPressureMaxTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto startPointX = 100;
+    auto startPointY = 200;
+    auto endPointX = 200;
+    auto endPointY = 200;
+    auto validPressureMax = 1.0;
+    auto point1 = json();
+    point1["x"] = startPointX;
+    point1["y"] = startPointY;
+    auto point2 = json();
+    point2["x"] = endPointX;
+    point2["y"] = endPointY;
+    auto touchOptions = json();
+    touchOptions["pressure"] = validPressureMax;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, LongClickAtTouchOptionsBoundaryDurationMinTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.longClickAt", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto pointX = 100;
+    auto pointY = 200;
+    auto validDurationMin = 1500;
+    auto point1 = json();
+    point1["x"] = pointX;
+    point1["y"] = pointY;
+    auto touchOptions = json();
+    touchOptions["duration"] = validDurationMin;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, LongClickAtTouchOptionsBoundaryDurationMaxTest)
+{
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.longClickAt", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto pointX = 100;
+    auto pointY = 200;
+    auto validDurationMax = 10000;
+    auto point1 = json();
+    point1["x"] = pointX;
+    point1["y"] = pointY;
+    auto touchOptions = json();
+    touchOptions["duration"] = validDurationMax;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}

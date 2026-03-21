@@ -88,6 +88,18 @@ namespace OHOS::uitest {
         sizeof(COMPONENT_EVENT_OPTIONS_PROPERTIES) / sizeof(FrontEndJsonPropDef),
     };
 
+    /** TouchOptions jsonObject definition.*/
+    constexpr FrontEndJsonPropDef TOUCH_OPTIONS_PROPERTIES[] = {
+        {"speed", "int", false},
+        {"duration", "int", false},
+        {"pressure", "float", false},
+    };
+    constexpr FrontEndJsonDef TOUCH_OPTIONS_DEF = {
+        "TouchOptions",
+        TOUCH_OPTIONS_PROPERTIES,
+        sizeof(TOUCH_OPTIONS_PROPERTIES) / sizeof(FrontEndJsonPropDef),
+    };
+
     /** Window ResizeDirection enumerator definition.*/
     constexpr FrontendEnumValueDef RESIZE_DIRECTION_VALUES[] = {
         {"LEFT", "0"},    {"RIGHT", "1"},     {"UP", "2"},       {"DOWN", "3"},
@@ -337,19 +349,22 @@ namespace OHOS::uitest {
         {"Driver.triggerCombineKeys", "(int,int,int?,int?):void", false, false},
         {"Driver.click", "(int,int):void", false, false},
         {"Driver.click", "(Point):void", false, false},
-        {"Driver.clickAt", "(Point):void", false, false, true},
+        {"Driver.clickAt", "(Point,TouchOptions?):void", false, false, true},
         {"Driver.longClick", "(int,int):void", false, false},
         {"Driver.longClick", "(Point):void", false, false},
         {"Driver.longClickAt", "(Point, int?):void", false, false, true},
+        {"Driver.longClickAt", "(Point,TouchOptions?):void", false, false, true},
         {"Driver.doubleClick", "(int,int):void", false, false},
         {"Driver.doubleClick", "(Point):void", false, false},
         {"Driver.doubleClickAt", "(Point):void", false, false, true},
         {"Driver.swipe", "(int,int,int,int,int?):void", false, false},
         {"Driver.swipe", "(Point,Point,int?):void", false, false},
         {"Driver.swipeBetween", "(Point,Point,int?):void", false, false, true},
+        {"Driver.swipeBetween", "(Point,Point,TouchOptions?):void", false, false, true},
         {"Driver.drag", "(int,int,int,int,int?):void", false, false},
         {"Driver.drag", "(Point,Point,int?):void", false, false},
         {"Driver.dragBetween", "(Point,Point,int?,int?):void", false, false, true},
+        {"Driver.dragBetween", "(Point,Point,TouchOptions?):void", false, false, true},
         {"Driver.setDisplayRotation", "(int):void", false, false},  // DisplayRotation enum as int value
         {"Driver.getDisplayRotation", "(int?):int", false, false, true},     // DisplayRotation enum as int value
         {"Driver.setDisplayRotationEnabled", "(bool):void", false, false},
@@ -487,7 +502,8 @@ namespace OHOS::uitest {
     const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF, &UI_ELEMENT_INFO_DEF,
                                      &TOUCH_PAD_SWIPE_OPTIONS_DEF, &INPUTTEXT_MODE_DEF,
                                      &WINDOW_CHANGE_OPTIONS_DEF,
-                                     &COMPONENT_EVENT_OPTIONS_DEF
+                                     &COMPONENT_EVENT_OPTIONS_DEF,
+                                     &TOUCH_OPTIONS_DEF
                                     };
     /** The allowed in/out data type scope of frontend apis.*/
     const std::initializer_list<std::string_view> DATA_TYPE_SCOPE = {
@@ -512,6 +528,7 @@ namespace OHOS::uitest {
         UI_EVENT_OBSERVER_DEF.name_,
         TOUCH_PAD_SWIPE_OPTIONS_DEF.name_,
         INPUTTEXT_MODE_DEF.name_,
+        TOUCH_OPTIONS_DEF.name_,
     };
 } // namespace OHOS::uitest
 

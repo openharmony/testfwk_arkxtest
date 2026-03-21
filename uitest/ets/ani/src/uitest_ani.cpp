@@ -1663,6 +1663,45 @@ static ani_boolean injectKnucklePointerActionSync(ani_env *env, ani_object obj, 
     UnmarshalReply(env, callInfo_, reply_);
     return true;
 }
+static json getTouchOptions(ani_env *env, ani_object options)
+{
+    auto touchOpts = json();
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(options), &ret);
+    if (ret != ANI_FALSE) {
+        HiLog::Error(LABEL, "TouchOptions Reference IsUndefined");
+        return touchOpts;
+    }
+    string list[] = {"speed", "duration", "pressure"};
+    for (int index = 0; index < THREE; index++) {
+        string propertyStr = list[index];
+        const char *cstr = propertyStr.c_str();
+        ani_ref ref;
+        if (env->Object_GetPropertyByName_Ref(options, cstr, &ref) != ANI_OK) {
+            HiLog::Error(LABEL, "TouchOptions Property Get Failed");
+            continue;
+        }
+        env->Reference_IsUndefined(ref, &ret);
+        if (ret == ANI_TRUE) {
+            continue;
+        }
+        if (index == TWO) {
+            ani_double value;
+            compareAndReport(ANI_OK,
+                env->Object_CallMethodByName_Double(static_cast<ani_object>(ref), "toDouble", nullptr, &value),
+                "TouchOptions Property Get Double Failed", "TouchOptions Get Double Success");
+            touchOpts[list[index]] = value;
+        } else {
+            ani_int value;
+            compareAndReport(ANI_OK,
+                env->Object_CallMethodByName_Int(static_cast<ani_object>(ref), "toInt", nullptr, &value),
+                "TouchOptions Property Get Int Failed", "TouchOptions Get Int Success");
+            touchOpts[list[index]] = value;
+        }
+    }
+    return touchOpts;
+}
+
 static ani_boolean clickAtSync(ani_env *env, ani_object obj, ani_object p)
 {
     ApiCallInfo callInfo_;
@@ -1671,6 +1710,26 @@ static ani_boolean clickAtSync(ani_env *env, ani_object obj, ani_object p)
     callInfo_.apiId_ = "Driver.clickAt";
     auto point = getPoint(env, p);
     callInfo_.paramList_.push_back(point);
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
+static ani_boolean clickAtTouchOptionsSync(ani_env *env, ani_object obj, ani_object point, ani_object options)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.clickAt";
+    auto p = getPoint(env, point);
+    callInfo_.paramList_.push_back(p);
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(options), &ret);
+    if (ret == ANI_FALSE) {
+        callInfo_.paramList_.push_back(getTouchOptions(env, options));
+    } else {
+        callInfo_.paramList_.push_back(json());
+    }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
@@ -1703,6 +1762,26 @@ static ani_boolean longClickAtSync(ani_env *env, ani_object obj, ani_object p, a
     return true;
 }
 
+static ani_boolean longClickAtTouchOptionsSync(ani_env *env, ani_object obj, ani_object point, ani_object options)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.longClickAt";
+    auto p = getPoint(env, point);
+    callInfo_.paramList_.push_back(p);
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(options), &ret);
+    if (ret == ANI_FALSE) {
+        callInfo_.paramList_.push_back(getTouchOptions(env, options));
+    } else {
+        callInfo_.paramList_.push_back(json());
+    }
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
 static ani_boolean swipeBetweenSync(ani_env *env, ani_object obj, ani_object f, ani_object t, ani_object speed)
 {
     ApiCallInfo callInfo_;
@@ -1714,6 +1793,27 @@ static ani_boolean swipeBetweenSync(ani_env *env, ani_object obj, ani_object f, 
     callInfo_.paramList_.push_back(from);
     callInfo_.paramList_.push_back(to);
     pushParam(env, speed, callInfo_, true);
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
+static ani_boolean swipeBetweenTouchOptionsSync(ani_env *env, ani_object obj, ani_object from, ani_object to,
+                                                ani_object options)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.swipeBetween";
+    callInfo_.paramList_.push_back(getPoint(env, from));
+    callInfo_.paramList_.push_back(getPoint(env, to));
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(options), &ret);
+    if (ret == ANI_FALSE) {
+        callInfo_.paramList_.push_back(getTouchOptions(env, options));
+    } else {
+        callInfo_.paramList_.push_back(json());
+    }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
@@ -1732,6 +1832,27 @@ static ani_boolean dragBetweenSync(ani_env *env, ani_object obj, ani_object f, a
     callInfo_.paramList_.push_back(to);
     pushParam(env, speed, callInfo_, true);
     pushParam(env, duration, callInfo_, true);
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
+static ani_boolean dragBetweenTouchOptionsSync(ani_env *env, ani_object obj, ani_object from, ani_object to,
+                                               ani_object options)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.dragBetween";
+    callInfo_.paramList_.push_back(getPoint(env, from));
+    callInfo_.paramList_.push_back(getPoint(env, to));
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(options), &ret);
+    if (ret == ANI_FALSE) {
+        callInfo_.paramList_.push_back(getTouchOptions(env, options));
+    } else {
+        callInfo_.paramList_.push_back(json());
+    }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
@@ -1890,10 +2011,17 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function{"injectKnucklePointerActionSync", nullptr,
             reinterpret_cast<void *>(injectKnucklePointerActionSync)},
         ani_native_function{"clickAtSync", nullptr, reinterpret_cast<void *>(clickAtSync)},
+        ani_native_function{"clickAtTouchOptionsSync", nullptr, reinterpret_cast<void *>(clickAtTouchOptionsSync)},
         ani_native_function{"doubleClickAtSync", nullptr, reinterpret_cast<void *>(doubleClickAtSync)},
         ani_native_function{"longClickAtSync", nullptr, reinterpret_cast<void *>(longClickAtSync)},
+        ani_native_function{"longClickAtTouchOptionsSync", nullptr,
+            reinterpret_cast<void *>(longClickAtTouchOptionsSync)},
         ani_native_function{"swipeBetweenSync", nullptr, reinterpret_cast<void *>(swipeBetweenSync)},
+        ani_native_function{"swipeBetweenTouchOptionsSync", nullptr,
+            reinterpret_cast<void *>(swipeBetweenTouchOptionsSync)},
         ani_native_function{"dragBetweenSync", nullptr, reinterpret_cast<void *>(dragBetweenSync)},
+        ani_native_function{"dragBetweenTouchOptionsSync", nullptr,
+            reinterpret_cast<void *>(dragBetweenTouchOptionsSync)},
         ani_native_function{"crownRotateSync", nullptr, reinterpret_cast<void *>(crownRotateSync)},
         ani_native_function{"touchPadTwoFingersScrollSync", nullptr,
                             reinterpret_cast<void *>(touchPadTwoFingersScrollSync)},
