@@ -1184,7 +1184,71 @@ namespace OHOS::uitest {
         return true;
     }
 
-    static void TouchParamsConverts(const ApiCallInfo &in, Point &point0, Point &point1, UiOpArgs &uiOpArgs)
+
+    static void ValidateDuration(int32_t duration, ApiCallErr& error)
+    {
+        UiOpArgs uiOpArgs;
+        if (duration < uiOpArgs.defaultDuration_) {
+            error = ApiCallErr(ERR_INVALID_PARAM, "Duration must be at least 1500ms");
+        }
+    }
+
+    static int32_t ValidateAndGetSpeed(int32_t speed)
+    {
+        UiOpArgs uiOpArgs;
+        uiOpArgs.swipeVelocityPps_ = speed;
+        CheckSwipeVelocityPps(uiOpArgs);
+        return uiOpArgs.swipeVelocityPps_;
+    }
+
+    static void ValidatePressure(float pressure, ApiCallErr& error)
+    {
+        if (pressure < 0 || pressure > 1) {
+            error = ApiCallErr(ERR_INVALID_PARAM, "Pressure must ranges form 0 to 1");
+        }
+    }
+
+    static void ValidateTouchOptions(const std::string& apiId, json &options, UiOpArgs &uiOpArgs, ApiCallErr &err)
+    {
+        static const set<string> TOUCH_OPTIONS = {"speed", "duration", "pressure"};
+        static const map<string, set<string>> METHOD_SUPPORTED_OPTIONS = {
+            {"Driver.clickAt", {"pressure"}},
+            {"Driver.longClickAt", {"duration", "pressure"}},
+            {"Driver.swipeBetween", {"speed", "pressure"}},
+            {"Driver.dragBetween", {"speed", "duration", "pressure"}},
+        };
+        auto it = METHOD_SUPPORTED_OPTIONS.find(apiId);
+        if (it == METHOD_SUPPORTED_OPTIONS.end()) {
+            err = ApiCallErr(ERR_INVALID_INPUT, "The use of TouchOptions is not supported");
+            return;
+        }
+        auto supportedFields = it->second;
+        for (auto optIt = TOUCH_OPTIONS.begin(); optIt != TOUCH_OPTIONS.end(); optIt++) {
+            auto opt = *optIt;
+            if (options.contains(opt)) {
+                if (supportedFields.find(opt) == supportedFields.end()) {
+                    err = ApiCallErr(ERR_INVALID_INPUT, "Invalid TouchOptions field [" + opt + "] for " + apiId);
+                    return;
+                }
+                if (!options[opt].is_number()) {
+                    err = ApiCallErr(ERR_INVALID_INPUT, "Invalid type of field [" + opt + "]");
+                    return;
+                }
+                if (opt == "speed") {
+                    uiOpArgs.swipeVelocityPps_ = ValidateAndGetSpeed(options[opt]);
+                } else if (opt == "duration") {
+                    ValidateDuration(options[opt], err);
+                    uiOpArgs.longClickHoldMs_ = options[opt];
+                } else if (opt == "pressure") {
+                    ValidatePressure(options[opt], err);
+                    uiOpArgs.touchPressure_ = options[opt];
+                }
+            }
+        }
+    }
+
+    static void TouchParamsConverts(const ApiCallInfo &in, Point &point0, Point &point1, UiOpArgs &uiOpArgs,
+                                    ApiCallErr &err)
     {
         auto params = in.paramList_;
         auto count = params.size();
@@ -1204,9 +1268,19 @@ namespace OHOS::uitest {
         if (params.at(1).type() != value_t::object) { // longClickAt
             uiOpArgs.longClickHoldMs_ = ReadCallArg<uint32_t>(in, INDEX_ONE, uiOpArgs.longClickHoldMs_);
         } else {
+            if (in.apiId_ == "Driver.clickAt" || in.apiId_ == "Driver.longClickAt") {
+                auto touchOptionsJson = ReadCallArg<json>(in, INDEX_ONE);
+                ValidateTouchOptions(in.apiId_, touchOptionsJson, uiOpArgs, err);
+                return;
+            }
             auto pointJson1 = ReadCallArg<json>(in, INDEX_ONE);
             auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
             point1 = Point(pointJson1["x"], pointJson1["y"], displayId1);
+            if (count == THREE && params.at(TWO).type() == value_t::object) {
+                auto touchOptionsJson = ReadCallArg<json>(in, INDEX_TWO);
+                ValidateTouchOptions(in.apiId_, touchOptionsJson, uiOpArgs, err);
+                return;
+            }
             uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
             uiOpArgs.longClickHoldMs_ = ReadCallArg<uint32_t>(in, INDEX_THREE, uiOpArgs.longClickHoldMs_);
         }
@@ -1218,22 +1292,6 @@ namespace OHOS::uitest {
         auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
         point.displayId_ = displayId;
         return point;
-    }
-
-    static void ValidateDuration(int32_t duration, ApiCallErr& error)
-    {
-        UiOpArgs uiOpArgs;
-        if (duration < uiOpArgs.defaultDuration_) {
-            error = ApiCallErr(ERR_INVALID_PARAM, "Duration must be at least 1500ms");
-        }
-    }
-
-    static int32_t ValidateAndGetSpeed(int32_t speed)
-    {
-        UiOpArgs uiOpArgs;
-        uiOpArgs.swipeVelocityPps_ = speed;
-        CheckSwipeVelocityPps(uiOpArgs);
-        return uiOpArgs.swipeVelocityPps_;
     }
 
     static void HandleLongClickComponentPresent(const ApiCallInfo &in, ApiReplyInfo &out,
@@ -1327,7 +1385,10 @@ namespace OHOS::uitest {
             auto point0 = Point(0, 0);
             auto point1 = Point(0, 0);
             UiOpArgs uiOpArgs;
-            TouchParamsConverts(in, point0, point1, uiOpArgs);
+            TouchParamsConverts(in, point0, point1, uiOpArgs, out.exception_);
+            if (out.exception_.code_ != NO_ERROR) {
+                return;
+            }
             auto op = TouchOp::CLICK;
             if (in.apiId_ == "Driver.longClick" || in.apiId_ == "Driver.longClickAt") {
                 op = TouchOp::LONG_CLICK;
