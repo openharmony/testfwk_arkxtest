@@ -76,7 +76,7 @@ class DataDriver {
     return specParams;
   }
 
-  getSpecParams() {
+  getSpecParams(): Record<string, AnyType>[] {
     let specParams: Record<string, AnyType>[] = [];
     const suiteService = this.suiteService;
     let suiteDesc = '';
