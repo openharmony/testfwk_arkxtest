@@ -2186,13 +2186,13 @@ ArgumentMatchers用于在Mock函数时自定义函数参数，它的接口以枚
 | anyFunction    | -     | 设定用户传任何function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyFunction方式调用。                    |
 | anyNumber     | -    | 设定用户传任何数字类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyNumber方式调用。                                   |
 | anyObj | - | 设定用户传任何对象类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyObj方式调用。  |
-| matchRegexs     | -    | 设定用户传任何符合正则表达式验证的参数，执行的结果都是预期的值，使用ArgumentMatchers.matchRegexs(Regex)方式调用。                  |
+| matchRegexs     | -    | 设定用户传任何符合正则表达式验证的参数，执行的结果都是预期的值，使用ArgumentMatchers.matchRegexs(RegExp)方式调用。  |
 | notString | - | @since1.0.28，设定用户传任何非字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.notString方式调用。 |
 | notBoolean | - | @since1.0.28，设定用户传任何非boolean类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notBoolean方式调用。 |
 | notNumber | - | @since1.0.28，设定用户传任何非数字类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notNumber方式调用。 |
 | notObj | - | @since1.0.28，设定用户传任何非对象类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notObj方式调用。 |
-| notFunction | - | @since1.0.28，设定用户传任何非function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyFunction方式调用。 |
-| notMatchRegexs | - | @since1.0.28，设定用户传任何不符合正则表达式验证的参数，执行的结果都是预期的值，使用ArgumentMatchers.notMatchRegexs(Regex)方式调用。 |
+| notFunction | - | @since1.0.28，设定用户传任何非function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notFunction方式调用。 |
+| notMatchRegexs | - | @since1.0.28，设定用户传任何不符合正则表达式验证的参数，执行的结果都是预期的值，使用ArgumentMatchers.notMatchRegexs(RegExp)方式调用。 |
 | containSubstring | - | @since1.0.28，设定用户传任何包含特定子串的字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.containSubstring(subString)方式调用。 |
 | notContainSubstring | - | @since1.0.28，设定用户传任何不包含特定子串的字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainSubArray(subString)方式调用。 |
 | containSubArray | - | @since1.0.28，设定用户传任何包含特定数组的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.containSubArray(subArray)方式调用。 |
