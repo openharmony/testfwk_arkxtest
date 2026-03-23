@@ -51,10 +51,12 @@ Commands:
         {"set-pastedata", std::make_tuple(3, 3, "testhelper set-pastedata <text>")},
         {"clear-pastedata", std::make_tuple(2, 2, "testhelper clear-pastedata")},
         {"hide-keyboard", std::make_tuple(2, 2, "testhelper hide-keyboard")},
+        {"--version", std::make_tuple(2, 2, "testhelper --version")},
+        {"help", std::make_tuple(2, 2, "testhelper help")},
     };
 
     // Validate argument count
-    bool ValidateArgCount(const std::string& command, int32_t argc)
+    void ValidateArgCount(const std::string& command, int32_t argc)
     {
         auto it = g_argCountMap.find(command);
         if (it == g_argCountMap.end()) {
@@ -66,7 +68,6 @@ Commands:
             PrintToConsole("Error: Invalid arguments. Usage: " + usage);
             _Exit(EXIT_FAILURE);
         }
-        return true;
     }
 
     // Command handler type
@@ -127,9 +128,11 @@ Commands:
         }
         std::string command(argv[1]);
         if (command == "--version") {
+            ValidateArgCount("--version", argc);
             PrintToConsole(VERSION);
             _Exit(EXIT_SUCCESS);
         } else if (command == "help") {
+            ValidateArgCount("help", argc);
             PrintToConsole(HELP_MSG);
             _Exit(EXIT_SUCCESS);
         }
