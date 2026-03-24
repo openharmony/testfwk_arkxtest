@@ -1693,7 +1693,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
   使用方式：
 
   ```bash
-  hdc shell aa test -p <bundleName> -b <bundleName> -s unittest OpenHarmonyTestRunner -s snapshotWhenFail true
+  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s snapshotWhenFail true
   ```
 
   功能说明：
