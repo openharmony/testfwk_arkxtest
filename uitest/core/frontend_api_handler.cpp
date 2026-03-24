@@ -1537,7 +1537,7 @@ namespace OHOS::uitest {
                     out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Finger number must be 1 when injecting pen action");
                     return;
                 }
-                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_TWO, uiOpArgs.touchPressure_);
+                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_TWO, uiOpArgs.defaultPenPressure_);
                 driver.PerformPenTouch(touch, uiOpArgs, out.exception_);
             }
         };
@@ -1755,7 +1755,7 @@ namespace OHOS::uitest {
             auto op = TouchOp::CLICK;
             if (in.apiId_ == "Driver.penLongClick") {
                 op = TouchOp::LONG_CLICK;
-                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_ONE, uiOpArgs.touchPressure_);
+                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_ONE, uiOpArgs.defaultPenPressure_);
             } else if (in.apiId_ == "Driver.penDoubleClick") {
                 op = TouchOp::DOUBLE_CLICK_P;
             } else if (in.apiId_ == "Driver.penSwipe") {
@@ -1769,7 +1769,7 @@ namespace OHOS::uitest {
                     out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "The point is not on the screen");
                     return;
                 }
-                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_THREE, uiOpArgs.touchPressure_);
+                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_THREE, uiOpArgs.defaultPenPressure_);
             }
             if (op == TouchOp::SWIPE) {
                 if (!CheckPointDisplayId(point0, point1, out)) {
