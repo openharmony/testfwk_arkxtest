@@ -171,7 +171,7 @@ namespace OHOS::uitest {
         uint32_t fingerNum_ = 0;
         uint32_t size_ = 0;
         TouchToolType touchToolType_ = TouchToolType::FINGER;
-        float touchPressure_ = 1.0;
+        float touchPressure_ = 0.0;
         bool syncInject_ = false;
     };
 
@@ -201,7 +201,8 @@ namespace OHOS::uitest {
         int32_t scrollWidgetDeadZone_ = 80; // make sure the scrollWidget does not slide more than one page.
         int32_t pinchWidgetDeadZone_ = 40;  // pinching at the edges of the widget has no effect.
         uint16_t swipeStepsCounts_ = 50;
-        float touchPressure_ = 1.0;
+        float touchPressure_ = 0.0;
+        float defaultPenPressure_ = 1.0;
         bool inputByPasteBoard_ = false;
         bool inputAdditional_ = false;
     };
