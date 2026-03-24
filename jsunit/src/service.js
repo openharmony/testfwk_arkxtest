@@ -17,6 +17,7 @@ import SysTestKit from './module/kit/SysTestKit';
 import { TAG } from './Constant';
 import LogExpectError from './module/report/LogExpectError';
 import { NestFilter } from './module/config/Filter';
+import FailureCaptureService from './module/failure/FailureCaptureService';
 
 function assertTrueFun(actualValue) {
     let actualValueStr = (actualValue === null || actualValue === undefined) ? actualValue :actualValue.toString();
@@ -747,6 +748,15 @@ SuiteService.Suite = class {
             } catch (e) {
                 console.error(`${TAG}stack:${e?.stack}`);
                 console.error(`${TAG}stack end`);
+                if (configService.enableFailureCapture) {
+                    const suiteName = this.description;
+                    const specName = specItem.description;
+                    try {
+                        await FailureCaptureService.captureOnFailure(suiteName, specName, e);
+                    } catch (captureError) {
+                        console.error(`${TAG}Failed to capture screenshot: ${captureError.message}`);
+                    }
+                }
                 if (e instanceof AssertException) {
                     specItem.fail = e;
                 } else if (e instanceof SkipError) {

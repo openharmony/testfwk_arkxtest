@@ -41,6 +41,7 @@ class ConfigService {
         this.runSkipped = '';
         this.filterXdescribe = [];
         this.testTag = [];
+        this.enableFailureCapture = false;
     }
 
     init(coreContext) {
@@ -93,7 +94,7 @@ class ConfigService {
             }
         }
 
-        let paramKeys = ['dryRun', 'random', 'breakOnError', 'coverage', 'skipMessage'];
+        let paramKeys = ['dryRun', 'random', 'breakOnError', 'coverage', 'skipMessage', 'snapshotWhenFail'];
         for (const key of paramKeys) {
             if (params[key] !== undefined && params[key] !== 'true' && params[key] !== 'false') {
                 this.filterValid.push(`${key}:${params[key]}`);
@@ -177,6 +178,10 @@ class ConfigService {
             this.coverage = params.coverage;
             this.skipMessage = params.skipMessage;
             this.runSkipped = params.runSkipped;
+            if (params.snapshotWhenFail === 'true') {
+                this.enableFailureCapture = true;
+                console.info(`${TAG}Failure capture enabled by command line parameter`);
+            }
             this.filterParam = {
                 testType: TESTTYPE,
                 level: LEVEL,
