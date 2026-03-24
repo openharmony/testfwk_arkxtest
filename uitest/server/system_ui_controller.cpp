@@ -661,7 +661,9 @@ namespace OHOS::uitest {
         switch (events.GetToolType()) {
             case TouchToolType::FINGER:
                 pinterItem.SetToolType(PointerEvent::TOOL_TYPE_FINGER);
-                pinterItem.SetPressure(events.GetTouchPressure());
+                if (events.GetTouchPressure() != 0.0) {
+                    pinterItem.SetPressure(events.GetTouchPressure());
+                }
                 break;
             case TouchToolType::PEN:
                 pinterItem.SetToolType(PointerEvent::TOOL_TYPE_PEN);
