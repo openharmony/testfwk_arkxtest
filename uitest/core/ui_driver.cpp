@@ -159,9 +159,8 @@ namespace OHOS::uitest {
 
     void UiDriver::DumpUiHierarchy(nlohmann::json &out, const DumpOption &option, ApiCallErr &error)
     {
-        DisplayManager &displayMgr = DisplayManager::GetInstance();
-        if (option.displayId_ == UNASSIGNED) {
-            option.displayId_ = DisplayManager::GetInstance().GetDefaultDisplayId();
+        if (option.displayId == UNASSIGNED) {
+            option.displayId = DisplayManager::GetInstance().GetDefaultDisplayId();
         }
         UpdateUIWindows(error, option.displayId_);
         if (error.code_ != NO_ERROR) {
@@ -180,7 +179,6 @@ namespace OHOS::uitest {
             out = childDom;
         } else {
             nlohmann::json attrData = nlohmann::json();
-
             for (int i = 0; i < UiAttr::HIERARCHY; ++i) {
                 attrData[ATTR_NAMES[i].data()] = "";
             }
