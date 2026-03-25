@@ -162,7 +162,7 @@ namespace OHOS::uitest {
         DisplayManager &displayMgr = DisplayManager::GetInstance();
         if (option.displayId_ == UNASSIGNED) {
             option.displayId_ = DisplayManager::GetInstance().GetDefaultDisplayId();
-        }        
+        }
         UpdateUIWindows(error, option.displayId_);
         if (error.code_ != NO_ERROR) {
             return;
