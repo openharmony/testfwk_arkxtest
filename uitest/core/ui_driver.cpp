@@ -157,7 +157,7 @@ namespace OHOS::uitest {
         }
     }
 
-    void UiDriver::DumpUiHierarchy(nlohmann::json &out, const DumpOption &option, ApiCallErr &error)
+    void UiDriver::DumpUiHierarchy(nlohmann::json &out, DumpOption &option, ApiCallErr &error)
     {
         option.displayId_ = uiController_->GetValidDisplayId(option.displayId_);
         UpdateUIWindows(error, option.displayId_);
