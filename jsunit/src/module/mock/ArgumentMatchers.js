@@ -131,11 +131,11 @@ class ArgumentMatchers {
         let arg = arguments[0];
         let stubSetKey = arguments[1];
 
-        if (stubSetKey && stubSetKey === this.any && arg) {
+        if (stubSetKey && stubSetKey === this.ANY && arg) {
             return true;
         }
 
-        if (typeof arg === 'string' && stubSetKey === this.ANY) {
+        if (typeof arg === 'string' && stubSetKey === this.ANY_STRING) {
             return true;
         }
 
