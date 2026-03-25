@@ -211,7 +211,7 @@ namespace OHOS::uitest {
         return EXIT_SUCCESS;
     }
 
-    static void DumpLayoutImpl(const DumpOption &option, bool initController, ApiCallErr &err)
+    static void DumpLayoutImpl(DumpOption &option, bool initController, ApiCallErr &err)
     {
         ofstream fout;
         fout.open(option.savePath_, ios::out | ios::binary);
