@@ -16,7 +16,6 @@
 #include <future>
 #include <thread>
 #include <atomic>
-#include <display_manager.h>
 #include "ui_model.h"
 #include "ui_driver.h"
 
@@ -158,15 +157,9 @@ namespace OHOS::uitest {
         }
     }
 
-    void UiDriver::CheckDisplayId(const DumpOption &option)
-    {
-        if (option.displayId_ == UNASSIGNED) {
-            option.displayId_ = DisplayManager::GetInstance().GetDefaultDisplayId();
-        }
-    }
     void UiDriver::DumpUiHierarchy(nlohmann::json &out, const DumpOption &option, ApiCallErr &error)
     {
-        CheckDisplayId(option);
+        option.displayId_ = uiController_->GetValidDisplayId(option.displayId_);
         UpdateUIWindows(error, option.displayId_);
         if (error.code_ != NO_ERROR) {
             return;
