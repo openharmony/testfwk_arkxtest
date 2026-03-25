@@ -188,6 +188,9 @@ namespace OHOS::uitest {
         {
             return false;
         }
+        virtual int32_t GetValidDisplayId(int32_t id) const {
+            return 0;
+        };
     };
 }
 
