@@ -350,7 +350,8 @@ namespace OHOS::uitest {
     {
         auto &paramList = ctx.callInfo_.paramList_;
         const auto &id = ctx.callInfo_.apiId_;
-        if (id  == "Driver.screenCap" || id  == "UiDriver.screenCap" || id  == "Driver.screenCapture" || id == "Driver.dumpLayout") {
+        if (id  == "Driver.screenCap" || id  == "UiDriver.screenCap" || id  == "Driver.screenCapture"
+            || id == "Driver.dumpLayout") {
             if (paramList.size() < 1 || paramList.at(0).type() != nlohmann::detail::value_t::string) {
                 LOG_E("Missing file path argument");
                 error = CreateJsException(env, ERR_INVALID_INPUT, "Missing file path argument");
