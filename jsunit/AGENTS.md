@@ -1,7 +1,5 @@
 # JsUnit - AI Knowledge Base
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Overview
 
 **JsUnit (Hypium)** is the JavaScript/ArkTS unit testing framework component of arkxtest, providing comprehensive test execution capabilities for OpenHarmony applications and system interfaces. It serves as the foundation for writing and executing unit tests with rich assertion libraries, mocking capabilities, and data-driven testing support.
