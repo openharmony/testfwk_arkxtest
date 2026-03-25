@@ -189,7 +189,6 @@ namespace OHOS::uitest {
             out["attributes"] = attrData;
             out["children"] = childDom;
         }
-
         if (option.addExternAttr_) {
             map<int32_t, string_view> elementTrees;
             vector<char *> buffers;
