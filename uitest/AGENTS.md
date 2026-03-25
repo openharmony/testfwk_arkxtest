@@ -1,7 +1,5 @@
 # UiTest - AI Knowledge Base
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Overview
 
 uitest is OpenHarmony's UI automation testing framework, operating on a **client-server architecture** with multi-language support (ArkTS-Static, ArkTS-Dynamic, JavaScript, and Cangjie).
