@@ -1363,6 +1363,38 @@ static ani_boolean screenCapSync(ani_env *env, ani_object obj, ani_string path, 
     return reply_.resultValue_.get<bool>();
 }
 
+static ani_boolean dumpLayoutSync(ani_env *env, ani_object obj, ani_string savepath, ani_object displayId)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.dumpLayout";
+    
+    string savePath = aniStringToStdString(env, savepath);
+    int32_t fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
+    if (fd == -1) {
+        return false;
+    }
+    fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+    HiLog::Info(LABEL, "dumpLayout savePath: %{public}s, fd: %{public}d", savePath.c_str(), fd);
+    
+    callInfo_.paramList_[INDEX_ZERO] = fd;
+    callInfo_.fdParamIndex_ = INDEX_ZERO;
+    pushParam(env, displayId, callInfo_, true);
+    
+    Transact(callInfo_, reply_);
+    ani_ref result = UnmarshalReply(env, callInfo_, reply_);
+    if (result == nullptr) {
+        close(fd);
+        return false;
+    }
+    
+    // Close the file descriptor as it's handled by the server side
+    close(fd);
+    
+    return reply_.resultValue_.get<bool>();
+}
+
 static ani_boolean setDisplayRotationEnabledSync(ani_env *env, ani_object obj, ani_boolean enable)
 {
     ApiCallInfo callInfo_;
@@ -1992,6 +2024,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function{"setDisplayRotationSync", nullptr, reinterpret_cast<void *>(setDisplayRotationSync)},
         ani_native_function{"screenCaptureSync", nullptr, reinterpret_cast<void *>(screenCaptureSync)},
         ani_native_function{"screenCapSync", nullptr, reinterpret_cast<void *>(screenCapSync)},
+        ani_native_function{"dumpLayoutSync", nullptr, reinterpret_cast<void *>(dumpLayoutSync)},
         ani_native_function{"penSwipeSync", nullptr, reinterpret_cast<void *>(penSwipeSync)},
         ani_native_function{"penClickSync", nullptr, reinterpret_cast<void *>(penClickSync)},
         ani_native_function{"penDoubleClickSync", nullptr, reinterpret_cast<void *>(penDoubleClickSync)},

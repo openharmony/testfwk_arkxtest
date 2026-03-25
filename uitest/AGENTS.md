@@ -312,6 +312,10 @@ hdc shell uitest dumpLayout -p /data/local/tmp/app.json -b com.example.app
 hdc shell uitest dumpLayout -p /data/local/tmp/custom.json -e customAttr
 ```
 
+**API Usage:**
+The dumpLayout API (API 26.0.0) supports the format:
+- `dumpLayout(savePath: string, displayId?: int)` - Saves layout to specified path (converted to file descriptor internally), with optional display ID parameter
+
 Options: `-i` (no merge), `-a` (include font attrs), `-b` (bundleName), `-w` (windowId), `-m` (merge), `-d` (displayId), `-e` (custom attr)
 
 **3. Start Daemon**

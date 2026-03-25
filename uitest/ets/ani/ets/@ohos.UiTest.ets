@@ -1263,6 +1263,7 @@ export class Component {
     private native setDisplayRotationSync(rotation: DisplayRotation):boolean;
     private native screenCaptureSync(savepath: string, rect?: Rect):boolean;
     private native screenCapSync(savepath: string, displayId?: int):boolean;
+    private native dumpLayoutSync(savepath: string, displayId?: int):boolean;
   
     private native penSwipeSync(f: Point, t: Point, speed?: int, pressure?: double): boolean;
     private native penClickSync(p: Point):boolean;
@@ -1478,7 +1479,20 @@ export class Component {
         });
         return promise;
     }
-  
+
+    dumpLayout(savePath: string, displayId?: int): Promise<boolean> {
+        let promise = new Promise<boolean>((resolve: (value: boolean) => void, reject: (error: Error) => void) => {
+        let promise1 = taskpool.execute(():boolean => this.dumpLayoutSync(savePath, displayId));
+            promise1.then((e:Any)=>{
+                let value : boolean = e as boolean;
+                resolve(value);
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
   
     penSwipe(f: Point, t: Point, speed?: int, pressure?: double): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
