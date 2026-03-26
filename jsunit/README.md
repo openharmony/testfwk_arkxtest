@@ -1571,7 +1571,7 @@ export default function staticTest() {
 | 参数名       | 类型          | 必填 | 说明                        |
 |-----------|-------------|----|---------------------------|
 | methodName    | String      | 是  | 类的实例上的公共方法名。              |
-| argsArray | `Array<any>` | 是  | 一个数组，表示期望该方法被调用时所传入的参数列表。 |
+| argsArray | `Array<any>` | 是  | 一个数组，表示期望该方法被调用时所传入的参数列表。@since1.0.28，参数可传入ArgumentMatchers进行模糊匹配。 |
 
 **返回值：**
 
@@ -2186,7 +2186,19 @@ ArgumentMatchers用于在Mock函数时自定义函数参数，它的接口以枚
 | anyFunction    | -     | 设定用户传任何function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyFunction方式调用。                    |
 | anyNumber     | -    | 设定用户传任何数字类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyNumber方式调用。                                   |
 | anyObj | - | 设定用户传任何对象类型参数，执行的结果都是预期的值，使用ArgumentMatchers.anyObj方式调用。  |
-| matchRegexs     | -    | 设定用户传任何符合正则表达式验证的参数，执行的结果都是预期的值，使用ArgumentMatchers.matchRegexs(Regex)方式调用。                  |
+| matchRegexs     | -    | 设定用户传任何符合正则表达式验证的参数，执行的结果都是预期的值，使用ArgumentMatchers.matchRegexs(RegExp)方式调用。  |
+| notString | - | @since1.0.28，设定用户传任何非字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.notString方式调用。 |
+| notBoolean | - | @since1.0.28，设定用户传任何非boolean类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notBoolean方式调用。 |
+| notNumber | - | @since1.0.28，设定用户传任何非数字类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notNumber方式调用。 |
+| notObj | - | @since1.0.28，设定用户传任何非对象类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notObj方式调用。 |
+| notFunction | - | @since1.0.28，设定用户传任何非function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notFunction方式调用。 |
+| notMatchRegexs | - | @since1.0.28，设定用户传任何不符合正则表达式验证的参数，执行的结果都是预期的值，使用ArgumentMatchers.notMatchRegexs(RegExp)方式调用。 |
+| containSubstring | - | @since1.0.28，设定用户传任何包含特定子串的字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.containSubstring(subString)方式调用。 |
+| notContainSubstring | - | @since1.0.28，设定用户传任何不包含特定子串的字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainSubArray(subString)方式调用。 |
+| containSubArray | - | @since1.0.28，设定用户传任何包含特定数组的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.containSubArray(subArray)方式调用。 |
+| notContainSubArray | - | @since1.0.28，设定用户传任何不包含特定数组的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainSubArray(subArray)方式调用。 |
+| containValue | - | @since1.0.28，设定用户传任何包含特定值的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.containValue(value)方式调用。 |
+| notContainValue | - | @since1.0.28，设定用户传任何不包含特定值的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainValue(value)方式调用。 |
 
 
 **示例：**
@@ -2200,6 +2212,10 @@ class ClassName {
   }
 
   method_1(arg: string) {
+    return '888888';
+  }
+  
+  method_2(arg: number[]) {
     return '888888';
   }
 }
@@ -2219,6 +2235,74 @@ export default function argumentMatchersAnyTest() {
             // 5.对Mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
             // 执行成功的案例1，传参为字符串类型
             expect(claser.method_1('test')).assertEqual('1'); // 用例执行通过。
+        })
+		
+		it('testArgumentMatchers_ContainsSubString', 0, () => {
+            // 1.创建一个Mock能力的对象MockKit
+			let mocker: MockKit = new MockKit();
+            // 2.定类ClassName，里面两个函数，然后创建一个对象claser
+			let claser: ClassName = new ClassName();
+            // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
+			let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
+            // 4.期望claser.method_1函数被Mock后, 以任何包含'testA'字串的字符串作为入参时返回结果'1'
+			when(mockfunc)(ArgumentMatchers.containSubstring('testA')).afterReturn('1');
+            // 5.对Mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+            // testABBBC 包含 testA，满足条件，返回 '1'
+			expect(claser.method_1("testABBBC")).assertEqual('1'); // 断言执行通过
+            // 6.校验method_1被mock后符合条件的调用次数
+            // 目前仅调用过1次，入参为testABBBC，testAAA不包含testABBBC，满足条件
+			mocker.verify('method_1', [ArgumentMatchers.notContainSubstring('testAAA')]).once();
+        })
+		
+		it('testArgumentMatchers_ContainElement', 0, () => {
+            // 1.创建一个Mock能力的对象MockKit
+			let mocker: MockKit = new MockKit();
+            // 2.定类ClassName，里面两个函数，然后创建一个对象claser
+			let claser: ClassName = new ClassName();
+            // 3.进行Mock操作,比如需要对ClassName类的method_2函数进行Mock
+			let mockfunc: Function = mocker.mockFunc(claser, claser.method_2);
+            // 4.期望claser.method_2函数被Mock后, 以任何包含1的数组作为入参时返回结果'1'
+			when(mockfunc)(ArgumentMatchers.containValue(1)).afterReturn('1');
+            // 5.对Mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+            // [1,2,3] 包含 1，满足条件，返回 '1'
+			expect(claser.method_2([1,2,3])).assertEqual('1'); // 断言执行通过
+            // 6.校验method_2被mock后符合条件的调用次数
+            // 目前仅调用过1次，入参为[1,2,3]，4不被[1,2,3]包含，满足条件
+			mocker.verify('method_2', [ArgumentMatchers.notContainValue(4)]).once(); // 执行success
+        })
+		
+		it('testArgumentMatchers_ContainSunArray', 0, () => {
+            // 1.创建一个Mock能力的对象MockKit
+			let mocker: MockKit = new MockKit();
+            // 2.定类ClassName，里面两个函数，然后创建一个对象claser
+			let claser: ClassName = new ClassName();
+            // 3.进行Mock操作,比如需要对ClassName类的method_2函数进行Mock
+			let mockfunc: Function = mocker.mockFunc(claser, claser.method_2);
+            // 4.期望claser.method_2函数被Mock后, 以任何包含子数组[1,2]的数组作为入参时返回结果'1'
+			when(mockfunc)(ArgumentMatchers.containSubArray([1,2])).afterReturn('1');
+            // 5.对Mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+            // [1,2,3] 包含 [1,2]，满足条件，返回 '1'
+			expect(claser.method_2([1,2,3])).assertEqual('1'); // 断言执行通过
+            // 6.校验method_2被mock后符合条件的调用次数
+            // 目前仅调用过1次，入参为[1,2,3]，[3,4]不被[1,2,3]包含，满足条件
+			mocker.verify('method_2', [ArgumentMatchers.notContainSubArray([3,4])]).once(); // 执行success
+        })
+		
+		it('testArgumentMatchers_MatchRegexs', 0, () => {
+            // 1.创建一个Mock能力的对象MockKit
+			let mocker: MockKit = new MockKit();
+            // 2.定类ClassName，里面两个函数，然后创建一个对象claser
+			let claser: ClassName = new ClassName();
+            // 3.进行Mock操作,比如需要对ClassName类的method_1函数进行Mock
+			let mockFunc: Function = mocker.mockFunc(claser, claser.method_1);
+            // 4.期望claser.method_1函数被Mock后, 以任何匹配正则表达式RegExp('123456')的字符串作为入参时返回结果'1'
+			when(mockFunc)(ArgumentMatchers.matchRegexs(new RegExp('123456'))).afterReturn('1');
+            // 5.对Mock后的函数进行断言，看是否符合预期，注意选择跟第4步中对应的断言方法
+            // '12345678' 匹配正则表达式RegExp('123456')，满足条件，返回 '1'
+			expect(claser.method_1('12345678')).assertEqual('1') //用例执行通过
+            // 6.校验method_1被mock后符合条件的调用次数
+            // 目前仅调用过1次，入参为'12345678'，不匹配正则表达式RegExp('333')，满足条件
+			mocker.verify('method_1', [ArgumentMatchers.notMatchRegexs(new RegExp('333'))]).once(); // 执行success
         })
     })
 }

@@ -64,7 +64,7 @@ function getObjectDesc(value: AnyType) {
   return message;
 }
 
-function eq(a: AnyType, b: AnyType): boolean {
+export function eq(a: AnyType, b: AnyType): boolean {
   const aType = DeepTypeUtils.getType(a);
   const bType = DeepTypeUtils.getType(b);
 

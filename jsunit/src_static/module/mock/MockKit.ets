@@ -15,14 +15,15 @@
 
 import hilog from '@ohos.hilog';
 import {expect} from '../../index';
-import { DeepTypeUtils } from '../assert/deepEquals/DeepTypeUtils'
+import { ArgumentMatchers } from './ArgumentMatchers';
+import { eq } from '../assert/deepEquals/assertDeepEquals'
 
 let domain: int = 0x0000;
 let tag: string = 'testTag';
 
 export interface MapKey {
   methodName: string,
-  args: object[],
+  args: Object[],
   classObj: object
 }
 
@@ -37,25 +38,31 @@ export class NoResult {
   code: number
 }
 
+export interface CallRecord {
+  methodName: string,
+  args: Object[],
+  classObj: object
+}
+
 export class MockKit {
   flag: boolean
   hashMap: Map<MapKey, string>
-  resultMap: Map<string, object | null | undefined>
-  propertyMap:Map<string, object | null | undefined>
-  countMap: Map<string, Map<object, object[][]>>
-  recordCalls: Map<string, int>
+  resultMap: Map<string, Object | null | undefined>
+  propertyMap:Map<string, Object | null | undefined>
+  countMap: Map<string, Map<object, Object[][]>>
+  recordCalls: Array<CallRecord>
   functionHashCodeList: Array<string>
   constructor() {
     this.flag = false
     this.hashMap = new Map<MapKey, string>()
-    this.resultMap = new Map<string, object | null | undefined>()
-    this.propertyMap = new Map<string, object | null | undefined>()
-    this.countMap = new Map<string, Map<object, object[][]>>()
-    this.recordCalls = new Map<string, int>()
+    this.resultMap = new Map<string, Object | null | undefined>()
+    this.propertyMap = new Map<string, Object | null | undefined>()
+    this.countMap = new Map<string, Map<object, Object[][]>>()
+    this.recordCalls = new Array<CallRecord>()
     this.functionHashCodeList = new Array<string>()
   }
 
-  mockProperty(instance: object, name: string, value: object)
+  mockProperty(instance: object, name: string, value: Object)
   {
     const that = this
     let isMocked = false;
@@ -76,10 +83,10 @@ export class MockKit {
       for (let i = 0; i < classType.getMethodsNum(); i++) {
         let method = classType.getMethod(i)
         if (method.getName() === getValueMethod) {
-          const args:  FixedArray<object> =  []
+          const args: FixedArray<Object> = []
           try {
-            let oriValue = method.invoke(instance, args) as object
-            const args0:  Array<object> =  []
+            let oriValue = method.invoke(instance, args) as Object
+            const args0: Array<Object> = []
             const key: MapKey = {
               methodName: name,
               args: args0,
@@ -97,7 +104,7 @@ export class MockKit {
     for (let i = 0; i < classType.getMethodsNum(); i++) {
       let method = classType.getMethod(i)
       if (method.getName() === setValueMethod) {
-        const args:  FixedArray<object> =  [value]
+        const args: FixedArray<Object> = [value]
         try {
           method.invoke(instance, args)
         } catch (e) {
@@ -138,7 +145,7 @@ export class MockKit {
       hilog.info(domain, tag, 'method %{public}s', method.getName())
       if (method.getName() === "__setMocker__") {
         hilog.info(domain, tag, '%{public}s', '__setMocker__ in')
-        const args:  FixedArray<MockKit> =  [mocker]
+        const args: FixedArray<MockKit> = [mocker]
         try {
           method.invoke(instance, args)
         } catch (e) {
@@ -149,39 +156,28 @@ export class MockKit {
     }
   }
 
-  checkIsEqualOfArgs(args1: Object[], args2: Object[]) {
+  checkIsEqualOfArgs(args1: Object, args2: Object) {
     hilog.info(domain, tag, '%{public}s', 'start run MockKit checkIsEqualOfArgs ')
-    hilog.info(domain, tag, 'args1: %{public}s, args2: %{public}s', String(args1), String(args2))
+    hilog.info(domain, tag, 'args1: %{public}s, args2: %{public}s', JSON.stringify(args1), JSON.stringify(args2))
+    if (args1 === args2) {
+      return true;
+    }
+    if (eq(args1, args2)) {
+      return true;
+    }
+    return false;
+  }
 
-    if (args1.length !== args2.length) {
-      return false;
-    }
-    for (let i = 0; i < args1.length; i++) {
-      if (args1[i] === ArgumentMatchers.any) {
-        continue;
-      } else if (args1[i] === ArgumentMatchers.anyString && typeof args2[i] === 'string') {
-        continue;
-      } else if (args1[i] === ArgumentMatchers.anyBoolean && typeof args2[i] === 'boolean') {
-        continue;
-      } else if (args1[i] === ArgumentMatchers.anyNumber && typeof args2[i] === 'number') {
-        continue;
-      } else if (args1[i] === ArgumentMatchers.anyObj && typeof args2[i] === 'object') {
-        continue;
-      } else if (args1[i] === ArgumentMatchers.anyFunction && typeof args2[i] === 'function') {
-        continue;
-      } else if (ArgumentMatchers.isRegExp(args1[i]) && typeof args2[i] === 'string') {
-        let re = args1[i] as RegExp;
-        let str = args2[i] as String
-        let isMatch = re.test(str)
-        if (isMatch) {
-          continue;
+  checkIsRightValue(paramsKey: Object[], params: Object[]): boolean {
+    return paramsKey.every((key, j) => {
+        if (ArgumentMatchers.matcheReturnKey(params[j], key)) {
+          return true;
         }
-      }
-      if (args1[i] !== args2[i]) {
-        return false
-      }
-    }
-    return true
+        if (this.checkIsEqualOfArgs(key, params[j])) {
+          return true;
+        }
+      return false;
+    });
   }
 
   setCountInfo(instance: object, className: string, methodName: string, args: Object[]) {
@@ -200,7 +196,7 @@ export class MockKit {
         instanceMap?.set(instance, [args])
       }
     } else {
-      const instanceMap = new Map<object, object[][]>()
+      const instanceMap = new Map<object, Object[][]>()
       instanceMap.set(instance, [args])
       countMap.set(key, instanceMap)
     }
@@ -209,15 +205,14 @@ export class MockKit {
   getReturnInfo(instance: object, className: string, methodName: string, args: Object[]) {
     hilog.info(domain, tag, '%{public}s', 'start run getReturnInfo')
     const hashMap = this.hashMap
-
-    let methondCall : string = methodName + '#' + string(args)
-    hilog.info(domain, tag, 'call %{public}s', methondCall)
-    let recordTimes = this.recordCalls.get(methondCall);
-    if (!recordTimes) {
-      recordTimes = 0
-    }
-    recordTimes++;
-    this.recordCalls.set(methondCall, recordTimes);
+    const callRecord: CallRecord = {
+      methodName: methodName,
+      args: [...args],
+      classObj: instance
+    };
+    this.recordCalls.push(callRecord);
+    
+    hilog.info(domain, tag, 'Method %{public}s called', methodName);
 
     for (let key of hashMap.keys()) {
       let hashKey: string = hashMap.get(key) as string
@@ -227,7 +222,7 @@ export class MockKit {
       if (!keyArgs || !keyClassObj) {
         continue
       }
-      if (keyMethodName === methodName && this.checkIsEqualOfArgs(keyArgs, args) && keyClassObj === instance) {
+      if (keyMethodName === methodName && this.checkIsRightValue(keyArgs, args) && keyClassObj === instance) {
         const returnValue = this.resultMap.get(hashKey)
         if (returnValue instanceof Error) {
           throw (returnValue as Error)
@@ -249,19 +244,20 @@ export class MockKit {
     return noResult
   }
 
-  verify(methodName: string, args: object[]) {
-    hilog.info(domain, tag, '%{public}s', 'start run verify 1111')
-    let record = methodName + '#' + string(args)
-    let invokeTimes = this.recordCalls.get(record)
-    if (!invokeTimes) {
-      invokeTimes = 0
+  verify(methodName: string, args: Object[]) {
+    let invokeTime = 0;
+    for (const record of this.recordCalls) {
+      if (record.methodName === methodName && this.checkIsRightValue(args, record.args)) {
+        invokeTime++;
+      }
     }
-    hilog.info(domain, tag, 'verify record %{public}s, has invoke %{public}d', record, invokeTimes)
-    return new VerificationMode(invokeTimes? invokeTimes: 0)
+    
+    hilog.info(domain, tag, 'verify %{public}s, has invoke %{public}d', methodName, invokeTime)
+    return new VerificationMode(invokeTime);
   }
 
   clear(instance: object) {
-    hilog.info(domain, tag, '%{public}s', 'start run clear  1111')
+    hilog.info(domain, tag, '%{public}s', 'start run clear')
     for (const hashEntries of this.hashMap.entries()) {
       if (!hashEntries) {
         continue
@@ -271,14 +267,14 @@ export class MockKit {
       if (instance === keyObject) {
         const hashValue = this.hashMap.get(key) as string
         if (this.propertyMap.has(hashValue)) {
-          const oriValue = this.propertyMap.get(hashValue) as object
+          const oriValue = this.propertyMap.get(hashValue) as Object
           let name = key.methodName
           const classType = Type.of(instance) as ClassType
           const setValueMethod = "__setProperty_" + name + "__";
           for (let i = 0; i < classType.getMethodsNum(); i++) {
             let method = classType.getMethod(i)
             if (method.getName() === setValueMethod) {
-              const args: FixedArray<object> = [oriValue]
+              const args: FixedArray<Object> = [oriValue]
               try {
                 method.invoke(instance, args)
               } catch (e) {
@@ -292,6 +288,7 @@ export class MockKit {
         this.hashMap.delete(key)
       }
     }
+    this.recordCalls = this.recordCalls.filter(record => record.classObj !== instance)
   }
 
   ignoreMockProperty(instance: object, name:string)
@@ -305,13 +302,13 @@ export class MockKit {
       const keyObject = key.classObj
       if (instance === keyObject && keyMethodName === name) {
         const hashValue = this.hashMap.get(key) as string
-        const oriValue = this.propertyMap.get(hashValue) as object
+        const oriValue = this.propertyMap.get(hashValue) as Object
         const classType = Type.of(instance) as ClassType
         const setValueMethod = "__setProperty_" + name + "__";
         for (let i = 0; i < classType.getMethodsNum(); i++) {
           let method = classType.getMethod(i)
           if (method.getName() === setValueMethod) {
-            const args: FixedArray<object> = [oriValue]
+            const args: FixedArray<Object> = [oriValue]
             try {
               method.invoke(instance, args)
             } catch (e) {
@@ -446,10 +443,9 @@ export class AfterWhen{
       hilog.info(domain, tag, 'hashmap { keyClassName:%{public}s, keyMethodName:%{public}s, keyArgs:%{public}s}, hashValue: %{public}s',
         keyMethodName, String(keyArgs), hashValue)
     }
-
   }
 
-  afterReturn(value: object) {
+  afterReturn(value: Object) {
     hilog.info(domain, tag, '%{public}s', 'start run afterReturn, hashKey: ' + this.hashKey)
     hilog.info(domain, tag, '%{public}s', 'start run afterReturn, keyInfo: ' + string(this.keyInfo.args))
     let map = this.mocker.resultMap
@@ -493,7 +489,7 @@ export class AfterWhen{
 export function when(mockFunc: Function) {
   hilog.info(domain, tag, '%{public}s', 'start run when')
   const mockFuncResult: MockFuncResult = (mockFunc as () => MockFuncResult) ()
-  return (...args: object[]) => {
+  return (...args: Object[]) => {
     const methodName = mockFuncResult.methodName
     const classObj = mockFuncResult.classObj
     const key:MapKey = {
@@ -502,46 +498,5 @@ export function when(mockFunc: Function) {
       classObj
     }
     return new AfterWhen(key, mockFuncResult.mocker)
-  }
-}
-
-export class ArgumentMatchers{
-
-  MATCH_REGEXS = "<match regexs>";
-
-
-  constructor() {
-    hilog.info(domain, tag, '%{public}s ', "ArgumentMatchers constructor")
-  }
-
-  static any() {
-  }
-
-  static anyString() {
-  }
-
-  static anyBoolean() {
-  }
-
-  static anyNumber() {
-  }
-
-  static anyObj() {
-  }
-
-  static anyFunction() {
-  }
-
-  static matchRegexs(value: RegExp) {
-    if (ArgumentMatchers.isRegExp(value)) {
-      return value;
-    }
-    throw Error('not a regex');
-  }
-
-  static isRegExp<T>(value: T) : boolean {
-    let ret  = DeepTypeUtils.getType(value) === 'RegExp';
-    hilog.info(domain, tag, 'isRegExp %{public}d ', ret);
-    return ret;
   }
 }
