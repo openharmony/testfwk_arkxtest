@@ -527,3 +527,48 @@ TEST_F(UiActionTest, computeTouchPadAction)
     action2.Decompose(events2, opt, displaySize);
     ASSERT_EQ(vectorSize2, events2.size());
 }
+
+TEST_F(UiActionTest, MouseSwipeAndDrag)
+{
+    static constexpr int32_t fromX = 100;
+    static constexpr int32_t fromY = 200;
+    static constexpr int32_t toX = 300;
+    static constexpr int32_t toY = 400;
+    static constexpr int32_t key1Code = 17;
+    static constexpr int32_t key2Code = 2072;
+    static constexpr int32_t two = 2;
+    
+    Point from {fromX, fromY};
+    Point to {toX, toY};
+    UiOpArgs opt;
+    
+    MouseSwipe dragAction(TouchOp::DRAG, from, to, key1Code, key2Code);
+    vector<MouseEvent> dragEvents;
+    dragAction.Decompose(dragEvents, opt);
+    ASSERT_GT(dragEvents.size(), 0);
+
+    ASSERT_EQ(ActionStage::MOVE, dragEvents.front().stage_);
+    ASSERT_EQ(two, dragEvents.front().keyEvents_.size());
+    ASSERT_EQ(ActionStage::DOWN, dragEvents.front().keyEvents_[0].stage_);
+    ASSERT_EQ(ActionStage::DOWN, dragEvents.front().keyEvents_[1].stage_);
+    
+    ASSERT_EQ(ActionStage::NONE, dragEvents.back().stage_);
+    ASSERT_EQ(two, dragEvents.back().keyEvents_.size());
+    ASSERT_EQ(ActionStage::UP, dragEvents.back().keyEvents_[0].stage_);
+    ASSERT_EQ(ActionStage::UP, dragEvents.back().keyEvents_[1].stage_);
+    
+    // Check middle events have mouse actions
+    for (size_t i = 1; i < dragEvents.size() - 1; i++) {
+        if (i == 1) {
+            ASSERT_EQ(ActionStage::DOWN, dragEvents[i].stage_);
+            ASSERT_EQ(MouseButton::BUTTON_LEFT, dragEvents[i].button_);
+        } else if (i == dragEvents.size() - two) {
+            ASSERT_EQ(ActionStage::UP, dragEvents[i].stage_);
+            ASSERT_EQ(MouseButton::BUTTON_LEFT, dragEvents[i].button_);
+        } else {
+            ASSERT_EQ(ActionStage::MOVE, dragEvents[i].stage_);
+            ASSERT_EQ(MouseButton::BUTTON_LEFT, dragEvents[i].button_);
+        }
+        ASSERT_TRUE(dragEvents[i].keyEvents_.empty());
+    }
+}

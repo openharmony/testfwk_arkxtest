@@ -1858,6 +1858,67 @@ static ani_boolean dragBetweenTouchOptionsSync(ani_env *env, ani_object obj, ani
     return true;
 }
 
+static json getKeyOptions(ani_env *env, ani_object options)
+{
+    auto keyOpts = json();
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(options), &ret);
+    if (ret != ANI_FALSE) {
+        HiLog::Error(LABEL, "KeyOptions Reference IsUndefined");
+        return keyOpts;
+    }
+    string list[] = {"key1", "key2"};
+    for (int index = 0; index < TWO; index++) {
+        string propertyStr = list[index];
+        const char *cstr = propertyStr.c_str();
+        ani_ref ref;
+        if (env->Object_GetPropertyByName_Ref(options, cstr, &ref) != ANI_OK) {
+            HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
+            continue;
+        }
+        env->Reference_IsUndefined(ref, &ret);
+        if (ret == ANI_TRUE) {
+            continue;
+        }
+        ani_int value;
+        compareAndReport(ANI_OK,
+            env->Object_CallMethodByName_Int(static_cast<ani_object>(ref), "toInt", nullptr, &value),
+            "Object_CallMethodByName_Int Failed", "get int value");
+        HiLog::Info(LABEL, "%{public}d ani_int", static_cast<int>(value));
+        keyOpts[propertyStr] = value;
+    }
+    return keyOpts;
+}
+
+static ani_boolean mouseDragWithOptionsSync(ani_env *env, ani_object obj, ani_object f, ani_object t,
+                                            ani_object touchOptions, ani_object keyOptions)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.mouseDragWithOptions";
+    auto from = getPoint(env, f);
+    auto to = getPoint(env, t);
+    callInfo_.paramList_.push_back(from);
+    callInfo_.paramList_.push_back(to);
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(touchOptions), &ret);
+    if (ret == ANI_FALSE) {
+        callInfo_.paramList_.push_back(getTouchOptions(env, static_cast<ani_object>(touchOptions)));
+    } else {
+        callInfo_.paramList_.push_back(json());
+    }
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(keyOptions), &ret);
+    if (ret == ANI_FALSE) {
+        callInfo_.paramList_.push_back(getKeyOptions(env, static_cast<ani_object>(keyOptions)));
+    } else {
+        callInfo_.paramList_.push_back(json());
+    }
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
 static ani_boolean crownRotateSync(ani_env *env, ani_object obj, ani_int dis, ani_object speed)
 {
     ApiCallInfo callInfo_;
@@ -2000,6 +2061,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function{"mouseMoveWithTrackSync", nullptr, reinterpret_cast<void *>(mouseMoveWithTrackSync)},
         ani_native_function{"mouseMoveToSync", nullptr, reinterpret_cast<void *>(mouseMoveToSync)},
         ani_native_function{"mouseDragSync", nullptr, reinterpret_cast<void *>(mouseDragSync)},
+        ani_native_function{"mouseDragWithOptionsSync", nullptr, reinterpret_cast<void *>(mouseDragWithOptionsSync)},
         ani_native_function{"mouseClickSync", nullptr, reinterpret_cast<void *>(mouseClickSync)},
         ani_native_function{"mouseDoubleClickSync", nullptr, reinterpret_cast<void *>(mouseDoubleClickSync)},
         ani_native_function{"mouseLongClickSync", nullptr, reinterpret_cast<void *>(mouseLongClickSync)},
