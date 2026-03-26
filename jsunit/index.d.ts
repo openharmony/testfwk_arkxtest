@@ -103,7 +103,19 @@ export class ArgumentMatchers {
   static anyNumber;
   static anyObj;
   static anyFunction;
-  static matchRegexs(Regex: RegExp): void
+  static matchRegexs(Regex: RegExp): void;
+  static notString;
+  static notBoolean;
+  static notNumber;
+  static notObj;
+  static notFunction;
+  static notMatchRegexs(Regex: RegExp): void;
+  static containSubstring(subString: string): void;
+  static notContainSubstring(subString: string): void;
+  static containSubArray(subArray: []): void;
+  static notContainSubArray(subArray: []): void;
+  static containValue(value: any): void;
+  static notContainValue(value: any): void;
 }
 
 declare interface when {
