@@ -39,7 +39,7 @@ type ServiceType = SuiteService
 type EventType = SuiteEvent | SpecEvent | TaskEvent;
 class Core {
   public static instance: WorkerLocal<Core> | null = null;
-  public static getInstance() {
+  public static getInstance(): Core {
     if (!Core.instance) {
       let core = new Core();
       Core.instance = new WorkerLocal<Core>(() => core);
@@ -89,7 +89,7 @@ class Core {
     this.sService = null;
   }
 
-  addService(name: string, service: ServiceType) {
+  addService(name: string, service: ServiceType): void {
     let serviceMap = this.services.get(name);
     if (!serviceMap) {
       serviceMap = new Map<string, ServiceType>();
@@ -107,11 +107,11 @@ class Core {
     }
   }
 
-  getServices(name: string) {
+  getServices(name: string): Map<string, ServiceType> | undefined {
     return this.services.get(name);
   }
 
-  registerEvent(serviceName: string, event: EventType) {
+  registerEvent(serviceName: string, event: EventType): void {
     let eventMap = this.events.get(serviceName);
     if (!eventMap) {
       eventMap = new Map<string, EventType>();
@@ -120,14 +120,14 @@ class Core {
     eventMap.set(event.id, event);
   }
 
-  unRegisterEvent(serviceName: string, eventID: string) {
+  unRegisterEvent(serviceName: string, eventID: string): void {
     const eventObj = this.events.get(serviceName);
     if (eventObj) {
       eventObj.delete(eventID);
     }
   }
 
-  subscribeEvent(serviceName: string, serviceObj: ReportService) {
+  subscribeEvent(serviceName: string, serviceObj: ReportService): void {
     const eventMap = this.events.get(serviceName);
     if (eventMap) {
       eventMap.forEach((value: EventType) => {
@@ -142,7 +142,7 @@ class Core {
     }
   }
 
-  subscribeEvent(serviceName: string, serviceObj: OhReport) {
+  subscribeEvent(serviceName: string, serviceObj: OhReport): void {
     const eventMap = this.events.get(serviceName);
     if (eventMap) {
       eventMap.forEach((value: EventType) => {
@@ -157,7 +157,7 @@ class Core {
     }
   }
 
-  async fireEvents(serviceName: string, eventName: string) {
+  async fireEvents(serviceName: string, eventName: string): Promise<void> {
     const eventMap = this.events.get(serviceName);
     if (eventMap) {
       for (const event of eventMap.values()) {
@@ -197,7 +197,7 @@ class Core {
     }
   }
 
-  addToGlobal(apis: ApiIF) {
+  addToGlobal(apis: ApiIF): void {
     const describe = apis.describe;
     if (describe) {
       this.describe = describe;
@@ -252,7 +252,7 @@ class Core {
     }
   }
 
-  init() {
+  init(): void {
     let suiteService = new SuiteService({ id: 'default' })
     suiteService.msgHandle = this.msgHandle;
     this.addService('suite', suiteService);
@@ -308,7 +308,7 @@ class Core {
     }
   }
 
-  async execute(abilityDelegator: abilityDelegatorRegistry.AbilityDelegator) {
+  async execute(abilityDelegator: abilityDelegatorRegistry.AbilityDelegator): Promise<void> {
     const suiteService = this.getDefaultService('suite');
     const configService = this.getDefaultService('config');
     if (suiteService !== null && configService !== null) {

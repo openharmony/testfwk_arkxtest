@@ -17,7 +17,7 @@ import { ConfigService } from './module/config/configService';
 import { ItfnType, AnyType } from './module/types/common';
 import { TAG } from './Constant';
 
-export function getFuncWithArgsZero(func: () => Any, timeout: int, isStressTest: boolean) {
+export function getFuncWithArgsZero(func: () => Any, timeout: int, isStressTest: boolean): Promise<void> {
   return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (value: Error) => void) => {
     let timer = 0;
     if (!isStressTest) {
@@ -51,7 +51,7 @@ export function getFuncWithArgsZero(func: () => Any, timeout: int, isStressTest:
   });
 }
 
-export function getFuncWithArgsOne(func: (params: () => void) => Any, timeout: int, isStressTest: boolean) {
+export function getFuncWithArgsOne(func: (params: () => void) => Any, timeout: int, isStressTest: boolean): Promise<void> {
   return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
     let timer = 0;
     if (!isStressTest) {
@@ -91,7 +91,7 @@ export function getFuncWithArgsTwo(
   timeout: int,
   paramItem: AnyType,
   isStressTest: boolean
-) {
+): Promise<void> {
   return new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (reason: Error) => void) => {
     let timer = 0;
     if (!isStressTest) {
@@ -130,7 +130,7 @@ export function processFunc(
   coreContext: Core,
   func: () => Any,
   itTimeout?: number
-) {
+): () => Promise<void> {
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
     const config = configService as ConfigService;
@@ -157,7 +157,7 @@ export function processFunc(
   };
 }
 
-export function processFuncWithArgOne(coreContext: Core, func: (done: () => void) => Any, itTimeout?: number) {
+export function processFuncWithArgOne(coreContext: Core, func: (done: () => void) => Any, itTimeout?: number): () => Promise<void> {
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
     const config = configService as ConfigService;
@@ -180,7 +180,7 @@ export function processFuncWithArgOne(coreContext: Core, func: (done: () => void
 }
 
 export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => void, param2: AnyType) => Any,
-  itTimeout?: number) {
+  itTimeout?: number): (paramItem: AnyType) => Promise<void> {
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
     const config = configService as ConfigService;

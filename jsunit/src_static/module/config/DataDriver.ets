@@ -37,7 +37,7 @@ class DataDriver {
     this.specService = null;
   }
 
-  init(coreContext: Core) {
+  init(coreContext: Core): void {
     this.coreContext = coreContext;
     const suiteService = coreContext.getDefaultService('suite');
     if (suiteService) {
@@ -49,7 +49,7 @@ class DataDriver {
     }
   }
 
-  getSpecParamsValue(specs: DataDriverSuite[]) {
+  getSpecParamsValue(specs: DataDriverSuite[]): Record<string, AnyType>[] {
     let specParams: Record<string, AnyType>[] = [];
     let specDesc = '';
     const specService = this.specService;
@@ -112,7 +112,7 @@ class DataDriver {
     return specParams;
   }
 
-  getSuiteParams() {
+  getSuiteParams(): Record<string, AnyType> {
     let suiteParams: Record<string, AnyType> = {};
     const suiteService = this.suiteService;
     if (suiteService) {

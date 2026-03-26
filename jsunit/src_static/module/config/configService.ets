@@ -74,11 +74,11 @@ class ConfigService {
     this.testTag = [];
   }
 
-  init(coreContext: Core) {
+  init(coreContext: Core): void {
     this.coreContext = coreContext;
   }
 
-  isNormalInteger(str: string) {
+  isNormalInteger(str: string): boolean {
     const n = Math.floor(Number(str));
     return n !== Infinity && String(n) === String(str) && n >= 0;
   }
@@ -93,7 +93,7 @@ class ConfigService {
     }
   }
 
-  basicParamValidCheck(params: ConfigIf) {
+  basicParamValidCheck(params: ConfigIf): void {
     const size = params.size;
     if (size) {
       const sizeArray = new Array<string>('small', 'medium', 'large');
@@ -129,7 +129,7 @@ class ConfigService {
     }
   }
 
-  filterParamValidCheck(params: ConfigIf) {
+  filterParamValidCheck(params: ConfigIf): void {
     let timeout = params.timeout;
     if (timeout) {
       if (!this.isNormalInteger(timeout)) {
@@ -183,7 +183,7 @@ class ConfigService {
     }
   }
 
-  setConfig(params: ConfigIf) {
+  setConfig(params: ConfigIf): void {
     this.basicParamValidCheck(params);
     this.filterParamValidCheck(params);
     try {
@@ -248,7 +248,7 @@ class ConfigService {
     }
   }
 
-  parseParams() {
+  parseParams(): void {
     if (this.filter !== 0) {
       return;
     }
@@ -349,7 +349,7 @@ class ConfigService {
     console.info(`${TAG}filter params:${this.filter}`);
   }
 
-  isCurrentSuite(description: string) {
+  isCurrentSuite(description: string): boolean {
     if (this.suite !== undefined && this.suite !== '' && this.suite !== null) {
       const suiteList = this.suite.split(',');
       const suiteArray = new Array<string>();
@@ -447,7 +447,7 @@ class ConfigService {
     return false;
   }
 
-  isRandom() {
+  isRandom(): boolean {
     return this.random || false;
   }
 
@@ -455,11 +455,11 @@ class ConfigService {
     return this.breakOnError !== 'true' ? false : true;
   }
 
-  setSupportAsync(value: boolean) {
+  setSupportAsync(value: boolean): void {
     this.supportAsync = value;
   }
 
-  isSupportAsync() {
+  isSupportAsync(): boolean {
     return this.supportAsync;
   }
 
@@ -506,7 +506,7 @@ class ConfigService {
     }
     return targetParams;
   }
-  translateParamsToString(parameters: Record<string, string>) {
+  translateParamsToString(parameters: Record<string, string>): string {
     const keySet = new Set<string>(KEYSET);
     let targetParams = '';
     for (const key of Object.keys(parameters)) {
@@ -517,7 +517,7 @@ class ConfigService {
     return targetParams.trim();
   }
 
-  execute() {}
+  execute(): void {}
 
   checkIfSuiteInSkipRun(desc: string): boolean {
     const list = this.runSkipped.split(',');

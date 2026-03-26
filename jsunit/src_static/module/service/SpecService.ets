@@ -49,15 +49,15 @@ class SpecService {
     this.currentRunningSpec = new StaticSpec({ description: '', fi: 0, fn: (): void => {} });
   }
 
-  init(coreContext: Core) {
+  init(coreContext: Core): void {
     this.coreContext = coreContext;
   }
 
-  setCurrentRunningSpec(spec: StaticSpec | null) {
+  setCurrentRunningSpec(spec: StaticSpec | null): void {
     this.currentRunningSpec = spec;
   }
 
-  setStatus(hasError: boolean) {
+  setStatus(hasError: boolean): void {
     this.hasError = hasError;
   }
 
@@ -65,18 +65,18 @@ class SpecService {
     return this.hasError;
   }
 
-  getTestTotal() {
+  getTestTotal(): int {
     return this.totalTest;
   }
 
-  getCurrentRunningSpec() {
+  getCurrentRunningSpec(): StaticSpec | null {
     return this.currentRunningSpec;
   }
-  getSkipSpecNum() {
+  getSkipSpecNum(): int {
     return this.skipSpecNum;
   }
 
-  initSpecService() {
+  initSpecService(): void {
     this.isSkipSpec = false;
     this.specSkipReason = '';
   }
@@ -161,7 +161,7 @@ class SpecService {
     }
   }
 
-  xit(desc: string, filter: int, func: ItfnType, reason: string) {
+  xit(desc: string, filter: int, func: ItfnType, reason: string): void {
     const coreContext = this.coreContext;
     if (coreContext) {
       const suiteService = coreContext.getDefaultService('suite');

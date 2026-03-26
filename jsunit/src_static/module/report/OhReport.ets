@@ -48,7 +48,7 @@ class OhReport {
     this.specService = null;
   }
 
-  init(coreContext: Core) {
+  init(coreContext: Core): void {
     this.coreContext = coreContext;
     const suite = coreContext.getDefaultService('suite');
     if (suite !== null) {
@@ -67,7 +67,7 @@ class OhReport {
     }
   }
 
-  taskStart() {}
+  taskStart(): void {}
 
   async taskDone() {
     const suite = this.suiteService;
@@ -125,7 +125,7 @@ class OhReport {
     }
   }
 
-  incorrectFormat() {
+  incorrectFormat(): void {
     const core = this.coreContext;
     if (core) {
       const config = core.getDefaultService('config');
@@ -140,7 +140,7 @@ class OhReport {
     }
   }
 
-  incorrectTestSuiteFormat() {
+  incorrectTestSuiteFormat(): void {
     const core = this.coreContext;
     if (core) {
       const config = core.getDefaultService('config');
