@@ -57,15 +57,15 @@ class ExpectService {
     return new AssertMatcher(actualValue, currentRunningSpec, currentRunningSuite, this.matchers, this.customMatchers);
   }
 
-  init(coreContext: Core) {
+  init(coreContext: Core): void {
     this.coreContext = coreContext;
   }
 
-  addMatchers(matchers: AssertMatcherIF) {
+  addMatchers(matchers: AssertMatcherIF): void {
     this.matchers = matchers;
   }
 
-  addCustomMatchers(customAssert: Function) {
+  addCustomMatchers(customAssert: Function): void {
     if (typeof customAssert !== 'function') {
       throw new Error('Custom assertion must be a function');
     }
@@ -76,7 +76,7 @@ class ExpectService {
     this.customMatchers.set(customAssertName, customAssert);
   }
 
-  removeCustomMatchers(customAssertionName: string) {
+  removeCustomMatchers(customAssertionName: string): void {
     const func = this.customMatchers.get(customAssertionName)
     if(func) {
       this.customMatchers.delete(customAssertionName)
@@ -183,18 +183,18 @@ export class AssertMatcher {
   }
 
   // 翻转方法
-  not() {
+  not(): AssertMatcher {
     this.isNot = true;
     return this;
   }
 
-  message(msg: string) {
+  message(msg: string): AssertMatcher {
     this.currentRunningSpec.expectMsg = msg;
     console.info(`${TAG} msg: ${msg}`);
     return this;
   }
 
-  addCustomAssert(customMatcher: Map<string, Function>) {
+  addCustomAssert(customMatcher: Map<string, Function>): void {
     for (const key of customMatcher.keys()) {
       const customAssertFunc = customMatcher.get(key)
       if (customAssertFunc && typeof customAssertFunc === 'function') {
@@ -226,7 +226,7 @@ export class AssertMatcher {
   }
 
 
-  addCloseAssert(matchers: AssertMatcherIF) {
+  addCloseAssert(matchers: AssertMatcherIF): void {
     const numFn = (matcherName: string, assertFn: (actualValue: number, expected: number[]) => AssertResult) => {
       return (arg1: NumberType, arg2: NumberType) => {
         const result = assertFn((this.actualValue as NumberType).toDouble(), [arg1.toDouble(), arg2.toDouble()]);
@@ -254,7 +254,7 @@ export class AssertMatcher {
     }
   }
 
-  addNumAssert(matchers: AssertMatcherIF) {
+  addNumAssert(matchers: AssertMatcherIF): void {
     const numFn = (matcherName: string, assertFn: (actualValue: number, expected: number[]) => AssertResult) => {
       return (arg1: NumberType): void => {
         const result = assertFn((this.actualValue as NumberType).toDouble(), [arg1.toDouble()]);
@@ -297,7 +297,7 @@ export class AssertMatcher {
     }
   }
 
-  addFailAssert(matchers: AssertMatcherIF) {
+  addFailAssert(matchers: AssertMatcherIF): void {
     const voidFn = (matcherName: string, assertFn: () => AssertResult) => {
       return () => {
         const result = assertFn();
@@ -325,7 +325,7 @@ export class AssertMatcher {
     }
   }
 
-  addNumWithoutExpectAssert(matchers: AssertMatcherIF) {
+  addNumWithoutExpectAssert(matchers: AssertMatcherIF): void {
     const nNumFn = (matcherName: string, assertFn: (actualValue: number) => AssertResult) => {
       return () => {
         const result = assertFn((this.actualValue as NumberType).toDouble());
@@ -362,7 +362,7 @@ export class AssertMatcher {
     }
   }
 
-  addBooleanAssert(matchers: AssertMatcherIF) {
+  addBooleanAssert(matchers: AssertMatcherIF): void {
     const booleanFn = (matcherName: string, assertFn: (actualValue: boolean) => AssertResult) => {
       return () => {
         const result = assertFn(this.actualValue as boolean);
@@ -394,7 +394,7 @@ export class AssertMatcher {
     }
   }
 
-  addAnytypeAssert(matchers: AssertMatcherIF) {
+  addAnytypeAssert(matchers: AssertMatcherIF): void {
     const equalFn = (matcherName: string, assertFn: (actualValue: AnyType, expected: AnyType[]) => AssertResult) => {
       return (arg: AnyType) => {
         const result = assertFn(this.actualValue, [arg]);
@@ -437,7 +437,7 @@ export class AssertMatcher {
 
   }
 
-  addInstanceOfAssert(matchers: AssertMatcherIF) {
+  addInstanceOfAssert(matchers: AssertMatcherIF): void {
     const equalFn = (matcherName: string, assertFn: (actualValue: AnyType, expected: string[]) => AssertResult) => {
       return (arg: string) => {
         const result = assertFn(this.actualValue, [arg]);
@@ -465,7 +465,7 @@ export class AssertMatcher {
     }
   }
 
-  addUndefinedAssert(matchers: AssertMatcherIF) {
+  addUndefinedAssert(matchers: AssertMatcherIF): void {
     const undefinedFn = (matcherName: string, assertFn: (actualValue: AnyType) => AssertResult) => {
       return () => {
         const result = assertFn(this.actualValue);
@@ -496,7 +496,7 @@ export class AssertMatcher {
     }
   }
 
-  addThrowAssert(matchers: AssertMatcherIF) {
+  addThrowAssert(matchers: AssertMatcherIF): void {
     const throwFn = (matcherName: string, assertFn: (actualValue: () => void, args: string[]) => AssertResult) => {
       return (arg1: string, arg2?: string) => {
         let arr = [arg1];
@@ -531,7 +531,7 @@ export class AssertMatcher {
     }
   }
 
-  addPromiseAssert(matchers: AssertMatcherIF) {
+  addPromiseAssert(matchers: AssertMatcherIF): void {
     const promiseFn = (matcherName: string, assertFn: (actualPromise: Promise<AnyType>) => Promise<AssertResult>) => {
       return async (): Promise<void> => {
         const result: AssertResult = await assertFn(this.actualValue as Promise<AnyType>);
@@ -566,7 +566,7 @@ export class AssertMatcher {
     }
   }
 
-  addPromiseWithAssert(matchers: AssertMatcherIF) {
+  addPromiseWithAssert(matchers: AssertMatcherIF): void {
     const promiseFn = (
       matcherName: string,
       assertFn: (actualPromise: Promise<AnyType>, expectedValue: AnyType[]) => Promise<AssertResult>
@@ -600,7 +600,7 @@ export class AssertMatcher {
     }
   }
 
-  addPromiseWithError(matchers: AssertMatcherIF) {
+  addPromiseWithError(matchers: AssertMatcherIF): void {
     const promiseFn = (
       matcherName: string,
       assertFn: (actualPromise: Promise<AnyType>, expectedValue: string[]) => Promise<AssertResult>
@@ -638,7 +638,7 @@ export class AssertMatcher {
     }
   }
 
-  addAssert(matchers: AssertMatcherIF) {
+  addAssert(matchers: AssertMatcherIF): void {
     this.addCloseAssert(matchers);
     this.addNumAssert(matchers);
     this.addFailAssert(matchers);

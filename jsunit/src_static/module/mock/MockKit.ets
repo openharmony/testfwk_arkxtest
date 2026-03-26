@@ -62,7 +62,7 @@ export class MockKit {
     this.functionHashCodeList = new Array<string>()
   }
 
-  mockProperty(instance: object, name: string, value: Object)
+  mockProperty(instance: object, name: string, value: Object): void
   {
     const that = this
     let isMocked = false;
@@ -114,7 +114,7 @@ export class MockKit {
       }
     }
   }
-  mockPrivateFunc(instance: object, name: string) {
+  mockPrivateFunc(instance: object, name: string): () => MockFuncResult {
     if (!instance || !name) {
       throw Error("parameters is invalid")
     }
@@ -130,14 +130,14 @@ export class MockKit {
     }
   }
 
-  mockFunc(instance: object, method: Function) {
+  mockFunc(instance: object, method: Function): () => MockFuncResult {
     if (!instance || !method) {
       throw Error("parameters is invalid")
     }
     const name = method.name
     return this.mockPrivateFunc(instance, name)
   }
-  setMockerOfUserClass(instance: object, mocker: MockKit) {
+  setMockerOfUserClass(instance: object, mocker: MockKit): void {
     hilog.info(domain, tag, '%{public}s', 'start run setMockerOfUserClass')
     const classType = Type.of(instance) as ClassType
     for (let i = 0; i < classType.getMethodsNum(); i++) {
@@ -156,7 +156,7 @@ export class MockKit {
     }
   }
 
-  checkIsEqualOfArgs(args1: Object, args2: Object) {
+  checkIsEqualOfArgs(args1: Object, args2: Object): boolean {
     hilog.info(domain, tag, '%{public}s', 'start run MockKit checkIsEqualOfArgs ')
     hilog.info(domain, tag, 'args1: %{public}s, args2: %{public}s', JSON.stringify(args1), JSON.stringify(args2))
     if (args1 === args2) {
@@ -195,7 +195,7 @@ export class MockKit {
     });
   }
 
-  setCountInfo(instance: object, className: string, methodName: string, args: Object[]) {
+  setCountInfo(instance: object, className: string, methodName: string, args: Object[]): void {
     hilog.info(domain, tag, '%{public}s', 'start run setCountInfo')
     const countMap = this.countMap
     const key = className + "--" + methodName
@@ -217,7 +217,7 @@ export class MockKit {
     }
   }
 
-  getReturnInfo(instance: object, className: string, methodName: string, args: Object[]) {
+  getReturnInfo(instance: object, className: string, methodName: string, args: Object[]): object | NoResult | null | undefined {
     hilog.info(domain, tag, '%{public}s', 'start run getReturnInfo')
     const hashMap = this.hashMap
     const callRecord: CallRecord = {
@@ -259,7 +259,7 @@ export class MockKit {
     return noResult
   }
 
-  verify(methodName: string, args: Object[]) {
+  verify(methodName: string, args: Object[]): VerificationMode {
     let invokeTime = 0;
     for (const record of this.recordCalls) {
       if (record.methodName === methodName && this.checkIsRightValue(args, record.args)) {
@@ -271,7 +271,7 @@ export class MockKit {
     return new VerificationMode(invokeTime);
   }
 
-  clear(instance: object) {
+  clear(instance: object): void {
     hilog.info(domain, tag, '%{public}s', 'start run clear')
     for (const hashEntries of this.hashMap.entries()) {
       if (!hashEntries) {
@@ -306,7 +306,7 @@ export class MockKit {
     this.recordCalls = this.recordCalls.filter(record => record.classObj !== instance)
   }
 
-  ignoreMockProperty(instance: object, name:string)
+  ignoreMockProperty(instance: object, name:string): void
   {
     for (const hashEntries of this.hashMap.entries()) {
       if (!hashEntries) {
@@ -337,7 +337,7 @@ export class MockKit {
     }
   }
 
-  ignoreMock(instance: object, method: Function | string) {
+  ignoreMock(instance: object, method: Function | string): void {
     if (!instance || !method) {
       throw Error("parameters is invalid")
     }
@@ -367,25 +367,25 @@ export class VerificationMode {
     this.doTimes = invokeTimes
   }
 
-  once() {
+  once(): void {
     expect(1).assertEqual(this.doTimes);
   }
 
-  times(count: int) {
+  times(count: int): void {
     expect(count).assertEqual(this.doTimes);
   }
 
-  never() {
+  never(): void {
     expect(0).assertEqual(this.doTimes);
   }
 
-  atLeast(count: int) {
+  atLeast(count: int): void {
     if (count > this.doTimes) {
       throw Error('failed ' + count + ' greater than the actual execution times of method');
     }
   }
 
-  atMost(count: int) {
+  atMost(count: int): void {
     if (count < this.doTimes) {
       throw Error('failed ' + count + ' less than the actual execution times of method');
     }
@@ -403,7 +403,7 @@ export class AfterWhen{
     this.generateHashKey()
   }
 
-  checkIsEqualOfArgs(args1: Object[], args2: Object[]) {
+  checkIsEqualOfArgs(args1: Object[], args2: Object[]): boolean {
     if (args1.length !== args2.length) {
       return false;
     }
@@ -416,7 +416,7 @@ export class AfterWhen{
     return true
   }
 
-  generateHashKey() {
+  generateHashKey(): void {
     hilog.info(domain, tag, '%{public}s', 'start run AfterWhen  generateHashKey')
     const hashMap = this.mocker.hashMap
     let found = false
@@ -460,7 +460,7 @@ export class AfterWhen{
     }
   }
 
-  afterReturn(value: Object) {
+  afterReturn(value: Object): void {
     hilog.info(domain, tag, '%{public}s', 'start run afterReturn, hashKey: ' + this.hashKey)
     hilog.info(domain, tag, '%{public}s', 'start run afterReturn, keyInfo: ' + string(this.keyInfo.args))
     let map = this.mocker.resultMap
@@ -478,21 +478,21 @@ export class AfterWhen{
     }
   }
 
-  afterReturnNothing() {
+  afterReturnNothing(): void {
     const map = this.mocker.resultMap
     map.set(this.hashKey, undefined)
     let hashMap = this.mocker.hashMap
     hashMap.set(this.keyInfo, this.hashKey)
   }
 
-  afterThrow(message: string) {
+  afterThrow(message: string): void {
     let hashMap = this.mocker.hashMap
     hashMap.set(this.keyInfo, this.hashKey)
     const map = this.mocker.resultMap
     map.set(this.hashKey, new Error(message))
   }
 
-  afterAction(action: Function) {
+  afterAction(action: Function): void {
     let hashMap = this.mocker.hashMap
     hashMap.set(this.keyInfo, this.hashKey)
     this.mocker.functionHashCodeList.push(this.hashKey)
@@ -501,7 +501,7 @@ export class AfterWhen{
   }
 }
 
-export function when(mockFunc: Function) {
+export function when(mockFunc: Function): (...args: object[]) => AfterWhen {
   hilog.info(domain, tag, '%{public}s', 'start run when')
   const mockFuncResult: MockFuncResult = (mockFunc as () => MockFuncResult) ()
   return (...args: Object[]) => {

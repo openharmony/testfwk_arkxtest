@@ -36,7 +36,7 @@ class ReportService {
     this.index = 0;
   }
 
-  init(coreContext: Core) {
+  init(coreContext: Core): void {
     this.coreContext = coreContext;
     const suite = coreContext.getDefaultService('suite');
     if (suite !== null) {
@@ -49,15 +49,15 @@ class ReportService {
     this.duration = 0;
   }
 
-  taskStart() {
+  taskStart(): void {
     console.info(`${TAG}[start] start run suites`);
   }
 
-  suiteStart() {
+  suiteStart(): void {
     console.info(`${TAG}[suite start]${this.suiteService.getCurrentRunningSuite().description}`);
   }
 
-  specStart() {
+  specStart(): void {
     const spec = this.specService.currentRunningSpec;
     if (spec) {
       console.info(`${TAG}start running case '${spec.description}'`);
@@ -66,7 +66,7 @@ class ReportService {
     }
   }
 
-  specDone() {
+  specDone(): void {
     const spec = this.specService.currentRunningSpec;
     const suite = this.suiteService.currentRunningSuite;
     if (spec) {
@@ -86,13 +86,13 @@ class ReportService {
     }
   }
 
-  suiteDone() {
+  suiteDone(): void {
     let suite = this.suiteService.currentRunningSuite;
     let message = suite.hookError ? `, ${suite.hookError?.message}` : '';
     console.info(`[suite end] ${suite.description} consuming ${suite.duration} ms${message}`);
   }
 
-  taskDone() {
+  taskDone(): void {
     let msg = '';
     let summary = this.suiteService.getSummary();
     msg = 'total cases:' + summary.total + ';failure ' + summary.failure + ',' + 'error ' + summary.error;
@@ -101,7 +101,7 @@ class ReportService {
     console.info(`${TAG}[end] run suites end`);
   }
 
-  incorrectFormat() {
+  incorrectFormat(): void {
     const config = this.coreContext.getDefaultService('config');
     if (config !== null) {
       const configService = config as ConfigService;
@@ -113,7 +113,7 @@ class ReportService {
     }
   }
 
-  incorrectTestSuiteFormat() {
+  incorrectTestSuiteFormat(): void {
     const config = this.coreContext.getDefaultService('config');
     if (config !== null) {
       const configService = config as ConfigService;
@@ -125,7 +125,7 @@ class ReportService {
     }
   }
 
-  formatPrint(type: string, msg: string) {
+  formatPrint(type: string, msg: string): void {
     switch (type) {
       case 'pass':
         console.info(`${TAG}[pass]${msg}`);
@@ -145,7 +145,7 @@ class ReportService {
     }
   }
 
-  sleep(numberMillis: int) {
+  sleep(numberMillis: int): void {
     const exitTime = new Date().getTime() + numberMillis;
     while (new Date().getTime() < exitTime) {}
     return;
