@@ -29,6 +29,7 @@
 
 namespace OHOS::uitest {
     using namespace nlohmann;
+    using namespace nlohmann::detail;
     using namespace std;
 
     static constexpr size_t NAPI_MAX_BUF_LEN = 1024;
@@ -387,6 +388,12 @@ namespace OHOS::uitest {
             } else {
                 paramList[1] = param0["1"];
                 paramList[TWO] = times;
+            }
+        } else if (id == "Driver.mouseDrag") {
+            json param2 = paramList.size() > TWO ? paramList.at(INDEX_TWO) : nullptr;
+            json param3 = paramList.size() > THREE ? paramList.at(INDEX_THREE) : nullptr;
+            if (param2.type() == value_t::object || param3.type() == value_t::object) {
+                ctx.callInfo_.apiId_ = "Driver.mouseDragWithOptions";
             }
         }
     }

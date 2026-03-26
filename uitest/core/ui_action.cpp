@@ -429,6 +429,28 @@ namespace OHOS::uitest {
                 recv[index].button_ = MouseButton::BUTTON_NONE;
             }
         }
+        if (key1_ != UNASSIGNED || key2_ != UNASSIGNED) {
+            vector<KeyEvent> keyAction1;
+            if (key1_ != UNASSIGNED) {
+                keyAction1.push_back(KeyEvent {ActionStage::DOWN, key1_, opt.keyHoldMs_});
+            }
+            if (key2_ != UNASSIGNED) {
+                keyAction1.push_back(KeyEvent {ActionStage::DOWN, key2_, opt.keyHoldMs_});
+            }
+            auto keyDown = MouseEvent {ActionStage::MOVE, from_, MouseButton::BUTTON_NONE,
+                keyAction1, opt.clickHoldMs_};
+            recv.insert(recv.begin(), keyDown);
+            vector<KeyEvent> keyAction2;
+            if (key1_ != UNASSIGNED) {
+                keyAction2.push_back(KeyEvent {ActionStage::UP, key1_, opt.keyHoldMs_});
+            }
+            if (key2_ != UNASSIGNED) {
+                keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
+            }
+            auto keyUp = MouseEvent {ActionStage::NONE, to_, MouseButton::BUTTON_NONE,
+                keyAction2, 0};
+            recv.push_back(keyUp);
+        }
     }
 
     void MouseClick::Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const
