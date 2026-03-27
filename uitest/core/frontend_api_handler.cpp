@@ -2335,7 +2335,7 @@ static void RegisterExtensionHandler()
         RegisterUiDriverComponentFinders();
         RegisterUiDriverWindowFinder();
         RegisterUiDriverMiscMethods();
-	    RegisterUiDriverFileMethods();
+        RegisterUiDriverFileMethods();
         RegisterUiDriverKeyOperation();
         RegisterUiDriverInputText();
         RegisterUiDriverTouchOperators();
