@@ -926,7 +926,7 @@ assertDeepEquals(expectValue: any): void
 
 **示例：**
 ```javascript
-import { describe, expect, it } from '@ohos.hypium';
+import { describe, expect, it } from '@ohos/hypium';
 
 export default function assertDeepEqualsTest() {
     describe('expectTest', () => {
