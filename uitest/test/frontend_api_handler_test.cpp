@@ -1297,3 +1297,298 @@ TEST_F(FrontendApiHandlerTest, LongClickAtTouchOptionsBoundaryDurationMaxTest)
     server.Call(call2, reply2);
     EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
 }
+
+TEST_F(FrontendApiHandlerTest, MouseDragWithKey1)
+{
+    static constexpr int32_t testPoint1X = 100;
+    static constexpr int32_t testPoint1Y = 200;
+    static constexpr int32_t testPoint2X = 300;
+    static constexpr int32_t testPoint2Y = 400;
+    static constexpr int32_t key1Code = 17;
+    static constexpr uint32_t testSpeed = 1000;
+    static constexpr uint32_t duration = 1500;
+    
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "Driver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "Driver.mouseDragWithOptions",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto point1 = json();
+    point1["x"] = testPoint1X;
+    point1["y"] = testPoint1Y;
+    auto point2 = json();
+    point2["x"] = testPoint2X;
+    point2["y"] = testPoint2Y;
+    auto touchOptions = json();
+    touchOptions["speed"] = testSpeed;
+    touchOptions["duration"] = duration;
+    auto keyOptions = json();
+    keyOptions["key1"] = key1Code;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    call2.paramList_.emplace_back(keyOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, MouseDragWithKey1AndKey2)
+{
+    static constexpr int32_t testPoint1X = 100;
+    static constexpr int32_t testPoint1Y = 200;
+    static constexpr int32_t testPoint2X = 300;
+    static constexpr int32_t testPoint2Y = 400;
+    static constexpr int32_t key1Code = 17;
+    static constexpr int32_t key2Code = 2072;
+    static constexpr uint32_t testSpeed = 1000;
+    static constexpr uint32_t duration = 1500;
+    
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "Driver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "Driver.mouseDragWithOptions",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto point1 = json();
+    point1["x"] = testPoint1X;
+    point1["y"] = testPoint1Y;
+    auto point2 = json();
+    point2["x"] = testPoint2X;
+    point2["y"] = testPoint2Y;
+    auto touchOptions = json();
+    touchOptions["speed"] = testSpeed;
+    touchOptions["duration"] = duration;
+    auto keyOptions = json();
+    keyOptions["key1"] = key1Code;
+    keyOptions["key2"] = key2Code;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    call2.paramList_.emplace_back(keyOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, MouseDragWithKey2OnlyShouldFail)
+{
+    static constexpr int32_t testPoint1X = 100;
+    static constexpr int32_t testPoint1Y = 200;
+    static constexpr int32_t testPoint2X = 300;
+    static constexpr int32_t testPoint2Y = 400;
+    static constexpr int32_t key2Code = 2072;
+    
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "Driver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "Driver.mouseDragWithOptions",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto point1 = json();
+    point1["x"] = testPoint1X;
+    point1["y"] = testPoint1Y;
+    auto point2 = json();
+    point2["x"] = testPoint2X;
+    point2["y"] = testPoint2Y;
+    auto touchOptions = json();
+    auto keyOptions = json();
+    keyOptions["key2"] = key2Code;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    call2.paramList_.emplace_back(keyOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(ERR_INVALID_PARAM, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, MouseDragSpeedBelowRange)
+{
+    static constexpr int32_t testPoint1X = 100;
+    static constexpr int32_t testPoint1Y = 200;
+    static constexpr int32_t testPoint2X = 300;
+    static constexpr int32_t testPoint2Y = 400;
+    static constexpr uint32_t testSpeedZero = 0;
+    static constexpr uint32_t testSpeedAbove = 50000;
+    static constexpr uint32_t duration = 1500;
+    
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "Driver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "Driver.mouseDragWithOptions",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto point1 = json();
+    point1["x"] = testPoint1X;
+    point1["y"] = testPoint1Y;
+    auto point2 = json();
+    point2["x"] = testPoint2X;
+    point2["y"] = testPoint2Y;
+    auto touchOptions = json();
+    touchOptions["speed"] = testSpeedZero;
+    touchOptions["duration"] = duration;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+
+    auto call3 = ApiCallInfo {.apiId_ = "Driver.mouseDragWithOptions",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    touchOptions["speed"] = testSpeedAbove;
+    call3.paramList_.emplace_back(point1);
+    call3.paramList_.emplace_back(point2);
+    call3.paramList_.emplace_back(touchOptions);
+    auto reply3 = ApiReplyInfo();
+    server.Call(call3, reply3);
+    EXPECT_EQ(NO_ERROR, reply3.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, MouseDragNegativeSpeedShouldFail)
+{
+    static constexpr int32_t testPoint1X = 100;
+    static constexpr int32_t testPoint1Y = 200;
+    static constexpr int32_t testPoint2X = 300;
+    static constexpr int32_t testPoint2Y = 400;
+    static constexpr int32_t testNegativeSpeed = -500;
+    static constexpr int32_t testSpeed = 600;
+    static constexpr int32_t testDurationBelow = 1000;
+    static constexpr uint32_t duration = 1500;
+    
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "Driver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "Driver.mouseDragWithOptions",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto point1 = json();
+    point1["x"] = testPoint1X;
+    point1["y"] = testPoint1Y;
+    auto point2 = json();
+    point2["x"] = testPoint2X;
+    point2["y"] = testPoint2Y;
+    auto touchOptions = json();
+    touchOptions["speed"] = testNegativeSpeed;
+    touchOptions["duration"] = duration;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(ERR_INVALID_PARAM, reply2.exception_.code_);
+
+    auto call3 = ApiCallInfo {.apiId_ = "Driver.mouseDragWithOptions",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    touchOptions["speed"] = testSpeed;
+    touchOptions["duration"] = testDurationBelow;
+    call3.paramList_.emplace_back(point1);
+    call3.paramList_.emplace_back(point2);
+    call3.paramList_.emplace_back(touchOptions);
+    auto reply3 = ApiReplyInfo();
+    server.Call(call3, reply3);
+    EXPECT_EQ(ERR_INVALID_PARAM, reply3.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, MouseDragNegativePointsShouldFail)
+{
+    static constexpr int32_t testPoint1X = -100;
+    static constexpr int32_t testPoint1Y = 200;
+    static constexpr int32_t testPoint2X = 300;
+    static constexpr int32_t testPoint2Y = -400;
+    static constexpr uint32_t testSpeed = 1000;
+    static constexpr uint32_t duration = 1500;
+    
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "Driver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "Driver.mouseDragWithOptions",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto point1 = json();
+    point1["x"] = testPoint1X;
+    point1["y"] = testPoint1Y;
+    auto point2 = json();
+    point2["x"] = testPoint2X;
+    point2["y"] = testPoint2Y;
+    auto touchOptions = json();
+    touchOptions["speed"] = testSpeed;
+    touchOptions["duration"] = duration;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(ERR_INVALID_PARAM, reply2.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, MouseDragOldInterface)
+{
+    static constexpr int32_t testPoint1X = 100;
+    static constexpr int32_t testPoint1Y = 200;
+    static constexpr int32_t testPoint2X = 300;
+    static constexpr int32_t testPoint2Y = 400;
+    static constexpr uint32_t testSpeed = 1000;
+    static constexpr uint32_t testDuration = 2000;
+    static constexpr int32_t testInvalidDuration = 1000;
+    
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "Driver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "Driver.mouseDrag", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto point1 = json();
+    point1["x"] = testPoint1X;
+    point1["y"] = testPoint1Y;
+    auto point2 = json();
+    point2["x"] = testPoint2X;
+    point2["y"] = testPoint2Y;
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(testSpeed);
+    call2.paramList_.emplace_back(testDuration);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);
+
+    auto call3 = ApiCallInfo {.apiId_ = "Driver.mouseDrag", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto speed = testSpeed;
+    auto duration = testInvalidDuration;
+    call3.paramList_.emplace_back(testSpeed);
+    call3.paramList_.emplace_back(testInvalidDuration);
+    call3.paramList_.emplace_back(speed);
+    call3.paramList_.emplace_back(duration);
+    auto reply3 = ApiReplyInfo();
+    server.Call(call3, reply3);
+    EXPECT_EQ(ERR_INVALID_INPUT, reply3.exception_.code_);
+}
+
+TEST_F(FrontendApiHandlerTest, MouseDragNewInterfaceWithoutOptions)
+{
+    static constexpr int32_t testPoint1X = 100;
+    static constexpr int32_t testPoint1Y = 200;
+    static constexpr int32_t testPoint2X = 300;
+    static constexpr int32_t testPoint2Y = 400;
+    
+    const auto& server = FrontendApiServer::Get();
+    auto call1 = ApiCallInfo {.apiId_ = "Driver.create"};
+    auto reply1 = ApiReplyInfo();
+    server.Call(call1, reply1);
+    auto call2 = ApiCallInfo {.apiId_ = "Driver.mouseDragWithOptions",
+                              .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto point1 = json();
+    point1["x"] = testPoint1X;
+    point1["y"] = testPoint1Y;
+    auto point2 = json();
+    point2["x"] = testPoint2X;
+    point2["y"] = testPoint2Y;
+    auto touchOptions = json();  // Empty options should use defaults
+    call2.paramList_.emplace_back(point1);
+    call2.paramList_.emplace_back(point2);
+    call2.paramList_.emplace_back(touchOptions);
+    auto reply2 = ApiReplyInfo();
+    server.Call(call2, reply2);
+    EXPECT_EQ(NO_ERROR, reply2.exception_.code_);  // Should use default speed and duration
+}
