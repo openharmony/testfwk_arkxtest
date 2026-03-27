@@ -32,13 +32,23 @@ export class MatcherInfo {
 }
 
 export class ArgumentMatchers {
-  static MATCH_REGEXS = "<match regexs>";
-  static CONTAIN_VALUE = "<contain value>";
-  static CONTAIN_SUBSTRING = "<contain subString>";
-  static CONTAIN_SUBARRAY = "<contain subArray>";
+    static ANY = '<any>';
+    static ANY_STRING = '<any String>';
+    static ANY_BOOLEAN = '<any Boolean>';
+    static ANY_NUMBER = '<any Number>';
+    static ANY_OBJECT = '<any Object>';
+    static ANY_FUNCTION = '<any Function>';
+    static MATCH_REGEXS = '<match regexs>';
+    static NOT_STRING = '<not String>';
+    static NOT_BOOLEAN = '<not boolean>';
+    static NOT_NUMBER = '<not Number>';
+    static NOT_OBJECT = '<not Object>';
+    static NOT_FUNCTION = '<not Function>';
+    static static CONTAIN_VALUE = '<contain value>';
+    static CONTAIN_SUBSTRING = '<contain subString>';
+    static CONTAIN_SUBARRAY = '<contain subArray>';
 
   constructor() {
-    hilog.info(domain, tag, '%{public}s ', "ArgumentMatchers constructor")
   }
 
   static any() {
@@ -130,7 +140,7 @@ export class ArgumentMatchers {
     return ret;
   }
 
-  static matcheReturnKey(arg: Object, stubSetKey: Object) {
+  static matcheReturnKey(arg: Object, stubSetKey: Object) : boolean {
     if (stubSetKey && stubSetKey === ArgumentMatchers.any && arg) {
       return true;
     } else if (stubSetKey === ArgumentMatchers.anyString && typeof arg === 'string') {
@@ -189,5 +199,54 @@ export class ArgumentMatchers {
       return isContained === needMatch
     }
     return false;
+  }
+
+  static matcheStubKey(key: Object): Object | null {
+    if (key === ArgumentMatchers.any) {
+      return ArgumentMatchers.ANY;
+    }
+    if (key === ArgumentMatchers.anyString) {
+      return ArgumentMatchers.ANY_STRING;
+    }
+    if (key === ArgumentMatchers.anyBoolean) {
+      return ArgumentMatchers.ANY_BOOLEAN;
+    }
+    if (key === ArgumentMatchers.anyNumber) {
+      return ArgumentMatchers.ANY_NUMBER;
+    }
+    if (key === ArgumentMatchers.anyObj) {
+      return ArgumentMatchers.ANY_OBJECT;
+    }
+    if (key === ArgumentMatchers.anyFunction) {
+      return ArgumentMatchers.ANY_FUNCTION;
+    }
+    if (key === ArgumentMatchers.notString) {
+      return ArgumentMatchers.NOT_STRING;
+    }
+    if (key === ArgumentMatchers.notBoolean) {
+      return ArgumentMatchers.NOT_BOOLEAN;
+    }
+    if (key === ArgumentMatchers.notNumber) {
+      return ArgumentMatchers.NOT_NUMBER;
+    }
+    if (key === ArgumentMatchers.notObj) {
+      return ArgumentMatchers.NOT_OBJECT;
+    }
+    if (key === ArgumentMatchers.notFunction) {
+      return ArgumentMatchers.NOT_FUNCTION;
+    }
+    if (key instanceof MatcherInfo && (key as MatcherInfo).type_ === ArgumentMatchers.MATCH_REGEXS) {
+      return key;
+    }
+    if (key instanceof MatcherInfo && (key as MatcherInfo).type_ === ArgumentMatchers.CONTAIN_VALUE) {
+      return key;
+    }
+    if (key instanceof MatcherInfo && (key as MatcherInfo).type_ === ArgumentMatchers.CONTAIN_SUBARRAY) {
+      return key;
+    }
+    if (key instanceof MatcherInfo && (key as MatcherInfo).type_ === ArgumentMatchers.CONTAIN_SUBSTRING) {
+      return key;
+    }
+    return null;
   }
 }

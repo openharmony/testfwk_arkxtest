@@ -924,10 +924,9 @@ assertDeepEquals(expectValue: any): void
 |---|-----------------|----|--------------------------------------------|
 | expectValue  | any | 是  | 期望值，即待验证的表达式或变量的值。可为任意类型，包括基本类型、对象类型或空值等。  |
 
-
 **示例：**
 ```javascript
-import { describe, expect, it } from '@ohos/hypium';
+import { describe, expect, it } from '@ohos.hypium';
 
 export default function assertDeepEqualsTest() {
     describe('expectTest', () => {
@@ -1171,6 +1170,107 @@ export default function assertMessageTest() {
             expect(actualValue).message('0 != 2').assertEqual(expectValue);
         })
     })
+}
+
+```
+
+#### assertMatchObj<sup>1.0.28</sup>
+
+assertMatchObj(expectValue: Object): void
+
+检验实际对象的属性是否匹配期望对象的结构和值。
+
+**参数：**
+
+| 参数名      | 类型   | 必填 | 说明                           |
+| ----------- | ------ | ---- | ------------------------------ |
+| expectValue | Object | 是   | 期望对象，即待验证的对象结构。 |
+
+**功能说明：**
+
+1. **部分匹配**：只验证期望对象中指定的属性，不要求实际对象和期望对象完全一致
+2. **ArgumentMatchers 支持**：可结合 ArgumentMatchers 使用匹配器进行灵活验证
+3. **嵌套对象支持**：支持嵌套对象的递归匹配
+
+**示例：**
+
+```javascript
+import { ArgumentMatchers, describe, expect, it } from '@ohos/hypium';
+
+interface User {
+  name: string;
+  age: number;
+  email: string;
+  active: boolean;
+  tags: string[];
+  profile?: UserProfile;
+}
+
+interface UserProfile {
+  phone: string;
+  address: string;
+  city: string;
+}
+
+export default function assertMatchObjTest() {
+  describe('assertMatchObj', () => {
+    // 精确匹配
+    it('basic_exact_match', 0, () => {
+      const user: User = {
+        name: "John",
+        age: 30,
+        email: "john@example.com",
+        active: true,
+        tags: ["user", "vip"]
+      };
+
+      expect(user).assertMatchObj({
+        name: "John",
+        age: 30,
+        active: true,
+      });
+    });
+
+    // 使用匹配器
+    it('matcher_match', 0, () => {
+      const user: User = {
+        name: "John",
+        age: 30,
+        email: "john@example.com",
+        active: true,
+        tags: []
+      };
+
+      expect(user).assertMatchObj({
+        name: ArgumentMatchers.anyString,
+        email: ArgumentMatchers.matchRegexs(/.*@.*/)
+      });
+    });
+
+    // 嵌套对象
+    it('nested_match', 0, () => {
+      const user: User = {
+        name: "John",
+        age: 30,
+        email: "john@example.com",
+        active: true,
+        tags: [],
+        profile: {
+          phone: "123-456-7890",
+          address: "123 Main St",
+          city: "New York"
+        }
+      };
+
+      expect(user).assertMatchObj({
+        name: "John",
+        profile: {
+          phone: "123-456-7890",
+          city: "New York"
+        }
+      });
+    });
+  });
 }
 
 ```
