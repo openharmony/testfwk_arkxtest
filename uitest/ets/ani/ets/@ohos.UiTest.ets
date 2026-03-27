@@ -245,6 +245,16 @@ interface TouchPadSwipeOptions {
   speed?: int;
 }
 
+interface KeyOptions {
+  key1?: int;
+  key2?: int;
+}
+
+class KeyOptionsInner implements KeyOptions {
+  key1?: int = undefined;
+  key2?: int = undefined;
+}
+
 class TouchPadSwipeOptionsInner implements TouchPadSwipeOptions {
   stay?: boolean = undefined;
   speed?: int = undefined;
@@ -1273,6 +1283,7 @@ export class Component {
     private native mouseMoveWithTrackSync(f: Point, t: Point, speed?: int): boolean;
     private native mouseMoveToSync(p: Point): boolean;
     private native mouseDragSync(f: Point, t: Point, speed?: int, duration?: int): boolean;
+    private native mouseDragWithOptionsSync(f: Point, t: Point, touchOptions?: TouchOptions, keyOptions?: KeyOptions): boolean;
     private native mouseClickSync(p: Point, btnId: MouseButton, key1?: int, key2?: int):boolean;
     private native mouseDoubleClickSync(p: Point, btnId: MouseButton, key1?: int, key2?: int):boolean;
     private native mouseLongClickSync(p: Point, btnId: MouseButton, key1?: int, key2?: int, duration?: int):boolean;
@@ -1587,6 +1598,18 @@ export class Component {
     mouseDrag(f: Point, t: Point, speed?: int, duration?: int): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.mouseDragSync(f, t, speed, duration));
+            promise1.then((e:Any)=>{
+                resolve(Promise.resolve());
+            }, (err: Error): void => {
+                let br = err as BusinessError<void>;
+                reject(br);
+            });
+        });
+        return promise;
+    }
+    mouseDrag(f: Point, t: Point, touchOptions?: TouchOptions, keyOptions?: KeyOptions): Promise<void> {
+        let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+            let promise1 = taskpool.execute(():boolean => this.mouseDragWithOptionsSync(f, t, touchOptions, keyOptions));
             promise1.then((e:Any)=>{
                 resolve(Promise.resolve());
             }, (err: Error): void => {

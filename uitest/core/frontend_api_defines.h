@@ -237,6 +237,17 @@ namespace OHOS::uitest {
         sizeof(TOUCH_PAD_SWIPE_OPTIONS) / sizeof(FrontEndJsonPropDef),
     };
 
+    /** KeyOptions jsonObject definition.*/
+    constexpr FrontEndJsonPropDef KEY_OPTIONS_PROPERTIES[] = {
+        {"key1", "int", false},
+        {"key2", "int", false},
+    };
+    constexpr FrontEndJsonDef KEY_OPTIONS_DEF = {
+        "KeyOptions",
+        KEY_OPTIONS_PROPERTIES,
+        sizeof(KEY_OPTIONS_PROPERTIES) / sizeof(FrontEndJsonPropDef),
+    };
+
     /** By class definition. deprecated since api 9*/
     constexpr FrontendMethodDef BY_METHODS[] = {
         {"By.id", "(int):By", false, true},
@@ -382,6 +393,7 @@ namespace OHOS::uitest {
         {"Driver.mouseMoveTo", "(Point):void", false, false},
         {"Driver.mouseMoveWithTrack", "(Point,Point,int?):void", false, false},
         {"Driver.mouseDrag", "(Point,Point,int?,int?):void", false, false},
+        {"Driver.mouseDragWithOptions", "(Point,Point,TouchOptions?,KeyOptions?):void", false, false, true},
         {"Driver.mouseScroll", "(Point,bool,int,int?,int?,int?):void", false, false},
         {"Driver.createUIEventObserver", "():UIEventObserver", false, true},
         {"Driver.inputText", "(Point,string,InputTextMode?):void", false, false},
@@ -503,8 +515,8 @@ namespace OHOS::uitest {
                                      &TOUCH_PAD_SWIPE_OPTIONS_DEF, &INPUTTEXT_MODE_DEF,
                                      &WINDOW_CHANGE_OPTIONS_DEF,
                                      &COMPONENT_EVENT_OPTIONS_DEF,
-                                     &TOUCH_OPTIONS_DEF
-                                    };
+                                     &TOUCH_OPTIONS_DEF, &KEY_OPTIONS_DEF
+                                     };
     /** The allowed in/out data type scope of frontend apis.*/
     const std::initializer_list<std::string_view> DATA_TYPE_SCOPE = {
         "int",
@@ -529,6 +541,7 @@ namespace OHOS::uitest {
         TOUCH_PAD_SWIPE_OPTIONS_DEF.name_,
         INPUTTEXT_MODE_DEF.name_,
         TOUCH_OPTIONS_DEF.name_,
+        KEY_OPTIONS_DEF.name_,
     };
 } // namespace OHOS::uitest
 

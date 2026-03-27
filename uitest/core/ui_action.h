@@ -426,7 +426,9 @@ namespace OHOS::uitest {
 
     class MouseSwipe : public MouseAction {
     public:
-        explicit MouseSwipe(TouchOp type, const Point &from, const Point &to) : type_(type), from_(from), to_(to) {};
+        explicit MouseSwipe(TouchOp type, const Point &from, const Point &to,
+                            int32_t key1 = UNASSIGNED, int32_t key2 = UNASSIGNED)
+            : type_(type), from_(from), to_(to), key1_(key1), key2_(key2) {};
 
         void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const override;
 
@@ -436,6 +438,8 @@ namespace OHOS::uitest {
         const TouchOp type_;
         const Point from_;
         const Point to_;
+        const int32_t key1_;
+        const int32_t key2_;
     };
 
     class MouseClick : public MouseAction {
