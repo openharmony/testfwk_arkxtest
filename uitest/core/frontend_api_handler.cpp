@@ -1222,7 +1222,75 @@ namespace OHOS::uitest {
         return true;
     }
 
-    static void TouchParamsConverts(const ApiCallInfo &in, Point &point0, Point &point1, UiOpArgs &uiOpArgs)
+
+    static void ValidateDuration(int32_t duration, ApiCallErr& error)
+    {
+        UiOpArgs uiOpArgs;
+        if (duration < uiOpArgs.defaultDuration_) {
+            error = ApiCallErr(ERR_INVALID_PARAM, "Duration must be at least 1500ms");
+        }
+    }
+
+    static int32_t ValidateAndGetSpeed(int32_t speed)
+    {
+        UiOpArgs uiOpArgs;
+        uiOpArgs.swipeVelocityPps_ = speed;
+        CheckSwipeVelocityPps(uiOpArgs);
+        return uiOpArgs.swipeVelocityPps_;
+    }
+
+    static void ValidatePressure(float pressure, ApiCallErr& error)
+    {
+        if (pressure < 0 || pressure > 1) {
+            error = ApiCallErr(ERR_INVALID_PARAM, "Pressure must ranges form 0 to 1");
+        }
+    }
+
+    static void ValidateTouchOptions(const std::string& apiId, json &options, UiOpArgs &uiOpArgs, ApiCallErr &err)
+    {
+        if (options.is_null() || options.empty()) {
+            return;
+        }
+        static const set<string> TOUCH_OPTIONS = {"speed", "duration", "pressure"};
+        static const map<string, set<string>> METHOD_SUPPORTED_OPTIONS = {
+            {"Driver.clickAt", {"pressure"}},
+            {"Driver.longClickAt", {"duration", "pressure"}},
+            {"Driver.swipeBetween", {"speed", "pressure"}},
+            {"Driver.dragBetween", {"speed", "duration", "pressure"}},
+            {"Driver.mouseDrag", {"speed", "duration"}},
+        };
+        auto it = METHOD_SUPPORTED_OPTIONS.find(apiId);
+        if (it == METHOD_SUPPORTED_OPTIONS.end()) {
+            err = ApiCallErr(ERR_INVALID_INPUT, "The use of TouchOptions is not supported");
+            return;
+        }
+        auto supportedFields = it->second;
+        for (auto optIt = TOUCH_OPTIONS.begin(); optIt != TOUCH_OPTIONS.end(); optIt++) {
+            auto opt = *optIt;
+            if (options.contains(opt)) {
+                if (supportedFields.find(opt) == supportedFields.end()) {
+                    err = ApiCallErr(ERR_INVALID_INPUT, "Invalid TouchOptions field [" + opt + "] for " + apiId);
+                    return;
+                }
+                if (!options[opt].is_number()) {
+                    err = ApiCallErr(ERR_INVALID_INPUT, "Invalid type of field [" + opt + "]");
+                    return;
+                }
+                if (opt == "speed") {
+                    uiOpArgs.swipeVelocityPps_ = ValidateAndGetSpeed(options[opt]);
+                } else if (opt == "duration") {
+                    ValidateDuration(options[opt], err);
+                    uiOpArgs.longClickHoldMs_ = options[opt];
+                } else if (opt == "pressure") {
+                    ValidatePressure(options[opt], err);
+                    uiOpArgs.touchPressure_ = options[opt];
+                }
+            }
+        }
+    }
+
+    static void TouchParamsConverts(const ApiCallInfo &in, Point &point0, Point &point1, UiOpArgs &uiOpArgs,
+                                    ApiCallErr &err)
     {
         auto params = in.paramList_;
         auto count = params.size();
@@ -1242,9 +1310,19 @@ namespace OHOS::uitest {
         if (params.at(1).type() != value_t::object) { // longClickAt
             uiOpArgs.longClickHoldMs_ = ReadCallArg<uint32_t>(in, INDEX_ONE, uiOpArgs.longClickHoldMs_);
         } else {
+            if (in.apiId_ == "Driver.clickAt" || in.apiId_ == "Driver.longClickAt") {
+                auto touchOptionsJson = ReadCallArg<json>(in, INDEX_ONE);
+                ValidateTouchOptions(in.apiId_, touchOptionsJson, uiOpArgs, err);
+                return;
+            }
             auto pointJson1 = ReadCallArg<json>(in, INDEX_ONE);
             auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
             point1 = Point(pointJson1["x"], pointJson1["y"], displayId1);
+            if (count == THREE && params.at(TWO).type() == value_t::object) {
+                auto touchOptionsJson = ReadCallArg<json>(in, INDEX_TWO);
+                ValidateTouchOptions(in.apiId_, touchOptionsJson, uiOpArgs, err);
+                return;
+            }
             uiOpArgs.swipeVelocityPps_ = ReadCallArg<uint32_t>(in, INDEX_TWO, uiOpArgs.swipeVelocityPps_);
             uiOpArgs.longClickHoldMs_ = ReadCallArg<uint32_t>(in, INDEX_THREE, uiOpArgs.longClickHoldMs_);
         }
@@ -1256,22 +1334,6 @@ namespace OHOS::uitest {
         auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
         point.displayId_ = displayId;
         return point;
-    }
-
-    static void ValidateDuration(int32_t duration, ApiCallErr& error)
-    {
-        UiOpArgs uiOpArgs;
-        if (duration < uiOpArgs.defaultDuration_) {
-            error = ApiCallErr(ERR_INVALID_PARAM, "Duration must be at least 1500ms");
-        }
-    }
-
-    static int32_t ValidateAndGetSpeed(int32_t speed)
-    {
-        UiOpArgs uiOpArgs;
-        uiOpArgs.swipeVelocityPps_ = speed;
-        CheckSwipeVelocityPps(uiOpArgs);
-        return uiOpArgs.swipeVelocityPps_;
     }
 
     static void HandleLongClickComponentPresent(const ApiCallInfo &in, ApiReplyInfo &out,
@@ -1365,7 +1427,10 @@ namespace OHOS::uitest {
             auto point0 = Point(0, 0);
             auto point1 = Point(0, 0);
             UiOpArgs uiOpArgs;
-            TouchParamsConverts(in, point0, point1, uiOpArgs);
+            TouchParamsConverts(in, point0, point1, uiOpArgs, out.exception_);
+            if (out.exception_.code_ != NO_ERROR) {
+                return;
+            }
             auto op = TouchOp::CLICK;
             if (in.apiId_ == "Driver.longClick" || in.apiId_ == "Driver.longClickAt") {
                 op = TouchOp::LONG_CLICK;
@@ -1515,7 +1580,7 @@ namespace OHOS::uitest {
                     out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Finger number must be 1 when injecting pen action");
                     return;
                 }
-                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_TWO, uiOpArgs.touchPressure_);
+                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_TWO, uiOpArgs.defaultPenPressure_);
                 driver.PerformPenTouch(touch, uiOpArgs, out.exception_);
             }
         };
@@ -1597,6 +1662,58 @@ namespace OHOS::uitest {
             driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.mouseMoveTo", mouseMoveTo);
+    }
+    
+    static void ParseKeyOptions(const json &keyOpts, int32_t &key1, int32_t &key2, ApiReplyInfo &out)
+    {
+        if (keyOpts.is_null() || keyOpts.empty()) {
+            return;
+        }
+        key1 = ReadArgFromJson<int32_t>(keyOpts, "key1", UNASSIGNED);
+        key2 = ReadArgFromJson<int32_t>(keyOpts, "key2", UNASSIGNED);
+        if (key1 == UNASSIGNED && key2 != UNASSIGNED) {
+            out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invalid key options: key2 cannot be set without key1");
+        }
+    }
+
+    static void RegisterUiDriverMouseDragOperators()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto mouseDrag = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            auto pointJson1 = ReadCallArg<json>(in, INDEX_ZERO);
+            auto pointJson2 = ReadCallArg<json>(in, INDEX_ONE);
+            auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
+            auto displayId2 = ReadArgFromJson<int32_t>(pointJson2, "displayId", UNASSIGNED);
+            auto from = Point(pointJson1["x"], pointJson1["y"], displayId1);
+            auto to = Point(pointJson2["x"], pointJson2["y"], displayId2);
+            if (!CheckPointDisplayId(from, to, out)) {
+                return;
+            }
+            UiOpArgs uiOpArgs;
+            auto touchOptionsJson = ReadCallArg<json>(in, INDEX_TWO, json());
+            string apiId = "Driver.mouseDrag";
+            ValidateTouchOptions(apiId, touchOptionsJson, uiOpArgs, out.exception_);
+            if (out.exception_.code_ != NO_ERROR) {
+                return;
+            }
+            auto keyOptionsJson = ReadCallArg<json>(in, INDEX_THREE, json());
+            int32_t key1 = UNASSIGNED;
+            int32_t key2 = UNASSIGNED;
+            ParseKeyOptions(keyOptionsJson, key1, key2, out);
+            if (out.exception_.code_ != NO_ERROR) {
+                return;
+            }
+            const uint32_t minLongClickHoldMs = 1500;
+            if (uiOpArgs.longClickHoldMs_ < minLongClickHoldMs) {
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Invalid longclick hold time");
+                return;
+            }
+            CheckSwipeVelocityPps(uiOpArgs);
+            auto touch = MouseSwipe(TouchOp::DRAG, from, to, key1, key2);
+            driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
+        };
+        server.AddHandler("Driver.mouseDragWithOptions", mouseDrag);
     }
 
     static void RegisterUiDriverMouseScrollOperators()
@@ -1733,7 +1850,7 @@ namespace OHOS::uitest {
             auto op = TouchOp::CLICK;
             if (in.apiId_ == "Driver.penLongClick") {
                 op = TouchOp::LONG_CLICK;
-                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_ONE, uiOpArgs.touchPressure_);
+                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_ONE, uiOpArgs.defaultPenPressure_);
             } else if (in.apiId_ == "Driver.penDoubleClick") {
                 op = TouchOp::DOUBLE_CLICK_P;
             } else if (in.apiId_ == "Driver.penSwipe") {
@@ -1747,7 +1864,7 @@ namespace OHOS::uitest {
                     out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "The point is not on the screen");
                     return;
                 }
-                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_THREE, uiOpArgs.touchPressure_);
+                uiOpArgs.touchPressure_ = ReadCallArg<float>(in, INDEX_THREE, uiOpArgs.defaultPenPressure_);
             }
             if (op == TouchOp::SWIPE) {
                 if (!CheckPointDisplayId(point0, point1, out)) {
@@ -2298,6 +2415,7 @@ static void RegisterExtensionHandler()
         RegisterUiDriverDisplayOperators();
         RegisterUiDriverMouseClickOperators();
         RegisterUiDriverMouseMoveOperators();
+        RegisterUiDriverMouseDragOperators();
         RegisterUiDriverMouseScrollOperators();
         RegisterUiEventObserverMethods();
         RegisterExtensionHandler();
