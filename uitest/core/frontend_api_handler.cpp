@@ -949,7 +949,10 @@ namespace OHOS::uitest {
             driver.DelayMs(time);
         };
         server.AddHandler("Driver.delayMs", delay);
+    }
 
+    static void RegisterUiDriverFileMethods()
+    {
         auto screenCap = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto fd = ReadCallArg<uint32_t>(in, INDEX_ZERO);
@@ -2335,6 +2338,7 @@ static void RegisterExtensionHandler()
         RegisterUiDriverComponentFinders();
         RegisterUiDriverWindowFinder();
         RegisterUiDriverMiscMethods();
+	RegisterUiDriverFileMethods();
         RegisterUiDriverKeyOperation();
         RegisterUiDriverInputText();
         RegisterUiDriverTouchOperators();
