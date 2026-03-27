@@ -44,7 +44,7 @@ export class ArgumentMatchers {
     static NOT_NUMBER = '<not Number>';
     static NOT_OBJECT = '<not Object>';
     static NOT_FUNCTION = '<not Function>';
-    static static CONTAIN_VALUE = '<contain value>';
+    static CONTAIN_VALUE = '<contain value>';
     static CONTAIN_SUBSTRING = '<contain subString>';
     static CONTAIN_SUBARRAY = '<contain subArray>';
 
