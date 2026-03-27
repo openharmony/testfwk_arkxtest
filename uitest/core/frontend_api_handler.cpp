@@ -952,7 +952,7 @@ namespace OHOS::uitest {
     }
 
     static void RegisterUiDriverScreenCapMethods()
-    {        
+    {
         auto &server = FrontendApiServer::Get();
         auto screenCap = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
@@ -981,7 +981,7 @@ namespace OHOS::uitest {
     }
 
     static void RegisterUiDriverDumpLayoutMethods()
-    {        
+    {
         auto &server = FrontendApiServer::Get();
         auto dumpLayout = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
