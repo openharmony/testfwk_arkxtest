@@ -951,8 +951,9 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.delayMs", delay);
     }
 
-    static void RegisterUiDriverFileMethods()
-    {
+    static void RegisterUiDriverScreenCapMethods()
+    {        
+        auto &server = FrontendApiServer::Get();
         auto screenCap = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto fd = ReadCallArg<uint32_t>(in, INDEX_ZERO);
@@ -977,7 +978,11 @@ namespace OHOS::uitest {
         };
         server.AddHandler("Driver.screenCap", screenCap);
         server.AddHandler("Driver.screenCapture", screenCap);
+    }
 
+    static void RegisterUiDriverDumpLayoutMethods()
+    {        
+        auto &server = FrontendApiServer::Get();
         auto dumpLayout = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto fd = ReadCallArg<uint32_t>(in, INDEX_ZERO);
@@ -2335,7 +2340,8 @@ static void RegisterExtensionHandler()
         RegisterUiDriverComponentFinders();
         RegisterUiDriverWindowFinder();
         RegisterUiDriverMiscMethods();
-        RegisterUiDriverFileMethods();
+        RegisterUiDriverScreenCapMethods();
+        RegisterUiDriverDumpLayoutMethods();
         RegisterUiDriverKeyOperation();
         RegisterUiDriverInputText();
         RegisterUiDriverTouchOperators();
