@@ -40,12 +40,9 @@ export function assertMatchObj(actualValue: AnyType, expected: AnyType[]): Asser
       message: 'expect expected value to be an object',
     };
   }
-
-  // 使用 Object.entries() 获取键值对，避免直接类型转换
   const expectedEntries: Array<Array<any>> = Object.entries(expectedObj);
   const actualEntries: Array<Array<any>> = Object.entries(actualValue);
 
-  // 将 actualEntries 转换为 Map 以便快速查找
   const actualMap = new Map<string, AnyType>();
   for (const entry of actualEntries) {
     if (entry && entry.length >= 2) {

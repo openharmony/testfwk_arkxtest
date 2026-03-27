@@ -51,11 +51,8 @@ function assertMatchObj(actualValue, expected) {
         }
 
         const matcherKey = matcher.matcheStubKey(expectedValue);
-        console.info("zzzzzzzzzz 000" + matcherKey)
         if (matcherKey !== null) {
-            console.info("zzzzzzzzzz 111" + JSON.stringify(expectedValue))
             matchResult = matcher.matcheReturnKey(actualValueForProperty, matcherKey);
-            console.info("zzzzzzzzzz 222" + matchResult)
             matchDetail = `${key}: actual=${JSON.stringify(actualValueForProperty)}, expected=matcher(${matcherKey})`;
         } else if (typeof expectedValue === 'object' && expectedValue !== null && !Array.isArray(expectedValue)) {
             const nestedMatch = assertMatchObj(actualValueForProperty, [expectedValue]);
