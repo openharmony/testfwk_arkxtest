@@ -979,25 +979,20 @@ namespace OHOS::uitest {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto fd = ReadCallArg<uint32_t>(in, INDEX_ZERO);
             auto displayId = ReadCallArg<uint32_t>(in, INDEX_ONE, UNASSIGNED);
-            
             if (!driver.CheckDisplayExist(displayId)) {
                 out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Invalid display id.");
                 return;
             }
-            
             DumpOption option;
             option.fd = fd;
             option.displayId_ = displayId;
-            
             nlohmann::json layoutJson;
             ApiCallErr err(NO_ERROR);
             driver.DumpUiHierarchy(layoutJson, option, err);
-            
             if (err.code_ != NO_ERROR) {
                 out.exception_ = err;
                 return;
             }
-            
             // Write the JSON to file descriptor
             string layoutStr = layoutJson.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
             ssize_t written = write(fd, layoutStr.c_str(), layoutStr.length());
@@ -1005,10 +1000,8 @@ namespace OHOS::uitest {
                 out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Failed to write to file descriptor");
                 return;
             }
-            
             // Close the file descriptor
             close(fd);
-            
             out.resultValue_ = true;
         };
         server.AddHandler("Driver.dumpLayout", dumpLayout);
