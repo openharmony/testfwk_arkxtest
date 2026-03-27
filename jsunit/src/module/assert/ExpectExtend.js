@@ -35,6 +35,7 @@ import assertPromiseIsRejectedWith from './assertPromiseIsRejectedWith';
 import assertPromiseIsRejectedWithError from './assertPromiseIsRejectedWithError';
 import assertPromiseIsResolved from './assertPromiseIsResolved';
 import assertPromiseIsResolvedWith from './assertPromiseIsResolvedWith';
+import assertMatchObj from './assertMatchObj';
 class ExpectExtend {
     constructor(attr) {
         this.id = attr.id;
@@ -64,6 +65,7 @@ class ExpectExtend {
         this.matchers.assertPromiseIsRejectedWithError = assertPromiseIsRejectedWithError;
         this.matchers.assertPromiseIsResolved = assertPromiseIsResolved;
         this.matchers.assertPromiseIsResolvedWith = assertPromiseIsResolvedWith;
+        this.matchers.assertMatchObj = assertMatchObj;
     }
 
     init(coreContext) {

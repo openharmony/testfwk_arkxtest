@@ -140,6 +140,7 @@ export interface AssertMatcherIF {
   assertPosUnlimited: (actualValue: number) => AssertResult;
   assertEqual: (actualValue: AnyType, expect: AnyType[]) => AssertResult;
   assertDeepEquals: (actualValue: AnyType, expected: AnyType[]) => AssertResult;
+  assertMatchObj: (actualValue: AnyType, expected: AnyType[]) => AssertResult;
   assertPromiseIsPending: (actualPromise: Promise<AnyType>) => Promise<AssertResult>;
   assertPromiseIsRejected: (actualPromise: Promise<AnyType>) => Promise<AssertResult>;
   assertPromiseIsRejectedWith: (actualPromise: Promise<AnyType>, expectedValue: AnyType[]) => Promise<AssertResult>;
@@ -205,6 +206,7 @@ export interface Assert {
   assertPosUnlimited(): void;
   not(): Assert;
   assertDeepEquals(expectValue: allExpectType): void;
+  assertMatchObj(expectValue: Object): void;
   assertPromiseIsPending(): Promise<void>;
   assertPromiseIsRejected(): Promise<void>;
   assertPromiseIsRejectedWith: (expectValue: allExpectType) => Promise<void>;
