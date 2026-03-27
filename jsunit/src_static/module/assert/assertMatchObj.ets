@@ -56,7 +56,7 @@ export function assertMatchObj(actualValue: AnyType, expected: AnyType[]): Asser
       expectedValue = null;
     }
 
-    if (!expectedValue) {
+    if (expectedValue === undefined) {
       continue;
     }
 
@@ -64,9 +64,6 @@ export function assertMatchObj(actualValue: AnyType, expected: AnyType[]): Asser
       if (actualKeys.includes(key)) {
         actualValueHasKey = true;
         actualValueForProperty = (reflect.Value.of(actualValue as object) as ClassValue).getFieldByName(key).getData() as AnyType;
-        if (!actualValueForProperty) {
-          actualValueHasKey = false;
-        }
       }
     } catch (e) {
       actualValueHasKey = false;
