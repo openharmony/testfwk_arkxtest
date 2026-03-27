@@ -996,14 +996,11 @@ namespace OHOS::uitest {
                 out.exception_ = err;
                 return;
             }
-            // Write the JSON to file descriptor
             string layoutStr = layoutJson.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
-            ssize_t written = write(fd, layoutStr.c_str(), layoutStr.length());
-            if (written == -1) {
+            if (write(fd, layoutStr.c_str(), layoutStr.length()) == -1) {
                 out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Failed to write to file descriptor");
                 return;
             }
-            // Close the file descriptor
             close(fd);
             out.resultValue_ = true;
         };
@@ -2338,7 +2335,7 @@ static void RegisterExtensionHandler()
         RegisterUiDriverComponentFinders();
         RegisterUiDriverWindowFinder();
         RegisterUiDriverMiscMethods();
-	RegisterUiDriverFileMethods();
+	    RegisterUiDriverFileMethods();
         RegisterUiDriverKeyOperation();
         RegisterUiDriverInputText();
         RegisterUiDriverTouchOperators();
