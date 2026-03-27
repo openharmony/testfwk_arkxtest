@@ -1248,16 +1248,12 @@ namespace OHOS::uitest {
 
     static void ValidateTouchOptions(const std::string& apiId, json &options, UiOpArgs &uiOpArgs, ApiCallErr &err)
     {
-        if (options.is_null() || options.empty()) {
-            return;
-        }
         static const set<string> TOUCH_OPTIONS = {"speed", "duration", "pressure"};
         static const map<string, set<string>> METHOD_SUPPORTED_OPTIONS = {
             {"Driver.clickAt", {"pressure"}},
             {"Driver.longClickAt", {"duration", "pressure"}},
             {"Driver.swipeBetween", {"speed", "pressure"}},
             {"Driver.dragBetween", {"speed", "duration", "pressure"}},
-            {"Driver.mouseDrag", {"speed", "duration"}},
         };
         auto it = METHOD_SUPPORTED_OPTIONS.find(apiId);
         if (it == METHOD_SUPPORTED_OPTIONS.end()) {
@@ -1662,58 +1658,6 @@ namespace OHOS::uitest {
             driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
         };
         server.AddHandler("Driver.mouseMoveTo", mouseMoveTo);
-    }
-    
-    static void ParseKeyOptions(const json &keyOpts, int32_t &key1, int32_t &key2, ApiReplyInfo &out)
-    {
-        if (keyOpts.is_null() || keyOpts.empty()) {
-            return;
-        }
-        key1 = ReadArgFromJson<int32_t>(keyOpts, "key1", UNASSIGNED);
-        key2 = ReadArgFromJson<int32_t>(keyOpts, "key2", UNASSIGNED);
-        if (key1 == UNASSIGNED && key2 != UNASSIGNED) {
-            out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invalid key options: key2 cannot be set without key1");
-        }
-    }
-
-    static void RegisterUiDriverMouseDragOperators()
-    {
-        auto &server = FrontendApiServer::Get();
-        auto mouseDrag = [](const ApiCallInfo &in, ApiReplyInfo &out) {
-            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
-            auto pointJson1 = ReadCallArg<json>(in, INDEX_ZERO);
-            auto pointJson2 = ReadCallArg<json>(in, INDEX_ONE);
-            auto displayId1 = ReadArgFromJson<int32_t>(pointJson1, "displayId", UNASSIGNED);
-            auto displayId2 = ReadArgFromJson<int32_t>(pointJson2, "displayId", UNASSIGNED);
-            auto from = Point(pointJson1["x"], pointJson1["y"], displayId1);
-            auto to = Point(pointJson2["x"], pointJson2["y"], displayId2);
-            if (!CheckPointDisplayId(from, to, out)) {
-                return;
-            }
-            UiOpArgs uiOpArgs;
-            auto touchOptionsJson = ReadCallArg<json>(in, INDEX_TWO, json());
-            string apiId = "Driver.mouseDrag";
-            ValidateTouchOptions(apiId, touchOptionsJson, uiOpArgs, out.exception_);
-            if (out.exception_.code_ != NO_ERROR) {
-                return;
-            }
-            auto keyOptionsJson = ReadCallArg<json>(in, INDEX_THREE, json());
-            int32_t key1 = UNASSIGNED;
-            int32_t key2 = UNASSIGNED;
-            ParseKeyOptions(keyOptionsJson, key1, key2, out);
-            if (out.exception_.code_ != NO_ERROR) {
-                return;
-            }
-            const uint32_t minLongClickHoldMs = 1500;
-            if (uiOpArgs.longClickHoldMs_ < minLongClickHoldMs) {
-                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Invalid longclick hold time");
-                return;
-            }
-            CheckSwipeVelocityPps(uiOpArgs);
-            auto touch = MouseSwipe(TouchOp::DRAG, from, to, key1, key2);
-            driver.PerformMouseAction(touch, uiOpArgs, out.exception_);
-        };
-        server.AddHandler("Driver.mouseDragWithOptions", mouseDrag);
     }
 
     static void RegisterUiDriverMouseScrollOperators()
@@ -2415,7 +2359,6 @@ static void RegisterExtensionHandler()
         RegisterUiDriverDisplayOperators();
         RegisterUiDriverMouseClickOperators();
         RegisterUiDriverMouseMoveOperators();
-        RegisterUiDriverMouseDragOperators();
         RegisterUiDriverMouseScrollOperators();
         RegisterUiEventObserverMethods();
         RegisterExtensionHandler();
