@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,7 +15,7 @@
 
 import { AssertResult } from '../modal/assertModel';
 import { AnyType } from '../types/common';
-import { ArgumentMatchers } from '../../mock/ArgumentMatchers';
+import { ArgumentMatchers } from '../mock/ArgumentMatchers';
 import { DeepTypeUtils } from './deepEquals/DeepTypeUtils';
 import hilog from '@ohos.hilog';
 
@@ -40,46 +40,54 @@ export function assertMatchObj(actualValue: AnyType, expected: AnyType[]): Asser
       message: 'expect expected value to be an object',
     };
   }
-  const expectedEntries: Array<Array<any>> = Object.entries(expectedObj);
-  const actualEntries: Array<Array<any>> = Object.entries(actualValue);
 
-  const actualMap = new Map<string, AnyType>();
-  for (const entry of actualEntries) {
-    if (entry && entry.length >= 2) {
-      actualMap.set(entry[0], entry[1]);
+  const expectedKeys = DeepTypeUtils.getAllKeys(expectedObj as object);
+  const actualKeys = DeepTypeUtils.getAllKeys(actualValue as object);
+
+  for (let i = 0; i < expectedKeys.length; i++) {
+    const key = expectedKeys[i];
+    let expectedValue: AnyType = null;
+    let actualValueHasKey = false;
+    let actualValueForProperty: AnyType = null;
+
+    try {
+      expectedValue = (reflect.Value.of(expectedObj as object) as ClassValue).getFieldByName(key).getData() as AnyType;
+    } catch (e) {
+      expectedValue = null;
     }
-  }
 
-  for (let i = 0; i < expectedEntries.length; i++) {
-    const entry = expectedEntries[i];
-    if (!entry || entry.length < 2) {
+    if (!expectedValue) {
       continue;
     }
 
-    const key = entry[0] as string;
-    const expectedValue = entry[1] as AnyType;
-    const actualValueHasKey = actualMap.has(key);
-    const actualValueForProperty = actualMap.get(key) as AnyType;
-
-    let matchResult = false;
-    let matchDetail = '';
-
+    try {
+      if (actualKeys.includes(key)) {
+        actualValueHasKey = true;
+        actualValueForProperty = (reflect.Value.of(actualValue as object) as ClassValue).getFieldByName(key).getData() as AnyType;
+        if (!actualValueForProperty) {
+          actualValueHasKey = false;
+        }
+      }
+    } catch (e) {
+      actualValueHasKey = false;
+    }
     if (!actualValueHasKey) {
       mismatchedFields.push(key);
       mismatchedDetails.push(`property '${key}' not found in actual object`);
       continue;
     }
 
-    const matcherKey = ArgumentMatchers.matcheStubKey(expectedValue);
+    let matchResult = false;
+    let matchDetail = '';
+    const matcherKey = ArgumentMatchers.matcheStubKey(expectedValue as Object);
     hilog.info(domain, tag, '%{public}s', 'assertMatchObj matcherKey: ' + JSON.stringify(matcherKey));
 
     if (matcherKey !== null) {
-      hilog.info(domain, tag, '%{public}s', 'assertMatchObj expectedValue: ' + JSON.stringify(expectedValue));
-      matchResult = ArgumentMatchers.matcheReturnKey(actualValueForProperty, matcherKey);
+      matchResult = ArgumentMatchers.matcheReturnKey(actualValueForProperty as Object, expectedValue as Object);
       hilog.info(domain, tag, '%{public}s', 'assertMatchObj matchResult: ' + matchResult);
       matchDetail = `${key}: actual=${JSON.stringify(actualValueForProperty)}, expected=matcher(${JSON.stringify(matcherKey)})`;
     } else if (typeof expectedValue === 'object' && expectedValue !== null && !Array.isArray(expectedValue)) {
-      const nestedMatch = assertMatchObj(actualValueForProperty, [expectedValue]);
+      const nestedMatch = assertMatchObj(actualValueForProperty, [expectedValue as Object]);
       matchResult = nestedMatch.pass;
       matchDetail = `${key}: ${nestedMatch.message}`;
     } else {
