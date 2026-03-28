@@ -1006,7 +1006,6 @@ namespace OHOS::uitest {
                 out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Failed to write to file descriptor");
                 return;
             }
-            close(fd);
             out.resultValue_ = true;
         };
         server.AddHandler("Driver.dumpLayout", dumpLayout);
