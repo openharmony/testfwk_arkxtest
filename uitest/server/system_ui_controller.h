@@ -94,10 +94,11 @@ namespace OHOS::uitest {
         void ChangeWindowMode(int32_t windowId, WindowMode mode) const override;
 
         bool IsPcWindowMode() const override;
+        
+        int32_t GetValidDisplayId(int32_t id) const override;
 
     private:
         void  InjectMouseEvent(const MouseEvent &event) const;
-        int32_t GetValidDisplayId(int32_t id) const;
         bool connected_ = false;
         std::mutex dumpMtx;
         mutable std::vector<int32_t> downKeys_;

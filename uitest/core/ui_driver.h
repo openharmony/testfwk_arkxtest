@@ -65,7 +65,7 @@ namespace OHOS::uitest {
         /**Take screen capture, save to given file path as PNG.*/
         void TakeScreenCap(int32_t fd, ApiCallErr &err, Rect rect, int32_t displayId = 0);
 
-        void DumpUiHierarchy(nlohmann::json &out, const DumpOption &option, ApiCallErr &error);
+        void DumpUiHierarchy(nlohmann::json &out, DumpOption &option, ApiCallErr &error);
 
         const FrontEndClassDef &GetFrontendClassDef() const override
         {

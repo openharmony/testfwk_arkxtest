@@ -46,7 +46,7 @@ public:
 
     void PerformMouseAction(const MouseAction &touch, const UiOpArgs &opt, ApiCallErr &err) {}
     void PerformTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err) {}
-    void DumpUiHierarchy(nlohmann::json &out, const DumpOption &option, ApiCallErr &error) {}
+    void DumpUiHierarchy(nlohmann::json &out, DumpOption &option, ApiCallErr &error) {}
 };
 
 bool ExtensionApiCheck(bool cond)

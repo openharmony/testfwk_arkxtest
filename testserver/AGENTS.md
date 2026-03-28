@@ -1,7 +1,5 @@
 # TestSever - AI Knowledge Base
 
-This file provides guidance for Claude Code (claude.ai/code) when working in this code repository.
-
 ## Quick Start
 
 ### Repository Context

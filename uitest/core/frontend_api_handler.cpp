@@ -949,7 +949,11 @@ namespace OHOS::uitest {
             driver.DelayMs(time);
         };
         server.AddHandler("Driver.delayMs", delay);
+    }
 
+    static void RegisterUiDriverScreenCapMethods()
+    {
+        auto &server = FrontendApiServer::Get();
         auto screenCap = [](const ApiCallInfo &in, ApiReplyInfo &out) {
             auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
             auto fd = ReadCallArg<uint32_t>(in, INDEX_ZERO);
@@ -974,6 +978,37 @@ namespace OHOS::uitest {
         };
         server.AddHandler("Driver.screenCap", screenCap);
         server.AddHandler("Driver.screenCapture", screenCap);
+    }
+
+    static void RegisterUiDriverDumpLayoutMethods()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto dumpLayout = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            auto fd = ReadCallArg<uint32_t>(in, INDEX_ZERO);
+            auto displayId = ReadCallArg<uint32_t>(in, INDEX_ONE, UNASSIGNED);
+            if (!driver.CheckDisplayExist(displayId)) {
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Invalid display id.");
+                return;
+            }
+            DumpOption option;
+            option.fd = fd;
+            option.displayId_ = displayId;
+            nlohmann::json layoutJson;
+            ApiCallErr err(NO_ERROR);
+            driver.DumpUiHierarchy(layoutJson, option, err);
+            if (err.code_ != NO_ERROR) {
+                out.exception_ = err;
+                return;
+            }
+            string layoutStr = layoutJson.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
+            if (write(fd, layoutStr.c_str(), layoutStr.length()) == -1) {
+                out.exception_ = ApiCallErr(ERR_INVALID_INPUT, "Failed to write to file descriptor");
+                return;
+            }
+            out.resultValue_ = true;
+        };
+        server.AddHandler("Driver.dumpLayout", dumpLayout);
     }
 
     static void RegisterUiDriverKeyOperation()
@@ -2360,6 +2395,8 @@ static void RegisterExtensionHandler()
         RegisterUiDriverComponentFinders();
         RegisterUiDriverWindowFinder();
         RegisterUiDriverMiscMethods();
+        RegisterUiDriverScreenCapMethods();
+        RegisterUiDriverDumpLayoutMethods();
         RegisterUiDriverKeyOperation();
         RegisterUiDriverInputText();
         RegisterUiDriverTouchOperators();
