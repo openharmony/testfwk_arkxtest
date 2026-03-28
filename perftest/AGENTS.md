@@ -1,7 +1,5 @@
 # PerfTest - AI Knowledge Base
 
-This file provides guidance for Claude Code (claude.ai/code) when working in this code repository.
-
 ## Project Overview
 
 This is **PerfTest** - a white-box performance testing framework for OpenHarmony application performance testing. It provides performance measurement capabilities to collect metrics such as code segment execution duration, CPU usage/load, memory consumption, list scrolling FPS, and application startup/page switching latency during test code execution or specific UI scenarios.

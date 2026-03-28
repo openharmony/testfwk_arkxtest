@@ -1,7 +1,5 @@
 # Arkxtest - AI Knowledge Base
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Overview
 
 **arkxtest** is OpenHarmony's automated testing framework, consisting of three main components:

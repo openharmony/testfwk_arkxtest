@@ -1,7 +1,5 @@
 # UiTest - AI Knowledge Base
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Overview
 
 uitest is OpenHarmony's UI automation testing framework, operating on a **client-server architecture** with multi-language support (ArkTS-Static, ArkTS-Dynamic, JavaScript, and Cangjie).
@@ -311,6 +309,10 @@ hdc shell uitest dumpLayout -p /data/local/tmp/app.json -b com.example.app
 # Custom attribute
 hdc shell uitest dumpLayout -p /data/local/tmp/custom.json -e customAttr
 ```
+
+**API Usage:**
+The dumpLayout API (API 26.0.0) supports the format:
+- `dumpLayout(savePath: string, displayId?: int)` - Saves layout to specified path (converted to file descriptor internally), with optional display ID parameter
 
 Options: `-i` (no merge), `-a` (include font attrs), `-b` (bundleName), `-w` (windowId), `-m` (merge), `-d` (displayId), `-e` (custom attr)
 

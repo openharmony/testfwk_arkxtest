@@ -76,6 +76,7 @@ namespace OHOS::uitest {
 
     struct DumpOption {
         string savePath_ = "";
+        int32_t fd = -1;
         bool listWindows_ = false;
         bool addExternAttr_ = false;
         string bundleName_ = "";
