@@ -1385,12 +1385,8 @@ static ani_boolean dumpLayoutSync(ani_env *env, ani_object obj, ani_string savep
     Transact(callInfo_, reply_);
     ani_ref result = UnmarshalReply(env, callInfo_, reply_);
     if (result == nullptr) {
-        close(fd);
         return false;
     }
-    
-    // Close the file descriptor as it's handled by the server side
-    close(fd);
     
     return reply_.resultValue_.get<bool>();
 }
