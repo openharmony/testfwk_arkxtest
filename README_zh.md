@@ -1690,16 +1690,10 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
   | ---------------- | --------------------------------------------------- | ------------- |
   | snapshotWhenFail | @since1.0.28 用例失败时是否自动截图并保存UI布局信息 | true/false    |
 
-  使用方式：
-
-  ```bash
-  hdc shell aa test -b xxx -m xxx -s unittest OpenHarmonyTestRunner -s snapshotWhenFail true
-  ```
-
   功能说明：
 
   当启用 `snapshotWhenFail` 后，如果测试用例执行失败，框架会自动执行以下操作：
-
+  
   屏幕截图：将失败时的屏幕信息截图保存为PNG图片，保存路径：`/data/storage/el2/base/{测试套名}_{用例名}_{时间戳}.png`
 
   UI布局导出：将失败时的UI组件树导出为JSON文件，保存路径：`/data/storage/el2/base/{测试套名}_{用例名}_{时间戳}.json`
