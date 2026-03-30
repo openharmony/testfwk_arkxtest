@@ -19,29 +19,30 @@ import { Driver } from '@ohos.UiTest';
 class FailureCaptureService {
     static async captureOnFailure(suiteName, specName, error) {
         const timestamp = Date.now();
-        const savePath1 = `/data/storage/el2/base/${suiteName}_${specName}_${timestamp}.png`;
+        const sanitizeName = (name) => name.replace(/[\/\\:*?"<>|]/g, '_');
+        const safeSuiteName = sanitizeName(suiteName);
+        const safeSpecName = sanitizeName(specName);
+        const screenshotPath = `/data/storage/el2/base/${safeSuiteName}_${safeSpecName}_${timestamp}.png`;
+        const layoutDumpPath = `/data/storage/el2/base/${safeSuiteName}_${safeSpecName}_${timestamp}.json`;
+        const driver = Driver.create()
         try {
-            console.info(`${TAG}Capturing screenshot to: ${savePath1}`);
-            const driver = Driver.create()
-            const success1 = await driver.screenCap(savePath1);
-            if (success1) {
-                console.info(`${TAG}Screenshot saved successfully: ${savePath1}`);
+            console.info(`${TAG}Capturing screenshot to: ${screenshotPath}`);
+            const resultForScreenCap = await driver.screenCap(screenshotPath);
+            if (resultForScreenCap) {
+                console.info(`${TAG}Screenshot saved successfully: ${screenshotPath}`);
             } else {
-                console.error(`${TAG}Failed to save screenshot: ${savePath1}`);
+                console.error(`${TAG}Failed to save screenshot: ${screenshotPath}`);
             }
         } catch (e) {
             console.error(`${TAG}Screenshot capture error: ${e.message}`);
         }
-
-        const savePath2 = `/data/storage/el2/base/${suiteName}_${specName}_${timestamp}.json`;
         try {
-            console.info(`${TAG}DumpLayout to: ${savePath2}`);
-            const driver = Driver.create()
-            const success2 = await driver.dumpLayout(savePath2);
-            if (success2) {
-                console.info(`${TAG}Dump saved successfully: ${savePath2}`);
+            console.info(`${TAG}DumpLayout to: ${layoutDumpPath}`);
+            const resultForDump = await driver.dumpLayout(layoutDumpPath);
+            if (resultForDump) {
+                console.info(`${TAG}Dump saved successfully: ${layoutDumpPath}`);
             } else {
-                console.error(`${TAG}Failed to dumpLayout to: ${savePath2}`);
+                console.error(`${TAG}Failed to dumpLayout to: ${layoutDumpPath}`);
             }
         } catch (e) {
             console.error(`${TAG}DumpLayout error: ${e.message}`);
