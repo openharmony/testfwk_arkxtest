@@ -80,7 +80,7 @@ export function assertMatchObj(actualValue: AnyType, expected: AnyType[]): Asser
     hilog.info(domain, tag, '%{public}s', 'assertMatchObj matcherKey: ' + JSON.stringify(matcherKey));
 
     if (matcherKey !== null) {
-      matchResult = ArgumentMatchers.matcheReturnKey(actualValueForProperty as Object, expectedValue as Object);
+      matchResult = ArgumentMatchers.matcheReturnKey(actualValueForProperty as Object, matcherKey as Object);
       hilog.info(domain, tag, '%{public}s', 'assertMatchObj matchResult: ' + matchResult);
       matchDetail = `${key}: actual=${JSON.stringify(actualValueForProperty)}, expected=matcher(${JSON.stringify(matcherKey)})`;
     } else if (typeof expectedValue === 'object' && expectedValue !== null && !Array.isArray(expectedValue)) {

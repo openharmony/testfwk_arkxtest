@@ -141,27 +141,27 @@ export class ArgumentMatchers {
   }
 
   static matcheReturnKey(arg: Object, stubSetKey: Object) : boolean {
-    if (stubSetKey && stubSetKey === ArgumentMatchers.any && arg) {
+    if (stubSetKey && stubSetKey === ArgumentMatchers.ANY && arg) {
       return true;
-    } else if (stubSetKey === ArgumentMatchers.anyString && typeof arg === 'string') {
+    } else if (stubSetKey === ArgumentMatchers.ANY_STRING && typeof arg === 'string') {
       return true;
-    } else if (stubSetKey === ArgumentMatchers.anyBoolean && typeof arg === 'boolean') {
+    } else if (stubSetKey === ArgumentMatchers.ANY_BOOLEAN && typeof arg === 'boolean') {
       return true;
-    } else if (stubSetKey === ArgumentMatchers.anyNumber && typeof arg === 'number') {
+    } else if (stubSetKey === ArgumentMatchers.ANY_NUMBER && typeof arg === 'number') {
       return true;
-    } else if (stubSetKey === ArgumentMatchers.anyObj && typeof arg === 'object') {
+    } else if (stubSetKey === ArgumentMatchers.ANY_OBJECT && typeof arg === 'object') {
       return true;
-    } else if (stubSetKey === ArgumentMatchers.anyFunction && typeof arg === 'function') {
+    } else if (stubSetKey === ArgumentMatchers.ANY_FUNCTION && typeof arg === 'function') {
       return true;
-    } else if (stubSetKey === ArgumentMatchers.notString && typeof arg !== 'string') {
+    } else if (stubSetKey === ArgumentMatchers.NOT_STRING && typeof arg !== 'string') {
       return true;
-    } else if (stubSetKey === ArgumentMatchers.notBoolean && typeof arg !== 'boolean') {
+    } else if (stubSetKey === ArgumentMatchers.NOT_BOOLEAN && typeof arg !== 'boolean') {
       return true;
-    } else if (stubSetKey === ArgumentMatchers.notNumber && typeof arg !== 'number') {
+    } else if (stubSetKey === ArgumentMatchers.NOT_NUMBER && typeof arg !== 'number') {
       return true;
-    } else if (stubSetKey === ArgumentMatchers.notObj && typeof arg !== 'object') {
+    } else if (stubSetKey === ArgumentMatchers.NOT_OBJECT && typeof arg !== 'object') {
       return true;
-    } else if (stubSetKey === ArgumentMatchers.notFunction && typeof arg !== 'function') {
+    } else if (stubSetKey === ArgumentMatchers.NOT_FUNCTION && typeof arg !== 'function') {
       return true;
     } else if (stubSetKey instanceof MatcherInfo && (stubSetKey as MatcherInfo).type_ === ArgumentMatchers.MATCH_REGEXS && typeof arg === 'string') {
       let needMatch = (stubSetKey as MatcherInfo).needMatch !== false;

@@ -168,7 +168,22 @@ export class MockKit {
     return false;
   }
 
+  convertParams(argsArray: Object[]): Object[] {
+    let result: Object[] = [];
+    for (let i = 0; i < argsArray.length; i++) {
+      const param = argsArray[i];
+      const matchKey = ArgumentMatchers.matcheStubKey(param);
+      if (matchKey) {
+        result.push(matchKey);
+      } else {
+        result.push(param);
+      }
+    }
+    return result;
+  }
+
   checkIsRightValue(paramsKey: Object[], params: Object[]): boolean {
+    paramsKey = this.convertParams(paramsKey)
     return paramsKey.every((key, j) => {
         if (ArgumentMatchers.matcheReturnKey(params[j], key)) {
           return true;
