@@ -50,12 +50,12 @@ namespace OHOS::perftest {
             }
             ani_ref undefRef;
             env->GetUndefined(&undefRef);
-            ani_status status = env->FindClass("escompat.Error", &cls);
+            ani_status status = env->FindClass("std.core.Error", &cls);
             if (status != ANI_OK) {
                 HiLog::Error(LABEL, "FindClass : %{public}d", status);
                 return nullptr;
             }
-            status = env->Class_FindMethod(cls, "<ctor>", "C{std.core.String}C{escompat.ErrorOptions}:", &method);
+            status = env->Class_FindMethod(cls, "<ctor>", "C{std.core.String}C{std.core.ErrorOptions}:", &method);
             if (status != ANI_OK) {
                 HiLog::Error(LABEL, "Class_FindMethod : %{public}d", status);
                 return nullptr;
@@ -80,7 +80,7 @@ namespace OHOS::perftest {
                 return ANI_ERROR;
             }
             ani_method method;
-            if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", "iC{escompat.Error}:", &method)) {
+            if (ANI_OK != env->Class_FindMethod(cls, "<ctor>", "iC{std.core.Error}:", &method)) {
                 HiLog::Error(LABEL, "Not found method of BusinessError");
                 return ANI_ERROR;
             }
