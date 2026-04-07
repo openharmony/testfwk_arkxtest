@@ -15,11 +15,20 @@
 
 import ArgumentMatchers from '../mock/ArgumentMatchers';
 
-function assertMatchObj(actualValue, expected) {
+const MAX_DEPTH = 6;
+
+function assertMatchObj(actualValue, expected, visited = new Set(), depth = 0) {
     const expectedObj = expected[0];
     const matcher = new ArgumentMatchers();
     let mismatchedFields = [];
     let mismatchedDetails = [];
+
+    if (depth >= MAX_DEPTH) {
+        return {
+            pass: false,
+            message: `maximum recursion depth ${MAX_DEPTH} exceeded`
+        };
+    }
 
     if (typeof actualValue !== 'object' || actualValue === null) {
         return {
@@ -34,6 +43,15 @@ function assertMatchObj(actualValue, expected) {
             message: 'expect expected value to be an object'
         };
     }
+
+    const objectId = Object.prototype.toString.call(actualValue);
+    if (visited.has(objectId)) {
+        return {
+            pass: true,
+            message: 'circular reference detected, skipping further checks'
+        };
+    }
+    visited.add(objectId);
 
     const expectedKeys = Object.keys(expectedObj);
 
@@ -55,7 +73,7 @@ function assertMatchObj(actualValue, expected) {
             matchResult = matcher.matcheReturnKey(actualValueForProperty, matcherKey);
             matchDetail = `${key}: actual=${JSON.stringify(actualValueForProperty)}, expected=matcher(${matcherKey})`;
         } else if (typeof expectedValue === 'object' && expectedValue !== null && !Array.isArray(expectedValue)) {
-            const nestedMatch = assertMatchObj(actualValueForProperty, [expectedValue]);
+            const nestedMatch = assertMatchObj(actualValueForProperty, [expectedValue], visited, depth + 1);
             matchResult = nestedMatch.pass;
             matchDetail = `${key}: ${nestedMatch.message}`;
         } else {

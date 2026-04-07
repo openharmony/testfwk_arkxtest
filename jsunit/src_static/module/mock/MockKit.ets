@@ -183,7 +183,7 @@ export class MockKit {
   }
 
   checkIsRightValue(paramsKey: Object[], params: Object[]): boolean {
-    paramsKey = this.convertParams(paramsKey)
+    paramsKey = this.convertParams(paramsKey);
     return paramsKey.every((key, j) => {
         if (ArgumentMatchers.matcheReturnKey(params[j], key)) {
           return true;
