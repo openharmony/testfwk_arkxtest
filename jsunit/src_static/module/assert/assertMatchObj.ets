@@ -21,11 +21,19 @@ import hilog from '@ohos.hilog';
 
 let domain: int = 0x0000;
 let tag: string = 'testTag';
+const MAX_DEPTH = 6;
 
-export function assertMatchObj(actualValue: AnyType, expected: AnyType[]): AssertResult {
+function assertMatchObjInternal(actualValue: AnyType, expected: AnyType[], depth: number): AssertResult {
   const expectedObj = expected[0];
   let mismatchedFields: string[] = [];
   let mismatchedDetails: string[] = [];
+
+  if (depth >= MAX_DEPTH) {
+    return {
+      pass: false,
+      message: `maximum recursion depth ${MAX_DEPTH} exceeded`,
+    };
+  }
 
   if (typeof actualValue !== 'object' || actualValue === null) {
     return {
@@ -77,14 +85,12 @@ export function assertMatchObj(actualValue: AnyType, expected: AnyType[]): Asser
     let matchResult = false;
     let matchDetail = '';
     const matcherKey = ArgumentMatchers.matcheStubKey(expectedValue as Object);
-    hilog.info(domain, tag, '%{public}s', 'assertMatchObj matcherKey: ' + JSON.stringify(matcherKey));
 
     if (matcherKey !== null) {
       matchResult = ArgumentMatchers.matcheReturnKey(actualValueForProperty as Object, matcherKey as Object);
-      hilog.info(domain, tag, '%{public}s', 'assertMatchObj matchResult: ' + matchResult);
       matchDetail = `${key}: actual=${JSON.stringify(actualValueForProperty)}, expected=matcher(${JSON.stringify(matcherKey)})`;
     } else if (typeof expectedValue === 'object' && expectedValue !== null && !Array.isArray(expectedValue)) {
-      const nestedMatch = assertMatchObj(actualValueForProperty, [expectedValue as Object]);
+      const nestedMatch = assertMatchObjInternal(actualValueForProperty, [expectedValue as Object], depth + 1);
       matchResult = nestedMatch.pass;
       matchDetail = `${key}: ${nestedMatch.message}`;
     } else {
@@ -110,4 +116,8 @@ export function assertMatchObj(actualValue: AnyType, expected: AnyType[]): Asser
       message: `object does not match expected structure: ${errorMessage}`,
     };
   }
+}
+
+export function assertMatchObj(actualValue: AnyType, expected: AnyType[]): AssertResult {
+  return assertMatchObjInternal(actualValue, expected, 0);
 }
