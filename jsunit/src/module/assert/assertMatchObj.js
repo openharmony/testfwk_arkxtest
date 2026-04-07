@@ -17,7 +17,7 @@ import ArgumentMatchers from '../mock/ArgumentMatchers';
 
 const MAX_DEPTH = 6;
 
-function assertMatchObj(actualValue, expected, visited = new Set(), depth = 0) {
+function assertMatchObj(actualValue, expected, depth = 0) {
     const expectedObj = expected[0];
     const matcher = new ArgumentMatchers();
     let mismatchedFields = [];
@@ -44,14 +44,6 @@ function assertMatchObj(actualValue, expected, visited = new Set(), depth = 0) {
         };
     }
 
-    const objectId = Object.prototype.toString.call(actualValue);
-    if (visited.has(objectId)) {
-        return {
-            pass: true,
-            message: 'circular reference detected, skipping further checks'
-        };
-    }
-    visited.add(objectId);
 
     const expectedKeys = Object.keys(expectedObj);
 
@@ -73,7 +65,7 @@ function assertMatchObj(actualValue, expected, visited = new Set(), depth = 0) {
             matchResult = matcher.matcheReturnKey(actualValueForProperty, matcherKey);
             matchDetail = `${key}: actual=${JSON.stringify(actualValueForProperty)}, expected=matcher(${matcherKey})`;
         } else if (typeof expectedValue === 'object' && expectedValue !== null && !Array.isArray(expectedValue)) {
-            const nestedMatch = assertMatchObj(actualValueForProperty, [expectedValue], visited, depth + 1);
+            const nestedMatch = assertMatchObj(actualValueForProperty, [expectedValue], depth + 1);
             matchResult = nestedMatch.pass;
             matchDetail = `${key}: ${nestedMatch.message}`;
         } else {
