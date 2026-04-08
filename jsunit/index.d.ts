@@ -85,6 +85,7 @@ export interface Assert {
   assertPosUnlimited(): void
   not(): Assert;
   assertDeepEquals(expectValue: any): void
+  assertMatchObj(expectValue: Object): void
   assertPromiseIsPending(): Promise<void>
   assertPromiseIsRejected(): Promise<void>
   assertPromiseIsRejectedWith(expectValue?: any): Promise<void>

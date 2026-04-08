@@ -118,6 +118,7 @@ export class AssertMatcher {
   public assertPosUnlimited: () => void;
   public assertDeepEquals: (expectValue: AnyType) => void;
   public assertEqual: (expectValue: AnyType) => void;
+  public assertMatchObj: (expectValue: Object) => void;
   public assertPromiseIsPending: () => Promise<void>;
   public assertPromiseIsRejected: () => Promise<void>;
   public assertPromiseIsRejectedWith: (expectValue: AnyType) => Promise<void>;
@@ -155,6 +156,7 @@ export class AssertMatcher {
     this.assertPosUnlimited = () => {};
     this.assertDeepEquals = (expectValue: AnyType) => {};
     this.assertEqual = (expectValue: AnyType) => {};
+    this.assertMatchObj = (expectValue: Object) => {};
     this.assertInstanceOf = (expectValue: string) => {};
     this.assertPromiseIsPending = () => {
       return Promise.resolve();
@@ -426,6 +428,11 @@ export class AssertMatcher {
     const assertEqual = matchers.assertEqual;
     if (assertEqual) {
       this.assertEqual = equalFn('assertEqual', assertEqual);
+    }
+
+    const assertMatchObj = matchers.assertMatchObj;
+    if (assertMatchObj) {
+      this.assertMatchObj = equalFn('assertMatchObj', assertMatchObj);
     }
 
   }

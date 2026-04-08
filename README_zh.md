@@ -158,6 +158,7 @@ export default function test() {
 | 24  | assertPromiseIsResolvedWith | @since1.0.4 判断promise是否处于Resolved状态，并且比较执行的结果值。             |
 | 25  | not                | @since1.0.4 断言取反,支持上面所有的断言功能。                               |
 | 26  | message                | @since1.0.17自定义断言异常信息。                                      |
+| 27 | assertMatchObj | @since1.0.28 检验对象actualvalue是否匹配expectvalue中的属性要求。 |
 
 expect断言示例代码：
 
