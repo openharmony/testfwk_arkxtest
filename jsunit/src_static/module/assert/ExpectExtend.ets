@@ -38,6 +38,7 @@ import { assertPromiseIsRejectedWith } from './assertPromiseIsRejectedWith';
 import { assertPromiseIsRejectedWithError } from './assertPromiseIsRejectedWithError';
 import { assertPromiseIsResolved } from './assertPromiseIsResolved';
 import { assertPromiseIsResolvedWith } from './assertPromiseIsResolvedWith';
+import { assertMatchObj } from './assertMatchObj';
 import { AnyType } from '../types/common';
 import { ExpectService } from '../service/ExpectService';
 import { assertThrow } from './assertThrow';
@@ -79,6 +80,7 @@ class ExpectExtend {
       assertPromiseIsRejectedWithError,
       assertPromiseIsResolved,
       assertPromiseIsResolvedWith,
+      assertMatchObj,
     };
     this.matchers = matcher;
   }
