@@ -56,7 +56,8 @@
           "libjpeg-turbo",
           "libpng",
           "time_service",
-          "imf"
+          "imf",
+          "os_account"
         ]
       },
       "build": {
