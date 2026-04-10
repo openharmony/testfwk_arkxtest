@@ -57,6 +57,8 @@ namespace OHOS::uitest {
 
         bool IsWearable() const override;
 
+        bool IsPenKeySupported(bool shouldConnectPen) const override;
+
         bool IsKnuckleSnapshotEnable() const override;
 
         bool IsKnuckleRecordEnable() const override;

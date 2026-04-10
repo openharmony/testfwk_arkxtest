@@ -133,6 +133,26 @@ enum ComponentEventType {
   COMPONENT_TEXT_CHANGED = 5,
 }
 
+enum PenKey {
+  HANDWRITING = 0,
+  SMART = 1,
+  AIR_MOUSE = 2,
+}
+
+enum PenMode {
+  HANDWRITING = 0,
+  AIR_MOUSE = 1,
+}
+
+enum PenKeyOperation {
+  CLICK = 0,
+  DOUBLE_CLICK = 1,
+}
+
+interface PenKeyOperationOptions {
+  point?: Point;
+}
+
 interface Point {
  x: int;
  y: int;
@@ -1077,6 +1097,19 @@ export class Component {
       });
       return promise;
     }
+    private native triggerPenKeySync(key: PenKey, mode: PenMode, operation: PenKeyOperation, options?: PenKeyOperationOptions):boolean;
+    triggerPenKey(key: PenKey, mode: PenMode, operation: PenKeyOperation, options?: PenKeyOperationOptions): Promise<void> {
+      let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
+        let promise1 = taskpool.execute(():boolean => this.triggerPenKeySync(key, mode, operation, options));
+        promise1.then((e:Any)=>{
+            resolve(Promise.resolve());
+        }, (err: Error): void => {
+            let br = err as BusinessError<void>;
+            reject(br);
+        });
+      });
+      return promise;
+    }
     private native inputTextSync(p: Point, text: string):boolean;
     inputText(p: Point, text: string): Promise<void> {
       let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
@@ -1963,6 +1996,7 @@ export class Component {
       doSetupIfNeeded();
     }
     native within(on:On): On;
+    native withinComponent(com: Component): On;
     native clickable(b?: boolean): On;
     native longClickable(b?: boolean): On;
     native scrollable(b?: boolean): On;
@@ -1972,7 +2006,9 @@ export class Component {
     native checked(b?: boolean): On;
     native checkable(b?: boolean): On;
     native isBefore(on: On): On;
+    native isBeforeComponent(com: Component): On;
     native isAfter(on: On): On;
+    native isAfterComponent(com: Component): On;
     native inWindow(bundleName: string): On;
     native text(txt: string, pattern?: MatchPattern): On;
     native description(val: string, pattern?: MatchPattern): On;
@@ -1987,6 +2023,15 @@ export class Component {
     }
     type(tp: string): On {
         return this.type(tp, MatchPattern.EQUALS);
+    }
+    isBefore(com: Component): On {
+        return this.isBeforeComponent(com);
+    }
+    isAfter(com: Component): On {
+        return this.isAfterComponent(com);
+    }
+    within(com: Component): On {
+        return this.withinComponent(com);
     }
   }
 
@@ -2018,6 +2063,11 @@ export namespace ON {
     export function within(on:On): On {
         initializeONinnerIfNeeded();
         return ONInner!.within(on);
+    }
+
+    export function within(com: Component): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.withinComponent(com);
     }
 
     export function clickable(b?: boolean): On {
@@ -2065,9 +2115,19 @@ export namespace ON {
         return ONInner!.isBefore(on);
     }
 
+    export function isBefore(com: Component): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.isBeforeComponent(com);
+    }
+
     export function isAfter(on: On): On {
         initializeONinnerIfNeeded();
         return ONInner!.isAfter(on);
+    }
+
+    export function isAfter(com: Component): On {
+        initializeONinnerIfNeeded();
+        return ONInner!.isAfterComponent(com);
     }
 
     export function inWindow(bundleName: string): On {

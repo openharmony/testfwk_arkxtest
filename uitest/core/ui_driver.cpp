@@ -319,6 +319,30 @@ namespace OHOS::uitest {
         uiController_->InjectKeyEventSequence(events, displayId);
     }
 
+    void UiDriver::TriggerPenKey(const PenKeyAction &action, const UiOpArgs &opt, ApiCallErr &error, int32_t displayId)
+    {
+        if (!CheckStatus(false, error)) {
+            return;
+        }
+        if (!CheckDisplayExist(displayId)) {
+            error = ApiCallErr(ERR_INVALID_INPUT, "Invalid display id.");
+            return;
+        }
+        if (action.IsMouseKeyCombo()) {
+            vector<MouseEvent> mouseEvents;
+            action.ComputeMouseEvents(mouseEvents, opt);
+            if (!mouseEvents.empty()) {
+                uiController_->InjectMouseEventSequence(mouseEvents);
+            }
+        } else {
+            vector<KeyEvent> keyEvents;
+            action.ComputeEvents(keyEvents, opt);
+            if (!keyEvents.empty()) {
+                uiController_->InjectKeyEventSequence(keyEvents, displayId);
+            }
+        }
+    }
+
     void UiDriver::FindWidgets(const WidgetSelector &selector, vector<unique_ptr<Widget>> &rev,
         ApiCallErr &err, bool updateUi, bool skipWaitForUiSteady)
     {
@@ -700,6 +724,11 @@ namespace OHOS::uitest {
     bool UiDriver::IsWearable() const
     {
         return uiController_->IsWearable();
+    }
+
+    bool UiDriver::IsPenKeySupported(bool shouldConnectPen) const
+    {
+        return uiController_->IsPenKeySupported(shouldConnectPen);
     }
 
     bool UiDriver::IsAdjustWindowModeEnable() const

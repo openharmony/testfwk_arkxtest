@@ -557,4 +557,64 @@ namespace OHOS::uitest {
         DCHECK(stage_ >= ActionStage::DOWN && stage_ <= ActionStage::AXIS_STOP);
         recv.push_back(MouseEvent {stage_, point_, btn_, {}, 0});
     }
+
+    void PenKeyAction::ComputeEvents(std::vector<KeyEvent> &recv, const UiOpArgs &opt) const
+    {
+        constexpr int32_t keyCodePenLightPinch = 3215;
+        constexpr int32_t keyCodeF20 = 2823;
+        constexpr int32_t keyCodeDpadUp = 2012;
+        constexpr int32_t keyCodeDpadDown = 2013;
+        constexpr int32_t keyCodeNumPad2 = 2;
+
+        struct PenKeyMapping {
+            PenKey key;
+            PenMode mode;
+            PenKeyOp operation;
+            int32_t keyCode;
+            int32_t clickCount;
+        };
+        const PenKeyMapping mappings[] = {
+            {PenKey::HANDWRITING_KEY, PenMode::HANDWRITING_MODE, PenKeyOp::SINGLE_CLICK, keyCodePenLightPinch, ONE},
+            {PenKey::HANDWRITING_KEY, PenMode::HANDWRITING_MODE, PenKeyOp::DOUBLE_CLICK, keyCodeF20, TWO},
+            {PenKey::HANDWRITING_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::SINGLE_CLICK, keyCodeDpadUp, ONE},
+            {PenKey::HANDWRITING_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::DOUBLE_CLICK, keyCodeNumPad2, ONE},
+            {PenKey::SMART_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::SINGLE_CLICK, keyCodeDpadDown, ONE}
+        };
+        for (const auto& mapping : mappings) {
+            if (mapping.key != key_ || mapping.mode != mode_ || mapping.operation != operation_) {
+                continue;
+            }
+            int32_t keyCode = mapping.keyCode;
+            int32_t clickCount = mapping.clickCount;
+
+            for (int32_t i = 0; i < clickCount; i++) {
+                recv.push_back(KeyEvent {ActionStage::DOWN, keyCode, opt.keyHoldMs_});
+                recv.push_back(KeyEvent {ActionStage::UP, keyCode, opt.keyHoldMs_});
+            }
+            return;
+        }
+    }
+
+    void PenKeyAction::ComputeMouseEvents(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const
+    {
+        if (!IsMouseKeyCombo()) {
+            return;
+        }
+        constexpr int32_t keyCodePenAirMouse = 3214;
+        int32_t clickCount = (operation_ == PenKeyOp::DOUBLE_CLICK) ? TWO : ONE;
+        vector<KeyEvent> keyDownEvents;
+        keyDownEvents.push_back(KeyEvent {ActionStage::DOWN, keyCodePenAirMouse, opt.keyHoldMs_});
+        MouseEvent keyDown {ActionStage::MOVE, point_, MouseButton::BUTTON_NONE, keyDownEvents, opt.clickHoldMs_};
+        recv.push_back(keyDown);
+        for (int i = 0; i < clickCount; i++) {
+            MouseEvent mouseDown {ActionStage::DOWN, point_, MouseButton::BUTTON_LEFT, {}, opt.clickHoldMs_};
+            recv.push_back(mouseDown);
+            MouseEvent mouseUp {ActionStage::UP, point_, MouseButton::BUTTON_LEFT, {}, 0};
+            recv.push_back(mouseUp);
+        }
+        vector<KeyEvent> keyUpEvents;
+        keyUpEvents.push_back(KeyEvent {ActionStage::UP, keyCodePenAirMouse, opt.keyHoldMs_});
+        MouseEvent keyUp {ActionStage::NONE, point_, MouseButton::BUTTON_NONE, keyUpEvents, 0};
+        recv.push_back(keyUp);
+    }
 }
