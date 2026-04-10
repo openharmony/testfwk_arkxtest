@@ -149,6 +149,50 @@ namespace OHOS::uitest {
         sizeof(MOUSE_BUTTON_VALUES) / sizeof(FrontendEnumValueDef),
     };
 
+    /** Describes the Pen key type.*/
+    constexpr FrontendEnumValueDef PEN_KEY_VALUES[] = {
+        {"HANDWRITING", "0"},
+        {"SMART", "1"},
+        {"AIR_MOUSE", "2"},
+    };
+    constexpr FrontendEnumeratorDef PEN_KEY_DEF = {
+        "PenKey",
+        PEN_KEY_VALUES,
+        sizeof(PEN_KEY_VALUES) / sizeof(FrontendEnumValueDef),
+    };
+
+    /** Describes the Pen mode.*/
+    constexpr FrontendEnumValueDef PEN_MODE_VALUES[] = {
+        {"HANDWRITING", "0"},
+        {"AIR_MOUSE", "1"},
+    };
+    constexpr FrontendEnumeratorDef PEN_MODE_DEF = {
+        "PenMode",
+        PEN_MODE_VALUES,
+        sizeof(PEN_MODE_VALUES) / sizeof(FrontendEnumValueDef),
+    };
+
+    /** Describes the Pen key operation type.*/
+    constexpr FrontendEnumValueDef PEN_KEY_OPERATION_VALUES[] = {
+        {"CLICK", "0"},
+        {"DOUBLE_CLICK", "1"},
+    };
+    constexpr FrontendEnumeratorDef PEN_KEY_OPERATION_DEF = {
+        "PenKeyOperation",
+        PEN_KEY_OPERATION_VALUES,
+        sizeof(PEN_KEY_OPERATION_VALUES) / sizeof(FrontendEnumValueDef),
+    };
+
+    /** PenKeyOperationOptions jsonObject definition.*/
+    constexpr FrontEndJsonPropDef PEN_KEY_OPERATION_OPTIONS_PROPERTIES[] = {
+        {"point", "Point", false},
+    };
+    constexpr FrontEndJsonDef PEN_KEY_OPERATION_OPTIONS_DEF = {
+        "PenKeyOperationOptions",
+        PEN_KEY_OPERATION_OPTIONS_PROPERTIES,
+        sizeof(PEN_KEY_OPERATION_OPTIONS_PROPERTIES) / sizeof(FrontEndJsonPropDef),
+    };
+
     /** Describes the direction of the UI operation.*/
     constexpr FrontendEnumValueDef UI_DIRECTION_VALUES[] = {
         {"LEFT", "0"},
@@ -329,8 +373,11 @@ namespace OHOS::uitest {
         {"On.checkable", "(bool?):On", false, true},
         {"On.checked", "(bool?):On", false, true},
         {"On.isBefore", "(On):On", false, true},
+        {"On.isBeforeComponent", "(Component):On", false, true, true},
         {"On.isAfter", "(On):On", false, true},
+        {"On.isAfterComponent", "(Component):On", false, true, true},
         {"On.within", "(On):On", false, true},
+        {"On.withinComponent", "(Component):On", false, true, true},
         {"On.inWindow", "(string):On", false, true},
         {"On.inDisplay", "(int):On", false, true},
         {"On.belongingDisplay", "(int):On", false, true, true},
@@ -359,6 +406,7 @@ namespace OHOS::uitest {
         {"Driver.pressBack", "(int?):void", false, false, true},
         {"Driver.triggerKey", "(int,int?):void", false, false},
         {"Driver.triggerCombineKeys", "(int,int,int?,int?):void", false, false},
+        {"Driver.triggerPenKey", "(int,int,int,PenKeyOperationOptions?):void", false, false, true},
         {"Driver.click", "(int,int):void", false, false},
         {"Driver.click", "(Point):void", false, false},
         {"Driver.clickAt", "(Point,TouchOptions?):void", false, false, true},
@@ -511,13 +559,13 @@ namespace OHOS::uitest {
                                       &UI_EVENT_OBSERVER_DEF};
     const auto FRONTEND_ENUMERATOR_DEFS = {&MATCH_PATTERN_DEF, &WINDOW_MODE_DEF, &RESIZE_DIRECTION_DEF,
                                            &DISPLAY_ROTATION_DEF, &MOUSE_BUTTON_DEF, &UI_DIRECTION_DEF,
-                                           &WINDOW_CHANGE_TYPE_DEF, &COMPONENT_EVENT_TYPE_DEF};
+                                           &WINDOW_CHANGE_TYPE_DEF, &COMPONENT_EVENT_TYPE_DEF,
+                                           &PEN_KEY_DEF, &PEN_MODE_DEF, &PEN_KEY_OPERATION_DEF};
     const auto FRONTEND_JSON_DEFS = {&RECT_DEF, &POINT_DEF, &WINDOW_FILTER_DEF, &UI_ELEMENT_INFO_DEF,
                                      &TOUCH_PAD_SWIPE_OPTIONS_DEF, &INPUTTEXT_MODE_DEF,
                                      &WINDOW_CHANGE_OPTIONS_DEF,
                                      &COMPONENT_EVENT_OPTIONS_DEF,
-                                     &TOUCH_OPTIONS_DEF, &KEY_OPTIONS_DEF
-                                     };
+                                     &TOUCH_OPTIONS_DEF, &KEY_OPTIONS_DEF, &PEN_KEY_OPERATION_OPTIONS_DEF};
     /** The allowed in/out data type scope of frontend apis.*/
     const std::initializer_list<std::string_view> DATA_TYPE_SCOPE = {
         "int",
@@ -543,6 +591,7 @@ namespace OHOS::uitest {
         INPUTTEXT_MODE_DEF.name_,
         TOUCH_OPTIONS_DEF.name_,
         KEY_OPTIONS_DEF.name_,
+        PEN_KEY_OPERATION_OPTIONS_DEF.name_,
     };
 } // namespace OHOS::uitest
 

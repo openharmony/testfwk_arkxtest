@@ -58,6 +58,11 @@ namespace OHOS::uitest {
             return false;
         }
 
+        bool IsPenKeySupported(bool shouldConnectPen) const override
+        {
+            return false;
+        }
+
         bool IsAdjustWindowModeEnable() const override
         {
             return false;
