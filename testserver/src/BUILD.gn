@@ -72,6 +72,7 @@ ohos_shared_library("test_server_service") {
     "time_service:time_client",
     "ability_runtime:wantagent_innerkits",
     "input:libmmi-client",
+    "os_account:os_account_innerkits",
   ]
 
   if (defined(global_parts_info) && defined(global_parts_info.inputmethod_imf)) {

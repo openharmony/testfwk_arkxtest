@@ -39,6 +39,7 @@
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include "accesstoken_kit.h"
+#include "os_account_manager.h"
 #include "tokenid_kit.h"
 #include "memory_collector.h"
 #include <fstream>
@@ -677,5 +678,18 @@ namespace OHOS::testserver {
         result = TEST_SERVER_NOT_SUPPORTED;
         return TEST_SERVER_OK;
 #endif
+    }
+
+    ErrCode TestServerService::GetUserIdByDisplayId(int32_t displayId, int32_t &userId)
+    {
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        auto ret = OHOS::AccountSA::OsAccountManager::GetForegroundOsAccountLocalId(displayId, userId);
+        if (ret != ERR_OK) {
+            HiLog::Error(LABEL_SERVICE, "GetUserIdByDisplay in displayId %{public}d failed,
+                ret: %{public}d", displayId, ret);
+            userId = -1;
+            return TEST_SERVER_ACCOUNTOP_FAILED;
+        }
+        return TEST_SERVER_OK;
     }
 } // namespace OHOS::testserver

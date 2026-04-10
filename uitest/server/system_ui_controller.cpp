@@ -43,7 +43,6 @@
 #include "test_server_error_code.h"
 #include "parameters.h"
 #include "image_packer.h"
-#include "os_account_manager.h"
 
 using namespace std;
 using namespace chrono;
@@ -1474,22 +1473,10 @@ namespace OHOS::uitest {
         }
     }
 
-    static bool GetUserIdByDisplay(int32_t displayId, int32_t &userId)
-    {
-        auto ret = OHOS::AccountSA::OsAccountManager::GetForegroundOsAccountLocalId(displayId, userId);
-        if (ret != ERR_OK) {
-            LOG_E("GetUserIdByDisplay in displayId %{public}d failed, ret : %{public}d", displayId, ret);
-            return false;
-        }
-        return true;
-    }
-
     bool SysUiController::ConvertAAMS(int32_t displayId, ApiCallErr &error)
     {
-        int32_t userId = -1;
-        if (!GetUserIdByDisplay(displayId, userId)) {
-            return false;
-        }
+        int32_t userId = OHOS::testserver::TestServerClient::GetInstance().GetUserIdByDisplayId(displayId);
+        LOG_I("display %{public}d belongs to user %{public}d", displayId, userId);
         if (userId == currentUser_) {
             return true;
         }

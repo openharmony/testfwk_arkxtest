@@ -43,6 +43,7 @@ namespace OHOS::testserver {
         int32_t GetPasteData(std::string& pasteText);
         int32_t ClearPasteData();
         int32_t HideKeyboard();
+        int32_t GetUserIdByDisplayId(int32_t displayId);
     private:
         TestServerClient();
         ~TestServerClient() = default;
