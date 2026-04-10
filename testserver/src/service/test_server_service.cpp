@@ -680,6 +680,19 @@ namespace OHOS::testserver {
 #endif
     }
 
+    ErrCode TestServerService::GetUserCounts(int32_t &counts)
+    {
+        vector<int32_t> activatedOsAccountIds;
+        auto ret = OHOS::AccountSA::OsAccountManager::QueryActiveOsAccountIds(activatedOsAccountIds);
+        HiLog::Info(LABEL_SERVICE, "QueryActiveOsAccountIds, ret: %{public}d", ret);
+        if (ret != 0) {
+            counts = 1;
+            return TEST_SERVER_ACCOUNTOP_FAILED;
+        }
+        counts = activatedOsAccountIds.size();
+        return TEST_SERVER_OK;
+    }
+
     ErrCode TestServerService::GetUserIdByDisplayId(int32_t displayId, int32_t &userId)
     {
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
