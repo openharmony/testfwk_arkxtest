@@ -1477,6 +1477,9 @@ namespace OHOS::uitest {
 
     bool SysUiController::ConvertAAMS(int32_t displayId, ApiCallErr &error)
     {
+        if (isSingleUser_) {
+            return true;
+        }
         int32_t userId = OHOS::testserver::TestServerClient::GetInstance().GetUserIdByDisplayId(displayId);
         LOG_I("display %{public}d belongs to user %{public}d", displayId, userId);
         if (userId == currentUser_) {
