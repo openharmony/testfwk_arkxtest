@@ -698,8 +698,8 @@ namespace OHOS::testserver {
         HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
         auto ret = OHOS::AccountSA::OsAccountManager::GetForegroundOsAccountLocalId(displayId, userId);
         if (ret != ERR_OK) {
-            HiLog::Error(LABEL_SERVICE, "GetUserIdByDisplay in displayId %{public}d failed,
-                ret: %{public}d", displayId, ret);
+            HiLog::Error(LABEL_SERVICE, "GetUserIdByDisplay in displayId %{public}d failed,"
+                "ret: %{public}d", displayId, ret);
             userId = -1;
             return TEST_SERVER_ACCOUNTOP_FAILED;
         }
