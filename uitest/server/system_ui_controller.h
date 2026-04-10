@@ -104,6 +104,7 @@ namespace OHOS::uitest {
         mutable std::vector<int32_t> downKeys_;
         int32_t currentUser_ = -1;
         bool ConvertAAMS(int32_t displayId, ApiCallErr &error);
+        bool isSingleUser_ = true;
     };
 }
 

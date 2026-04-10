@@ -396,6 +396,8 @@ namespace OHOS::uitest {
 
     bool SysUiController::Initialize(ApiCallErr &error)
     {
+        int32_t userCounts = OHOS::testserver::TestServerClient::GetInstance().GetUserCounts();
+        isSingleUser_ = userCounts == 1;
         return this->ConnectToSysAbility(error);
     }
 
