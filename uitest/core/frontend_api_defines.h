@@ -354,7 +354,7 @@ namespace OHOS::uitest {
         {"Driver.waitForComponent", "(On,int):Component", false, false},
         {"Driver.screenCap", "(int,int?):bool", false, false},            // fliePath as fileDescription.
         {"Driver.screenCapture", "(int, Rect?):bool", false, false}, // fliePath as fileDescription.
-        {"Driver.dumpLayout", "(int,int?):bool", false, false},            // fileDescription and optional displayId.
+        {"Driver.dumpLayout", "(int,int?):bool", false, true},            // fileDescription and optional displayId.
         {"Driver.assertComponentExist", "(On):void", false, false},
         {"Driver.pressBack", "(int?):void", false, false, true},
         {"Driver.triggerKey", "(int,int?):void", false, false},
@@ -413,6 +413,7 @@ namespace OHOS::uitest {
         {"Driver.injectKnucklePointerAction", "(PointerMatrix,int?):void", false, false, true},
         {"Driver.touchPadTwoFingersScroll", "(Point,int,int,int?):void", false, false, true},
     };
+    
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",
         DRIVER_METHODS,
