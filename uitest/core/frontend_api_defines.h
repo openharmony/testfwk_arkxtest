@@ -413,6 +413,7 @@ namespace OHOS::uitest {
         {"Driver.injectKnucklePointerAction", "(PointerMatrix,int?):void", false, false, true},
         {"Driver.touchPadTwoFingersScroll", "(Point,int,int,int?):void", false, false, true},
     };
+    
     constexpr FrontEndClassDef DRIVER_DEF = {
         "Driver",
         DRIVER_METHODS,
