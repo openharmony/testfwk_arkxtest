@@ -80,6 +80,22 @@ namespace OHOS::uitest {
         BUTTON_MIDDLE = 2
     };
 
+    enum PenKey : int32_t {
+        HANDWRITING_KEY = 0,
+        SMART_KEY = 1,
+        AIR_MOUSE_KEY = 2,
+    };
+
+    enum PenMode : int32_t {
+        HANDWRITING_MODE = 0,
+        AIR_MOUSE_MODE = 1,
+    };
+
+    enum PenKeyOp : int32_t {
+        SINGLE_CLICK = 0,
+        DOUBLE_CLICK = 1,
+    };
+
     enum Direction : uint32_t {
         TO_LEFT,
         TO_RIGHT,
@@ -395,6 +411,27 @@ namespace OHOS::uitest {
         const int32_t codeZero_;
         const int32_t codeOne_;
         const int32_t codeTwo_;
+    };
+
+    class PenKeyAction : public KeyAction {
+    public:
+        PenKeyAction(PenKey key, PenMode mode, PenKeyOp operation, const Point &point = Point(0, 0))
+            : key_(key), mode_(mode), operation_(operation), point_(point) {};
+
+        void ComputeEvents(std::vector<KeyEvent> &recv, const UiOpArgs &opt) const override;
+
+        void ComputeMouseEvents(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const;
+
+        bool IsMouseKeyCombo() const
+        {
+            return key_ == PenKey::AIR_MOUSE_KEY && mode_ == PenMode::AIR_MOUSE_MODE;
+        }
+
+    private:
+        const PenKey key_;
+        const PenMode mode_;
+        const PenKeyOp operation_;
+        const Point point_;
     };
 
     using Back = NamedPlainKey<KEYCODE_BACK>;
