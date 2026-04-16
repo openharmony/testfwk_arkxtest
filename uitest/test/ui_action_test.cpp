@@ -28,6 +28,13 @@ static constexpr uint32_t CUSTOM_SWIPE_VELOCITY_PPS = 500;
 static constexpr uint32_t CUSTOM_UI_STEADY_MS = 600;
 static constexpr uint32_t CUSTOM_WAIT_UI_STEADY_MS = 700;
 
+static constexpr int32_t KEYCODE_PEN_LIGHT_PINCH = 3215;
+static constexpr int32_t KEYCODE_DPAD_UP = 2012;
+static constexpr int32_t KEYCODE_DPAD_DOWN = 2013;
+static constexpr int32_t KEYCODE_F20 = 2823;
+static constexpr int32_t KEYCODE_NUMPAD_2 = 2;
+static constexpr int32_t KEYCODE_PEN_AIR_MOUSE = 3214;
+
 class UiActionTest : public testing::Test {
 public:
     ~UiActionTest() override = default;
@@ -446,9 +453,9 @@ TEST_F(UiActionTest, computeBackKeyAction)
     Back keyAction;
     vector<KeyEvent> events;
     keyAction.ComputeEvents(events, customOptions_);
-    ASSERT_EQ(2, events.size()); // up & down
+    ASSERT_EQ(TWO, events.size()); // up & down
     auto event1 = *events.begin();
-    auto event2 = *(events.begin() + 1);
+    auto event2 = *(events.begin() + INDEX_ONE);
     ASSERT_EQ(KEYCODE_BACK, event1.code_);
     ASSERT_EQ(ActionStage::DOWN, event1.stage_);
 
@@ -461,11 +468,11 @@ TEST_F(UiActionTest, computePasteAction)
     Paste keyAction;
     vector<KeyEvent> events;
     keyAction.ComputeEvents(events, customOptions_);
-    ASSERT_EQ(4, events.size()); // ctrl_down/key_down/key_up/ctrl_up
+    ASSERT_EQ(FOUR, events.size()); // ctrl_down/key_down/key_up/ctrl_up
     auto event1 = *events.begin();
-    auto event2 = *(events.begin() + 1);
-    auto event3 = *(events.begin() + 2);
-    auto event4 = *(events.begin() + 3);
+    auto event2 = *(events.begin() + INDEX_ONE);
+    auto event3 = *(events.begin() + INDEX_TWO);
+    auto event4 = *(events.begin() + INDEX_THREE);
 
     ASSERT_EQ(KEYCODE_CTRL, event1.code_);
     ASSERT_EQ(ActionStage::DOWN, event1.stage_);
@@ -485,9 +492,9 @@ TEST_F(UiActionTest, anonymousSignleKey)
     AnonymousSingleKey anonymousKey(keyCode);
     vector<KeyEvent> events;
     anonymousKey.ComputeEvents(events, customOptions_);
-    ASSERT_EQ(2, events.size()); // up & down
+    ASSERT_EQ(TWO, events.size()); // up & down
     auto event1 = *events.begin();
-    auto event2 = *(events.begin() + 1);
+    auto event2 = *(events.begin() + INDEX_ONE);
     ASSERT_EQ(keyCode, event1.code_);
     ASSERT_EQ(ActionStage::DOWN, event1.stage_);
 
@@ -571,4 +578,139 @@ TEST_F(UiActionTest, MouseSwipeAndDrag)
         }
         ASSERT_TRUE(dragEvents[i].keyEvents_.empty());
     }
+}
+
+TEST_F(UiActionTest, PenKeyAction_ComputeEvents_HandwritingMode_Click)
+{
+    PenKeyAction action(PenKey::HANDWRITING_KEY, PenMode::HANDWRITING_MODE, PenKeyOp::SINGLE_CLICK);
+    vector<KeyEvent> events;
+    action.ComputeEvents(events, customOptions_);
+    ASSERT_EQ(TWO, events.size());
+    auto event1 = *events.begin();
+    auto event2 = *(events.begin() + INDEX_ONE);
+    ASSERT_EQ(ActionStage::DOWN, event1.stage_);
+    ASSERT_EQ(KEYCODE_PEN_LIGHT_PINCH, event1.code_);
+    ASSERT_EQ(ActionStage::UP, event2.stage_);
+    ASSERT_EQ(KEYCODE_PEN_LIGHT_PINCH, event2.code_);
+}
+
+TEST_F(UiActionTest, PenKeyAction_ComputeEvents_HandwritingMode_DoubleClick)
+{
+    PenKeyAction action(PenKey::HANDWRITING_KEY, PenMode::HANDWRITING_MODE, PenKeyOp::DOUBLE_CLICK);
+    vector<KeyEvent> events;
+    action.ComputeEvents(events, customOptions_);
+    ASSERT_EQ(FOUR, events.size());
+    auto event1 = *events.begin();
+    auto event2 = *(events.begin() + INDEX_ONE);
+    auto event3 = *(events.begin() + INDEX_TWO);
+    auto event4 = *(events.begin() + INDEX_THREE);
+    ASSERT_EQ(ActionStage::DOWN, event1.stage_);
+    ASSERT_EQ(KEYCODE_F20, event1.code_);
+    ASSERT_EQ(ActionStage::UP, event2.stage_);
+    ASSERT_EQ(KEYCODE_F20, event2.code_);
+
+    ASSERT_EQ(ActionStage::DOWN, event3.stage_);
+    ASSERT_EQ(KEYCODE_F20, event3.code_);
+
+    ASSERT_EQ(ActionStage::UP, event4.stage_);
+    ASSERT_EQ(KEYCODE_F20, event4.code_);
+}
+
+TEST_F(UiActionTest, PenKeyAction_ComputeEvents_AirMouseMode_HandwritingKey_Click)
+{
+    PenKeyAction action(PenKey::HANDWRITING_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::SINGLE_CLICK);
+    vector<KeyEvent> events;
+    action.ComputeEvents(events, customOptions_);
+    ASSERT_EQ(TWO, events.size());
+
+    auto event1 = *events.begin();
+    auto event2 = *(events.begin() + INDEX_ONE);
+
+    ASSERT_EQ(ActionStage::DOWN, event1.stage_);
+    ASSERT_EQ(KEYCODE_DPAD_UP, event1.code_);
+
+    ASSERT_EQ(ActionStage::UP, event2.stage_);
+    ASSERT_EQ(KEYCODE_DPAD_UP, event2.code_);
+}
+
+TEST_F(UiActionTest, PenKeyAction_ComputeEvents_AirMouseMode_HandwritingKey_DoubleClick)
+{
+    PenKeyAction action(PenKey::HANDWRITING_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::DOUBLE_CLICK);
+    vector<KeyEvent> events;
+    action.ComputeEvents(events, customOptions_);
+    ASSERT_EQ(TWO, events.size());
+
+    auto event1 = *events.begin();
+    auto event2 = *(events.begin() + INDEX_ONE);
+
+    ASSERT_EQ(ActionStage::DOWN, event1.stage_);
+    ASSERT_EQ(KEYCODE_NUMPAD_2, event1.code_);
+
+    ASSERT_EQ(ActionStage::UP, event2.stage_);
+    ASSERT_EQ(KEYCODE_NUMPAD_2, event2.code_);
+}
+
+TEST_F(UiActionTest, PenKeyAction_ComputeEvents_AirMouseMode_SmartKey_Click)
+{
+    PenKeyAction action(PenKey::SMART_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::SINGLE_CLICK);
+    vector<KeyEvent> events;
+    action.ComputeEvents(events, customOptions_);
+    ASSERT_EQ(TWO, events.size());
+
+    auto event1 = *events.begin();
+    auto event2 = *(events.begin() + INDEX_ONE);
+
+    ASSERT_EQ(ActionStage::DOWN, event1.stage_);
+    ASSERT_EQ(KEYCODE_DPAD_DOWN, event1.code_);
+
+    ASSERT_EQ(ActionStage::UP, event2.stage_);
+    ASSERT_EQ(KEYCODE_DPAD_DOWN, event2.code_);
+}
+
+TEST_F(UiActionTest, PenKeyAction_IsMouseKeyCombo)
+{
+    PenKeyAction action1(PenKey::AIR_MOUSE_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::SINGLE_CLICK, Point(0, 0));
+    PenKeyAction action2(PenKey::HANDWRITING_KEY, PenMode::HANDWRITING_MODE, PenKeyOp::SINGLE_CLICK);
+
+    ASSERT_TRUE(action1.IsMouseKeyCombo());
+    ASSERT_FALSE(action2.IsMouseKeyCombo());
+}
+
+TEST_F(UiActionTest, PenKeyAction_ComputeMouseEvents_Click)
+{
+    PenKeyAction action(PenKey::AIR_MOUSE_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::SINGLE_CLICK, Point(0, 0));
+    vector<MouseEvent> events;
+    action.ComputeMouseEvents(events, customOptions_);
+    ASSERT_EQ(FOUR, events.size());
+
+    auto event1 = *events.begin();
+    auto event2 = *(events.begin() + INDEX_ONE);
+    auto event3 = *(events.begin() + INDEX_TWO);
+    auto event4 = *(events.begin() + INDEX_THREE);
+
+    ASSERT_EQ(ActionStage::MOVE, event1.stage_);
+    ASSERT_EQ(0, event1.point_.px_);
+    ASSERT_EQ(0, event1.point_.py_);
+    ASSERT_EQ(MouseButton::BUTTON_NONE, event1.button_);
+    ASSERT_EQ(ONE, event1.keyEvents_.size());
+    ASSERT_EQ(ActionStage::DOWN, event1.keyEvents_[0].stage_);
+    ASSERT_EQ(KEYCODE_PEN_AIR_MOUSE, event1.keyEvents_[0].code_);
+
+    ASSERT_EQ(ActionStage::DOWN, event2.stage_);
+    ASSERT_EQ(0, event2.point_.px_);
+    ASSERT_EQ(0, event2.point_.py_);
+    ASSERT_EQ(MouseButton::BUTTON_LEFT, event2.button_);
+
+    ASSERT_EQ(ActionStage::UP, event3.stage_);
+    ASSERT_EQ(0, event3.point_.px_);
+    ASSERT_EQ(0, event3.point_.py_);
+    ASSERT_EQ(MouseButton::BUTTON_LEFT, event3.button_);
+
+    ASSERT_EQ(ActionStage::NONE, event4.stage_);
+    ASSERT_EQ(0, event4.point_.px_);
+    ASSERT_EQ(0, event4.point_.py_);
+    ASSERT_EQ(MouseButton::BUTTON_NONE, event4.button_);
+    ASSERT_EQ(1, event4.keyEvents_.size());
+    ASSERT_EQ(ActionStage::UP, event4.keyEvents_[0].stage_);
+    ASSERT_EQ(KEYCODE_PEN_AIR_MOUSE, event4.keyEvents_[0].code_);
 }

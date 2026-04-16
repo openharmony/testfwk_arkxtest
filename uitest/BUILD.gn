@@ -242,6 +242,7 @@ ohos_executable("uitest_server") {
       arkxtest_product_feature == "tablet" ||
       arkxtest_product_feature == "phone") {
     defines += [ "ARKXTEST_ADJUST_WINDOWMODE_ENABLE" ]
+    defines += [ "ARKXTEST_TRIGGER_PEN_KEY_ENABLE" ]
   }
 }
 
