@@ -166,6 +166,8 @@ namespace OHOS::uitest {
 
         virtual bool IsWearable() const = 0;
 
+        virtual bool IsPenKeySupported(bool shouldConnectPen) const = 0;
+
         virtual bool IsAdjustWindowModeEnable() const = 0;
 
         virtual bool IsKnuckleSnapshotEnable() const = 0;

@@ -1047,6 +1047,15 @@ namespace OHOS::uitest {
         return isWearable;
     }
 
+    bool SysUiController::IsPenKeySupported(bool shouldConnectPen) const
+    {
+        bool res = false;
+#ifdef ARKXTEST_TRIGGER_PEN_KEY_ENABLE
+        res = true;
+#endif
+        return res;
+    }
+
     bool SysUiController::IsAdjustWindowModeEnable() const
     {
         bool IsAdjustWindowModeEnable = false;
