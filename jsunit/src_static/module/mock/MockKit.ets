@@ -78,11 +78,11 @@ export class MockKit {
     }
     const getValueMethod = "__getProperty_" + name + "__";
     const setValueMethod = "__setProperty_" + name + "__";
-    const classType = Type.of(instance) as ClassType
+    const classType = Class.of(instance)
     if (!isMocked) {
-      for (let i = 0; i < classType.getMethodsNum(); i++) {
-        let method = classType.getMethod(i)
-        if (method.getName() === getValueMethod) {
+      for (let klass = classType; klass != Class.from<Object>(); klass = klass.getSuper()!) {
+        const method = klass.getInstanceMethod(getValueMethod)
+        if (method != undefined) {
           const args: FixedArray<Object> = []
           try {
             let oriValue = method.invoke(instance, args) as Object
@@ -96,20 +96,20 @@ export class MockKit {
             this.propertyMap.set(keyInfo.hashKey, oriValue)
           } catch (e) {
             console.info("catch error:" + e)
-    }
+          }
           hilog.info(domain, tag, '%{public}s', 'invoke over')
         }
       }
     }
-    for (let i = 0; i < classType.getMethodsNum(); i++) {
-      let method = classType.getMethod(i)
-      if (method.getName() === setValueMethod) {
+    for (let klass = classType; klass != Class.from<Object>(); klass = klass.getSuper()!) {
+      const method = klass.getInstanceMethod(setValueMethod)
+      if (method != undefined) {
         const args: FixedArray<Object> = [value]
         try {
           method.invoke(instance, args)
         } catch (e) {
           console.info("catch error:" + e)
-    }
+        }
         hilog.info(domain, tag, '%{public}s', 'invoke over')
       }
     }
@@ -139,11 +139,10 @@ export class MockKit {
   }
   setMockerOfUserClass(instance: object, mocker: MockKit) {
     hilog.info(domain, tag, '%{public}s', 'start run setMockerOfUserClass')
-    const classType = Type.of(instance) as ClassType
-    for (let i = 0; i < classType.getMethodsNum(); i++) {
-      let method = classType.getMethod(i)
-      hilog.info(domain, tag, 'method %{public}s', method.getName())
-      if (method.getName() === "__setMocker__") {
+    const classType = Class.of(instance)
+    for (let klass = classType; klass != Class.from<Object>(); klass = klass.getSuper()!) {
+      const method = klass.getInstanceMethod("__setMocker__")
+      if (method != undefined) {
         hilog.info(domain, tag, '%{public}s', '__setMocker__ in')
         const args: FixedArray<MockKit> = [mocker]
         try {
@@ -284,11 +283,11 @@ export class MockKit {
         if (this.propertyMap.has(hashValue)) {
           const oriValue = this.propertyMap.get(hashValue) as Object
           let name = key.methodName
-          const classType = Type.of(instance) as ClassType
+          const classType = Class.of(instance)
           const setValueMethod = "__setProperty_" + name + "__";
-          for (let i = 0; i < classType.getMethodsNum(); i++) {
-            let method = classType.getMethod(i)
-            if (method.getName() === setValueMethod) {
+          for (let klass = classType; klass != Class.from<Object>(); klass = klass.getSuper()!) {
+            const method = klass.getInstanceMethod(setValueMethod)
+            if (method != undefined) {
               const args: FixedArray<Object> = [oriValue]
               try {
                 method.invoke(instance, args)
@@ -318,11 +317,11 @@ export class MockKit {
       if (instance === keyObject && keyMethodName === name) {
         const hashValue = this.hashMap.get(key) as string
         const oriValue = this.propertyMap.get(hashValue) as Object
-        const classType = Type.of(instance) as ClassType
+        const classType = Class.of(instance)
         const setValueMethod = "__setProperty_" + name + "__";
-        for (let i = 0; i < classType.getMethodsNum(); i++) {
-          let method = classType.getMethod(i)
-          if (method.getName() === setValueMethod) {
+        for (let klass = classType; klass != Class.from<Object>(); klass = klass.getSuper()!) {
+          const method = klass.getInstanceMethod(setValueMethod)
+          if (method != undefined) {
             const args: FixedArray<Object> = [oriValue]
             try {
               method.invoke(instance, args)
