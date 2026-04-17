@@ -499,12 +499,28 @@ static ani_ref within(ani_env *env, ani_object obj, ani_object on)
     return createOn(env, obj, params, "On.within");
 }
 
+static ani_ref withinComponent(ani_env *env, ani_object obj, ani_object comObj)
+{
+    nlohmann::json params = nlohmann::json::array();
+    string componentRef = aniStringToStdString(env, unwrapp(env, comObj, "nativeComponent"));
+    params.push_back(componentRef);
+    return createOn(env, obj, params, "On.withinComponent");
+}
+
 static ani_ref isBefore(ani_env *env, ani_object obj, ani_object on)
 {
     nlohmann::json params = nlohmann::json::array();
     string p = aniStringToStdString(env, unwrapp(env, on, "nativeOn"));
     params.push_back(p);
     return createOn(env, obj, params, "On.isBefore");
+}
+
+static ani_ref isBeforeComponent(ani_env *env, ani_object obj, ani_object comObj)
+{
+    nlohmann::json params = nlohmann::json::array();
+    string componentRef = aniStringToStdString(env, unwrapp(env, comObj, "nativeComponent"));
+    params.push_back(componentRef);
+    return createOn(env, obj, params, "On.isBeforeComponent");
 }
 
 static ani_ref isAfter(ani_env *env, ani_object obj, ani_object on)
@@ -514,6 +530,15 @@ static ani_ref isAfter(ani_env *env, ani_object obj, ani_object on)
     params.push_back(p);
     return createOn(env, obj, params, "On.isAfter");
 }
+
+static ani_ref isAfterComponent(ani_env *env, ani_object obj, ani_object comObj)
+{
+    nlohmann::json params = nlohmann::json::array();
+    string componentRef = aniStringToStdString(env, unwrapp(env, comObj, "nativeComponent"));
+    params.push_back(componentRef);
+    return createOn(env, obj, params, "On.isAfterComponent");
+}
+
 static ani_ref id(ani_env *env, ani_object obj, ani_string id, ani_enum_item pattern)
 {
     nlohmann::json params = nlohmann::json::array();
@@ -652,15 +677,21 @@ static ani_boolean BindOn(ani_env *env)
         ani_native_function{"description", nullptr, reinterpret_cast<void *>(description)},
         ani_native_function{"inWindow", nullptr, reinterpret_cast<void *>(inWindow)},
         ani_native_function{"enabled", nullptr, reinterpret_cast<void *>(enabled)},
-        ani_native_function{"within", nullptr, reinterpret_cast<void *>(within)},
+        ani_native_function{"within", "C{@ohos.UiTest.On}:C{@ohos.UiTest.On}", reinterpret_cast<void *>(within)},
+        ani_native_function{"withinComponent", "C{@ohos.UiTest.Component}:C{@ohos.UiTest.On}",
+            reinterpret_cast<void *>(withinComponent)},
         ani_native_function{"selected", nullptr, reinterpret_cast<void *>(selected)},
         ani_native_function{"focused", nullptr, reinterpret_cast<void *>(focused)},
         ani_native_function{"clickable", nullptr, reinterpret_cast<void *>(clickable)},
         ani_native_function{"checkable", nullptr, reinterpret_cast<void *>(checkable)},
         ani_native_function{"checked", nullptr, reinterpret_cast<void *>(checked)},
         ani_native_function{"scrollable", nullptr, reinterpret_cast<void *>(scrollable)},
-        ani_native_function{"isBefore", nullptr, reinterpret_cast<void *>(isBefore)},
-        ani_native_function{"isAfter", nullptr, reinterpret_cast<void *>(isAfter)},
+        ani_native_function{"isBefore", "C{@ohos.UiTest.On}:C{@ohos.UiTest.On}", reinterpret_cast<void *>(isBefore)},
+        ani_native_function{"isBeforeComponent", "C{@ohos.UiTest.Component}:C{@ohos.UiTest.On}",
+            reinterpret_cast<void *>(isBeforeComponent)},
+        ani_native_function{"isAfter", "C{@ohos.UiTest.On}:C{@ohos.UiTest.On}", reinterpret_cast<void *>(isAfter)},
+        ani_native_function{"isAfterComponent", "C{@ohos.UiTest.Component}:C{@ohos.UiTest.On}",
+            reinterpret_cast<void *>(isAfterComponent)},
         ani_native_function{"longClickable", nullptr, reinterpret_cast<void *>(longClickable)},
         ani_native_function{"belongingDisplay", nullptr, reinterpret_cast<void *>(belongingDisplay)},
         ani_native_function{"originalText", nullptr, reinterpret_cast<void *>(originalText)},
@@ -1308,6 +1339,48 @@ static ani_boolean setDisplayRotationSync(ani_env *env, ani_object obj, ani_enum
     callInfo_.apiId_ = "Driver.setDisplayRotation";
     ani_int enumValue = getEnumValue(env, rotation);
     callInfo_.paramList_.push_back(enumValue);
+    Transact(callInfo_, reply_);
+    UnmarshalReply(env, callInfo_, reply_);
+    return true;
+}
+
+static json getPenKeyOperationOptions(ani_env *env, ani_object options)
+{
+    auto result = json();
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(options), &ret);
+    if (ret != ANI_FALSE) {
+        return result;
+    }
+    ani_ref ref;
+    if (env->Object_GetPropertyByName_Ref(options, "point", &ref) != ANI_OK) {
+        return result;
+    }
+    ani_boolean isUndefined;
+    env->Reference_IsUndefined(ref, &isUndefined);
+    if (isUndefined == ANI_FALSE) {
+        result["point"] = getPoint(env, static_cast<ani_object>(ref));
+    }
+    return result;
+}
+
+static ani_boolean triggerPenKeySync(ani_env *env, ani_object obj, ani_enum_item key, ani_enum_item mode,
+                                     ani_enum_item operation, ani_object options)
+{
+    ApiCallInfo callInfo_;
+    ApiReplyInfo reply_;
+    callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
+    callInfo_.apiId_ = "Driver.triggerPenKey";
+    callInfo_.paramList_.push_back(getEnumValue(env, key));
+    callInfo_.paramList_.push_back(getEnumValue(env, mode));
+    callInfo_.paramList_.push_back(getEnumValue(env, operation));
+    ani_boolean ret;
+    env->Reference_IsUndefined(reinterpret_cast<ani_ref>(options), &ret);
+    if (ret == ANI_FALSE) {
+        callInfo_.paramList_.push_back(getPenKeyOperationOptions(env, options));
+    } else {
+        callInfo_.paramList_.push_back(json());
+    }
     Transact(callInfo_, reply_);
     UnmarshalReply(env, callInfo_, reply_);
     return true;
@@ -2089,6 +2162,7 @@ static ani_boolean BindDriver(ani_env *env)
         ani_native_function{"penClickSync", nullptr, reinterpret_cast<void *>(penClickSync)},
         ani_native_function{"penDoubleClickSync", nullptr, reinterpret_cast<void *>(penDoubleClickSync)},
         ani_native_function{"penLongClickSync", "C{@ohos.UiTest.Point}C{std.core.Double}:z", reinterpret_cast<void *>(penLongClickSync)},
+        ani_native_function{"triggerPenKeySync", nullptr, reinterpret_cast<void *>(triggerPenKeySync)},
         ani_native_function{"mouseScrollSync", nullptr, reinterpret_cast<void *>(mouseScrollSync)},
         ani_native_function{"mouseMoveWithTrackSync", nullptr, reinterpret_cast<void *>(mouseMoveWithTrackSync)},
         ani_native_function{"mouseMoveToSync", nullptr, reinterpret_cast<void *>(mouseMoveToSync)},

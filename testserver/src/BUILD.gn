@@ -81,7 +81,7 @@ ohos_shared_library("test_server_service") {
     defines += [ "ARKXTEST_IMF_ENABLE" ]
   }
 
-  if (arkxtest_product_feature == "phone" || arkxtest_product_feature == "tablet") {
+  if (arkxtest_product_feature == "phone" || arkxtest_product_feature == "tablet" || arkxtest_product_feature == "pc") {
     external_deps += [
       "data_share:datashare_consumer",
     ]

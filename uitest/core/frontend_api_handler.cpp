@@ -838,6 +838,34 @@ namespace OHOS::uitest {
         server.AddHandler("On.belongingDisplay", genericRelativeBuilder);
     }
 
+    static void RegisterRelativeLocatorHandlers()
+    {
+        auto &server = FrontendApiServer::Get();
+        auto relativeLocatorHandler = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto selector = make_unique<WidgetSelector>();
+            if (in.callerObjRef_ != REF_SEED_ON) {
+                *selector = GetBackendObject<WidgetSelector>(in.callerObjRef_);
+            }
+            auto backendRef = ReadCallArg<string>(in, INDEX_ZERO);
+            auto &widget = GetBackendObject<Widget>(backendRef);
+            auto locatorSelector = make_unique<WidgetSelector>();
+            auto hierarchyMatcher = WidgetMatchModel(UiAttr::HIERARCHY, widget.GetHierarchy(), EQ);
+            locatorSelector->AddMatcher(hierarchyMatcher);
+            const auto attrName = in.apiId_.substr(ON_DEF.name_.length() + 1);
+            if (attrName == "isBeforeComponent") {
+                selector->AddRearLocator(*locatorSelector, out.exception_);
+            } else if (attrName == "isAfterComponent") {
+                selector->AddFrontLocator(*locatorSelector, out.exception_);
+            } else if (attrName == "withinComponent") {
+                selector->AddParentLocator(*locatorSelector, out.exception_);
+            }
+            out.resultValue_ = StoreBackendObject(move(selector));
+        };
+        server.AddHandler("On.isBeforeComponent", relativeLocatorHandler);
+        server.AddHandler("On.isAfterComponent", relativeLocatorHandler);
+        server.AddHandler("On.withinComponent", relativeLocatorHandler);
+    }
+
     static void RegisterUiDriverComponentFinders()
     {
         auto &server = FrontendApiServer::Get();
@@ -1056,6 +1084,51 @@ namespace OHOS::uitest {
             driver.TriggerKey(keyAction, uiOpArgs, out.exception_, displayId);
         };
         server.AddHandler("Driver.triggerCombineKeys", triggerCombineKeys);
+    }
+
+    static void RegisterUiDriverTriggerPenKey()
+    {
+        auto &server = FrontendApiServer::Get();
+
+        static const std::set<std::tuple<PenKey, PenMode, PenKeyOp, bool>> VALID_PEN_KEY_COMBINATIONS = {
+            {PenKey::HANDWRITING_KEY, PenMode::HANDWRITING_MODE, PenKeyOp::SINGLE_CLICK, false},
+            {PenKey::HANDWRITING_KEY, PenMode::HANDWRITING_MODE, PenKeyOp::DOUBLE_CLICK, false},
+            {PenKey::AIR_MOUSE_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::SINGLE_CLICK, true},
+            {PenKey::AIR_MOUSE_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::DOUBLE_CLICK, true},
+            {PenKey::HANDWRITING_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::SINGLE_CLICK, false},
+            {PenKey::HANDWRITING_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::DOUBLE_CLICK, false},
+            {PenKey::SMART_KEY, PenMode::AIR_MOUSE_MODE, PenKeyOp::SINGLE_CLICK, false}
+        };
+        auto triggerPenKey = [](const ApiCallInfo &in, ApiReplyInfo &out) {
+            auto &driver = GetBackendObject<UiDriver>(in.callerObjRef_);
+            UiOpArgs uiOpArgs;
+            auto key = static_cast<PenKey>(ReadCallArg<int32_t>(in, INDEX_ZERO));
+            auto mode = static_cast<PenMode>(ReadCallArg<int32_t>(in, INDEX_ONE));
+            auto operation = static_cast<PenKeyOp>(ReadCallArg<int32_t>(in, INDEX_TWO));
+            if (!driver.IsPenKeySupported(mode == PenMode::HANDWRITING_MODE)) {
+                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This operation is not supported.");
+                return;
+            }
+            Point point(0, 0);
+            bool hasPoint = false;
+            if (in.paramList_.size() > INDEX_THREE) {
+                auto optionsJson = ReadCallArg<json>(in, INDEX_THREE, json());
+                auto pointJson = ReadArgFromJson<json>(optionsJson, "point", json());
+                if (!pointJson.empty()) {
+                    auto displayId = ReadArgFromJson<int32_t>(pointJson, "displayId", UNASSIGNED);
+                    point = Point(pointJson["x"], pointJson["y"], displayId);
+                    hasPoint = true;
+                }
+            }
+            if (VALID_PEN_KEY_COMBINATIONS.find({key, mode, operation, hasPoint}) == VALID_PEN_KEY_COMBINATIONS.end()) {
+                out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invalid pen key combination.");
+                return;
+            }
+            PenKeyAction action(key, mode, operation, point);
+            driver.TriggerPenKey(action, uiOpArgs, out.exception_);
+            ConvertError(out);
+        };
+        server.AddHandler("Driver.triggerPenKey", triggerPenKey);
     }
 
     static void RegisterUiDriverInputText()
@@ -2392,12 +2465,14 @@ static void RegisterExtensionHandler()
         server.AddCommonPreprocessor("APiCallInfoChecker", APiCallInfoChecker);
         server.AddHandler("BackendObjectsCleaner", BackendObjectsCleaner);
         RegisterOnBuilders();
+        RegisterRelativeLocatorHandlers();
         RegisterUiDriverComponentFinders();
         RegisterUiDriverWindowFinder();
         RegisterUiDriverMiscMethods();
         RegisterUiDriverScreenCapMethods();
         RegisterUiDriverDumpLayoutMethods();
         RegisterUiDriverKeyOperation();
+        RegisterUiDriverTriggerPenKey();
         RegisterUiDriverInputText();
         RegisterUiDriverTouchOperators();
         RegisterUiComponentAttrGetters();

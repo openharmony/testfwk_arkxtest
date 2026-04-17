@@ -54,6 +54,8 @@ namespace OHOS::uitest {
         /**Trigger the given key action. */
         void TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error, int32_t displayId = -1);
 
+        void TriggerPenKey(const PenKeyAction &action, const UiOpArgs &opt, ApiCallErr &error, int32_t displayId = -1);
+
         /**Perform the given touch action.*/
         void PerformTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
 
@@ -104,6 +106,8 @@ namespace OHOS::uitest {
         void SetAamsWorkMode(const AamsWorkMode mode);
 
         bool IsWearable() const;
+
+        bool IsPenKeySupported(bool shouldConnectPen) const;
 
         bool IsAdjustWindowModeEnable() const;
 
