@@ -347,6 +347,26 @@ namespace OHOS::uitest {
         return napi_ok;
     }
 
+    static void HandleFilePathParam(napi_env env, TransactionContext &ctx, napi_value &error, ErrCode errCode)
+    {
+        auto &paramList = ctx.callInfo_.paramList_;
+        if (paramList.size() < 1 || paramList.at(0).type() != nlohmann::detail::value_t::string) {
+            LOG_E("Missing file path argument");
+            error = CreateJsException(env, errCode, "Missing file path argument");
+            return;
+        }
+        auto path = paramList.at(INDEX_ZERO).get<string>();
+        auto fd = open(path.c_str(), O_RDWR | O_CREAT, 0666);
+        if (fd == -1) {
+            LOG_E("Invalid file path: %{public}s", path.data());
+            error = CreateJsException(env, errCode, "Invalid file path:" + path);
+            return;
+        }
+        fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+        paramList[INDEX_ZERO] = fd;
+        ctx.callInfo_.fdParamIndex_ = INDEX_ZERO;
+    }
+
     static void PreprocessConvertApiId(TransactionContext &ctx)
     {
         const auto &id = ctx.callInfo_.apiId_;
@@ -372,23 +392,12 @@ namespace OHOS::uitest {
     {
         auto &paramList = ctx.callInfo_.paramList_;
         const auto &id = ctx.callInfo_.apiId_;
-        if (id  == "Driver.screenCap" || id  == "UiDriver.screenCap" || id  == "Driver.screenCapture"
-            || id == "Driver.dumpLayout") {
-            if (paramList.size() < 1 || paramList.at(0).type() != nlohmann::detail::value_t::string) {
-                LOG_E("Missing file path argument");
-                error = CreateJsException(env, ERR_INVALID_INPUT, "Missing file path argument");
-                return;
-            }
-            auto path = paramList.at(INDEX_ZERO).get<string>();
-            auto fd = open(path.c_str(), O_RDWR | O_CREAT, 0666);
-            if (fd == -1) {
-                LOG_E("Invalid file path: %{public}s", path.data());
-                error = CreateJsException(env, ERR_INVALID_INPUT, "Invalid file path:" + path);
-                return;
-            }
-            fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
-            paramList[INDEX_ZERO] = fd;
-            ctx.callInfo_.fdParamIndex_ = INDEX_ZERO;
+        if (id  == "Driver.screenCap" || id  == "UiDriver.screenCap" || id  == "Driver.screenCapture") {
+            HandleFilePathParam(env, ctx, error, ERR_INVALID_INPUT);
+            return;
+        } else if (id == "Driver.dumpLayout") {
+            HandleFilePathParam(env, ctx, error, ERR_INVALID_PARAM);
+            return;
         } else if (id  == "UIEventObserver.once") {
             auto err = ApiCallErr(NO_ERROR);
             UiEventObserverNapi::Get().PreprocessCallOnce(env, ctx.callInfo_, ctx.jsThis_, ctx.jsArgs_, err);

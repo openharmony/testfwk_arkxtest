@@ -1396,6 +1396,7 @@ static ani_boolean screenCaptureSync(ani_env *env, ani_object obj, ani_string pa
     HiLog::Info(LABEL, "savePath: %{public}s", savePath.c_str());
     auto fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
     if (fd == -1) {
+        ErrorHandler::Throw(env, ERR_INVALID_INPUT, "Invalid file path:" + savePath);
         return false;
     }
     fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
@@ -1421,6 +1422,7 @@ static ani_boolean screenCapSync(ani_env *env, ani_object obj, ani_string path, 
     HiLog::Info(LABEL, "savePath: %{public}s", savePath.c_str());
     int32_t fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
     if (fd == -1) {
+        ErrorHandler::Throw(env, ERR_INVALID_INPUT, "Invalid file path:" + savePath);
         return false;
     }
     fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
@@ -1446,6 +1448,7 @@ static ani_boolean dumpLayoutSync(ani_env *env, ani_object obj, ani_string savep
     string savePath = aniStringToStdString(env, savepath);
     int32_t fd = open(savePath.c_str(), O_RDWR | O_CREAT, 0666);
     if (fd == -1) {
+        ErrorHandler::Throw(env, ERR_INVALID_PARAM, "Invalid file path:" + savePath);
         return false;
     }
     fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
