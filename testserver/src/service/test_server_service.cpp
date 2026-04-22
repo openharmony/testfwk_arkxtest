@@ -689,7 +689,7 @@ namespace OHOS::testserver {
             counts = 1;
             return TEST_SERVER_ACCOUNTOP_FAILED;
         }
-        counts = activatedOsAccountIds.size();
+        counts = static_cast<int32_t>(activatedOsAccountIds.size());
         return TEST_SERVER_OK;
     }
 
