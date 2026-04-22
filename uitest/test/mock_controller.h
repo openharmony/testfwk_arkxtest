@@ -28,8 +28,6 @@ namespace OHOS::uitest {
 
         ~MockController() = default;
 
-            
-
         bool GetWidgetsInWindow(const Window &winInfo,
                                 std::unique_ptr<ElementNodeIterator> &elementNodeIterator,
                                 AamsWorkMode mode) override
