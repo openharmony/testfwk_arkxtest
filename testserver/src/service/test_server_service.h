@@ -72,6 +72,9 @@ namespace OHOS::testserver {
 
         ErrCode HideKeyboard(int32_t& result) override;
 
+        ErrCode GetUserIdByDisplayId(int32_t displayId, int32_t &userId) override;
+
+        ErrCode GetUserCounts(int32_t &counts) override;
     protected:
         void OnStart() override;
         void OnStop() override;
