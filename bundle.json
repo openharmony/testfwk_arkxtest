@@ -57,7 +57,9 @@
           "libpng",
           "time_service",
           "imf",
-          "os_account"
+          "os_account",
+          "font_manager",
+          "ui_appearance"
         ]
       },
       "build": {

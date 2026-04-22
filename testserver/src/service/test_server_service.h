@@ -29,6 +29,9 @@
 #include "cpu_collector.h"
 
 namespace OHOS::testserver {
+    constexpr int32_t FONT_ERROR_ALREADY_INSTALLED = 31100104;
+    constexpr int32_t FONT_ERROR_NOT_FOUND = 31100107;
+
     class TestServerService : public SystemAbility, public TestServerInterfaceStub {
         DECLARE_SYSTEM_ABILITY(TestServerService);
 
@@ -75,6 +78,14 @@ namespace OHOS::testserver {
         ErrCode GetUserIdByDisplayId(int32_t displayId, int32_t &userId) override;
 
         ErrCode GetUserCounts(int32_t &counts) override;
+        ErrCode InstallFont(const std::string& fontPath, int32_t& installResult) override;
+
+        ErrCode UninstallFont(const std::string& fontName, int32_t& uninstallResult) override;
+
+        ErrCode SetViewMode(const std::string& mode, int32_t& setResult) override;
+
+        ErrCode GetViewMode(std::string& mode, int32_t& getResult) override;
+
     protected:
         void OnStart() override;
         void OnStop() override;

@@ -646,3 +646,108 @@ TEST_F(KeyboardOperationTest, HandleHideKeyboard)
     int32_t result = TestHelperCore().HandleHideKeyboard();
     EXPECT_EQ(result, EXIT_FAILURE);
 }
+
+class FontnameOperationTest : public ::testing::Test {
+protected:
+    void SetUp() override {}
+    void TearDown() override {}
+};
+
+TEST_F(FontnameOperationTest, HandleGetFontname_EmptyPath)
+{
+    std::string emptyPath = "";
+    int32_t result = TestHelperCore().HandleGetFontname(emptyPath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_RelativePath)
+{
+    std::string relativePath = "fonts/test.ttf";
+    int32_t result = TestHelperCore().HandleGetFontname(relativePath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_FileNotFound)
+{
+    std::string notExistPath = "/data/local/tmp/nonexistent.ttf";
+    int32_t result = TestHelperCore().HandleGetFontname(notExistPath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_InvalidExtension)
+{
+    std::string invalidExtPath = "/data/local/tmp/test.txt";
+    int32_t result = TestHelperCore().HandleGetFontname(invalidExtPath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_InvalidExtension_Txt)
+{
+    std::string invalidExtPath = "/data/local/tmp/test.txt";
+    int32_t result = TestHelperCore().HandleGetFontname(invalidExtPath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_InvalidExtension_Pdf)
+{
+    std::string invalidExtPath = "/data/local/tmp/test.pdf";
+    int32_t result = TestHelperCore().HandleGetFontname(invalidExtPath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_TooLongPath)
+{
+    int32_t num = 5000;
+    std::string longPath(num, 'a');
+    int32_t result = TestHelperCore().HandleGetFontname(longPath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_ValidExtension_Ttf)
+{
+    std::string ttfPath = "/data/local/tmp/test.ttf";
+    int32_t result = TestHelperCore().HandleGetFontname(ttfPath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_ValidExtension_Otf)
+{
+    std::string otfPath = "/data/local/tmp/test.otf";
+    int32_t result = TestHelperCore().HandleGetFontname(otfPath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_ValidExtension_Ttc)
+{
+    std::string ttcPath = "/data/local/tmp/test.ttc";
+    int32_t result = TestHelperCore().HandleGetFontname(ttcPath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_ValidExtension_Otc)
+{
+    std::string otcPath = "/data/local/tmp/test.otc";
+    int32_t result = TestHelperCore().HandleGetFontname(otcPath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_PathWithSpaces)
+{
+    std::string pathWithSpaces = "/data/local/tmp/test font.ttf";
+    int32_t result = TestHelperCore().HandleGetFontname(pathWithSpaces);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_UppercaseExtension)
+{
+    std::string uppercaseExtPath = "/data/local/tmp/test.TTF";
+    int32_t result = TestHelperCore().HandleGetFontname(uppercaseExtPath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
+
+TEST_F(FontnameOperationTest, HandleGetFontname_MixedCaseExtension)
+{
+    std::string mixedCaseExtPath = "/data/local/tmp/test.TtF";
+    int32_t result = TestHelperCore().HandleGetFontname(mixedCaseExtPath);
+    EXPECT_EQ(result, EXIT_FAILURE);
+}
