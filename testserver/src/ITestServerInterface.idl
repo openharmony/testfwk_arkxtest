@@ -37,4 +37,8 @@ interface OHOS.testserver.ITestServerInterface {
     void HideKeyboard([out] int hideResult);
     void GetUserIdByDisplayId([in] int displayId, [out] int userId);
     void GetUserCounts([out] int counts);
+    void InstallFont([in] String fontPath, [out] int installResult);
+    void UninstallFont([in] String fontName, [out] int uninstallResult);
+    void SetViewMode([in] String mode, [out] int setResult);
+    void GetViewMode([out] String mode, [out] int getResult);
 }
