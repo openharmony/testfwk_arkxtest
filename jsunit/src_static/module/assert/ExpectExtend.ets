@@ -53,7 +53,7 @@ class ExpectExtend {
     this.coreContext = null;
   }
 
-  extendsMatchers() {
+  extendsMatchers(): void {
     const matcher: AssertMatcherIF = {
       assertClose,
       assertFail,
@@ -85,7 +85,7 @@ class ExpectExtend {
     this.matchers = matcher;
   }
 
-  init(coreContext: Core) {
+  init(coreContext: Core): void {
     this.coreContext = coreContext;
     this.extendsMatchers();
     const expectService = coreContext.getDefaultService('expect');

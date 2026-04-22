@@ -31,11 +31,11 @@ let domain: int = 0x0000;
 let tag: string = 'testTag';
 
 export class Hypium {
-  public static context = new Map<string, AnyType>();
+  public static context: Map<string, AnyType> = new Map<string, AnyType>();
   private static readonly MAX_PARSE_DEPTH = 20;
   private static readonly INITIAL_DEPTH = 1;
 
-  static parseValue(value: jsonx.JsonElement, currentDepth: number) {
+  static parseValue(value: jsonx.JsonElement, currentDepth: number): Array<Object | null | undefined> | Record<string, AnyType> | String | Double | Int | Boolean | null | undefined {
     if (currentDepth > Hypium.MAX_PARSE_DEPTH) {
       throw new Error('Maximum parsing depth exceeded. currentParseDepth is ' + currentDepth);
     }
@@ -64,7 +64,7 @@ export class Hypium {
     }
   }
 
-  static parseParams(paramsItem: jsonx.JsonElement, currentDepth: number) {
+  static parseParams(paramsItem: jsonx.JsonElement, currentDepth: number): Record<string, AnyType> {
     const it = paramsItem.$_iterator()
     const tempRecord: Record<string, AnyType> = {}
     while (true) {
@@ -142,7 +142,7 @@ export class Hypium {
     }
   }
 
-  static setData(JsonData: string) {
+  static setData(JsonData: string): void {
     const core = Core.getInstance();
     let jsonData = JSON.parseJsonElement(JsonData);
     let suitesValue: Array<jsonx.JsonElement> | undefined = [];
@@ -186,15 +186,15 @@ export class Hypium {
     }
   }
 
-  static setTimeConfig(systemTime: number) {
+  static setTimeConfig(systemTime: number): void {
     SysTestKit.systemTime = systemTime;
   }
 
-  static set(key: string, value: AnyType) {
+  static set(key: string, value: AnyType): void {
     Hypium.context.set(key, value);
   }
 
-  static get(key: string) {
+  static get(key: string): AnyType | undefined {
     return Hypium.context.get(key);
   }
 
@@ -202,7 +202,7 @@ export class Hypium {
     abilityDelegator: abilityDelegatorRegistry.AbilityDelegator,
     abilityDelegatorArguments: abilityDelegatorRegistry.AbilityDelegatorArgs,
     testsuite: () => void
-  ) {
+  ): void {
     const core = Core.getInstance();
     const expectExtend = new ExpectExtend({
       id: 'extend',
@@ -245,7 +245,7 @@ export class Hypium {
         abilityDelegatorArguments) as Promise<TestcaseSummaryIF>;
       workerPromiseArray.push(workerPromise);
     }
-    const ret : TestcaseRet = {
+    const ret: TestcaseRet = {
       total: 0,
       failure: 0,
       error: 0,
@@ -256,7 +256,7 @@ export class Hypium {
     Promise.all(workerPromiseArray).then(async (items: Array<TestcaseSummaryIF>) => {
       let allItemList = new Array<ItItemIF>();
       Hypium.handleWorkerTestResult(ret, allItemList, items);
-      const retResult : TestcaseRet = {
+      const retResult: TestcaseRet = {
         total: 0,
         failure: 0,
         error: 0,
@@ -274,16 +274,16 @@ export class Hypium {
         `\n${PrintTag.OHOS_REPORT_ALL_STATUS}: taskconsuming=${taskConsuming > 0 ? taskConsuming : ret.duration}`;
       abilityDelegator.printSync(message);
       console.info(`${TAG}, [end] you worker test`);
-      abilityDelegator.finishTest('you worker test finished!!!', 0, () => {});
+      abilityDelegator.finishTest('you worker test finished!!!', 0, () => { });
     }).catch((e) => {
       console.info(`${TAG}, [end] error you worker test, ${e}`);
-      abilityDelegator.finishTest('you worker test error finished!!!', 0, () => {});
+      abilityDelegator.finishTest('you worker test error finished!!!', 0, () => { });
     }).finally(() => {
       console.info(`${TAG}, all promise finally end`);
     });
   }
 
-  static createEAWorkerPromise(i: int, testsuite: ()=> void, abilityDelegator: abilityDelegatorRegistry.AbilityDelegator,
+  static createEAWorkerPromise(i: int, testsuite: () => void, abilityDelegator: abilityDelegatorRegistry.AbilityDelegator,
     abilityDelegatorArguments: abilityDelegatorRegistry.AbilityDelegatorArgs): Promise<TestcaseSummaryIF> {
     const workerPromise: Promise<TestcaseSummaryIF> = new Promise<TestcaseSummaryIF>((resolve, reject) => {
       let worker = new EAWorker(`EAWork_${i}`);
@@ -291,13 +291,13 @@ export class Hypium {
       const currentCB = (msg: concurrency.Message) => {
         let data = msg.getObject() as SendData;
         let currentThreadName = data.currentThreadName;
-        hilog.info(domain, tag, 'receview data from ' + currentThreadName +" " + JSON.stringify(data))
+        hilog.info(domain, tag, 'receview data from ' + currentThreadName + " " + JSON.stringify(data))
         worker.quit();
         let flag: boolean = worker.isAlive();
         resolve(data.summary);
       }
       let msgHandler = new concurrency.MessageHandler(currentCB, worker);
-      worker.postTask(()=> {
+      worker.postTask(() => {
         let core = new Core();
         core.msgHandle = msgHandler;
         Core.instance!.set(core);
@@ -312,12 +312,12 @@ export class Hypium {
           hilog.error(domain, tag, 'Failed to quit worker: ' + JSON.stringify(quitError));
         }
         reject(e);
-        });
+      });
     });
     return workerPromise;
   }
 
-  static handleWorkerTestResult(ret: TestcaseRet, allItemList: Array<ItItemIF>, items: Array<TestcaseSummaryIF>) {
+  static handleWorkerTestResult(ret: TestcaseRet, allItemList: Array<ItItemIF>, items: Array<TestcaseSummaryIF>): void {
     for (const item of items) {
       ret.total += item.total;
       ret.failure += item.failure;
@@ -329,7 +329,7 @@ export class Hypium {
     }
   }
 
-  static handleItResult(allItemList: Array<ItItemIF>, itItemList: Array<ItItemIF>) {
+  static handleItResult(allItemList: Array<ItItemIF>, itItemList: Array<ItItemIF>): void {
     for (const itItem of itItemList) {
       const description = itItem.description;
       const result = itItem.result;
@@ -351,12 +351,12 @@ export class Hypium {
     }
   }
 
-  static configWorkerItTestResult(retResult: TestcaseRet, allItemList: Array<ItItemIF>) {
+  static configWorkerItTestResult(retResult: TestcaseRet, allItemList: Array<ItItemIF>): void {
     for (const item of allItemList) {
       const description = item.description;
       const result = item.result;
       console.info(`${TAG}, description, ${description}, result,${result}`);
-      retResult.total ++;
+      retResult.total++;
       if (result === 0) {
         retResult.pass++;
       } else if (result === -1) {
@@ -369,7 +369,7 @@ export class Hypium {
     }
   }
 
-  static printWorkerTestResult(abilityDelegator: abilityDelegatorRegistry.AbilityDelegator, allItemList:Array<ItItemIF>) {
+  static printWorkerTestResult(abilityDelegator: abilityDelegatorRegistry.AbilityDelegator, allItemList: Array<ItItemIF>): void {
     let index = 1;
     for (const itemValue of allItemList) {
       const description = itemValue.description;

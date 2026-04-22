@@ -32,56 +32,56 @@ export class MatcherInfo {
 }
 
 export class ArgumentMatchers {
-    static ANY = '<any>';
-    static ANY_STRING = '<any String>';
-    static ANY_BOOLEAN = '<any Boolean>';
-    static ANY_NUMBER = '<any Number>';
-    static ANY_OBJECT = '<any Object>';
-    static ANY_FUNCTION = '<any Function>';
-    static MATCH_REGEXS = '<match regexs>';
-    static NOT_STRING = '<not String>';
-    static NOT_BOOLEAN = '<not boolean>';
-    static NOT_NUMBER = '<not Number>';
-    static NOT_OBJECT = '<not Object>';
-    static NOT_FUNCTION = '<not Function>';
-    static CONTAIN_VALUE = '<contain value>';
-    static CONTAIN_SUBSTRING = '<contain subString>';
-    static CONTAIN_SUBARRAY = '<contain subArray>';
+    static ANY: string = '<any>';
+    static ANY_STRING: string = '<any String>';
+    static ANY_BOOLEAN: string = '<any Boolean>';
+    static ANY_NUMBER: string = '<any Number>';
+    static ANY_OBJECT: string = '<any Object>';
+    static ANY_FUNCTION: string = '<any Function>';
+    static MATCH_REGEXS: string = '<match regexs>';
+    static NOT_STRING: string = '<not String>';
+    static NOT_BOOLEAN: string = '<not boolean>';
+    static NOT_NUMBER: string = '<not Number>';
+    static NOT_OBJECT: string = '<not Object>';
+    static NOT_FUNCTION: string = '<not Function>';
+    static CONTAIN_VALUE: string = '<contain value>';
+    static CONTAIN_SUBSTRING: string = '<contain subString>';
+    static CONTAIN_SUBARRAY: string = '<contain subArray>';
 
   constructor() {
   }
 
-  static any() {
+  static any(): void {
   }
 
-  static anyString() {
+  static anyString(): void {
   }
 
-  static anyBoolean() {
+  static anyBoolean(): void {
   }
 
-  static anyNumber() {
+  static anyNumber(): void {
   }
 
-  static anyObj() {
+  static anyObj(): void {
   }
 
-  static anyFunction() {
+  static anyFunction(): void {
   }
 
-  static notString() {
+  static notString(): void {
   }
 
-  static notBoolean() {
+  static notBoolean(): void {
   }
 
-  static notNumber() {
+  static notNumber(): void {
   }
 
-  static notObj() {
+  static notObj(): void {
   }
 
-  static notFunction() {
+  static notFunction(): void {
   }
 
   static matchRegexs(value: RegExp): MatcherInfo {

@@ -60,17 +60,17 @@ class StaticSuite {
     this.isPromiseError = false;
   }
 
-  pushSpec(spec: StaticSpec) {
+  pushSpec(spec: StaticSpec): void {
     this.specs.push(spec);
   }
 
-  removeSpec(desc: string) {
+  removeSpec(desc: string): void {
     this.specs = this.specs.filter((item: StaticSpec) => {
       return item.description !== desc;
     });
   }
 
-  getSpecsNum() {
+  getSpecsNum(): int {
     return this.specs.length;
   }
 
@@ -87,7 +87,7 @@ class StaticSuite {
     return false;
   }
 
-  run(coreContext: Core) {
+  run(coreContext: Core): void {
     const sService = coreContext.getDefaultService('suite');
     const cService = coreContext.getDefaultService('config');
     if (sService !== null && cService !== null) {

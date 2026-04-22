@@ -165,7 +165,7 @@ class SuiteService {
     return;
   }
 
-  handleHookFunction(core: Core, func: HookFuncType) {
+  handleHookFunction(core: Core, func: HookFuncType): () => Promise<void> {
     const argsCount = getFunctionArgumentsCount(func);
     let fn = (): Promise<void> => { }
     if (argsCount === 1) {
@@ -176,7 +176,7 @@ class SuiteService {
     return fn
   }
 
-  beforeAll(func: HookFuncType) {
+  beforeAll(func: HookFuncType): void {
     const core = this.coreContext;
     if (core !== null) {
       const fn = this.handleHookFunction(core as Core, func);
@@ -184,7 +184,7 @@ class SuiteService {
     }
   }
 
-  beforeEach(func: HookFuncType) {
+  beforeEach(func: HookFuncType): void {
     const core = this.coreContext;
     if (core !== null) {
       const fn = this.handleHookFunction(core as Core, func);
@@ -192,14 +192,14 @@ class SuiteService {
     }
   }
 
-  beforeEachIt(func: HookFuncType) {
+  beforeEachIt(func: HookFuncType): void {
     const core = this.coreContext;
     if (core !== null) {
       const fn = this.handleHookFunction(core as Core, func);
       this.currentRunningSuite.beforeEachIt.add(fn);
     }
   }
-  beforeItSpecified(itDescs: string | string[], func: HookFuncType) {
+  beforeItSpecified(itDescs: string | string[], func: HookFuncType): void {
     const core = this.coreContext;
     if (core !== null) {
       const fn = this.handleHookFunction(core as Core, func);
@@ -207,7 +207,7 @@ class SuiteService {
     }
   }
 
-  afterItSpecified(itDescs: string | string[], func: HookFuncType) {
+  afterItSpecified(itDescs: string | string[], func: HookFuncType): void {
     const core = this.coreContext;
     if (core !== null) {
       const fn = this.handleHookFunction(core as Core, func);
@@ -215,7 +215,7 @@ class SuiteService {
     }
   }
 
-  afterAll(func: HookFuncType) {
+  afterAll(func: HookFuncType): void {
     const core = this.coreContext;
     if (core !== null) {
       const fn = this.handleHookFunction(core as Core, func);
@@ -223,7 +223,7 @@ class SuiteService {
     }
   }
 
-  afterEach(func: HookFuncType) {
+  afterEach(func: HookFuncType): void {
     const core = this.coreContext;
     if (core) {
       const fn = this.handleHookFunction(core as Core, func);
@@ -231,7 +231,7 @@ class SuiteService {
     }
   }
 
-  afterEachIt(func: HookFuncType) {
+  afterEachIt(func: HookFuncType): void {
     const core = this.coreContext;
     if (core) {
       const fn = this.handleHookFunction(core as Core, func);
@@ -239,22 +239,22 @@ class SuiteService {
     }
   }
 
-  getCurrentRunningSuite() {
+  getCurrentRunningSuite(): StaticSuite {
     return this.currentRunningSuite;
   }
 
-  setCurrentRunningSuite(suite: StaticSuite) {
+  setCurrentRunningSuite(suite: StaticSuite): void {
     this.currentRunningSuite = suite;
   }
 
-  getRootSuite() {
+  getRootSuite(): StaticSuite {
     return this.rootSuite;
   }
 
-  getCurrentRunningSuiteDesc() {
+  getCurrentRunningSuiteDesc(): string {
     return this.currentRunningSuiteDesc;
   }
-  setCurrentRunningSuiteDesc(suite: StaticSuite, currentSuite: StaticSuite, prefix: string) {
+  setCurrentRunningSuiteDesc(suite: StaticSuite, currentSuite: StaticSuite, prefix: string): void {
     if (suite != null && suite === currentSuite) {
       this.currentRunningSuiteDesc = prefix;
     } else if (suite != null && suite !== currentSuite) {
@@ -267,7 +267,7 @@ class SuiteService {
       });
     }
   }
-  analyzeConfigServiceClass(configServiceClass: string, desc: string) {
+  analyzeConfigServiceClass(configServiceClass: string, desc: string): boolean {
     if (configServiceClass == null || configServiceClass === '') {
       this.fullRun = true;
       return false;
@@ -294,7 +294,7 @@ class SuiteService {
     }
     return targetArray.indexOf(desc) === -1;
   }
-  traversalResults(suite: StaticSuite, obj: TestcaseSummaryIF, breakOnError: boolean) {
+  traversalResults(suite: StaticSuite, obj: TestcaseSummaryIF, breakOnError: boolean): void {
     if (suite.childSuites.length === 0 && suite.specs.length === 0) {
       return;
     }
@@ -396,11 +396,11 @@ class SuiteService {
     return obj;
   }
 
-  init(coreContext: Core) {
+  init(coreContext: Core): void {
     this.coreContext = coreContext;
   }
 
-  getDryResultStr(dryrunResult: DryrunResultIF) {
+  getDryResultStr(dryrunResult: DryrunResultIF): string {
     let message = '{';
     const cls = Class.of(dryrunResult);
     let keys = new Array<string>();
@@ -487,7 +487,7 @@ class SuiteService {
     suiteArray: Array<Map<string, Array<ConfigIf>>>,
     skipSuiteArray: Array<Map<string, Array<ConfigIf>>>,
     rootSuite: StaticSuite
-  ) {
+  ): void {
     rootSuite.childSuites.map((suite: StaticSuite) => {
       if (suite.description != null && suite.description !== '') {
         let prefix = '';
@@ -521,7 +521,7 @@ class SuiteService {
     });
   }
 
-  getAllChildSuiteNum(suite: StaticSuite, specArray: Array<StaticSpec>) {
+  getAllChildSuiteNum(suite: StaticSuite, specArray: Array<StaticSpec>): void {
     if (suite.specs != null) {
       suite.specs.forEach((spec: StaticSpec) => {
         specArray.push(spec);
@@ -540,7 +540,7 @@ class SuiteService {
     await core.fireEvents('task', 'taskDone');
   }
 
-  execute() {
+  execute(): void {
     const cc = this.coreContext;
     if (cc) {
       const core = cc as Core;

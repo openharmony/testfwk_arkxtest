@@ -221,7 +221,7 @@ class NestFilter {
     return filterFlag;
   }
 
-  filterLevelOrSizeOrTestType(level: int | null, size: string | null, testType: string | null, filter: int) {
+  filterLevelOrSizeOrTestType(level: int | null, size: string | null, testType: string | null, filter: int): boolean {
     let result = false;
     if (filter === 0) {
       return false;
