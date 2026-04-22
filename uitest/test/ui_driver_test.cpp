@@ -673,3 +673,509 @@ TEST_F(UiDriverTest, SORT_WINDOW_ACTIVE)
     ASSERT_EQ(modelVec.at(3).window_.id_, 4);
     ASSERT_EQ(modelVec.at(4).window_.id_, 1);
 }
+
+// User switch tests - FindWidgets with displayId
+TEST_F(UiDriverTest, UserSwitch_FindWidgets_SwitchesUser)
+{
+    Window win1(100);
+    win1.id_ = 100;
+    win1.displayId_ = 0;
+    win1.bundleName_ = "com.user1.app";
+    MockAccessibilityElementInfo ele1;
+    ele1.accessibilityId = "1";
+    ele1.content = "Button";
+    controller_->AddWindowsAndNode(win1, {ele1});
+
+    Window win2(200);
+    win2.id_ = 200;
+    win2.displayId_ = 1;
+    win2.bundleName_ = "com.user2.app";
+    MockAccessibilityElementInfo ele2;
+    ele2.accessibilityId = "2";
+    ele2.content = "Button";
+    controller_->AddWindowsAndNode(win2, {ele2});
+
+    controller_->SetDisplayUserMapping(0, 100);
+    controller_->SetDisplayUserMapping(1, 101);
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+
+    selector.AddDisplayLocator(0);
+    vector<unique_ptr<Widget>> widgets;
+    driver_->FindWidgets(selector, widgets, error, true);
+
+    EXPECT_EQ(controller_->GetCurrentUser(), 100);
+}
+
+TEST_F(UiDriverTest, UserSwitch_FindWidget_WithDisplayId)
+{
+    Window win(100);
+    win.id_ = 100; 
+    win.displayId_ = 0;
+    win.bundleName_ = "com.user1.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    controller_->SetDisplayUserMapping(0, 100);
+
+    Widget widget("test");
+    widget.SetAttr(UiAttr::ACCESSIBILITY_ID, "1");
+    widget.SetDisplayId(0);
+
+    auto error = ApiCallErr(NO_ERROR);
+    driver_->RetrieveWidget(widget, error, true);
+    
+    EXPECT_EQ(controller_->GetCurrentUser(), 100);
+}
+
+TEST_F(UiDriverTest, UserSwitch_RetrieveWindow_WithDisplayId)
+{
+    Window win(100);
+    win.id_ = 100;
+    win.displayId_ = 0;
+    win.bundleName_ = "com.user1.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    controller_->SetDisplayUserMapping(0, 100);
+
+    auto error = ApiCallErr(NO_ERROR);
+    driver_->RetrieveWindow(win, error);
+
+    EXPECT_EQ(controller_->GetCurrentUser(), 100);
+}
+
+TEST_F(UiDriverTest, UserSwitch_MultipleDisplayQueries)
+{
+    Window win1(100);
+    win1.id_ = 100;
+    win1.displayId_ = 0;
+    win1.bundleName_ = "com.user1.app";
+    MockAccessibilityElementInfo ele1;
+    ele1.accessibilityId = "1";
+    ele1.content = "Button";
+    controller_->AddWindowsAndNode(win1, {ele1});
+
+    Window win2(200);
+    win2.id_ = 200;
+    win2.displayId_ = 1;
+    win2.bundleName_ = "com.user2.app";
+    MockAccessibilityElementInfo ele2;
+    ele2.accessibilityId = "2";
+    ele2.content = "Button";
+    controller_->AddWindowsAndNode(win2, {ele2});
+
+    controller_->SetDisplayUserMapping(0, 100);
+    controller_->SetDisplayUserMapping(1, 101);
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+
+    selector.AddDisplayLocator(0);
+    vector<unique_ptr<Widget>> widgets0;
+    driver_->FindWidgets(selector, widgets0, error, true);
+
+    EXPECT_EQ(controller_->GetCurrentUser(), 100);
+
+    selector.AddDisplayLocator(1);
+    vector<unique_ptr<Widget>> widgets1;
+    driver_->FindWidgets(selector, widgets1, error, true);
+
+    EXPECT_EQ(controller_->GetCurrentUser(), 101);
+}
+
+TEST_F(UiDriverTest, UserSwitch_WidgetWithDifferentDisplayId)
+{
+    Window win1(100);
+    win1.id_ = 100;
+    win1.displayId_ = 0;
+    win1.bundleName_ = "com.user1.app";
+    MockAccessibilityElementInfo ele1;
+    ele1.accessibilityId = "1";
+    ele1.content = "Button";
+    controller_->AddWindowsAndNode(win1, {ele1});
+
+    controller_->SetDisplayUserMapping(0, 100);
+    controller_->SetDisplayUserMapping(1, 101);
+    Widget widget("test");
+    widget.SetAttr(UiAttr::ACCESSIBILITY_ID, "1");
+    widget.SetDisplayId(1);
+
+    auto error = ApiCallErr(NO_ERROR);
+    driver_->RetrieveWidget(widget, error, true);
+
+    EXPECT_EQ(controller_->GetCurrentUser(), 101);
+}
+
+TEST_F(UiDriverTest, UserSwitch_FindWidgets_AllDisplays)
+{
+    for (int displayId = 0; displayId < 3; displayId++) {
+        Window win(100 + displayId);
+        win.id_ = 100 + displayId;
+        win.displayId_ = displayId;
+        win.bundleName_ = "com.app" + to_string(displayId);
+        MockAccessibilityElementInfo ele;
+        ele.accessibilityId = to_string(displayId);
+        ele.content = "Button";
+        controller_->AddWindowsAndNode(win, {ele});
+
+        controller_->SetDisplayUserMapping(displayId, 100 + displayId);
+    }
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+
+    for (int displayId = 0; displayId < 3; displayId++) {
+        selector.AddDisplayLocator(displayId);
+        vector<unique_ptr<Widget>> widgets;
+        driver_->FindWidgets(selector, widgets, error, true);
+
+        EXPECT_EQ(controller_->GetCurrentUser(), 100 + displayId);
+    }
+}
+
+TEST_F(UiDriverTest, UserSwitch_DefaultDisplayMapping)
+{
+    Window win(100);
+    win.id_ = 100;
+    win.displayId_ = 0;
+    win.bundleName_ = "com.test.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    Widget widget("test");
+    widget.SetAttr(UiAttr::ACCESSIBILITY_ID, "1");
+    widget.SetDisplayId(0);
+
+    auto error = ApiCallErr(NO_ERROR);
+    driver_->RetrieveWidget(widget, error, true);
+
+    EXPECT_EQ(controller_->GetCurrentUser(), -1);
+}
+
+// User switch count tests
+TEST_F(UiDriverTest, UserSwitch_Count_SingleSwitch)
+{
+    Window win(100);
+    win.id_ = 100;
+    win.displayId_ = 0;
+    win.bundleName_ = "com.test.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    controller_->SetDisplayUserMapping(0, 100);
+
+    int32_t userBefore = controller_->GetCurrentUser();
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+    selector.AddDisplayLocator(0);
+    vector<unique_ptr<Widget>> widgets;
+    driver_->FindWidgets(selector, widgets, error, true);
+
+    int32_t userAfter = controller_->GetCurrentUser();
+
+    EXPECT_EQ(userBefore, -1);
+    EXPECT_EQ(userAfter, 100);
+    EXPECT_NE(userBefore, userAfter);
+}
+
+TEST_F(UiDriverTest, UserSwitch_Count_DoubleSwitch)
+{
+    Window win(100);
+    win.id_ = 100;
+    win.displayId_ = 0;
+    win.bundleName_ = "com.test.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    controller_->SetDisplayUserMapping(0, 100);
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+
+    // First switch
+    selector.AddDisplayLocator(0);
+    vector<unique_ptr<Widget>> widgets1;
+    driver_->FindWidgets(selector, widgets1, error, true);
+
+    EXPECT_EQ(controller_->GetCurrentUser(), 100);
+
+    // Change mapping to simulate second switch
+    controller_->SetDisplayUserMapping(0, 101);
+
+    // Second switch
+    selector.AddDisplayLocator(0);
+    vector<unique_ptr<Widget>> widgets2;
+    driver_->FindWidgets(selector, widgets2, error, true);
+
+    EXPECT_EQ(controller_->GetCurrentUser(), 101);
+}
+
+TEST_F(UiDriverTest, UserSwitch_Count_TripleSwitch)
+{
+    Window win(100);
+    win.id_ = 100;
+    win.displayId_ = 0;
+    win.bundleName_ = "com.test.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+
+    // First switch to user 100
+    controller_->SetDisplayUserMapping(0, 100);
+    selector.AddDisplayLocator(0);
+    vector<unique_ptr<Widget>> widgets1;
+    driver_->FindWidgets(selector, widgets1, error, true);
+    EXPECT_EQ(controller_->GetCurrentUser(), 100);
+
+    // Second switch to user 101
+    controller_->SetDisplayUserMapping(0, 101);
+    selector.AddDisplayLocator(0);
+    vector<unique_ptr<Widget>> widgets2;
+    driver_->FindWidgets(selector, widgets2, error, true);
+    EXPECT_EQ(controller_->GetCurrentUser(), 101);
+
+    // Third switch to user 102
+    controller_->SetDisplayUserMapping(0, 102);
+    selector.AddDisplayLocator(0);
+    vector<unique_ptr<Widget>> widgets3;
+    driver_->FindWidgets(selector, widgets3, error, true);
+    EXPECT_EQ(controller_->GetCurrentUser(), 102);
+}
+
+TEST_F(UiDriverTest, UserSwitch_Count_SwitchBackToOriginal)
+{
+    Window win(100);
+    win.id_ = 100;
+    win.displayId_ = 0;
+    win.bundleName_ = "com.test.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+
+    // First switch to user 100
+    controller_->SetDisplayUserMapping(0, 100);
+    selector.AddDisplayLocator(0);
+    vector<unique_ptr<Widget>> widgets1;
+    driver_->FindWidgets(selector, widgets1, error, true);
+    EXPECT_EQ(controller_->GetCurrentUser(), 100);
+
+    // Switch to user 101
+    controller_->SetDisplayUserMapping(0, 101);
+    selector.AddDisplayLocator(0);
+    vector<unique_ptr<Widget>> widgets2;
+    driver_->FindWidgets(selector, widgets2, error, true);
+    EXPECT_EQ(controller_->GetCurrentUser(), 101);
+
+    // Switch back to original user 100
+    controller_->SetDisplayUserMapping(0, 100);
+    selector.AddDisplayLocator(0);
+    vector<unique_ptr<Widget>> widgets3;
+    driver_->FindWidgets(selector, widgets3, error, true);
+    EXPECT_EQ(controller_->GetCurrentUser(), 100);
+}
+
+TEST_F(UiDriverTest, UserSwitch_Count_RapidFiveSwitches)
+{
+    Window win(100);
+    win.id_ = 100;
+    win.displayId_ = 0;
+    win.bundleName_ = "com.test.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+
+    for (int i = 0; i < 5; i++) {
+        int32_t userId = 100 + i;
+        controller_->SetDisplayUserMapping(0, userId);
+
+        selector.AddDisplayLocator(0);
+        vector<unique_ptr<Widget>> widgets;
+        driver_->FindWidgets(selector, widgets, error, true);
+
+        EXPECT_EQ(controller_->GetCurrentUser(), userId);
+    }
+}
+
+TEST_F(UiDriverTest, UserSwitch_Count_TenSwitches)
+{
+    Window win(100);
+    win.id_ = 100;
+    win.displayId_ = 0;
+    win.bundleName_ = "com.test.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+
+    for (int i = 0; i < 10; i++) {
+        int32_t userId = 100 + i;
+        controller_->SetDisplayUserMapping(0, userId);
+
+        selector.AddDisplayLocator(0);
+        vector<unique_ptr<Widget>> widgets;
+        driver_->FindWidgets(selector, widgets, error, true);
+
+        EXPECT_EQ(controller_->GetCurrentUser(), userId);
+    }
+}
+
+TEST_F(UiDriverTest, UserSwitch_Count_SwitchWithStateCheck)
+{
+    Window win(100);
+    win.id_ = 100;
+    win.displayId_ = 0;
+    win.bundleName_ = "com.test.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+
+    std::vector<int32_t> expectedUsers = {100, 101, 102, 103, 104};
+
+    for (size_t i = 0; i < expectedUsers.size(); i++) {
+        controller_->SetDisplayUserMapping(0, expectedUsers[i]);
+
+        selector.AddDisplayLocator(0);
+        vector<unique_ptr<Widget>> widgets;
+        driver_->FindWidgets(selector, widgets, error, true);
+
+        EXPECT_EQ(controller_->GetCurrentUser(), expectedUsers[i]);
+    }
+}
+
+TEST_F(UiDriverTest, UserSwitch_Count_SameUserMultipleTimes)
+{
+    Window win(100);
+    win.id_ = 100;
+    win.displayId_ = 0;
+    win.bundleName_ = "com.test.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    controller_->SetDisplayUserMapping(0, 100);
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+
+    // Query same user 5 times
+    for (int i = 0; i < 5; i++) {
+        selector.AddDisplayLocator(0);
+        vector<unique_ptr<Widget>> widgets;
+        driver_->FindWidgets(selector, widgets, error, true);
+
+        EXPECT_EQ(controller_->GetCurrentUser(), 100);
+    }
+}
+
+TEST_F(UiDriverTest, UserSwitch_Count_AlternateUsers)
+{
+    Window win(100);
+    win.id_ = 100;
+    win.displayId_ = 0;
+    win.bundleName_ = "com.test.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+
+    // Alternate between users 100 and 101
+    for (int i = 0; i < 6; i++) {
+        int32_t userId = (i % 2 == 0) ? 100 : 101;
+        controller_->SetDisplayUserMapping(0, userId);
+
+        selector.AddDisplayLocator(0);
+        vector<unique_ptr<Widget>> widgets;
+        driver_->FindWidgets(selector, widgets, error, true);
+
+        EXPECT_EQ(controller_->GetCurrentUser(), userId);
+    }
+}
+
+TEST_F(UiDriverTest, UserSwitch_Count_LoopThroughUsers)
+{
+    Window win(100);
+    win.id_ = 100;
+    win.displayId_ = 0;
+    win.bundleName_ = "com.test.app";
+    MockAccessibilityElementInfo ele;
+    ele.accessibilityId = "1";
+    ele.content = "Button";
+    controller_->AddWindowsAndNode(win, {ele});
+
+    auto error = ApiCallErr(NO_ERROR);
+    auto selector = WidgetSelector();
+    auto matcher = WidgetMatchModel(UiAttr::TEXT, "Button", EQ);
+    selector.AddMatcher(matcher);
+
+    std::vector<int32_t> userLoop = {100, 101, 102, 100, 101, 102};
+
+    for (int32_t userId : userLoop) {
+        controller_->SetDisplayUserMapping(0, userId);
+
+        selector.AddDisplayLocator(0);
+        vector<unique_ptr<Widget>> widgets;
+        driver_->FindWidgets(selector, widgets, error, true);
+
+        EXPECT_EQ(controller_->GetCurrentUser(), userId);
+    }
+}

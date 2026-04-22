@@ -28,15 +28,7 @@ namespace OHOS::uitest {
 
         ~MockController() = default;
 
-        void GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay,
-            bool skipWaitForUiSteady) override
-        {
-            vector<Window> winInfos;
-            for (auto iter = testIn.cbegin(); iter != testIn.cend(); ++iter) {
-                winInfos.emplace_back(iter->second);
-            }
-            out.insert(make_pair(0, move(winInfos)));
-        }
+            
 
         bool GetWidgetsInWindow(const Window &winInfo,
                                 std::unique_ptr<ElementNodeIterator> &elementNodeIterator,
@@ -45,6 +37,10 @@ namespace OHOS::uitest {
             // copy ele
             auto eleCopy = windowNodeMap.at(winInfo.id_);
             elementNodeIterator = std::make_unique<MockElementNodeIterator>(eleCopy);
+            auto userIdIt = displayToUserMap_.find(winInfo.displayId_);
+            if (userIdIt != displayToUserMap_.end()) {
+                currentUser_ = userIdIt->second;
+            }
             return true;
         }
 
@@ -94,9 +90,43 @@ namespace OHOS::uitest {
             windowNodeMap.erase(in.id_);
         }
 
+        void SetCurrentUser(int32_t userId)
+        {
+            currentUser_ = userId;
+        }
+
+        int32_t GetCurrentUser() const
+        {
+            return currentUser_;
+        }
+
+        void SetDisplayUserMapping(int32_t displayId, int32_t userId)
+        {
+            displayToUserMap_[displayId] = userId;
+        }
+
+        void GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay,
+            bool skipWaitForUiSteady) override
+        {
+            vector<Window> winInfos;
+            for (auto iter = testIn.cbegin(); iter != testIn.cend(); ++iter) {
+                Window win = iter->second;
+                if (targetDisplay != -1 && win.displayId_ != targetDisplay) {
+                    continue;
+                }
+                winInfos.emplace_back(win);
+            }
+            out.insert(make_pair(targetDisplay, move(winInfos)));
+            auto userIdIt = displayToUserMap_.find(targetDisplay);
+            if (userIdIt != displayToUserMap_.end()) {
+                currentUser_ = userIdIt->second;
+            }
+        }
     private:
         std::map<int, Window> testIn;
         std::map<int, std::vector<MockAccessibilityElementInfo>> windowNodeMap;
+        std::map<int32_t, int32_t> displayToUserMap_ = {{0, -1}, {1, -1}};
+        int32_t currentUser_ = -1;
     };
 } // namespace OHOS::uitest
 #endif
