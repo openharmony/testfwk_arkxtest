@@ -2053,7 +2053,7 @@ export class UIEventObserver {
 export namespace ON {
     export let ONInner: On | undefined = undefined; 
     
-    function initializeONinnerIfNeeded() {
+    function initializeONinnerIfNeeded(): void {
         if (ONInner === undefined) {
             ONInner = new On();
         }

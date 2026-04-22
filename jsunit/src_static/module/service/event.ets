@@ -26,15 +26,15 @@ class SpecEvent {
     this.eventOhMonitors = new Array<OhReport>();
   }
 
-  subscribeEvent(service: ReportService) {
+  subscribeEvent(service: ReportService): void {
     this.eventMonitors.push(service);
   }
 
-  subscribeEvent(service: OhReport) {
+  subscribeEvent(service: OhReport): void {
     this.eventOhMonitors.push(service);
   }
 
-  async specStart() {
+  async specStart(): Promise<void> {
     for (const monitor of this.eventMonitors) {
       monitor.specStart();
     }
@@ -63,15 +63,15 @@ class SuiteEvent {
     this.eventOhMonitors = new Array<OhReport>();
   }
 
-  subscribeEvent(service: ReportService) {
+  subscribeEvent(service: ReportService): void {
     this.eventMonitors.push(service);
   }
 
-  subscribeEvent(service: OhReport) {
+  subscribeEvent(service: OhReport): void {
     this.eventOhMonitors.push(service);
   }
 
-  async suiteStart() {
+  async suiteStart(): Promise<void> {
     for (const monitor of this.eventMonitors) {
       monitor.suiteStart();
     }
@@ -80,7 +80,7 @@ class SuiteEvent {
     }
   }
 
-  async suiteDone() {
+  async suiteDone(): Promise<void> {
     for (const monitor of this.eventMonitors) {
       monitor.suiteDone();
     }
@@ -100,15 +100,15 @@ class TaskEvent {
     this.eventOhMonitors = new Array<OhReport>();
   }
 
-  subscribeEvent(service: ReportService) {
+  subscribeEvent(service: ReportService): void {
     this.eventMonitors.push(service);
   }
 
-  subscribeEvent(service: OhReport) {
+  subscribeEvent(service: OhReport): void {
     this.eventOhMonitors.push(service);
   }
 
-  async taskStart() {
+  async taskStart(): Promise<void> {
     for (const monitor of this.eventMonitors) {
       monitor.taskStart();
     }
@@ -117,7 +117,7 @@ class TaskEvent {
     }
   }
 
-  async taskDone() {
+  async taskDone(): Promise<void> {
     for (const monitor of this.eventMonitors) {
       monitor.taskDone();
     }
@@ -126,7 +126,7 @@ class TaskEvent {
     }
   }
 
-  incorrectFormat() {
+  incorrectFormat(): void {
     for (const monitor of this.eventMonitors) {
       monitor.incorrectFormat();
     }
@@ -135,7 +135,7 @@ class TaskEvent {
     }
   }
 
-  incorrectTestSuiteFormat() {
+  incorrectTestSuiteFormat(): void {
     for (const monitor of this.eventMonitors) {
       monitor.incorrectTestSuiteFormat();
     }

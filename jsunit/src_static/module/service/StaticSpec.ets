@@ -59,7 +59,7 @@ class StaticSpec {
     }
   }
 
-  setResult() {
+  setResult(): void {
     if (this.isSkip) {
       this.pass = false;
       return;
@@ -71,7 +71,7 @@ class StaticSpec {
     }
   }
 
-  run(coreContext: Core) {
+  run(coreContext: Core): void {
     const sService = coreContext.getDefaultService('spec');
 
     coreContext.fireEvents('spec', 'specStart');
@@ -139,7 +139,7 @@ class StaticSpec {
     this.isExecuted = true;
   }
 
-  filterCheck(coreContext: Core) {
+  filterCheck(coreContext: Core): boolean {
     const sService = coreContext.getDefaultService('spec');
     if (sService !== null) {
       const specService = sService as SpecService;

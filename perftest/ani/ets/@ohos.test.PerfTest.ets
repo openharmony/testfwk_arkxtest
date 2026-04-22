@@ -101,7 +101,7 @@ class PerfMeasureResultInner implements PerfMeasureResult {
 
 export class PerfTest {
     nativePerfTest: string = '';
-    eaw = new EAWorker();
+    eaw: EAWorker = new EAWorker();
     public constructor(perfTest: string) {
         doSetupIfNeeded();
         if (this.nativePerfTest == '') {
