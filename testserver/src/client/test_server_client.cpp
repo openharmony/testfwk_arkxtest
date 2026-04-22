@@ -310,6 +310,30 @@ namespace OHOS::testserver {
         iTestServerInterface_->HideKeyboard(hideResult);
         return hideResult;
     }
+
+    int32_t TestServerClient::GetUserCounts()
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t counts = 1;
+        iTestServerInterface_->GetUserCounts(counts);
+        return counts;
+    }
+
+    int32_t TestServerClient::GetUserIdByDisplayId(int32_t displayId)
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t userId = -1;
+        iTestServerInterface_->GetUserIdByDisplayId(displayId, userId);
+        return userId;
+    }
 } // namespace OHOS::testserver
 
 void FrequencyLockPlugin()

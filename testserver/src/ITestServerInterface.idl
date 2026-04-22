@@ -35,4 +35,6 @@ interface OHOS.testserver.ITestServerInterface {
     void GetPasteData([out] String pasteText, [out] int getResult);
     void ClearPasteData([out] int clearResult);
     void HideKeyboard([out] int hideResult);
+    void GetUserIdByDisplayId([in] int displayId, [out] int userId);
+    void GetUserCounts([out] int counts);
 }

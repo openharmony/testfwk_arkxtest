@@ -396,6 +396,8 @@ namespace OHOS::uitest {
 
     bool SysUiController::Initialize(ApiCallErr &error)
     {
+        int32_t userCounts = OHOS::testserver::TestServerClient::GetInstance().GetUserCounts();
+        isSingleUser_ = userCounts == 1;
         return this->ConnectToSysAbility(error);
     }
 
@@ -571,6 +573,9 @@ namespace OHOS::uitest {
                 displayId == VIRTUAL_DISPLAY_ID) {
                 continue;
             }
+            if (!ConvertAAMS(displayId, error)) {
+                continue;
+            }
             vector<AccessibilityWindowInfo> windows;
             if (!GetAamsWindowInfos(windows, displayId, skipWaitForUiSteady)) {
                 continue;
@@ -607,6 +612,10 @@ namespace OHOS::uitest {
         AamsWorkMode mode)
     {
         std::lock_guard<std::mutex> dumpLocker(dumpMtx); // disallow concurrent dumpUi
+        ApiCallErr error = ApiCallErr(NO_ERROR);
+        if (!ConvertAAMS(winInfo.displayId_, error)) {
+            return false;
+        }
         if (!connected_) {
             LOG_W("Connect to AccessibilityUITestAbility failed");
             return false;
@@ -1154,8 +1163,13 @@ namespace OHOS::uitest {
             error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS, REGISTER_LISTENER_FAILED");
             return false;
         }
-        auto ret = ability->Connect();
-        LOG_I("Connect to AAMS, result: %{public}d", ret);
+        auto ret = RET_OK;
+        if (currentUser_ == -1) {
+            ret = ability->Connect();
+        } else {
+            ret = ability->Connect(currentUser_);
+        }
+        LOG_I("Connect to AAMS in user %{public}d, result: %{public}d", currentUser_, ret);
         if (ret != RET_OK) {
             error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS");
             if (ret == RET_ERR_CONNECTION_EXIST) {
@@ -1172,6 +1186,8 @@ namespace OHOS::uitest {
             return false;
         }
         connected_ = true;
+        currentUser_ = ability->GetCurrentUserId();
+        LOG_I("connect to AAMS in user %{public}d successful", currentUser_);
         return true;
     }
 
@@ -1200,9 +1216,10 @@ namespace OHOS::uitest {
         };
         g_monitorInstance_->SetOnAbilityDisConnectCallback(onDisConnectCallback);
         auto ability = AccessibilityUITestAbility::GetInstance();
-        LOG_I("Start disconnect from AccessibilityUITestAbility");
-        if (ability->Disconnect() != RET_OK) {
-            LOG_E("Failed to disconnect from AccessibilityUITestAbility");
+        LOG_I("Start disconnect from AccessibilityUITestAbility in user %{public}d", currentUser_);
+        auto ret = ability->Disconnect(currentUser_);
+        if (ret != RET_OK) {
+            LOG_E("Failed to disconnect from AccessibilityUITestAbility, ret: %{public}d", ret);
             return;
         }
         const auto timeout = chrono::milliseconds(200);
@@ -1466,4 +1483,25 @@ namespace OHOS::uitest {
             return value == "true";
         }
     }
+
+    bool SysUiController::ConvertAAMS(int32_t displayId, ApiCallErr &error)
+    {
+        if (isSingleUser_) {
+            return true;
+        }
+        int32_t userId = OHOS::testserver::TestServerClient::GetInstance().GetUserIdByDisplayId(displayId);
+        LOG_I("display %{public}d belongs to user %{public}d", displayId, userId);
+        if (userId == currentUser_) {
+            return true;
+        }
+        if (userId == -1) {
+            LOG_E("Invalid userId for displayId %{public}d", displayId);
+            return false;
+        }
+        LOG_W("Switch from user %{public}d to user %{public}d", currentUser_, userId);
+        DisConnectFromSysAbility();
+        currentUser_ = userId;
+        return ConnectToSysAbility(error);
+    }
+    
 } // namespace OHOS::uitest
