@@ -29,6 +29,10 @@ namespace OHOS::testhelper {
         int32_t HandleSetPasteData(const std::string& text);
         int32_t HandleClearPasteData();
         int32_t HandleHideKeyboard();
+        int32_t HandleGetFontname(const std::string& fontPath);
+        int32_t HandleInstallFont(const std::string& fontPath);
+        int32_t HandleUninstallFont(const std::string& fontName);
+        int32_t HandleSetViewMode(const std::string& mode);
         int32_t ParseTimeToMs(const std::string& timeStr, int64_t& timeMs);
 
     private:

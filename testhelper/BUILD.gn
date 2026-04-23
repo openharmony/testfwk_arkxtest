@@ -31,6 +31,16 @@ ohos_static_library("testhelper_core") {
     "time_service:time_client",
     "ability_runtime:wantagent_innerkits",
   ]
+  if ((arkxtest_product_feature == "pc" ||
+       arkxtest_product_feature == "tablet" ||
+       arkxtest_product_feature == "phone") &&
+      (defined(global_parts_info) && defined(global_parts_info.graphic_graphic_2d))) {
+    external_deps += [
+      "graphic_2d:rosen_text",
+      "graphic_2d:2d_graphics",
+    ]
+    defines += [ "ARKXTEST_FONT_ENABLE"]
+  }
   if (defined(global_parts_info) && defined(global_parts_info.distributeddatamgr_pasteboard)) {
     external_deps += [
       "pasteboard:pasteboard_client",
@@ -99,6 +109,16 @@ ohos_unittest("testhelper_unittest") {
     "time_service:time_client",
     "ability_runtime:wantagent_innerkits",
   ]
+  if ((arkxtest_product_feature == "pc" ||
+       arkxtest_product_feature == "tablet" ||
+       arkxtest_product_feature == "phone") &&
+       (defined(global_parts_info) && defined(global_parts_info.graphic_graphic_2d))) {
+    external_deps += [
+      "graphic_2d:rosen_text",
+      "graphic_2d:2d_graphics",
+    ]
+    defines += [ "ARKXTEST_FONT_ENABLE"]
+  }
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   use_exceptions = true

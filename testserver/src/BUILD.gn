@@ -102,6 +102,23 @@ ohos_shared_library("test_server_service") {
     defines += [ "ARKXTEST_PASTEBOARD_ENABLE"]
   }
 
+  if ((arkxtest_product_feature == "pc" ||
+       arkxtest_product_feature == "tablet" ||
+       arkxtest_product_feature == "phone") &&
+       (defined(global_parts_info) && defined(global_parts_info.global_font_manager))) {
+    external_deps += [
+      "font_manager:font_manager_client",
+    ]
+    defines += [ "ARKXTEST_FONT_ENABLE" ]
+  }
+
+  if (defined(global_parts_info) && defined(global_parts_info.arkui_ui_appearance)) {
+    external_deps += [
+      "ui_appearance:ui_appearance_kit",
+    ]
+    defines += [ "ARKXTEST_VIEW_MODE_ENABLE" ]
+  }
+
   part_name = "arkxtest"
   subsystem_name = "testfwk"
 }

@@ -356,3 +356,119 @@ HWTEST_F(ServiceTest, testSetTimeBoundary, TestSize.Level1)
     EXPECT_EQ(resCode, 0);
     EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_TIME_SERVICE_FAILED);
 }
+
+#ifdef ARKXTEST_FONT_ENABLE
+HWTEST_F(ServiceTest, testInstallFontEmptyPath, TestSize.Level1)
+{
+    string emptyPath = "";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(emptyPath, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_INSTALL_FONT_FAILED);
+}
+
+HWTEST_F(ServiceTest, testInstallFontRelativePath, TestSize.Level1)
+{
+    string relativePath = "fonts/test.ttf";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(relativePath, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_INSTALL_FONT_FAILED);
+}
+
+HWTEST_F(ServiceTest, testInstallFontAbsolutePathNoPrefix, TestSize.Level1)
+{
+    string absolutePath = "/system/fonts/test.ttf";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(absolutePath, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_INSTALL_FONT_FAILED);
+}
+
+HWTEST_F(ServiceTest, testInstallFontPathTraversal1, TestSize.Level1)
+{
+    string pathTraversal = "/data/local/tmp/../system/test.ttf";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(pathTraversal, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_INSTALL_FONT_FAILED);
+}
+
+HWTEST_F(ServiceTest, testInstallFontPathTraversal2, TestSize.Level1)
+{
+    string pathTraversal = "/data/local/tmp/./test.ttf";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(pathTraversal, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_INSTALL_FONT_FAILED);
+}
+
+HWTEST_F(ServiceTest, testInstallFontPathTraversal3, TestSize.Level1)
+{
+    string pathTraversal = "/data/local/tmp/subdir/../../test.ttf";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(pathTraversal, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_INSTALL_FONT_FAILED);
+}
+
+HWTEST_F(ServiceTest, testInstallFontOldPrefix, TestSize.Level1)
+{
+    string oldPrefixPath = "/data/local/test.ttf";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(oldPrefixPath, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_INSTALL_FONT_FAILED);
+}
+
+HWTEST_F(ServiceTest, testInstallFontValidFormat, TestSize.Level1)
+{
+    string validPath = "/data/local/tmp/test.ttf";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(validPath, ret);
+    EXPECT_EQ(resCode, 0);
+}
+
+HWTEST_F(ServiceTest, testInstallFontValidOtfFormat, TestSize.Level1)
+{
+    string validPath = "/data/local/tmp/test.otf";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(validPath, ret);
+    EXPECT_EQ(resCode, 0);
+}
+
+HWTEST_F(ServiceTest, testInstallFontWithSubdirectory, TestSize.Level1)
+{
+    string subDirPath = "/data/local/tmp/fonts/test.ttf";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(subDirPath, ret);
+    EXPECT_EQ(resCode, 0);
+}
+
+HWTEST_F(ServiceTest, testInstallFontWithTrailingSlash, TestSize.Level1)
+{
+    string pathWithSlash = "/data/local/tmp/";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(pathWithSlash, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_INSTALL_FONT_FAILED);
+}
+
+HWTEST_F(ServiceTest, testInstallFontMultipleSlashes, TestSize.Level1)
+{
+    string multipleSlashes = "/data//local//tmp//test.ttf";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(multipleSlashes, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_INSTALL_FONT_FAILED);
+}
+#else
+HWTEST_F(ServiceTest, testInstallFontNotSupported, TestSize.Level1)
+{
+    string fontPath = "/data/local/tmp/test.ttf";
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->InstallFont(fontPath, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_NOT_SUPPORTED);
+}
+#endif
