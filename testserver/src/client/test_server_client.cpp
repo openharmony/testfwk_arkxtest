@@ -334,6 +334,61 @@ namespace OHOS::testserver {
         iTestServerInterface_->GetUserIdByDisplayId(displayId, userId);
         return userId;
     }
+
+    int32_t TestServerClient::InstallFont(const std::string& fontPath)
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t installResult = 0;
+        iTestServerInterface_->InstallFont(fontPath, installResult);
+        return installResult;
+    }
+
+    int32_t TestServerClient::UninstallFont(const std::string& fontName)
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t uninstallResult = 0;
+        iTestServerInterface_->UninstallFont(fontName, uninstallResult);
+        return uninstallResult;
+    }
+
+    int32_t TestServerClient::SetViewMode(const std::string& mode)
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t setResult = 0;
+        iTestServerInterface_->SetViewMode(mode, setResult);
+        return setResult;
+    }
+
+    std::string TestServerClient::GetViewMode()
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return "";
+        }
+        std::string mode;
+        int32_t getResult = 0;
+        iTestServerInterface_->GetViewMode(mode, getResult);
+        if (getResult == TEST_SERVER_NOT_SUPPORTED) {
+            return "NOT_SUPPORTED";
+        }
+        if (getResult != TEST_SERVER_OK) {
+            return "";
+        }
+        return mode;
+    }
 } // namespace OHOS::testserver
 
 void FrequencyLockPlugin()

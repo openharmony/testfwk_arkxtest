@@ -37,6 +37,10 @@ Commands:
   set-pastedata <text>     Set pasteboard text content
   clear-pastedata    Clear pasteboard content
   hide-keyboard      Hide input method keyboard
+  get-fontname <font-path> Get font name from font file (/data/local/* files only)
+  install-font <font-path>  Install font from font file (/data/local/* files only)
+  uninstall-font <font-name>  Uninstall font by font name
+  set-viewmode <dark|light>  Set view mode (dark or light)
   help               Show this help message
   --version          Show version information
 )";
@@ -51,6 +55,10 @@ Commands:
         {"set-pastedata", std::make_tuple(3, 3, "testhelper set-pastedata <text>")},
         {"clear-pastedata", std::make_tuple(2, 2, "testhelper clear-pastedata")},
         {"hide-keyboard", std::make_tuple(2, 2, "testhelper hide-keyboard")},
+        {"get-fontname", std::make_tuple(3, 3, "testhelper get-fontname <font-path> (/data/local/* files only)")},
+        {"install-font", std::make_tuple(3, 3, "testhelper install-font <font-path> (/data/local/* files only)")},
+        {"uninstall-font", std::make_tuple(3, 3, "testhelper uninstall-font <font-name>")},
+        {"set-viewmode", std::make_tuple(3, 3, "testhelper set-viewmode <dark|light>")},
         {"--version", std::make_tuple(2, 2, "testhelper --version")},
         {"help", std::make_tuple(2, 2, "testhelper help")},
     };
@@ -115,6 +123,26 @@ Commands:
         {"hide-keyboard", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
             ValidateArgCount("hide-keyboard", argc);
             return core.HandleHideKeyboard();
+        }},
+        {"get-fontname", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("get-fontname", argc);
+            std::string fontPath(argv[TWO]);
+            return core.HandleGetFontname(fontPath);
+        }},
+        {"install-font", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("install-font", argc);
+            std::string fontPath(argv[TWO]);
+            return core.HandleInstallFont(fontPath);
+        }},
+        {"uninstall-font", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("uninstall-font", argc);
+            std::string fontName(argv[TWO]);
+            return core.HandleUninstallFont(fontName);
+        }},
+        {"set-viewmode", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("set-viewmode", argc);
+            std::string mode(argv[TWO]);
+            return core.HandleSetViewMode(mode);
         }},
     };
 

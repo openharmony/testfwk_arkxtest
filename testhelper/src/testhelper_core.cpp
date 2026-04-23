@@ -17,11 +17,19 @@
 #include <string>
 #include <ctime>
 #include <regex>
+#include <fstream>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <algorithm>
 #include "common_utils.h"
 #include "testhelper_core.h"
 #include "time_service_client.h"
 #include "test_server_client.h"
 #include "test_server_error_code.h"
+#ifdef ARKXTEST_FONT_ENABLE
+#include "rosen_text/font_tool_set.h"
+#endif
 
 namespace OHOS::testhelper {
     int32_t TestHelperCore::HandleGetTime()
@@ -239,6 +247,172 @@ namespace OHOS::testhelper {
             return EXIT_FAILURE;
         } else {
             LOG_E("HideKeyboard failed with error: %{public}d", result);
+            PrintToConsole("Error: Service is not available.");
+            return EXIT_SERVICE_UNAVAILABLE;
+        }
+    }
+
+    int32_t TestHelperCore::HandleGetFontname(const std::string& fontPath)
+    {
+        LOG_I("HandleGetFontname called with path: %{public}s", fontPath.c_str());
+        
+        const std::string prefix = "/data/local/tmp/";
+        if (fontPath.empty() || fontPath.find(prefix) != 0) {
+            LOG_E("Invalid font path");
+            PrintToConsole(
+                "Error: Invalid arguments. Usage: testhelper get-fontname <font-path> (/data/local/tmp/* files only)");
+            return EXIT_FAILURE;
+        }
+        
+        std::string fileName = fontPath.substr(prefix.length());
+        if (fileName.empty() || fileName.find("..") != std::string::npos) {
+            LOG_E("Invalid font path: %{public}s", fontPath.c_str());
+            PrintToConsole("Error: Invalid font path. Only supports files in /data/local/tmp/*");
+            return EXIT_FAILURE;
+        }
+        
+#ifndef ARKXTEST_FONT_ENABLE
+        LOG_E("Font management is not supported");
+        PrintToConsole("Error: Operation is not supported. Font management is not supported on this device.");
+        return EXIT_NOT_SUPPORTED;
+#else
+        int fd = open(fontPath.c_str(), O_RDONLY);
+        if (fd < 0) {
+            LOG_E("Font file not found: %{public}s", fontPath.c_str());
+            PrintToConsole("Error: Font file not found: " + fontPath);
+            return EXIT_FAILURE;
+        }
+        fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+        std::vector<std::string> fontNames;
+        fontNames = Rosen::FontToolSet::GetInstance().GetFontFullName(fd);
+        fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+
+        if (fontNames.empty()) {
+            LOG_E("No font name found");
+            PrintToConsole("Error: Service is not available.");
+            return EXIT_SERVICE_UNAVAILABLE;
+        }
+        std::string fontName = fontNames[0];
+        PrintToConsole("Font name: " + fontName);
+        LOG_I("HandleGetFontname completed successfully");
+        return EXIT_SUCCESS;
+#endif
+    }
+
+    int32_t TestHelperCore::HandleInstallFont(const std::string& fontPath)
+    {
+        LOG_I("HandleInstallFont called with path: %{public}s", fontPath.c_str());
+        
+        const std::string prefix = "/data/local/tmp/";
+        if (fontPath.empty() || fontPath.find(prefix) != 0) {
+            LOG_E("Invalid font path");
+            PrintToConsole(
+                "Error: Invalid arguments. Usage: testhelper install-font <font-path> (/data/local/tmp/* files only)");
+            return EXIT_FAILURE;
+        }
+        
+        std::string fileName = fontPath.substr(prefix.length());
+        if (fileName.empty() || fileName.find("..") != std::string::npos) {
+            LOG_E("Invalid font path: %{public}s", fontPath.c_str());
+            PrintToConsole("Error: Invalid font path. Only supports files in /data/local/tmp/*");
+            return EXIT_FAILURE;
+        }
+        
+#ifndef ARKXTEST_FONT_ENABLE
+        LOG_E("Font management is not supported");
+        PrintToConsole("Error: Operation is not supported. Font management is not supported on this device.");
+        return EXIT_NOT_SUPPORTED;
+#else
+        int fd = open(fontPath.c_str(), O_RDONLY);
+        if (fd < 0) {
+            LOG_E("Font file not found: %{public}s", fontPath.c_str());
+            PrintToConsole("Error: Font file not found: " + fontPath);
+            return EXIT_FAILURE;
+        }
+        fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+        fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+
+        auto result = OHOS::testserver::TestServerClient::GetInstance().InstallFont(fontPath);
+        if (result == OHOS::testserver::TEST_SERVER_OK) {
+            PrintToConsole("Font installed successfully from " + fontPath);
+            LOG_I("HandleInstallFont completed successfully");
+            return EXIT_SUCCESS;
+        } else if (result == OHOS::testserver::TEST_SERVER_FONT_ALREADY_INSTALLED) {
+            LOG_E("Font is already installed");
+            PrintToConsole("Error: Font is already installed.");
+            return EXIT_FAILURE;
+        } else {
+            LOG_E("InstallFont failed with error: %{public}d", result);
+            PrintToConsole("Error: Service is not available.");
+            return EXIT_SERVICE_UNAVAILABLE;
+        }
+#endif
+    }
+
+    int32_t TestHelperCore::HandleUninstallFont(const std::string& fontName)
+    {
+        LOG_I("HandleUninstallFont called with name: %{public}s", fontName.c_str());
+
+        if (fontName.empty()) {
+            LOG_E("Font name is empty");
+            PrintToConsole("Error: Font not found: ");
+            return EXIT_FAILURE;
+        }
+#ifndef ARKXTEST_FONT_ENABLE
+        LOG_E("Font management is not supported");
+        PrintToConsole("Error: Operation is not supported. Font management is not supported on this device.");
+        return EXIT_NOT_SUPPORTED;
+#else
+        auto result = OHOS::testserver::TestServerClient::GetInstance().UninstallFont(fontName);
+        if (result == OHOS::testserver::TEST_SERVER_OK) {
+            PrintToConsole("Font uninstalled successfully: " + fontName);
+            LOG_I("HandleUninstallFont completed successfully");
+            return EXIT_SUCCESS;
+        } else if (result == OHOS::testserver::TEST_SERVER_FONT_NOT_FOUND) {
+            LOG_E("Font not found: %{public}s", fontName.c_str());
+            PrintToConsole("Error: Font not found: " + fontName);
+            return EXIT_FAILURE;
+        } else {
+            LOG_E("UninstallFont failed with error: %{public}d", result);
+            PrintToConsole("Error: Service is not available.");
+            return EXIT_SERVICE_UNAVAILABLE;
+        }
+#endif
+    }
+
+    int32_t TestHelperCore::HandleSetViewMode(const std::string& mode)
+    {
+        LOG_I("HandleSetViewMode called with mode: %{public}s", mode.c_str());
+        if (mode != "dark" && mode != "light") {
+            LOG_E("Invalid mode: %{public}s", mode.c_str());
+            PrintToConsole("Error: Invalid view mode. Mode must be 'dark' or 'light'.");
+            return EXIT_FAILURE;
+        }
+        
+        std::string currentMode = OHOS::testserver::TestServerClient::GetInstance().GetViewMode();
+        if (currentMode == "NOT_SUPPORTED") {
+            LOG_E("View mode is not supported");
+            PrintToConsole("Error: Operation is not supported. View mode is not supported on this device.");
+            return EXIT_FAILURE;
+        }
+        if (!currentMode.empty() && currentMode == mode) {
+            LOG_I("View mode is already set to %{public}s", mode.c_str());
+            PrintToConsole("Error: View mode is already set to " + mode + ".");
+            return EXIT_FAILURE;
+        }
+        
+        auto result = OHOS::testserver::TestServerClient::GetInstance().SetViewMode(mode);
+        if (result == OHOS::testserver::TEST_SERVER_NOT_SUPPORTED) {
+            LOG_E("View mode is not supported");
+            PrintToConsole("Error: Operation is not supported. View mode is not supported on this device.");
+            return EXIT_FAILURE;
+        }
+        if (result == OHOS::testserver::TEST_SERVER_OK) {
+            PrintToConsole("Set view mode to " + mode + " successfully.");
+            LOG_I("HandleSetViewMode completed successfully");
+            return EXIT_SUCCESS;
+        } else {
+            LOG_E("SetViewMode failed with error: %{public}d", result);
             PrintToConsole("Error: Service is not available.");
             return EXIT_SERVICE_UNAVAILABLE;
         }

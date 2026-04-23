@@ -36,6 +36,12 @@
 #ifdef ARKXTEST_IMF_ENABLE
 #include "input_method_controller.h"
 #endif
+#ifdef ARKXTEST_FONT_ENABLE
+#include "font_manager_inner_api.h"
+#endif
+#ifdef ARKXTEST_VIEW_MODE_ENABLE
+#include "ui_appearance.h"
+#endif
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include "accesstoken_kit.h"
@@ -45,6 +51,7 @@
 #include <fstream>
 #include <set>
 #include <sys/stat.h>
+#include "os_account_manager.h"
 
 namespace OHOS::testserver {
     // TEST_SERVER_SA_ID
@@ -704,5 +711,154 @@ namespace OHOS::testserver {
             return TEST_SERVER_ACCOUNTOP_FAILED;
         }
         return TEST_SERVER_OK;
+    }
+
+    ErrCode TestServerService::InstallFont(const std::string& fontPath, int32_t& installResult)
+    {
+#ifdef ARKXTEST_FONT_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        const std::string prefix = "/data/local/tmp/";
+        if (fontPath.empty() || fontPath.find(prefix) != 0) {
+            HiLog::Error(LABEL_SERVICE, "Invalid font path");
+            installResult = TEST_SERVER_INSTALL_FONT_FAILED;
+            return TEST_SERVER_OK;
+        }
+        std::string fileName = fontPath.substr(prefix.length());
+        if (fileName.empty() || fileName.find("..") != std::string::npos) {
+            HiLog::Error(LABEL_SERVICE, "Invalid font path");
+            installResult = TEST_SERVER_INSTALL_FONT_FAILED;
+            return TEST_SERVER_OK;
+        }
+        std::vector<int32_t> ids;
+        if (AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids) != 0 || ids.empty()) {
+            HiLog::Error(LABEL_SERVICE, "QueryActiveOsAccountIds failed");
+            installResult = TEST_SERVER_INSTALL_FONT_FAILED;
+            return TEST_SERVER_OK;
+        }
+        bool hasSuccess = false;
+        bool allAlreadyInstalled = true;
+        for (const auto& id : ids) {
+            auto ret = Global::FontManager::FontManagerInnerApi::InstallFont(fontPath, id);
+            if (ret == FONT_ERROR_ALREADY_INSTALLED) {
+                continue;
+            } else if (ret == 0) {
+                hasSuccess = true;
+                allAlreadyInstalled = false;
+            } else {
+                HiLog::Error(LABEL_SERVICE, "InstallFont failed for id=%{public}d: %{public}d", id, ret);
+                installResult = TEST_SERVER_INSTALL_FONT_FAILED;
+                return TEST_SERVER_OK;
+            }
+        }
+        installResult = allAlreadyInstalled ? TEST_SERVER_FONT_ALREADY_INSTALLED : TEST_SERVER_OK;
+        return TEST_SERVER_OK;
+#else
+        HiLog::Warn(LABEL_SERVICE, "Font management is not supported");
+        installResult = TEST_SERVER_NOT_SUPPORTED;
+        return TEST_SERVER_OK;
+#endif
+    }
+ 	 
+    ErrCode TestServerService::UninstallFont(const std::string& fontName, int32_t& uninstallResult)
+    {
+#ifdef ARKXTEST_FONT_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        std::vector<int32_t> ids;
+        auto osAccountRet = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
+        HiLog::Info(LABEL_SERVICE, "QueryActiveOsAccountIds ret=%{public}d, count=%{public}zu",
+            osAccountRet, ids.size());
+        if (osAccountRet != 0 || ids.empty()) {
+            HiLog::Error(LABEL_SERVICE, "QueryActiveOsAccountIds failed: %{public}d", osAccountRet);
+            uninstallResult = TEST_SERVER_UNINSTALL_FONT_FAILED;
+            return TEST_SERVER_OK;
+        }
+        bool fontFound = false;
+        for (const auto& id : ids) {
+            auto ret = Global::FontManager::FontManagerInnerApi::UninstallFont(fontName, id);
+            HiLog::Info(LABEL_SERVICE, "UninstallFont for id=%{public}d ret=%{public}d", id, ret);
+            if (ret == FONT_ERROR_NOT_FOUND) {
+                continue;
+            } else if (ret != 0) {
+                HiLog::Error(LABEL_SERVICE, "UninstallFont failed for id=%{public}d with error: %{public}d", id, ret);
+                uninstallResult = TEST_SERVER_UNINSTALL_FONT_FAILED;
+                return TEST_SERVER_OK;
+            }
+            fontFound = true;
+        }
+        if (!fontFound) {
+            HiLog::Error(LABEL_SERVICE, "Font not found: %{public}s", fontName.c_str());
+            uninstallResult = TEST_SERVER_FONT_NOT_FOUND;
+            return TEST_SERVER_OK;
+        }
+        uninstallResult = TEST_SERVER_OK;
+        return TEST_SERVER_OK;
+#else
+        HiLog::Warn(LABEL_SERVICE, "Font management is not supported");
+        uninstallResult = TEST_SERVER_NOT_SUPPORTED;
+        return TEST_SERVER_OK;
+#endif
+    }
+
+    ErrCode TestServerService::SetViewMode(const std::string& mode, int32_t& setResult)
+    {
+#ifdef ARKXTEST_VIEW_MODE_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        if (mode != "dark" && mode != "light") {
+            HiLog::Error(LABEL_SERVICE, "Invalid mode: %{public}s", mode.c_str());
+            setResult = TEST_SERVER_SET_VIEW_MODE_FAILED;
+            return TEST_SERVER_OK;
+        }
+        
+        OHOS::ArkUi::UiAppearance::DarkMode targetMode = (mode == "dark") ?
+            OHOS::ArkUi::UiAppearance::DarkMode::ALWAYS_DARK :
+            OHOS::ArkUi::UiAppearance::DarkMode::ALWAYS_LIGHT;
+            
+        auto ret = OHOS::ArkUi::UiAppearance::UIAppearance::SetDarkMode(targetMode);
+        if (ret != OHOS::ArkUi::UiAppearance::UiAppearanceAbilityErrCode::SUCCEEDED) {
+            HiLog::Error(LABEL_SERVICE, "SetDarkMode failed with error: %{public}d", ret);
+            setResult = TEST_SERVER_SET_VIEW_MODE_FAILED;
+            return TEST_SERVER_OK;
+        }
+        HiLog::Debug(LABEL_SERVICE, "SetViewMode success");
+        setResult = TEST_SERVER_OK;
+        return TEST_SERVER_OK;
+#else
+        HiLog::Warn(LABEL_SERVICE, "View mode is not supported");
+        setResult = TEST_SERVER_NOT_SUPPORTED;
+        return TEST_SERVER_OK;
+#endif
+    }
+
+    ErrCode TestServerService::GetViewMode(std::string& mode, int32_t& getResult)
+    {
+#ifdef ARKXTEST_VIEW_MODE_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        OHOS::ArkUi::UiAppearance::DarkMode darkMode;
+        auto ret = OHOS::ArkUi::UiAppearance::UIAppearance::GetDarkMode(darkMode);
+        if (ret != OHOS::ArkUi::UiAppearance::UiAppearanceAbilityErrCode::SUCCEEDED) {
+            HiLog::Error(LABEL_SERVICE, "GetDarkMode failed with error: %{public}d", ret);
+            getResult = TEST_SERVER_SET_VIEW_MODE_FAILED;
+            return TEST_SERVER_OK;
+        }
+        switch (darkMode) {
+            case OHOS::ArkUi::UiAppearance::DarkMode::ALWAYS_DARK:
+                mode = "dark";
+                break;
+            case OHOS::ArkUi::UiAppearance::DarkMode::ALWAYS_LIGHT:
+                mode = "light";
+                break;
+            case OHOS::ArkUi::UiAppearance::DarkMode::UNKNOWN:
+            default:
+                mode = "unknown";
+                HiLog::Warn(LABEL_SERVICE, "Unknown dark mode value: %{public}d", darkMode);
+                break;
+        }
+        getResult = TEST_SERVER_OK;
+        return TEST_SERVER_OK;
+#else
+        HiLog::Warn(LABEL_SERVICE, "View mode is not supported");
+        getResult = TEST_SERVER_NOT_SUPPORTED;
+        return TEST_SERVER_OK;
+#endif
     }
 } // namespace OHOS::testserver

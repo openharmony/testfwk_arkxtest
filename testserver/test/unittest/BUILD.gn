@@ -13,6 +13,7 @@
 
 import("//build/ohos.gni")
 import("//build/test.gni")
+import("//test/testfwk/arkxtest/arkxtest_config.gni")
 source_root = "//test/testfwk/arkxtest/testserver"
 
 ohos_unittest("TestSA_unittest") {
@@ -51,6 +52,16 @@ ohos_unittest("TestSA_unittest") {
       "pasteboard:pasteboard_data",
     ]
     defines = [ "ARKXTEST_PASTEBOARD_ENABLE"]
+  }
+
+  if ((arkxtest_product_feature == "pc" ||
+       arkxtest_product_feature == "tablet" ||
+       arkxtest_product_feature == "phone") &&
+      (defined(global_parts_info) && defined(global_parts_info.global_font_manager))) {
+    external_deps += [
+      "font_manager:font_manager_client",
+    ]
+    defines += [ "ARKXTEST_FONT_ENABLE" ]
   }
 
   include_dirs = [
