@@ -1317,6 +1317,29 @@ namespace OHOS::uitest {
         return result;
     }
 
+    Point SysUiController::ConvertRelativeToGlobal(const Point &point, ApiCallErr &error) const
+    {
+        using namespace Rosen;
+        int32_t displayId = GetValidDisplayId(point.displayId_);
+        DisplayManager &displayMgr = DisplayManager::GetInstance();
+        auto display = displayMgr.GetDisplayById(displayId);
+        if (display == nullptr) {
+            error = ApiCallErr(ERR_INVALID_INPUT, "Display not found.");
+            return Point(0, 0, displayId);
+        }
+
+        Rosen::RelativePosition relativePos = {displayId, {point.px_, point.py_}};
+        Rosen::Position position;
+        Rosen::DMError ret = displayMgr.ConvertRelativeCoordinateToGlobal(relativePos, position);
+        if (ret != DMError::DM_OK) {
+            error = ApiCallErr(ERR_INTERNAL, "Failed to convert coordinate to global.");
+            return Point(0, 0, displayId);
+        }
+
+        Point globalPoint(position.x, position.y, displayId);
+        return globalPoint;
+    }
+
     Point SysUiController::GetDisplayDensity(int32_t displayId) const
     {
         DisplayManager &displayMgr = DisplayManager::GetInstance();

@@ -183,6 +183,18 @@ namespace OHOS::uitest {
             return true;
         };
 
+        struct DisplayOffset {
+            int32_t displayId;
+            int32_t offsetX;
+            int32_t offsetY;
+        };
+
+        virtual Point ConvertRelativeToGlobal(const Point &point, ApiCallErr &error) const
+        {
+            error = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "Not implemented");
+            return Point();
+        }
+
         virtual void CloseAamsEvent() const {};
         virtual void OpenAamsEvent() const {};
         virtual void ChangeWindowMode(int32_t windowId, WindowMode mode) const {};

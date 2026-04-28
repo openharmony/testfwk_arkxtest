@@ -714,3 +714,119 @@ TEST_F(UiActionTest, PenKeyAction_ComputeMouseEvents_Click)
     ASSERT_EQ(ActionStage::UP, event4.keyEvents_[0].stage_);
     ASSERT_EQ(KEYCODE_PEN_AIR_MOUSE, event4.keyEvents_[0].code_);
 }
+
+TEST_F(UiActionTest, MouseSwipe_DecomposeCrossScreen_Basic)
+{
+    Point from {100, 200, 0};
+    Point to {200, 300, 1};
+    Point fromBoundary {1919, 250, 0};
+    Point toBoundary {0, 250, 1};
+    MouseSwipe dragAction(TouchOp::DRAG, from, to);
+    vector<MouseEvent> dragEvents;
+    dragAction.DecomposeCrossScreen(dragEvents, customOptions_, fromBoundary, toBoundary);
+    ASSERT_GT(dragEvents.size(), 0);
+    bool foundDown = false;
+    bool foundUp = false;
+    for (const auto& event : dragEvents) {
+        if (event.stage_ == ActionStage::DOWN && event.button_ == MouseButton::BUTTON_LEFT) {
+            foundDown = true;
+            ASSERT_EQ(from.px_, event.point_.px_);
+            ASSERT_EQ(from.py_, event.point_.py_);
+        }
+        if (event.stage_ == ActionStage::UP && event.button_ == MouseButton::BUTTON_LEFT) {
+            foundUp = true;
+            ASSERT_EQ(to.px_, event.point_.px_);
+            ASSERT_EQ(to.py_, event.point_.py_);
+        }
+    }
+    ASSERT_TRUE(foundDown);
+    ASSERT_TRUE(foundUp);
+}
+
+TEST_F(UiActionTest, MouseSwipe_DecomposeCrossScreen_WithKeys)
+{
+    static constexpr int32_t key1Code = 17;
+    static constexpr int32_t key2Code = 2072;
+    Point from {100, 200, 0};
+    Point to {200, 300, 1};
+    Point fromBoundary {1919, 250, 0};
+    Point toBoundary {0, 250, 1};
+    MouseSwipe dragAction(TouchOp::DRAG, from, to, key1Code, key2Code);
+    vector<MouseEvent> dragEvents;
+    dragAction.DecomposeCrossScreen(dragEvents, customOptions_, fromBoundary, toBoundary);
+    ASSERT_GT(dragEvents.size(), 0);
+    ASSERT_EQ(ActionStage::MOVE, dragEvents.front().stage_);
+    ASSERT_EQ(TWO, dragEvents.front().keyEvents_.size());
+    ASSERT_EQ(ActionStage::DOWN, dragEvents.front().keyEvents_[0].stage_);
+    ASSERT_EQ(key1Code, dragEvents.front().keyEvents_[0].code_);
+    ASSERT_EQ(ActionStage::DOWN, dragEvents.front().keyEvents_[1].stage_);
+    ASSERT_EQ(key2Code, dragEvents.front().keyEvents_[1].code_);
+    ASSERT_EQ(ActionStage::NONE, dragEvents.back().stage_);
+    ASSERT_EQ(TWO, dragEvents.back().keyEvents_.size());
+    ASSERT_EQ(ActionStage::UP, dragEvents.back().keyEvents_[0].stage_);
+    ASSERT_EQ(key1Code, dragEvents.back().keyEvents_[0].code_);
+    ASSERT_EQ(ActionStage::UP, dragEvents.back().keyEvents_[1].stage_);
+    ASSERT_EQ(key2Code, dragEvents.back().keyEvents_[1].code_);
+}
+
+TEST_F(UiActionTest, MouseSwipe_DecomposeCrossScreen_EventSequence)
+{
+    Point from {100, 200, 0};
+    Point to {200, 300, 1};
+    Point fromBoundary {1919, 250, 0};
+    Point toBoundary {0, 250, 1};
+    MouseSwipe dragAction(TouchOp::DRAG, from, to);
+    vector<MouseEvent> dragEvents;
+    dragAction.DecomposeCrossScreen(dragEvents, customOptions_, fromBoundary, toBoundary);
+    ASSERT_GT(dragEvents.size(), TWO);
+    bool foundBoundaryPoint = false;
+    for (size_t i = 1; i < dragEvents.size() - 1; i++) {
+        if (dragEvents[i].stage_ == ActionStage::MOVE) {
+            foundBoundaryPoint = true;
+            ASSERT_EQ(MouseButton::BUTTON_LEFT, dragEvents[i].button_);
+        }
+    }
+    ASSERT_TRUE(foundBoundaryPoint);
+}
+
+TEST_F(UiActionTest, MouseSwipe_DecomposeCrossScreen_DisplayIdChange)
+{
+    Point from {100, 200, 0};
+    Point to {200, 300, 1};
+    Point fromBoundary {1919, 250, 0};
+    Point toBoundary {0, 250, 1};
+    MouseSwipe dragAction(TouchOp::DRAG, from, to);
+    vector<MouseEvent> dragEvents;
+    dragAction.DecomposeCrossScreen(dragEvents, customOptions_, fromBoundary, toBoundary);
+    ASSERT_GT(dragEvents.size(), 0);
+    int32_t firstDisplayId = dragEvents[0].point_.displayId_;
+    int32_t lastDisplayId = dragEvents.back().point_.displayId_;
+    ASSERT_EQ(0, firstDisplayId);
+    ASSERT_EQ(1, lastDisplayId);
+    bool displayChanged = false;
+    for (size_t i = 1; i < dragEvents.size(); i++) {
+        if (dragEvents[i].point_.displayId_ != dragEvents[i-1].point_.displayId_) {
+            displayChanged = true;
+            break;
+        }
+    }
+    ASSERT_TRUE(displayChanged);
+}
+
+TEST_F(UiActionTest, MouseSwipe_DecomposeCrossScreen_SameScreenShouldUseNormalDecompose)
+{
+    Point from {100, 200, 0};
+    Point to {200, 300, 0};
+    MouseSwipe dragAction(TouchOp::DRAG, from, to);
+    vector<MouseEvent> dragEventsNormal;
+    dragAction.Decompose(dragEventsNormal, customOptions_);
+    ASSERT_GT(dragEventsNormal.size(), 0);
+    bool allSameDisplay = true;
+    for (const auto& event : dragEventsNormal) {
+        if (event.point_.displayId_ != 0) {
+            allSameDisplay = false;
+            break;
+        }
+    }
+    ASSERT_TRUE(allSameDisplay);
+}
