@@ -1276,7 +1276,7 @@ namespace OHOS::uitest {
         }
     }
 
-    static bool CheckPointDisplayId(Point &from, Point &to, ApiReplyInfo &out)
+    static bool CheckPointDisplayId(Point &from, Point &to, ApiReplyInfo &out, bool allowCrossScreen = false)
     {
         if (from.displayId_ == UNASSIGNED && to.displayId_ != UNASSIGNED) {
             from.displayId_ = to.displayId_;
@@ -1284,7 +1284,7 @@ namespace OHOS::uitest {
         if (from.displayId_ != UNASSIGNED && to.displayId_ == UNASSIGNED) {
             to.displayId_ = from.displayId_;
         }
-        if (from.displayId_ != to.displayId_) {
+        if (!allowCrossScreen && from.displayId_ != to.displayId_) {
             out.exception_ = ApiCallErr(ERR_INVALID_INPUT,
                 "The start point and end point must belong to the same display.");
             return false;
@@ -1701,7 +1701,7 @@ namespace OHOS::uitest {
             auto displayId2 = ReadArgFromJson<int32_t>(pointJson2, "displayId", UNASSIGNED);
             auto from = Point(pointJson1["x"], pointJson1["y"], displayId1);
             auto to = Point(pointJson2["x"], pointJson2["y"], displayId2);
-            if (!CheckPointDisplayId(from, to, out)) {
+            if (!CheckPointDisplayId(from, to, out, in.apiId_ == "Driver.mouseDrag")) {
                 return;
             }
             UiOpArgs uiOpArgs;
@@ -1757,7 +1757,7 @@ namespace OHOS::uitest {
             auto displayId2 = ReadArgFromJson<int32_t>(pointJson2, "displayId", UNASSIGNED);
             auto from = Point(pointJson1["x"], pointJson1["y"], displayId1);
             auto to = Point(pointJson2["x"], pointJson2["y"], displayId2);
-            if (!CheckPointDisplayId(from, to, out)) {
+            if (!CheckPointDisplayId(from, to, out, true)) {
                 return;
             }
             UiOpArgs uiOpArgs;

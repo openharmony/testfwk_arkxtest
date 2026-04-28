@@ -89,6 +89,8 @@ namespace OHOS::uitest {
 
         bool CheckDisplayExist(int32_t displayId) const override;
 
+        Point ConvertRelativeToGlobal(const Point &point, ApiCallErr &error) const override;
+
         void CloseAamsEvent() const override;
 
         void OpenAamsEvent() const override;
