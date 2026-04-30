@@ -101,6 +101,7 @@ namespace OHOS::uitest {
         void PerformTouchPadAction(const TouchPadAction &touch, const UiOpArgs &opt, ApiCallErr &error);
 
         void PerformPenTouch(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
+
         void PerformKnuckleAction(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err);
 
         void SetAamsWorkMode(const AamsWorkMode mode);
@@ -133,6 +134,7 @@ namespace OHOS::uitest {
         bool IsKnuckleSnapshotEnable() const;
 
         bool IsKnuckleRecordEnable() const;
+
         bool IsPcWindowMode() const;
 
     private:
@@ -156,6 +158,18 @@ namespace OHOS::uitest {
         // UI objects that are needed to be updated before each interaction and used in the interaction
         void UpdateUIWindows(ApiCallErr &error, int32_t targetDisplay = -1, bool skipWaitForUiSteady = false);
         void DumpWindowsInfo(const DumpOption &option, Rect &mergeBounds, nlohmann::json &childDom);
+        
+        struct DisplayInfo {
+            Point topLeft;
+            Point size;
+        };
+        
+        // Handle cross-screen operations
+        void CalculateBoundaryPoints(const Point& from, const Point& to, Point& fromBoundary, Point& toBoundary,
+                                     ApiCallErr& err);
+        void CalculateCrossScreenBoundary(const Point& fromGlobal, const Point& toGlobal,
+                                          const DisplayInfo& fromDisplay, const DisplayInfo& toDisplay,
+                                          Point& boundary);
         static std::unique_ptr<UiController> uiController_;
         // CacheModel:
         std::map<int32_t, vector<WindowCacheModel>> displayToWindowCacheMap_;

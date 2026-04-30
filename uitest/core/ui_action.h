@@ -19,6 +19,8 @@
 #include "ui_model.h"
 
 namespace OHOS::uitest {
+    class UiDriver;
+    
     // frequently used keys.
     constexpr int32_t KEYCODE_NONE = 0;
     constexpr int32_t KEYCODE_BACK = 2;
@@ -447,6 +449,8 @@ namespace OHOS::uitest {
          * @param options the ui operation agruments.
          * */
         virtual void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const = 0;
+        
+        virtual bool IsSwipe() const { return false; }
     };
 
     class MouseMoveTo : public MouseAction {
@@ -463,11 +467,15 @@ namespace OHOS::uitest {
 
     class MouseSwipe : public MouseAction {
     public:
+        friend class UiDriver;
         explicit MouseSwipe(TouchOp type, const Point &from, const Point &to,
                             int32_t key1 = UNASSIGNED, int32_t key2 = UNASSIGNED)
             : type_(type), from_(from), to_(to), key1_(key1), key2_(key2) {};
 
         void Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const override;
+        void DecomposeCrossScreen(std::vector<MouseEvent> &recv, const UiOpArgs &opt,
+                                  const Point &fromBoundary, const Point &toBoundary) const;
+        bool IsSwipe() const override { return true; }
 
         ~MouseSwipe() = default;
 
@@ -477,6 +485,8 @@ namespace OHOS::uitest {
         const Point to_;
         const int32_t key1_;
         const int32_t key2_;
+        void DecomposeCrossScreenSwipeInternal(PointerMatrix &recv, const Point &fromBoundary, const Point &toBoundary,
+                                               const UiOpArgs &options) const;
     };
 
     class MouseClick : public MouseAction {
