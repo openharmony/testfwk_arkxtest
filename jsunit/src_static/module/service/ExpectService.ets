@@ -108,7 +108,7 @@ export class AssertMatcher {
   public assertLarger: (expectValue: NumberType) => void;
   public assertLess: (expectValue: NumberType) => void;
   public assertNull: () => void;
-  public assertThrow: (expectValue: string) => void;
+  public assertThrow: (expectValue: string, expect?: string) => void;
   public assertThrowError: (expectValue: string, expect?: string) => void;
   public assertUndefined: () => void;
   public assertLargerOrEqual: (expectValue: NumberType) => void;
@@ -149,7 +149,7 @@ export class AssertMatcher {
     this.assertLessOrEqual = (expectValue: NumberType) => {};
     this.assertUndefined = () => {};
     this.assertNull = () => {};
-    this.assertThrow = (expectValue: string) => {};
+    this.assertThrow = (expectValue: string, expect?: string) => {};
     this.assertThrowError = (expectValue: string, expect?: string) => {};
     this.assertNaN = () => {};
     this.assertNegUnlimited = () => {};
