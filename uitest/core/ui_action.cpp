@@ -453,6 +453,59 @@ namespace OHOS::uitest {
         }
     }
 
+    void MouseSwipe::DecomposeCrossScreen(std::vector<MouseEvent> &recv, const UiOpArgs &opt,
+                                          const Point &fromBoundary, const Point &toBoundary) const
+    {
+        DCHECK(type_ == TouchOp::DRAG);
+        PointerMatrix touchEvents;
+        DecomposeCrossScreenSwipeInternal(touchEvents, fromBoundary, toBoundary, opt);
+        touchEvents.ConvertToMouseEvents(recv);
+        if (recv.empty()) {
+            return;
+        }
+        if (key1_ != UNASSIGNED || key2_ != UNASSIGNED) {
+            vector<KeyEvent> keyAction1;
+            if (key1_ != UNASSIGNED) {
+                keyAction1.push_back(KeyEvent {ActionStage::DOWN, key1_, opt.keyHoldMs_});
+            }
+            if (key2_ != UNASSIGNED) {
+                keyAction1.push_back(KeyEvent {ActionStage::DOWN, key2_, opt.keyHoldMs_});
+            }
+            auto keyDown = MouseEvent {ActionStage::MOVE, from_, MouseButton::BUTTON_NONE, keyAction1,
+                                       opt.clickHoldMs_};
+            recv.insert(recv.begin(), keyDown);
+            vector<KeyEvent> keyAction2;
+            if (key1_ != UNASSIGNED) {
+                keyAction2.push_back(KeyEvent {ActionStage::UP, key1_, opt.keyHoldMs_});
+            }
+            if (key2_ != UNASSIGNED) {
+                keyAction2.push_back(KeyEvent {ActionStage::UP, key2_, opt.keyHoldMs_});
+            }
+            auto keyUp = MouseEvent {ActionStage::NONE, to_, MouseButton::BUTTON_NONE, keyAction2, 0};
+            recv.push_back(keyUp);
+        }
+    }
+
+    void MouseSwipe::DecomposeCrossScreenSwipeInternal(PointerMatrix &recv, const Point &fromBoundary,
+                                                       const Point &toBoundary, const UiOpArgs &options) const
+    {
+        PointerMatrix segment1;
+        DecomposeComputeSwipe(segment1, from_, fromBoundary, type_, options);
+        PointerMatrix segment2;
+        DecomposeComputeSwipe(segment2, toBoundary, to_, type_, options);
+        uint32_t steps1 = segment1.GetSteps();
+        uint32_t steps2 = segment2.GetSteps();
+        PointerMatrix result(ONE, steps1 + steps2 - ONE);
+        for (uint32_t step = ZERO; step < steps1; step++) {
+            result.At(ZERO, step) = segment1.At(ZERO, step);
+        }
+        result.At(ZERO, steps1 - ONE).stage_ = ActionStage::MOVE;
+        for (uint32_t step = ONE; step < steps2; step++) {
+            result.At(ZERO, steps1 + step - 1) = segment2.At(ZERO, step);
+        }
+        recv = move(result);
+    }
+
     void MouseClick::Decompose(std::vector<MouseEvent> &recv, const UiOpArgs &opt) const
     {
         DCHECK(type_ >= TouchOp::CLICK && type_ <= TouchOp::DOUBLE_CLICK_P);

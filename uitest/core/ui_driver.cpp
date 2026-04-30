@@ -447,6 +447,28 @@ namespace OHOS::uitest {
         if (!CheckStatus(false, err)) {
             return;
         }
+        if (touch.IsSwipe()) {
+            const MouseSwipe& mouseSwipe = static_cast<const MouseSwipe&>(touch);
+            if (mouseSwipe.from_.displayId_ != mouseSwipe.to_.displayId_) {
+                if (!CheckDisplayExist(mouseSwipe.from_.displayId_) || !CheckDisplayExist(mouseSwipe.to_.displayId_)) {
+                    err = ApiCallErr(ERR_INVALID_INPUT, "Invalid display id for cross-screen drag.");
+                    return;
+                }
+                Point fromBoundary;
+                Point toBoundary;
+                CalculateBoundaryPoints(mouseSwipe.from_, mouseSwipe.to_, fromBoundary, toBoundary, err);
+                if (err.code_ != NO_ERROR) {
+                    return;
+                }
+                vector<MouseEvent> events;
+                mouseSwipe.DecomposeCrossScreen(events, opt, fromBoundary, toBoundary);
+                if (events.empty()) {
+                    return;
+                }
+                uiController_->InjectMouseEventSequence(events);
+                return;
+            }
+        }
         vector<MouseEvent> events;
         touch.Decompose(events, opt);
         if (events.empty()) {
@@ -953,5 +975,79 @@ namespace OHOS::uitest {
         return true;
 #endif
         return uiController_->IsPcWindowMode();
+    }
+
+    void UiDriver::CalculateBoundaryPoints(const Point& from, const Point& to, Point& fromBoundary, Point& toBoundary,
+                                           ApiCallErr& err)
+    {
+        Point fromGlobal = uiController_->ConvertRelativeToGlobal(from, err);
+        if (err.code_ != NO_ERROR) {
+            return;
+        }
+        Point toGlobal = uiController_->ConvertRelativeToGlobal(to, err);
+        if (err.code_ != NO_ERROR) {
+            return;
+        }
+        Point fromSize = uiController_->GetDisplaySize(from.displayId_);
+        Point toSize = uiController_->GetDisplaySize(to.displayId_);
+        Point fromTopLeft = uiController_->ConvertRelativeToGlobal(Point(0, 0, from.displayId_), err);
+        if (err.code_ != NO_ERROR) {
+            return;
+        }
+        Point toTopLeft = uiController_->ConvertRelativeToGlobal(Point(0, 0, to.displayId_), err);
+        if (err.code_ != NO_ERROR) {
+            return;
+        }
+        Point boundary(0, 0);
+        DisplayInfo fromDisplayInfo = {fromTopLeft, fromSize};
+        DisplayInfo toDisplayInfo = {toTopLeft, toSize};
+        CalculateCrossScreenBoundary(fromGlobal, toGlobal, fromDisplayInfo, toDisplayInfo, boundary);
+        fromBoundary.px_ = boundary.px_ - fromTopLeft.px_;
+        fromBoundary.py_ = boundary.py_ - fromTopLeft.py_;
+        fromBoundary.displayId_ = from.displayId_;
+        toBoundary.px_ = boundary.px_ - toTopLeft.px_;
+        toBoundary.py_ = boundary.py_ - toTopLeft.py_;
+        toBoundary.displayId_ = to.displayId_;
+    }
+
+    void UiDriver::CalculateCrossScreenBoundary(const Point& fromGlobal, const Point& toGlobal,
+                                                const DisplayInfo& fromDisplay, const DisplayInfo& toDisplay,
+                                                Point& boundary)
+    {
+        int32_t dx = toGlobal.px_ - fromGlobal.px_;
+        int32_t dy = toGlobal.py_ - fromGlobal.py_;
+        boundary.px_ = fromGlobal.px_;
+        boundary.py_ = fromGlobal.py_;
+        if (dx == 0) {
+            int32_t fromBottom = fromDisplay.topLeft.py_ + fromDisplay.size.py_ - 1;
+            int32_t toBottom = toDisplay.topLeft.py_ + toDisplay.size.py_ - 1;
+            boundary.py_ = (dy > 0) ? min(fromBottom, toDisplay.topLeft.py_) : max(fromDisplay.topLeft.py_, toBottom);
+        } else if (dy == 0) {
+            int32_t fromRight = fromDisplay.topLeft.px_ + fromDisplay.size.px_ - 1;
+            int32_t toRight = toDisplay.topLeft.px_ + toDisplay.size.px_ - 1;
+            boundary.px_ = (dx > 0) ? min(fromRight, toDisplay.topLeft.px_) : max(fromDisplay.topLeft.px_, toRight);
+        } else {
+            double minProgressRatio = 1.0;
+            int32_t intersectionX = fromGlobal.px_;
+            int32_t intersectionY = fromGlobal.py_;
+            int32_t fromRight = fromDisplay.topLeft.px_ + fromDisplay.size.px_ - 1;
+            int32_t fromBottom = fromDisplay.topLeft.py_ + fromDisplay.size.py_ - 1;
+            double progressAtVerticalEdge = (dx > 0) ? static_cast<double>(fromRight - fromGlobal.px_) / dx :
+                                            static_cast<double>(fromDisplay.topLeft.px_ - fromGlobal.px_) / dx;
+            double progressAtHorizontalEdge = (dy > 0) ? static_cast<double>(fromBottom - fromGlobal.py_) / dy :
+                                              static_cast<double>(fromDisplay.topLeft.py_ - fromGlobal.py_) / dy;
+            if (progressAtVerticalEdge > 0 && progressAtVerticalEdge < minProgressRatio) {
+                minProgressRatio = progressAtVerticalEdge;
+                intersectionX = (dx > 0) ? fromRight : fromDisplay.topLeft.px_;
+                intersectionY = fromGlobal.py_ + static_cast<int32_t>(dy * minProgressRatio);
+            }
+            if (progressAtHorizontalEdge > 0 && progressAtHorizontalEdge < minProgressRatio) {
+                minProgressRatio = progressAtHorizontalEdge;
+                intersectionY = (dy > 0) ? fromBottom : fromDisplay.topLeft.py_;
+                intersectionX = fromGlobal.px_ + static_cast<int32_t>(dx * minProgressRatio);
+            }
+            boundary.px_ = intersectionX;
+            boundary.py_ = intersectionY;
+        }
     }
 } // namespace OHOS::uitest
