@@ -159,7 +159,7 @@ namespace OHOS::uitest {
             } else if ((size_t)argc > INDEX_SEVEN) {
                 return ParameterRedundancy();
             }
-            screenSize = driver.GetDisplaySize(exception_, targetDisplay);
+            screenSize = driver.GetDisplaySize(exception_, displayId);
             if (!CreateFlingPoint(to, from, screenSize, direction)) {
                 return EXIT_FAILURE;
             }
