@@ -45,24 +45,24 @@ namespace OHOS::uitest {
         "                                                    direction ranges from 0,1,2,3 (left, right, up, down)\n"
         "                                                           velocity ranges from 200 to 40000, default 600\n"
         "                                      stepLength default the width or height of the screen divided by 200\n"
-        "                                                                             displayId default display id\n"
+        "                                                                          displayId default to display id\n"
         "click/doubleClick/longClick <x> <y> [displayId]                           click on the target coordinates\n"
-        "                                                                             displayId default display id\n"
+        "                                                                          displayId default to display id\n"
         "swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity] [displayId]                                        \n"
         "                                                           velocity ranges from 200 to 40000, default 600\n"
-        "                                                                             displayId default display id\n"
+        "                                                                          displayId default to display id\n"
         "fling <from_x> <from_y> <to_x> <to_y> [velocity] [stepLength] [displayId]                                \n"
         "                                                           velocity ranges from 200 to 40000, default 600\n"
-        "                                                            stepLength default the distance divided by 50\n"
-        "                                                                             displayId default display id\n"
+        "                                                         stepLength default to the distance divided by 50\n"
+        "                                                                          displayId default to display id\n"
         "keyEvent <keyID/Back/Home/Power> [displayId]                                              inject keyEvent\n"
-        "                                                                             displayId default display id\n"
-        "keyEvent <keyID_0> <keyID_1> [keyID_2] [displayId]                               keyID_2 default to None \n"
-        "                                                                             displayId default display id\n"
+        "                                                                          displayId default to display id\n"
+        "keyEvent <keyID_0> <keyID_1> [keyID_2] [displayId]                              keyID_2 defaults to None \n"
+        "                                                                          displayId default to display id\n"
         "inputText <x> <y> <text> [displayId]                             inputText at the target coordinate point\n"
-        "                                                                             displayId default display id\n"
-        "text <text> [displayId]                               input text at the location where is already focused\n";
-        "                                                                             displayId default display id\n"
+        "                                                                          displayId default to display id\n"
+        "text <text> [displayId]                               input text at the location where is already focused\n"
+        "                                                                          displayId default to display id\n"
         std::cout << usage << std::endl;
     }
     bool ParameterRedundancy()
@@ -235,27 +235,21 @@ namespace OHOS::uitest {
         int32_t displayId = -1;
 
         if (key == "Home") {
-            if ((size_t)argc == INDEX_FOUR) {
-                // no displayId
-            } else if ((size_t)argc == INDEX_FIVE) {
+            if ((size_t)argc == INDEX_FIVE) {
                 displayId = atoi(argv[FOUR]);
             } else {
                 return ParameterRedundancy();
             }
             driver.TriggerKey(Home(), uiOpArgs, exception_, displayId);
         } else if (key == "Back") {
-            if ((size_t)argc == INDEX_FOUR) {
-                // no displayId
-            } else if ((size_t)argc == INDEX_FIVE) {
+            if ((size_t)argc == INDEX_FIVE) {
                 displayId = atoi(argv[FOUR]);
             } else {
                 return ParameterRedundancy();
             }
             driver.TriggerKey(Back(), uiOpArgs, exception_, displayId);
         } else if (key == "Power") {
-            if ((size_t)argc == INDEX_FOUR) {
-                // no displayId
-            } else if ((size_t)argc == INDEX_FIVE) {
+            if ((size_t)argc == INDEX_FIVE) {
                 displayId = atoi(argv[FOUR]);
             } else {
                 return ParameterRedundancy();
