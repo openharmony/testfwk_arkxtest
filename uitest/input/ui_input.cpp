@@ -41,14 +41,28 @@ namespace OHOS::uitest {
         const std::string usage =
         "USAGE : \n"
         "help                                                                                  print uiInput usage\n"
-        "dircFling  <direction> [velocity] [stepLength]      direction ranges from 0,1,2,3 (left, right, up, down)\n"
-        "click/doubleClick/longClick <x> <y>                                       click on the target coordinates\n"
-        "swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity]      velocity ranges from 200 to 40000, default 600\n"
-        "fling <from_x> <from_y> <to_x> <to_y> [velocity] [stepLength]   velocity ranges from 200 to 40000, default 600\n"
-        "keyEvent <keyID/Back/Home/Power>                                                          inject keyEvent\n"
-        "keyEvent <keyID_0> <keyID_1> [keyID_2]                                           keyID_2 default to None \n"
-        "inputText <x> <y> <text>                                         inputText at the target coordinate point\n"
-        "text <text>                                           input text at the location where is already focused\n";
+        "dircFling  <direction> [velocity] [stepLength] [displayId]               fling in the specified direction\n" 
+        "                                                    direction ranges from 0,1,2,3 (left, right, up, down)\n"
+        "                                                           velocity ranges from 200 to 40000, default 600\n"
+        "                                      stepLength default the width or height of the screen divided by 200\n"
+        "                                                                             displayId default display id\n"
+        "click/doubleClick/longClick <x> <y> [displayId]                           click on the target coordinates\n"
+        "                                                                             displayId default display id\n"
+        "swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity] [displayId]                                        \n"
+        "                                                           velocity ranges from 200 to 40000, default 600\n"
+        "                                                                             displayId default display id\n"
+        "fling <from_x> <from_y> <to_x> <to_y> [velocity] [stepLength] [displayId]                                \n"
+        "                                                           velocity ranges from 200 to 40000, default 600\n"
+        "                                                            stepLength default the distance divided by 50\n"
+        "                                                                             displayId default display id\n"
+        "keyEvent <keyID/Back/Home/Power> [displayId]                                              inject keyEvent\n"
+        "                                                                             displayId default display id\n"
+        "keyEvent <keyID_0> <keyID_1> [keyID_2] [displayId]                               keyID_2 default to None \n"
+        "                                                                             displayId default display id\n"
+        "inputText <x> <y> <text> [displayId]                             inputText at the target coordinate point\n"
+        "                                                                             displayId default display id\n"
+        "text <text> [displayId]                               input text at the location where is already focused\n";
+        "                                                                             displayId default display id\n"
         std::cout << usage << std::endl;
     }
     bool ParameterRedundancy()
@@ -130,38 +144,51 @@ namespace OHOS::uitest {
         Direction direction;
         Point from;
         Point to;
+        int32_t displayId = -1;
         if (opt == "dircFling" && CheckParams(argc, INDEX_FOUR)) {
             direction = (Direction)atoi(argv[THREE]);
-            screenSize = driver.GetDisplaySize(exception_);
-            if (!CreateFlingPoint(to, from, screenSize, direction)) {
-                return EXIT_FAILURE;
-            }
+            // argc=4 ¡ú direction; argc=5 ¡ú +velocity; argc=6 ¡ú +stepLength; argc=7 ¡ú +displayId
             if ((size_t)argc >= INDEX_FIVE) {
                 uiOpArgs.swipeVelocityPps_ = atoi(argv[FOUR]);
             }
-            if ((size_t)argc == INDEX_SIX) {
+            if ((size_t)argc >= INDEX_SIX) {
                 uiOpArgs.swipeStepsCounts_ = atoi(argv[FIVE]);
-            } else if ((size_t)argc > INDEX_SIX) {
+            }
+            if ((size_t)argc == INDEX_SEVEN) {
+                displayId = atoi(argv[SIX]);
+            } else if ((size_t)argc > INDEX_SEVEN) {
                 return ParameterRedundancy();
+            }
+            screenSize = driver.GetDisplaySize(exception_, targetDisplay);
+            if (!CreateFlingPoint(to, from, screenSize, direction)) {
+                return EXIT_FAILURE;
             }
         } else if (opt == "fling" && CheckParams(argc, INDEX_SEVEN)) {
             if (!GetPoints(to, from, argc, argv)) {
                 return EXIT_FAILURE;
             }
-            if ((size_t)argc == INDEX_EIGHT) {
+            if ((size_t)argc >= INDEX_EIGHT) {
                 uiOpArgs.swipeVelocityPps_ = (uint32_t)atoi(argv[SEVEN]);
-            } else if ((size_t)argc == INDEX_NINE) {
+            }
+            if ((size_t)argc >= INDEX_NINE) {
                 auto stepLength = (uint32_t)atoi(argv[EIGHT]);
                 if (!CheckStepLength(uiOpArgs, to, from, stepLength)) {
                     return EXIT_FAILURE;
                 }
-            } else if ((size_t)argc > INDEX_NINE) {
+            }
+            if ((size_t)argc == INDEX_TEN) {
+                displayId = atoi(argv[INDEX_NINE]);
+            } else if ((size_t)argc > INDEX_TEN) {
                 return ParameterRedundancy();
             }
         } else {
             return EXIT_FAILURE;
         }
         CheckSwipeVelocityPps(uiOpArgs);
+        if (displayId != -1) {
+            from.displayId_ = displayId;
+            to.displayId_ = displayId;
+        }
         auto touch = GenericSwipe(op, from, to);
         driver.PerformTouch(touch, uiOpArgs, exception_);
         std::cout << exception_.message_ << std::endl;
@@ -180,10 +207,18 @@ namespace OHOS::uitest {
             if (!GetPoints(to, from, argc, argv)) {
                 return EXIT_FAILURE;
             }
+            int32_t displayId = -1;
             if ((size_t)argc == INDEX_EIGHT) {
                 uiOpArgs.swipeVelocityPps_ = (uint32_t)atoi(argv[SEVEN]);
-            } else if ((size_t)argc > INDEX_EIGHT) {
+            } else if ((size_t)argc == INDEX_NINE) {
+                uiOpArgs.swipeVelocityPps_ = (uint32_t)atoi(argv[SEVEN]);
+                displayId = atoi(argv[EIGHT]);
+            } else if ((size_t)argc > INDEX_NINE) {
                 return ParameterRedundancy();
+            }
+            if (displayId != -1) {
+                from.displayId_ = displayId;
+                to.displayId_ = displayId;
             }
         } else {
             return EXIT_FAILURE;
@@ -197,28 +232,57 @@ namespace OHOS::uitest {
     int32_t KeyEventActionInput(int32_t argc, char *argv[], UiDriver &driver, UiOpArgs uiOpArgs)
     {
         std::string key = argv[THREE];
-        if (key == "Home" && (size_t)argc == INDEX_FOUR) {
-            driver.TriggerKey(Home(), uiOpArgs, exception_);
-        } else if (key == "Back" && (size_t)argc == INDEX_FOUR) {
-            driver.TriggerKey(Back(), uiOpArgs, exception_);
-        } else if (key == "Power" && (size_t)argc == INDEX_FOUR) {
-            driver.TriggerKey(Power(), uiOpArgs, exception_);
+        int32_t displayId = -1;
+
+        if (key == "Home") {
+            if ((size_t)argc == INDEX_FOUR) {
+                // no displayId
+            } else if ((size_t)argc == INDEX_FIVE) {
+                displayId = atoi(argv[FOUR]);
+            } else {
+                return ParameterRedundancy();
+            }
+            driver.TriggerKey(Home(), uiOpArgs, exception_, displayId);
+        } else if (key == "Back") {
+            if ((size_t)argc == INDEX_FOUR) {
+                // no displayId
+            } else if ((size_t)argc == INDEX_FIVE) {
+                displayId = atoi(argv[FOUR]);
+            } else {
+                return ParameterRedundancy();
+            }
+            driver.TriggerKey(Back(), uiOpArgs, exception_, displayId);
+        } else if (key == "Power") {
+            if ((size_t)argc == INDEX_FOUR) {
+                // no displayId
+            } else if ((size_t)argc == INDEX_FIVE) {
+                displayId = atoi(argv[FOUR]);
+            } else {
+                return ParameterRedundancy();
+            }
+            driver.TriggerKey(Power(), uiOpArgs, exception_, displayId);
         } else if (atoi(argv[THREE]) != 0) {
             int32_t codeZero_ = atoi(argv[THREE]);
             int32_t codeOne_;
             int32_t codeTwo_;
             if ((size_t)argc == INDEX_FOUR) {
                 auto keyAction_ = AnonymousSingleKey(codeZero_);
-                driver.TriggerKey(keyAction_, uiOpArgs, exception_);
-            } else if ((size_t)argc == INDEX_FIVE || (size_t)argc == INDEX_SIX) {
+                driver.TriggerKey(keyAction_, uiOpArgs, exception_, displayId);
+            } else if ((size_t)argc == INDEX_FIVE) {
                 codeOne_ = atoi(argv[FOUR]);
-                if ((size_t)argc == INDEX_SIX) {
-                    codeTwo_ = atoi(argv[FIVE]);
-                } else {
-                    codeTwo_ = KEYCODE_NONE;
-                }
+                auto keyAction_ = CombinedKeys(codeZero_, codeOne_, KEYCODE_NONE);
+                driver.TriggerKey(keyAction_, uiOpArgs, exception_, displayId);
+            } else if ((size_t)argc == INDEX_SIX) {
+                codeOne_ = atoi(argv[FOUR]);
+                codeTwo_ = atoi(argv[FIVE]);
                 auto keyAction_ = CombinedKeys(codeZero_, codeOne_, codeTwo_);
-                driver.TriggerKey(keyAction_, uiOpArgs, exception_);
+                driver.TriggerKey(keyAction_, uiOpArgs, exception_, displayId);
+            } else if ((size_t)argc == INDEX_SEVEN) {
+                codeOne_ = atoi(argv[FOUR]);
+                codeTwo_ = atoi(argv[FIVE]);
+                displayId = atoi(argv[SIX]);
+                auto keyAction_ = CombinedKeys(codeZero_, codeOne_, codeTwo_);
+                driver.TriggerKey(keyAction_, uiOpArgs, exception_, displayId);
             } else {
                 return ParameterRedundancy();
             }
@@ -232,19 +296,23 @@ namespace OHOS::uitest {
     }
     int32_t TextActionInput(int32_t argc, char *argv[], UiDriver &driver, UiOpArgs uiOpArgs)
     {
-        if ((size_t)argc != INDEX_FOUR) {
+        if ((size_t)argc != INDEX_FOUR && (size_t)argc != INDEX_FIVE) {
             std::cout << "The number of parameters is incorrect. \n" << std::endl;
             PrintInputMessage();
             return EXIT_FAILURE;
         }
         auto text = argv[THREE];
-        driver.InputText(text, exception_, uiOpArgs);
+        int32_t displayId = -1;
+        if ((size_t)argc == INDEX_FIVE) {
+            displayId = atoi(argv[FOUR]);
+        }
+        driver.InputText(text, exception_, uiOpArgs, displayId);
         std::cout << exception_.message_ << std::endl;
         return EXIT_SUCCESS;
     }
     int32_t TextActionInputWithPoint(int32_t argc, char *argv[], UiDriver &driver, UiOpArgs uiOpArgs)
     {
-        if ((size_t)argc != INDEX_SIX) {
+        if ((size_t)argc != INDEX_SIX && (size_t)argc != INDEX_SEVEN) {
             std::cout << "The number of parameters is incorrect. \n" << std::endl;
             PrintInputMessage();
             return EXIT_FAILURE;
@@ -254,17 +322,22 @@ namespace OHOS::uitest {
             return EXIT_FAILURE;
         }
         auto text = argv[FIVE];
+        int32_t displayId = -1;
+        if ((size_t)argc == INDEX_SEVEN) {
+            displayId = atoi(argv[SIX]);
+            point.displayId_ = displayId;
+        }
         auto touch = GenericClick(TouchOp::CLICK, point);
         driver.PerformTouch(touch, uiOpArgs, exception_);
         static constexpr uint32_t focusTimeMs = 500;
         driver.DelayMs(focusTimeMs);
-        driver.InputText(text, exception_, uiOpArgs);
+        driver.InputText(text, exception_, uiOpArgs, displayId);
         std::cout << exception_.message_ << std::endl;
         return EXIT_SUCCESS;
     }
     int32_t ClickActionInput(int32_t argc, char *argv[], UiDriver &driver, UiOpArgs uiOpArgs)
     {
-        if ((size_t)argc != INDEX_FIVE) {
+        if ((size_t)argc != INDEX_FIVE && (size_t)argc != INDEX_SIX) {
             std::cout << "The number of parameters is incorrect. \n" << std::endl;
             PrintInputMessage();
             return EXIT_FAILURE;
@@ -278,6 +351,9 @@ namespace OHOS::uitest {
         Point point;
         if (!GetPoint(point, argc, argv)) {
             return EXIT_FAILURE;
+        }
+        if ((size_t)argc == INDEX_SIX) {
+            point.displayId_ = atoi(argv[FIVE]);
         }
         auto touch = GenericClick(op, point);
         driver.PerformTouch(touch, uiOpArgs, exception_);
