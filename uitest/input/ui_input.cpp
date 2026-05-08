@@ -62,7 +62,7 @@ namespace OHOS::uitest {
         "inputText <x> <y> <text> [displayId]                             inputText at the target coordinate point\n"
         "                                                                          displayId default to display id\n"
         "text <text> [displayId]                               input text at the location where is already focused\n"
-        "                                                                          displayId default to display id\n"
+        "                                                                          displayId default to display id\n";
         std::cout << usage << std::endl;
     }
     bool ParameterRedundancy()
