@@ -201,7 +201,7 @@ class StaticSuite {
   async runBeforeItSpecified(
     beforeItSpecified: Map<string | string[], (() => void) | (() => Promise<void>)>,
     specItem: StaticSpec
-  ) {
+  ): Promise<void> {
     try {
       for (const itNames of beforeItSpecified.keys()) {
         let flag = false;
@@ -232,7 +232,7 @@ class StaticSuite {
   async runAfterItSpecified(
     afterItSpecified: Map<string | string[], (() => void) | (() => Promise<void>)>,
     specItem: StaticSpec
-  ) {
+  ): Promise<void> {
     try {
       for (const itNames of afterItSpecified.keys()) {
         let flag = false;
@@ -261,7 +261,7 @@ class StaticSuite {
     }
   }
 
-  async asyncRunSpecs(coreContext: Core) {
+  async asyncRunSpecs(coreContext: Core): Promise<void> {
     const cService = coreContext.getDefaultService('config');
     const sService = coreContext.getDefaultService('spec');
     if (cService !== null && sService !== null) {
@@ -358,7 +358,7 @@ class StaticSuite {
     }
   }
 
-  async asyncRunChildSuites(coreContext: Core) {
+  async asyncRunChildSuites(coreContext: Core): Promise<void> {
     for (let i = 0; i < this.childSuites.length; i++) {
       let beforeEachIt = new Set<(() => void) | (() => Promise<void>)>();
       for (const hookItem of this.beforeEachIt) {
@@ -381,7 +381,7 @@ class StaticSuite {
     }
   }
 
-  async asyncRun(coreContext: Core) {
+  async asyncRun(coreContext: Core): Promise<void> {
     const sService = coreContext.getDefaultService('suite');
     const spService = coreContext.getDefaultService('spec');
     if (sService !== null && spService !== null) {

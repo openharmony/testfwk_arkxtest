@@ -43,7 +43,7 @@ class SpecEvent {
     }
   }
 
-  async specDone() {
+  async specDone(): Promise<void> {
     for (const monitor of this.eventMonitors) {
       monitor.specDone();
     }

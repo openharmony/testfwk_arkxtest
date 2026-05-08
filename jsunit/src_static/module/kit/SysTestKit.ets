@@ -92,7 +92,7 @@ class SysTestKit {
     SysTestKit.print(message);
     console.info(`${TAG}${JSON.stringify(tag)}  actionEnd print success`);
   }
-  static async print(message: string) {
+  static async print(message: string): void {
     const delegator = SysTestKit.delegator;
     if (delegator === null) {
       console.info(`delegator is null`);
