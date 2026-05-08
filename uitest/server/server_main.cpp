@@ -67,7 +67,7 @@ namespace OHOS::uitest {
     "  -w <windowId>                                                specifies the window id of the target window\n"
     "  -m <true/false>          whether merge windows, true means to merge, set it true when not use this option\n"
     "  -d <displayId>                                           specifies the locate screen of the target window\n"
-        "  -e <attributeName>                                               extend by adding the specified attribute\n"
+    "  -e <attributeName>                                               extend by adding the specified attribute\n"
     "start-daemon <token>                                                                 start the test process\n"
     "uiRecord                                                                            recording Ui Operations\n"
     "  record                                                           Write Ui event information into csv file\n"
@@ -79,17 +79,20 @@ namespace OHOS::uitest {
     "  read                                                                    print file content to the console\n"
     "uiInput                                                                     inject Ui simulation operations\n"
     "  help                                                                                  print uiInput usage\n"
-    "  dircFling  <direction> [velocity] [stepLength]      direction ranges from 0,1,2,3 (left, right, up, down)\n"
-    "  click/doubleClick/longClick <x> <y>                                       click on the target coordinates\n"
-    "  swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity]      velocity ranges from 200 to 40000, default 600\n"
-    "  fling <from_x> <from_y> <to_x> <to_y> [velocity] [stepLength]   velocity ranges from 200 to 40000, default 600\n"
-    "  keyEvent <keyID/Back/Home/Power>                                                          inject keyEvent\n"
-    "  keyEvent <keyID_0> <keyID_1> [keyID_2]                                           keyID_2 default to None \n"
-    "  inputText <x> <y> <text>                                         inputText at the target coordinate point\n"
-    "  text <text>                                           input text at the location where is already focused\n"
+    "  dircFling  <direction> [velocity] [stepLength] [displayId]                                               \n"
+    "                                                      direction ranges from 0,1,2,3 (left, right, up, down)\n"
+    "  click/doubleClick/longClick <x> <y> [displayId]                           click on the target coordinates\n"
+    "  swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity] [displayId]                                        \n"
+    "                                                             velocity ranges from 200 to 40000, default 600\n"
+    "  fling <from_x> <from_y> <to_x> <to_y> [velocity] [stepLength] [displayId]                                \n"
+    "                                                             velocity ranges from 200 to 40000, default 600\n"
+    "  keyEvent <keyID/Back/Home/Power> [displayId]                                              inject keyEvent\n"
+    "  keyEvent <keyID_0> <keyID_1> [keyID_2] [displayId]                               keyID_2 default to None \n"
+    "  inputText <x> <y> <text> [displayId]                             inputText at the target coordinate point\n"
+    "  text <text> [displayId]                               input text at the location where is already focused\n"
     "--version                                                                        print current tool version\n";
 
-    const std::string VERSION = "6.0.2.3";
+    const std::string VERSION = "7.0.0.1";
     struct option g_longoptions[] = {
         {nullptr, required_argument, nullptr, 'p'},
         {nullptr, required_argument, nullptr, 'd'},

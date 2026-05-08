@@ -39,6 +39,7 @@ namespace OHOS::uitest {
     constexpr size_t INDEX_SEVEN = 7;
     constexpr size_t INDEX_EIGHT = 8;
     constexpr size_t INDEX_NINE = 9;
+    constexpr size_t INDEX_TEN = 10;
     constexpr int32_t ZERO = 0;
     constexpr int32_t ONE = 1;
     constexpr int32_t TWO = 2;
