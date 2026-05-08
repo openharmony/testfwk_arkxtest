@@ -44,25 +44,25 @@ namespace OHOS::uitest {
         "dircFling <direction> [velocity] [stepLength] [displayId]                fling in the specified direction\n"
         "                                                    direction ranges from 0,1,2,3 (left, right, up, down)\n"
         "                                                           velocity ranges from 200 to 40000, default 600\n"
-        "                                      stepLength default the width or height of the screen divided by 200\n"
-        "                                                                          displayId default to display id\n"
+        "                                  stepLength defaults to the width or height of the screen divided by 200\n"
+        "                                                             displayId defaults to the default display id\n"
         "click/doubleClick/longClick <x> <y> [displayId]                           click on the target coordinates\n"
-        "                                                                          displayId default to display id\n"
+        "                                                             displayId defaults to the default display id\n"
         "swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity] [displayId]                                        \n"
         "                                                           velocity ranges from 200 to 40000, default 600\n"
-        "                                                                          displayId default to display id\n"
+        "                                                             displayId defaults to the default display id\n"
         "fling <from_x> <from_y> <to_x> <to_y> [velocity] [stepLength] [displayId]                                \n"
         "                                                           velocity ranges from 200 to 40000, default 600\n"
-        "                                                         stepLength default to the distance divided by 50\n"
-        "                                                                          displayId default to display id\n"
+        "                                                        stepLength defaults to the distance divided by 50\n"
+        "                                                             displayId defaults to the default display id\n"
         "keyEvent <keyID/Back/Home/Power> [displayId]                                              inject keyEvent\n"
-        "                                                                          displayId default to display id\n"
-        "keyEvent <keyID_0> <keyID_1> [keyID_2] [displayId]                              keyID_2 defaults to None \n"
-        "                                                                          displayId default to display id\n"
+        "                                                             displayId defaults to the default display id\n"
+        "keyEvent <keyID_0> <keyID_1> [keyID_2] [displayId]                               keyID_2 defaults to None\n"
+        "                                                             displayId defaults to the default display id\n"
         "inputText <x> <y> <text> [displayId]                             inputText at the target coordinate point\n"
-        "                                                                          displayId default to display id\n"
+        "                                                             displayId defaults to the default display id\n"
         "text <text> [displayId]                               input text at the location where is already focused\n"
-        "                                                                          displayId default to display id\n";
+        "                                                             displayId defaults to the default display id\n";
         std::cout << usage << std::endl;
     }
     bool ParameterRedundancy()
@@ -140,10 +140,10 @@ namespace OHOS::uitest {
 
     static bool TryParseDisplayId(int32_t argc, char *argv[], size_t pos, int32_t &displayId)
     {
-        if ((size_t)argc > pos + 1) {
+        if (argc > pos + 1) {
             return false;
         }
-        if ((size_t)argc == pos + 1) {
+        if (argc == pos + 1) {
             displayId = atoi(argv[pos]);
         }
         return true;

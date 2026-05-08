@@ -82,7 +82,7 @@ namespace OHOS::uitest {
     "  dircFling  <direction> [velocity] [stepLength] [displayId]                                               \n"
     "                                                      direction ranges from 0,1,2,3 (left, right, up, down)\n"
     "  click/doubleClick/longClick <x> <y> [displayId]                           click on the target coordinates\n"
-    "  swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity] [displayId]                                        \n" 
+    "  swipe/drag <from_x> <from_y> <to_x> <to_y> [velocity] [displayId]                                        \n"
     "                                                             velocity ranges from 200 to 40000, default 600\n"
     "  fling <from_x> <from_y> <to_x> <to_y> [velocity] [stepLength] [displayId]                                \n"
     "                                                             velocity ranges from 200 to 40000, default 600\n"
