@@ -70,7 +70,7 @@ export function loadAndSetUpUiTest(): boolean {
   }
 }
 
-enum MatchPattern {
+export enum MatchPattern {
     EQUALS = 0,
     CONTAINS = 1,
     STARTS_WITH = 2,
@@ -79,14 +79,14 @@ enum MatchPattern {
     REG_EXP_ICASE = 5,
   }
   
-enum WindowMode {
+export enum WindowMode {
     FULLSCREEN = 0,
     PRIMARY = 1,
     SECONDARY = 2,
     FLOATING = 3,
 }
   
-enum ResizeDirection {
+export enum ResizeDirection {
     LEFT = 0,
     RIGHT = 1,
     UP = 2,
@@ -97,34 +97,34 @@ enum ResizeDirection {
     RIGHT_DOWN = 7,
 }
   
-enum DisplayRotation {
+export enum DisplayRotation {
     ROTATION_0 = 0,
     ROTATION_90 = 1,
     ROTATION_180 = 2,
     ROTATION_270 = 3,
 }
   
-enum UiDirection {
+export enum UiDirection {
     LEFT = 0,
     RIGHT = 1,
     UP = 2,
     DOWN = 3,
 }
   
-enum MouseButton {
+export enum MouseButton {
     MOUSE_BUTTON_LEFT = 0,
     MOUSE_BUTTON_RIGHT = 1,
     MOUSE_BUTTON_MIDDLE = 2,
 }
 
-enum WindowChangeType {
+export enum WindowChangeType {
   WINDOW_UNDEFINED = 0,
   WINDOW_ADDED = 1,
   WINDOW_REMOVED = 2,
   WINDOW_BOUNDS_CHANGED = 3,
 }
 
-enum ComponentEventType {
+export enum ComponentEventType {
   COMPONENT_UNDEFINED = 0,
   COMPONENT_CLICKED = 1,
   COMPONENT_LONG_CLICKED = 2,
@@ -133,27 +133,27 @@ enum ComponentEventType {
   COMPONENT_TEXT_CHANGED = 5,
 }
 
-enum PenKey {
+export enum PenKey {
   HANDWRITING = 0,
   SMART = 1,
   AIR_MOUSE = 2,
 }
 
-enum PenMode {
+export enum PenMode {
   HANDWRITING = 0,
   AIR_MOUSE = 1,
 }
 
-enum PenKeyOperation {
+export enum PenKeyOperation {
   CLICK = 0,
   DOUBLE_CLICK = 1,
 }
 
-interface PenKeyOperationOptions {
+export interface PenKeyOperationOptions {
   point?: Point;
 }
 
-interface Point {
+export interface Point {
  x: int;
  y: int;
  displayId?: int;
@@ -165,7 +165,7 @@ class PointInner implements Point {
   displayId?: int = undefined;
 }
   
-interface Rect {
+export interface Rect {
   left: int;
   top: int;
   right: int;
@@ -181,7 +181,7 @@ class RectInner implements Rect {
   displayId?: int = undefined;
 }
   
-interface WindowFilter {
+export interface WindowFilter {
   bundleName?: string;
   title?: string;
   focused?: boolean;
@@ -198,7 +198,7 @@ class WindowFilterInner implements WindowFilter {
 }
 
 
-interface UIElementInfo {
+export interface UIElementInfo {
   bundleName: string;
   type: string;
   text: string;
@@ -220,7 +220,7 @@ class UIElementInfoInner implements UIElementInfo {
   componentRect?: Rect = undefined;
 }
 
-interface WindowChangeOptions {
+export interface WindowChangeOptions {
   timeout?: int;
   bundleName?: string;
 }
@@ -230,12 +230,12 @@ class WindowChangeOptionsInner implements WindowChangeOptions {
   bundleName?: string = undefined;
 }
 
-interface ComponentEventOptions {
+export interface ComponentEventOptions {
   timeout?: int;
   on?: On;
 }
 
-interface TouchOptions {
+export interface TouchOptions {
   speed?: int;
   duration?: int;
   pressure?: double;
@@ -250,7 +250,7 @@ class ComponentEventOptionsInner implements ComponentEventOptions {
   timeout?: int = undefined;
   on?: On = undefined;
 }
-interface InputTextMode {
+export interface InputTextMode {
   paste?: boolean;
   addition?: boolean;
 }
@@ -260,12 +260,12 @@ class InputTextModeInner implements InputTextMode {
   addition?: boolean = undefined;
 }
 
-interface TouchPadSwipeOptions {
+export interface TouchPadSwipeOptions {
   stay?: boolean;
   speed?: int;
 }
 
-interface KeyOptions {
+export interface KeyOptions {
   key1?: int;
   key2?: int;
 }
