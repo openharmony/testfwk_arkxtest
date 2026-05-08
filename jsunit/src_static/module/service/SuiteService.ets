@@ -338,7 +338,7 @@ class SuiteService {
     return;
   }
 
-  async setSuiteResults(suite: StaticSuite, error: Error, coreContext: Core) {
+  async setSuiteResults(suite: StaticSuite, error: Error, coreContext: Core): Promise<void> {
     if (suite.specs.length > 0) {
       const specService = coreContext.getDefaultService('spec');
       if (specService !== null) {
@@ -451,7 +451,7 @@ class SuiteService {
     return message;
   }
 
-  async dryRun(abilityDelegator: abilityDelegatorRegistry.AbilityDelegator) {
+  async dryRun(abilityDelegator: abilityDelegatorRegistry.AbilityDelegator): Promise<void> {
     const suiteArray = new Array<Map<string, Array<ConfigIf>>>();
     const skipSuiteArray = new Array<Map<string, Array<ConfigIf>>>();
     this.analyzeSuitesArray(new Array<string>(), suiteArray, skipSuiteArray, this.rootSuite);
@@ -534,7 +534,7 @@ class SuiteService {
     }
   }
 
-  async executeCases(core: Core) {
+  async executeCases(core: Core): Promise<void> {
     await core.fireEvents('task', 'taskStart');
     await this.rootSuite.asyncRun(core);
     await core.fireEvents('task', 'taskDone');

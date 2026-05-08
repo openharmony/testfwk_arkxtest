@@ -90,7 +90,7 @@ class StaticSpec {
     coreContext.fireEvents('spec', 'specDone');
   }
 
-  async asyncRun(coreContext: Core) {
+  async asyncRun(coreContext: Core): Promise<void> {
     const dataDriverMap = coreContext.getServices('dataDriver');
     if(dataDriverMap) {
       const dataDriver = dataDriverMap.get('dataDriver') as DataDriver;
