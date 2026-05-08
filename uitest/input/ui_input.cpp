@@ -241,7 +241,7 @@ namespace OHOS::uitest {
         std::string key = argv[THREE];
         int32_t displayId = -1;
         if (key == "Home" || key == "Back" || key == "Power") {
-            if ((size_t)argc != INDEX_FIVE || (size_t)argc != INDEX_FOUR) {
+            if ((size_t)argc != INDEX_FIVE && (size_t)argc != INDEX_FOUR) {
                 return ParameterRedundancy();
             }
             displayId = (size_t)argc == INDEX_FIVE ? atoi(argv[FOUR]) : -1;
