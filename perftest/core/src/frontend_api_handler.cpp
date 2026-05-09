@@ -65,7 +65,7 @@ namespace OHOS::perftest {
     {
         int charIndex = 0;
         constexpr size_t benLen = 32;
-        char buf[benLen];
+        char buf[benLen] {0};
         size_t tokenLen = 0;
         size_t defArgCount = 0;
         string token;

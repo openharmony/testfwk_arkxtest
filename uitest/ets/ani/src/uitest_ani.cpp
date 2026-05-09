@@ -249,8 +249,8 @@ static json getPoint(ani_env *env, ani_object p)
     auto point = json();
     string list[] = {"x", "y", "displayId"};
     for (int index = 0; index < THREE; index++) {
-        char *cstr = new char[list[index].length() + 1];
-        strcpy(cstr, list[index].c_str());
+        string propertyStr = list[index];
+        const char *cstr = propertyStr.c_str();
         if (index == TWO) {
             ani_ref ref;
             if (env->Object_GetPropertyByName_Ref(p, cstr, &ref) != ANI_OK) {
@@ -291,8 +291,8 @@ static json getRect(ani_env *env, ani_object p)
     }
     string list[] = {"left", "right", "top", "bottom", "displayId"};
     for (int index = 0; index < FIVE; index++) {
-        char *cstr = new char[list[index].length() + 1];
-        strcpy(cstr, list[index].c_str());
+        string propertyStr = list[index];
+        const char *cstr = propertyStr.c_str();
         if (index == FOUR) {
             ani_ref ref;
             if (env->Object_GetPropertyByName_Ref(p, cstr, &ref) != ANI_OK) {
@@ -414,8 +414,8 @@ static json getInputTextModeOptions(ani_env *env, ani_object f)
     auto options = json();
     string list[] = {"paste", "addition"};
     for (int i = 0; i < TWO; i++) {
-        char *cstr = new char[list[i].length() + 1];
-        strcpy(cstr, list[i].c_str());
+        string propertyStr = list[i];
+        const char *cstr = propertyStr.c_str();
         ani_ref value;
         if (env->Object_GetPropertyByName_Ref(f, cstr, &value) != ANI_OK) {
             HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
@@ -975,8 +975,8 @@ static json getWindowFilter(ani_env *env, ani_object f)
     auto filter = json();
     string list[] = {"bundleName", "title", "focused", "active", "displayId"};
     for (int i = 0; i < FIVE; i++) {
-        char *cstr = new char[list[i].length() + 1];
-        strcpy(cstr, list[i].c_str());
+        string propertyStr = list[i];
+        const char *cstr = propertyStr.c_str();
         ani_ref value;
         if (env->Object_GetPropertyByName_Ref(f, cstr, &value) != ANI_OK) {
             HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
@@ -1011,8 +1011,8 @@ static json getWindowChangeOptions(ani_env *env, ani_object opt)
     auto window_change_opts = json();
     string list[] = {"timeout", "bundleName"};
     for (int i = 0; i < TWO; i++) {
-        char *cstr = new char[list[i].length() + 1];
-        strcpy(cstr, list[i].c_str());
+        string propertyStr = list[i];
+        const char *cstr = propertyStr.c_str();
         ani_ref value;
         if (env->Object_GetPropertyByName_Ref(opt, cstr, &value) != ANI_OK) {
             HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
@@ -1046,8 +1046,8 @@ static json getComponentEventOptions(ani_env *env, ani_object opt)
     auto com_event_opts = json();
     string list[] = {"timeout", "on"};
     for (int i = 0; i < TWO; i++) {
-        char *cstr = new char[list[i].length() + 1];
-        strcpy(cstr, list[i].c_str());
+        string propertyStr = list[i];
+        const char *cstr = propertyStr.c_str();
         ani_ref value;
         if (env->Object_GetPropertyByName_Ref(opt, cstr, &value) != ANI_OK) {
             HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);
@@ -1674,8 +1674,8 @@ static json getTouchPadSwipeOptions(ani_env *env, ani_object f)
     auto options = json();
     string list[] = {"stay", "speed"};
     for (int i = 0; i < TWO; i++) {
-        char *cstr = new char[list[i].length() + 1];
-        strcpy(cstr, list[i].c_str());
+        string propertyStr = list[i];
+        const char *cstr = propertyStr.c_str();
         ani_ref value;
         if (env->Object_GetPropertyByName_Ref(f, cstr, &value) != ANI_OK) {
             HiLog::Error(LABEL, "GetPropertyByName %{public}s fail", cstr);

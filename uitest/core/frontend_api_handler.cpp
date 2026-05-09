@@ -211,7 +211,7 @@ namespace OHOS::uitest {
     {
         int charIndex = 0;
         constexpr size_t BUF_LEN = 32;
-        char buf[BUF_LEN];
+        char buf[BUF_LEN] = {0};
         size_t tokenLen = 0;
         size_t defArgCount = 0;
         string token;
