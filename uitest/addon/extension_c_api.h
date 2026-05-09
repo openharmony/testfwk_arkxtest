@@ -50,8 +50,6 @@ struct LowLevelFunctions {
     RetCode (*startCapture)(Text name, DataCallback callback, Text optJson);
     RetCode (*stopCapture)(Text name);
     RetCode (*atomicMouseAction)(int32_t stage, int32_t px, int32_t py, int32_t btn);
-    RetCode (*atomicMouseActionInDisplay)(int32_t stage, int32_t px, int32_t py, int32_t btn, int32_t displayId);
-    RetCode (*atomicTouchInDisplay)(int32_t stage, int32_t px, int32_t py, int32_t displayId);
 };
 
 struct UiTestPort {
