@@ -54,7 +54,7 @@ namespace OHOS::perftest {
             }
         } else {
             close(pipefd[1]);
-            char buffer[128];
+            char buffer[128] = {0};
             string executeRes;
             ssize_t count;
             while ((count = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
