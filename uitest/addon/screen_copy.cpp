@@ -309,6 +309,10 @@ bool StartScreenCopy(float scale, int32_t displayId, ScreenCopyHandler handler)
     if (!success) {
         constexpr size_t BUF_SIZE = 128;
         auto buf = (uint8_t *)malloc(BUF_SIZE);
+        if (buf == nullptr) {
+            LOG_E("malloc failed");
+            return false;
+        }
         memset_s(buf, BUF_SIZE, 0, BUF_SIZE);
         if (g_screenCopy->pendingError_ != nullptr) {
             g_screenCopy->pendingError_ = "Failed to run ScreenCopy, unknown error";

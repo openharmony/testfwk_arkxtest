@@ -178,8 +178,8 @@ namespace OHOS::uitest {
         string list[] = {"bundleName", "type", "text", "windowChangeType", 
             "componentEventType", "windowId", "componentId", "componentRect"};
         for (int i = 0; i < EIGHT; i++) {
-            char *cstr = new char[list[i].length() + 1];
-            strcpy(cstr, list[i].c_str());
+            string propertyStr = list[i];
+            char *cstr = propertyStr.data();
             if (i == THREE){
                 ani_enum enumType;
                 if (ANI_OK != env->FindEnum(Builder::BuildEnum({"@ohos", "UiTest", "WindowChangeType"}).Descriptor().c_str(), &enumType)) {
