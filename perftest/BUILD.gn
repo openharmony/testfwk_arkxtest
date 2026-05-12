@@ -167,6 +167,7 @@ ohos_shared_library("perftest_client") {
     "ipc:ipc_single",
     "libuv:uv",
     "napi:ace_napi",
+    "api_metrics:histogrammanager";
   ]
   relative_install_dir = "module/test"
   defines = [
@@ -200,6 +201,7 @@ ohos_shared_library("perftest_ani") {
     "runtime_core:ani",
     "runtime_core:ani_helpers",
     "runtime_core:libarkruntime",
+    "api_metrics:histogrammanager";
   ]
   output_extension = "so"
   part_name = "arkxtest"
