@@ -59,7 +59,8 @@
           "imf",
           "os_account",
           "font_manager",
-          "ui_appearance"
+          "ui_appearance",
+          "api_metrics"
         ]
       },
       "build": {

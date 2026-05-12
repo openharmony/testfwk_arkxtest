@@ -32,6 +32,7 @@
 #include "callback_code_ani.h"
 #include <cstring>
 #include <cstdio>
+#include "histogram_plugin_macros.h"
 
 using namespace OHOS::perftest;
 using namespace nlohmann;
@@ -163,6 +164,8 @@ static ani_ref UnmarshalObject(ani_env *env, nlohmann::json resultValue)
 static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const ApiReplyInfo &reply_)
 {
     HiLog::Info(LABEL, "%{public}s. Start to UnmarshalReply: %{public}s", __func__, reply_.resultValue_.dump().c_str());
+    static const string dotTag = "TestKit.perftest.";
+    HISTIGRAM_BOOLEAN(dotTag + callInfo_.apiId_, 1);
     if (HasExceptionReply(env, reply_)) {
         return nullptr;
     }
