@@ -154,7 +154,8 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
     }
     HiLog::Info(LABEL, "%{public}s.Start to UnmarshalReply", __func__);
     static const string dotTag = "TestKit.uitest.";
-    HISTIGRAM_BOOLEAN(dotTag + callInfo_.apiId_, 1);
+    auto label = dotTag + callInfo_.apiId_;
+    HISTOGRAM_BOOLEAN(label.c_str(), 1);
     const auto &message = reply_.exception_.message_;
     ErrCode code = reply_.exception_.code_;
     if (code == INTERNAL_ERROR || code == ERR_INTERNAL) {

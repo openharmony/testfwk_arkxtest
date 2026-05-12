@@ -165,7 +165,8 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
 {
     HiLog::Info(LABEL, "%{public}s. Start to UnmarshalReply: %{public}s", __func__, reply_.resultValue_.dump().c_str());
     static const string dotTag = "TestKit.perftest.";
-    HISTIGRAM_BOOLEAN(dotTag + callInfo_.apiId_, 1);
+    auto label = dotTag + callInfo_.apiId_;
+    HISTOGRAM_BOOLEAN(label.c_str(), 1);
     if (HasExceptionReply(env, reply_)) {
         return nullptr;
     }
