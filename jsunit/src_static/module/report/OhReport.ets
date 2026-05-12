@@ -69,7 +69,7 @@ class OhReport {
 
   taskStart(): void {}
 
-  async taskDone() {
+  async taskDone(): Promise<void> {
     const suite = this.suiteService;
     if (suite) {
       const summary = suite.getSummary();
@@ -155,7 +155,7 @@ class OhReport {
     }
   }
 
-  async suiteStart() {
+  async suiteStart(): Promise<void> {
     if (this.abilityDelegatorArguments !== null) {
       const suite = this.suiteService;
       if (suite) {
@@ -177,7 +177,7 @@ class OhReport {
     }
   }
 
-  async suiteDone() {
+  async suiteDone(): Promise<void> {
     if (this.abilityDelegatorArguments !== null) {
       const suite = this.suiteService;
       if (suite) {
@@ -208,7 +208,7 @@ class OhReport {
     }
   }
 
-  async specStart() {
+  async specStart(): Promise<void> {
     if (this.abilityDelegatorArguments !== null) {
       const specService = this.specService;
       const suiteService = this.suiteService;
@@ -239,7 +239,7 @@ class OhReport {
     }
   }
 
-  async specDone() {
+  async specDone(): Promise<void> {
     if (this.abilityDelegatorArguments !== null) {
       const specService = this.specService;
       const suiteService = this.suiteService;

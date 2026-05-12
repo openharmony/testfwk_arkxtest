@@ -37,7 +37,7 @@ function logMsg(actualValue: AnyType, expected: AnyType): string {
   return actualMsg + ' is not deep equal ' + expectMsg;
 }
 
-function getObjectDesc(value: AnyType) {
+function getObjectDesc(value: AnyType): string {
   const aClassName = DeepTypeUtils.getType(value);
   let message = '';
   const numericTypes: string[] = ["Number", "Int", "Short", "Long", "Float", "Byte"];
