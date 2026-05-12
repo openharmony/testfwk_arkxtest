@@ -221,7 +221,8 @@ namespace OHOS::uitest {
         }
         LOG_I("Start to Unmarshal transaction result");
         static const string dotTag = "TestKit.uitest.";
-        HISTIGRAM_BOOLEAN(dotTag + callInfo_.apiId_, 1);
+        auto label = dotTag + ctx.callInfo_.apiId_;
+        HISTOGRAM_BOOLEAN(label.c_str(), 1);
         const auto &message = reply.exception_.message_;
         ErrCode code = reply.exception_.code_;
         if (code == INTERNAL_ERROR || code == ERR_INTERNAL) {
