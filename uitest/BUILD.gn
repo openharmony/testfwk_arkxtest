@@ -294,7 +294,7 @@ ohos_shared_library("uitest_client") {
     "libuv:uv",
     "napi:ace_napi",
     "samgr:samgr_proxy",
-    "api_metrics:histogrammanager";
+    "api_metrics:histogrammanager"
   ]
   relative_install_dir = "module"
   defines = [
@@ -353,7 +353,7 @@ ohos_shared_library("uitest_ani") {
     "runtime_core:ani",
     "runtime_core:ani_helpers",
     "runtime_core:libarkruntime",
-    "api_metrics:histogrammanager";
+    "api_metrics:histogrammanager"
   ]
   output_extension = "so"
   part_name = "arkxtest"
