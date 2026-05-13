@@ -34,6 +34,7 @@
 #include "utils.h"
 #include <cstring>
 #include <cstdio>
+#include "histogram_plugin_macros.h"
 
 using namespace OHOS::uitest;
 using namespace nlohmann;
@@ -152,6 +153,9 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
         fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
     }
     HiLog::Info(LABEL, "%{public}s.Start to UnmarshalReply", __func__);
+    static const string dotTag = "TestKit.uitest.";
+    auto label = dotTag + callInfo_.apiId_;
+    HISTOGRAM_BOOLEAN(label.c_str(), 1);
     const auto &message = reply_.exception_.message_;
     ErrCode code = reply_.exception_.code_;
     if (code == INTERNAL_ERROR || code == ERR_INTERNAL) {
