@@ -167,7 +167,6 @@ ohos_shared_library("perftest_client") {
     "ipc:ipc_single",
     "libuv:uv",
     "napi:ace_napi",
-    "api_metrics:histogrammanager"
   ]
   relative_install_dir = "module/test"
   defines = [
@@ -176,6 +175,10 @@ ohos_shared_library("perftest_client") {
   ]
   if (arkxtest_product_feature == "watch" || arkxtest_product_feature == "glasses") {
     install_enable = false
+  }
+  if (arkxtest_api_metrics_enable) {
+    defines += [ "ARKXTEST_API_METRICS_ENABLE" ]
+    external_deps += [ "api_metrics:histogrammanager" ]
   }
 }
 
@@ -201,13 +204,17 @@ ohos_shared_library("perftest_ani") {
     "runtime_core:ani",
     "runtime_core:ani_helpers",
     "runtime_core:libarkruntime",
-    "api_metrics:histogrammanager"
   ]
   output_extension = "so"
   part_name = "arkxtest"
   subsystem_name = "testfwk"
   if (arkxtest_product_feature == "watch" || arkxtest_product_feature == "glasses") {
     install_enable = false
+  }
+  defines = []
+  if (arkxtest_api_metrics_enable) {
+    defines += [ "ARKXTEST_API_METRICS_ENABLE" ]
+    external_deps += [ "api_metrics:histogrammanager" ]
   }
 }
 
