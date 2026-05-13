@@ -41,4 +41,7 @@ interface OHOS.testserver.ITestServerInterface {
     void UninstallFont([in] String fontName, [out] int uninstallResult);
     void SetViewMode([in] String mode, [out] int setResult);
     void GetViewMode([out] String mode, [out] int getResult);
+    void EnableLocationMock([out] int enableResult);
+    void DisableLocationMock([out] int disableResult);
+    void SetMockedLocations([in] TestServerLocation[] locations, [in] int timeInterval, [out] int setResult);
 }

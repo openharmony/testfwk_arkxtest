@@ -21,6 +21,7 @@
 #include <string_view>
 #include <cstdint>
 #include <iostream>
+#include <algorithm>
 
 #ifdef __OHOS__
 #include "hilog/log.h"
@@ -38,8 +39,16 @@ namespace OHOS::testhelper {
     constexpr int32_t EXIT_FAILURE = 1;
     constexpr int32_t EXIT_SERVICE_UNAVAILABLE = 2;
     constexpr int32_t EXIT_NOT_SUPPORTED = 3;
+    constexpr int32_t PARSE_GPX_SUCCESS = 0;
+    constexpr int32_t PARSE_GPX_INVALID_LAT = 4;
+    constexpr int32_t PARSE_GPX_INVALID_LON = 5;
+    constexpr int32_t PARSE_GPX_INVALID_COORDS = 6;
+    constexpr int32_t MAX_MOCK_LOCATIONS = 1000;
+    constexpr int32_t MAX_TIME_INTERVAL = 3600;
     // constants
     constexpr int32_t TWO = 2;
+    constexpr int32_t THREE = 3;
+    constexpr int32_t FOUR = 4;
     constexpr int32_t MS_PER_SECOND = 1000;
     constexpr int32_t TIME_BUFFER_SIZE = 80;
     constexpr int32_t BASE_YEAR = 1900;
@@ -105,6 +114,42 @@ namespace OHOS::testhelper {
         return chars;
     }
 
+    inline bool IsDigitsOnly(const std::string& str)
+    {
+        return !str.empty() &&
+            std::all_of(str.begin(), str.end(), [](char c) {
+                return std::isdigit(static_cast<unsigned char>(c));
+            });
+    }
+
+    inline bool IsValidNumberChar(char c, bool& hasDecimalPoint)
+    {
+        if (c == '.') {
+            if (hasDecimalPoint) {
+                return false;
+            }
+            hasDecimalPoint = true;
+            return true;
+        }
+        return std::isdigit(static_cast<unsigned char>(c));
+    }
+
+    inline bool IsValidNumber(const std::string& str)
+    {
+        if (str.empty()) {
+            return false;
+        }
+        bool hasDecimalPoint = false;
+        for (size_t i = 0; i < str.length(); ++i) {
+            if (!IsValidNumberChar(str[i], hasDecimalPoint)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool SafeStoi(const std::string& str, int32_t& value);
+
     // log level
     enum LogRank : uint8_t {
         DEBUG = 3, INFO = 4, WARN = 5, ERROR = 6
@@ -140,5 +185,4 @@ namespace OHOS::testhelper {
 // print error log
 #define LOG_E(FMT, VARS...) LOG(ERROR, FMT, ##VARS)
 }
-
 #endif
