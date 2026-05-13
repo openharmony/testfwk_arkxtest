@@ -27,6 +27,7 @@
 #include "frontend_api_defines.h"
 #include "api_caller_client.h"
 #include "callback_code_napi.h"
+#include "histogram_plugin_macros.h"
 
 namespace OHOS::perftest {
     using namespace nlohmann;
@@ -204,6 +205,9 @@ namespace OHOS::perftest {
     static napi_value UnmarshalReply(napi_env env, const TransactionContext &ctx, const ApiReplyInfo &reply)
     {
         LOG_I("Start to Unmarshal transaction result");
+        static const string dotTag = "TestKit.perftest.";
+        auto label = dotTag + ctx.callInfo_.apiId_;
+        HISTOGRAM_BOOLEAN(label.c_str(), 1);
         const auto &message = reply.exception_.message_;
         ErrCode code = reply.exception_.code_;
         if (reply.exception_.code_ != NO_ERROR) {

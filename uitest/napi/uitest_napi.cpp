@@ -26,6 +26,7 @@
 #include "frontend_api_defines.h"
 #include "ipc_transactor.h"
 #include "ui_event_observer_napi.h"
+#include "histogram_plugin_macros.h"
 
 namespace OHOS::uitest {
     using namespace nlohmann;
@@ -219,6 +220,9 @@ namespace OHOS::uitest {
             fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         }
         LOG_I("Start to Unmarshal transaction result");
+        static const string dotTag = "TestKit.uitest.";
+        auto label = dotTag + ctx.callInfo_.apiId_;
+        HISTOGRAM_BOOLEAN(label.c_str(), 1);
         const auto &message = reply.exception_.message_;
         ErrCode code = reply.exception_.code_;
         if (code == INTERNAL_ERROR || code == ERR_INTERNAL) {
