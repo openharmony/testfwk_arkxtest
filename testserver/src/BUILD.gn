@@ -75,6 +75,14 @@ ohos_shared_library("test_server_service") {
     "os_account:os_account_innerkits",
   ]
 
+  if (defined(global_parts_info) && defined(global_parts_info.location_location)) {
+    external_deps += [
+      "location:locator_sdk",
+      "location:lbsservice_common",
+    ]
+    defines += [ "ARKXTEST_LOCATION_ENABLE" ]
+  }
+
   if (defined(global_parts_info) && defined(global_parts_info.inputmethod_imf)) {
     external_deps += [
       "imf:inputmethod_client",

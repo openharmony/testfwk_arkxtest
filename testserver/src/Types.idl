@@ -41,3 +41,15 @@ struct ProcessCpuInfo {
     String procName;
     int threadCount;
 };
+
+struct TestServerLocation {
+    double latitude;
+    double longitude;
+    double altitude;
+    double accuracy;
+    double speed;
+    double direction;
+    long timeStamp;
+    long timeSinceBoot;
+    boolean isFromMock;
+};

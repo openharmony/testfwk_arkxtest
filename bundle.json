@@ -60,7 +60,9 @@
           "os_account",
           "font_manager",
           "ui_appearance",
-          "api_metrics"
+          "api_metrics",
+          "location",
+          "libxml2"
         ]
       },
       "build": {

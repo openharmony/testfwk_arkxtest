@@ -23,7 +23,7 @@
 
 namespace OHOS::testhelper {
     // Constants
-    constexpr const char* VERSION = "1.0.0";
+    constexpr const char* VERSION = "1.0.1";
     constexpr const char* HELP_MSG = R"(
 Usage:
   testhelper <command> [options]
@@ -41,6 +41,9 @@ Commands:
   install-font <font-path>  Install font from font file (/data/local/* files only)
   uninstall-font <font-name>  Uninstall font by font name
   set-viewmode <dark|light>  Set view mode (dark or light)
+  enable-location-mock     Enable location mock functionality
+  disable-location-mock    Disable location mock and restore real location
+  set-mocked-locations <path> [interval] Set mocked locations from GPX file
   help               Show this help message
   --version          Show version information
 )";
@@ -59,6 +62,9 @@ Commands:
         {"install-font", std::make_tuple(3, 3, "testhelper install-font <font-path> (/data/local/* files only)")},
         {"uninstall-font", std::make_tuple(3, 3, "testhelper uninstall-font <font-name>")},
         {"set-viewmode", std::make_tuple(3, 3, "testhelper set-viewmode <dark|light>")},
+        {"enable-location-mock", std::make_tuple(2, 2, "testhelper enable-location-mock")},
+        {"disable-location-mock", std::make_tuple(2, 2, "testhelper disable-location-mock")},
+        {"set-mocked-locations", std::make_tuple(3, 4, "testhelper set-mocked-locations <path>")},
         {"--version", std::make_tuple(2, 2, "testhelper --version")},
         {"help", std::make_tuple(2, 2, "testhelper help")},
     };
@@ -144,6 +150,28 @@ Commands:
             std::string mode(argv[TWO]);
             return core.HandleSetViewMode(mode);
         }},
+        {"enable-location-mock", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("enable-location-mock", argc);
+            return core.HandleEnableLocationMock();
+        }},
+        {"disable-location-mock", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("disable-location-mock", argc);
+            return core.HandleDisableLocationMock();
+        }},
+        {"set-mocked-locations", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("set-mocked-locations", argc);
+            std::string gpxFile(argv[TWO]);
+            int32_t timeInterval = 1;
+            if (argc == FOUR) {
+                std::string intervalStr(argv[THREE]);
+                if (!SafeStoi(intervalStr, timeInterval)) {
+                    PrintToConsole(
+                        "Error: The parameter validation in timeInterval has failed. Integer value is required.");
+                    return EXIT_FAILURE;
+                }
+            }
+            return core.HandleSetMockedLocations(gpxFile, timeInterval);
+        }},
     };
 
     // Main entry point
@@ -152,26 +180,26 @@ Commands:
         if (argc < TWO) {
             PrintToConsole("Missing argument");
             PrintToConsole(HELP_MSG);
-            _Exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
         std::string command(argv[1]);
         if (command == "--version") {
             ValidateArgCount("--version", argc);
             PrintToConsole(VERSION);
-            _Exit(EXIT_SUCCESS);
+            return EXIT_SUCCESS;
         } else if (command == "help") {
             ValidateArgCount("help", argc);
             PrintToConsole(HELP_MSG);
-            _Exit(EXIT_SUCCESS);
+            return EXIT_SUCCESS;
         }
         auto it = g_commandHandlers.find(command);
         if (it != g_commandHandlers.end()) {
             TestHelperCore core;
-            _Exit(it->second(core, argc, argv));
+            return it->second(core, argc, argv);
         } else {
             PrintToConsole("Illegal argument: " + command);
             PrintToConsole(HELP_MSG);
-            _Exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
     }
 }

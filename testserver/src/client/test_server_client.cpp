@@ -389,6 +389,50 @@ namespace OHOS::testserver {
         }
         return mode;
     }
+
+    int32_t TestServerClient::EnableLocationMock()
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "iTestServerInterface_ is nullptr");
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t enableResult = 0;
+        iTestServerInterface_->EnableLocationMock(enableResult);
+        HiLog::Debug(LABEL, "EnableLocationMock result: %{public}d", enableResult);
+
+        return enableResult;
+    }
+
+    int32_t TestServerClient::DisableLocationMock()
+    {
+        HiLog::Info(LABEL, "%{public}s called.", __func__);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "iTestServerInterface_ is nullptr");
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t disableResult = 0;
+        iTestServerInterface_->DisableLocationMock(disableResult);
+        HiLog::Debug(LABEL, "DisableLocationMock result: %{public}d", disableResult);
+
+        return disableResult;
+    }
+
+    int32_t TestServerClient::SetMockedLocations(const std::vector<TestServerLocation>& locations,
+                                                 int32_t timeInterval)
+    {
+        HiLog::Info(LABEL, "%{public}s called with %{public}zu locations, interval: %{public}d", __func__,
+            locations.size(), timeInterval);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "iTestServerInterface_ is nullptr");
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t setResult = 0;
+        iTestServerInterface_->SetMockedLocations(locations, timeInterval, setResult);
+        HiLog::Debug(LABEL, "SetMockedLocations result: %{public}d", setResult);
+
+        return setResult;
+    }
 } // namespace OHOS::testserver
 
 void FrequencyLockPlugin()
