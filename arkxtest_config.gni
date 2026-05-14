@@ -15,4 +15,9 @@ import("//build/ohos.gni")
 
 declare_args() {
   arkxtest_product_feature = "default"
+  arkxtest_api_metrics_enable = false
+  if (defined(global_parts_info) &&
+      defined(global_parts_info.hiviewdfx_api_metrics_ext)) {
+    arkxtest_api_metrics_enable = true
+  }
 }

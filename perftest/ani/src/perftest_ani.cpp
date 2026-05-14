@@ -32,7 +32,9 @@
 #include "callback_code_ani.h"
 #include <cstring>
 #include <cstdio>
+#ifdef ARKXTEST_API_METRICS_ENABLE
 #include "histogram_plugin_macros.h"
+#endif
 
 using namespace OHOS::perftest;
 using namespace nlohmann;
@@ -164,9 +166,11 @@ static ani_ref UnmarshalObject(ani_env *env, nlohmann::json resultValue)
 static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const ApiReplyInfo &reply_)
 {
     HiLog::Info(LABEL, "%{public}s. Start to UnmarshalReply: %{public}s", __func__, reply_.resultValue_.dump().c_str());
+#ifdef ARKXTEST_API_METRICS_ENABLE
     static const string dotTag = "TestKit.perftest.";
     auto label = dotTag + callInfo_.apiId_;
     HISTOGRAM_BOOLEAN(label.c_str(), 1);
+#endif
     if (HasExceptionReply(env, reply_)) {
         return nullptr;
     }
