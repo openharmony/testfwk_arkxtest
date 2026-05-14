@@ -236,7 +236,7 @@ export class Hypium {
     abilityDelegatorArguments: abilityDelegatorRegistry.AbilityDelegatorArgs,
     workerNum: int,
     testsuite: () => void
-  ) {
+  ): Promise<void> {
     let workerPromiseArray: Promise<TestcaseSummaryIF>[] = [];
     let startTime = SysTestKit.getRealTime();
     Core.getInstance();
