@@ -97,8 +97,7 @@ namespace OHOS::uitest {
             return;
         } else {
             auto rect = window_.visibleBounds_;
-            static constexpr uint32_t step = 10;
-            Point focus(rect.GetCenterX(), rect.top_ + step, window_.displayId_);
+            Point focus(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
             auto touch = GenericClick(TouchOp::CLICK, focus);
             driver_.PerformTouch(touch, options_, out.exception_);
         }
