@@ -19,6 +19,7 @@ ohos_static_library("testhelper_core") {
   sources = [
     "./src/testhelper_core.cpp",
     "./src/common_utils.cpp",
+    "./src/gpx_parser.cpp",
   ]
   include_dirs = [ "./include" ]
   defines = [
@@ -30,6 +31,7 @@ ohos_static_library("testhelper_core") {
     "c_utils:utils",
     "time_service:time_client",
     "ability_runtime:wantagent_innerkits",
+    "libxml2:libxml2",
   ]
   if ((arkxtest_product_feature == "pc" ||
        arkxtest_product_feature == "tablet" ||
@@ -60,10 +62,16 @@ ohos_executable("testhelper") {
     "./src/testhelper_main.cpp",
   ]
   include_dirs = [ "./include" ]
-  deps = [ ":testhelper_core" ]
+  deps = [
+    ":testhelper_core",
+    "../testserver/src:test_server_client",
+  ]
   external_deps = [
     "hilog:libhilog",
     "c_utils:utils",
+    "ipc:ipc_core",
+    "common_event_service:cesfwk_innerkits",
+    "libxml2:libxml2",
   ]
   subsystem_name = "testfwk"
   part_name = "arkxtest"
@@ -108,6 +116,7 @@ ohos_unittest("testhelper_unittest") {
     "c_utils:utils",
     "time_service:time_client",
     "ability_runtime:wantagent_innerkits",
+    "libxml2:libxml2",
   ]
   if ((arkxtest_product_feature == "pc" ||
        arkxtest_product_feature == "tablet" ||

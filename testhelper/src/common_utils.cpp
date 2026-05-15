@@ -15,11 +15,30 @@
 
 #include <iostream>
 #include <string>
+#include <climits>
+#include <cstdlib>
 #include "common_utils.h"
 
 namespace OHOS::testhelper {
     void PrintToConsole(const std::string& message)
     {
         std::cout << message << std::endl;
+    }
+
+    bool SafeStoi(const std::string& str, int32_t& value)
+    {
+        if (str.empty() || !IsDigitsOnly(str)) {
+            return false;
+        }
+        char* end = nullptr;
+        long result = std::strtol(str.c_str(), &end, 10);
+        if (end == str.c_str() || *end != '\0') {
+            return false;
+        }
+        if (result < INT32_MIN || result > INT32_MAX) {
+            return false;
+        }
+        value = static_cast<int32_t>(result);
+        return true;
     }
 }

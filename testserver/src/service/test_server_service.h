@@ -86,6 +86,12 @@ namespace OHOS::testserver {
 
         ErrCode GetViewMode(std::string& mode, int32_t& getResult) override;
 
+        ErrCode EnableLocationMock(int32_t& enableResult) override;
+
+        ErrCode DisableLocationMock(int32_t& disableResult) override;
+
+        ErrCode SetMockedLocations(const std::vector<TestServerLocation>& locations, int32_t timeInterval,
+                                   int32_t& setResult) override;
     protected:
         void OnStart() override;
         void OnStop() override;
