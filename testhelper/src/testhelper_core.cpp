@@ -22,8 +22,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <libxml/parser.h>
 #include "common_utils.h"
 #include "testhelper_core.h"
+#include "gpx_parser.h"
 #include "time_service_client.h"
 #include "test_server_client.h"
 #include "test_server_error_code.h"
@@ -32,7 +36,7 @@
 #endif
 
 namespace OHOS::testhelper {
-    int32_t TestHelperCore::HandleGetTime()
+        int32_t TestHelperCore::HandleGetTime()
     {
         LOG_I("HandleGetTime called");
         auto timeService = MiscServices::TimeServiceClient::GetInstance();
@@ -252,6 +256,23 @@ namespace OHOS::testhelper {
         }
     }
 
+    bool TestHelperCore::ValidateFontFileFormat(const std::string& filePath)
+    {
+        size_t dotPos = filePath.rfind('.');
+        if (dotPos == std::string::npos) {
+            PrintToConsole("Error: Invalid font file format. Only supports .ttf and .ttc files.");
+            LOG_E("Font file has no extension: %{public}s", filePath.c_str());
+            return false;
+        }
+        std::string extension = filePath.substr(dotPos);
+        if (extension != ".ttf" && extension != ".ttc") {
+            PrintToConsole("Error: Invalid font file format. Only supports .ttf and .ttc files.");
+            LOG_E("Invalid font file extension: %{public}s", extension.c_str());
+            return false;
+        }
+        return true;
+    }
+
     int32_t TestHelperCore::HandleGetFontname(const std::string& fontPath)
     {
         LOG_I("HandleGetFontname called with path: %{public}s", fontPath.c_str());
@@ -259,23 +280,18 @@ namespace OHOS::testhelper {
         const std::string prefix = "/data/local/tmp/";
         if (fontPath.empty() || fontPath.find(prefix) != 0) {
             LOG_E("Invalid font path");
-            PrintToConsole(
-                "Error: Invalid arguments. Usage: testhelper get-fontname <font-path> (/data/local/tmp/* files only)");
+            PrintToConsole("Error: Invalid font path. Please provide a valid absolute path under the /data/local/tmp");
             return EXIT_FAILURE;
         }
-        
+        if (!ValidateFontFileFormat(fontPath)) {
+            return EXIT_FAILURE;
+        }
         std::string fileName = fontPath.substr(prefix.length());
         if (fileName.empty() || fileName.find("..") != std::string::npos) {
             LOG_E("Invalid font path: %{public}s", fontPath.c_str());
-            PrintToConsole("Error: Invalid font path. Only supports files in /data/local/tmp/*");
+            PrintToConsole("Error: Invalid font path. Please provide a valid absolute path under the /data/local/tmp");
             return EXIT_FAILURE;
         }
-        
-#ifndef ARKXTEST_FONT_ENABLE
-        LOG_E("Font management is not supported");
-        PrintToConsole("Error: Operation is not supported. Font management is not supported on this device.");
-        return EXIT_NOT_SUPPORTED;
-#else
         int fd = open(fontPath.c_str(), O_RDONLY);
         if (fd < 0) {
             LOG_E("Font file not found: %{public}s", fontPath.c_str());
@@ -283,6 +299,13 @@ namespace OHOS::testhelper {
             return EXIT_FAILURE;
         }
         fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+        
+#ifndef ARKXTEST_FONT_ENABLE
+        LOG_E("Font management is not supported");
+        PrintToConsole("Error: Operation is not supported. Font management is not supported on this device.");
+        fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+        return EXIT_NOT_SUPPORTED;
+#else
         std::vector<std::string> fontNames;
         fontNames = Rosen::FontToolSet::GetInstance().GetFontFullName(fd);
         fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
@@ -306,23 +329,18 @@ namespace OHOS::testhelper {
         const std::string prefix = "/data/local/tmp/";
         if (fontPath.empty() || fontPath.find(prefix) != 0) {
             LOG_E("Invalid font path");
-            PrintToConsole(
-                "Error: Invalid arguments. Usage: testhelper install-font <font-path> (/data/local/tmp/* files only)");
+            PrintToConsole("Error: Invalid font path. Please provide a valid absolute path under the /data/local/tmp");
             return EXIT_FAILURE;
         }
-        
+        if (!ValidateFontFileFormat(fontPath)) {
+            return EXIT_FAILURE;
+        }
         std::string fileName = fontPath.substr(prefix.length());
         if (fileName.empty() || fileName.find("..") != std::string::npos) {
             LOG_E("Invalid font path: %{public}s", fontPath.c_str());
-            PrintToConsole("Error: Invalid font path. Only supports files in /data/local/tmp/*");
+            PrintToConsole("Error: Invalid font path. Please provide a valid absolute path under the /data/local/tmp");
             return EXIT_FAILURE;
         }
-        
-#ifndef ARKXTEST_FONT_ENABLE
-        LOG_E("Font management is not supported");
-        PrintToConsole("Error: Operation is not supported. Font management is not supported on this device.");
-        return EXIT_NOT_SUPPORTED;
-#else
         int fd = open(fontPath.c_str(), O_RDONLY);
         if (fd < 0) {
             LOG_E("Font file not found: %{public}s", fontPath.c_str());
@@ -331,7 +349,12 @@ namespace OHOS::testhelper {
         }
         fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
-
+        
+#ifndef ARKXTEST_FONT_ENABLE
+        LOG_E("Font management is not supported");
+        PrintToConsole("Error: Operation is not supported. Font management is not supported on this device.");
+        return EXIT_NOT_SUPPORTED;
+#else
         auto result = OHOS::testserver::TestServerClient::GetInstance().InstallFont(fontPath);
         if (result == OHOS::testserver::TEST_SERVER_OK) {
             PrintToConsole("Font installed successfully from " + fontPath);
@@ -413,6 +436,123 @@ namespace OHOS::testhelper {
             return EXIT_SUCCESS;
         } else {
             LOG_E("SetViewMode failed with error: %{public}d", result);
+            PrintToConsole("Error: Service is not available.");
+            return EXIT_SERVICE_UNAVAILABLE;
+        }
+    }
+
+    bool TestHelperCore::ValidateGPXFilePath(const std::string& filePath)
+    {
+        const std::string prefix = "/data/local/tmp/";
+        if (filePath.empty() || filePath.find(prefix) != 0) {
+            PrintToConsole("Error: Invalid path. Please provide a valid gpx file path under the /data/local/tmp");
+            return false;
+        }
+        size_t dotPos = filePath.rfind('.');
+        if (dotPos == std::string::npos) {
+            PrintToConsole("Error: Invalid path. Please provide a valid gpx file path under the /data/local/tmp");
+            return false;
+        }
+        std::string extension = filePath.substr(dotPos);
+        if (extension != ".gpx") {
+            PrintToConsole("Error: Invalid path. Please provide a valid gpx file path under the /data/local/tmp");
+            return false;
+        }
+        std::string fileName = filePath.substr(prefix.length());
+        if (fileName.empty() || fileName.find("..") != std::string::npos) {
+            PrintToConsole("Error: Invalid path. Please provide a valid gpx file path under the /data/local/tmp");
+            return false;
+        }
+        return true;
+    }
+
+    bool TestHelperCore::ValidateTimeInterval(int32_t timeInterval)
+    {
+        if (timeInterval <= 0) {
+            PrintToConsole("Error: The parameter validation has failed. timeInterval must be greater than 0.");
+            LOG_E("Invalid time interval: %{public}d", timeInterval);
+            return false;
+        }
+        if (timeInterval > MAX_TIME_INTERVAL) {
+            PrintToConsole("Error: The parameter validation has failed. timeInterval must be less than 3600.");
+            LOG_E("Time interval too large: %{public}d", timeInterval);
+            return false;
+        }
+        return true;
+    }
+
+    int32_t TestHelperCore::HandleEnableLocationMock()
+    {
+        LOG_I("HandleEnableLocationMock called");
+        auto& testServerClient = OHOS::testserver::TestServerClient::GetInstance();
+        int32_t result = testServerClient.EnableLocationMock();
+        if (result == OHOS::testserver::TEST_SERVER_OK) {
+            PrintToConsole("Enable location mock successfully.");
+            LOG_I("HandleEnableLocationMock completed successfully");
+            return EXIT_SUCCESS;
+        } else if (result == OHOS::testserver::TEST_SERVER_NOT_SUPPORTED) {
+            LOG_E("EnableLocationMock not supported on this device");
+            PrintToConsole("Error: Operation is not supported. Location mock is not supported on this device.");
+            return EXIT_FAILURE;
+        } else {
+            LOG_E("EnableLocationMock failed with error: %{public}d", result);
+            PrintToConsole("Error: Service is not available.");
+            return EXIT_SERVICE_UNAVAILABLE;
+        }
+    }
+
+    int32_t TestHelperCore::HandleDisableLocationMock()
+    {
+        LOG_I("HandleDisableLocationMock called");
+        auto& testServerClient = OHOS::testserver::TestServerClient::GetInstance();
+        int32_t result = testServerClient.DisableLocationMock();
+        if (result == OHOS::testserver::TEST_SERVER_OK) {
+            PrintToConsole("Disable location mock successfully.");
+            LOG_I("HandleDisableLocationMock completed successfully");
+            return EXIT_SUCCESS;
+        } else if (result == OHOS::testserver::TEST_SERVER_NOT_SUPPORTED) {
+            LOG_E("DisableLocationMock not supported on this device");
+            PrintToConsole("Error: Operation is not supported. Location mock is not supported on this device.");
+            return EXIT_FAILURE;
+        } else {
+            LOG_E("DisableLocationMock failed with error: %{public}d", result);
+            PrintToConsole("Error: Service is not available.");
+            return EXIT_SERVICE_UNAVAILABLE;
+        }
+    }
+
+    int32_t TestHelperCore::HandleSetMockedLocations(const std::string& gpxFile, int32_t timeInterval)
+    {
+        xmlInitParser();
+        if (!ValidateGPXFilePath(gpxFile)) {
+            xmlCleanupParser();
+            return EXIT_FAILURE;
+        }
+        if (!ValidateTimeInterval(timeInterval)) {
+            xmlCleanupParser();
+            return EXIT_FAILURE;
+        }
+        auto locations = GPXParser::ParseFile(gpxFile);
+        if (locations.size() > MAX_MOCK_LOCATIONS) {
+            PrintToConsole(
+                "Error: The parameter validation in gpx file has failed. locations size must be less than 1000.");
+            LOG_E("Too many locations: %{public}zu", locations.size());
+            xmlCleanupParser();
+            return EXIT_FAILURE;
+        }
+        auto& testServerClient = OHOS::testserver::TestServerClient::GetInstance();
+        int32_t result = testServerClient.SetMockedLocations(locations, timeInterval);
+        xmlCleanupParser();
+        if (result == OHOS::testserver::TEST_SERVER_OK) {
+            PrintToConsole("Set mocked locations successfully.");
+            LOG_I("HandleSetMockedLocations completed successfully, locations: %{public}zu", locations.size());
+            return EXIT_SUCCESS;
+        } else if (result == OHOS::testserver::TEST_SERVER_NOT_SUPPORTED) {
+            LOG_E("SetMockedLocations not supported on this device");
+            PrintToConsole("Error: Operation is not supported. Location mock is not supported on this device.");
+            return EXIT_FAILURE;
+        } else {
+            LOG_E("SetMockedLocations failed with error: %{public}d", result);
             PrintToConsole("Error: Service is not available.");
             return EXIT_SERVICE_UNAVAILABLE;
         }

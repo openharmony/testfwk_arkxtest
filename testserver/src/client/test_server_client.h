@@ -49,6 +49,10 @@ namespace OHOS::testserver {
         int32_t UninstallFont(const std::string& fontName);
         int32_t SetViewMode(const std::string& mode);
         std::string GetViewMode();
+        int32_t EnableLocationMock();
+        int32_t DisableLocationMock();
+        int32_t SetMockedLocations(const std::vector<TestServerLocation>& locations,
+                                   int32_t timeInterval);
     private:
         TestServerClient();
         ~TestServerClient() = default;

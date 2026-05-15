@@ -52,6 +52,9 @@
 #include <set>
 #include <sys/stat.h>
 #include "os_account_manager.h"
+#ifdef ARKXTEST_LOCATION_ENABLE
+#include "locator.h"
+#endif
 
 namespace OHOS::testserver {
     // TEST_SERVER_SA_ID
@@ -860,5 +863,101 @@ namespace OHOS::testserver {
         getResult = TEST_SERVER_NOT_SUPPORTED;
         return TEST_SERVER_OK;
 #endif
+    }
+
+    ErrCode TestServerService::EnableLocationMock(int32_t& enableResult)
+    {
+        enableResult = TEST_SERVER_OK;
+#ifdef ARKXTEST_LOCATION_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        auto locatorClient = Location::Locator::GetInstance();
+        if (!locatorClient) {
+            HiLog::Error(LABEL_SERVICE, "locatorClient is nullptr");
+            enableResult = TEST_SERVER_LOCATION_MOCK_FAILED;
+            return TEST_SERVER_OK;
+        }
+        auto ret = locatorClient->EnableLocationMock();
+        if (ret) {
+            HiLog::Info(LABEL_SERVICE, "EnableLocationMock completed successfully");
+        } else {
+            HiLog::Error(LABEL_SERVICE, "EnableLocationMock failed with error: %{public}d", ret);
+            enableResult = TEST_SERVER_LOCATION_MOCK_FAILED;
+        }
+#else
+        HiLog::Warn(LABEL_SERVICE, "Location mock is not supported");
+        enableResult = TEST_SERVER_NOT_SUPPORTED;
+#endif
+        return TEST_SERVER_OK;
+    }
+
+    ErrCode TestServerService::DisableLocationMock(int32_t& disableResult)
+    {
+        disableResult = TEST_SERVER_OK;
+#ifdef ARKXTEST_LOCATION_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called.", __func__);
+        auto locatorClient = Location::Locator::GetInstance();
+        if (!locatorClient) {
+            HiLog::Error(LABEL_SERVICE, "locatorClient is nullptr");
+            disableResult = TEST_SERVER_LOCATION_MOCK_FAILED;
+            return TEST_SERVER_OK;
+        }
+        auto ret = locatorClient->DisableLocationMock();
+        if (ret) {
+            HiLog::Info(LABEL_SERVICE, "DisableLocationMock completed successfully");
+        } else {
+            HiLog::Error(LABEL_SERVICE, "DisableLocationMock failed with error: %{public}d", ret);
+            disableResult = TEST_SERVER_LOCATION_MOCK_FAILED;
+        }
+#else
+        HiLog::Warn(LABEL_SERVICE, "Location mock is not supported");
+        disableResult = TEST_SERVER_NOT_SUPPORTED;
+#endif
+        return TEST_SERVER_OK;
+    }
+
+    ErrCode TestServerService::SetMockedLocations(const std::vector<TestServerLocation>& locations,
+                                                  int32_t timeInterval, int32_t& setResult)
+    {
+        setResult = TEST_SERVER_OK;
+#ifdef ARKXTEST_LOCATION_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called with %{public}zu locations, interval: %{public}d", __func__,
+            locations.size(), timeInterval);
+        if (timeInterval < 1) {
+            HiLog::Error(LABEL_SERVICE, "Invalid time interval: %{public}d", timeInterval);
+            setResult = TEST_SERVER_SET_LOCATIONS_FAILED;
+            return TEST_SERVER_OK;
+        }
+        auto locatorClient = Location::Locator::GetInstance();
+        if (!locatorClient) {
+            HiLog::Error(LABEL_SERVICE, "locatorClient is nullptr");
+            setResult = TEST_SERVER_SET_LOCATIONS_FAILED;
+            return TEST_SERVER_OK;
+        }
+        std::vector<std::shared_ptr<OHOS::Location::Location>> nativeLocations;
+        for (const auto& testLoc : locations) {
+            std::shared_ptr<OHOS::Location::Location> nativeLoc = std::make_shared<OHOS::Location::Location>();
+            nativeLoc->SetLatitude(testLoc.latitude);
+            nativeLoc->SetLongitude(testLoc.longitude);
+            nativeLoc->SetAltitude(testLoc.altitude);
+            nativeLoc->SetAccuracy(testLoc.accuracy);
+            nativeLoc->SetSpeed(testLoc.speed);
+            nativeLoc->SetDirection(testLoc.direction);
+            nativeLoc->SetTimeStamp(testLoc.timeStamp);
+            nativeLoc->SetTimeSinceBoot(testLoc.timeSinceBoot);
+            nativeLoc->SetIsFromMock(testLoc.isFromMock);
+            nativeLocations.push_back(nativeLoc);
+        }
+        auto ret = locatorClient->SetMockedLocations(timeInterval, nativeLocations);
+        if (ret) {
+            HiLog::Info(LABEL_SERVICE, "SetMockedLocations completed successfully");
+        } else {
+            HiLog::Error(LABEL_SERVICE, "SetMockedLocations failed");
+            setResult = TEST_SERVER_SET_LOCATIONS_FAILED;
+        }
+#else
+        HiLog::Warn(LABEL_SERVICE, "Location mock is not supported");
+        setResult = TEST_SERVER_NOT_SUPPORTED;
+#endif
+        return TEST_SERVER_OK;
     }
 } // namespace OHOS::testserver
