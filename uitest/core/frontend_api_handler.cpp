@@ -847,7 +847,19 @@ namespace OHOS::uitest {
                 *selector = GetBackendObject<WidgetSelector>(in.callerObjRef_);
             }
             auto backendRef = ReadCallArg<string>(in, INDEX_ZERO);
+            auto findObj = sBackendObjects.find(backendRef);
+            if (findObj == sBackendObjects.end() || findObj->second == nullptr) {
+                out.exception_ = ApiCallErr(ERR_INVALID_PARAM, "Invalid component parameter");
+                return;
+            }
             auto &widget = GetBackendObject<Widget>(backendRef);
+            auto &driver = GetBoundUiDriver(backendRef);
+            auto retrievedWidget = driver.RetrieveWidget(widget, out.exception_, true);
+            if (out.exception_.code_ != NO_ERROR || retrievedWidget ==nullptr) {
+                out.exception_ = ApiCallErr(ERR_INVALID_PARAM,
+                    "Invalid component parameter: component not found in current UI");
+                return;
+            }
             auto locatorSelector = make_unique<WidgetSelector>();
             auto hierarchyMatcher = WidgetMatchModel(UiAttr::HIERARCHY, widget.GetHierarchy(), EQ);
             locatorSelector->AddMatcher(hierarchyMatcher);
