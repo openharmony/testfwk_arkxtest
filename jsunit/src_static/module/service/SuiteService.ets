@@ -167,7 +167,7 @@ class SuiteService {
 
   handleHookFunction(core: Core, func: HookFuncType): () => Promise<void> {
     const argsCount = getFunctionArgumentsCount(func);
-    let fn = (): Promise<void> => { }
+    let fn: () => Promise<void>;
     if (argsCount === 1) {
       fn = processFuncWithArgOne(core, func as ((done: () => void) => void));
     } else {
