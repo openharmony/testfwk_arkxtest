@@ -36,7 +36,6 @@ ohos_unittest("TestSA_unittest") {
     "data_share:datashare_consumer",
     "hilog:libhilog",
     "hiview:libucollection_utility",
-    "image_framework:image",
     "init:libbegetutil",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
