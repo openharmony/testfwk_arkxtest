@@ -216,17 +216,6 @@ struct MissionErrorMgr : public jpeg_error_mgr {
     jmp_buf setjmp_buffer;
 };
 
-static void AdaptJpegSize(jpeg_compress_struct &jpeg, uint32_t width, uint32_t height)
-{
-    constexpr int32_t alignment = 32;
-    if (width % alignment == 0) {
-        jpeg.image_width = width;
-    } else {
-        LOG_D("The width need to be adapted!");
-        jpeg.image_width = ceil((double)width / (double)alignment) * alignment;
-    }
-    jpeg.image_height = height;
-}
 
 shared_ptr<PixelMap> ScreenCopy::ScaleNewsetFrameLocked()
 {
@@ -243,6 +232,13 @@ shared_ptr<PixelMap> ScreenCopy::ScaleNewsetFrameLocked()
     opt.scaleMode = Media::ScaleMode::FIT_TARGET_SIZE;
     opt.editable = false;
     return Media::PixelMap::Create(*newestFrame_, rect, opt);
+}
+
+static void MissionErrorExit(j_common_ptr cinfo)
+{
+    MissionErrorMgr *myerr = static_cast<MissionErrorMgr *>(cinfo->err);
+    (*cinfo->err->output_message)(cinfo);
+    longjmp(myerr->setjmp_buffer, 1);
 }
 
 void ScreenCopy::WaitAndConsumeFrames()
@@ -262,28 +258,44 @@ void ScreenCopy::WaitAndConsumeFrames()
             continue;
         }
         constexpr int32_t rgbaPixelBytes = 4;
-        jpeg_compress_struct jpeg;
+        jpeg_compress_struct jpeg = {};
         MissionErrorMgr jerr;
+        uint8_t *imgBuf = nullptr;
+        unsigned long imgSize = 0;
         jpeg.err = jpeg_std_error(&jerr);
+        jerr.error_exit = MissionErrorExit;
+        if (setjmp(jerr.setjmp_buffer)) {
+            jpeg_destroy_compress(&jpeg);
+            LOG_E("JPEG compression failed");
+            if (imgBuf != nullptr) {
+                free(imgBuf);
+                imgBuf = nullptr;
+            }
+            continue;
+        }
         jpeg_create_compress(&jpeg);
-        AdaptJpegSize(jpeg, scaledPixels->GetWidth(), scaledPixels->GetHeight());
+        jpeg.image_width = scaledPixels->GetWidth();
+        jpeg.image_height = scaledPixels->GetHeight();
         jpeg.input_components = rgbaPixelBytes;
         jpeg.in_color_space = JCS_EXT_RGBX;
         jpeg_set_defaults(&jpeg);
         constexpr int32_t compressQuality = 75;
         jpeg_set_quality(&jpeg, compressQuality, 1);
-        uint8_t *imgBuf = nullptr;
-        unsigned long imgSize = 0;
         jpeg_mem_dest(&jpeg, &imgBuf, &imgSize);
         jpeg_start_compress(&jpeg, 1);
-        JSAMPROW rowPointer[1024 * 4];
+        auto memAddr = const_cast<uint8_t *>(scaledPixels->GetPixels());
+        if (memAddr == nullptr) {
+            jpeg_destroy_compress(&jpeg);
+            LOG_E("Pixel data is null");
+            continue;
+        }
         const auto stride = scaledPixels->GetRowStride();
-        auto memAddr = (uint8_t *)(scaledPixels->GetPixels());
-        for (int32_t rowIndex = 0; rowIndex < scaledPixels->GetHeight(); rowIndex++) {
-            rowPointer[rowIndex] = memAddr;
+        const auto height = scaledPixels->GetHeight();
+        for (uint32_t rowIndex = 0; rowIndex < height; rowIndex++) {
+            JSAMPROW rowPtr[1] = { memAddr };
+            jpeg_write_scanlines(&jpeg, rowPtr, 1);
             memAddr += stride;
         }
-        (void)jpeg_write_scanlines(&jpeg, rowPointer, jpeg.image_height);
         jpeg_finish_compress(&jpeg);
         jpeg_destroy_compress(&jpeg);
         LOG_D("ConsumeFrame_End, size=%{public}lu", imgSize);
