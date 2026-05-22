@@ -265,7 +265,9 @@ void ScreenCopy::WaitAndConsumeFrames()
         jpeg.err = jpeg_std_error(&jerr);
         jerr.error_exit = MissionErrorExit;
         if (setjmp(jerr.setjmp_buffer)) {
-            jpeg_destroy_compress(&jpeg);
+            if (jpeg.mem != nullptr) {
+                jpeg_destroy_compress(&jpeg);
+            }
             LOG_E("JPEG compression failed");
             if (imgBuf != nullptr) {
                 free(imgBuf);
