@@ -61,6 +61,8 @@ public:
 private:
     void PollAndNotifyFrames(int32_t displayId);
     void WaitAndConsumeFrames();
+    bool JpegEncode(PixelMap &pixelMap, uint8_t *&imgBuf, unsigned long &imgSize);
+    bool WriteJpegScanlines(jpeg_compress_struct &jpeg, uint8_t *data, uint32_t stride, uint32_t height);
     void UpdateFrameLocked(shared_ptr<PixelMap> frame, bool &changed, bool &muted);
     shared_ptr<PixelMap> ScaleNewsetFrameLocked();
     sptr<Screen> sourceScreen_;
@@ -216,7 +218,6 @@ struct MissionErrorMgr : public jpeg_error_mgr {
     jmp_buf setjmp_buffer;
 };
 
-
 shared_ptr<PixelMap> ScreenCopy::ScaleNewsetFrameLocked()
 {
     if (newestFrame_ == nullptr) {
@@ -251,55 +252,16 @@ void ScreenCopy::WaitAndConsumeFrames()
             break;
         }
         LOG_D("ConsumeFrame_Begin");
-        // resize the pixelmap to fit scale
         auto scaledPixels = ScaleNewsetFrameLocked();
         lock.unlock();
         if (scaledPixels == nullptr) {
             continue;
         }
-        constexpr int32_t rgbaPixelBytes = 4;
-        jpeg_compress_struct jpeg = {};
-        MissionErrorMgr jerr;
         uint8_t *imgBuf = nullptr;
         unsigned long imgSize = 0;
-        jpeg.err = jpeg_std_error(&jerr);
-        jerr.error_exit = MissionErrorExit;
-        if (setjmp(jerr.setjmp_buffer)) {
-            if (jpeg.mem != nullptr) {
-                jpeg_destroy_compress(&jpeg);
-            }
-            LOG_E("JPEG compression failed");
-            if (imgBuf != nullptr) {
-                free(imgBuf);
-                imgBuf = nullptr;
-            }
+        if (!JpegEncode(*scaledPixels, imgBuf, imgSize)) {
             continue;
         }
-        jpeg_create_compress(&jpeg);
-        jpeg.image_width = scaledPixels->GetWidth();
-        jpeg.image_height = scaledPixels->GetHeight();
-        jpeg.input_components = rgbaPixelBytes;
-        jpeg.in_color_space = JCS_EXT_RGBX;
-        jpeg_set_defaults(&jpeg);
-        constexpr int32_t compressQuality = 75;
-        jpeg_set_quality(&jpeg, compressQuality, 1);
-        jpeg_mem_dest(&jpeg, &imgBuf, &imgSize);
-        jpeg_start_compress(&jpeg, 1);
-        auto memAddr = const_cast<uint8_t *>(scaledPixels->GetPixels());
-        if (memAddr == nullptr) {
-            jpeg_destroy_compress(&jpeg);
-            LOG_E("Pixel data is null");
-            continue;
-        }
-        const auto stride = scaledPixels->GetRowStride();
-        const auto height = scaledPixels->GetHeight();
-        for (uint32_t rowIndex = 0; rowIndex < height; rowIndex++) {
-            JSAMPROW rowPtr[1] = { memAddr };
-            jpeg_write_scanlines(&jpeg, rowPtr, 1);
-            memAddr += stride;
-        }
-        jpeg_finish_compress(&jpeg);
-        jpeg_destroy_compress(&jpeg);
         LOG_D("ConsumeFrame_End, size=%{public}lu", imgSize);
         if (g_screenCopyHandler != nullptr) {
             g_screenCopyHandler(imgBuf, imgSize);
@@ -308,6 +270,64 @@ void ScreenCopy::WaitAndConsumeFrames()
         }
     }
     LOG_I("Stop WaitAndConsumeFrames");
+}
+
+bool ScreenCopy::JpegEncode(PixelMap &pixelMap, uint8_t *&imgBuf, unsigned long &imgSize)
+{
+    constexpr int32_t rgbaPixelBytes = 4;
+    jpeg_compress_struct jpeg = {};
+    MissionErrorMgr jerr;
+    imgBuf = nullptr;
+    imgSize = 0;
+    jpeg.err = jpeg_std_error(&jerr);
+    jerr.error_exit = MissionErrorExit;
+    if (setjmp(jerr.setjmp_buffer)) {
+        if (jpeg.mem != nullptr) {
+            jpeg_destroy_compress(&jpeg);
+        }
+        LOG_E("JPEG compression failed");
+        if (imgBuf != nullptr) {
+            free(imgBuf);
+        }
+        return false;
+    }
+    jpeg_create_compress(&jpeg);
+    jpeg.image_width = pixelMap.GetWidth();
+    jpeg.image_height = pixelMap.GetHeight();
+    jpeg.input_components = rgbaPixelBytes;
+    jpeg.in_color_space = JCS_EXT_RGBX;
+    jpeg_set_defaults(&jpeg);
+    constexpr int32_t compressQuality = 75;
+    jpeg_set_quality(&jpeg, compressQuality, 1);
+    jpeg_mem_dest(&jpeg, &imgBuf, &imgSize);
+    jpeg_start_compress(&jpeg, 1);
+    auto memAddr = const_cast<uint8_t *>(pixelMap.GetPixels());
+    if (memAddr == nullptr) {
+        jpeg_destroy_compress(&jpeg);
+        free(imgBuf);
+        imgBuf = nullptr;
+        LOG_E("Pixel data is null");
+        return false;
+    }
+    if (!WriteJpegScanlines(jpeg, memAddr, pixelMap.GetRowStride(), pixelMap.GetHeight())) {
+        jpeg_destroy_compress(&jpeg);
+        free(imgBuf);
+        imgBuf = nullptr;
+        return false;
+    }
+    jpeg_finish_compress(&jpeg);
+    jpeg_destroy_compress(&jpeg);
+    return true;
+}
+
+bool ScreenCopy::WriteJpegScanlines(jpeg_compress_struct &jpeg, uint8_t *data, uint32_t stride, uint32_t height)
+{
+    for (uint32_t rowIndex = 0; rowIndex < height; rowIndex++) {
+        JSAMPROW rowPtr[1] = { data };
+        jpeg_write_scanlines(&jpeg, rowPtr, 1);
+        data += stride;
+    }
+    return true;
 }
 
 bool StartScreenCopy(float scale, int32_t displayId, ScreenCopyHandler handler)
