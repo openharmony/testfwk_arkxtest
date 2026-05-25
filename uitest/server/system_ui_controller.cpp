@@ -445,12 +445,43 @@ namespace OHOS::uitest {
         return newBounds;
     }
 
-    static void InflateWindowInfo(AccessibilityWindowInfo& node, Window& info)
+    static WindowMode ConvertWindowMode(int32_t rawMode)
+    {
+        const auto origMode = static_cast<OHOS::Rosen::WindowMode>(rawMode);
+        switch (origMode) {
+            case OHOS::Rosen::WindowMode::WINDOW_MODE_FULLSCREEN:
+                return WindowMode::FULLSCREEN;
+            case OHOS::Rosen::WindowMode::WINDOW_MODE_SPLIT_PRIMARY:
+                return WindowMode::SPLIT_PRIMARY;
+            case OHOS::Rosen::WindowMode::WINDOW_MODE_SPLIT_SECONDARY:
+                return WindowMode::SPLIT_SECONDARY;
+            case OHOS::Rosen::WindowMode::WINDOW_MODE_FLOATING:
+                return WindowMode::FLOATING;
+            case OHOS::Rosen::WindowMode::WINDOW_MODE_PIP:
+                return WindowMode::PIP;
+            default:
+                return WindowMode::UNKNOWN;
+        }
+    }
+
+    static void InflateAbilityInfo(Window& info, const std::string& app,
+        AccessibilityElementInfo& element, bool needAbilityInfo)
+    {
+        if (needAbilityInfo) {
+            const auto foreAbility = AAFwk::AbilityManagerClient::GetInstance()->GetTopAbility();
+            info.abilityName_ = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
+            info.pagePath_ = (app == foreAbility.GetBundleName()) ? element.GetPagePath() : "";
+        } else {
+            info.abilityName_ = "";
+            info.pagePath_ = element.GetPagePath();
+        }
+    }
+
+    static void InflateWindowInfo(AccessibilityWindowInfo& node, Window& info, bool needAbilityInfo)
     {
         info.focused_ = node.IsFocused();
         info.actived_ = node.IsActive();
         info.decoratorEnabled_ = node.IsDecorEnable();
-        // get bundle name by root node
         AccessibilityElementInfo element;
         LOG_D("Start Get Bundle Name by WindowId %{public}d", node.GetWindowId());
         if (AccessibilityUITestAbility::GetInstance()->GetRootByWindow(node, element) != RET_OK) {
@@ -459,9 +490,7 @@ namespace OHOS::uitest {
             std::string app = element.GetBundleName();
             LOG_I("End Get Bundle Name by WindowId %{public}d, app is %{public}s", node.GetWindowId(), app.data());
             info.bundleName_ = app;
-            const auto foreAbility = AAFwk::AbilityManagerClient::GetInstance()->GetTopAbility();
-            info.abilityName_ = (app == foreAbility.GetBundleName()) ? foreAbility.GetAbilityName() : "";
-            info.pagePath_ = (app == foreAbility.GetBundleName()) ? element.GetPagePath() : "";
+            InflateAbilityInfo(info, app, element, needAbilityInfo);
         }
         auto touchAreas = node.GetTouchHotAreas();
         for (auto area : touchAreas) {
@@ -475,27 +504,7 @@ namespace OHOS::uitest {
             info.touchHotAreas_.clear();
             info.touchHotAreas_.push_back(Rect(0, 0, 0, 0));
         }
-        const auto origMode = static_cast<OHOS::Rosen::WindowMode>(node.GetWindowMode());
-        switch (origMode) {
-            case OHOS::Rosen::WindowMode::WINDOW_MODE_FULLSCREEN:
-                info.mode_ = WindowMode::FULLSCREEN;
-                break;
-            case OHOS::Rosen::WindowMode::WINDOW_MODE_SPLIT_PRIMARY:
-                info.mode_ = WindowMode::SPLIT_PRIMARY;
-                break;
-            case OHOS::Rosen::WindowMode::WINDOW_MODE_SPLIT_SECONDARY:
-                info.mode_ = WindowMode::SPLIT_SECONDARY;
-                break;
-            case OHOS::Rosen::WindowMode::WINDOW_MODE_FLOATING:
-                info.mode_ = WindowMode::FLOATING;
-                break;
-            case OHOS::Rosen::WindowMode::WINDOW_MODE_PIP:
-                info.mode_ = WindowMode::PIP;
-                break;
-            default:
-                info.mode_ = WindowMode::UNKNOWN;
-                break;
-        }
+        info.mode_ = ConvertWindowMode(node.GetWindowMode());
     }
 
     static bool GetAamsWindowInfos(vector<AccessibilityWindowInfo> &windows, int32_t displayId,
@@ -558,7 +567,7 @@ namespace OHOS::uitest {
     }
 
     void SysUiController::GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay,
-        bool skipWaitForUiSteady)
+        bool skipWaitForUiSteady, bool needAbilityInfo)
     {
         std::lock_guard<std::mutex> dumpLocker(dumpMtx); // disallow concurrent dumpUi
         ApiCallErr error = ApiCallErr(NO_ERROR);
@@ -598,7 +607,7 @@ namespace OHOS::uitest {
                     win.GetWindowId(), win.IsActive(), win.IsFocused(), win.GetWindowLayer(), win.GetDisplayId());
                 Window winWrapper{win.GetWindowId()};
                 winWrapper.bounds_ = winRectInScreen;
-                InflateWindowInfo(win, winWrapper);
+                InflateWindowInfo(win, winWrapper, needAbilityInfo);
                 winWrapper.displayId_ = win.GetDisplayId();
                 UpdateWindowAttrs(winWrapper, overplays);
                 winWrapper.displayId_ = displayId;

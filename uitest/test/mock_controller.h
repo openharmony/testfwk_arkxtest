@@ -109,7 +109,7 @@ namespace OHOS::uitest {
         }
 
         void GetUiWindows(std::map<int32_t, vector<Window>> &out, int32_t targetDisplay,
-            bool skipWaitForUiSteady) override
+            bool skipWaitForUiSteady, bool needAbilityInfo) override
         {
             vector<Window> winInfos;
             for (auto iter = testIn.cbegin(); iter != testIn.cend(); ++iter) {
