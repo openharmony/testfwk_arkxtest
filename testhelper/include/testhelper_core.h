@@ -37,6 +37,7 @@ namespace OHOS::testhelper {
 
     private:
         bool ValidateTimeRanges(int year, int month, int day, int hour, int minute, int second);
+        bool ValidateFontFileFormat(const std::string& filePath);
     };
 }
 
