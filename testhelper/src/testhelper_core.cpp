@@ -252,6 +252,23 @@ namespace OHOS::testhelper {
         }
     }
 
+    bool TestHelperCore::ValidateFontFileFormat(const std::string& filePath)
+    {
+        size_t dotPos = filePath.rfind('.');
+        if (dotPos == std::string::npos) {
+            PrintToConsole("Error: Invalid font file format. Only supports .ttf and .ttc files.");
+            LOG_E("Font file has no extension: %{public}s", filePath.c_str());
+            return false;
+        }
+        std::string extension = filePath.substr(dotPos);
+        if (extension != ".ttf" && extension != ".ttc") {
+            PrintToConsole("Error: Invalid font file format. Only supports .ttf and .ttc files.");
+            LOG_E("Invalid font file extension: %{public}s", extension.c_str());
+            return false;
+        }
+        return true;
+    }
+
     int32_t TestHelperCore::HandleGetFontname(const std::string& fontPath)
     {
         LOG_I("HandleGetFontname called with path: %{public}s", fontPath.c_str());
@@ -259,23 +276,18 @@ namespace OHOS::testhelper {
         const std::string prefix = "/data/local/tmp/";
         if (fontPath.empty() || fontPath.find(prefix) != 0) {
             LOG_E("Invalid font path");
-            PrintToConsole(
-                "Error: Invalid arguments. Usage: testhelper get-fontname <font-path> (/data/local/tmp/* files only)");
+            PrintToConsole("Error: Invalid font path. Please provide a valid absolute path under the /data/local/tmp");
             return EXIT_FAILURE;
         }
-        
+        if (!ValidateFontFileFormat(fontPath)) {
+            return EXIT_FAILURE;
+        }
         std::string fileName = fontPath.substr(prefix.length());
         if (fileName.empty() || fileName.find("..") != std::string::npos) {
             LOG_E("Invalid font path: %{public}s", fontPath.c_str());
-            PrintToConsole("Error: Invalid font path. Only supports files in /data/local/tmp/*");
+            PrintToConsole("Error: Invalid font path. Please provide a valid absolute path under the /data/local/tmp");
             return EXIT_FAILURE;
         }
-        
-#ifndef ARKXTEST_FONT_ENABLE
-        LOG_E("Font management is not supported");
-        PrintToConsole("Error: Operation is not supported. Font management is not supported on this device.");
-        return EXIT_NOT_SUPPORTED;
-#else
         int fd = open(fontPath.c_str(), O_RDONLY);
         if (fd < 0) {
             LOG_E("Font file not found: %{public}s", fontPath.c_str());
@@ -283,6 +295,13 @@ namespace OHOS::testhelper {
             return EXIT_FAILURE;
         }
         fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+        
+#ifndef ARKXTEST_FONT_ENABLE
+        LOG_E("Font management is not supported");
+        PrintToConsole("Error: Operation is not supported. Font management is not supported on this device.");
+        fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+        return EXIT_NOT_SUPPORTED;
+#else
         std::vector<std::string> fontNames;
         fontNames = Rosen::FontToolSet::GetInstance().GetFontFullName(fd);
         fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
@@ -306,23 +325,18 @@ namespace OHOS::testhelper {
         const std::string prefix = "/data/local/tmp/";
         if (fontPath.empty() || fontPath.find(prefix) != 0) {
             LOG_E("Invalid font path");
-            PrintToConsole(
-                "Error: Invalid arguments. Usage: testhelper install-font <font-path> (/data/local/tmp/* files only)");
+            PrintToConsole("Error: Invalid font path. Please provide a valid absolute path under the /data/local/tmp");
             return EXIT_FAILURE;
         }
-        
+        if (!ValidateFontFileFormat(fontPath)) {
+            return EXIT_FAILURE;
+        }
         std::string fileName = fontPath.substr(prefix.length());
         if (fileName.empty() || fileName.find("..") != std::string::npos) {
             LOG_E("Invalid font path: %{public}s", fontPath.c_str());
-            PrintToConsole("Error: Invalid font path. Only supports files in /data/local/tmp/*");
+            PrintToConsole("Error: Invalid font path. Please provide a valid absolute path under the /data/local/tmp");
             return EXIT_FAILURE;
         }
-        
-#ifndef ARKXTEST_FONT_ENABLE
-        LOG_E("Font management is not supported");
-        PrintToConsole("Error: Operation is not supported. Font management is not supported on this device.");
-        return EXIT_NOT_SUPPORTED;
-#else
         int fd = open(fontPath.c_str(), O_RDONLY);
         if (fd < 0) {
             LOG_E("Font file not found: %{public}s", fontPath.c_str());
@@ -331,7 +345,12 @@ namespace OHOS::testhelper {
         }
         fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
-
+        
+#ifndef ARKXTEST_FONT_ENABLE
+        LOG_E("Font management is not supported");
+        PrintToConsole("Error: Operation is not supported. Font management is not supported on this device.");
+        return EXIT_NOT_SUPPORTED;
+#else
         auto result = OHOS::testserver::TestServerClient::GetInstance().InstallFont(fontPath);
         if (result == OHOS::testserver::TEST_SERVER_OK) {
             PrintToConsole("Font installed successfully from " + fontPath);
