@@ -70,7 +70,8 @@ namespace OHOS::uitest {
         return true;
     }
 
-    void UiDriver::UpdateUIWindows(ApiCallErr &error, int32_t targetDisplay, bool skipWaitForUiSteady)
+    void UiDriver::UpdateUIWindows(ApiCallErr &error, int32_t targetDisplay,
+        bool skipWaitForUiSteady, bool needAbilityInfo)
     {
         visitWidgets_.clear();
         targetWidgetsIndex_.clear();
@@ -79,7 +80,8 @@ namespace OHOS::uitest {
             return;
         }
         std::map<int32_t, vector<Window>> currentDisplayAndWindowCacheMap;
-        uiController_->GetUiWindows(currentDisplayAndWindowCacheMap, targetDisplay, skipWaitForUiSteady);
+        uiController_->GetUiWindows(currentDisplayAndWindowCacheMap, targetDisplay,
+            skipWaitForUiSteady, needAbilityInfo);
         if (currentDisplayAndWindowCacheMap.empty()) {
             LOG_E("Get Windows Failed");
             error = ApiCallErr(ERR_INTERNAL, "Get window nodes failed");
@@ -160,7 +162,7 @@ namespace OHOS::uitest {
     void UiDriver::DumpUiHierarchy(nlohmann::json &out, DumpOption &option, ApiCallErr &error)
     {
         option.displayId_ = uiController_->GetValidDisplayId(option.displayId_);
-        UpdateUIWindows(error, option.displayId_);
+        UpdateUIWindows(error, option.displayId_, false, true);
         if (error.code_ != NO_ERROR) {
             return;
         }
