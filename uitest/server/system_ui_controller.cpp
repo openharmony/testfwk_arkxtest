@@ -1507,6 +1507,12 @@ namespace OHOS::uitest {
         }
     }
 
+    void SysUiController::SetActiveUser(int32_t userId)
+    {
+        LOG_I("Set currentUser_ from %{public}d to %{public}d", currentUser_, userId);
+        currentUser_ = userId;
+    }
+
     bool SysUiController::ConvertAAMS(int32_t displayId, ApiCallErr &error)
     {
         if (isSingleUser_) {
