@@ -39,6 +39,7 @@
 #include <cstdio>
 #include "ipc_transactor.h"
 #include "system_ui_controller.h"
+#include "test_server_client.h"
 #include "input_manager.h"
 #include "i_input_event_consumer.h"
 #include "pointer_event.h"
@@ -223,7 +224,13 @@ namespace OHOS::uitest {
             return;
         }
         if (initController) {
-            UiDriver::RegisterController(make_unique<SysUiController>());
+            auto controller = make_unique<SysUiController>();
+            int32_t userId = OHOS::testserver::TestServerClient::GetInstance()
+                .GetUserIdByDisplayId(option.displayId_);
+            if (userId != -1) {
+                controller->SetActiveUser(userId);
+            }
+            UiDriver::RegisterController(move(controller));
         }
         auto driver = UiDriver();
         auto data = nlohmann::json();

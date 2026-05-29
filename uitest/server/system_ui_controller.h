@@ -91,6 +91,8 @@ namespace OHOS::uitest {
 
         Point ConvertRelativeToGlobal(const Point &point, ApiCallErr &error) const override;
 
+        void SetActiveUser(int32_t userId);
+
         void CloseAamsEvent() const override;
 
         void OpenAamsEvent() const override;
