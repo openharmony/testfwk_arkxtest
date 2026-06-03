@@ -336,7 +336,8 @@ do { \
     {
         EXTENSION_API_CHECK(out != nullptr, "Null LowLevelFunctions recveive pointer", ERR_BAD_ARG);
         auto extensionSize = reinterpret_cast<unsigned long>(out->callThroughMessage);
-        auto methodNum = extensionSize / (sizeof(out->callThroughMessage));
+        auto methodNum = extensionSize / sizeof(out->callThroughMessage);
+        LOG_W("InitLowLevelFunctions get methodNum %{public}lu", methodNum);
         out->callThroughMessage = CallThroughMessage;
         out->setCallbackMessageHandler = SetCallbackMessageHandler;
         out->atomicTouch = AtomicTouch;
