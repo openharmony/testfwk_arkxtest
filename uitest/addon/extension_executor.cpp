@@ -199,6 +199,34 @@ do { \
         return RETCODE_SUCCESS;
     }
 
+    static RetCode AtomicMouseActionInDisplay(int32_t stage, int32_t px, int32_t py, int32_t btn, int32_t displayId)
+    {
+        static auto driver = UiDriver();
+        EXTENSION_API_CHECK(stage >= ActionStage::DOWN && stage <= ActionStage::AXIS_STOP,
+                            "Illegal stage", ERR_BAD_ARG);
+        EXTENSION_API_CHECK(btn >= MouseButton::BUTTON_NONE && btn <= MouseButton::BUTTON_MIDDLE,
+                            "Illegal btn", ERR_BAD_ARG);
+        auto touch = GenericAtomicMouseAction(static_cast<ActionStage>(stage), Point(px, py, displayId),
+                                              static_cast<MouseButton>(btn));
+        auto err = ApiCallErr(NO_ERROR);
+        UiOpArgs uiOpArgs;
+        driver.PerformMouseAction(touch, uiOpArgs, err);
+        EXTENSION_API_CHECK(err.code_ == NO_ERROR, err.message_, err.code_);
+        return RETCODE_SUCCESS;
+    }
+
+    static RetCode AtomicTouchInDisplay(int32_t stage, int32_t px, int32_t py, int32_t displayId)
+    {
+        static auto driver = UiDriver();
+        EXTENSION_API_CHECK(stage >= ActionStage::DOWN && stage <= ActionStage::UP, "Illegal stage", ERR_BAD_ARG);
+        auto touch = GenericAtomicAction(static_cast<ActionStage>(stage), Point(px, py, displayId));
+        auto err = ApiCallErr(NO_ERROR);
+        UiOpArgs uiOpArgs;
+        driver.PerformTouch(touch, uiOpArgs, err);
+        EXTENSION_API_CHECK(err.code_ == NO_ERROR, err.message_, err.code_);
+        return RETCODE_SUCCESS;
+    }
+
     static RetCode StopCapture(Text name)
     {
         EXTENSION_API_CHECK(name.data != nullptr, "Illegal name/callback", ERR_BAD_ARG);
@@ -307,12 +335,19 @@ do { \
     static RetCode InitLowLevelFunctions(LowLevelFunctions *out)
     {
         EXTENSION_API_CHECK(out != nullptr, "Null LowLevelFunctions recveive pointer", ERR_BAD_ARG);
+        auto extensionSize = reinterpret_cast<unsigned long>(out->callThroughMessage);
+        auto methodNum = extensionSize / sizeof(out->callThroughMessage);
+        LOG_W("InitLowLevelFunctions get methodNum %{public}lu", methodNum);
         out->callThroughMessage = CallThroughMessage;
         out->setCallbackMessageHandler = SetCallbackMessageHandler;
         out->atomicTouch = AtomicTouch;
         out->startCapture = StartCapture;
         out->stopCapture = StopCapture;
         out->atomicMouseAction = AtomicMouseAction;
+        if (methodNum == EIGHT) {
+            out->atomicMouseActionInDisplay = AtomicMouseActionInDisplay;
+            out->atomicTouchInDisplay = AtomicTouchInDisplay;
+        }
         return RETCODE_SUCCESS;
     }
 
