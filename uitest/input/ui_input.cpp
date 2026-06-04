@@ -140,10 +140,10 @@ namespace OHOS::uitest {
 
     static bool TryParseDisplayId(int32_t argc, char *argv[], size_t pos, int32_t &displayId)
     {
-        if ((size_t)argc > pos + 1) {
+        if (static_cast<size_t>(argc) > pos + 1) {
             return false;
         }
-        if ((size_t)argc == pos + 1) {
+        if (static_cast<size_t>(argc) == pos + 1) {
             displayId = atoi(argv[pos]);
         }
         return true;
