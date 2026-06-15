@@ -109,6 +109,7 @@ class ExpectExtend {
             return (expect as ExpectService).expect(actualValue);
           }
         }
+        throw new Error("No coreContext or default 'expect' service!")
       },
     };
   }
