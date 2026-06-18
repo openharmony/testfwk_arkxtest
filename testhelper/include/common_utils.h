@@ -43,6 +43,8 @@ namespace OHOS::testhelper {
     constexpr int32_t PARSE_GPX_INVALID_LAT = 4;
     constexpr int32_t PARSE_GPX_INVALID_LON = 5;
     constexpr int32_t PARSE_GPX_INVALID_COORDS = 6;
+    constexpr int32_t PARSE_GPX_INVALID_SPEED = 7;
+    constexpr int32_t PARSE_GPX_INVALID_DIRECTION = 8;
     constexpr int32_t MAX_MOCK_LOCATIONS = 1000;
     constexpr int32_t MAX_TIME_INTERVAL = 3600;
     // constants

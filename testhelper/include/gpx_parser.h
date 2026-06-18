@@ -38,21 +38,27 @@ namespace OHOS::testhelper {
 
     private:
         static int32_t CreateLocationFromData(const GPXElementData& data, testserver::TestServerLocation& location);
+        static int32_t ValidateCoordinates(const std::string& latStr, const std::string& lonStr,
+            double& lat, double& lon);
+        static int32_t ParseOptionalFields(const GPXElementData& data, double& ele, double& speed,
+            double& direction);
+        static void FillLocation(testserver::TestServerLocation& location, double lat, double lon,
+            double ele, double speed, double direction);
         static void ParseExtensions(xmlNodePtr node, std::string& speedStr, std::string& directionStr);
         static void ParsePointData(xmlNodePtr node, GPXElementData& data, std::string& speedStr,
             std::string& directionStr);
-        static void AddLocation(const GPXElementData& data, const std::string& speedStr,
+        static bool AddLocation(const GPXElementData& data, const std::string& speedStr,
             const std::string& directionStr, std::vector<testserver::TestServerLocation>& locations,
             const std::string& pointType);
-        static void ProcessPoint(xmlNodePtr node, std::vector<testserver::TestServerLocation>& locations,
+        static bool ProcessPoint(xmlNodePtr node, std::vector<testserver::TestServerLocation>& locations,
             const std::string& pointType);
-        static void ProcessWaypoint(xmlNodePtr node, std::vector<testserver::TestServerLocation>& locations);
-        static void ProcessTrackSegment(xmlNodePtr trksegNode, std::vector<testserver::TestServerLocation>& locations);
-        static void ProcessTrack(xmlNodePtr trkNode, std::vector<testserver::TestServerLocation>& locations);
-        static void ProcessRoute(xmlNodePtr rteNode, std::vector<testserver::TestServerLocation>& locations);
+        static bool ProcessWaypoint(xmlNodePtr node, std::vector<testserver::TestServerLocation>& locations);
+        static bool ProcessTrackSegment(xmlNodePtr trksegNode, std::vector<testserver::TestServerLocation>& locations);
+        static bool ProcessTrack(xmlNodePtr trkNode, std::vector<testserver::TestServerLocation>& locations);
+        static bool ProcessRoute(xmlNodePtr rteNode, std::vector<testserver::TestServerLocation>& locations);
         static bool ValidateGPXRoot(xmlNodePtr root, std::vector<testserver::TestServerLocation>& locations);
-        static void ProcessGPXChildren(xmlNodePtr root, std::vector<testserver::TestServerLocation>& locations);
-        static void ProcessChildElement(xmlNodePtr child, const char* childName,
+        static bool ProcessGPXChildren(xmlNodePtr root, std::vector<testserver::TestServerLocation>& locations);
+        static bool ProcessChildElement(xmlNodePtr child, const char* childName,
             std::vector<testserver::TestServerLocation>& locations);
     };
 

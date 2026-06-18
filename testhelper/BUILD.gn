@@ -32,6 +32,7 @@ ohos_static_library("testhelper_core") {
     "time_service:time_client",
     "ability_runtime:wantagent_innerkits",
     "libxml2:libxml2",
+    "ability_base:configuration",
   ]
   if ((arkxtest_product_feature == "pc" ||
        arkxtest_product_feature == "tablet" ||
@@ -117,6 +118,7 @@ ohos_unittest("testhelper_unittest") {
     "time_service:time_client",
     "ability_runtime:wantagent_innerkits",
     "libxml2:libxml2",
+    "ability_base:configuration",
   ]
   if ((arkxtest_product_feature == "pc" ||
        arkxtest_product_feature == "tablet" ||
