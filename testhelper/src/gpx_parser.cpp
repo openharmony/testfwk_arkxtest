@@ -73,7 +73,11 @@ namespace OHOS::testhelper {
             xmlFreeDoc(doc);
             return locations;
         }
-        ProcessGPXChildren(root, locations);
+        if (!ProcessGPXChildren(root, locations)) {
+            locations.clear();
+            xmlFreeDoc(doc);
+            return locations;
+        }
         xmlFreeDoc(doc);
         if (locations.empty()) {
             PrintToConsole(
@@ -97,70 +101,95 @@ namespace OHOS::testhelper {
         return true;
     }
 
-    void GPXParser::ProcessGPXChildren(xmlNodePtr root, LocationList& locations)
+    bool GPXParser::ProcessGPXChildren(xmlNodePtr root, LocationList& locations)
     {
         for (xmlNodePtr child = root->children; child != nullptr; child = child->next) {
             if (child->type != XML_ELEMENT_NODE) continue;
             if (child->name == nullptr) continue;
             const char* childName = reinterpret_cast<const char*>(child->name);
-            ProcessChildElement(child, childName, locations);
+            if (!ProcessChildElement(child, childName, locations)) {
+                return false;
+            }
         }
+        return true;
     }
 
-    void GPXParser::ProcessChildElement(xmlNodePtr child, const char* childName, LocationList& locations)
+    bool GPXParser::ProcessChildElement(xmlNodePtr child, const char* childName, LocationList& locations)
     {
-        if (child->name == nullptr) return;
+        if (child->name == nullptr) return true;
         if (xmlStrcasecmp(child->name, BAD_CAST "wpt") == 0) {
             LOG_D("GPXParser: Found waypoint element");
-            ProcessWaypoint(child, locations);
+            return ProcessWaypoint(child, locations);
         } else if (xmlStrcasecmp(child->name, BAD_CAST "trk") == 0) {
             LOG_D("GPXParser: Found track element");
-            ProcessTrack(child, locations);
+            return ProcessTrack(child, locations);
         } else if (xmlStrcasecmp(child->name, BAD_CAST "rte") == 0) {
             LOG_D("GPXParser: Found route element");
-            ProcessRoute(child, locations);
+            return ProcessRoute(child, locations);
         }
+        return true;
     }
 
-    int32_t GPXParser::CreateLocationFromData(const GPXElementData& data,
-        testserver::TestServerLocation& location)
+    int32_t GPXParser::ValidateCoordinates(const std::string& latStr, const std::string& lonStr,
+        double& lat, double& lon)
     {
-        double lat = INVALID_LATITUDE;
-        double lon = INVALID_LONGITUDE;
-        double ele = DEFAULT_ALTITUDE;
-        double speed = DEFAULT_SPEED;
-        double direction = DEFAULT_DIRECTION;
-        if (!data.lat.empty() && !SafeStod(data.lat, lat)) {
+        lat = INVALID_LATITUDE;
+        lon = INVALID_LONGITUDE;
+        if (!latStr.empty() && !SafeStod(latStr, lat)) {
+            PrintToConsole("Error: The parameter validation in gpx file has failed. latitude is not a valid number.");
             LOG_E("GPXParser: Failed to parse latitude");
             return PARSE_GPX_INVALID_LAT;
         }
-        if (!data.lon.empty() && !SafeStod(data.lon, lon)) {
+        if (!lonStr.empty() && !SafeStod(lonStr, lon)) {
+            PrintToConsole("Error: The parameter validation in gpx file has failed. longitude is not a valid number.");
             LOG_E("GPXParser: Failed to parse longitude");
             return PARSE_GPX_INVALID_LON;
         }
         if (lat < LATITUDE_MIN || lat > LATITUDE_MAX) {
-            LOG_E("GPXParser: Invalid latitude");
+            PrintToConsole("Error: The parameter validation in gpx file has failed. latitude must be in [-90, 90].");
+            LOG_E("GPXParser: Invalid latitude: %{public}f", lat);
             return PARSE_GPX_INVALID_COORDS;
         }
         if (lon < LONGITUDE_MIN || lon > LONGITUDE_MAX) {
-            LOG_E("GPXParser: Invalid longitude");
+            PrintToConsole("Error: The parameter validation in gpx file has failed. longitude must be in [-180, 180].");
+            LOG_E("GPXParser: Invalid longitude: %{public}f", lon);
             return PARSE_GPX_INVALID_COORDS;
         }
+        return PARSE_GPX_SUCCESS;
+    }
+
+    int32_t GPXParser::ParseOptionalFields(const GPXElementData& data, double& ele, double& speed, double& direction)
+    {
+        ele = DEFAULT_ALTITUDE;
+        speed = DEFAULT_SPEED;
+        direction = DEFAULT_DIRECTION;
         if (!data.ele.empty() && !SafeStod(data.ele, ele)) {
             ele = DEFAULT_ALTITUDE;
         }
-        if (!data.speed.empty() && !SafeStod(data.speed, speed)) {
-            speed = DEFAULT_SPEED;
-        } else if (!data.speed.empty() && speed < 0) {
-            speed = DEFAULT_SPEED;
-        }
-        if (!data.direction.empty() && SafeStod(data.direction, direction)) {
-            if (direction < DIRECTION_MIN || direction > DIRECTION_MAX) {
-                direction = DEFAULT_DIRECTION;
+        if (!data.speed.empty()) {
+            if (!SafeStod(data.speed, speed) || speed < 0) {
+                PrintToConsole(
+                    "Error: The parameter validation in gpx file has failed. speed must be a valid number and >= 0.");
+                LOG_E("GPXParser: Invalid speed: %{public}s", data.speed.c_str());
+                return PARSE_GPX_INVALID_SPEED;
             }
-        } else if (!data.direction.empty()) {
-            direction = DEFAULT_DIRECTION;
         }
+        if (!data.direction.empty()) {
+            if (!SafeStod(data.direction, direction) ||
+                direction < DIRECTION_MIN || direction > DIRECTION_MAX) {
+                PrintToConsole(
+                    "Error: The parameter validation in gpx file has failed. "
+                    "direction must be a valid number in [0, 360].");
+                LOG_E("GPXParser: Invalid direction: %{public}s", data.direction.c_str());
+                return PARSE_GPX_INVALID_DIRECTION;
+            }
+        }
+        return PARSE_GPX_SUCCESS;
+    }
+
+    void GPXParser::FillLocation(testserver::TestServerLocation& location, double lat, double lon,
+        double ele, double speed, double direction)
+    {
         location.latitude = lat;
         location.longitude = lon;
         location.altitude = ele;
@@ -170,6 +199,24 @@ namespace OHOS::testhelper {
         location.timeStamp = 0;
         location.timeSinceBoot = 0;
         location.isFromMock = true;
+    }
+
+    int32_t GPXParser::CreateLocationFromData(const GPXElementData& data, testserver::TestServerLocation& location)
+    {
+        double lat = INVALID_LATITUDE;
+        double lon = INVALID_LONGITUDE;
+        int32_t coordResult = ValidateCoordinates(data.lat, data.lon, lat, lon);
+        if (coordResult != PARSE_GPX_SUCCESS) {
+            return coordResult;
+        }
+        double ele = DEFAULT_ALTITUDE;
+        double speed = DEFAULT_SPEED;
+        double direction = DEFAULT_DIRECTION;
+        int32_t optionalResult = ParseOptionalFields(data, ele, speed, direction);
+        if (optionalResult != PARSE_GPX_SUCCESS) {
+            return optionalResult;
+        }
+        FillLocation(location, lat, lon, ele, speed, direction);
         return PARSE_GPX_SUCCESS;
     }
 
@@ -240,33 +287,37 @@ namespace OHOS::testhelper {
         }
     }
 
-    void GPXParser::AddLocation(const GPXElementData& data, const std::string& speedStr,
+    bool GPXParser::AddLocation(const GPXElementData& data, const std::string& speedStr,
         const std::string& directionStr, LocationList& locations, const std::string& pointType)
     {
         GPXElementData locationData = data;
         if (!speedStr.empty()) locationData.speed = speedStr;
         if (!directionStr.empty()) locationData.direction = directionStr;
         testserver::TestServerLocation location;
-        if (CreateLocationFromData(locationData, location) == PARSE_GPX_SUCCESS) {
-            locations.push_back(location);
-            LOG_I("GPXParser: Added valid %{public}s point", pointType.c_str());
+        if (CreateLocationFromData(locationData, location) != PARSE_GPX_SUCCESS) {
+            return false;
         }
+        locations.push_back(location);
+        LOG_I("GPXParser: Added valid %{public}s point", pointType.c_str());
+        return true;
     }
 
-    void GPXParser::ProcessPoint(xmlNodePtr node, LocationList& locations, const std::string& pointType)
+    bool GPXParser::ProcessPoint(xmlNodePtr node, LocationList& locations, const std::string& pointType)
     {
         if (node == nullptr || node->properties == nullptr) {
-            std::string msg = "GPXParser: ProcessGPX" + pointType + ": Invalid node";
-            LOG_W("%{public}s", msg.c_str());
-            return;
+            PrintToConsole("Error: The parameter validation in gpx file has failed. Invalid point node.");
+            LOG_E("GPXParser: ProcessPoint: Invalid node for %{public}s", pointType.c_str());
+            return false;
         }
         xmlChar* latAttr = xmlGetProp(node, BAD_CAST "lat");
         xmlChar* lonAttr = xmlGetProp(node, BAD_CAST "lon");
         if (latAttr == nullptr || lonAttr == nullptr) {
             if (latAttr) xmlFree(latAttr);
             if (lonAttr) xmlFree(lonAttr);
-            LOG_W("GPXParser: Missing lat or lon attribute");
-            return;
+            PrintToConsole(
+                "Error: The parameter validation in gpx file has failed. lat and lon attributes are required.");
+            LOG_E("GPXParser: Missing lat or lon attribute");
+            return false;
         }
         GPXElementData data;
         data.lat = reinterpret_cast<char*>(latAttr);
@@ -276,56 +327,68 @@ namespace OHOS::testhelper {
         std::string speedStr;
         std::string directionStr;
         ParsePointData(node, data, speedStr, directionStr);
-        AddLocation(data, speedStr, directionStr, locations, pointType);
+        return AddLocation(data, speedStr, directionStr, locations, pointType);
     }
 
-    void GPXParser::ProcessWaypoint(xmlNodePtr node, LocationList& locations)
+    bool GPXParser::ProcessWaypoint(xmlNodePtr node, LocationList& locations)
     {
-        ProcessPoint(node, locations, "waypoint");
+        return ProcessPoint(node, locations, "waypoint");
     }
 
-    void GPXParser::ProcessTrackSegment(xmlNodePtr trksegNode, LocationList& locations)
+    bool GPXParser::ProcessTrackSegment(xmlNodePtr trksegNode, LocationList& locations)
     {
         if (trksegNode == nullptr) {
-            LOG_W("GPXParser: ProcessGPXTrackSegment: Invalid node");
-            return;
+            PrintToConsole("Error: The parameter validation in gpx file has failed. Invalid track segment node.");
+            LOG_E("GPXParser: ProcessTrackSegment: Invalid node");
+            return false;
         }
         for (xmlNodePtr child = trksegNode->children; child != nullptr; child = child->next) {
             if (child->type != XML_ELEMENT_NODE) continue;
             if (child->name == nullptr) continue;
             if (xmlStrcasecmp(child->name, BAD_CAST "trkpt") == 0) {
-                ProcessPoint(child, locations, "track");
+                if (!ProcessPoint(child, locations, "track")) {
+                    return false;
+                }
             }
         }
+        return true;
     }
 
-    void GPXParser::ProcessTrack(xmlNodePtr trkNode, LocationList& locations)
+    bool GPXParser::ProcessTrack(xmlNodePtr trkNode, LocationList& locations)
     {
         if (trkNode == nullptr) {
-            LOG_W("GPXParser: ProcessGPXTrack: Invalid node");
-            return;
+            PrintToConsole("Error: The parameter validation in gpx file has failed. Invalid track node.");
+            LOG_E("GPXParser: ProcessTrack: Invalid node");
+            return false;
         }
         for (xmlNodePtr child = trkNode->children; child != nullptr; child = child->next) {
             if (child->type != XML_ELEMENT_NODE) continue;
             if (child->name == nullptr) continue;
             if (xmlStrcasecmp(child->name, BAD_CAST "trkseg") == 0) {
-                ProcessTrackSegment(child, locations);
+                if (!ProcessTrackSegment(child, locations)) {
+                    return false;
+                }
             }
         }
+        return true;
     }
 
-    void GPXParser::ProcessRoute(xmlNodePtr rteNode, LocationList& locations)
+    bool GPXParser::ProcessRoute(xmlNodePtr rteNode, LocationList& locations)
     {
         if (rteNode == nullptr) {
-            LOG_W("GPXParser: ProcessGPXRoute: Invalid node");
-            return;
+            PrintToConsole("Error: The parameter validation in gpx file has failed. Invalid route node.");
+            LOG_E("GPXParser: ProcessRoute: Invalid node");
+            return false;
         }
         for (xmlNodePtr child = rteNode->children; child != nullptr; child = child->next) {
             if (child->type != XML_ELEMENT_NODE) continue;
             if (child->name == nullptr) continue;
             if (xmlStrcasecmp(child->name, BAD_CAST "rtept") == 0) {
-                ProcessPoint(child, locations, "route");
+                if (!ProcessPoint(child, locations, "route")) {
+                    return false;
+                }
             }
         }
+        return true;
     }
 }

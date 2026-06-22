@@ -463,6 +463,10 @@ namespace OHOS::testhelper {
             PrintToConsole("Error: Invalid path. Please provide a valid gpx file path under the /data/local/tmp");
             return false;
         }
+        if (access(filePath.c_str(), F_OK) != 0) {
+            PrintToConsole("Error: Invalid path. Please provide a valid gpx file path under the /data/local/tmp");
+            return false;
+        }
         return true;
     }
 
@@ -533,6 +537,11 @@ namespace OHOS::testhelper {
             return EXIT_FAILURE;
         }
         auto locations = GPXParser::ParseFile(gpxFile);
+        if (locations.empty()) {
+            LOG_E("No valid locations parsed from GPX file");
+            xmlCleanupParser();
+            return EXIT_FAILURE;
+        }
         if (locations.size() > MAX_MOCK_LOCATIONS) {
             PrintToConsole(
                 "Error: The parameter validation in gpx file has failed. locations size must be less than 1000.");
