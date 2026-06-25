@@ -30,6 +30,13 @@ config("uitest_common_configs") {
 ohos_static_library("uitest_core") {
   use_exceptions = true
   configs = [ ":uitest_common_configs" ]
+  branch_protector_ret = "pac_ret"
+  stack_protector_ret = true
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "${source_root}/core/dump_handler.cpp",
     "${source_root}/core/frontend_api_handler.cpp",
@@ -68,6 +75,13 @@ ohos_static_library("uitest_core") {
 ohos_static_library("uitest_input") {
   use_exceptions = true
   configs = [ ":uitest_common_configs" ]
+  branch_protector_ret = "pac_ret"
+  stack_protector_ret = true
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [ "${source_root}/input/ui_input.cpp" ]
   deps = [ ":uitest_core" ]
   defines = [
@@ -86,6 +100,13 @@ ohos_static_library("uitest_input") {
 ohos_static_library("uitest_record") {
   use_exceptions = true
   configs = [ ":uitest_common_configs" ]
+  branch_protector_ret = "pac_ret"
+  stack_protector_ret = true
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "${source_root}/record/external_calls.cpp",
     "${source_root}/record/find_widget.cpp",
@@ -121,6 +142,13 @@ common_external_deps = [
 
 ohos_static_library("uitest_ipc") {
   configs = [ ":uitest_common_configs" ]
+  branch_protector_ret = "pac_ret"
+  stack_protector_ret = true
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [ "${source_root}/connection/ipc_transactor.cpp" ]
   include_dirs = [ "${source_root}/core" ]
   deps = [ "${source_root}/../testserver/src:test_server_client" ]
@@ -145,6 +173,13 @@ ohos_static_library("uitest_ipc") {
 
 ohos_static_library("uitest_addon") {
   configs = [ ":uitest_common_configs" ]
+  branch_protector_ret = "pac_ret"
+  stack_protector_ret = true
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "${source_root}/addon/extension_executor.cpp",
     "${source_root}/addon/screen_copy.cpp",
@@ -177,6 +212,13 @@ ohos_static_library("uitest_addon") {
 
 ohos_executable("uitest_server") {
   configs = [ ":uitest_common_configs" ]
+  branch_protector_ret = "pac_ret"
+  stack_protector_ret = true
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "${source_root}/server/element_node_iterator_impl.cpp",
     "${source_root}/server/server_main.cpp",
@@ -268,6 +310,13 @@ gen_js_obj("uitest_exporter_abc") {
 
 ohos_shared_library("uitest_client") {
   configs = [ ":uitest_common_configs" ]
+  branch_protector_ret = "pac_ret"
+  stack_protector_ret = true
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "${source_root}/napi/ui_event_observer_napi.cpp",
     "${source_root}/napi/uitest_napi.cpp",
@@ -333,8 +382,16 @@ ohos_unittest("uitest_core_unittest") {
   subsystem_name = "testfwk"
   part_name = "arkxtest"
 }
+
 ohos_shared_library("uitest_ani") {
   configs = [ ":uitest_common_configs" ]
+  branch_protector_ret = "pac_ret"
+  stack_protector_ret = true
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   external_deps = common_external_deps
   include_dirs = [
     "${source_root}/core",
@@ -366,6 +423,7 @@ ohos_shared_library("uitest_ani") {
   part_name = "arkxtest"
   subsystem_name = "testfwk"
 }
+
 generate_static_abc("uitest_abc") {
   base_url = "./ets/ani/ets"
   files = [ "./ets/ani/ets/@ohos.UiTest.ets" ]
@@ -374,6 +432,7 @@ generate_static_abc("uitest_abc") {
   out_puts = [ "$target_out_dir/@ohos.UiTest.abc" ]
   device_dst_file = "/system/framework/@ohos.UiTest.abc"
 }
+
 ohos_prebuilt_etc("uitest_etc") {
   source = "$target_out_dir/@ohos.UiTest.abc"
   module_install_dir = "framework"
@@ -431,6 +490,13 @@ ohos_unittest("uitest_extension_unittest") {
 }
 
 ohos_shared_library("uitest_dummy_extension") {
+  branch_protector_ret = "pac_ret"
+  stack_protector_ret = true
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [ "${source_root}/test/dummy_extension.cpp" ]
   include_dirs = [ "${source_root}/addon" ]
   testonly = true
@@ -459,6 +525,13 @@ group("uitestkit_test") {
 }
 
 ohos_shared_library("cj_ui_test_ffi") {
+  branch_protector_ret = "pac_ret"
+  stack_protector_ret = true
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   cflags = [
     "-Wfloat-equal",
     "-Wformat=2",
