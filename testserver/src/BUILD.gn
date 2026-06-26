@@ -44,7 +44,6 @@ config("test_server_service_config") {
 ohos_shared_library("test_server_service") {
   configs = [ ":test_server_service_config" ]
   branch_protector_ret = "pac_ret"
-  stack_protector_ret = true
   sanitize = {
     cfi = true
     cfi_cross_dso = true
@@ -150,7 +149,6 @@ config("test_server_client_config") {
 ohos_shared_library("test_server_client") {
   public_configs = [ ":test_server_client_config" ]
   branch_protector_ret = "pac_ret"
-  stack_protector_ret = true
   sanitize = {
     cfi = true
     cfi_cross_dso = true

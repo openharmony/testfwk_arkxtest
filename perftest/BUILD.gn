@@ -33,7 +33,6 @@ ohos_static_library("perftest_core") {
   use_exceptions = true
   configs = [ ":perftest_common_configs" ]
   branch_protector_ret = "pac_ret"
-  stack_protector_ret = true
   sanitize = {
     cfi = true
     cfi_cross_dso = true
@@ -77,7 +76,6 @@ ohos_static_library("perftest_core") {
 ohos_static_library("perftest_ipc") {
   configs = [ ":perftest_common_configs" ]
   branch_protector_ret = "pac_ret"
-  stack_protector_ret = true
   sanitize = {
     cfi = true
     cfi_cross_dso = true
@@ -111,7 +109,6 @@ ohos_static_library("perftest_ipc") {
 ohos_executable("perftest_server") {
   configs = [ ":perftest_common_configs" ]
   branch_protector_ret = "pac_ret"
-  stack_protector_ret = true
   sanitize = {
     cfi = true
     cfi_cross_dso = true
@@ -165,7 +162,6 @@ gen_js_obj("perftest_exporter_abc") {
 ohos_shared_library("perftest_client") {
   configs = [ ":perftest_common_configs" ]
   branch_protector_ret = "pac_ret"
-  stack_protector_ret = true
   sanitize = {
     cfi = true
     cfi_cross_dso = true
@@ -214,7 +210,6 @@ ohos_shared_library("perftest_ani") {
   shlib_type = "ani"
   configs = [ ":perftest_common_configs" ]
   branch_protector_ret = "pac_ret"
-  stack_protector_ret = true
   sanitize = {
     cfi = true
     cfi_cross_dso = true

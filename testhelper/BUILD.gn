@@ -17,7 +17,6 @@ import("//test/testfwk/arkxtest/arkxtest_config.gni")
 
 ohos_static_library("testhelper_core") {
   branch_protector_ret = "pac_ret"
-  stack_protector_ret = true
   sanitize = {
     cfi = true
     cfi_cross_dso = true
@@ -67,7 +66,6 @@ ohos_static_library("testhelper_core") {
 
 ohos_executable("testhelper") {
   branch_protector_ret = "pac_ret"
-  stack_protector_ret = true
   sanitize = {
     cfi = true
     cfi_cross_dso = true
