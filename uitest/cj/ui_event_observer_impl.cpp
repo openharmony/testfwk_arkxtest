@@ -120,8 +120,12 @@ static void DestructElementInfo(CUIElementInfo &info)
 static CUIElementInfo CreateElementInfo(string str)
 {
     int status = 0;
-    CUIElementInfo result{};
-    auto json = nlohmann::json::parse(str);
+    CUIElementInfo result = { .bundleName = nullptr, .componentType = nullptr, .text = nullptr };
+    auto json = nlohmann::json::parse(str, nullptr, false);
+    if (json.is_discarded()) {
+        LOG_E("[UiEventObserverImpl] parse json error.");
+        return result;
+    }
     string bundleName = json["bundleName"];
     string type = json["type"];
     string text = json["text"];

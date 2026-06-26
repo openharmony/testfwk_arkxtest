@@ -179,7 +179,13 @@ namespace OHOS::cjuitest {
                 callInfo_.paramList_ = "";
             } else {
                 LOG_D("paramList_: %{public}s", params.paramList);
-                callInfo_.paramList_ = nlohmann::json::parse(string{params.paramList});
+                auto j = nlohmann::json::parse(string{params.paramList}, nullptr, false);
+                if (j.is_discarded()) {
+                    ret.code = uitest::ErrCode::ERR_INVALID_PARAM;
+                    ret.data = MallocCString("Invalid input parameter.");
+                    return ret;
+                }
+                callInfo_.paramList_ = std::move(j);
             }
             ApiCallErr err{uitest::ErrCode::NO_ERROR};
             PreprocessTransaction(callInfo_, err);
