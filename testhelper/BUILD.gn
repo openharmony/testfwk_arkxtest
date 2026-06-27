@@ -16,6 +16,7 @@ import("//build/ohos.gni")
 import("//test/testfwk/arkxtest/arkxtest_config.gni")
 
 ohos_static_library("testhelper_core") {
+  branch_protector_ret = "pac_ret"
   sources = [
     "./src/testhelper_core.cpp",
     "./src/common_utils.cpp",
@@ -59,6 +60,7 @@ ohos_static_library("testhelper_core") {
 }
 
 ohos_executable("testhelper") {
+  branch_protector_ret = "pac_ret" 
   sources = [
     "./src/testhelper_main.cpp",
   ]
