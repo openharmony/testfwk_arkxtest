@@ -33,11 +33,6 @@ ohos_static_library("perftest_core") {
   use_exceptions = true
   configs = [ ":perftest_common_configs" ]
   branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   sources = [
     "./core/src/frontend_api_handler.cpp",
     "./core/src/perf_test.cpp",
@@ -76,11 +71,6 @@ ohos_static_library("perftest_core") {
 ohos_static_library("perftest_ipc") {
   configs = [ ":perftest_common_configs" ]
   branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   sources = [
     "./connection/src/api_caller_client.cpp", 
     "./connection/src/api_caller_server.cpp", 
@@ -109,11 +99,6 @@ ohos_static_library("perftest_ipc") {
 ohos_executable("perftest_server") {
   configs = [ ":perftest_common_configs" ]
   branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   sources = [
     "./core/src/start_daemon.cpp",
   ]
@@ -162,11 +147,6 @@ gen_js_obj("perftest_exporter_abc") {
 ohos_shared_library("perftest_client") {
   configs = [ ":perftest_common_configs" ]
   branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   sources = [
     "./napi/src/perftest_napi.cpp",
     "./napi/src/callback_code_napi.cpp",
@@ -210,11 +190,6 @@ ohos_shared_library("perftest_ani") {
   shlib_type = "ani"
   configs = [ ":perftest_common_configs" ]
   branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
   external_deps = common_external_deps
   include_dirs = [
     "./core/include",

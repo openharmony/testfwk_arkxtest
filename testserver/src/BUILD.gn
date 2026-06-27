@@ -44,12 +44,6 @@ config("test_server_service_config") {
 ohos_shared_library("test_server_service") {
   configs = [ ":test_server_service_config" ]
   branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
-
   output_values = get_target_outputs(":test_server_interface")
   sources = [
     "${target_gen_dir}/test_server_interface_stub.cpp",
@@ -149,11 +143,6 @@ config("test_server_client_config") {
 ohos_shared_library("test_server_client") {
   public_configs = [ ":test_server_client_config" ]
   branch_protector_ret = "pac_ret"
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
 
   output_values = get_target_outputs(":test_server_interface")
   sources = [
