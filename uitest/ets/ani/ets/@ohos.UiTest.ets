@@ -1644,7 +1644,7 @@ export class Component {
   
     mouseDrag(f: Point, t: Point, speed?: int, duration?: int): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
-        let promise1 = taskpool.execute(():boolean => this.mouseDragSync(f, t, speed, duration));
+            let promise1 = taskpool.execute(():boolean => this.mouseDragSync(f, t, speed, duration));
             promise1.then((e:Any)=>{
                 resolve(Promise.resolve());
             }, (err: Error): void => {
@@ -1654,7 +1654,8 @@ export class Component {
         });
         return promise;
     }
-    mouseDrag(f: Point, t: Point, touchOptions?: TouchOptions, keyOptions?: KeyOptions): Promise<void> {
+
+    mouseDragWithOptions(f: Point, t: Point, touchOptions?: TouchOptions, keyOptions?: KeyOptions): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
             let promise1 = taskpool.execute(():boolean => this.mouseDragWithOptionsSync(f, t, touchOptions, keyOptions));
             promise1.then((e:Any)=>{
@@ -1666,6 +1667,7 @@ export class Component {
         });
         return promise;
     }
+
     mouseClick(p: Point, btnId: MouseButton, key1?: int, key2?: int): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
         let promise1 = taskpool.execute(():boolean => this.mouseClickSync(p, btnId, key1, key2));
@@ -1757,7 +1759,8 @@ export class Component {
         });
         return promise;
     }
-    clickAt(point: Point, options?: TouchOptions): Promise<void> {
+
+    clickAtWithOptions(point: Point, options?: TouchOptions): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
             let promise1 = taskpool.execute((): boolean => this.clickAtTouchOptionsSync(point, options));
             promise1.then((e: Any)=>{
@@ -1769,6 +1772,7 @@ export class Component {
         });
         return promise;
     }
+
     doubleClickAt(point: Point): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
             let promise1 = taskpool.execute((): boolean => this.doubleClickAtSync(point));
@@ -1793,7 +1797,8 @@ export class Component {
         });
         return promise;
     }
-    longClickAt(point: Point, options?: TouchOptions): Promise<void> {
+
+    longClickAtWithOptions(point: Point, options?: TouchOptions): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
             let promise1 = taskpool.execute(():boolean => this.longClickAtTouchOptionsSync(point, options));
             promise1.then((e: Any) => {
@@ -1805,6 +1810,7 @@ export class Component {
         });
         return promise;
     }
+
     swipeBetween(from: Point, to: Point, speed?: int): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
             let promise1 = taskpool.execute((): boolean => this.swipeBetweenSync(from, to, speed));
@@ -1817,7 +1823,8 @@ export class Component {
         });
         return promise;
     }
-    swipeBetween(from: Point, to: Point, options?: TouchOptions): Promise<void> {
+
+    swipeBetweenWithOptions(from: Point, to: Point, options?: TouchOptions): Promise<void> {
         let promise = new Promise<void>(
             (resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
             let promise1 = taskpool.execute((): boolean => this.swipeBetweenTouchOptionsSync(from, to, options));
@@ -1830,6 +1837,7 @@ export class Component {
         });
         return promise;
     }
+
     dragBetween(from: Point, to: Point, speed?: int, duration?: int): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
             let promise1 = taskpool.execute((): boolean => this.dragBetweenSync(from, to, speed, duration));
@@ -1842,7 +1850,8 @@ export class Component {
         });
         return promise;
     }
-    dragBetween(from: Point, to: Point, options?: TouchOptions): Promise<void> {
+
+    dragBetweenWithOptions(from: Point, to: Point, options?: TouchOptions): Promise<void> {
         let promise = new Promise<void>(
             (resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
             let promise1 = taskpool.execute((): boolean =>
@@ -1856,6 +1865,7 @@ export class Component {
         });
         return promise;
     }
+
     crownRotate(d: int, speed?: int): Promise<void> {
         let promise = new Promise<void>((resolve: (value: PromiseLike<void>) => void, reject: (error: Error) => void) => {
             let promise1 = taskpool.execute((): boolean => this.crownRotateSync(d, speed));
@@ -2006,9 +2016,9 @@ export class Component {
     native checked(b?: boolean): On;
     native checkable(b?: boolean): On;
     native isBefore(on: On): On;
-    native isBeforeComponent(com: Component): On;
+    native beforeComponent(com: Component): On;
     native isAfter(on: On): On;
-    native isAfterComponent(com: Component): On;
+    native afterComponent(com: Component): On;
     native inWindow(bundleName: string): On;
     native text(txt: string, pattern?: MatchPattern): On;
     native description(val: string, pattern?: MatchPattern): On;
@@ -2023,15 +2033,6 @@ export class Component {
     }
     type(tp: string): On {
         return this.type(tp, MatchPattern.EQUALS);
-    }
-    isBefore(com: Component): On {
-        return this.isBeforeComponent(com);
-    }
-    isAfter(com: Component): On {
-        return this.isAfterComponent(com);
-    }
-    within(com: Component): On {
-        return this.withinComponent(com);
     }
   }
 
@@ -2065,7 +2066,7 @@ export namespace ON {
         return ONInner!.within(on);
     }
 
-    export function within(com: Component): On {
+    export function withinComponent(com: Component): On {
         initializeONinnerIfNeeded();
         return ONInner!.withinComponent(com);
     }
@@ -2115,9 +2116,9 @@ export namespace ON {
         return ONInner!.isBefore(on);
     }
 
-    export function isBefore(com: Component): On {
+    export function beforeComponent(com: Component): On {
         initializeONinnerIfNeeded();
-        return ONInner!.isBeforeComponent(com);
+        return ONInner!.beforeComponent(com);
     }
 
     export function isAfter(on: On): On {
@@ -2125,9 +2126,9 @@ export namespace ON {
         return ONInner!.isAfter(on);
     }
 
-    export function isAfter(com: Component): On {
+    export function afterComponent(com: Component): On {
         initializeONinnerIfNeeded();
-        return ONInner!.isAfterComponent(com);
+        return ONInner!.afterComponent(com);
     }
 
     export function inWindow(bundleName: string): On {

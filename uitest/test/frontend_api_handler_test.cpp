@@ -774,7 +774,8 @@ TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsValidSpeedTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -802,7 +803,8 @@ TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsValidPressureTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -830,7 +832,8 @@ TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsValidDurationTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -858,7 +861,8 @@ TEST_F(FrontendApiHandlerTest, ClickAtTouchOptionsValidPressureTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.clickAt", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.clickAtWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto pointX = 100;
     auto pointY = 200;
     auto validPressure = 0.5;
@@ -880,7 +884,8 @@ TEST_F(FrontendApiHandlerTest, LongClickAtTouchOptionsValidDurationTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.longClickAt", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.longClickAtWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto pointX = 100;
     auto pointY = 200;
     auto validDuration = 2000;
@@ -902,7 +907,8 @@ TEST_F(FrontendApiHandlerTest, SwipeBetweenTouchOptionsValidSpeedTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -930,7 +936,8 @@ TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsInvalidDurationTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -958,7 +965,8 @@ TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsInvalidSpeedTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -986,7 +994,8 @@ TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsInvalidPressureTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -1014,7 +1023,8 @@ TEST_F(FrontendApiHandlerTest, ClickAtTouchOptionsInvalidPressureTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.clickAt", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.clickAtWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto pointX = 100;
     auto pointY = 200;
     auto invalidPressure = 2.0;
@@ -1036,7 +1046,8 @@ TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsBoundarySpeedMinTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -1064,7 +1075,8 @@ TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsBoundarySpeedMaxTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -1092,7 +1104,8 @@ TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsBoundaryPressureMinTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -1120,7 +1133,8 @@ TEST_F(FrontendApiHandlerTest, DragBetweenTouchOptionsBoundaryPressureMaxTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.dragBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -1148,7 +1162,8 @@ TEST_F(FrontendApiHandlerTest, SwipeBetweenTouchOptionsBoundarySpeedMinTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -1176,7 +1191,8 @@ TEST_F(FrontendApiHandlerTest, SwipeBetweenTouchOptionsBoundarySpeedMaxTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -1204,7 +1220,8 @@ TEST_F(FrontendApiHandlerTest, SwipeBetweenTouchOptionsBoundaryPressureMinTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -1232,7 +1249,8 @@ TEST_F(FrontendApiHandlerTest, SwipeBetweenTouchOptionsBoundaryPressureMaxTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetween", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.swipeBetweenWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto startPointX = 100;
     auto startPointY = 200;
     auto endPointX = 200;
@@ -1260,7 +1278,8 @@ TEST_F(FrontendApiHandlerTest, LongClickAtTouchOptionsBoundaryDurationMinTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.longClickAt", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.longClickAtWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto pointX = 100;
     auto pointY = 200;
     auto validDurationMin = 1500;
@@ -1282,7 +1301,8 @@ TEST_F(FrontendApiHandlerTest, LongClickAtTouchOptionsBoundaryDurationMaxTest)
     auto call1 = ApiCallInfo {.apiId_ = "UiDriver.create"};
     auto reply1 = ApiReplyInfo();
     server.Call(call1, reply1);
-    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.longClickAt", .callerObjRef_ = reply1.resultValue_.get<string>()};
+    auto call2 = ApiCallInfo {.apiId_ = "UiDriver.longClickAtWithOptions",
+        .callerObjRef_ = reply1.resultValue_.get<string>()};
     auto pointX = 100;
     auto pointY = 200;
     auto validDurationMax = 10000;

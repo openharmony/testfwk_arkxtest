@@ -864,17 +864,17 @@ namespace OHOS::uitest {
             auto hierarchyMatcher = WidgetMatchModel(UiAttr::HIERARCHY, widget.GetHierarchy(), EQ);
             locatorSelector->AddMatcher(hierarchyMatcher);
             const auto attrName = in.apiId_.substr(ON_DEF.name_.length() + 1);
-            if (attrName == "isBeforeComponent") {
+            if (attrName == "beforeComponent") {
                 selector->AddRearLocator(*locatorSelector, out.exception_);
-            } else if (attrName == "isAfterComponent") {
+            } else if (attrName == "afterComponent") {
                 selector->AddFrontLocator(*locatorSelector, out.exception_);
             } else if (attrName == "withinComponent") {
                 selector->AddParentLocator(*locatorSelector, out.exception_);
             }
             out.resultValue_ = StoreBackendObject(move(selector));
         };
-        server.AddHandler("On.isBeforeComponent", relativeLocatorHandler);
-        server.AddHandler("On.isAfterComponent", relativeLocatorHandler);
+        server.AddHandler("On.beforeComponent", relativeLocatorHandler);
+        server.AddHandler("On.afterComponent", relativeLocatorHandler);
         server.AddHandler("On.withinComponent", relativeLocatorHandler);
     }
 
@@ -1335,11 +1335,11 @@ namespace OHOS::uitest {
         }
         static const set<string> TOUCH_OPTIONS = {"speed", "duration", "pressure"};
         static const map<string, set<string>> METHOD_SUPPORTED_OPTIONS = {
-            {"Driver.clickAt", {"pressure"}},
-            {"Driver.longClickAt", {"duration", "pressure"}},
-            {"Driver.swipeBetween", {"speed", "pressure"}},
-            {"Driver.dragBetween", {"speed", "duration", "pressure"}},
-            {"Driver.mouseDrag", {"speed", "duration"}},
+            {"Driver.clickAtWithOptions", {"pressure"}},
+            {"Driver.longClickAtWithOptions", {"duration", "pressure"}},
+            {"Driver.swipeBetweenWithOptions", {"speed", "pressure"}},
+            {"Driver.dragBetweenWithOptions", {"speed", "duration", "pressure"}},
+            {"Driver.mouseDragWithOptions", {"speed", "duration"}},
         };
         auto it = METHOD_SUPPORTED_OPTIONS.find(apiId);
         if (it == METHOD_SUPPORTED_OPTIONS.end()) {
@@ -1392,7 +1392,7 @@ namespace OHOS::uitest {
         if (params.at(1).type() != value_t::object) { // longClickAt
             uiOpArgs.longClickHoldMs_ = ReadCallArg<uint32_t>(in, INDEX_ONE, uiOpArgs.longClickHoldMs_);
         } else {
-            if (in.apiId_ == "Driver.clickAt" || in.apiId_ == "Driver.longClickAt") {
+            if (in.apiId_ == "Driver.clickAtWithOptions" || in.apiId_ == "Driver.longClickAtWithOptions") {
                 auto touchOptionsJson = ReadCallArg<json>(in, INDEX_ONE);
                 ValidateTouchOptions(in.apiId_, touchOptionsJson, uiOpArgs, err);
                 return;
@@ -1501,6 +1501,23 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.isComponentPresentWhenSwipe", GenericComponentPresentHandler);
     }
 
+    static TouchOp GetTouchOperationType(const std::string& apiId)
+    {
+        if (apiId == "Driver.longClick" || apiId == "Driver.longClickAt" ||
+            apiId == "Driver.longClickAtWithOptions") {
+            return TouchOp::LONG_CLICK;
+        } else if (apiId == "Driver.doubleClick" || apiId == "Driver.doubleClickAt") {
+            return TouchOp::DOUBLE_CLICK_P;
+        } else if (apiId == "Driver.swipe" || apiId == "Driver.swipeBetween" ||
+            apiId == "Driver.swipeBetweenWithOptions") {
+            return TouchOp::SWIPE;
+        } else if (apiId == "Driver.drag" || apiId == "Driver.dragBetween" ||
+            apiId == "Driver.dragBetweenWithOptions") {
+            return TouchOp::DRAG;
+        }
+        return TouchOp::CLICK;
+    }
+
     static void RegisterUiDriverTouchOperators()
     {
         auto &server = FrontendApiServer::Get();
@@ -1513,16 +1530,7 @@ namespace OHOS::uitest {
             if (out.exception_.code_ != NO_ERROR) {
                 return;
             }
-            auto op = TouchOp::CLICK;
-            if (in.apiId_ == "Driver.longClick" || in.apiId_ == "Driver.longClickAt") {
-                op = TouchOp::LONG_CLICK;
-            } else if (in.apiId_ == "Driver.doubleClick" || in.apiId_ == "Driver.doubleClickAt") {
-                op = TouchOp::DOUBLE_CLICK_P;
-            } else if (in.apiId_ == "Driver.swipe" || in.apiId_ == "Driver.swipeBetween") {
-                op = TouchOp::SWIPE;
-            } else if (in.apiId_ == "Driver.drag" || in.apiId_ == "Driver.dragBetween") {
-                op = TouchOp::DRAG;
-            }
+            auto op = GetTouchOperationType(in.apiId_);
             CheckSwipeVelocityPps(uiOpArgs);
             const uint32_t minLongClickHoldMs = 1500;
             if (uiOpArgs.longClickHoldMs_ < minLongClickHoldMs) {
@@ -1547,10 +1555,14 @@ namespace OHOS::uitest {
         server.AddHandler("Driver.swipe", genericClick);
         server.AddHandler("Driver.drag", genericClick);
         server.AddHandler("Driver.longClickAt", genericClick);
+        server.AddHandler("Driver.longClickAtWithOptions", genericClick);
         server.AddHandler("Driver.dragBetween", genericClick);
+        server.AddHandler("Driver.dragBetweenWithOptions", genericClick);
         server.AddHandler("Driver.doubleClickAt", genericClick);
         server.AddHandler("Driver.clickAt", genericClick);
+        server.AddHandler("Driver.clickAtWithOptions", genericClick);
         server.AddHandler("Driver.swipeBetween", genericClick);
+        server.AddHandler("Driver.swipeBetweenWithOptions", genericClick);
     }
 
     static bool CheckMultiPointerOperatorsPoint(const PointerMatrix& pointer)
@@ -1713,7 +1725,8 @@ namespace OHOS::uitest {
             auto displayId2 = ReadArgFromJson<int32_t>(pointJson2, "displayId", UNASSIGNED);
             auto from = Point(pointJson1["x"], pointJson1["y"], displayId1);
             auto to = Point(pointJson2["x"], pointJson2["y"], displayId2);
-            if (!CheckPointDisplayId(from, to, out, in.apiId_ == "Driver.mouseDrag")) {
+            if (!CheckPointDisplayId(from, to, out, in.apiId_ == "Driver.mouseDrag" ||
+                in.apiId_ == "Driver.mouseDragWithOptions")) {
                 return;
             }
             UiOpArgs uiOpArgs;
@@ -1726,7 +1739,7 @@ namespace OHOS::uitest {
             }
             CheckSwipeVelocityPps(uiOpArgs);
             auto op = TouchOp::SWIPE;
-            if (in.apiId_ == "Driver.mouseDrag") {
+            if (in.apiId_ == "Driver.mouseDrag" || in.apiId_ == "Driver.mouseDragWithOptions") {
                 op = TouchOp::DRAG;
             }
             auto touch = MouseSwipe(op, from, to);
@@ -1774,7 +1787,7 @@ namespace OHOS::uitest {
             }
             UiOpArgs uiOpArgs;
             auto touchOptionsJson = ReadCallArg<json>(in, INDEX_TWO, json());
-            string apiId = "Driver.mouseDrag";
+            string apiId = "Driver.mouseDragWithOptions";
             ValidateTouchOptions(apiId, touchOptionsJson, uiOpArgs, out.exception_);
             if (out.exception_.code_ != NO_ERROR) {
                 return;
