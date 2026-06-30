@@ -327,6 +327,8 @@ namespace OHOS::uitest {
         old2NewApiMap_["UiComponent.getId"] = "Component.getAccessibilityId";
         old2NewApiMap_["UiComponent.getKey"] = "Component.getId";
         old2NewApiMap_["UiWindow.isActived"] = "UiWindow.isActive";
+        old2NewApiMap_["On.isBeforeComponent"] = "On.beforeComponent";
+        old2NewApiMap_["On.isAfterComponent"] = "On.afterComponent";
         new2OldApiMap_["On"] = "By" ;
         new2OldApiMap_["Driver"] = "UiDriver" ;
         new2OldApiMap_["Component"] = "UiComponent" ;
@@ -350,6 +352,16 @@ namespace OHOS::uitest {
         {ERR_API_USAGE, {INTERNAL_ERROR}},
     };
     
+    static void ConvertRenamedOverloadedApiId(ApiCallInfo &inModifier)
+    {
+        const auto &id = inModifier.apiId_;
+        auto &paramList = inModifier.paramList_;
+        if (id == "Driver.longClickAt" &&
+            paramList.size() > INDEX_ONE && paramList.at(INDEX_ONE).type() == value_t::object) {
+            inModifier.apiId_ = id + "WithOptions";
+        }
+    }
+
     string FrontendApiServer::ApiMapPre(ApiCallInfo &inModifier) const
     {
         // 0. add convert error label
@@ -367,6 +379,7 @@ namespace OHOS::uitest {
                     iter->second.c_str());
                 inModifier.apiId_ = iter->second;
             }
+            ConvertRenamedOverloadedApiId(inModifier);
             return "";
         }
         string oldApiName = inModifier.apiId_;
