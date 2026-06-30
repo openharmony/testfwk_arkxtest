@@ -523,12 +523,12 @@ static ani_ref isBefore(ani_env *env, ani_object obj, ani_object on)
     return createOn(env, obj, params, "On.isBefore");
 }
 
-static ani_ref isBeforeComponent(ani_env *env, ani_object obj, ani_object comObj)
+static ani_ref beforeComponent(ani_env *env, ani_object obj, ani_object comObj)
 {
     nlohmann::json params = nlohmann::json::array();
     string componentRef = aniStringToStdString(env, unwrapp(env, comObj, "nativeComponent"));
     params.push_back(componentRef);
-    return createOn(env, obj, params, "On.isBeforeComponent");
+    return createOn(env, obj, params, "On.beforeComponent");
 }
 
 static ani_ref isAfter(ani_env *env, ani_object obj, ani_object on)
@@ -539,12 +539,12 @@ static ani_ref isAfter(ani_env *env, ani_object obj, ani_object on)
     return createOn(env, obj, params, "On.isAfter");
 }
 
-static ani_ref isAfterComponent(ani_env *env, ani_object obj, ani_object comObj)
+static ani_ref afterComponent(ani_env *env, ani_object obj, ani_object comObj)
 {
     nlohmann::json params = nlohmann::json::array();
     string componentRef = aniStringToStdString(env, unwrapp(env, comObj, "nativeComponent"));
     params.push_back(componentRef);
-    return createOn(env, obj, params, "On.isAfterComponent");
+    return createOn(env, obj, params, "On.afterComponent");
 }
 
 static ani_ref id(ani_env *env, ani_object obj, ani_string id, ani_enum_item pattern)
@@ -695,11 +695,11 @@ static ani_boolean BindOn(ani_env *env)
         ani_native_function{"checked", nullptr, reinterpret_cast<void *>(checked)},
         ani_native_function{"scrollable", nullptr, reinterpret_cast<void *>(scrollable)},
         ani_native_function{"isBefore", "C{@ohos.UiTest.On}:C{@ohos.UiTest.On}", reinterpret_cast<void *>(isBefore)},
-        ani_native_function{"isBeforeComponent", "C{@ohos.UiTest.Component}:C{@ohos.UiTest.On}",
-            reinterpret_cast<void *>(isBeforeComponent)},
+        ani_native_function{"beforeComponent", "C{@ohos.UiTest.Component}:C{@ohos.UiTest.On}",
+            reinterpret_cast<void *>(beforeComponent)},
         ani_native_function{"isAfter", "C{@ohos.UiTest.On}:C{@ohos.UiTest.On}", reinterpret_cast<void *>(isAfter)},
-        ani_native_function{"isAfterComponent", "C{@ohos.UiTest.Component}:C{@ohos.UiTest.On}",
-            reinterpret_cast<void *>(isAfterComponent)},
+        ani_native_function{"afterComponent", "C{@ohos.UiTest.Component}:C{@ohos.UiTest.On}",
+            reinterpret_cast<void *>(afterComponent)},
         ani_native_function{"longClickable", nullptr, reinterpret_cast<void *>(longClickable)},
         ani_native_function{"belongingDisplay", nullptr, reinterpret_cast<void *>(belongingDisplay)},
         ani_native_function{"originalText", nullptr, reinterpret_cast<void *>(originalText)},
@@ -1832,7 +1832,7 @@ static ani_boolean clickAtTouchOptionsSync(ani_env *env, ani_object obj, ani_obj
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
-    callInfo_.apiId_ = "Driver.clickAt";
+    callInfo_.apiId_ = "Driver.clickAtWithOptions";
     auto p = getPoint(env, point);
     callInfo_.paramList_.push_back(p);
     ani_boolean ret;
@@ -1879,7 +1879,7 @@ static ani_boolean longClickAtTouchOptionsSync(ani_env *env, ani_object obj, ani
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
-    callInfo_.apiId_ = "Driver.longClickAt";
+    callInfo_.apiId_ = "Driver.longClickAtWithOptions";
     auto p = getPoint(env, point);
     callInfo_.paramList_.push_back(p);
     ani_boolean ret;
@@ -1916,7 +1916,7 @@ static ani_boolean swipeBetweenTouchOptionsSync(ani_env *env, ani_object obj, an
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
-    callInfo_.apiId_ = "Driver.swipeBetween";
+    callInfo_.apiId_ = "Driver.swipeBetweenWithOptions";
     callInfo_.paramList_.push_back(getPoint(env, from));
     callInfo_.paramList_.push_back(getPoint(env, to));
     ani_boolean ret;
@@ -1955,7 +1955,7 @@ static ani_boolean dragBetweenTouchOptionsSync(ani_env *env, ani_object obj, ani
     ApiCallInfo callInfo_;
     ApiReplyInfo reply_;
     callInfo_.callerObjRef_ = aniStringToStdString(env, unwrapp(env, obj, "nativeDriver"));
-    callInfo_.apiId_ = "Driver.dragBetween";
+    callInfo_.apiId_ = "Driver.dragBetweenWithOptions";
     callInfo_.paramList_.push_back(getPoint(env, from));
     callInfo_.paramList_.push_back(getPoint(env, to));
     ani_boolean ret;

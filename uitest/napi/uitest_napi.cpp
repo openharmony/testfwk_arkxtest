@@ -375,27 +375,6 @@ namespace OHOS::uitest {
         ctx.callInfo_.fdParamIndex_ = INDEX_ZERO;
     }
 
-    static void PreprocessConvertApiId(TransactionContext &ctx)
-    {
-        const auto &id = ctx.callInfo_.apiId_;
-        auto &paramList = ctx.callInfo_.paramList_;
-        if (id == "Driver.mouseDrag") {
-            json param2 = paramList.size() > TWO ? paramList.at(INDEX_TWO) : nullptr;
-            json param3 = paramList.size() > THREE ? paramList.at(INDEX_THREE) : nullptr;
-            if (param2.type() == value_t::object || param3.type() == value_t::object) {
-                ctx.callInfo_.apiId_ = "Driver.mouseDragWithOptions";
-            }
-        } else if (id  == "On.isBefore" || id  == "On.isAfter" || id  == "On.within") {
-            if (paramList.size() < 1 || paramList.at(INDEX_ZERO).type() != nlohmann::detail::value_t::string) {
-                return;
-            }
-            auto param = paramList.at(INDEX_ZERO).get<string>();
-            if (param.compare(ZERO, strlen("Component#"), "Component#") == ZERO) {
-                ctx.callInfo_.apiId_ = id + "Component";
-            }
-        }
-    }
-
     static void PreprocessTransaction(napi_env env, TransactionContext &ctx, napi_value &error)
     {
         auto &paramList = ctx.callInfo_.paramList_;
@@ -429,7 +408,6 @@ namespace OHOS::uitest {
                 paramList[TWO] = times;
             }
         }
-        PreprocessConvertApiId(ctx);
     }
 
     static napi_status DeepConvertObject(napi_env env, napi_value in, napi_value* out)
