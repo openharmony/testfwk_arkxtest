@@ -216,7 +216,7 @@ namespace OHOS::uitest {
 
     static void DumpLayoutImpl(DumpOption &option, bool initController, ApiCallErr &err)
     {
-        int fd = open(option.savePath_.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        int32_t fd = open(option.savePath_.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
         if (fd == -1) {
             err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(option.savePath_) + strerror(errno));
             return;
@@ -243,7 +243,9 @@ namespace OHOS::uitest {
         if (written == -1 || static_cast<size_t>(written) != dumpStr.length()) {
             LOG_E("Write dumpStr to file failed, errno: %{public}s", strerror(errno));
         }
-        fsync(fd);
+        if (fsync(fd) == -1) {
+            LOG_E("fsync failed, errno: %{public}s", strerror(errno));
+        }
         close(fd);
         return;
     }
