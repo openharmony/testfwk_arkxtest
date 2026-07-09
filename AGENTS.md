@@ -2,11 +2,13 @@
 
 ## Overview
 
-**arkxtest** is OpenHarmony's automated testing framework, consisting of three main components:
+**arkxtest** is OpenHarmony's automated testing framework, consisting of the following components:
 
 1. **JsUnit (Hypium)** - JavaScript/ArkTS unit test framework
 2. **UiTest** - UI automation testing framework for component location and operation
 3. **PerfTest** - White-box performance testing framework
+4. **TestServer** - System ability service (SA ID: 5502) providing high-permission system interfaces
+5. **TestHelper** - C++ CLI tool (`/system/bin/testhelper`) delegating to TestServer for system-level test operations
 
 The framework provides APIs for writing test cases, executing them, and generating test reports for OpenHarmony applications and system interfaces.
 
@@ -31,7 +33,8 @@ OpenHarmony/
         ├── jsunit/
         ├── uitest/
         ├── perftest/
-        └── testserver/
+        ├── testserver/
+        └── testhelper/
 ```
 
 All build commands should be run from the OpenHarmony root directory.
@@ -57,6 +60,9 @@ cd /path/to/openharmony
 # Build perftest
 ./build.sh --product-name rk3568 --build-target perftestkit
 
+# Build test helper CLI
+./build.sh --product-name rk3568 --build-target testhelperkit
+
 # Build test server
 ./build.sh --product-name rk3568 --build-target test_server_service
 ./build.sh --product-name rk3568 --build-target test_server_client
@@ -69,6 +75,9 @@ cd /path/to/openharmony
 | `uitestkit` | Main uitest build group (all uitest components) |
 | `cj_ui_test_ffi` | CJ FFI bindings (libcj_ui_test_ffi.z.so) |
 | `perftestkit` | Performance testing framework |
+| `testhelperkit` | TestHelper build group (binary + core library) |
+| `testhelper` | TestHelper executable (`/system/bin/testhelper`) |
+| `testhelper_unittest` | TestHelper gtest unit test binary |
 | `test_server_service` | Test server daemon (SA ID: 5502) |
 | `test_server_client` | Test server client library |
 
@@ -119,18 +128,27 @@ arkxtest/
 │   ├── init/           # Service initialization (testserver.cfg)
 │   └── sa_profile/     # Service profile (5502.json)
 │
+├── testhelper/         # C++ CLI tool delegating to TestServer
+│   ├── include/        # Headers (testhelper_core.h, common_utils.h, gpx_parser.h)
+│   ├── src/            # Command handlers, GPX parser, utilities
+│   └── test/unittest/  # gtest unit tests
+│
 └── hamock/             # Mock framework (part of jsunit)
 ```
 ### jsunit (Hypium) - Unit Test Framework
 
+A JavaScript/ArkTS unit testing framework distributed as an npm package (`@ohos/hypium`), supporting both ArkTS-Dynamic (`src/`) and ArkTS-Static (`src_static/`) environments with a unified API surface.
+
 **Core Features:**
 
-- **Basic Process Support**: `describe`, `it`, `beforeAll`, `beforeEach`, `afterEach`, `afterAll`
-- **Assertion Library**: 25+ assertion methods (`assertEqual`, `assertTrue`, `assertContain`, etc.)
-- **Mock Capability**: Function-level mocking with `when()`/`afterReturn()`/`afterThrow()`
+- **Basic Process Support**: `describe`, `it`, `beforeAll`, `beforeEach`, `afterEach`, `afterAll`, plus extended hooks (`beforeEachIt`, `afterEachIt`, `beforeItSpecified`, `afterItSpecified`)
+- **Assertion Library**: 25+ assertion methods (`assertEqual`, `assertTrue`, `assertContain`, `assertClose`, `assertInstanceOf`, `assertDeepEquals`, `assertMatchObj`, etc.)
+- **Mock Capability**: Function stubbing with `when()`/`afterReturn()`/`afterThrow()`, call verification with `verify().times()`, 14 `ArgumentMatchers` (type + fuzzy regex/substring/array matchers)
 - **Data Driving**: Parameterized tests with `dataProvider`
-- **Async Testing**: Promise-based async test support
-- **Special Features**: Test filtering, skipping, timeout, random execution, stress testing
+- **Async Testing**: Native Promise handling with `assertPromiseIsResolved`/`assertPromiseIsRejected`
+- **Special Features**: Test filtering, skipping (`xdescribe`/`xit` + `throw SkipError`), timeout, random execution, stress testing, parallel worker execution
+- **Failure Capture**: `-s snapshotWhenFail true` auto-captures screenshot + layout dump on failure
+- **Tag-based Filtering**: `-s tag <expr>` with comma (OR) / plus (AND) operators
 
 **Usage:**
 
@@ -149,6 +167,9 @@ export default async function abilityTest() {
 ```
 
 ### Uitest - UI Test Framework
+
+uitest is OpenHarmony's UI automation testing framework, operating on a **client-server architecture** with multi-language support (ArkTS-Static, ArkTS-Dynamic, JavaScript, and Cangjie).
+
 **Core Features:**
 - Provides APIs for ArkTS-Dynamic and static languages, supporting UI test for different language projects
 - Driver class APIs for UI automation (create, findComponent, pressBack, click, swipe, etc.)
@@ -157,6 +178,7 @@ export default async function abilityTest() {
 - UiWindow class APIs for window operations (getBundleName, focus, moveTo, resize, close)
 - UIEventObserver class APIs for listening to UI events (toastShow, dialogShow, windowChange, componentEventOccur)
 - Shell command support for quick UI operations (screenCap, dumpLayout, uiRecord, uiInput)
+- Multi-display & multi-user support (since API 26): dynamic AAMS user switching for multi-display multi-user concurrent scenarios
 
 **Client-Server Model:**
 ```
@@ -168,6 +190,8 @@ uitest_server (uitest daemon)
     ↓ Accessibility/Window Manager
 System Under Test
 ```
+
+For detailed architecture, multi-display adaptation, shell commands, and deployment, see `uitest/AGENTS.md`.
 
 ### PerfTest Architecture - White-box Performance Test Framework
 
@@ -214,6 +238,33 @@ System service (SA ID: 5502) that provides high-permission interfaces:
 
 Lifecycle: On-demand start (first client connection), auto-stop when all clients exit or developer mode disabled.
 
+### TestHelper Architecture - C++ CLI Tool
+
+**TestHelper** is a C++ command-line tool (`/system/bin/testhelper`) that delegates to the TestServer SA (ID 5502) through `TestServerClient` to expose system-level test capabilities. It is disabled on `watch`/`glasses` product features.
+
+**Command Dispatch Model:**
+```
+CLI (argv)
+  ↓
+testhelper_main.cpp: g_commandHandlers lookup + arg count validation
+  ↓
+TestHelperCore::Handle*()
+  ↓ Validate inputs + TestServerClient::GetInstance().<Call>()
+TestServer SA (ID 5502)
+```
+
+**Supported Commands:**
+- **Time Operations**: `get-time`, `set-time` (strict `YYYY-MM-DD HH:MM:SS` parsing with mktime round-trip validation), `get-timezone`, `set-timezone`
+- **Clipboard Operations**: `get-pastedata`, `set-pastedata` (max 128MB), `clear-pastedata` (gated by `ARKXTEST_PASTEBOARD_ENABLE`)
+- **Keyboard Operation**: `hide-keyboard`
+- **Font Management**: `get-fontname`, `install-font`, `uninstall-font` (gated by `ARKXTEST_FONT_ENABLE`; path must be under `/data/local/tmp/`)
+- **Dark/Light Mode**: `set-viewmode <dark|light>`
+- **Location Mocking**: `enable-location-mock`, `disable-location-mock`, `set-mocked-locations <gpx> [interval]` (libxml2 GPX 1.1 parser, max 1000 locations, interval 1-3600 seconds)
+
+**Input Validation**: All inputs validated before service calls — path prefix (`/data/local/tmp/`), reject `..` traversal, check extensions (`.ttf`/`.ttc`/`.gpx`), check ranges. Resource safety via fdsan-managed file descriptors and libxml2 cleanup on every exit path.
+
+For detailed implementation, see `testhelper/AGENTS.md`.
+
 ## Running Tests
 
 ### Framework Unit Tests (C++ TDD)
@@ -223,6 +274,7 @@ Lifecycle: On-demand start (first client connection), auto-stop when all clients
 ./build.sh --product-name rk3568 --build-target uitestkit_test
 ./build.sh --product-name rk3568 --build-target testserver_unittest
 ./build.sh --product-name rk3568 --build-target perftest_unittest
+./build.sh --product-name rk3568 --build-target testhelper_unittest
 
 ```
 
@@ -236,9 +288,10 @@ hdc shell ./uitest_core_unittest
 
 # Run with filter
 hdc shell ./uitest_core_unittest --gtest_filter=WidgetSelectorTest.*
+hdc shell /data/local/tmp/testhelper_unittest --gtest_filter=ParseTimeToMsTest.ValidTime_Normal
 ```
 
-**Test Files:** `uitest/test/`, `testserver/test/`, `perftest/test/`
+**Test Files:** `uitest/test/`, `testserver/test/`, `perftest/test/`, `testhelper/test/`
 
 ### Application Tests (ArkTS)
 
@@ -286,11 +339,14 @@ Expected output location: `out/<product>/testfwk/arkxtest/` in the OpenHarmony r
 hdc target mount
 hdc shell mount -o rw,remount /
 
-# Push uitest server and client (see uitest/CLAUDE.md for detailed deployment steps)
-# Example for uitest:
+# Push uitest server and client (see uitest/AGENTS.md for detailed deployment steps)
 hdc file send out/rk3568/testfwk/arkxtest/uitest /system/bin/uitest
 hdc file send out/rk3568/testfwk/arkxtest/libuitest.z.so /system/lib/module/libuitest.z.so
 hdc shell chmod +x /system/bin/uitest
+
+# Push testhelper CLI (see testhelper/AGENTS.md for detailed deployment steps)
+hdc file send out/rk3568/testfwk/arkxtest/testhelper /system/bin/testhelper
+hdc shell chmod +x /system/bin/testhelper
 ```
 
 ### 4. Verify Service Status
@@ -304,6 +360,45 @@ hdc shell smgr list | grep 5502
 
 ### 5. Run Tests
 See "Running Tests" section above for specific test execution commands.
+
+## Shell Commands & CLI Tools
+
+Two on-device CLI binaries — verify both after every uitest/testhelper change:
+
+**1. uitest** (`/system/bin/uitest`) - UI 快捷操作
+```bash
+hdc shell uitest screenCap -p /data/local/tmp/screenshot.png     # 截图
+hdc shell uitest dumpLayout -p /data/local/tmp/layout.json       # 导出 UI 树
+hdc shell uitest uiInput click 500 1000                          # 注入点击
+hdc shell uitest uiInput swipe 100 1000 900 1000 600             # 注入滑动
+hdc shell uitest uiInput keyEvent Back                           # 注入按键
+hdc shell uitest uiInput inputText 500 1000 "Hello"              # 注入文本
+hdc shell uitest uiRecord record -W true -l                      # 录制 UI 操作
+hdc shell uitest start-daemon test@1234@1000@0                   # 启动守护进程
+```
+完整命令列表见 `uitest/AGENTS.md` 的 "Shell Commands"。
+
+**2. testhelper** (`/system/bin/testhelper`) - 委托 TestServer SA 5502 提供系统能力
+```bash
+hdc shell testhelper --version
+hdc shell testhelper help
+hdc shell testhelper get-time
+hdc shell testhelper set-time "2026-02-28 14:30:00"
+hdc shell testhelper get-timezone
+hdc shell testhelper set-timezone Asia/Shanghai
+hdc shell testhelper get-pastedata
+hdc shell testhelper set-pastedata "text"
+hdc shell testhelper clear-pastedata
+hdc shell testhelper hide-keyboard
+hdc shell testhelper get-fontname /data/local/tmp/font.ttf
+hdc shell testhelper install-font /data/local/tmp/font.ttf
+hdc shell testhelper uninstall-font "FontName"
+hdc shell testhelper set-viewmode dark
+hdc shell testhelper enable-location-mock
+hdc shell testhelper disable-location-mock
+hdc shell testhelper set-mocked-locations /data/local/tmp/route.gpx 2
+```
+完整命令列表见 `testhelper/AGENTS.md` 的 "Shell Commands"。
 
 ## Troubleshooting
 
@@ -350,6 +445,9 @@ See "Running Tests" section above for specific test execution commands.
 | `common_event_service` | System events |
 | `safwk` / `samgr` | System ability framework (testserver) |
 | `pasteboard` | Clipboard operations |
+| `libxml2` | GPX XML parsing (testhelper) |
+| `time_service` | Time/timezone service (testhelper) |
+| `graphic_2d` | Font management (testhelper, feature-gated) |
 | `hiview` / `hisysevent` | System event monitoring |
 
 ## Resource Usage
@@ -369,9 +467,11 @@ See `deps.md` for complete dependency list.
 
 ## Component-Specific Documentation
 
-- **Uitest**: `uitest/CLAUDE.md` - Detailed uitest architecture, API workflow, shell commands
+- **JsUnit**: `jsunit/AGENTS.md` - Hypium framework architecture, assertion/mock APIs, test execution
+- **Uitest**: `uitest/AGENTS.md` - Detailed uitest architecture, API workflow, shell commands
 - **PerfTest**: `perftest/CLAUDE.md` - Performance testing architecture, metrics, collection strategies
 - **TestServer**: `testserver/CLAUDE.md` - System ability service, IPC interface, lifecycle management
+- **TestHelper**: `testhelper/AGENTS.md` - CLI tool architecture, command handlers, implementation details
 - **Dependencies**: `deps.md` - Complete list of external dependencies
 
 ## Related Documentation

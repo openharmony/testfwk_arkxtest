@@ -102,6 +102,44 @@ hdc shell chmod +x /system/bin/uitest
 - Client library: `/system/lib/module/libuitest.z.so`
 - ANI library: `/system/lib/libuitest_ani.so`
 
+## Code Style
+
+### C++ Code Style
+
+- **Include guards**: `#ifndef FILE_NAME_H` / `#define` / `#endif` — never `#pragma once`. Apache 2.0 license header on every file (`Copyright (c) YYYY Huawei Device Co., Ltd.`).
+- **Namespace**: `namespace OHOS::uitest { ... } // namespace OHOS::uitest`. Body indented **4 spaces**. `using namespace std;` and `using namespace nlohmann;` are common at the top.
+- **Naming**: PascalCase classes/functions/structs (`UiDriver`, `FindWidgets`, `ApiCallErr`); trailing-underscore members (`uiController_`, `code_`); `UPPER_CASE` constexpr constants (`INDEX_ZERO`, `NAPI_MAX_BUF_LEN`). **No `m_` prefix.** Plain struct data fields often have no suffix (`bundleName`, `text`).
+- **Includes**: system → third-party (`nlohmann/json.hpp`, `napi/native_api.h`) → local project headers (`ui_driver.h`, `common_utilities_hpp.h`). Conditional includes guarded by `#ifdef ARKXTEST_*_ENABLE`.
+- **Smart pointers**: idiomatic `unique_ptr`/`shared_ptr` + `make_unique`/`move`. Use OHOS `sptr`/`wptr` for IPC ref-counted objects.
+- **Modern**: `override` on virtual overrides; `~Foo() = default`. No exceptions for flow control.
+
+### Error Handling & Logging
+
+- **No exceptions for control flow.** uitest uses an out-param `ApiCallErr& err` (last meaningful param; `frontend_error_defines.h:67`, holds `ErrCode code_` + `message_`). Error codes defined in `frontend_error_defines.h:20` (`ERR_INVALID_INPUT=401`, `ERR_OPERATION_UNSUPPORTED=17000005`, etc.).
+- **`DCHECK(cond)` is fatal**: logs `LOG_E` + `_Exit(0)` (`common_utilities_hpp.h:164`). Use ONLY for invariants, never recoverable errors.
+- **Logging**: `LOG_D/I/W/E(fmt, args...)` macros (auto-generate tag from file/function). Format strings use HiLog privacy tags: `%{public}s`, `%{public}d`. Define `LOG_TAG` per BUILD.gn target (`UiTestKit_Base`, `UiTestKit_Server`, etc.).
+
+```cpp
+#ifndef MY_CLASS_H
+#define MY_CLASS_H
+#include "common_utilities_hpp.h"
+namespace OHOS::uitest {
+class MyClass {
+public:
+    void DoWork(ApiCallErr &err);
+private:
+    std::unique_ptr<Helper> helper_;
+};
+} // namespace OHOS::uitest
+#endif // MY_CLASS_H
+```
+
+### ArkTS / JavaScript Style (bindings & API)
+
+- **`.ets` (ArkTS-Static)** files in `ets/ani/ets/` use `'use static'`-style full type annotations, native function declarations via `export native function`, and `loadLibraryWithPermissionCheck`. Import OHOS kits (`@ohos.hilog`, `@ohos.base`).
+- **NAPI `.cpp`** (`napi/uitest_napi.cpp`): register module via `napi_module_register`; convert JS↔C++ with helper functions (`JsStrToCppStr`). Guard optional features with `#ifdef ARKXTEST_API_METRICS_ENABLE`.
+- **Strings**: single quotes in JS; template literals for logs.
+
 ## Architecture
 
 ### Client-Server Model
@@ -127,7 +165,77 @@ System Under Test
 ### Component Flow
 
 1. **Component Lookup**: `Driver.findComponent(ON.text('Hello'))` → IPC → Server → `WidgetSelector` → UI Model
+   - Relative positioning via `On`: `isBefore`/`isAfter`/`within` (by `On` matcher), `beforeComponent`/`afterComponent`/`withinComponent` (by concrete `Component` object, since API 26)
+   - `beforeComponent`/`afterComponent` direction is counter-intuitive: `beforeComponent` calls `AddRearLocator` (target is *behind* the given component in tree order), `afterComponent` calls `AddFrontLocator` (target is *ahead*). `withinComponent` calls `AddParentLocator`.
+   - The `Component` passed to these methods is re-validated via `RetrieveWidget`; if it no longer exists in the current UI, `ERR_INVALID_PARAM` is returned.
 2. **Component Operation**: `Component.click()` → IPC → Server → `WidgetOperator` → Input System
+   - Coordinate-based operations: `clickAt`/`doubleClickAt`/`longClickAt`/`swipeBetween`/`dragBetween`, plus `*WithOptions` variants (since API 26) accepting `TouchOptions` (speed/duration/pressure) for finer control
+   - **TouchOptions field validation**: each `*WithOptions` method only accepts a specific subset of `TouchOptions` fields (`ValidateTouchOptions` in `frontend_api_handler.cpp:1331`). Passing an unsupported field returns `ERR_INVALID_INPUT`. Per-method allowed fields: `clickAtWithOptions`→{pressure}, `longClickAtWithOptions`→{duration,pressure}, `swipeBetweenWithOptions`→{speed,pressure}, `dragBetweenWithOptions`→{speed,duration,pressure}, `mouseDragWithOptions`→{speed,duration}.
+   - Mouse drag with keys: `mouseDragWithOptions(from, to, touchOptions?, keyOptions?)` (since API 26), `KeyOptions` provides `key1`/`key2` for combo keys. `key2` without `key1` returns `ERR_INVALID_PARAM` (`ParseKeyOptions` in `frontend_api_handler.cpp:1762`).
+   - Pen key operations: `triggerPenKey(key, mode, operation, options?)` (since API 26), using `PenKey`/`PenMode`/`PenKeyOperation`/`PenKeyOperationOptions`
+   - **PenKey valid combinations**: enforced by a whitelist (`VALID_PEN_KEY_COMBINATIONS` in `frontend_api_handler.cpp:1105`). AIR_MOUSE mode + AIR_MOUSE key requires `point` in options. Invalid combos return `ERR_INVALID_PARAM`.
+   - **PenKey feature gate**: `triggerPenKey` is gated by `ARKXTEST_TRIGGER_PEN_KEY_ENABLE`, which is only defined for `pc`/`tablet`/`phone` product features (`BUILD.gn:251`). On unsupported products, `IsPenKeySupported` returns false and the API returns `ERR_OPERATION_UNSUPPORTED` (17000005).
+   - **PenKey internal dispatch**: `PenKeyAction::IsMouseKeyCombo()` (AIR_MOUSE key + AIR_MOUSE mode) routes to `InjectMouseEventSequence`; all other combos route to `InjectKeyEventSequence` (`ui_driver.cpp:324`).
+   - Multi-display layout dump: `dumpLayout(savePath, displayId?)` (since API 26). The `savePath` is converted to a file descriptor on the client side; the server writes JSON via `write(fd, ...)` after validating `displayId` exists (`CheckDisplayExist`).
+
+### Multi-User & Multi-Display Adaptation (since API 26)
+
+Before API 26, the uitest server connected to AAMS (Accessibility Manager Service) under the default user (user 0) only. Any API with a `displayId` parameter could operate on the specified screen, but **if that screen belonged to a non-user-0 user, the operation would silently fail** — AAMS was scoped to user 0 and could not see that user's UI tree.
+
+API 26 introduces dynamic AAMS user switching to support **multi-display multi-user concurrent scenarios** (e.g., each display assigned to a different user via multi-user mode):
+
+**Mechanism (`SysUiController::ConvertAAMS` in `system_ui_controller.cpp:1525`):**
+
+1. **Single-user fast path**: At init, `Initialize()` queries `TestServerClient::GetUserCounts()`. If only 1 user exists, `isSingleUser_ = true` and `ConvertAAMS` short-circuits (returns true without any switching) — identical to pre-API 26 behavior, zero overhead.
+2. **Multi-user switching**: When `isSingleUser_` is false, every `GetUiWindows(displayId)` / `GetWidgetsInWindow(winInfo)` call first invokes `ConvertAAMS(displayId)`:
+   - Queries `TestServerClient::GetUserIdByDisplayId(displayId)` to find which user owns the display.
+   - If the display's user matches `currentUser_`, no switch needed.
+   - If different, calls `DisConnectFromSysAbility()` (disconnect AAMS for old user) then `ConnectToSysAbility()` which re-connects AAMS via `AccessibilityUITestAbility::Connect(userId)` under the new user (`system_ui_controller.cpp:1179`).
+3. **Shell `dumpLayout`**: `server_main.cpp:228` also calls `GetUserIdByDisplayId` + `SetActiveUser(userId)` before creating the controller, ensuring the shell command targets the correct user's display.
+
+**Key implementation details:**
+- **Single AAMS connection at a time**: The server holds one AAMS connection (to one user). `ConvertAAMS` switches it as needed — operations across different users' displays are **serialized** by `dumpMtx` mutex (`system_ui_controller.h:109`), not truly concurrent.
+- **`currentUser_` tracking**: Initialized to `-1` (defaults to `ability->Connect()` without userId = user 0); updated to `ability->GetCurrentUserId()` after successful connect (`:1198`); updated via `SetActiveUser(userId)` from shell/IPC.
+- **TestServer dependency**: `GetUserIdByDisplayId` / `GetUserCounts` are provided by TestServer SA 5502 (`ITestServerInterface.idl:38-39`). Multi-user support requires TestServer to be running and aware of display-to-user mappings.
+
+**Affected APIs**: Any Driver/Component API that ultimately calls `GetUiWindows` or `GetWidgetsInWindow` with a `displayId` — including `findComponent`/`dumpLayout`/`screenCap(displayId)`/coordinate operations on a specified display.
+
+### Display ID Propagation & Multi-Display Operations
+
+Every API that accepts a `displayId` (or `Point` with embedded `displayId`) follows a layered propagation path:
+
+```
+ArkTS API (displayId param)
+  → frontend_api_handler.cpp: reads displayId from Point JSON (key "displayId", default UNASSIGNED=-1)
+    → UiDriver: CheckDisplayExist(displayId) validates via DisplayManager
+      → SysUiController:
+        - GetUiWindows/GetWidgetsInWindow: ConvertAAMS(displayId) switches user if needed
+        - InjectTouchEventSequence: pointerEvent->SetTargetDisplayId(displayId)
+        - InjectMouseEventSequence: pointerEvent->SetTargetDisplayId(displayId)
+        - InjectKeyEventSequence:KeyEvent::SetDisplayId(displayId)
+```
+
+**`UNASSIGNED` (-1) resolution**: When `displayId` is not specified (default `-1`), `GetValidDisplayId` (`system_ui_controller.cpp:659`) resolves it to `DisplayManager::GetDefaultDisplayId()` — typically display 0 (main screen). This applies to all touch/mouse/key injection and coordinate conversion.
+
+**Cross-screen constraints for coordinate operations** (`CheckPointDisplayId` in `frontend_api_handler.cpp:1291`):
+
+Operations involving two points (from/to) enforce that both points belong to the same display, unless explicitly allowed:
+
+| Operation | Cross-screen allowed? | Behavior |
+|-----------|-----------------------|----------|
+| `swipe`/`swipeBetween`/`drag`/`dragBetween` (+ `*WithOptions`) | **No** | `ERR_INVALID_INPUT` if `from.displayId != to.displayId` |
+| `longClickComponentPresent`/`dragComponentPresent` (swipe variants) | **No** | Same constraint |
+| `penSwipe` | **No** | Same constraint |
+| `mouseDrag`/`mouseDragWithOptions` | **Yes** | `allowCrossScreen=true`, points can be on different displays |
+| Single-point ops (`clickAt`, `longClickAt`, `penClick`, etc.) | N/A | Single displayId, no constraint |
+
+When one point has `displayId=UNASSIGNED` and the other has a specific value, the `UNASSIGNED` point inherits the other's displayId automatically (`CheckPointDisplayId:1293-1298`).
+
+**Coordinate conversion** (`ConvertRelativeToGlobal` in `system_ui_controller.cpp:1329`): converts a per-display relative coordinate to a global screen coordinate using `DisplayManager::ConvertRelativeCoordinateToGlobal`. Required when the input subsystem expects global coordinates but the API received display-local coordinates.
+
+**Per-display window cache** (`UiDriver::displayToWindowCacheMap_`): `UiDriver` maintains a `map<displayId, vector<WindowCacheModel>>` (`ui_driver.cpp:110`). `UpdateUIWindows(targetDisplay)` fetches windows for the specified display only (or all displays when `targetDisplay=-1`), and `DumpUiHierarchy`/`FindWidgets` look up the cache by `displayId` (`:120`, `:169`, `:236`). Widget operations retrieve the widget's `displayId` from its cached `Window` and pass it through for correct AAMS scoping.
+
+**Input injection routing**: Touch/mouse/key events carry `displayId` via `PointerEvent::SetTargetDisplayId` / `KeyEvent::SetDisplayId`, so the input subsystem routes the event to the correct physical screen. This is independent of the AAMS user switching (above) — input injection works on any display regardless of which user's UI tree is currently connected.
 
 ## Running Tests
 
@@ -137,8 +245,13 @@ System Under Test
 
 **Build Tests:**
 ```bash
-# From OpenHarmony root
+# Build all unittests
 ./build.sh --product-name rk3568 --build-target uitestkit_test
+
+# Build a single unittest target (NOT the whole uitestkit_test group)
+./build.sh --product-name rk3568 --build-target uitest_core_unittest
+./build.sh --product-name rk3568 --build-target uitest_ipc_unittest
+./build.sh --product-name rk3568 --build-target uitest_extension_unittest
 ```
 
 **Run Tests:**
@@ -157,6 +270,8 @@ hdc shell ./uitest_core_unittest --gtest_filter=WidgetSelectorTest.*
 - `uitest_core_unittest` - Core logic (WidgetSelector, WidgetOperator, UiDriver, UiModel, etc.)
 - `uitest_ipc_unittest` - IPC communication
 - `uitest_extension_unittest` - Extension executor
+
+Test sources live in `test/` — one `<classname>_test.cpp` per `ohos_unittest` target. New tests must be registered in `BUILD.gn` source lists (`testonly = true`, `module_out_path = "arkxtest/uitest"`).
 
 ### Application UI Tests (ArkTS)
 
@@ -386,6 +501,7 @@ Built by `WidgetHierarchyBuilder` in `ui_model.cpp`
 | `ARKXTEST_WATCH_FEATURE_ENABLE` | Watch features (crown rotation) |
 | `ARKXTEST_KNUCKLE_ACTION_ENABLE` | Knuckle gestures |
 | `ARKXTEST_ADJUST_WINDOWMODE_ENABLE` | Window mode adjustment |
+| `ARKXTEST_TRIGGER_PEN_KEY_ENABLE` | Pen key operations (`triggerPenKey`); pc/tablet/phone only |
 | `HIDUMPER_ENABLED` | HiDumper integration |
 
 ## Dependencies
@@ -408,7 +524,7 @@ Built by `WidgetHierarchyBuilder` in `ui_model.cpp`
 2. **Multi-Language**: Features implemented in C++ must have bindings in ANI (ArkTS-Static) and NAPI (ArkTS-Dynamic)
 3. **System Integration**: Deeply integrated with OpenHarmony system services (accessibility, window manager, input)
 4. **IPC Communication**: All client operations go through IPC to server daemon
-5. **API Version**: Module support API 8+, with milestone features at API 9, 10, 11, 18, 20, 22
+5. **API Version**: Module support API 8+, with milestone features at API 9, 10, 11, 18, 20, 22, 23, 25, 26
 
 ## Related Documentation
 
