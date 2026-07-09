@@ -18,7 +18,6 @@
 #include <memory>
 #include <algorithm>
 #include <iostream>
-#include <fstream>
 #include <getopt.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -217,9 +216,8 @@ namespace OHOS::uitest {
 
     static void DumpLayoutImpl(DumpOption &option, bool initController, ApiCallErr &err)
     {
-        ofstream fout;
-        fout.open(option.savePath_, ios::out | ios::binary);
-        if (!fout) {
+        int fd = open(option.savePath_.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        if (fd == -1) {
             err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(option.savePath_) + strerror(errno));
             return;
         }
@@ -236,18 +234,17 @@ namespace OHOS::uitest {
         auto data = nlohmann::json();
         driver.DumpUiHierarchy(data, option, err);
         if (err.code_ != NO_ERROR) {
-            fout.close();
+            close(fd);
             return;
         }
         string dumpStr = data.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
         LOG_D("dumpStr size = %{public}zu", dumpStr.size());
-        fout << dumpStr;
-        if (fout.fail()) {
-            LOG_E("Write dumpStr to file failed.");
-        } else if (fout.bad()) {
-            LOG_E("Error in write dumpStr to file.");
+        ssize_t written = write(fd, dumpStr.c_str(), dumpStr.length());
+        if (written == -1 || static_cast<size_t>(written) != dumpStr.length()) {
+            LOG_E("Write dumpStr to file failed, errno: %{public}s", strerror(errno));
         }
-        fout.close();
+        fsync(fd);
+        close(fd);
         return;
     }
 

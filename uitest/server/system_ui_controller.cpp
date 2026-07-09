@@ -1173,7 +1173,7 @@ namespace OHOS::uitest {
             return false;
         }
         auto ret = RET_OK;
-        if (currentUser_ == -1) {
+        if (isSingleUser_ || currentUser_ == -1) {
             ret = ability->Connect();
         } else {
             ret = ability->Connect(currentUser_);
