@@ -308,22 +308,18 @@ hdc shell /data/local/tmp/perftest_unittest --gtest_filter=PerfTestTest.*
 | N-API 绑定（`napi/`） | `perftestkit` | — | 须验证消费方应用 `aa test` |
 | ANI 绑定 / `.ets`（`ani/`） | `perftestkit` + 删旧 `.abc`（见 L170） | — | 须验证消费方应用 `aa test` |
 | 新增 PerfMetric | `perftestkit` | `perftest_unittest` | 须确认级联完整（枚举→collector→注册→.ets→.d.ts） |
-| 改公共 `.d.ts` 签名 | `perftestkit` | — | 向后兼容：类中新增同名方法时，入参个数不同是兼容的；同名方法参数类型/顺序与已有范围非包含关系视为不兼容；类属性：可读写属性可选↔必选、只读属性必选变可选、删除成员，均为不兼容 |
+| 改公共 `.d.ts` 签名 | `perftestkit` | — | 向后兼容规则见根 `../AGENTS.md` § 项目约束 |
 
 ### Done 定义
 
-完成回复须含：
-1. **改动清单**：改了哪些文件，对应上表哪一行；N-API 与 ANI 绑定是否成对改动（两绑定同步确认）
-2. **构建证据**：`perftestkit`（或对应单组件目标）构建通过的输出摘录；涉及 `.ets` 改动的须确认已删旧 `.abc`
-3. **运行证据**：`perftest_unittest` 推送+运行输出摘录；涉及绑定层的须附 `aa test` 应用测试输出
-4. **约束确认**：触发了 § 项目约束 的哪些条（两绑定同步 / IPC 序列化兼容 / 回调 timeout / ABC 重建），是否遵守
+模板见根 `../AGENTS.md` § Done 定义。perftest 专属项：
+- 构建目标：`perftestkit`（涉及 `.ets` 改动须确认已删旧 `.abc`）
+- 运行证据：`perftest_unittest`；涉及绑定层须附 `aa test` 输出
+- 约束确认：两绑定同步 / IPC 序列化兼容 / 回调 timeout / ABC 重建
 
 ### 无法 device-side 验证时的兜底
 
-无设备或 CI 环境下无法跑 unittest/shell 时：
-- **不得省略**构建验证（`perftestkit` 构建可在主机完成）
-- 须在回复中**显式标注**："以下项未做 device-side 验证"并列出，说明阻塞原因
-- 不得用"应当通过""预计正常"等措辞替代实际运行证据
+见根 `../AGENTS.md` § 无法 device-side 验证时的兜底。
 
 ## 常见开发任务
 
@@ -368,7 +364,7 @@ hdc shell /data/local/tmp/perftest_unittest --gtest_filter=PerfTestTest.*
 - 移除或削弱 `CodeCallbackContext` 中的 `std::condition_variable` + `ThreadLock` 同步机制（`napi/include/callback_code_napi.h:39`、`ani/include/callback_code_ani.h:37`）—— 跨线程回调通知必须保持阻塞（见 § 回调线程安全实现细节）。回调通过 `napi_call_threadsafe_function` / `ani_call_threadsafe_function` 以 `napi_tsblocking` 模式在客户端（ArkTS 主）线程上执行；服务端线程必须 `wait()` 直到被通知。
 
 **改动前须确认**：
-- 改 `@ohos.test.PerfTest.d.ts` 公共签名 → 类中新增同名方法时，入参个数不同是兼容的；同名方法参数类型/顺序与已有范围非包含关系视为不兼容；类属性：可读写属性可选↔必选、只读属性必选变可选、删除成员，均为不兼容。
+- 改 `@ohos.test.PerfTest.d.ts` 公共签名 → 向后兼容规则见根 `../AGENTS.md` § 项目约束。
 - 改 IPC 序列化格式（`core/include/frontend_api_defines.h` 中的 `ApiCallInfo`/`ApiReplyInfo`）→ 影响客户端/服务端兼容性。
 - 新增 `PerfMetric` 枚举值 → 须级联到：采集器类、`FrontendApiHandler` 注册、`@ohos.test.PerfTest.ets` 枚举以及 `@ohos.test.PerfTest.d.ts`（见 § 新增性能指标）。
 

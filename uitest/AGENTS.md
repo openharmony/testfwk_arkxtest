@@ -152,22 +152,18 @@ ArkTS API（displayId 参数）
 | 扩展执行器（`addon/extension_executor`） | `uitestkit` | `uitest_extension_unittest` | — | — |
 | 多显示器/输入注入（`system_ui_controller`/`ui_input`） | `uitestkit` | `uitest_core_unittest` | `dumpLayout -d <displayId>` + `uiInput` 跨屏验证 | 见 § 多屏多用户、§ Display ID 传播 |
 | NAPI/ANI/CJ 绑定层 | `uitestkit` | — | `aa test` 应用测试（见根 § 应用测试） | 三绑定一致性：改一处须验证对应绑定编译通过 |
-| 新增/改公共 `.d.ts` 签名 | `uitestkit` | — | `aa test` 应用测试 | 向后兼容：类中新增同名方法时，入参个数不同是兼容的；同名方法参数类型/顺序与已有范围非包含关系视为不兼容；类属性：可读写属性可选↔必选、只读属性必选变可选、删除成员，均为不兼容 |
+| 新增/改公共 `.d.ts` 签名 | `uitestkit` | — | `aa test` 应用测试 | 向后兼容规则见根 `../AGENTS.md` § 项目约束 |
 
 ### Done 定义
 
-完成回复须含：
-1. **改动清单**：改了哪些文件，对应上表哪一行
-2. **构建证据**：`uitestkit`（或对应单组件目标）构建通过的输出摘录
-3. **运行证据**：对应 unittest 推送+运行输出摘录；涉及 device-side 场景的须附 shell 回归输出（`dumpLayout`/`uiInput` 等，命令见 § Shell 命令）
-4. **约束确认**：触发了 § 项目约束 的哪些条，是否遵守（如三绑定同步、跨屏约束、feature gate）
+模板见根 `../AGENTS.md` § Done 定义。uitest 专属项：
+- 构建目标：`uitestkit`
+- 运行证据：对应 unittest；涉及 device-side 场景须附 shell 回归输出（`dumpLayout`/`uiInput` 等，命令见 § Shell 命令）
+- 约束确认：三绑定同步 / 跨屏约束 / feature gate
 
 ### 无法 device-side 验证时的兜底
 
-无设备或 CI 环境下无法跑 unittest/shell 时：
-- **不得省略**构建验证（`uitestkit` 构建可在主机完成）
-- 须在回复中**显式标注**："以下项未做 device-side 验证"并列出，说明阻塞原因（如"无连接设备""仅 CI 环境"）
-- 不得用"应当通过""预计正常"等措辞替代实际运行证据
+见根 `../AGENTS.md` § 无法 device-side 验证时的兜底。
 
 ## 新增 API
 
@@ -366,8 +362,7 @@ uiInput 子命令：
 **改前须确认（ask-before）**：
 - 改 `frontend_api_defines.h` 的 `FrontendApiType` 枚举 / IPC JSON schema → 先确认 IPC 协议兼容
 - 改 `frontend_error_defines.h` 错误码枚举 → 先检查全部调用方
-- 改 `@ohos.UiTest.d.ts` 公共签名 → 类中新增同名方法时，入参个数不同是兼容的；同名方法参数类型/顺序与已有范围非包含关系视为不兼容；类属性：可读写属性可选↔必选、只读属性必选变可选、删除成员，均为不兼容
-- 改 `ARKXTEST_*_ENABLE` feature flag → 先确认影响的产品范围
+- 改 `@ohos.UiTest.d.ts` 公共签名 → 向后兼容规则见根 `../AGENTS.md` § 项目约束
 
 ## 依赖
 

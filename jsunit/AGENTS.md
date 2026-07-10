@@ -32,7 +32,7 @@ OpenHarmony/
             └── package.json
 ```
 
-**所有构建命令必须从 OpenHarmony 根目录执行**，不是从 jsunit 目录执行。
+构建命令须从 OpenHarmony 根目录执行（见根 `../AGENTS.md` § 构建和验证）。
 
 ### 使用框架
 
@@ -450,17 +450,14 @@ hdc shell aa test -b <bundleName> -m entry -s unittest OpenHarmonyTestRunner -s 
 
 ### Done 定义
 
-完成回复须含：
-1. **改动清单**：改了哪些文件，`src/` 与 `src_static/` 是否成对改动（双树对等确认）
-2. **构建证据**：无独立构建；须附消费方测试应用构建通过的输出摘录（命令见 § 运行测试）
-3. **运行证据**：`aa test` 运行输出摘录
-4. **约束确认**：触发了 § 项目约束 的哪些条（双树对等 / 无独立构建 / 公共 API 兼容性），是否遵守
+模板见根 `../AGENTS.md` § Done 定义。jsunit 专属项：
+- 构建证据：无独立构建；须附消费方测试应用构建通过的输出摘录
+- 运行证据：`aa test` 运行输出摘录
+- 约束确认：双树对等 / 无独立构建 / 公共 API 兼容性
 
 ### 无法 device-side 验证时的兜底
 
-无设备或 CI 环境下无法跑 `aa test` 时：
-- 须在回复中**显式标注**："以下项未做 device-side 验证"并列出，说明阻塞原因
-- 不得用"应当通过""预计正常"等措辞替代实际运行证据
+见根 `../AGENTS.md` § 无法 device-side 验证时的兜底。
 
 ### 消费方构建失败排查清单
 
@@ -519,8 +516,8 @@ jsunit 是纯 npm 包，无独立构建/lint。
 - **无独立构建/验证**：`package.json` 无 `scripts`、无 `dependencies`，无 `tsconfig.json`/`.eslintrc`。改动验证方式是消费方测试应用能构建并运行（见 § 验证）。
 
 **禁止**：
-- 修改 `index.d.ts` 公共 API 签名而不确认向后兼容。类中新增同名方法时，入参个数不同是兼容的；同名方法参数类型/顺序与已有范围非包含关系视为不兼容；类属性：可读写属性可选↔必选、只读属性必选变可选、删除成员，均为不兼容。
-- 禁止改变现有 API 的行为，任何功能扩展须通过新增接口（方法/参数）实现，保持向后兼容。
+- 修改 `index.d.ts` 公共 API 签名而不确认向后兼容（规则见根 `../AGENTS.md` § 项目约束）。
+- 禁止改变现有 API 的行为（见根 `../AGENTS.md` § 项目约束）。
 
 **改前须确认（ask-before）**：
 - 改 `src/service.js` 的 `SpecService` 执行流程（it/case 超时、skip 逻辑、hook 顺序）→ 影响所有消费方测试的执行语义，先确认行为变更的向后影响。

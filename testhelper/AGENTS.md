@@ -22,7 +22,7 @@ OpenHarmony/
             └── BUILD.gn             # 构建配置
 ```
 
-**所有构建命令必须从 OpenHarmony 根目录执行**，不是从 testhelper 目录执行。
+构建命令须从 OpenHarmony 根目录执行（见根 `../AGENTS.md` § 构建和验证）。
 
 ### 前置条件
 - 已配置构建环境的 OpenHarmony 源码
@@ -31,29 +31,7 @@ OpenHarmony/
 
 ## 构建系统
 
-**重要：** 所有构建命令必须从 **OpenHarmony 源码根目录** 执行。构建产物位于 OpenHarmony 根目录下的 `out/<product>/testfwk/arkxtest/`。
-
-### 构建命令
-
-```bash
-# 先导航到 OpenHarmony 根目录
-cd /path/to/openharmony
-
-# 构建二进制文件 + 核心库
-./build.sh --product-name rk3568 --build-target testhelperkit
-
-# 构建单元测试
-./build.sh --product-name rk3568 --build-target testhelper_unittest
-```
-
-### 关键构建目标
-
-| 目标 | 描述 |
-|------|------|
-| `testhelperkit` | 构建组（二进制文件 + 核心库） |
-| `testhelper` | 可执行目标（`/system/bin/testhelper`） |
-| `testhelper_core` | 包含处理器、工具函数、GPX 解析器的静态库 |
-| `testhelper_unittest` | gtest 单元测试二进制文件 |
+构建命令和目标见根 `../AGENTS.md` § 构建和验证。构建产物位于 `out/<product>/testfwk/arkxtest/`。
 
 ### 构建配置
 
@@ -215,8 +193,6 @@ TestServer SA (ID 5502)
 
 ### 框架单元测试（C++ gtest）
 
-**重要：** 所有命令从 OpenHarmony 根目录执行。
-
 ```bash
 # 构建（从 OpenHarmony 根目录）
 ./build.sh --product-name rk3568 --build-target testhelper_unittest
@@ -250,18 +226,14 @@ hdc shell /data/local/tmp/testhelper_unittest --gtest_filter=CommonUtilsTest.*
 
 ### 完成定义
 
-完成回复须含：
-1. **改动清单**：改了哪些文件，对应上表哪一行
-2. **构建证据**：`testhelperkit`（或 `testhelper_unittest`）构建通过的输出摘录
-3. **运行证据**：`testhelper_unittest` 推送+运行输出摘录；涉及设备侧的须附 shell 回归输出（命令见 § Shell 命令）
-4. **约束确认**：触发了 § 项目约束 的哪些条（输入校验前置 / fdsan 资源安全 / watch/glasses 禁用 / 时间格式契约），是否遵守
+模板见根 `../AGENTS.md` § Done 定义。testhelper 专属项：
+- 构建目标：`testhelperkit`（或 `testhelper_unittest`）
+- 运行证据：`testhelper_unittest`；涉及设备侧的须附 shell 回归输出（命令见 § Shell 命令）
+- 约束确认：输入校验前置 / fdsan 资源安全 / watch/glasses 禁用 / 时间格式契约
 
 ### 无法设备侧验证时的兜底
 
-无设备或 CI 环境下无法跑 unittest/shell 时：
-- **不得省略**构建验证（`testhelperkit` 构建可在主机完成）
-- 须在回复中**显式标注**："以下项未做设备侧验证"并列出，说明阻塞原因
-- 不得用"应当通过""预计正常"等措辞替代实际运行证据
+见根 `../AGENTS.md` § 无法 device-side 验证时的兜底。
 
 ## 新增命令
 
@@ -368,7 +340,7 @@ hdc shell testhelper set-mocked-locations /data/local/tmp/route.gpx 2
 
 **改前须确认**：
 - 修改 `ParseTimeToMs` 中的严格时间格式 `YYYY-MM-DD HH:MM:SS` 解析（`testhelper_core.cpp:129`，四阶段校验含 mktime 往返）—— 影响 `set-time` 契约。
-- 修改 `ARKXTEST_FONT_ENABLE` / `ARKXTEST_PASTEBOARD_ENABLE` 特性标志 —— 确认受影响的产品。
+- 修改 `ARKXTEST_FONT_ENABLE` / `ARKXTEST_PASTEBOARD_ENABLE` 特性标志 —— 确认受影响的产品（通用规则见根 `../AGENTS.md` § 项目约束）。
 - 修改 `g_argCountMap` 参数契约（每个命令的最小/最大参数数，`testhelper_main.cpp:52`）—— 影响所有命令入口校验；`ValidateArgCount` 不匹配时调用 `_Exit(EXIT_FAILURE)`。
 - 修改退出码常量（`include/common_utils.h` 中的 `EXIT_SUCCESS`/`EXIT_FAILURE`/`EXIT_SERVICE_UNAVAILABLE`/`EXIT_NOT_SUPPORTED`）—— 影响所有处理器使用的 CLI 契约。
 - 修改 `ValidateGPXFilePath` 路径前缀 `/data/local/tmp/` 或 `..` 遍历检查（`testhelper_core.cpp:444`）—— 影响安全边界。

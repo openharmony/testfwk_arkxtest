@@ -160,13 +160,12 @@ testserver/
 **禁止**：
 - 编辑 `out/<product>/gen/test/testfwk/arkxtest/testserver/src/` 下的 IPC proxy/stub 自动生成代码——始终编辑 IDL 源文件（见 § 新增 IPC 方法）。
 - 绕过 `CreateSession()` 调用者追踪——它是按需启停生命周期的基础，新入口点必须注册调用者。
-- 禁止改变现有 API 的行为，任何功能扩展须通过新增接口（方法/参数）实现，保持向后兼容。
+- 禁止改变现有 API 的行为（见根 `../AGENTS.md` § 项目约束）。
 
 **改前须确认（ask-before）**：
 - 改 `test_server_error_code.h` 错误码 → 先检查所有调用方，使用已有错误码而非原始整数。
 - 改 `init/testserver.cfg` 的 uid/gid/capabilities 或 `5502.json` 的 ACL → 需与维护者确认（影响 SA 权限）。
 - 改按需停止条件（`CallerDetectTimer` 超时 / 开发者模式门控） → 影响服务生命周期。
-- 改 `ARKXTEST_*_ENABLE` feature flag → 先确认影响的产品范围。
 
 ## 验证
 
@@ -183,18 +182,14 @@ testserver/
 
 ### Done 定义
 
-完成回复须含：
-1. **改动清单**：改了哪些文件，对应上表哪一行
-2. **构建证据**：`test_server_service` / `test_server_client`（或对应目标）构建通过的输出摘录
-3. **运行证据**：`testserver_unittest` 推送+运行输出摘录；涉及 device-side 场景的须附 SA 启动/日志输出
-4. **约束确认**：触发了 § 项目约束 的哪些条（生成代码边界 / 调用者追踪 / 错误码 / 生命周期），是否遵守
+模板见根 `../AGENTS.md` § Done 定义。testserver 专属项：
+- 构建目标：`test_server_service` / `test_server_client`
+- 运行证据：`testserver_unittest`；涉及 device-side 场景须附 SA 启动/日志输出
+- 约束确认：生成代码边界 / 调用者追踪 / 错误码 / 生命周期
 
 ### 无法 device-side 验证时的兜底
 
-无设备或 CI 环境下无法跑 unittest/shell 时：
-- **不得省略**构建验证（`test_server_service` / `test_server_client` 构建可在主机完成）
-- 须在回复中**显式标注**："以下项未做 device-side 验证"并列出，说明阻塞原因
-- 不得用"应当通过""预计正常"等措辞替代实际运行证据
+见根 `../AGENTS.md` § 无法 device-side 验证时的兜底。
 
 ## 故障排查
 
