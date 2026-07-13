@@ -139,7 +139,7 @@ ArkTS API（displayId 参数）
 
 ## 测试运行与验证
 
-构建、推送、运行单元测试和应用测试的命令统一见根 `../AGENTS.md` § 构建和验证（含 uitest 单元测试目标说明：core/ipc/extension 各测什么）。以下为 uitest 特有的验证要求。
+构建、推送、运行单元测试和 XTS 测试的命令统一见根 `../AGENTS.md` § 构建和验证（含 uitest 单元测试目标说明：core/ipc/extension 各测什么）。以下为 uitest 特有的验证要求。
 
 ### 按改动类型的验证矩阵
 
@@ -151,8 +151,8 @@ ArkTS API（displayId 参数）
 | IPC 通信层（`connection/ipc_transactor.cpp`） | `uitestkit` | `uitest_ipc_unittest` | `start-daemon` 验证连通 | — |
 | 扩展执行器（`addon/extension_executor`） | `uitestkit` | `uitest_extension_unittest` | — | — |
 | 多显示器/输入注入（`system_ui_controller`/`ui_input`） | `uitestkit` | `uitest_core_unittest` | `dumpLayout -d <displayId>` + `uiInput` 跨屏验证 | 见 § 多屏多用户、§ Display ID 传播 |
-| NAPI/ANI/CJ 绑定层 | `uitestkit` | — | `aa test` 应用测试（见根 § 应用测试） | 三绑定一致性：改一处须验证对应绑定编译通过 |
-| 新增/改公共 `.d.ts` 签名 | `uitestkit` | — | `aa test` 应用测试 | 向后兼容规则见根 `../AGENTS.md` § 项目约束 |
+| NAPI/ANI/CJ 绑定层 | `uitestkit` | — | `aa test` XTS 测试（见根 § XTS 测试） | 三绑定一致性：改一处须验证对应绑定编译通过 |
+| 新增/改公共 `.d.ts` 签名 | `uitestkit` | — | `aa test` XTS 测试 | 向后兼容规则见根 `../AGENTS.md` § 项目约束 |
 
 ### Done 定义
 

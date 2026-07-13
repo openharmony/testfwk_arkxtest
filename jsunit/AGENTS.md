@@ -4,15 +4,6 @@
 
 **JsUnit (Hypium)** 是 arkxtest 的 ArkTS 单元测试框架组件，为 OpenHarmony 应用和系统接口提供全面的测试执行能力。它是编写和执行单元测试的基础，提供丰富的断言库、Mock 能力和数据驱动测试支持。
 
-## 本包的性质（是什么，不是什么）
-
-- **纯 npm 包** — `package.json` **无 `scripts`** 且**无 `dependencies`**。没有 `bundle.json`，没有 GN 构建，没有 lint/typecheck/format 工具（`tsconfig.json`、`.eslintrc`、`.prettierrc` 不存在）。
-- **无独立构建/验证**。它通过 OHPM 被测试应用消费（`ohpm i @ohos/hypium`）。验证方式 = 消费方应用能构建并运行。
-- **双源码树** — 每个特性同时存在于：
-  - `src/`（`*.js`）— ArkTS-Dynamic（NAPI），入口 `index.js`
-  - `src_static/`（`*.ets`）— ArkTS-Static（ANI），入口 `index.ets` / `src_static/hypium.ets`
-  - 两者必须保持特性对等。编辑一侧时，必须检查另一侧。
-
 ## 快速开始
 
 ### 仓库位置
@@ -36,7 +27,7 @@ OpenHarmony/
 
 ### 使用框架
 
-jsunit 框架以 npm 包形式分发，直接集成到测试应用中：
+jsunit 通过 OHPM 被测试应用消费（`ohpm i @ohos/hypium`），直接集成到测试项目中：
 
 ```bash
 # 通过 OHPM 安装
@@ -153,6 +144,12 @@ export default function abilityTest() {
 - `assertMatchObj.js` - 带嵌入匹配器的部分对象属性匹配
 
 ### 多语言支持
+
+每个特性同时存在于两棵源码树中：
+- `src/`（`*.js`）— ArkTS-Dynamic（NAPI），入口 `index.js`
+- `src_static/`（`*.ets`）— ArkTS-Static（ANI），入口 `index.ets` / `src_static/hypium.ets`
+
+两者必须保持特性对等，编辑一侧时必须检查另一侧（详见 § 项目约束 双树对等）。
 
 | 环境 | 绑定类型 | 位置 |
 |------|----------|------|
@@ -358,11 +355,11 @@ mocker.clear(obj);                                // 恢复原始方法
 
 ## 运行测试
 
-### 应用测试（ArkTS）
+### XTS 测试（ArkTS）
 
 **重要：** 以下所有构建命令必须从 **OpenHarmony 源码根目录** 执行，不是从 jsunit 目录执行。构建输出位于 OpenHarmony 根目录的 `out/<product>/`。
 
-**构建测试应用：**
+**构建 XTS 测试套：**
 ```bash
 # 先导航到 OpenHarmony 根目录
 cd /path/to/openharmony
@@ -436,7 +433,7 @@ hdc shell aa test -b <bundleName> -m entry -s unittest OpenHarmonyTestRunner -s 
 
 ## 验证（如何检查你的改动）
 
-- **无本地 lint/构建。** jsunit 是纯 npm 包（`package.json` 无 `scripts`/`dependencies`），无 `tsconfig.json`/`.eslintrc`。改动验证方式是消费方测试应用能构建并运行。
+- **无本地 lint/构建。** jsunit 无 `scripts`/`dependencies`（`package.json` 仅声明包名与入口），无 `tsconfig.json`/`.eslintrc`。改动验证方式是消费方测试应用能构建并运行。
 - 确认 `src/` 和 `src_static/` 编辑保持特性对等 — 相同行为必须存在于两棵树中。
 
 ### 提交前自检清单（无设备时可执行）
@@ -502,14 +499,12 @@ hdc shell aa test -b <bundleName> -m entry -s unittest OpenHarmonyTestRunner -s 
 | `src/module/report/OhReport.js` | OpenHarmony 特定报告 |
 | `src/module/kit/SysTestKit.js` | 日志关键字检测、用例元数据访问 |
 | `src_static/` | ArkTS-Static 特定实现（`src/` 的镜像） |
-| `package.json` | NPM 包配置（无 scripts，无 dependencies） |
+| `package.json` | 包配置（@ohos/hypium，无 scripts，无 dependencies） |
 | `README.md` | 详细特性和 API 文档 |
 
 ## 项目约束
 
 根 `../AGENTS.md` § 项目约束 的跨组件通用约束同样适用。以下为 jsunit 专属约束：
-
-jsunit 是纯 npm 包，无独立构建/lint。
 
 **不变量**：
 - **双树对等（尽量达成）**：`src/`（`.js`，ArkTS-Dynamic）和 `src_static/`（`.ets`，ArkTS-Static）改动应尽量保持特性对等。改一侧前应确认另一侧的对应实现。由于 ArkTS-Static 语法限制，某些特性可能无法完全对等，此时须明确说明 gap 点及原因。

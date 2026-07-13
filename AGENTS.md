@@ -4,7 +4,7 @@
 
 本仓库对应 OpenHarmony `test/testfwk/arkxtest`，是自动化测试框架。优先按这些目录定位问题：
 
-- `jsunit/`：Hypium 单元测试框架（`@ohos/hypium` npm 包），ArkTS-Dynamic（`src/`）+ ArkTS-Static（`src_static/`）双树。
+- `jsunit/`：Hypium 单元测试框架（`@ohos/hypium`），ArkTS-Dynamic（`src/`）+ ArkTS-Static（`src_static/`）双树。
 - `uitest/`：UI 自动化测试框架，客户端-服务端架构，C++ core + ANI/NAPI/CJ 三套绑定。
 - `perftest/`：白盒性能测试框架，N-API/ANI 前端 + IPC + core。
 - `testserver/`：系统测试 SA（ID 5502），提供高权限接口。
@@ -42,7 +42,7 @@ arkxtest/
 │   │   ├── core.js    # 核心引擎
 │   │   └── service.js # 测试服务
 │   ├── src_static/    # ArkTS-Static 实现
-│   └── package.json     # NPM 包配置
+│   └── package.json     # 包配置（@ohos/hypium，无 scripts/dependencies）
 │
 ├── uitest/             # UI 自动化测试框架
 │   ├── core/            # C++ 核心逻辑（UiDriver, WidgetSelector, WidgetOperator）
@@ -141,12 +141,12 @@ hdc shell /data/local/tmp/testhelper_unittest --gtest_filter=ParseTimeToMsTest.V
 
 测试文件位于：`uitest/test/`、`testserver/test/`、`perftest/test/`、`testhelper/test/`。新增 uitest 测试须在 `uitest/BUILD.gn` 的 source list 注册（`testonly = true`，`module_out_path = "arkxtest/uitest"`），每个 `ohos_unittest` 目标对应一个 `<classname>_test.cpp`。
 
-### 应用测试（ArkTS）
+### XTS 测试（ArkTS）
 
-**注意**：测试应用构建命令也从 OpenHarmony 源码根目录执行。
+**注意**：XTS 测试套构建命令也从 OpenHarmony 源码根目录执行。
 
 ```bash
-# 构建测试应用
+# 构建 XTS 测试套
 # ArkTS-Dynamic
 ./test/xts/acts/build.sh product-name <product> system_size=standard suite=<testsuite_path>:<target>
 # ArkTS-Static
@@ -166,7 +166,7 @@ hdc shell aa test -b <bundleName> -m entry -s unittest OpenHarmonyTestRunner -s 
 
 涉及真实窗口、显示、输入注入、SA 启动、Shell 命令（uitest/testhelper）的改动，需要补充 device-side 证据：构建 + 推送 + 运行对应 unittest 或 Shell 命令验证。
 
-jsunit 无独立构建/lint——纯 npm 包，验证方式是消费方测试应用能构建并运行。
+jsunit 无独立构建/lint，验证方式是消费方测试应用能构建并运行。
 
 提交使用 `git commit -s`，并保留 `Co-Authored-By: Agent`。
 
@@ -191,7 +191,7 @@ jsunit 无独立构建/lint——纯 npm 包，验证方式是消费方测试应
 
 | 组件 | 定位 | 详细文档 | 改动前必读约束提示 |
 | --- | --- | --- | --- |
-| **jsunit** (Hypium) | JS/ArkTS 单元测试框架，npm 包 `@ohos/hypium`，断言/Mock/数据驱动 | `jsunit/AGENTS.md` | `src/`(.js) 与 `src_static/`(.ets) **双树对等**，改一侧必须同步另一侧 |
+| **jsunit** (Hypium) | JS/ArkTS 单元测试框架，`@ohos/hypium`，断言/Mock/数据驱动 | `jsunit/AGENTS.md` | `src/`(.js) 与 `src_static/`(.ets) **双树对等**，改一侧必须同步另一侧 |
 | **uitest** | UI 自动化测试框架，客户端-服务端架构，NAPI/ANI/CJ 三套绑定 | `uitest/AGENTS.md` | 改 C++ core 须同步 ANI(`ets/ani/`)+NAPI(`napi/`)+CJ(`cj/`)+`.d.ts`；勿跳 `CheckPointDisplayId` 跨屏校验、勿拆 `dumpMtx` 串行化 |
 | **perftest** | 白盒性能测试框架，采集 DURATION/CPU/MEMORY/FPS 等指标 | `perftest/AGENTS.md` | 改 `ani/ets/@ohos.test.PerfTest.ets` 后须删旧 `.abc` 重建（见 L170） |
 | **testserver** | 测试 SA（ID 5502），高权限系统能力服务，按需启停 | `testserver/AGENTS.md` | 禁改 `gen/` 下 IDL 自动生成代码；改 IPC 方法须四步走（IDL→service→client→test） |
@@ -208,7 +208,7 @@ jsunit 无独立构建/lint——纯 npm 包，验证方式是消费方测试应
 | 场景 | 先读 |
 | --- | --- |
 | 添加 uitest 新 API（Driver/On/Component/UiWindow） | `uitest/AGENTS.md` § 新增 API |
-| 添加 testhelper CLI 命令 | `testhelper/AGENTS.md` § Adding New Commands |
+| 添加 testhelper CLI 命令 | `testhelper/AGENTS.md` § 新增命令 |
 | 添加 TestServer IPC 方法（IDL） | `testserver/AGENTS.md` § Adding New IPC Methods |
 | 添加性能指标（PerfMetric） | `perftest/AGENTS.md` § Adding New Performance Metrics |
 | 修改断言/Mock/TestRunner/Tag 过滤 | `jsunit/AGENTS.md` § Key APIs / § TestRunner |

@@ -237,10 +237,22 @@ hdc shell /data/local/tmp/testhelper_unittest --gtest_filter=CommonUtilsTest.*
 
 ## 新增命令
 
-1. 在 `testhelper_core.h/.cpp` 中添加处理器 `int32_t TestHelperCore::HandleXxx(...)`，包含输入校验 + `TestServerClient::GetInstance().<Call>()`。
-2. 在 `testhelper_main.cpp` 的 `g_argCountMap` 中注册参数契约，在 `g_commandHandlers` 中注册 lambda。
-3. 在 `HELP_MSG` 中添加一行。
-4. 在 `test/unittest/testhelper_core_test.cpp` 中添加 gtest 用例，覆盖合法、非法格式、边界和服务不可用路径。
+新增 testhelper CLI 命令须同步修改以下 6 处：
+
+| 步骤 | 文件（行号） | 内容 |
+| --- | --- | --- |
+| 1. 声明参数个数 | `src/testhelper_main.cpp`（`g_argCountMap:52`） | 添加 `{"命令名", std::make_tuple(minArgs, maxArgs, "usage")}` |
+| 2. 注册处理器 | `src/testhelper_main.cpp`（`g_commandHandlers:91`） | 添加 `{"命令名", lambda → ValidateArgCount + core.HandleXxx}` |
+| 3. 更新帮助 | `src/testhelper_main.cpp`（`HELP_MSG:27`） | 在 Commands 列表添加命令说明 |
+| 4. 声明方法 | `include/testhelper_core.h`（`TestHelperCore` 类） | 添加 `int32_t HandleXxx(...);` |
+| 5. 实现方法 | `src/testhelper_core.cpp` | 实现 `HandleXxx`，输入校验须在 testserver SA 调用前完成 |
+| 6. 补充测试 | `test/unittest/testhelper_core_test.cpp` | 为新命令添加 gtest 用例，覆盖合法、非法格式、边界和服务不可用路径 |
+
+### 约束（新增命令必读）
+
+- **禁止跳过 `ValidateArgCount`**：处理器入口必须先校验参数个数。
+- **禁止在服务调用后做输入校验**：所有参数校验（格式、范围、路径前缀 `/data/local/*` 等）须在 `HandleXxx` 调用 `TestServerClient` 前完成。
+- **产品特性禁用检查**：`watch`/`glasses` 上禁用的命令须检查 `ARKXTEST_*_ENABLE`。
 
 ## 目录结构
 
