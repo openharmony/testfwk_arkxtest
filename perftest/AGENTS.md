@@ -1,14 +1,34 @@
-# PerfTest - AI Knowledge Base
+# PerfTest - AI 知识库
 
-## Project Overview
+## 项目概述
 
-This is **PerfTest** - a white-box performance testing framework for OpenHarmony application performance testing. It provides performance measurement capabilities to collect metrics such as code segment execution duration, CPU usage/load, memory consumption, list scrolling FPS, and application startup/page switching latency during test code execution or specific UI scenarios.
+本项目是 **PerfTest** —— 一个面向 OpenHarmony 应用性能测试的白盒性能测试框架。它提供性能测量能力，可在测试代码执行或特定 UI 场景下采集代码段执行时长、CPU 使用率/负载、内存消耗、列表滑动帧率以及应用启动/页面切换时延等指标。
 
-The framework supports both N-API (for ArkTS-Dynamic applications) and ANI (for ArkTS-Static applications) interfaces.
+框架同时支持 N-API（面向 ArkTS-Dynamic 应用）和 ANI（面向 ArkTS-Static 应用）接口。
 
-## Architecture
+## 知识路由
 
-### Three-Layer Architecture
+改动前按任务/路径/词汇先读对应章节；编辑前须声明 ① 任务属哪一行 ② 已读本文件对应章节 ③ 触发了哪些项目约束。
+
+| 触发条件 | 主要文件（高频落点） | 先读本文件 | 必读根 AGENTS.md |
+| --- | --- | --- | --- |
+| 新增/改性能指标（PerfMetric） | `collection/include/data_collection.h`（`:29` PerfMetric 枚举） | § 新增性能指标 | — |
+| 改 IPC 序列化格式 | `core/include/frontend_api_defines.h`（`:82` ApiCallInfo / `:89` ApiReplyInfo）、`connection/src/api_caller_client.cpp`、`connection/src/api_caller_server.cpp`、`connection/src/ipc_transactor.cpp` | § 修改 IPC 协议 + § 项目约束（IPC 兼容） | — |
+| 改服务端接口注册 | `core/src/frontend_api_handler.cpp`（`:120` AddHandler、`:475-543` 注册点） | § 新增服务端接口 | — |
+| 改测试执行生命周期 | `core/src/perf_test.cpp`、`core/src/perf_test_strategy.cpp` | § 核心组件 + § 能力调用流程 | — |
+| 改 N-API 绑定 | `napi/src/perftest_napi.cpp`、`napi/src/callback_code_napi.cpp` | § 前端绑定 + § 项目约束（两绑定同步） | — |
+| 改 ANI 绑定 / ArkTS API | `ani/src/perftest_ani.cpp`、`ani/ets/@ohos.test.PerfTest.ets` | § 前端绑定 + § 构建命令说明 (L170) + § 项目约束（两绑定同步） | — |
+| 改 C++ core 后只改了一个绑定 | — | § 项目约束（两绑定，非三绑定） | — |
+| 任务提到 `.abc` / ABC 重建 | `ani/ets/@ohos.test.PerfTest.ets` → `out/<product>/obj/.../@ohos.test.PerfTest.abc` | § 构建命令（L170 说明） + § 项目约束（禁止项） | — |
+| 任务提到 `actionCode`/`resetCode` 回调 | `napi/src/callback_code_napi.cpp`、`ani/src/callback_code_ani.cpp`、`CodeCallbackContext` | § 回调线程安全 + § 项目约束 | — |
+| 任务提到 `timeout` / 30s | `core/include/perf_test_strategy.h`（`:65` timeout_）、`napi/include/callback_code_napi.h`（`:43` timeout） | § 回调线程安全（超时保护） | — |
+| 任务提到 HiSysEvent / HiTrace | `collection/src/app_start_time_collection.cpp`、`collection/src/list_swipe_fps_collection.cpp` | § 支持的指标 | — |
+| 任务提到 testserver / SA 5502 / ACL | — | § 系统依赖 | testserver/AGENTS.md § 架构 |
+| 改公共 `.d.ts` 签名 | `interface/sdk-js/api/@ohos.test.PerfTest.d.ts` | § 新增性能指标（第 6 步） + § 项目约束（改动前须确认） | — |
+
+## 架构
+
+### 三层架构
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -50,162 +70,215 @@ The framework supports both N-API (for ArkTS-Dynamic applications) and ANI (for 
 └──────────────────────────────────────────────────────────────┘
 ```
 
-### Core Components
+### 核心组件
 
-**Core Layer** (`core/`):
-- `PerfTest`: Main test orchestration class, manages test execution lifecycle
-- `PerfTestStrategy`: Test strategy object, defines metrics to test, actionCode, resetCode, iteration count, package name of app under test, and timeout for single code segment execution
-- `FrontendApiHandler`: Manages API registration and parameter parsing
-- `common utils`: Common utilities and API definitions
+**核心层**（`core/`）：
+- `PerfTest`：主测试编排类，管理测试执行生命周期
+- `PerfTestStrategy`：测试策略对象，定义待测指标、actionCode、resetCode、迭代次数、被测应用包名以及单代码段执行超时时间
+- `FrontendApiHandler`：管理 API 注册与参数解析
+- `common utils`：通用工具与 API 定义
 
-**Connection Layer** (`connection/`):
-- `IApiCaller`: Manages IPC communication between client and server
-- `ApiCallerProxy`: IPC client, initiates calls to server; also performs server crash detection, returns exception on client after server exits
-- `ApiCallerStub`: IPC server, receives client requests; also performs client exit detection, server automatically exits after client disconnects
+**连接层**（`connection/`）：
+- `IApiCaller`：管理客户端与服务端之间的 IPC 通信
+- `ApiCallerProxy`：IPC 客户端，发起对服务端的调用；同时执行服务端崩溃检测，服务端退出后在客户端侧返回异常
+- `ApiCallerStub`：IPC 服务端，接收客户端请求；同时执行客户端退出检测，客户端断开后服务端自动退出
 
-**Collection Layer** (`collection/`):
-- `DataCollection`: Base class for all metric collectors
-- Specialized collectors for each metric type (CPU, memory, duration, FPS, etc.)
-- Uses HiSysEvent to obtain system event-based metrics
-- Process monitoring via bundle name or PID
+**采集层**（`collection/`）：
+- `DataCollection`：所有指标采集器的基类
+- 各指标类型的专用采集器（CPU、内存、时长、帧率等）
+- 通过 HiSysEvent 获取基于系统事件的指标
+- 通过包名或 PID 进行进程监控
 
-**Frontend Bindings**:
-- `napi/`: N-API bindings for ArkTS-Dynamic interface; `CallbackCodeNapi` for calling back ArkTS code segments and waiting for completion
-- `ani/`: ANI bindings for ArkTS-Static interface; `CallbackCodeAni` for calling back ArkTS code segments and waiting for completion
+**前端绑定**：
+- `napi/`：面向 ArkTS-Dynamic 接口的 N-API 绑定；`CallbackCodeNapi` 用于回调 ArkTS 代码段并等待完成
+- `ani/`：面向 ArkTS-Static 接口的 ANI 绑定；`CallbackCodeAni` 用于回调 ArkTS 代码段并等待完成
 
-**Server Daemon** (`core/src/start_daemon.cpp`):
-- Entry point for starting PerfTest as a standalone process
-- Starts on-demand when clients connect
-- Automatically stops when all clients disconnect
+**服务端守护进程**（`core/src/start_daemon.cpp`）：
+- 以独立进程方式启动 PerfTest 的入口点
+- 客户端连接时按需启动
+- 所有客户端断开后自动停止
 
-### Supported Metrics
+### 支持的指标
 
-The framework collects the following performance metrics (defined in `PerfMetric` enum):
+框架采集以下性能指标（定义于 `PerfMetric` 枚举）：
 
-- `DURATION`: Execution time of test code
-- `CPU_LOAD`: System CPU load
-- `CPU_USAGE`: Process CPU usage percentage
-- `MEMORY_RSS`: Resident Set Size (actual physical memory occupied by the process, including private memory and complete shared library memory, shared libraries are counted multiple times)
-- `MEMORY_PSS`: Proportional Set Size (proportionally allocated memory size, private memory counted in full, shared memory divided equally among sharing processes, more accurately reflects actual process memory usage)
-- `APP_START_RESPONSE_TIME`: Application startup response latency
-- `APP_START_COMPLETE_TIME`: Application startup completion latency
-- `PAGE_SWITCH_COMPLETE_TIME`: Page/route switch completion latency
-- `LIST_SWIPE_FPS`: Frame rate during list scrolling
+- `DURATION`：测试代码执行时长
+- `CPU_LOAD`：系统 CPU 负载
+- `CPU_USAGE`：进程 CPU 使用率百分比
+- `MEMORY_RSS`：常驻集大小（进程实际占用的物理内存，包括私有内存和完整的共享库内存，共享库会被重复计算）
+- `MEMORY_PSS`：比例集大小（按比例分配的内存大小，私有内存全额计入，共享内存按共享进程数均摊，更准确地反映进程实际内存使用量）
+- `APP_START_RESPONSE_TIME`：应用启动响应时延
+- `APP_START_COMPLETE_TIME`：应用启动完成时延
+- `PAGE_SWITCH_COMPLETE_TIME`：页面/路由切换完成时延
+- `LIST_SWIPE_FPS`：列表滚动时的帧率
 
-### Capability Invocation Flow
+### 能力调用流程
 
-1. **Client Initialization**: Frontend (N-API/ANI) creates `PerfTest` with `PerfTestStrategy` as parameter
-2. **Connection**: Client calls interface provided by meta-capability to start server, and uses connection token to connect to server daemon via IPC
-3. **Test Execution**: Server iterates test rounds, executes action code and collects metrics
-4. **Callback Management**: Action code (JS/ArkTS functions) executed via callback mechanism
-5. **Result Collection**: Each collector collects data per iteration
-6. **Result Retrieval**: Client calls `getMeasureResult()` to get aggregated statistics
-7. **Cleanup**: Release resources, destroy callbacks
+1. **客户端初始化**：前端（N-API/ANI）以 `PerfTestStrategy` 为参数创建 `PerfTest`
+2. **连接**：客户端调用元能力提供的接口启动服务端，并使用连接令牌通过 IPC 连接到服务端守护进程
+3. **测试执行**：服务端迭代测试轮次，执行 action 代码并采集指标
+4. **回调管理**：通过回调机制执行 action 代码（JS/ArkTS 函数）
+5. **结果采集**：各采集器在每轮迭代中采集数据
+6. **结果获取**：客户端调用 `getMeasureResult()` 获取聚合统计结果
+7. **清理**：释放资源，销毁回调
 
-### Important Design Patterns
+### 重要设计模式
 
-**Strategy Pattern**: `PerfTestStrategy` encapsulates test configuration
+**策略模式**：`PerfTestStrategy` 封装测试配置
 
-**Factory Pattern**: `PerfTest::create()` creates instance from strategy
+**工厂模式**：`PerfTest::create()` 根据策略创建实例
 
-**Callback Pattern**: Action/reset code passed as callbacks from frontend to backend
+**回调模式**：action/reset 代码作为回调从前端传递到后端
 
-**Template Method**: `DataCollection` base class defines collection lifecycle
+**模板方法**：`DataCollection` 基类定义采集生命周期
 
-**Proxy Pattern**: `ApiCallerProxy` provides transparent IPC communication
+**代理模式**：`ApiCallerProxy` 提供透明的 IPC 通信
 
-## Code Organization
+## 目录结构
 
-### Source Files by Function
+```
+perftest/
+├── core/
+│   ├── include/
+│   │   ├── perf_test.h                  # 主测试编排类
+│   │   ├── perf_test_strategy.h         # 策略配置（timeout_:65）
+│   │   ├── frontend_api_defines.h       # IPC 序列化结构（ApiCallInfo:82/ApiReplyInfo:89）
+│   │   └── frontend_api_handler.h       # API 注册与分发
+│   └── src/
+│       ├── perf_test.cpp                # 测试执行主逻辑
+│       ├── perf_test_strategy.cpp       # 策略配置解析
+│       ├── frontend_api_handler.cpp     # API 注册与分发（高频）
+│       └── start_daemon.cpp             # 守护进程入口
+├── collection/
+│   ├── include/data_collection.h        # 采集器基类（PerfMetric 枚举:29）
+│   └── src/
+│       ├── duration_collection.cpp      # 代码段执行时长
+│       ├── cpu_collection.cpp           # CPU 使用率/负载
+│       ├── memory_collection.cpp        # RSS/PSS
+│       ├── app_start_time_collection.cpp # 应用启动时延（HiSysEvent）
+│       ├── page_switch_time_collection.cpp # 页面切换时延（HiSysEvent）
+│       └── list_swipe_fps_collection.cpp  # 列表滑动帧率（HiTrace）
+├── connection/
+│   └── src/
+│       ├── ipc_transactor.cpp           # IPC 序列化/反序列化
+│       ├── api_caller_client.cpp        # 客户端连接管理
+│       └── api_caller_server.cpp        # 服务端请求处理
+├── napi/
+│   ├── src/perftest_napi.cpp            # N-API 模块注册
+│   ├── src/callback_code_napi.cpp       # ArkTS 回调处理（线程安全）
+│   └── src/perftest_exporter.js         # JS 侧初始化
+├── ani/
+│   ├── ets/@ohos.test.PerfTest.ets      # ArkTS API 定义（改后须删旧 .abc）
+│   └── src/
+│       ├── perftest_ani.cpp             # ANI 原生方法绑定
+│       └── callback_code_ani.cpp        # ArkTS 回调处理（线程安全）
+└── test/unittest/
+    ├── data_collection_test.cpp         # 采集器测试
+    ├── ipc_transactor_test.cpp          # IPC 通信测试
+    ├── frontend_api_handler_test.cpp    # API 注册与分发测试
+    └── perf_test_test.cpp               # 测试编排测试
+```
 
-**Test Orchestration**:
-- `core/src/perf_test.cpp`: Main test execution logic
-- `core/src/perf_test_strategy.cpp`: Strategy configuration parsing
-- `core/src/frontend_api_handler.cpp`: Frontend API registration and dispatch
+## 代码组织
 
-**Data Collection**:
-- `collection/src/duration_collection.cpp`: Obtain code segment execution duration
-- `collection/src/cpu_collection.cpp`: Obtain CPU metrics (usage, load) via `/proc/stat`
-- `collection/src/memory_collection.cpp`: Obtain memory metrics (PSS, RSS) via `/proc/[pid]/status`
-- `collection/src/app_start_time_collection.cpp`: Obtain application startup latency (response latency, completion latency) via HiSysEvent
-- `collection/src/page_switch_time_collection.cpp`: Obtain page switch latency (completion latency) via HiSysEvent
-- `collection/src/list_swipe_fps_collection.cpp`: Calculate list scrolling FPS by capturing and parsing HiTrace during code segment execution
+### 按功能分类的源文件
 
-**IPC Communication**:
-- `connection/src/ipc_transactor.cpp`: IPC serialization/deserialization
-- `connection/src/api_caller_client.cpp`: Client connection management
-- `connection/src/api_caller_server.cpp`: Server request processing
+**测试编排**：
+- `core/src/perf_test.cpp`：主测试执行逻辑
+- `core/src/perf_test_strategy.cpp`：策略配置解析
+- `core/src/frontend_api_handler.cpp`：前端 API 注册与分发
 
-**Frontend Bindings**:
-- `napi/src/perftest_napi.cpp`: N-API module registration and export
-- `napi/src/callback_code_napi.cpp`: ArkTS code segment callback handling (calls user-defined actionCode, resetCode and waits for completion)
-- `ani/src/perftest_ani.cpp`: ANI native method binding
-- `ani/src/callback_code_ani.cpp`: ArkTS code segment callback handling (calls user-defined actionCode, resetCode and waits for completion)
-- `napi/src/perftest_exporter.js`: JS-side initialization and daemon startup
-- `ani/ets/@ohos.test.PerfTest.ets`: ArkTS-side API definition
+**数据采集**：
+- `collection/src/duration_collection.cpp`：获取代码段执行时长
+- `collection/src/cpu_collection.cpp`：通过 `/proc/stat` 获取 CPU 指标（使用率、负载）
+- `collection/src/memory_collection.cpp`：通过 `/proc/[pid]/status` 获取内存指标（PSS、RSS）
+- `collection/src/app_start_time_collection.cpp`：通过 HiSysEvent 获取应用启动时延（响应时延、完成时延）
+- `collection/src/page_switch_time_collection.cpp`：通过 HiSysEvent 获取页面切换时延（完成时延）
+- `collection/src/list_swipe_fps_collection.cpp`：在代码段执行期间捕获并解析 HiTrace，计算列表滑动帧率
 
-**Server Daemon**:
-- `core/src/start_daemon.cpp`: Daemon entry point, provides command to start perftest-daemon
+**IPC 通信**：
+- `connection/src/ipc_transactor.cpp`：IPC 序列化/反序列化
+- `connection/src/api_caller_client.cpp`：客户端连接管理
+- `connection/src/api_caller_server.cpp`：服务端请求处理
 
-## Build System
+**前端绑定**：
+- `napi/src/perftest_napi.cpp`：N-API 模块注册与导出
+- `napi/src/callback_code_napi.cpp`：ArkTS 代码段回调处理（调用用户定义的 actionCode、resetCode 并等待完成）
+- `ani/src/perftest_ani.cpp`：ANI 原生方法绑定
+- `ani/src/callback_code_ani.cpp`：ArkTS 代码段回调处理（调用用户定义的 actionCode、resetCode 并等待完成）
+- `napi/src/perftest_exporter.js`：JS 侧初始化与守护进程启动
+- `ani/ets/@ohos.test.PerfTest.ets`：ArkTS 侧 API 定义
 
-This project uses **GN (Generate Ninja)** as the build system, integrated into the OpenHarmony build system.
+**服务端守护进程**：
+- `core/src/start_daemon.cpp`：守护进程入口点，提供启动 perftest-daemon 的命令
 
-### Build Commands
+### 高频/高风险改动路径
+
+- `core/src/frontend_api_handler.cpp`（API 注册与参数分发，新增接口高频落点）
+- `ani/ets/@ohos.test.PerfTest.ets`（ArkTS API 定义，改后须删旧 `.abc` 重建，见 § 构建命令 L170）
+- `core/include/frontend_api_defines.h`（`ApiCallInfo` `:82`/`ApiReplyInfo` `:89` 序列化结构，改影响 IPC 兼容）
+- `core/src/perf_test.cpp`（测试执行主逻辑，生命周期改动高风险）
+- `napi/src/callback_code_napi.cpp` + `ani/src/callback_code_ani.cpp`（回调机制，须成对改动）
+
+## 构建系统
+
+本项目使用 **GN（Generate Ninja）** 作为构建系统，集成于 OpenHarmony 构建体系。
+
+### 构建命令
 
 ```bash
-# Build all PerfTest components (core, IPC, client, server, ANI)
+# 构建所有 PerfTest 组件（core、IPC、client、server、ANI）
 ./build.sh --product-name <product> --build-target perftestkit
 
-# Build single component
-./build.sh --product-name <product> --build-target perftest_server     # Executable daemon (perftest)
-./build.sh --product-name <product> --build-target perftest_client     # N-API shared library (libperftest.z.so)
-./build.sh --product-name <product> --build-target perftest_ani        # ANI shared library (libperftest_ani.so)
-./build.sh --product-name <product> --build-target perftest_abc        # ABC module (@ohos.test.PerfTest.abc)
+# 构建单个组件
+./build.sh --product-name <product> --build-target perftest_server     # 可执行守护进程（perftest）
+./build.sh --product-name <product> --build-target perftest_client     # N-API 共享库（libperftest.z.so）
+./build.sh --product-name <product> --build-target perftest_ani        # ANI 共享库（libperftest_ani.so）
+./build.sh --product-name <product> --build-target perftest_abc        # ABC 模块（@ohos.test.PerfTest.abc）
 
-# Build unit tests
+# 构建单元测试
 ./build.sh --product-name <product> --build-target perftest_unittest
 ```
 
-**Note:** If the `ani/ets/@ohos.test.PerfTest.ets` file is modified, you need to delete `out/<product>/obj/test/testfwk/arkxtest/perftest/@ohos.test.PerfTest.abc` before rebuilding for changes to take effect.
+**注意：** 若修改了 `ani/ets/@ohos.test.PerfTest.ets` 文件，需在重新构建前删除 `out/<product>/obj/test/testfwk/arkxtest/perftest/@ohos.test.PerfTest.abc`，否则更改不会生效。
 
-### Build Artifacts Location
+### 构建产物位置
 
-- Executable daemon (perftest): `out/<product>/testfwk/arkxtest/perftest`
-- N-API shared library (libperftest.z.so): `out/<product>/testfwk/arkxtest/libperftest.z.so`
-- ANI shared library (libperftest_ani.so): `out/<product>/testfwk/arkxtest/libperftest_ani.so`
-- ABC module (@ohos.test.PerfTest.abc): `out/<product>/obj/test/testfwk/arkxtest/perftest/@ohos.test.PerfTest.abc`
+- 可执行守护进程（perftest）：`out/<product>/testfwk/arkxtest/perftest`
+- N-API 共享库（libperftest.z.so）：`out/<product>/testfwk/arkxtest/libperftest.z.so`
+- ANI 共享库（libperftest_ani.so）：`out/<product>/testfwk/arkxtest/libperftest_ani.so`
+- ABC 模块（@ohos.test.PerfTest.abc）：`out/<product>/obj/test/testfwk/arkxtest/perftest/@ohos.test.PerfTest.abc`
 
-- Unit tests: `out/<product>/tests/unittest/arkxtest/perftest/perftest_unittest.txt`
+- 单元测试：`out/<product>/tests/unittest/arkxtest/perftest/perftest_unittest.txt`
 
-### Device Installation Location
+### 设备安装位置
 
-- Server daemon: `/system/bin/perftest`
-- N-API client: `/system/lib/module/test/libperftest.z.so`
-- ANI library: `/system/lib/libperftest_ani.so`
-- ABC module: `/system/framework/@ohos.test.PerfTest.abc`
+- 服务端守护进程：`/system/bin/perftest`
+- N-API 客户端：`/system/lib/module/test/libperftest.z.so`
+- ANI 库：`/system/lib/libperftest_ani.so`
+- ABC 模块：`/system/framework/@ohos.test.PerfTest.abc`
 
-### Test Commands
+### 测试命令
 
 ```bash
-# Run unit tests on device
+# 在设备上运行单元测试
 hdc file send perftest_unittest /data/local/tmp/
 hdc shell chmod +x /data/local/tmp/perftest_unittest
 hdc shell /data/local/tmp/perftest_unittest
 
-# Run with specific test filter
+# 使用指定测试过滤器运行
 hdc shell /data/local/tmp/perftest_unittest --gtest_filter=PerfTestTest.*
 ```
 
-### Test Result Interpretation
+### 测试结果解读
 
-Unit tests use the Google Test framework for output:
-- `[  PASSED  ]`: Test passed
-- `[  FAILED  ]`: Test failed
-- `[  RUN     ]`: Test currently running
-- Runtime statistics are located at the end of output
+单元测试使用 gTest 框架输出：
+- `[  PASSED  ]`：测试通过
+- `[  FAILED  ]`：测试失败
+- `[  RUN     ]`：测试正在运行
+- 运行时统计信息位于输出末尾
 
-Example output:
+输出示例：
 ```
 [==========] Running 10 tests from 2 test suites.
 [----------] Global test environment set-up.
@@ -224,84 +297,123 @@ Example output:
 [  PASSED  ] 10 tests.
 ```
 
-## Common Development Tasks
+## 验证
 
-### Adding New Performance Metrics
+### 按改动类型的验证矩阵
 
-1. Add enum value to `PerfMetric` in `collection/include/data_collection.h`
-2. Create new collector class inheriting from `DataCollection`
-3. Implement `StartCollection()` and `StopCollectionAndGetResult()`
-4. Register in frontend class definition of `FrontendApiHandler`
-5. Add TypeScript enum in `ani/ets/@ohos.test.PerfTest.ets`
-6. Add the new metric enum value definition to the `PerfMetric` interface in the interface documentation `"../../../../interface/sdk-js/api/@ohos.test.PerfTest.d.ts"`.
+| 改动类型 | 必跑构建目标 | 必跑 unittest | 备注 |
+| --- | --- | --- | --- |
+| C++ core（`perf_test`/`frontend_api_handler`/collection） | `perftestkit` | `perftest_unittest` | 推送+运行见 § 测试命令 |
+| IPC 通信层（`ipc_transactor`/`api_caller_*`） | `perftestkit` | `perftest_unittest`（`--gtest_filter=IpcTransactorTest.*`） | — |
+| N-API 绑定（`napi/`） | `perftestkit` | — | 须验证消费方应用 `aa test` |
+| ANI 绑定 / `.ets`（`ani/`） | `perftestkit` + 删旧 `.abc`（见 L170） | — | 须验证消费方应用 `aa test` |
+| 新增 PerfMetric | `perftestkit` | `perftest_unittest` | 须确认级联完整（枚举→collector→注册→.ets→.d.ts） |
+| 改公共 `.d.ts` 签名 | `perftestkit` | — | 向后兼容规则见根 `../AGENTS.md` § 项目约束 |
 
-### Modifying IPC Protocol
+### Done 定义
 
-1. Update `ApiCallInfo` and `ApiReplyInfo` structures in `connection/include/common_utils.h`
-2. Modify serialization in `connection/src/api_caller_client.cpp`
-3. Modify deserialization in `connection/src/api_caller_server.cpp`
-4. Update `OnRemoteRequest()` in `connection/src/ipc_transactor.cpp`
+模板见根 `../AGENTS.md` § Done 定义。perftest 专属项：
+- 构建目标：`perftestkit`（涉及 `.ets` 改动须确认已删旧 `.abc`）
+- 运行证据：`perftest_unittest`；涉及绑定层须附 `aa test` 输出
+- 约束确认：两绑定同步 / IPC 序列化兼容 / 回调 timeout / ABC 重建
 
-### Adding Server-side Interface
+### 无法 device-side 验证时的兜底
 
-1. Add interface handling logic in `core/include/perf_test.h` and `.cpp` files or in other newly created `.h/.cpp` files
-2. Add static method to handle interface call in `core/src/frontend_api_handler.cpp`, register interface via `AddHandler()` method
+见根 `../AGENTS.md` § 无法 device-side 验证时的兜底。
 
-### Unit Testing
+## 常见开发任务
 
-Unit tests use the Google Test framework. Test files are located in `test/unittest/`:
+### 新增性能指标
 
-- `data_collection_test.cpp`: Data collector tests
-- `ipc_transactor_test.cpp`: IPC communication tests
-- `frontend_api_handler_test.cpp`: API registration and dispatch tests
-- `perf_test_test.cpp`: Test orchestration tests
+1. 在 `collection/include/data_collection.h` 的 `PerfMetric` 枚举中添加新枚举值
+2. 创建继承自 `DataCollection` 的新采集器类
+3. 实现 `StartCollection()` 和 `StopCollectionAndGetResult()`
+4. 在 `FrontendApiHandler` 的前端类定义中注册
+5. 在 `ani/ets/@ohos.test.PerfTest.ets` 中添加 TypeScript 枚举
+6. 在接口文档 `"../../../../interface/sdk-js/api/@ohos.test.PerfTest.d.ts"` 的 `PerfMetric` 接口中添加新的指标枚举值定义
 
-## Important Notes
+### 修改 IPC 协议
 
-### ArkTS Callback Method Handling
+1. 更新 `core/include/frontend_api_defines.h` 中的 `ApiCallInfo` 和 `ApiReplyInfo` 结构体
+2. 修改 `connection/src/api_caller_client.cpp` 中的序列化逻辑
+3. 修改 `connection/src/api_caller_server.cpp` 中的反序列化逻辑
+4. 更新 `connection/src/ipc_transactor.cpp` 中的 `OnRemoteRequest()`
 
-The framework uses a complex callback mechanism to execute JS/ArkTS code from the C++ backend:
-- `actionCode`: User-defined test code segment to execute
-- `resetCode`: Optional environment reset code segment between iterations
-- Callbacks managed via `CodeCallbackContext` with thread synchronization
-- Supports both N-API and ANI callbacks
+### 新增服务端接口
 
-### Thread Safety
+1. 在 `core/include/perf_test.h` 和 `.cpp` 文件中或其他新建的 `.h/.cpp` 文件中添加接口处理逻辑
+2. 在 `core/src/frontend_api_handler.cpp` 中添加静态方法处理接口调用，通过 `AddHandler()` 方法注册接口
 
-- Server daemon runs in a separate process
-- IPC calls are synchronous but may block
-- Callback execution requires careful thread synchronization
-- Uses `ThreadLock` to wait for async callback completion
+### 单元测试
 
-### Callback Thread Safety Implementation Details
+单元测试使用 gTest 框架。测试文件位于 `test/unittest/`：
 
-The framework uses the following mechanisms to ensure safe cross-thread callback calls:
+- `data_collection_test.cpp`：数据采集器测试
+- `ipc_transactor_test.cpp`：IPC 通信测试
+- `frontend_api_handler_test.cpp`：API 注册与分发测试
+- `perf_test_test.cpp`：测试编排测试
 
-**CodeCallbackContext Synchronization Primitives**:
-- Uses `std::condition_variable` and `std::mutex` for thread synchronization
-- `ThreadLock` class encapsulates wait/notification logic to prevent deadlocks
+## 项目约束
 
-**N-API Thread-safe Calls**:
+根目录 `../AGENTS.md` § 项目约束 中的跨组件约束同样适用。perftest 专属约束：
+
+**禁止项**：
+- 编辑 `ani/ets/@ohos.test.PerfTest.ets` 后，未在重新构建前删除过时的 `out/<product>/obj/test/testfwk/arkxtest/perftest/@ohos.test.PerfTest.abc` —— 更改将不会生效（见 § 构建命令，L170 处说明）。
+- 修改 perftest C++ core 后仅同步了一个绑定。perftest 有**两个**绑定（非三个）：N-API（`napi/`，ArkTS-Dynamic）+ ANI（`ani/`，ArkTS-Static）—— 不存在仓颉绑定。两者均须与 core 保持同步。
+- 修改 ArkTS 回调机制（`actionCode`/`resetCode`、`CodeCallbackContext` 线程同步）时，未保留 30 秒默认超时 / `PerfTestStrategy::timeout` 可配置行为（`core/include/perf_test_strategy.h:65`）。
+- 移除或削弱 `CodeCallbackContext` 中的 `std::condition_variable` + `ThreadLock` 同步机制（`napi/include/callback_code_napi.h:39`、`ani/include/callback_code_ani.h:37`）—— 跨线程回调通知必须保持阻塞（见 § 回调线程安全实现细节）。回调通过 `napi_call_threadsafe_function` / `ani_call_threadsafe_function` 以 `napi_tsblocking` 模式在客户端（ArkTS 主）线程上执行；服务端线程必须 `wait()` 直到被通知。
+
+**改动前须确认**：
+- 改 `@ohos.test.PerfTest.d.ts` 公共签名 → 向后兼容规则见根 `../AGENTS.md` § 项目约束。
+- 改 IPC 序列化格式（`core/include/frontend_api_defines.h` 中的 `ApiCallInfo`/`ApiReplyInfo`）→ 影响客户端/服务端兼容性。
+- 新增 `PerfMetric` 枚举值 → 须级联到：采集器类、`FrontendApiHandler` 注册、`@ohos.test.PerfTest.ets` 枚举以及 `@ohos.test.PerfTest.d.ts`（见 § 新增性能指标）。
+
+## 重要说明
+
+### ArkTS 回调方法处理
+
+框架使用复杂的回调机制从 C++ 后端执行 JS/ArkTS 代码：
+- `actionCode`：用户定义的待执行测试代码段
+- `resetCode`：可选的迭代间环境重置代码段
+- 通过 `CodeCallbackContext` 管理回调，带线程同步
+- 同时支持 N-API 和 ANI 回调
+
+### 线程安全
+
+- 服务端守护进程运行在独立进程中
+- IPC 调用是同步的，但可能阻塞
+- 回调执行需要谨慎的线程同步
+- 使用 `ThreadLock` 等待异步回调完成
+
+### 回调线程安全实现细节
+
+框架使用以下机制确保跨线程回调调用的安全性：
+
+**CodeCallbackContext 同步原语**：
+- 使用 `std::condition_variable` 和 `std::mutex` 进行线程同步
+- `ThreadLock` 类封装等待/通知逻辑，防止死锁
+
+**N-API 线程安全调用**：
 ```cpp
-// Cross-thread safe N-API callback call
+// 跨线程安全的 N-API 回调调用
 napi_call_threadsafe_function(napi_threadsafe_function func, void* data, napi_threadsafe_function_call_mode mode)
 ```
-- `mode` parameter controls call behavior (blocking/non-blocking)
-- Uses `napi_tsblocking` mode to wait for callback completion
+- `mode` 参数控制调用行为（阻塞/非阻塞）
+- 使用 `napi_tsblocking` 模式等待回调完成
 
-**ANI Thread-safe Calls**:
+**ANI 线程安全调用**：
 ```cpp
-// Cross-thread safe ANI callback call
+// 跨线程安全的 ANI 回调调用
 ani_call_threadsafe_function(ani_threadsafe_function func, void* data, ani_threadsafe_function_call_mode mode)
 ```
-- Similar mechanism to N-API, adapted for ArkTS-Static scenarios
+- 与 N-API 类似的机制，适配 ArkTS-Static 场景
 
-**Timeout Protection**:
-- Default wait time: 30 seconds
-- Configurable via `PerfTestStrategy::timeout`
-- Returns error after timeout to avoid infinite waiting
+**超时保护**：
+- 默认等待时间：30 秒
+- 可通过 `PerfTestStrategy::timeout` 配置
+- 超时后返回错误，避免无限等待
 
-**Thread Model**:
+**线程模型**：
 ```
 ┌─────────────────┐         ┌─────────────────┐
 │  Client Thread  │         │  Server Thread  │
@@ -324,15 +436,15 @@ ani_call_threadsafe_function(ani_threadsafe_function func, void* data, ani_threa
          │<──────────────────────────│
 ```
 
-### Error Handling
+### 错误处理
 
-All functions use `ApiCallErr` structure for error reporting:
-- `errorCode`: Numeric error code
-- `errorMessage`: String error description
+所有函数使用 `ApiCallErr` 结构体进行错误报告：
+- `errorCode`：数值型错误码
+- `errorMessage`：字符串型错误描述
 
-### System Dependencies
+### 系统依赖
 
-- Requires HiSysEvent service to obtain application startup/page switch events
-- Uses `/proc` filesystem for CPU/memory metrics
-- Depends on testserver SA (5502) to call high-permission verified interfaces (PerfTest process cannot directly apply for ACL permissions)
-- Requires developer mode to access processes
+- 需要 HiSysEvent 服务获取应用启动/页面切换事件
+- 使用 `/proc` 文件系统获取 CPU/内存指标
+- 依赖 testserver SA（5502）调用高权限验权接口（PerfTest 进程无法直接申请 ACL 权限）
+- 需要开发者模式以访问进程
