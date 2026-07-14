@@ -442,6 +442,61 @@ export default function attributeTest() {
 }
 ```
 
+### it 1.0.28
+
+it(testCaseName: string, attribute: TestType | Size | Level, func: Function, timeout?: number, tag?: string): void
+
+定义一条测试用例
+
+**参数：**
+
+| 参数名       | 类型     | 必填 | 说明                                                         |
+| ------------ | -------- | ---- | ------------------------------------------------------------ |
+| testCaseName | string   | 是   | 测试用例的名称。                                             |
+| attribute    | number   | 是   | 过滤参数，支持传0或Level、Size、TestType对象中的枚举值。若传0，则不过滤用例，若传其他参数，则可对用例的级别、规模、测试类型进行过滤，具体参见[TestType, Size, Level相关介绍](https://gitcode.com/openharmony/testfwk_arkxtest/blob/408c803a86827b211cbfeb168ef6a330054bcf1f/jsunit/README.md#testtype)。 |
+| func         | Function | 是   | 测试函数，用于注册测试用例。                                 |
+| timeout      | number   | 否   | 用例的超时时间，用于设置分配给用例的执行时间，该执行时间优先于命令行设置的执行时间。 |
+| tag          | string   | 否   | 用例标签。用例标签由字母、数字、空格、`|` 组成，多个标签用 `|` 分隔 。 |
+
+**示例：**
+
+```javascript
+import { describe, expect, it } from '@ohos/hypium';
+
+const sleep = (ms: number) => {
+  return new Promise<void>(res => setTimeout(res, ms))
+}
+
+export default function itOfTagTest() {
+  describe("itOfTagTest", (): void => {
+    it('timeout1', 0, async () => {
+      await sleep(4000)
+    }, 2000)
+    // 用例超时时间2000小于实际执行时间4000，用例超时失败
+
+    it('timeout2', 0, async () => {
+      await sleep(4000)
+    }, 6000)
+    // 用例pass
+
+    it('timeout3', 0, async () => {
+      await sleep(4000)
+    }, -1)
+    // 取值不在范围内，设为默认值5000ms，用例pass
+
+    it('test1', 0, () => {
+      expect(1).assertEqual(1)
+    }, 4000, "a")
+    // 设置用例标签为a，命令行执行参数为-s tag 'a'时执行该用例
+
+    it('test2', 0, () => {
+      expect(1).assertEqual(1)
+    }, 4000, "a  |  b")
+    // 设置用例标签为a和b，命令行执行参数为-s tag 'a'或者'b'时执行该用例
+  })
+}
+```
+
 ### xdescribe<sup>1.0.17</sup>
 
 xdescribe(testSuiteName: string, func: Function): void

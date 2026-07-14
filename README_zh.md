@@ -1695,13 +1695,13 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
   }
     ```
 
-- **用例失败时自动截图并保存UI布局信息**
+- **@since1.0.28 用例失败时自动截图并保存UI布局信息**
 
   用例失败时自动截图并保存UI布局信息，方便排查UI测试失败原因。
 
-  | Key              | 含义说明                                            | Value取值范围 |
-  | ---------------- | --------------------------------------------------- | ------------- |
-  | snapshotWhenFail | @since1.0.28 用例失败时是否自动截图并保存UI布局信息 | true/false    |
+  | Key              | 含义说明                               | Value取值范围 |
+  | ---------------- | -------------------------------------- | ------------- |
+  | snapshotWhenFail | 用例失败时是否自动截图并保存UI布局信息 | true/false    |
 
   功能说明：
 
@@ -1715,9 +1715,86 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
 
   - 该功能依赖于 `@ohos.UiTest` 模块中 `Driver` 的`dumpLayout` 能力，Api 26.0.0起开始支持；
   - 文件保存路径为应用的内部存储目录，需要设备具备相应的存储权限；
-  
   - 如果截图或导出布局失败，会在日志中输出错误信息，但不会影响测试结果；
   - 建议在UI测试或需要排查界面问题时启用此功能，以快速定位问题；
+
+- **@since1.0.28 根据用例标签筛选用例**
+
+  指定执行拥有特定标签的测试用例，可通过it接口第4个参数设置用例的标签。
+
+  | Key  | 含义说明           | Value取值范围                                                |
+  | ---- | ------------------ | ------------------------------------------------------------ |
+  | tag  | 指定测试用例的标签 | 字符串，只允许字母、数字、空格、逗号、加号组合，传入其他字符做设置失败处理，执行全量用例。 |
+
+  示例命令：
+  
+  ```bash
+  hdc shell aa test -b <bundle-name> -m <module-name> -s unittest OpenHarmonyTestRunner -s tag <tag-filter>
+  ```
+
+  使用说明：
+  
+  - 逗号 `,`：OR 逻辑，多个条件组用逗号分隔，满足任意一组即可执行。例：-s tag 'a,b'，执行标签a或者b的用例
+  - 加号 `+`：AND 逻辑，同一组内多个标签用加号连接，必须同时满足所有标签。例：-s tag 'a+b'，执行同时拥有a,b标签的用例
+  - 空格 ：解析时会自动忽略。
+  - 支持多种组合。例：-s tag 'a+b, c'，执行同时拥有a,b标签或者c标签的用例
+  
+  示例代码：
+  
+  ```javascript
+  import { describe, expect, it } from '@ohos/hypium';
+  
+  const sleep = (ms: number) => {
+    return new Promise<void>(res => setTimeout(res, ms))
+  }
+  
+  export default function itOfTagTest() {
+    describe("itOfTagTest", (): void => {
+      it('test1', 0, () => {
+        expect(1).assertEqual(1)
+      }, 4000, "a")
+      // 设置用例标签为a，命令行执行参数为-s tag 'a'时执行该用例
+  
+      it('test2', 0, () => {
+        expect(1).assertEqual(1)
+      }, 4000, "a  |  b")
+      // 设置用例标签为a和b，命令行执行参数为-s tag 'a'或者'b'时执行该用例
+    })
+  }
+  ```
+  
+- **@since1.0.28 设置用例超时时间**
+  
+    可通过it接口第5个参数设置用例级超时时间，优先级：用例级 timeout > 命令行 timeout > 框架默认 timeout（5000ms）。
+  
+    **示例代码：**
+    
+    ```javascript
+  import { describe, expect, it } from '@ohos/hypium';
+  
+  const sleep = (ms: number) => {
+    return new Promise<void>(res => setTimeout(res, ms))
+  }
+  
+  export default function itOfTagTest() {
+    describe("itOfTagTest", (): void => {
+      it('timeout1', 0, async () => {
+        await sleep(4000)
+      }, 2000)
+      // 用例超时时间2000小于实际执行时间4000，用例超时失败
+  
+      it('timeout2', 0, async () => {
+        await sleep(4000)
+      }, 6000)
+      // 用例pass
+  
+      it('timeout3', 0, async () => {
+        await sleep(4000)
+      }, -1)
+      // 取值不在范围内，设为默认值5000ms，用例pass
+    })
+  }
+  ```
 
 ### 使用方式
 

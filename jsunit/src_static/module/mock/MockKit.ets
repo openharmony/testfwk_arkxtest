@@ -262,7 +262,8 @@ export class MockKit {
   verify(methodName: string, args: Object[]): VerificationMode {
     let invokeTime = 0;
     for (const record of this.recordCalls) {
-      if (record.methodName === methodName && this.checkIsRightValue(args, record.args)) {
+      if (record.methodName === methodName && args.length === record.args.length &&
+ 	       this.checkIsRightValue(args, record.args)) {
         invokeTime++;
       }
     }

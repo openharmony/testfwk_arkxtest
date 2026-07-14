@@ -405,7 +405,7 @@ class MockKit {
     let invokeTime = 0;
     let args = this.convertParams(argsArray);
     for (const [key, value] of this.recordCalls) {
-      if (methodName === key.methodName && this.checkIsRightValue(args, key.args)) {
+      if (methodName === key.methodName && args.length === key.args.length && this.checkIsRightValue(args, key.args)) {
         invokeTime += value;
       }
     }
