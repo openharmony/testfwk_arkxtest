@@ -1734,10 +1734,10 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
 
   使用说明：
   
-  - 逗号 `,`：OR 逻辑，多个条件组用逗号分隔，满足任意一组即可执行。例：-s tag 'a,b'，执行标签a或者b的用例
-  - 加号 `+`：AND 逻辑，同一组内多个标签用加号连接，必须同时满足所有标签。例：-s tag 'a+b'，执行同时拥有a,b标签的用例
+  - 逗号 `,`：OR 逻辑，多个条件组用逗号分隔，满足任意一组即可执行。例：-s tag 'a,b'，执行标签a或者b的用例。
+  - 加号 `+`：AND 逻辑，同一组内多个标签用加号连接，必须同时满足所有标签。例：-s tag 'a+b'，执行同时拥有a,b标签的用例。
   - 空格 ：解析时会自动忽略。
-  - 支持多种组合。例：-s tag 'a+b, c'，执行同时拥有a,b标签或者c标签的用例
+  - 支持多种组合。例：-s tag 'a+b, c'，执行同时拥有a,b标签或者c标签的用例。
   
   示例代码：
   
@@ -1750,15 +1750,20 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
   
   export default function itOfTagTest() {
     describe("itOfTagTest", (): void => {
-      it('test1', 0, () => {
+      it('tag1', 0, () => {
         expect(1).assertEqual(1)
       }, 4000, "a")
       // 设置用例标签为a，命令行执行参数为-s tag 'a'时执行该用例
   
-      it('test2', 0, () => {
+      it('tag2', 0, () => {
         expect(1).assertEqual(1)
       }, 4000, "a  |  b")
       // 设置用例标签为a和b，命令行执行参数为-s tag 'a'或者'b'时执行该用例
+      
+      it('tag3', 0, () => {
+        expect(1).assertEqual(1)
+      }, 4000, "a@b")
+      // 传入非法字符@, 改用例不设置标签，命令行执行参数为-s tag 'a'时跳过该用例
     })
   }
   ```
