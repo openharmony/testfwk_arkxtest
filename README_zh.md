@@ -1763,7 +1763,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
       it('tag3', 0, () => {
         expect(1).assertEqual(1)
       }, 4000, "a@b")
-      // 传入非法字符@, 改用例不设置标签，命令行执行参数为-s tag 'a'时跳过该用例
+      // 传入非法字符@, 不设置标签，命令行执行参数为-s tag 'a'时跳过该用例
     })
   }
   ```
