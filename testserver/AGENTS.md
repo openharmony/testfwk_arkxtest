@@ -27,7 +27,7 @@ testserver 是 OpenHarmony 测试框架的系统服务（SA ID: 5502），为测
 
 ### C++ 代码风格
 
-- **头文件保护**：`#ifndef FILE_NAME_H` / `#define` / `#endif`——禁用 `#pragma once`。每个文件须有 Apache 2.0 许可证头。
+- **头文件保护**：`#ifndef FILE_NAME_H` / `#define` / `#endif`——禁用 `#pragma once`。许可证头要求见根 `../AGENTS.md` § 项目约束。
 - **命名空间**：`namespace OHOS::testserver { ... } // namespace OHOS::testserver`。函数体 **4 空格缩进**。
 - **命名**：类/函数 PascalCase（`TestServerService`、`SetPasteData`）；成员变量 camelCase 下划线后缀（`callerCount_`、`iTestServerInterface_`）；`constexpr` 常量 UPPER_CASE 或 camelCase（`CALLER_DETECT_DURING`、`TESTSERVER_LOAD_TIMEOUT_MS`）。
 - **头文件包含**：项目头文件用 `"quotes"`（`"test_server_service.h"`）；系统/OpenHarmony 头文件用 `"quotes"` 或 `<angle>`（`"hilog/log.h"`、`<common_event_manager.h>`）。条件包含用 `#ifdef ARKXTEST_*_ENABLE` 保护。
@@ -63,7 +63,7 @@ testserver 是 OpenHarmony 测试框架的系统服务（SA ID: 5502），为测
 
 ### 测试
 
-- **框架**：Google Test + Google Mock，使用 OpenHarmony `HWTEST_F` / `HWTEST` / `HWMTEST` 宏。
+- **框架**：gTest + gMock，使用 OpenHarmony `HWTEST_F` / `HWTEST` / `HWMTEST` 宏。
 - **测试夹具**：`SetUp()` 调用 `TestServerMockPermission::MockProcess("testserver")`；`TearDown()` 卸载 SA。
 - **Mock**：通过 `TestServerServiceMock` 的 `MOCK_METHOD0` mock `IsRootVersion()`/`IsDeveloperMode()`。
 - **条件编译测试**：`#ifdef ARKXTEST_*` 覆盖功能启用/禁用两条路径。

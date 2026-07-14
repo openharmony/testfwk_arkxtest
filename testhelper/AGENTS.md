@@ -318,7 +318,7 @@ hdc shell testhelper set-mocked-locations /data/local/tmp/route.gpx 2
 
 ## 代码风格
 
-- **许可证**：每个 `.cpp`/`.h` 以 Apache-2.0 头开始 `Copyright (c) <year> Huawei Device Co., Ltd.`
+- **许可证**：见根 `../AGENTS.md` § 项目约束。
 - **命名空间**：所有代码位于 `namespace OHOS::testhelper { ... }`（内部 4 空格缩进）
 - **命名**：类/结构体 PascalCase（`TestHelperCore`、`GPXParser`）；方法 PascalCase（`Handle*`、`Validate*`、`Parse*`）；结构体字段/局部变量小写；常量 `constexpr` UPPER_SNAKE_CASE
 - **类型**：仅使用固定宽度类型（`int32_t`、`int64_t`、`uint8_t`、`size_t`）；字符串以 `const std::string&` 传递

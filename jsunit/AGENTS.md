@@ -210,7 +210,7 @@ export default function abilityTest() {
 - 严格静态语义：禁止 `any`（用 `AnyType`，来自 `module/types/common`），禁止 `arguments` 对象，对象形状需显式接口。
 
 ### 共享约定（两棵树）
-- 每个文件都有 **Apache 2.0 许可证头**：`Copyright (c) <year> Huawei Device Co., Ltd.` 后跟许可证文本。动态文件写 `Copyright (c) 2021-...`，静态文件常写 `2025`。
+- **许可证头**：见根 `../AGENTS.md` § 项目约束。
 - **导入**：分组 — 外部（`@ohos.*`）优先，然后本地项目模块。单导出模块用默认导入（`import Core from './core'`），多导出用命名导入。
 - **`TAG` 常量** = `'[Hypium]'` — 所有 `console.info`/日志输出前缀 `` `${TAG}...` ``。
 - **导出**：在文件末尾聚合为单个 `export { a, b, c };` 块（见 `index.js:248`）。
@@ -442,8 +442,7 @@ hdc shell aa test -b <bundleName> -m entry -s unittest OpenHarmonyTestRunner -s 
 1. **`index.d.ts` 签名一致性**：新增/修改的公共 API 是否在 `index.d.ts` 中声明了匹配签名。检查方法：对比 `src/` 中 `export` 的函数/类与 `index.d.ts` 中的声明。
 2. **双树导出表面对齐**：`index.js` 和 `index.ets` 的导出列表是否一致——新增模块是否两侧都已导出。
 3. **静态树语法合规**：`src_static/` 下新增/修改的 `.ets` 文件是否满足：第 1 行 `'use static';`、使用 `int`/`byte`/`short`/`double` 而非 `number`、使用 `AnyType` 而非 `any`、无对象字面量映射（用 `Map`）。
-4. **许可证头**：新增文件是否包含 Apache 2.0 许可证头。
-5. **TAG 常量**：新增文件中的日志是否使用 `${TAG}` 前缀（`TAG = '[Hypium]'`）。
+4. **TAG 常量**：新增文件中的日志是否使用 `${TAG}` 前缀（`TAG = '[Hypium]'`）。
 
 ### Done 定义
 
