@@ -272,7 +272,7 @@ hdc shell /data/local/tmp/perftest_unittest --gtest_filter=PerfTestTest.*
 
 ### 测试结果解读
 
-单元测试使用 Google Test 框架输出：
+单元测试使用 gTest 框架输出：
 - `[  PASSED  ]`：测试通过
 - `[  FAILED  ]`：测试失败
 - `[  RUN     ]`：测试正在运行
@@ -346,7 +346,7 @@ hdc shell /data/local/tmp/perftest_unittest --gtest_filter=PerfTestTest.*
 
 ### 单元测试
 
-单元测试使用 Google Test 框架。测试文件位于 `test/unittest/`：
+单元测试使用 gTest 框架。测试文件位于 `test/unittest/`：
 
 - `data_collection_test.cpp`：数据采集器测试
 - `ipc_transactor_test.cpp`：IPC 通信测试
