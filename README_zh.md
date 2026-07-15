@@ -1763,7 +1763,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
       it('tag3', 0, () => {
         expect(1).assertEqual(1)
       }, 4000, "a@b")
-      // 传入非法字符@, 不设置标签，命令行执行参数为-s tag 'a'时跳过该用例
+      // 传入非法字符@，等同于没有设置标签，-s tag 传递任何值都不会选中此用例
     })
   }
   ```
@@ -1796,7 +1796,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
       it('timeout3', 0, async () => {
         await sleep(4000)
       }, -1)
-      // 取值不在范围内，设为默认值5000ms，用例pass
+      // 取值不在范围内，取执行命令行-s timeout 中设置的值作为超时时间，若-s timeout未设置则此用超时时间为5000。
     })
   }
   ```
