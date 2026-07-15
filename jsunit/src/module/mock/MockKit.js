@@ -403,8 +403,14 @@ class MockKit {
       throw Error('not a function name');
     }
     let invokeTime = 0;
+    if (!argsArray) {
+      argsArray = [];
+    }
     let args = this.convertParams(argsArray);
     for (const [key, value] of this.recordCalls) {
+      if (!key.args) {
+        continue;
+      }
       if (methodName === key.methodName && args.length === key.args.length && this.checkIsRightValue(args, key.args)) {
         invokeTime += value;
       }

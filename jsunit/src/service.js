@@ -1005,7 +1005,7 @@ SpecService.Spec = class {
         };
         this.fail = undefined;
         this.error = undefined;
-        this.pass = undefined;
+        this.pass = false;
         this.duration = 0;
         this.startTime = 0;
         this.isExecuted = false; // 当前用例是否执行
