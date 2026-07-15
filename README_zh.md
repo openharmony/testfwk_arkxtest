@@ -1796,7 +1796,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
       it('timeout3', 0, async () => {
         await sleep(4000)
       }, -1)
-      // 取值不在范围内，取执行命令行-s timeout 中设置的值作为超时时间，若-s timeout未设置则此用超时时间为5000。
+      // 取值不在范围内，取执行命令行-s timeout 中设置的值作为超时时间，若-s timeout未设置则此用例超时时间为5000。
     })
   }
   ```
