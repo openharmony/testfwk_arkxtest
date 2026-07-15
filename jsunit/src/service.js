@@ -152,12 +152,6 @@ function getFuncWithArgsTwo(func, timeout, paramItem, isStressTest) {
 }
 
 function processFunc(coreContext, func, itTimeout) {
-    let argNames = ((func || '').toString()
-        .replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, '')
-        .match(/^(function)?\s*[^\(]*\(\s*([^\)]*)\)/m) || ['', '', ''])[2]
-        .split(',') // split parameters
-        .map(item => item.replace(/^\s*(_?)(.+?)\1\s*$/, name => name.split('=')[0].trim()))
-        .filter(String);
     let funcLen = func.length;
     let processedFunc;
     const config = coreContext.getDefaultService('config');
@@ -1011,6 +1005,7 @@ SpecService.Spec = class {
         };
         this.fail = undefined;
         this.error = undefined;
+        this.pass = false;
         this.duration = 0;
         this.startTime = 0;
         this.isExecuted = false; // 当前用例是否执行

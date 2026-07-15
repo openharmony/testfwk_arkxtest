@@ -16,7 +16,7 @@
 class SpecEvent {
     constructor(attr) {
         this.id = attr.id;
-        this.coreContext = attr.context;
+        this.coreContext = attr.coreContext;
         this.eventMonitors = [];
     }
 
