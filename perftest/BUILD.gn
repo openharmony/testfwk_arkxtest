@@ -171,6 +171,7 @@ ohos_shared_library("perftest_client") {
     "ipc:ipc_single",
     "libuv:uv",
     "napi:ace_napi",
+    "node:node_header_notcie"
   ]
   relative_install_dir = "module/test"
   defines = [

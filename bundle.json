@@ -62,7 +62,8 @@
           "ui_appearance",
           "api_metrics",
           "location",
-          "libxml2"
+          "libxml2",
+          "node"
         ]
       },
       "build": {
