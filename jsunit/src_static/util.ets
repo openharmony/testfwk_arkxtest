@@ -204,11 +204,11 @@ export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => vo
 }
 
 export function getFunctionArgumentsCount(func: ItfnType): int {
-  if (func instanceof (() => Any)) {
+  if (func instanceof (() => never)) {
     return 0;
-  } else if (func instanceof (((done: Any) => Any))) {
+  } else if (func instanceof ((done: Any) => never)) {
     return 1;
-  } else if (func instanceof (((done: Any, arg2: Any) => Any))) {
+  } else if (func instanceof ((done: Any, arg2: Any) => never)) {
     return 2;
   }
   return 0;
