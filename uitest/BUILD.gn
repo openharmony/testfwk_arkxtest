@@ -343,6 +343,7 @@ ohos_unittest("uitest_core_unittest") {
 }
 
 ohos_shared_library("uitest_ani") {
+  shlib_type = "ani"
   configs = [ ":uitest_common_configs" ]
   branch_protector_ret = "pac_ret"
   external_deps = common_external_deps

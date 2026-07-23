@@ -38,10 +38,10 @@ config("test_server_service_config") {
     "utils",
     "${target_gen_dir}",
   ]
-  cflags_cc = [ "-fexceptions" ]
+  cflags_cc = [ "-fexceptions", "-Os" ]
 }
 
-ohos_shared_library("test_server_service") {
+ohos_static_library("test_server_service_impl") {
   configs = [ ":test_server_service_config" ]
   branch_protector_ret = "pac_ret"
   output_values = get_target_outputs(":test_server_interface")
@@ -131,6 +131,83 @@ ohos_shared_library("test_server_service") {
   subsystem_name = "testfwk"
 }
 
+ohos_shared_library("test_server_service") {
+  shlib_type = "sa"
+  configs = [ ":test_server_service_config" ]
+  branch_protector_ret = "pac_ret"
+  deps = [
+    ":test_server_service_impl",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "access_token:libtokenid_sdk",
+    "c_utils:utils",
+    "common_event_service:cesfwk_innerkits",
+    "hilog:libhilog",
+    "hiview:libucollection_utility",
+    "init:libbegetutil",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "soc_perf:socperf_client",
+    "window_manager:session_manager_lite",
+    "ability_runtime:app_manager",
+    "time_service:time_client",
+    "ability_runtime:wantagent_innerkits",
+    "input:libmmi-client",
+    "os_account:os_account_innerkits",
+  ]
+
+  if (defined(global_parts_info) && defined(global_parts_info.location_location)) {
+    external_deps += [
+      "location:locator_sdk",
+      "location:lbsservice_common",
+    ]
+  }
+
+  if (defined(global_parts_info) && defined(global_parts_info.inputmethod_imf)) {
+    external_deps += [
+      "imf:inputmethod_client",
+    ]
+  }
+
+  if (arkxtest_product_feature == "phone" || arkxtest_product_feature == "tablet" || arkxtest_product_feature == "pc") {
+    external_deps += [
+      "data_share:datashare_consumer",
+    ]
+  }
+  if (defined(global_parts_info) && defined(global_parts_info.distributeddatamgr_udmf)) {
+    external_deps += [
+      "udmf:udmf_client",
+    ]
+  }
+
+  if (defined(global_parts_info) && defined(global_parts_info.distributeddatamgr_pasteboard)) {
+    external_deps += [
+      "pasteboard:pasteboard_client",
+      "pasteboard:pasteboard_data",
+    ]
+  }
+
+  if ((arkxtest_product_feature == "pc" ||
+       arkxtest_product_feature == "tablet" ||
+       arkxtest_product_feature == "phone") &&
+       (defined(global_parts_info) && defined(global_parts_info.global_font_manager))) {
+    external_deps += [
+      "font_manager:font_manager_client",
+    ]
+  }
+
+  if (defined(global_parts_info) && defined(global_parts_info.arkui_ui_appearance)) {
+    external_deps += [
+      "ui_appearance:ui_appearance_kit",
+    ]
+  }
+
+  part_name = "arkxtest"
+  subsystem_name = "testfwk"
+}
 config("test_server_client_config") {
   visibility = [ ":*" ]
   include_dirs = [
@@ -141,6 +218,7 @@ config("test_server_client_config") {
 }
 
 ohos_shared_library("test_server_client") {
+  cflags_cc = [ "-Os" ]
   public_configs = [ ":test_server_client_config" ]
   branch_protector_ret = "pac_ret"
 
