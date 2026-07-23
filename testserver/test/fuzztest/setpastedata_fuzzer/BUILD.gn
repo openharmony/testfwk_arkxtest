@@ -20,7 +20,7 @@ source_root = "../../.."
 ohos_fuzztest("SetPasteDataFuzzTest") {
   module_out_path = "arkxtest/testserver"
   fuzz_config_file = "${source_root}/test/fuzztest/setpastedata_fuzzer"
-  deps = [ "${source_root}/src:test_server_service" ]
+  deps = [ "${source_root}/src:test_server_service_impl" ]
   external_deps = [
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
