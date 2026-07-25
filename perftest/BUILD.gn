@@ -22,6 +22,7 @@ config("perftest_common_configs") {
     "-Wformat=2",
     "-Wshadow",
   ]
+  cflags_cc = [ "-Os" ]
 }
 common_external_deps = [
   "c_utils:utils",
