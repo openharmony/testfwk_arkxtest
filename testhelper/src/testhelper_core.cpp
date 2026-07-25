@@ -37,7 +37,7 @@
 namespace OHOS::testhelper {
     static bool IsValidTimeFormat(const std::string& timeStr)
     {
-        static constexpr int32_t TIME_STR_LEN = 19;
+        static constexpr size_t TIME_STR_LEN = 19;
         static constexpr char SEP_DASH = '-';
         static constexpr char SEP_SPACE = ' ';
         static constexpr char SEP_COLON = ':';
