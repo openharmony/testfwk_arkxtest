@@ -16,7 +16,6 @@
 #include <iostream>
 #include <string>
 #include <ctime>
-#include <regex>
 #include <fstream>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -36,6 +35,36 @@
 #endif
 
 namespace OHOS::testhelper {
+    static bool IsValidTimeFormat(const std::string& timeStr)
+    {
+        static constexpr int32_t TIME_STR_LEN = 19;
+        static constexpr char SEP_DASH = '-';
+        static constexpr char SEP_SPACE = ' ';
+        static constexpr char SEP_COLON = ':';
+        if (timeStr.length() != TIME_STR_LEN) {
+            return false;
+        }
+        return std::isdigit(static_cast<unsigned char>(timeStr[0])) &&
+               std::isdigit(static_cast<unsigned char>(timeStr[1])) &&
+               std::isdigit(static_cast<unsigned char>(timeStr[2])) &&
+               std::isdigit(static_cast<unsigned char>(timeStr[3])) &&
+               timeStr[4] == SEP_DASH &&
+               std::isdigit(static_cast<unsigned char>(timeStr[5])) &&
+               std::isdigit(static_cast<unsigned char>(timeStr[6])) &&
+               timeStr[7] == SEP_DASH &&
+               std::isdigit(static_cast<unsigned char>(timeStr[8])) &&
+               std::isdigit(static_cast<unsigned char>(timeStr[9])) &&
+               timeStr[10] == SEP_SPACE &&
+               std::isdigit(static_cast<unsigned char>(timeStr[11])) &&
+               std::isdigit(static_cast<unsigned char>(timeStr[12])) &&
+               timeStr[13] == SEP_COLON &&
+               std::isdigit(static_cast<unsigned char>(timeStr[14])) &&
+               std::isdigit(static_cast<unsigned char>(timeStr[15])) &&
+               timeStr[16] == SEP_COLON &&
+               std::isdigit(static_cast<unsigned char>(timeStr[17])) &&
+               std::isdigit(static_cast<unsigned char>(timeStr[18]));
+    }
+
         int32_t TestHelperCore::HandleGetTime()
     {
         LOG_I("HandleGetTime called");
@@ -128,7 +157,7 @@ namespace OHOS::testhelper {
 
     int32_t TestHelperCore::ParseTimeToMs(const std::string& timeStr, int64_t& timeMs)
     {
-        if (!std::regex_match(timeStr, std::regex("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"))) {
+        if (!IsValidTimeFormat(timeStr)) {
             return PARSE_TIME_INVALID_FORMAT;
         }
         struct tm originalTimeinfo = {};
