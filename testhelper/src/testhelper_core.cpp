@@ -58,7 +58,7 @@ namespace OHOS::testhelper {
         if (timeStr.length() != timeStrLen) {
             return false;
         }
-        auto isDigit = [](size_t i) {
+        auto isDigit = [&timeStr](size_t i) {
             return std::isdigit(static_cast<unsigned char>(timeStr[i]));
         };
         return isDigit(idxYearStart) && isDigit(idxYearStart + 1) &&
