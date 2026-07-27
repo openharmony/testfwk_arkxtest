@@ -67,6 +67,11 @@ namespace OHOS::testhelper {
     constexpr int32_t MIN_SECOND = 0;
     constexpr int32_t MAX_SECOND = 59;
     constexpr int64_t MAX_TIMESTAMP_SECONDS = 2147483647;
+    // time format constants
+    constexpr size_t timeStrLen = 19;
+    constexpr char timeSepDash = '-';
+    constexpr char timeSepSpace = ' ';
+    constexpr char timeSepColon = ':';
     // parse time error codes
     constexpr int32_t PARSE_TIME_SUCCESS = 0;
     constexpr int32_t PARSE_TIME_INVALID_FORMAT = 1;
