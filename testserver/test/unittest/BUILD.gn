@@ -25,7 +25,7 @@ ohos_unittest("TestSA_unittest") {
   ]
   deps = [
     "${source_root}/src:test_server_client",
-    "${source_root}/src:test_server_service",
+    "${source_root}/src:test_server_service_impl",
   ]
   external_deps = [
     "access_token:libnativetoken",

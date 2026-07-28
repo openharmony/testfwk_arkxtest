@@ -25,6 +25,7 @@ config("uitest_common_configs") {
     "-Wformat=2",
     "-Wshadow",
   ]
+  cflags_cc = [ "-Os" ]
 }
 
 ohos_static_library("uitest_core") {
@@ -67,7 +68,6 @@ ohos_static_library("uitest_core") {
 }
 
 ohos_static_library("uitest_input") {
-  use_exceptions = true
   configs = [ ":uitest_common_configs" ]
   branch_protector_ret = "pac_ret"
   sources = [ "${source_root}/input/ui_input.cpp" ]
@@ -86,7 +86,6 @@ ohos_static_library("uitest_input") {
 }
 
 ohos_static_library("uitest_record") {
-  use_exceptions = true
   configs = [ ":uitest_common_configs" ]
   branch_protector_ret = "pac_ret"
   sources = [
@@ -343,6 +342,7 @@ ohos_unittest("uitest_core_unittest") {
 }
 
 ohos_shared_library("uitest_ani") {
+  shlib_type = "ani"
   configs = [ ":uitest_common_configs" ]
   branch_protector_ret = "pac_ret"
   external_deps = common_external_deps

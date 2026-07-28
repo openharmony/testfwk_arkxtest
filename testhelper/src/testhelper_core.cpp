@@ -16,7 +16,6 @@
 #include <iostream>
 #include <string>
 #include <ctime>
-#include <regex>
 #include <fstream>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -36,6 +35,46 @@
 #endif
 
 namespace OHOS::testhelper {
+    static bool IsValidTimeFormat(const std::string& timeStr)
+    {
+        static constexpr size_t idxYearStart = 0;
+        static constexpr size_t idxYearEnd = 3;
+        static constexpr size_t idxFirstDash = 4;
+        static constexpr size_t idxMonthStart = 5;
+        static constexpr size_t idxMonthEnd = 6;
+        static constexpr size_t idxSecondDash = 7;
+        static constexpr size_t idxDayStart = 8;
+        static constexpr size_t idxDayEnd = 9;
+        static constexpr size_t idxSpace = 10;
+        static constexpr size_t idxHourStart = 11;
+        static constexpr size_t idxHourEnd = 12;
+        static constexpr size_t idxFirstColon = 13;
+        static constexpr size_t idxMinuteStart = 14;
+        static constexpr size_t idxMinuteEnd = 15;
+        static constexpr size_t idxSecondColon = 16;
+        static constexpr size_t idxSecStart = 17;
+        static constexpr size_t idxSecEnd = 18;
+
+        if (timeStr.length() != timeStrLen) {
+            return false;
+        }
+        auto isDigit = [&timeStr](size_t i) {
+            return std::isdigit(static_cast<unsigned char>(timeStr[i]));
+        };
+        return isDigit(idxYearStart) && isDigit(idxYearStart + 1) &&
+               isDigit(idxYearStart + TWO) && isDigit(idxYearEnd) &&
+               timeStr[idxFirstDash] == timeSepDash &&
+               isDigit(idxMonthStart) && isDigit(idxMonthEnd) &&
+               timeStr[idxSecondDash] == timeSepDash &&
+               isDigit(idxDayStart) && isDigit(idxDayEnd) &&
+               timeStr[idxSpace] == timeSepSpace &&
+               isDigit(idxHourStart) && isDigit(idxHourEnd) &&
+               timeStr[idxFirstColon] == timeSepColon &&
+               isDigit(idxMinuteStart) && isDigit(idxMinuteEnd) &&
+               timeStr[idxSecondColon] == timeSepColon &&
+               isDigit(idxSecStart) && isDigit(idxSecEnd);
+    }
+
         int32_t TestHelperCore::HandleGetTime()
     {
         LOG_I("HandleGetTime called");
@@ -128,7 +167,7 @@ namespace OHOS::testhelper {
 
     int32_t TestHelperCore::ParseTimeToMs(const std::string& timeStr, int64_t& timeMs)
     {
-        if (!std::regex_match(timeStr, std::regex("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"))) {
+        if (!IsValidTimeFormat(timeStr)) {
             return PARSE_TIME_INVALID_FORMAT;
         }
         struct tm originalTimeinfo = {};
