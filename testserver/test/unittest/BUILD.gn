@@ -18,7 +18,6 @@ source_root = "//test/testfwk/arkxtest/testserver"
 
 ohos_unittest("TestSA_unittest") {
   sources = [
-    "${source_root}/test/unittest/mock_permission.cpp",
     "${source_root}/test/unittest/start_test_server.cpp",
     "${source_root}/test/unittest/test_server_client_test.cpp",
     "${source_root}/test/unittest/test_server_service_test.cpp",
@@ -28,6 +27,7 @@ ohos_unittest("TestSA_unittest") {
     "${source_root}/src:test_server_service_impl",
   ]
   external_deps = [
+    "access_token:libaccesstoken_sdk",
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
     "ability_base:want",

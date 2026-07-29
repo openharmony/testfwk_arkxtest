@@ -36,6 +36,7 @@ using namespace std;
 using namespace testing::ext;
 using namespace OHOS;
 using namespace OHOS::testserver;
+using namespace OHOS::Security::AccessToken;
 
 class TestServerServiceMock : public TestServerService {
 public:
@@ -88,7 +89,15 @@ protected:
 
     void SetUp() override
     {
-        TestServerMockPermission::MockProcess("testserver");
+        static std::vector<std::string> permissions = {
+            "ohos.permission.SET_TIME",
+            "ohos.permission.SET_TIME_ZONE",
+            "ohos.permission.CONNECT_IME_ABILITY",
+        };
+        static MockToken token(permissions, false);
+        token.Grant("ohos.permission.SET_TIME");
+        token.Grant("ohos.permission.SET_TIME_ZONE");
+        token.Grant("ohos.permission.CONNECT_IME_ABILITY");
         samgr_ = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         testServerServiceMock_ = make_unique<TestServerServiceMock>(SYSTEM_ABILITY_ID, false);
     }
