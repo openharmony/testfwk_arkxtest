@@ -249,6 +249,9 @@ ohos_executable("uitest_server") {
     defines += [ "ARKXTEST_ADJUST_WINDOWMODE_ENABLE" ]
     defines += [ "ARKXTEST_TRIGGER_PEN_KEY_ENABLE" ]
   }
+  if (arkxtest_product_feature == "car") {
+    defines += [ "ARKXTEST_MULTI_USER_ENABLE" ]
+  }
 }
 
 es2abc_gen_abc("gen_uitest_exporter_abc") {
