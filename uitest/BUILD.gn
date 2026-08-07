@@ -108,6 +108,7 @@ ohos_static_library("uitest_record") {
   external_deps = [
     "ability_base:want",
     "ability_runtime:ability_manager",
+    "bounds_checking_function:libsec_shared",
     "hilog:libhilog",
     "input:libmmi-client",
     "ipc:ipc_single",
@@ -208,6 +209,7 @@ ohos_executable("uitest_server") {
   #dependencies for screencap
   external_deps = [
     "ability_runtime:ability_manager",
+    "bounds_checking_function:libsec_shared",
     "accessibility:accessibility_common",
     "accessibility:accessibleability",
     "graphic_2d:librender_service_client",

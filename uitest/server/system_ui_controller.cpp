@@ -397,8 +397,7 @@ namespace OHOS::uitest {
     bool SysUiController::Initialize(ApiCallErr &error)
     {
 #ifdef ARKXTEST_MULTI_USER_ENABLE
-        int32_t userCounts = OHOS::testserver::TestServerClient::GetInstance().GetUserCounts();
-        isSingleUser_ = userCounts == 1;
+        isSingleUser_ = false;
 #else
         isSingleUser_ = true;
 #endif
