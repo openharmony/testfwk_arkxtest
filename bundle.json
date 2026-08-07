@@ -63,7 +63,8 @@
           "api_metrics",
           "location",
           "libxml2",
-          "node"
+          "node",
+          "bounds_checking_function"
         ]
       },
       "build": {
