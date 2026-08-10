@@ -127,6 +127,10 @@ ohos_static_library("test_server_service_impl") {
     defines += [ "ARKXTEST_VIEW_MODE_ENABLE" ]
   }
 
+  if (arkxtest_product_feature == "car") {
+    defines += [ "ARKXTEST_MULTI_USER_ENABLE" ]
+  }
+
   part_name = "arkxtest"
   subsystem_name = "testfwk"
 }

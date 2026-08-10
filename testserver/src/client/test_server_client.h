@@ -44,7 +44,6 @@ namespace OHOS::testserver {
         int32_t ClearPasteData();
         int32_t HideKeyboard();
         int32_t GetUserIdByDisplayId(int32_t displayId);
-        int32_t GetUserCounts();
         int32_t InstallFont(const std::string& fontPath);
         int32_t UninstallFont(const std::string& fontName);
         int32_t SetViewMode(const std::string& mode);
