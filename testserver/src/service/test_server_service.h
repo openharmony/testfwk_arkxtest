@@ -77,7 +77,6 @@ namespace OHOS::testserver {
 
         ErrCode GetUserIdByDisplayId(int32_t displayId, int32_t &userId) override;
 
-        ErrCode GetUserCounts(int32_t &counts) override;
         ErrCode InstallFont(const std::string& fontPath, int32_t& installResult) override;
 
         ErrCode UninstallFont(const std::string& fontName, int32_t& uninstallResult) override;

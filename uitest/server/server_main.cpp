@@ -223,11 +223,13 @@ namespace OHOS::uitest {
         }
         if (initController) {
             auto controller = make_unique<SysUiController>();
+#ifdef ARKXTEST_MULTI_USER_ENABLE
             int32_t userId = OHOS::testserver::TestServerClient::GetInstance()
                 .GetUserIdByDisplayId(option.displayId_);
             if (userId != -1) {
                 controller->SetActiveUser(userId);
             }
+#endif
             UiDriver::RegisterController(move(controller));
         }
         auto driver = UiDriver();
