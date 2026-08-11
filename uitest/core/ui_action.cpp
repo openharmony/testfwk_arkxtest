@@ -74,11 +74,9 @@ namespace OHOS::uitest {
         uint32_t intervalMs = timeCostMs / steps + 1;
         constexpr uint32_t fingers = 1;
         constexpr uint32_t intervalMsInSwipe = 5;
+        constexpr uint32_t minSwipeSteps = 2;
         if (type != TouchOp::FLING) {
-            steps = timeCostMs / intervalMsInSwipe;
-            if (steps < 2) {
-                steps = 2;
-            }
+            steps = std::max(timeCostMs / intervalMsInSwipe, minSwipeSteps);
             intervalMs = intervalMsInSwipe;
         }
         PointerMatrix pointer(fingers, steps + 1);
@@ -230,29 +228,28 @@ namespace OHOS::uitest {
     void TouchPadAction::Decompose(vector<TouchPadEvent> &recv, const UiOpArgs &options,
                                    const Point displaySize) const
     {
-        int32_t numTwo = 2;
-        int32_t displayCenterX = displaySize.px_ / numTwo;
-        int32_t displayCenterY = displaySize.py_ / numTwo;
+        int32_t displayCenterX = displaySize.px_ / TWO;
+        int32_t displayCenterY = displaySize.py_ / TWO;
         int32_t pxFrom = displayCenterX;
         int32_t pyFrom = displayCenterY;
         int32_t pxTo = displayCenterX;
         int32_t pyTo = displayCenterY;
         switch (direction_) {
             case TO_LEFT:
-                pxFrom += displayCenterX / numTwo;
-                pxTo -= displayCenterX / numTwo;
+                pxFrom += displayCenterX / TWO;
+                pxTo -= displayCenterX / TWO;
                 break;
             case TO_RIGHT:
-                pxFrom -= displayCenterX / numTwo;
-                pxTo += displayCenterX / numTwo;
+                pxFrom -= displayCenterX / TWO;
+                pxTo += displayCenterX / TWO;
                 break;
             case TO_UP:
-                pyFrom += displayCenterY / numTwo;
-                pyTo -= displayCenterY / numTwo;
+                pyFrom += displayCenterY / TWO;
+                pyTo -= displayCenterY / TWO;
                 break;
             case TO_DOWN:
-                pyFrom -= displayCenterY / numTwo;
-                pyTo += displayCenterY / numTwo;
+                pyFrom -= displayCenterY / TWO;
+                pyTo += displayCenterY / TWO;
                 break;
             default:
                 break;
@@ -262,10 +259,7 @@ namespace OHOS::uitest {
         const uint32_t distance = sqrt(distanceX * distanceX + distanceY * distanceY);
         const uint32_t timeCostMs = (distance * 1000) / options.swipeVelocityPps_;
         constexpr uint32_t intervalMs = 5;
-        uint32_t steps = timeCostMs / intervalMs;
-        if (steps < 2) {
-            steps = 2;
-        }
+        uint32_t steps = std::max(timeCostMs / intervalMs, TWO);
         recv.push_back(TouchPadEvent {ActionStage::DOWN, {pxFrom, pyFrom}, fingers_, intervalMs});
         float stepLengthX = static_cast<double>(distanceX) / static_cast<double>(steps);
         float stepLengthY = static_cast<double>(distanceY) / static_cast<double>(steps);
