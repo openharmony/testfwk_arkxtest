@@ -129,7 +129,9 @@ namespace OHOS::uitest {
         } else {
             auto selector = WidgetSelector();
             auto attrMatcher = WidgetMatchModel(UiAttr::TYPE, std::string("DecorBar"), EQ);
+            auto windowMatcher = WidgetMatchModel(UiAttr::HOST_WINDOW_ID, std::to_string(window_.id_), EQ);
             selector.AddMatcher(attrMatcher);
+            selector.AddMatcher(windowMatcher);
             selector.SetWantMulti(false);
             vector<unique_ptr<Widget>> widgets;
             driver_.FindWidgets(selector, widgets, out.exception_, false);

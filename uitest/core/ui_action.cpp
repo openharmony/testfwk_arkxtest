@@ -74,9 +74,8 @@ namespace OHOS::uitest {
         uint32_t intervalMs = timeCostMs / steps + 1;
         constexpr uint32_t fingers = 1;
         constexpr uint32_t intervalMsInSwipe = 5;
-        constexpr uint32_t minSwipeSteps = 2;
         if (type != TouchOp::FLING) {
-            steps = std::max(timeCostMs / intervalMsInSwipe, minSwipeSteps);
+            steps = std::max(timeCostMs / intervalMsInSwipe, TWO);
             intervalMs = intervalMsInSwipe;
         }
         PointerMatrix pointer(fingers, steps + 1);
