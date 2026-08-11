@@ -127,10 +127,29 @@ namespace OHOS::uitest {
             from = Point(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
             to = Point(endX + window_.bounds_.GetWidth() / TWO, endY + rect.GetHeight() / TWO, window_.displayId_);
         } else {
-            auto rect = window_.bounds_;
-            constexpr uint32_t step = 40;
-            from = Point(rect.left_ + step, rect.top_ + step, window_.displayId_);
-            to = Point(endX + step, endY + step, window_.displayId_);
+            auto selector = WidgetSelector();
+            auto attrMatcher = WidgetMatchModel(UiAttr::TYPE, std::string("DecorBar"), EQ);
+            auto windowMatcher = WidgetMatchModel(UiAttr::HOST_WINDOW_ID, std::to_string(window_.id_), EQ);
+            selector.AddMatcher(attrMatcher);
+            selector.AddMatcher(windowMatcher);
+            selector.SetWantMulti(false);
+            vector<unique_ptr<Widget>> widgets;
+            driver_.FindWidgets(selector, widgets, out.exception_, false);
+            if (!widgets.empty() && out.exception_.code_ == NO_ERROR) {
+                auto decorBarRect = widgets[0]->GetBounds();
+                constexpr uint32_t offsetX = 30;
+                from = Point(window_.bounds_.left_ + offsetX,
+                             decorBarRect.top_ + decorBarRect.GetHeight() / TWO,
+                             window_.displayId_);
+                to = Point(endX + offsetX,
+                           endY + decorBarRect.GetHeight() / TWO,
+                           window_.displayId_);
+            } else {
+                auto rect = window_.bounds_;
+                constexpr uint32_t step = 30;
+                from = Point(rect.left_ + step, rect.top_ + step, window_.displayId_);
+                to = Point(endX + step, endY + step, window_.displayId_);
+            }
         }
         auto touch = GenericSwipe(TouchOp::DRAG, from, to);
         driver_.PerformTouch(touch, options_, out.exception_);
@@ -280,33 +299,33 @@ namespace OHOS::uitest {
 
     void WindowOperator::SplitSecondary(ApiReplyInfo &out)
     {
-            constexpr auto topZone = 20;
-            Point from(window_.visibleBounds_.GetCenterX(), window_.visibleBounds_.top_ - topZone, window_.displayId_);
-            Point to(0, 0);
-            auto selector = WidgetSelector();
-            auto attrMatcher = WidgetMatchModel(UiAttr::KEY, "SCBDividerFlex1", EQ);
-            selector.AddMatcher(attrMatcher);
-            selector.SetWantMulti(false);
-            vector<unique_ptr<Widget>> widgets;
-            driver_.FindWidgets(selector, widgets, out.exception_);
-            if (widgets.empty() || out.exception_.code_ != NO_ERROR) {
-                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
-                return;
-            }
-            auto rect = widgets[0]->GetBounds();
-            Point divider(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
-            if (divider.px_ < window_.bounds_.left_) {
-                to = Point(0, from.py_, window_.displayId_);
-            } else if (divider.py_ < window_.bounds_.top_) {
-                to = Point(from.px_, 0, window_.displayId_);
-            } else {
-                out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
-                return;
-            }
-            constexpr auto waitMs = 1000;
-            auto drag = GenericSwipe(TouchOp::SWIPE, from, to);
-            driver_.PerformTouch(drag, options_, out.exception_);
-            this_thread::sleep_for(chrono::milliseconds(waitMs));
+        constexpr auto topZone = 20;
+        Point from(window_.visibleBounds_.GetCenterX(), window_.visibleBounds_.top_ - topZone, window_.displayId_);
+        Point to(0, 0);
+        auto selector = WidgetSelector();
+        auto attrMatcher = WidgetMatchModel(UiAttr::KEY, "SCBDividerFlex1", EQ);
+        selector.AddMatcher(attrMatcher);
+        selector.SetWantMulti(false);
+        vector<unique_ptr<Widget>> widgets;
+        driver_.FindWidgets(selector, widgets, out.exception_);
+        if (widgets.empty() || out.exception_.code_ != NO_ERROR) {
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        auto rect = widgets[0]->GetBounds();
+        Point divider(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
+        if (divider.px_ < window_.bounds_.left_) {
+            to = Point(0, from.py_, window_.displayId_);
+        } else if (divider.py_ < window_.bounds_.top_) {
+            to = Point(from.px_, 0, window_.displayId_);
+        } else {
+            out.exception_ = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "this device can not support this action");
+            return;
+        }
+        constexpr auto waitMs = 1000;
+        auto drag = GenericSwipe(TouchOp::SWIPE, from, to);
+        driver_.PerformTouch(drag, options_, out.exception_);
+        this_thread::sleep_for(chrono::milliseconds(waitMs));
         return;
     }
 
@@ -326,6 +345,7 @@ namespace OHOS::uitest {
         }
         if (window_.mode_ == WindowMode::SPLIT_SECONDARY) {
             SplitSecondary(out);
+            return;
         }
         if (out.exception_.code_ != NO_ERROR) {
             return;
