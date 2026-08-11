@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include <cmath>
 #include "ui_action.h"
 
@@ -75,7 +76,7 @@ namespace OHOS::uitest {
         constexpr uint32_t fingers = 1;
         constexpr uint32_t intervalMsInSwipe = 5;
         if (type != TouchOp::FLING) {
-            steps = std::max(timeCostMs / intervalMsInSwipe, TWO);
+            steps = std::max(timeCostMs / intervalMsInSwipe, static_cast<uint32_t>(TWO));
             intervalMs = intervalMsInSwipe;
         }
         PointerMatrix pointer(fingers, steps + 1);
@@ -258,7 +259,7 @@ namespace OHOS::uitest {
         const uint32_t distance = sqrt(distanceX * distanceX + distanceY * distanceY);
         const uint32_t timeCostMs = (distance * 1000) / options.swipeVelocityPps_;
         constexpr uint32_t intervalMs = 5;
-        uint32_t steps = std::max(timeCostMs / intervalMs, TWO);
+        uint32_t steps = std::max(timeCostMs / intervalMs, static_cast<uint32_t>(TWO));
         recv.push_back(TouchPadEvent {ActionStage::DOWN, {pxFrom, pyFrom}, fingers_, intervalMs});
         float stepLengthX = static_cast<double>(distanceX) / static_cast<double>(steps);
         float stepLengthY = static_cast<double>(distanceY) / static_cast<double>(steps);
