@@ -127,10 +127,27 @@ namespace OHOS::uitest {
             from = Point(rect.GetCenterX(), rect.GetCenterY(), window_.displayId_);
             to = Point(endX + window_.bounds_.GetWidth() / TWO, endY + rect.GetHeight() / TWO, window_.displayId_);
         } else {
-            auto rect = window_.bounds_;
-            constexpr uint32_t step = 40;
-            from = Point(rect.left_ + step, rect.top_ + step, window_.displayId_);
-            to = Point(endX + step, endY + step, window_.displayId_);
+            auto selector = WidgetSelector();
+            auto attrMatcher = WidgetMatchModel(UiAttr::TYPE, std::string("DecorBar"), EQ);
+            selector.AddMatcher(attrMatcher);
+            selector.SetWantMulti(false);
+            vector<unique_ptr<Widget>> widgets;
+            driver_.FindWidgets(selector, widgets, out.exception_, false);
+            if (!widgets.empty() && out.exception_.code_ == NO_ERROR) {
+                auto decorBarRect = widgets[0]->GetBounds();
+                constexpr uint32_t offsetX = 30;
+                from = Point(window_.bounds_.left_ + offsetX,
+                             decorBarRect.top_ + decorBarRect.GetHeight() / TWO,
+                             window_.displayId_);
+                to = Point(endX + offsetX,
+                           endY + decorBarRect.GetHeight() / TWO,
+                           window_.displayId_);
+            } else {
+                auto rect = window_.bounds_;
+                constexpr uint32_t step = 30;
+                from = Point(rect.left_ + step, rect.top_ + step, window_.displayId_);
+                to = Point(endX + step, endY + step, window_.displayId_);
+            }
         }
         auto touch = GenericSwipe(TouchOp::DRAG, from, to);
         driver_.PerformTouch(touch, options_, out.exception_);

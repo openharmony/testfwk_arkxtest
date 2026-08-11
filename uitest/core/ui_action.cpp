@@ -76,6 +76,9 @@ namespace OHOS::uitest {
         constexpr uint32_t intervalMsInSwipe = 5;
         if (type != TouchOp::FLING) {
             steps = timeCostMs / intervalMsInSwipe;
+            if (steps < 2) {
+                steps = 2;
+            }
             intervalMs = intervalMsInSwipe;
         }
         PointerMatrix pointer(fingers, steps + 1);
@@ -260,6 +263,9 @@ namespace OHOS::uitest {
         const uint32_t timeCostMs = (distance * 1000) / options.swipeVelocityPps_;
         constexpr uint32_t intervalMs = 5;
         uint32_t steps = timeCostMs / intervalMs;
+        if (steps < 2) {
+            steps = 2;
+        }
         recv.push_back(TouchPadEvent {ActionStage::DOWN, {pxFrom, pyFrom}, fingers_, intervalMs});
         float stepLengthX = static_cast<double>(distanceX) / static_cast<double>(steps);
         float stepLengthY = static_cast<double>(distanceY) / static_cast<double>(steps);
