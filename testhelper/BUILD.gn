@@ -30,6 +30,7 @@ ohos_static_library("testhelper_core") {
   ]
   external_deps = [
     "hilog:libhilog",
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "time_service:time_client",
     "ability_runtime:wantagent_innerkits",
@@ -73,6 +74,7 @@ ohos_executable("testhelper") {
   ]
   external_deps = [
     "hilog:libhilog",
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "ipc:ipc_core",
     "common_event_service:cesfwk_innerkits",
@@ -118,6 +120,7 @@ ohos_unittest("testhelper_unittest") {
   ]
   external_deps = [
     "hilog:libhilog",
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "time_service:time_client",
     "ability_runtime:wantagent_innerkits",
