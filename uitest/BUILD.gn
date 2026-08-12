@@ -117,6 +117,7 @@ ohos_static_library("uitest_record") {
   part_name = "arkxtest"
 }
 common_external_deps = [
+  "bounds_checking_function:libsec_shared",
   "c_utils:utils",
   "hilog:libhilog",
 ]
@@ -432,6 +433,7 @@ ohos_unittest("uitest_extension_unittest") {
     "${source_root}/record",
   ]
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "hilog:libhilog",
     "json:nlohmann_json_static",
     "input:libmmi-client",
