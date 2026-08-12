@@ -60,9 +60,12 @@ export async function collectCoverageData() {
     let writeLen = fs.writeSync(file.fd, strJson, {encoding:'utf-8'});
     console.info(`${TAG} write coverage data success: ${writeLen}`);
     fs.closeSync(file);
+    const OHOS_REPORT_SAND_BOX_PATH = 'OHOS_REPORT_SAND_BOX_PATH:';
     const OHOS_REPORT_COVERAGE_PATH = 'OHOS_REPORT_COVERAGE_PATH:';
     await SysTestKit.print(`${OHOS_REPORT_COVERAGE_PATH} ${readPath}`);
+    await SysTestKit.print(`${OHOS_REPORT_SAND_BOX_PATH} ${savePath}`);
     console.info(`${OHOS_REPORT_COVERAGE_PATH} ${readPath}`);
+    console.info(`${OHOS_REPORT_SAND_BOX_PATH} ${savePath}`);
 }
 
 function isCoveragePathValid(inputPath) {
