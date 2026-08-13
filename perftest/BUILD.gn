@@ -25,6 +25,7 @@ config("perftest_common_configs") {
   cflags_cc = [ "-Os" ]
 }
 common_external_deps = [
+  "bounds_checking_function:libsec_shared",
   "c_utils:utils",
   "hilog:libhilog",
   "json:nlohmann_json_static",
