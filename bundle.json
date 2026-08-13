@@ -30,6 +30,7 @@
           "ipc",
           "ability_base",
           "window_manager",
+          "bounds_checking_function",
           "c_utils",
           "napi",
           "accessibility",
