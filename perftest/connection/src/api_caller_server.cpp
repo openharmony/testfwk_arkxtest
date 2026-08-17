@@ -117,7 +117,7 @@ namespace OHOS::perftest {
         uint32_t tries = 0;
         do {
             // publish caller with retries
-            if (!OHOS::testserver::TestServerClient::GetInstance().PublishCommonEvent(event)) {
+            if (!CommonEventManager::PublishCommonEvent(event)) {
                 LOG_E("Pulbish commonEvent failed");
             }
             tries++;
