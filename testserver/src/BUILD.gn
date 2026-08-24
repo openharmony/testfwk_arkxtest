@@ -226,6 +226,7 @@ ohos_shared_library("test_server_client") {
   cflags_cc = [ "-Os" ]
   public_configs = [ ":test_server_client_config" ]
   branch_protector_ret = "pac_ret"
+  version_script = "libtest_server_client.map"
 
   output_values = get_target_outputs(":test_server_interface")
   sources = [

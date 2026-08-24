@@ -1,0 +1,48 @@
+# Copyright (c) 2026 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+{
+  global:
+    extern "C" {
+      FrequencyLockPlugin;
+    };
+    extern "C++" {
+      OHOS::testserver::TestServerClient::GetInstance*;
+      OHOS::testserver::TestServerClient::LoadTestServer*;
+      OHOS::testserver::TestServerClient::SetPasteData*;
+      OHOS::testserver::TestServerClient::ChangeWindowMode*;
+      OHOS::testserver::TestServerClient::TerminateWindow*;
+      OHOS::testserver::TestServerClient::MinimizeWindow*;
+      OHOS::testserver::TestServerClient::PublishCommonEvent*;
+      OHOS::testserver::TestServerClient::FrequencyLock*;
+      OHOS::testserver::TestServerClient::SpDaemonProcess*;
+      OHOS::testserver::TestServerClient::CollectProcessMemory*;
+      OHOS::testserver::TestServerClient::CollectProcessCpu*;
+      OHOS::testserver::TestServerClient::GetValueFromDataShare*;
+      OHOS::testserver::TestServerClient::SetTime*;
+      OHOS::testserver::TestServerClient::SetTimezone*;
+      OHOS::testserver::TestServerClient::GetPasteData*;
+      OHOS::testserver::TestServerClient::ClearPasteData*;
+      OHOS::testserver::TestServerClient::HideKeyboard*;
+      OHOS::testserver::TestServerClient::GetUserIdByDisplayId*;
+      OHOS::testserver::TestServerClient::InstallFont*;
+      OHOS::testserver::TestServerClient::UninstallFont*;
+      OHOS::testserver::TestServerClient::SetViewMode*;
+      OHOS::testserver::TestServerClient::GetViewMode*;
+      OHOS::testserver::TestServerClient::EnableLocationMock*;
+      OHOS::testserver::TestServerClient::DisableLocationMock*;
+      OHOS::testserver::TestServerClient::SetMockedLocations*;
+    };
+  local:
+    *;
+};
