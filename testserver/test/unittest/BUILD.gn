@@ -21,9 +21,11 @@ ohos_unittest("TestSA_unittest") {
     "${source_root}/test/unittest/start_test_server.cpp",
     "${source_root}/test/unittest/test_server_client_test.cpp",
     "${source_root}/test/unittest/test_server_service_test.cpp",
+    "${target_gen_dir}/../../src/test_server_interface_proxy.cpp",
   ]
   deps = [
     "${source_root}/src:test_server_client",
+    "${source_root}/src:test_server_interface",
     "${source_root}/src:test_server_service_impl",
   ]
   external_deps = [
