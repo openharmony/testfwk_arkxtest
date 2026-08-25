@@ -523,6 +523,8 @@ ohos_shared_library("cj_ui_test_ffi") {
     "samgr:samgr_proxy",
   ]
 
+  version_script = "libcj_ui_test_ffi.map"
+
   relative_install_dir = "platformsdk"
   subsystem_name = "testfwk"
   part_name = "arkxtest"
