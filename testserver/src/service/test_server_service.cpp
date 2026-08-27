@@ -14,6 +14,9 @@
  */
 
 #include "test_server_service.h"
+#include <spawn.h>
+#include <csignal>
+#include <unistd.h>
 #include "iremote_object.h"
 #include "system_ability_definition.h"
 #include "hilog/log.h"
@@ -316,8 +319,27 @@ namespace OHOS::testserver {
         std::string params = ParseDaemonCommand(extraInfo);
 
         if (daemonCommand == START_SPDAEMON_PROCESS) {
-            std::string command = std::string("./system/bin/SP_daemon " + params + " &");
-            std::system(command.c_str());
+            std::vector<std::string> args;
+            std::istringstream iss(params);
+            std::string arg;
+            while (iss >> arg) {
+                args.push_back(arg);
+            }
+            char daemonName[] = "SP_daemon";
+            std::vector<char*> argv;
+            argv.push_back(daemonName);
+            // posix_spawn does not modify argv, const_cast is safe here
+            for (auto& a : args) {
+                argv.push_back(const_cast<char*>(a.c_str()));
+            }
+            argv.push_back(nullptr);
+
+            pid_t pid;
+            int ret = posix_spawn(&pid, "/system/bin/SP_daemon", nullptr, nullptr, argv.data(), nullptr);
+            if (ret != 0) {
+                HiLog::Error(LABEL_SERVICE, "posix_spawn failed: %{public}d", ret);
+                return TEST_SERVER_SPDAEMON_PROCESS_FAILED;
+            }
         } else if (daemonCommand == KILL_SPDAEMON_PROCESS) {
             const std::string spDaemonProcessName = "SP_daemon";
             KillProcess(spDaemonProcessName);
