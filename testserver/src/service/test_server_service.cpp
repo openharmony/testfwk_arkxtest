@@ -14,6 +14,7 @@
  */
 
 #include "test_server_service.h"
+#include <charconv>
 #include <spawn.h>
 #include <csignal>
 #include <unistd.h>
@@ -283,10 +284,14 @@ namespace OHOS::testserver {
                 if (key.compare(PARA_START_POSITION, PARA_END_POSITION, "para") != 0) {
                     continue;
                 }
-                try {
-                    int index = std::stoi(key.substr(PARA_END_POSITION));
+                int index = 0;
+                const std::string indexText = key.substr(PARA_END_POSITION);
+                const char *begin = indexText.data();
+                const char *end = begin + indexText.size();
+                auto parsed = std::from_chars(begin, end, index);
+                if (parsed.ec == std::errc{} && parsed.ptr == end) {
                     paraIndices.push_back(index);
-                } catch (const std::exception&) {
+                } else {
                     HiLog::Error(LABEL_SERVICE, "Daemon receive an error param: %{public}s", key.c_str());
                 }
             }
