@@ -1289,8 +1289,11 @@ static ani_boolean waitForIdleSync(ani_env *env, ani_object obj, ani_int idleTim
     callInfo_.paramList_.push_back(idleTime);
     callInfo_.paramList_.push_back(timeout);
     Transact(callInfo_, reply_);
-    UnmarshalReply(env, callInfo_, reply_);
-    return true;
+    ani_ref ret = UnmarshalReply(env, callInfo_, reply_);
+    if (ret == nullptr) {
+        return false;
+    }
+    return reply_.resultValue_.get<bool>();
 }
 
 static ani_object waitForComponentSync(ani_env *env, ani_object obj, ani_object on_obj, ani_int time)
