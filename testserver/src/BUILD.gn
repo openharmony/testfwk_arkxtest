@@ -138,6 +138,7 @@ ohos_static_library("test_server_service_impl") {
 
 ohos_shared_library("test_server_service") {
   shlib_type = "sa"
+  version_script = "../../hide_init_fini.map"
   configs = [ ":test_server_service_config" ]
   branch_protector_ret = "pac_ret"
   deps = [
