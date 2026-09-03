@@ -278,6 +278,8 @@ gen_js_obj("uitest_exporter_abc") {
 }
 
 ohos_shared_library("uitest_client") {
+  shlib_type = "napi"
+  version_script = "../hide_init_fini.map"
   configs = [ ":uitest_common_configs" ]
   branch_protector_ret = "pac_ret"
   sources = [
@@ -349,6 +351,7 @@ ohos_unittest("uitest_core_unittest") {
 
 ohos_shared_library("uitest_ani") {
   shlib_type = "ani"
+  version_script = "../hide_init_fini.map"
   configs = [ ":uitest_common_configs" ]
   branch_protector_ret = "pac_ret"
   external_deps = common_external_deps
