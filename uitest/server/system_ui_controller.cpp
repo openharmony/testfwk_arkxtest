@@ -1018,7 +1018,7 @@ namespace OHOS::uitest {
             LOG_E("Set pasteBoard data failed.");
             error = ApiCallErr(ERR_INTERNAL, "Set pasteBoard data failed.");
             if (ret == OHOS::testserver::TEST_SERVER_NOT_SUPPORTED) {
-                error.code_ = ERR_NO_SYSTEM_CAPABILITY;
+                err = ApiCallErr(ERR_NO_SYSTEM_CAPABILITY, "Capability not support");
             }
             return;
         }
