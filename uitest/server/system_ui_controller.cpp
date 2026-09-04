@@ -1018,7 +1018,7 @@ namespace OHOS::uitest {
             LOG_E("Set pasteBoard data failed.");
             error = ApiCallErr(ERR_INTERNAL, "Set pasteBoard data failed.");
             if (ret == OHOS::testserver::TEST_SERVER_NOT_SUPPORTED) {
-                err = ApiCallErr(ERR_NO_SYSTEM_CAPABILITY,
+                error = ApiCallErr(ERR_NO_SYSTEM_CAPABILITY,
                     "Capability not support, clipboard service is not supported");
             }
             return;
