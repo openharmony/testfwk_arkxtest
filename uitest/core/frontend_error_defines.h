@@ -59,7 +59,7 @@ namespace OHOS::uitest {
         {ERR_COMPONENT_LOST, "The window or component is invisible or destroyed."},
         {ERR_OPERATION_UNSUPPORTED, "This operation is not supported."},
         {ERR_INTERNAL, "Internal error."},
-        {ERR_NO_SYSTEM_CAPABILITY, "The specified SystemCapability name was not found."},
+        {ERR_NO_SYSTEM_CAPABILITY, "Capability not supported."},
         {ERR_INVALID_INPUT, "Invalid input parameter."},
     };
 
