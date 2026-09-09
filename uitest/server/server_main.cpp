@@ -15,6 +15,7 @@
 
 #include <chrono>
 #include <unistd.h>
+#include <cinttypes>
 #include <memory>
 #include <algorithm>
 #include <iostream>
@@ -36,6 +37,8 @@
 #include <cmath>
 #include <fcntl.h>
 #include <cstdio>
+#include <link.h>
+#include <sys/mman.h>
 #include "ipc_transactor.h"
 #include "system_ui_controller.h"
 #include "test_server_client.h"
@@ -103,6 +106,63 @@ namespace OHOS::uitest {
         {nullptr, required_argument, nullptr, 'm'},
         {nullptr, required_argument, nullptr, 'e'},
         {nullptr, 0, nullptr, 0}};
+
+    struct ReclaimContext {
+        size_t pageSize = 0;
+        size_t reclaimed = 0;
+    };
+
+    static int32_t PhdrReclaimCallback(struct dl_phdr_info *info, size_t, void *data)
+    {
+        if (info == nullptr || data == nullptr || info->dlpi_name == nullptr || info->dlpi_phdr == nullptr) {
+            return 0;
+        }
+        // OpenHarmony .so naming convention: libxxx.z.so or libxxx.so, match suffix ".so"
+        constexpr size_t soSuffixLen = 3; // strlen(".so")
+        const char *name = info->dlpi_name;
+        size_t nameLen = strlen(name);
+        if (nameLen < soSuffixLen || memcmp(name + nameLen - soSuffixLen, ".so", soSuffixLen) != 0) {
+            return 0;
+        }
+        auto *ctx = static_cast<ReclaimContext *>(data);
+        for (uint16_t i = 0; i < info->dlpi_phnum; ++i) {
+            const ElfW(Phdr) &phdr = info->dlpi_phdr[i];
+            if (phdr.p_type != PT_LOAD) {
+                continue;
+            }
+            if ((phdr.p_flags & PF_R) == 0 || (phdr.p_flags & PF_W) != 0) {
+                continue;
+            }
+            auto start = static_cast<uintptr_t>(info->dlpi_addr + phdr.p_vaddr);
+            auto alignedStart = start & ~(ctx->pageSize - 1);
+            auto alignedEnd = (start + phdr.p_memsz + ctx->pageSize - 1) & ~(ctx->pageSize - 1);
+            if (alignedStart >= alignedEnd) {
+                continue;
+            }
+            if (madvise(reinterpret_cast<void *>(alignedStart), alignedEnd - alignedStart, MADV_DONTNEED) == 0) {
+                ctx->reclaimed += alignedEnd - alignedStart;
+            } else {
+                int32_t savedErrno = errno;
+                LOG_W("madvise failed: start=0x%{public}" PRIxPTR " len=%{public}zu errno=%{public}d",
+                    alignedStart, alignedEnd - alignedStart, savedErrno);
+            }
+        }
+        return 0;
+    }
+
+    static void ReclaimFileBackedPages() noexcept
+    {
+        ReclaimContext ctx;
+        long ps = sysconf(_SC_PAGESIZE);
+        if (ps <= 0) {
+            LOG_W("sysconf(_SC_PAGESIZE) failed: %{public}ld", ps);
+            return;
+        }
+        ctx.pageSize = static_cast<size_t>(ps);
+        int32_t count = dl_iterate_phdr(PhdrReclaimCallback, &ctx);
+        LOG_I("ReclaimFileBackedPages: iterated=%{public}d reclaimedBytes=%{public}zu", count, ctx.reclaimed);
+    }
+
     /* *Print to the console of this shell process. */
     static inline void PrintToConsole(string_view message)
     {
@@ -308,6 +368,7 @@ namespace OHOS::uitest {
 
     static int32_t DumpLayout(int32_t argc, char *argv[])
     {
+        ReclaimFileBackedPages();
         DumpOption option;
         auto ts = to_string(GetCurrentMicroseconds());
         auto savePath = "/data/local/tmp/layout_" + ts + ".json";
