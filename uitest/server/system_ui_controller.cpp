@@ -25,7 +25,7 @@
 #ifdef HIDUMPER_ENABLED
 #include <iservice_registry.h>
 #include <system_ability_load_callback_stub.h>
-#include <fdsan.h>
+
 #include "idump_broker.h"
 #include "dump_broker_proxy.h"
 #include "system_ability_definition.h"
@@ -1429,16 +1429,16 @@ namespace OHOS::uitest {
         result.emplace_back(pidInUtf16);
     }
 
-    void SysUiController::GetHidumperInfo(std::string windowId, char **buf, size_t &len)
-    {
 #ifdef HIDUMPER_ENABLED
+    static sptr<IRemoteObject> GetHidumperRemote()
+    {
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         // wati SA start
         constexpr auto delayMs = 2000;
         this_thread::sleep_for(chrono::milliseconds(delayMs));
         if (sam == nullptr) {
             LOG_E("Get samgr failed");
-            return;
+            return nullptr;
         }
         auto remoteObject = sam->CheckSystemAbility(OHOS::DFX_HI_DUMPER_SERVICE_ABILITY_ID);
         if (remoteObject == nullptr) {
@@ -1448,7 +1448,7 @@ namespace OHOS::uitest {
             if (sam->LoadSystemAbility(OHOS::DFX_HI_DUMPER_SERVICE_ABILITY_ID, loadCallback) != ERR_OK) {
                 LOG_E("Schedule LoadSystemAbility failed");
                 lock.unlock();
-                return;
+                return nullptr;
             }
             LOG_E("Schedule LoadSystemAbility succeed");
             lock.unlock();
@@ -1457,6 +1457,14 @@ namespace OHOS::uitest {
         }
         if (remoteObject == nullptr) {
             LOG_E("remoteObject is null");
+        }
+        return remoteObject;
+    }
+
+    static void RunHidumperAndRead(const std::string &windowId, char **buf, size_t &len)
+    {
+        auto remoteObject = GetHidumperRemote();
+        if (remoteObject == nullptr) {
             return;
         }
         // run dump command
@@ -1478,6 +1486,13 @@ namespace OHOS::uitest {
         *buf = tempBuf;
         len = size;
         fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+    }
+#endif
+
+    void SysUiController::GetHidumperInfo(std::string windowId, char **buf, size_t &len)
+    {
+#ifdef HIDUMPER_ENABLED
+        RunHidumperAndRead(windowId, buf, len);
 #else
         *buf = nullptr;
         len = 0;

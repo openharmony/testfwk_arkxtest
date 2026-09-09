@@ -18,7 +18,7 @@
 #include <csignal>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <fdsan.h>
+
 #include "data_collection.h"
 
 namespace OHOS::perftest {
