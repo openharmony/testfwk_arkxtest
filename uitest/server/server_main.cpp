@@ -35,6 +35,7 @@
 #include <vector>
 #include <cmath>
 #include <fcntl.h>
+#include <fdsan.h>
 #include <cstdio>
 #include "ipc_transactor.h"
 #include "system_ui_controller.h"
@@ -221,6 +222,7 @@ namespace OHOS::uitest {
             err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(option.savePath_) + strerror(errno));
             return;
         }
+        fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         if (initController) {
             auto controller = make_unique<SysUiController>();
 #ifdef ARKXTEST_MULTI_USER_ENABLE
@@ -236,7 +238,7 @@ namespace OHOS::uitest {
         auto data = nlohmann::json();
         driver.DumpUiHierarchy(data, option, err);
         if (err.code_ != NO_ERROR) {
-            close(fd);
+            fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
             return;
         }
         string dumpStr = data.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
@@ -248,7 +250,7 @@ namespace OHOS::uitest {
         if (fsync(fd) == -1) {
             LOG_E("fsync failed, errno: %{public}s", strerror(errno));
         }
-        close(fd);
+        fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         return;
     }
 
@@ -377,6 +379,7 @@ namespace OHOS::uitest {
         fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         if (!controller.TakeScreenCap(fd, errorRecv, displayId)) {
             PrintToConsole("ScreenCap failed: " + errorRecv.str());
+            fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
             return EXIT_FAILURE;
         }
         fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
@@ -523,6 +526,7 @@ namespace OHOS::uitest {
 
     extern "C" int32_t main(int32_t argc, char *argv[])
     {
+        fdsan_set_error_level(FDSAN_ERROR_LEVEL_FATAL);
         if (argc < TWO) {
             PrintToConsole("Missing argument");
             PrintToConsole(HELP_MSG);
