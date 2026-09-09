@@ -35,7 +35,6 @@
 #include <vector>
 #include <cmath>
 #include <fcntl.h>
-
 #include <cstdio>
 #include "ipc_transactor.h"
 #include "system_ui_controller.h"

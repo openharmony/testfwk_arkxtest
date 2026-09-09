@@ -25,7 +25,6 @@
 #ifdef HIDUMPER_ENABLED
 #include <iservice_registry.h>
 #include <system_ability_load_callback_stub.h>
-
 #include "idump_broker.h"
 #include "dump_broker_proxy.h"
 #include "system_ability_definition.h"
