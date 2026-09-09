@@ -25,6 +25,7 @@
 #ifdef HIDUMPER_ENABLED
 #include <iservice_registry.h>
 #include <system_ability_load_callback_stub.h>
+#include <fdsan.h>
 #include "idump_broker.h"
 #include "dump_broker_proxy.h"
 #include "system_ability_definition.h"
@@ -1469,13 +1470,14 @@ namespace OHOS::uitest {
         vector<u16string> args;
         CreateHidumperCmd(windowId, args);
         client->Request(args, fd);
+        fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         auto size = lseek(fd, 0, SEEK_END);
         char *tempBuf = new char[size + 1];
         lseek(fd, 0, SEEK_SET);
         read(fd, tempBuf, size);
         *buf = tempBuf;
         len = size;
-        close(fd);
+        fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
 #else
         *buf = nullptr;
         len = 0;
