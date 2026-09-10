@@ -368,6 +368,9 @@ export class MockKit {
   }
 
   isMocked(instance: object, name: string): boolean {
+    if (!instance || !name) {
+      return false
+    }
     let hashMap = this.hashMap
     for (const hashEntries of hashMap.entries()) {
       if (!hashEntries) {
