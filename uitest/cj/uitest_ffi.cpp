@@ -32,19 +32,9 @@
 #include "fcntl.h"
 #include "common_utilities_hpp.h"
 
-// fdsan.h is a bionic private header not available in the cj build toolchain.
-// Declare the needed fdsan API here to avoid header dependency.
-typedef enum {
-    FDSAN_OWNER_TYPE_FILE = 4,
-} fdsan_owner_type;
-
-static inline uint64_t fdsan_create_owner_tag(fdsan_owner_type type, uint64_t tag)
-{
-    return (static_cast<uint64_t>(type) << 56) | tag;
-}
-
-extern "C" void fdsan_exchange_owner_tag(int fd, uint64_t expected_tag, uint64_t new_tag);
-extern "C" int fdsan_close_with_tag(int fd, uint64_t tag);
+// fdsan.h is not exposed in the cj build toolchain, but the fdsan API
+// declarations are provided by musl <stdio.h> in the OpenHarmony libc.
+#include <stdio.h>
 #include "frontend_api_defines.h"
 #include "ipc_transactor.h"
 #include "ui_event_observer_impl.h"
@@ -247,4 +237,5 @@ namespace OHOS::cjuitest {
             return result;
         }
     }
+} // namespace OHOS::uitest
 } // namespace OHOS::uitest
