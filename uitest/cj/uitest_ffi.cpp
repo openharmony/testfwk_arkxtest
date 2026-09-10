@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include "nlohmann/json.hpp"
 #include "fcntl.h"
+#include <fdsan.h>
 #include "common_utilities_hpp.h"
 #include "frontend_api_defines.h"
 #include "ipc_transactor.h"
@@ -101,6 +102,7 @@ namespace OHOS::cjuitest {
                 error = ApiCallErr{ERR_INVALID_INPUT, "Invalid file path:" + path};
                 return;
             }
+            fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
             paramList[INDEX_ZERO] = fd;
             callInfo.fdParamIndex_ = INDEX_ZERO;
         } else if (id  == "UIEventObserver.once") {
@@ -197,7 +199,7 @@ namespace OHOS::cjuitest {
             auto result = CJTransact(callInfo_);
             if (callInfo_.fdParamIndex_ >= 0) {
                 auto fd = callInfo_.paramList_.at(INDEX_ZERO).get<int>();
-                (void) close(fd);
+                fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
             }
             if (result.exception_.code_ != uitest::ErrCode::NO_ERROR) {
                 ret.code = result.exception_.code_;
