@@ -635,6 +635,7 @@ MockKit是Mock的基础类，用于指定需要Mock的实例和方法。
 | 5 | ignoreMock | 使用ignoreMock可以还原实例中被Mock后的函数/属性，对被Mock后的函数/属性有效。                                                                                                   |
 | 6 | clear | 用例执行完毕后，进行被Mock的实例进行还原处理（还原之后对象恢复被Mock之前的功能）。                                                                                                  |
 | 7 | clearAll | 用例执行完毕后，进行数据和内存清理,不会还原实例中被Mock后的函数。                                                                                                                  |  
+| 8 | isMocked | @since1.0.29，查询实例上的指定方法或属性是否处于Mock状态（方法返回值/属性值与原始值不一致）。为只读查询，不修改Mock状态。对系统API、未Mock对象、空或null的name返回false，不抛异常。 |
 
 **VerificationMode相关接口**
 
@@ -1300,6 +1301,66 @@ export default function staticTest() {
       expect(really_result).assertEqual(1);
       let really_private_result = claser.method();
       expect(really_private_result).assertEqual(2);
+    })
+  })
+}
+```
+
+**示例15：isMocked(obj, name) 查询Mock状态的使用**
+
+> @since1.0.29 支持
+
+```javascript
+import { describe, expect, it, MockKit, when } from '@ohos/hypium';
+
+class ClassName {
+  constructor() {
+  }
+  count = 0;
+  method_1(arg: string) {
+    return '888888';
+  }
+}
+
+export default function isMockedTest() {
+  describe('isMockedTest', () => {
+    it('isMocked_method', 0, () => {
+      // 1.创建一个Mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
+      // 2.创建一个对象claser
+      let claser: ClassName = new ClassName();
+      // 3.进行Mock操作，对ClassName类的method_1函数进行Mock并设置桩行为
+      let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
+      when(mockfunc)('test').afterReturn('1');
+      // 4.查询method_1是否处于Mock状态，返回true
+      expect(mocker.isMocked(claser, 'method_1')).assertTrue();
+      // 5.clear还原后查询，返回false
+      mocker.clear(claser);
+      expect(mocker.isMocked(claser, 'method_1')).assertFalse();
+    })
+
+    it('isMocked_property', 0, () => {
+      // 1.创建一个Mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
+      // 2.创建一个对象claser
+      let claser: ClassName = new ClassName();
+      // 3.Mock ClassName对象的成员变量count
+      mocker.mockProperty(claser, "count", 999);
+      // 4.查询count是否处于Mock状态，返回true
+      expect(mocker.isMocked(claser, 'count')).assertTrue();
+      // 5.ignoreMock还原后查询，返回false
+      mocker.ignoreMock(claser, "count");
+      expect(mocker.isMocked(claser, 'count')).assertFalse();
+    })
+
+    it('isMocked_neverMocked', 0, () => {
+      let mocker: MockKit = new MockKit();
+      let claser: ClassName = new ClassName();
+      // 从未Mock的对象/方法名返回false
+      expect(mocker.isMocked(claser, 'method_1')).assertFalse();
+      // name为空或null安全降级返回false，不抛异常
+      expect(mocker.isMocked(claser, '')).assertFalse();
+      expect(mocker.isMocked(claser, null)).assertFalse();
     })
   })
 }

@@ -1720,6 +1720,85 @@ export default function staticTest() {
 }
 ```
 
+#### isMocked<sup>1.0.29<sup>
+
+isMocked(obj: Object, name: String): boolean
+
+查询实例上的指定方法或属性是否处于 Mock 状态（方法返回值/属性值与原始值不一致）。该接口为只读查询，不会修改任何 Mock 状态。
+
+**参数：**
+
+| 参数名  | 类型   | 必填 | 说明                       |
+|---------|--------|----|----------------------------|
+| obj     | Object | 是  | 某个类的实例。               |
+| name    | String | 是  | 类的实例上的方法名或属性名。 |
+
+**返回值：**
+
+| 类型    | 说明                                            |
+|---------|-------------------------------------------------|
+| boolean | true：方法返回值/属性值与原始值不一致；false：未 Mock 或已被还原。 |
+
+**说明：**
+
+- **方法 Mock**：需先调用 [mockFunc](#mockfunc) 并通过 [when](#when) 设置桩行为后，isMocked 才返回 true；仅调用 mockFunc 但未调用 when 时返回 false。
+- **属性 Mock**：调用 [mockProperty](#mockproperty) 后即返回 true。
+- **还原后**：调用 [clear](#clear) 或 [ignoreMock](#ignoremock) 还原后返回 false。
+- **异常输入处理**：对系统模块 API、从未 Mock 的对象、不存在的方法/属性名，以及 name 为空字符串或 null 时，均返回 false，不抛异常。
+
+**示例：**
+```javascript
+import { describe, expect, it, MockKit, when } from '@ohos/hypium';
+
+class ClassName {
+    constructor() {}
+
+    count = 0;
+
+    greet(name: string) {
+        return 'hello ' + name;
+    }
+}
+
+export default function isMockedTest() {
+    describe('isMockedTest', () => {
+        it('isMocked_method', 0, () => {
+            let claser: ClassName = new ClassName();
+            let mocker: MockKit = new MockKit();
+            // 1.Mock ClassName 实例的 greet 方法并设置桩行为
+            let mockfunc: Function = mocker.mockFunc(claser, claser.greet);
+            when(mockfunc)('world').afterReturn('mocked');
+            // 2.查询 greet 是否处于 Mock 状态
+            expect(mocker.isMocked(claser, 'greet')).assertTrue(); // true
+            // 3.还原后查询
+            mocker.clear(claser);
+            expect(mocker.isMocked(claser, 'greet')).assertFalse(); // false
+        })
+
+        it('isMocked_property', 0, () => {
+            let claser: ClassName = new ClassName();
+            let mocker: MockKit = new MockKit();
+            // 1.Mock ClassName 实例的 count 属性
+            mocker.mockProperty(claser, 'count', 999);
+            expect(mocker.isMocked(claser, 'count')).assertTrue(); // true
+            // 2.还原后查询
+            mocker.ignoreMock(claser, 'count');
+            expect(mocker.isMocked(claser, 'count')).assertFalse(); // false
+        })
+
+        it('isMocked_neverMocked', 0, () => {
+            let claser: ClassName = new ClassName();
+            let mocker: MockKit = new MockKit();
+            // 从未 Mock 的对象/方法名返回 false
+            expect(mocker.isMocked(claser, 'greet')).assertFalse();
+            // name 为空或 null 安全降级返回 false
+            expect(mocker.isMocked(claser, '')).assertFalse();
+            expect(mocker.isMocked(claser, null)).assertFalse();
+        })
+    })
+}
+```
+
 #### verify
 
 `verify(methodName: String, argsArray: Array<any>): VerificationMode`

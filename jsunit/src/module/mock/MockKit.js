@@ -114,6 +114,28 @@ class MockKit {
     }
   }
 
+  isMocked(obj, name) {
+    let mockFuncResult = null;
+    for (const [key, value] of this.mockFuncResultMap) {
+      if (key.obj === obj && key.methodName === name) {
+        mockFuncResult = value;
+        break;
+      }
+    }
+    if (mockFuncResult && this.stubs instanceof Map && this.stubs.has(mockFuncResult)) {
+      return true;
+    }
+    let isPropertyMocked = false;
+    this.propertyValueMap.forEach(function (value, key, map) {
+      if (key.obj === obj && key.methodName === name) {
+        if (obj[name] !== value) {
+          isPropertyMocked = true;
+        }
+      }
+    });
+    return isPropertyMocked;
+  }
+
   extend(dest, source) {
     dest['stub'] = source['stub'];
     dest['afterReturn'] = source['afterReturn'];
