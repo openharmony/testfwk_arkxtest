@@ -31,7 +31,7 @@
 #include "nlohmann/json.hpp"
 #include "fcntl.h"
 #include "common_utilities_hpp.h"
-#include <stdio.h>
+#include <cstdio>
 #include "frontend_api_defines.h"
 #include "ipc_transactor.h"
 #include "ui_event_observer_impl.h"
