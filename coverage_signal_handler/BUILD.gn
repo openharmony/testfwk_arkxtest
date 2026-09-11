@@ -21,6 +21,7 @@ ohos_shared_library("coverage_signal_handler") {
     "-Werror",
     "--coverage",
   ]
+  version_script = "libcoverage_signal_handler.map"
   ldflags = [ "--coverage" ]
   subsystem_name = "testfwk"
   part_name = "arkxtest"
