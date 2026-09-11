@@ -1,0 +1,4 @@
+LIBCOVERAGE_SIGNAL_HANDLER {
+    local:
+        *;
+};
