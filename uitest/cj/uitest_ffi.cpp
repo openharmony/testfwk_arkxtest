@@ -31,9 +31,6 @@
 #include "nlohmann/json.hpp"
 #include "fcntl.h"
 #include "common_utilities_hpp.h"
-
-// fdsan.h is not exposed in the cj build toolchain, but the fdsan API
-// declarations are provided by musl <stdio.h> in the OpenHarmony libc.
 #include <stdio.h>
 #include "frontend_api_defines.h"
 #include "ipc_transactor.h"
@@ -237,5 +234,4 @@ namespace OHOS::cjuitest {
             return result;
         }
     }
-} // namespace OHOS::uitest
 } // namespace OHOS::uitest
