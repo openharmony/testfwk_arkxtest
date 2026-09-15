@@ -1724,7 +1724,7 @@ export default function staticTest() {
 
 isMocked(obj: Object, name: String): boolean
 
-查询实例上的指定方法或属性是否处于 Mock 状态（方法返回值/属性值与原始值不一致）。该接口为只读查询，不会修改任何 Mock 状态。
+查询实例上的指定方法或属性是否处于 Mock 状态（方法需通过 when 设置桩行为；属性需调用 mockProperty，与设置值是否等于原始值无关）。该接口为只读查询，不会修改任何 Mock 状态。
 
 **参数：**
 
@@ -1737,7 +1737,7 @@ isMocked(obj: Object, name: String): boolean
 
 | 类型    | 说明                                            |
 |---------|-------------------------------------------------|
-| boolean | true：方法返回值/属性值与原始值不一致；false：未 Mock 或已被还原。 |
+| boolean | true：方法已通过 when 设置桩行为，或属性已调用 mockProperty；false：未 Mock 或已被还原。 |
 
 **说明：**
 

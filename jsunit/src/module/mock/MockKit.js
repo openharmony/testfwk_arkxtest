@@ -72,11 +72,16 @@ class MockKit {
         obj[key.methodName] = value;
       }
     });
+    let propertyKeysToDelete = [];
     this.propertyValueMap.forEach(function (value, key, map) {
       if (key.obj === obj) {
         obj[key.methodName] = value;
+        propertyKeysToDelete.push(key);
       }
     });
+    for (let i = 0; i < propertyKeysToDelete.length; i++) {
+      this.propertyValueMap.delete(propertyKeysToDelete[i]);
+    }
     for (const [key, value] of this.mockFuncResultMap) {
       if (key.obj === obj) {
         this.mockFuncResultMap.delete(key);
@@ -137,9 +142,7 @@ class MockKit {
     if (this.propertyValueMap instanceof Map) {
       this.propertyValueMap.forEach(function (value, key, map) {
         if (key.obj === obj && key.methodName === name) {
-          if (obj[name] !== value) {
-            isPropertyMocked = true;
-          }
+          isPropertyMocked = true;
         }
       });
     }
