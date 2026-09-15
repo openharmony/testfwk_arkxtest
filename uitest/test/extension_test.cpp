@@ -24,6 +24,7 @@
 #include "extension_c_api.h"
 #include "mock_extension_executor.h"
 #include "screen_copy.h"
+#include "virtual_screen.h"
 #include "nlohmann/json.hpp"
 
 using namespace OHOS::uitest;
@@ -119,5 +120,58 @@ TEST_F(ExtensionTest, testStopCapture)
     auto name2 = Text{ .data = "haha", .size = strlen("haha") };
     RetCode ret2 = StopCapture(name2);
     ASSERT_EQ(RETCODE_FAIL, ret2);
+}
+
+// below tests target the real addon/virtual_screen module (not the mock),
+// only covering paths that do not touch the real ScreenManager/DisplayManager
+TEST_F(ExtensionTest, testVirtualScreenOptionDefaults)
+{
+    VirtualScreenOption option;
+    ASSERT_EQ("uitest", option.name_);
+    ASSERT_EQ(0u, option.width_);
+    ASSERT_EQ(0u, option.height_);
+    ASSERT_EQ(0.0f, option.density_);
+    ASSERT_EQ(nullptr, option.surface_);
+    ASSERT_EQ(0, option.flags_);
+    ASSERT_FALSE(option.isForShot_);
+    ASSERT_TRUE(option.missionIds_.empty());
+    ASSERT_EQ(1u, option.refreshInterval_);
+    ASSERT_EQ(-1, option.skipAppPid_);
+    ASSERT_TRUE(option.skipPrivacyWindowsId_.empty());
+    ASSERT_TRUE(option.enableCanvasRotation_);
+}
+
+TEST_F(ExtensionTest, testVirtualScreenSetupIllegalSize)
+{
+    VirtualScreen screen;
+    VirtualScreenOption option;
+    option.width_ = 0;
+    option.height_ = 100;
+    ASSERT_FALSE(screen.Setup(option));
+    option.width_ = 100;
+    option.height_ = 0;
+    ASSERT_FALSE(screen.Setup(option));
+    ASSERT_EQ(INVALID_SCREEN_ID, screen.GetVirtualScreenId());
+    ASSERT_FALSE(screen.IsRunning());
+}
+
+TEST_F(ExtensionTest, testVirtualScreenRunAndStopWithoutSetup)
+{
+    VirtualScreen screen;
+    // Run before Setup must fail without touching ScreenManager
+    ASSERT_FALSE(screen.Run(INVALID_SCREEN_ID));
+    // Stop before create must be a no-op
+    screen.Stop();
+    ASSERT_EQ(INVALID_SCREEN_ID, screen.GetVirtualScreenId());
+    ASSERT_FALSE(screen.IsRunning());
+}
+
+TEST_F(ExtensionTest, testStartVirtualScreenIllegalOption)
+{
+    VirtualScreenOption option; // width_/height_ default to 0, illegal
+    ASSERT_FALSE(StartVirtualScreen(option, INVALID_SCREEN_ID));
+    ASSERT_EQ(INVALID_SCREEN_ID, GetRunningVirtualScreenId());
+    // stop when no virtual screen is running, must not crash
+    StopVirtualScreen();
 }
 }
