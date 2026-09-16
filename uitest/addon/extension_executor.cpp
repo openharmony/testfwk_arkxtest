@@ -286,7 +286,7 @@ do { \
     }
 
     // dumpLayout 为同步一次性 capture：转储布局并经回调返回
-    static RetCode DumpLayoutOnce(const nlohmann::json &options, DataCallback callback)
+    static RetCode DumpLayoutOnce(nlohmann::json &options, DataCallback callback)
     {
         nlohmann::json tree;
         ApiCallErr err(NO_ERROR);
