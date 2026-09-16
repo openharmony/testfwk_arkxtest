@@ -31,25 +31,17 @@ VirtualScreen::~VirtualScreen()
     Stop();
 }
 
-bool VirtualScreen::Setup(const VirtualScreenOption &option)
+// 组装原生 VirtualScreenOption，语义与投屏工具 ScreenEncoder::Run 中的创建参数一致
+static void BuildNativeOption(const VirtualScreenOption &option, Rosen::VirtualScreenOption &nativeOption)
 {
-    if (option.width_ == 0 || option.height_ == 0) {
-        LOG_E("Illegal virtual screen size, width=%{public}u, height=%{public}u", option.width_, option.height_);
-        return false;
-    }
-    if (isRunning_) {
-        Stop();
-    }
-    // 组装原生 VirtualScreenOption，语义与投屏工具 ScreenEncoder::Run 中的创建参数一致
-    Rosen::VirtualScreenOption nativeOption;
-    nativeOption.name_ = option.name_;
-    nativeOption.width_ = option.width_;
-    nativeOption.height_ = option.height_;
-    nativeOption.density_ = option.density_;
-    nativeOption.surface_ = sptr<Surface>(option.surface_);
-    nativeOption.flags_ = option.flags_;
-    nativeOption.isForShot_ = option.isForShot_;
-    nativeOption.missionIds_ = option.missionIds_;
+    nativeOption.name_ = option.name;
+    nativeOption.width_ = option.width;
+    nativeOption.height_ = option.height;
+    nativeOption.density_ = option.density;
+    nativeOption.surface_ = sptr<Surface>(option.surface);
+    nativeOption.flags_ = option.flags;
+    nativeOption.isForShot_ = option.isForShot;
+    nativeOption.missionIds_ = option.missionIds;
     if (nativeOption.density_ <= 0) {
         auto defaultDisplay = DisplayManager::GetInstance().GetDefaultDisplay();
         if (defaultDisplay != nullptr) {
@@ -57,65 +49,86 @@ bool VirtualScreen::Setup(const VirtualScreenOption &option)
             LOG_D("Use default display dpi, density=%{public}f", nativeOption.density_);
         }
     }
-    virtualScreenId_ = ScreenManager::GetInstance().CreateVirtualScreen(nativeOption);
-    if (virtualScreenId_ == SCREEN_ID_INVALID) {
-        LOG_E("Create virtual screen failed");
-        virtualScreenId_ = INVALID_SCREEN_ID;
-        return false;
-    }
-    LOG_I("Create virtual screen success, id=%{public}llu", (unsigned long long)virtualScreenId_);
+}
+
+// 挂载 surface/设置刷新率/隐私豁免/开启画布旋转，任一步失败即返回失败（由调用方回滚销毁）
+static bool ConfigVirtualScreen(ScreenId screenId, const VirtualScreenOption &option)
+{
     // 挂载 surface，将虚拟屏内容输出到调用方提供的 surface（如编码器 surface）
-    if (option.surface_ != nullptr) {
-        auto ret = ScreenManager::GetInstance().SetVirtualScreenSurface(virtualScreenId_, sptr<Surface>(option.surface_));
+    if (option.surface != nullptr) {
+        auto ret = ScreenManager::GetInstance().SetVirtualScreenSurface(screenId,
+            sptr<Surface>(option.surface));
         if (ret != DMError::DM_OK) {
             LOG_E("Set virtual screen surface failed, ret=%{public}d", static_cast<int32_t>(ret));
-            Stop();
             return false;
         }
     }
     // 设置刷新率（帧率 = 120 / refreshInterval）
-    auto ret = ScreenManager::GetInstance().SetVirtualScreenRefreshRate(virtualScreenId_, option.refreshInterval_);
+    auto ret = ScreenManager::GetInstance().SetVirtualScreenRefreshRate(screenId, option.refreshInterval);
     if (ret != DMError::DM_OK) {
         LOG_E("Set virtual screen refresh rate failed, ret=%{public}d", static_cast<int32_t>(ret));
-        Stop();
         return false;
     }
     // 隐私豁免：跳过指定应用的隐私窗口
-    if (option.skipAppPid_ >= 0 && !option.skipPrivacyWindowsId_.empty()) {
-        std::vector<uint64_t> skipPrivacyWindowsId = option.skipPrivacyWindowsId_;
+    if (option.skipAppPid >= 0 && !option.skipPrivacyWindowsId.empty()) {
+        std::vector<uint64_t> skipPrivacyWindowsId = option.skipPrivacyWindowsId;
         ret = DisplayManager::GetInstance().SetVirtualScreenSecurityExemption(
-            virtualScreenId_, option.skipAppPid_, skipPrivacyWindowsId);
+            screenId, option.skipAppPid, skipPrivacyWindowsId);
         if (ret != DMError::DM_OK) {
             LOG_E("Set virtual screen security exemption failed, ret=%{public}d", static_cast<int32_t>(ret));
-            Stop();
             return false;
         }
     }
     // 开启画布旋转，保证镜像画面方向正确
-    if (option.enableCanvasRotation_) {
-        ret = ScreenManager::GetInstance().SetVirtualMirrorScreenCanvasRotation(virtualScreenId_, true);
+    if (option.enableCanvasRotation) {
+        ret = ScreenManager::GetInstance().SetVirtualMirrorScreenCanvasRotation(screenId, true);
         if (ret != DMError::DM_OK) {
             LOG_E("Set virtual mirror screen canvas rotation failed, ret=%{public}d", static_cast<int32_t>(ret));
-            Stop();
             return false;
         }
     }
     return true;
 }
 
+bool VirtualScreen::Setup(const VirtualScreenOption &option)
+{
+    if (option.width == 0 || option.height == 0) {
+        LOG_E("Illegal virtual screen size, width=%{public}u, height=%{public}u", option.width, option.height);
+        return false;
+    }
+    if (isRunning) {
+        Stop();
+    }
+    Rosen::VirtualScreenOption nativeOption;
+    BuildNativeOption(option, nativeOption);
+    virtualScreenId = ScreenManager::GetInstance().CreateVirtualScreen(nativeOption);
+    if (virtualScreenId == SCREEN_ID_INVALID) {
+        LOG_E("Create virtual screen failed");
+        virtualScreenId = INVALID_SCREEN_ID;
+        return false;
+    }
+    LOG_I("Create virtual screen success, id=%{public}llu", static_cast<unsigned long long>(virtualScreenId));
+    if (!ConfigVirtualScreen(virtualScreenId, option)) {
+        Stop();
+        return false;
+    }
+    return true;
+}
+
 bool VirtualScreen::Run(ScreenId mainScreenId)
 {
-    if (virtualScreenId_ == INVALID_SCREEN_ID) {
+    if (virtualScreenId == INVALID_SCREEN_ID) {
         LOG_E("Virtual screen not created, call Setup first");
         return false;
     }
-    if (isRunning_) {
+    if (isRunning) {
         LOG_W("Virtual screen is already running");
         return true;
     }
     if (mainScreenId == SCREEN_ID_INVALID) {
         mainScreenId = static_cast<ScreenId>(DisplayManager::GetInstance().GetDefaultDisplayId());
-        LOG_D("Use default display as main screen, mainScreenId=%{public}llu", (unsigned long long)mainScreenId);
+        LOG_D("Use default display as main screen, mainScreenId=%{public}llu",
+            static_cast<unsigned long long>(mainScreenId));
     }
     if (mainScreenId == SCREEN_ID_INVALID) {
         LOG_E("Get default display id failed");
@@ -128,46 +141,47 @@ bool VirtualScreen::Run(ScreenId mainScreenId)
         screenGroupId = display->GetScreenId();
     }
     // 建立镜像：把主屏内容镜像到虚拟屏
-    std::vector<ScreenId> mirrorIds = { virtualScreenId_ };
+    std::vector<ScreenId> mirrorIds = { virtualScreenId };
     auto ret = ScreenManager::GetInstance().MakeMirror(mainScreenId, mirrorIds, screenGroupId);
     if (ret != DMError::DM_OK) {
         LOG_E("Make mirror failed, ret=%{public}d", static_cast<int32_t>(ret));
         return false;
     }
-    isRunning_ = true;
-    LOG_I("Virtual screen mirror started, virtualScreenId=%{public}llu", (unsigned long long)virtualScreenId_);
+    isRunning = true;
+    LOG_I("Virtual screen mirror started, virtualScreenId=%{public}llu",
+        static_cast<unsigned long long>(virtualScreenId));
     return true;
 }
 
 void VirtualScreen::Stop()
 {
-    if (virtualScreenId_ == INVALID_SCREEN_ID) {
+    if (virtualScreenId == INVALID_SCREEN_ID) {
         return;
     }
-    if (isRunning_) {
-        std::vector<ScreenId> mirrorIds = { virtualScreenId_ };
+    if (isRunning) {
+        std::vector<ScreenId> mirrorIds = { virtualScreenId };
         auto ret = ScreenManager::GetInstance().StopMirror(mirrorIds);
         if (ret != DMError::DM_OK) {
             LOG_E("Stop mirror failed, ret=%{public}d", static_cast<int32_t>(ret));
         }
-        isRunning_ = false;
+        isRunning = false;
     }
-    auto ret = ScreenManager::GetInstance().DestroyVirtualScreen(virtualScreenId_);
+    auto ret = ScreenManager::GetInstance().DestroyVirtualScreen(virtualScreenId);
     if (ret != DMError::DM_OK) {
         LOG_E("Destroy virtual screen failed, ret=%{public}d", static_cast<int32_t>(ret));
     }
-    virtualScreenId_ = INVALID_SCREEN_ID;
+    virtualScreenId = INVALID_SCREEN_ID;
     LOG_I("Virtual screen destroyed");
 }
 
 ScreenId VirtualScreen::GetVirtualScreenId() const
 {
-    return virtualScreenId_;
+    return virtualScreenId;
 }
 
 bool VirtualScreen::IsRunning() const
 {
-    return isRunning_;
+    return isRunning;
 }
 
 bool StartVirtualScreen(const VirtualScreenOption &option, ScreenId mainScreenId)
