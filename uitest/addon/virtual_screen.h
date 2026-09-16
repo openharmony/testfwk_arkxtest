@@ -33,18 +33,18 @@ namespace OHOS::uitest {
     // 虚拟屏创建参数。字段语义与 OHOS::Rosen::VirtualScreenOption 一一对应，
     // 并补充投屏场景迁移的刷新率/隐私豁免/画布旋转配置。
     struct VirtualScreenOption {
-        std::string name_ = "uitest";
-        uint32_t width_ = 0;
-        uint32_t height_ = 0;
-        float density_ = 0;                              // 密度，<=0 时自动取默认屏 DPI
-        Surface* surface_ = nullptr;                     // 虚拟屏输出 surface（如编码器 surface），调用方保证生命周期
-        int32_t flags_ = 0;
-        bool isForShot_ = false;
-        std::vector<uint64_t> missionIds_ = {};
-        uint32_t refreshInterval_ = 1;                   // 帧刷新间隔，帧率 = 120 / refreshInterval_
-        int32_t skipAppPid_ = -1;                        // 隐私豁免应用 pid，<0 表示不豁免
-        std::vector<uint64_t> skipPrivacyWindowsId_ = {}; // 隐私豁免窗口
-        bool enableCanvasRotation_ = true;               // 是否开启画布旋转
+        std::string name = "uitest";
+        uint32_t width = 0;
+        uint32_t height = 0;
+        float density = 0;                               // 密度，<=0 时自动取默认屏 DPI
+        Surface* surface = nullptr;                      // 虚拟屏输出 surface（如编码器 surface），调用方保证生命周期
+        int32_t flags = 0;
+        bool isForShot = false;
+        std::vector<uint64_t> missionIds = {};
+        uint32_t refreshInterval = 1;                    // 帧刷新间隔，帧率 = 120 / refreshInterval
+        int32_t skipAppPid = -1;                         // 隐私豁免应用 pid，<0 表示不豁免
+        std::vector<uint64_t> skipPrivacyWindowsId = {}; // 隐私豁免窗口
+        bool enableCanvasRotation = true;                // 是否开启画布旋转
     };
 
     // 虚拟屏创建与管理类
@@ -61,8 +61,8 @@ namespace OHOS::uitest {
         ScreenId GetVirtualScreenId() const;
         bool IsRunning() const;
     private:
-        ScreenId virtualScreenId_ = INVALID_SCREEN_ID;
-        bool isRunning_ = false;
+        ScreenId virtualScreenId = INVALID_SCREEN_ID;
+        bool isRunning = false;
     };
 
     // 全局生命周期入口（参考 ScreenCopy::StartScreenCopy/StopScreenCopy）

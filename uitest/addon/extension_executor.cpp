@@ -282,7 +282,75 @@ do { \
             dumpOption.displayId_ = val.get<int>();
         }
         driver.DumpUiHierarchy(tree, dumpOption, err);
+    return RETCODE_SUCCESS;
+    }
+
+    // dumpLayout 为同步一次性 capture：转储布局并经回调返回
+    static RetCode DumpLayoutOnce(const nlohmann::json &options, DataCallback callback)
+    {
+        nlohmann::json tree;
+        ApiCallErr err(NO_ERROR);
+        EXTENSION_API_CHECK(GetDumpInfo(options, tree, err) == RETCODE_SUCCESS, "Illegal options", ERR_BAD_ARG);
+        g_runningCaptures.erase("dumpLayout"); // dumpLayout is sync&once
+        EXTENSION_API_CHECK(err.code_ == NO_ERROR, err.message_, err.code_);
+        auto layout = tree.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
+        callback(Text{layout.c_str(), layout.length()});
         return RETCODE_SUCCESS;
+    }
+
+    // 虚拟屏创建参数通过 optJson 传入，参考 copyScreen 的暴露方式
+    static RetCode StartVirtualScreenCapture(const nlohmann::json &options, DataCallback callback)
+    {
+        VirtualScreenOption option;
+        option.name = ReadArgFromJson<string>(options, "screenName", "uitest");
+        option.width = ReadArgFromJson<uint32_t>(options, "width", 0);
+        option.height = ReadArgFromJson<uint32_t>(options, "height", 0);
+        option.density = ReadArgFromJson<float>(options, "density", 0);
+        option.flags = ReadArgFromJson<int32_t>(options, "flags", 0);
+        option.isForShot = ReadArgFromJson<bool>(options, "isForShot", false);
+        option.refreshInterval = ReadArgFromJson<uint32_t>(options, "refreshInterval", 1);
+        option.skipAppPid = ReadArgFromJson<int32_t>(options, "skipAppPid", -1);
+        option.enableCanvasRotation = ReadArgFromJson<bool>(options, "enableCanvasRotation", true);
+        if (options.type() == nlohmann::detail::value_t::object && options.contains("skipPrivacyWindowsId")) {
+            auto arr = options["skipPrivacyWindowsId"];
+            if (arr.type() == nlohmann::detail::value_t::array) {
+                for (auto &item : arr) {
+                    option.skipPrivacyWindowsId.push_back(item.get<uint64_t>());
+                }
+            }
+        }
+        // mainScreenId 缺省时传 UINT64_MAX（即 Rosen::SCREEN_ID_INVALID），内部解析为默认屏
+        const auto mainScreenId = ReadArgFromJson<uint64_t>(options, "mainScreenId",
+            std::numeric_limits<uint64_t>::max());
+        // 同进程场景：调用方可经 optJson 传入 surface 裸指针（uint64），由 uitest 完成 surface 绑定
+        const auto surfacePtr = ReadArgFromJson<uint64_t>(options, "surfacePtr", 0);
+        if (surfacePtr != 0) {
+            option.surface = reinterpret_cast<Surface*>(surfacePtr);
+        }
+        if (!StartVirtualScreen(option, mainScreenId)) {
+            return RETCODE_FAIL;
+        }
+        // 创建成功后回传虚拟屏 id，供调用方（如投屏工具）绑定 surface 等后续操作
+        const auto vsId = GetRunningVirtualScreenId();
+        auto idJson = "{\"virtualScreenId\":" + std::to_string(vsId) + "}";
+        callback(Text{idJson.c_str(), idJson.length()});
+        return RETCODE_SUCCESS;
+    }
+
+    static void StartRecordUiAction(DataCallback callback)
+    {
+        UiDriverRecordStop();
+        g_recordRunningLock.lock(); // wait for running thread terminates
+        g_recordRunningLock.unlock();
+        auto recordThread = thread([callback]() {
+            g_recordRunningLock.lock();
+            UiDriverRecordStart([callback](nlohmann::json record) {
+                auto data = record.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
+                callback(Text{data.c_str(), data.length()});
+                }, "");
+            g_recordRunningLock.unlock();
+        });
+        recordThread.detach();
     }
 
     static RetCode StartCapture(Text name, DataCallback callback, Text optJson)
@@ -300,13 +368,7 @@ do { \
         g_runningCaptures.insert(name.data);
         guard.unlock();
         if (strcmp(name.data, "dumpLayout") == 0) {
-            nlohmann::json tree;
-            ApiCallErr err(NO_ERROR);
-            EXTENSION_API_CHECK(GetDumpInfo(options, tree, err) == RETCODE_SUCCESS, "Illegal options", ERR_BAD_ARG);
-            g_runningCaptures.erase("dumpLayout"); // dumpLayout is sync&once
-            EXTENSION_API_CHECK(err.code_ == NO_ERROR, err.message_, err.code_);
-            auto layout = tree.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
-            callback(Text{layout.c_str(), layout.length()});
+            return DumpLayoutOnce(options, callback);
         } else if (strcmp(name.data, "copyScreen") == 0) {
             float scale = ReadArgFromJson<float>(options, "scale", 0.5f);
             if (scale <= 0 || scale >= 1.0f) {
@@ -319,56 +381,14 @@ do { \
                 free(data);
             });
         } else if (strcmp(name.data, "virtualScreen") == 0) {
-            // 虚拟屏创建参数通过 optJson 传入，参考 copyScreen 的暴露方式
-            VirtualScreenOption option;
-            option.name_ = ReadArgFromJson<string>(options, "screenName", "uitest");
-            option.width_ = ReadArgFromJson<uint32_t>(options, "width", 0);
-            option.height_ = ReadArgFromJson<uint32_t>(options, "height", 0);
-            option.density_ = ReadArgFromJson<float>(options, "density", 0);
-            option.flags_ = ReadArgFromJson<int32_t>(options, "flags", 0);
-            option.isForShot_ = ReadArgFromJson<bool>(options, "isForShot", false);
-            option.refreshInterval_ = ReadArgFromJson<uint32_t>(options, "refreshInterval", 1);
-            option.skipAppPid_ = ReadArgFromJson<int32_t>(options, "skipAppPid", -1);
-            option.enableCanvasRotation_ = ReadArgFromJson<bool>(options, "enableCanvasRotation", true);
-            if (options.type() == nlohmann::detail::value_t::object && options.contains("skipPrivacyWindowsId")) {
-                auto arr = options["skipPrivacyWindowsId"];
-                if (arr.type() == nlohmann::detail::value_t::array) {
-                    for (auto &item : arr) {
-                        option.skipPrivacyWindowsId_.push_back(item.get<uint64_t>());
-                    }
-                }
-            }
-            // mainScreenId 缺省时传 UINT64_MAX（即 Rosen::SCREEN_ID_INVALID），内部解析为默认屏
-            const auto mainScreenId = ReadArgFromJson<uint64_t>(
-                options, "mainScreenId", std::numeric_limits<uint64_t>::max());
-            // 同进程场景：调用方可经 optJson 传入 surface 裸指针（uint64），由 uitest 完成 surface 绑定
-            const auto surfacePtr = ReadArgFromJson<uint64_t>(options, "surfacePtr", 0);
-            if (surfacePtr != 0) {
-                option.surface_ = reinterpret_cast<Surface*>(surfacePtr);
-            }
-            if (!StartVirtualScreen(option, mainScreenId)) {
+            if (StartVirtualScreenCapture(options, callback) != RETCODE_SUCCESS) {
                 unique_lock<mutex> lock(g_captureLock);
                 g_runningCaptures.erase(name.data);
                 lock.unlock();
                 EXTENSION_API_CHECK(false, "Start virtual screen failed", ERR_BAD_ARG);
             }
-            // 创建成功后回传虚拟屏 id，供调用方（如投屏工具）绑定 surface 等后续操作
-            const auto vsId = GetRunningVirtualScreenId();
-            auto idJson = "{\"virtualScreenId\":" + std::to_string(vsId) + "}";
-            callback(Text{idJson.c_str(), idJson.length()});
         } else if (strcmp(name.data, "recordUiAction") == 0) {
-            UiDriverRecordStop();
-            g_recordRunningLock.lock(); // wait for running thread terminates
-            g_recordRunningLock.unlock();
-            auto recordThread = thread([callback]() {
-                g_recordRunningLock.lock();
-                UiDriverRecordStart([callback](nlohmann::json record) {
-                    auto data = record.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
-                    callback(Text{data.c_str(), data.length()});
-                    }, "");
-                g_recordRunningLock.unlock();
-            });
-            recordThread.detach();
+            StartRecordUiAction(callback);
         } else {
             EXTENSION_API_CHECK(false, string("Illegal capture type: ") + name.data, ERR_BAD_ARG);
         }

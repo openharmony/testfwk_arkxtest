@@ -127,29 +127,30 @@ TEST_F(ExtensionTest, testStopCapture)
 TEST_F(ExtensionTest, testVirtualScreenOptionDefaults)
 {
     VirtualScreenOption option;
-    ASSERT_EQ("uitest", option.name_);
-    ASSERT_EQ(0u, option.width_);
-    ASSERT_EQ(0u, option.height_);
-    ASSERT_EQ(0.0f, option.density_);
-    ASSERT_EQ(nullptr, option.surface_);
-    ASSERT_EQ(0, option.flags_);
-    ASSERT_FALSE(option.isForShot_);
-    ASSERT_TRUE(option.missionIds_.empty());
-    ASSERT_EQ(1u, option.refreshInterval_);
-    ASSERT_EQ(-1, option.skipAppPid_);
-    ASSERT_TRUE(option.skipPrivacyWindowsId_.empty());
-    ASSERT_TRUE(option.enableCanvasRotation_);
+    ASSERT_EQ("uitest", option.name);
+    ASSERT_EQ(0u, option.width);
+    ASSERT_EQ(0u, option.height);
+    ASSERT_EQ(0.0f, option.density);
+    ASSERT_EQ(nullptr, option.surface);
+    ASSERT_EQ(0, option.flags);
+    ASSERT_FALSE(option.isForShot);
+    ASSERT_TRUE(option.missionIds.empty());
+    ASSERT_EQ(1u, option.refreshInterval);
+    ASSERT_EQ(-1, option.skipAppPid);
+    ASSERT_TRUE(option.skipPrivacyWindowsId.empty());
+    ASSERT_TRUE(option.enableCanvasRotation);
 }
 
 TEST_F(ExtensionTest, testVirtualScreenSetupIllegalSize)
 {
+    constexpr uint32_t TEST_SCREEN_SIZE = 100;
     VirtualScreen screen;
     VirtualScreenOption option;
-    option.width_ = 0;
-    option.height_ = 100;
+    option.width = 0;
+    option.height = TEST_SCREEN_SIZE;
     ASSERT_FALSE(screen.Setup(option));
-    option.width_ = 100;
-    option.height_ = 0;
+    option.width = TEST_SCREEN_SIZE;
+    option.height = 0;
     ASSERT_FALSE(screen.Setup(option));
     ASSERT_EQ(INVALID_SCREEN_ID, screen.GetVirtualScreenId());
     ASSERT_FALSE(screen.IsRunning());
