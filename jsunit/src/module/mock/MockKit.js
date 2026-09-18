@@ -119,6 +119,17 @@ class MockKit {
     }
   }
 
+  findMockedValue(map, obj, name) {
+    if (map instanceof Map) {
+      for (const [key, value] of map) {
+        if (key.obj === obj && key.methodName === name) {
+          return value;
+        }
+      }
+    }
+    return null;
+  }
+
   isMocked(obj, name) {
     if (!obj || (typeof obj !== 'object' && typeof obj !== 'function')) {
       return false;
@@ -126,27 +137,11 @@ class MockKit {
     if (typeof name !== 'string' || name.length === 0) {
       return false;
     }
-    let mockFuncResult = null;
-    if (this.mockFuncResultMap instanceof Map) {
-      for (const [key, value] of this.mockFuncResultMap) {
-        if (key.obj === obj && key.methodName === name) {
-          mockFuncResult = value;
-          break;
-        }
-      }
-    }
+    let mockFuncResult = this.findMockedValue(this.mockFuncResultMap, obj, name);
     if (mockFuncResult && this.stubs instanceof Map && this.stubs.has(mockFuncResult)) {
       return true;
     }
-    let isPropertyMocked = false;
-    if (this.propertyValueMap instanceof Map) {
-      this.propertyValueMap.forEach(function (value, key) {
-        if (key.obj === obj && key.methodName === name) {
-          isPropertyMocked = true;
-        }
-      });
-    }
-    return isPropertyMocked;
+    return this.findMockedValue(this.propertyValueMap, obj, name) !== null;
   }
 
   extend(dest, source) {
