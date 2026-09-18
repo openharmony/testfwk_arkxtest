@@ -140,7 +140,7 @@ class MockKit {
     }
     let isPropertyMocked = false;
     if (this.propertyValueMap instanceof Map) {
-      this.propertyValueMap.forEach(function (value, key, map) {
+      this.propertyValueMap.forEach(function (value, key) {
         if (key.obj === obj && key.methodName === name) {
           isPropertyMocked = true;
         }
