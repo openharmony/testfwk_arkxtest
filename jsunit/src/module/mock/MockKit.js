@@ -18,6 +18,8 @@ import VerificationMode from './VerificationMode';
 import ArgumentMatchers from './ArgumentMatchers';
 
 class MockKit {
+  static NOT_FOUND = {};
+
   constructor() {
     this.mFunctions = [];
     this.stubs = new Map();
@@ -35,12 +37,13 @@ class MockKit {
 
   reset() {
     this.mFunctions = [];
-    this.stubs = {};
-    this.recordCalls = {};
+    this.stubs = new Map();
+    this.recordCalls = new Map();
     this.currentSetKey = new Map();
     this.mockObj = null;
     this.recordMockedMethod = new Map();
     this.propertyValueMap = new Map();
+    this.mockFuncResultMap = new Map();
   }
 
   clearAll() {
@@ -60,6 +63,21 @@ class MockKit {
     }
   }
 
+  removeMockedEntries(map, obj, name, onMatch) {
+    let keysToDelete = [];
+    map.forEach(function (value, key) {
+      if (key.obj === obj && (name === null || key.methodName === name)) {
+        if (onMatch) {
+          onMatch(value, key);
+        }
+        keysToDelete.push(key);
+      }
+    });
+    for (let i = 0; i < keysToDelete.length; i++) {
+      map.delete(keysToDelete[i]);
+    }
+  }
+
   clear(obj) {
     if (!obj) {
       throw Error('Please enter an object to be cleaned');
@@ -67,26 +85,13 @@ class MockKit {
     if (typeof obj !== 'object' && typeof obj !== 'function') {
       throw new Error('Not a object or static class');
     }
-    this.recordMockedMethod.forEach(function (value, key, map) {
-      if (key.obj === obj) {
-        obj[key.methodName] = value;
-      }
+    this.removeMockedEntries(this.recordMockedMethod, obj, null, function (value, key) {
+      obj[key.methodName] = value;
     });
-    let propertyKeysToDelete = [];
-    this.propertyValueMap.forEach(function (value, key, map) {
-      if (key.obj === obj) {
-        obj[key.methodName] = value;
-        propertyKeysToDelete.push(key);
-      }
+    this.removeMockedEntries(this.propertyValueMap, obj, null, function (value, key) {
+      obj[key.methodName] = value;
     });
-    for (let i = 0; i < propertyKeysToDelete.length; i++) {
-      this.propertyValueMap.delete(propertyKeysToDelete[i]);
-    }
-    for (const [key, value] of this.mockFuncResultMap) {
-      if (key.obj === obj) {
-        this.mockFuncResultMap.delete(key);
-      }
-    }
+    this.removeMockedEntries(this.mockFuncResultMap, obj, null);
   }
 
   ignoreMock(obj, method) {
@@ -100,23 +105,13 @@ class MockKit {
     if (typeof method !== 'string') {
       name = method.propName;
     }
-    for (const [key, value] of this.recordMockedMethod) {
-      if (key.obj === obj && key.methodName === name) {
-        obj[name] = value;
-        this.recordMockedMethod.delete(key);
-      }
-    }
-    for (const [key, value] of this.propertyValueMap) {
-      if (key.obj === obj && key.methodName === name) {
-        obj[name] = value;
-        this.propertyValueMap.delete(key);
-      }
-    }
-    for (const [key, value] of this.mockFuncResultMap) {
-      if (key.obj === obj && key.methodName === name) {
-        this.mockFuncResultMap.delete(key);
-      }
-    }
+    this.removeMockedEntries(this.recordMockedMethod, obj, name, function (value, key) {
+      obj[name] = value;
+    });
+    this.removeMockedEntries(this.propertyValueMap, obj, name, function (value, key) {
+      obj[name] = value;
+    });
+    this.removeMockedEntries(this.mockFuncResultMap, obj, name);
   }
 
   findMockedValue(map, obj, name) {
@@ -127,7 +122,7 @@ class MockKit {
         }
       }
     }
-    return null;
+    return MockKit.NOT_FOUND;
   }
 
   isMocked(obj, name) {
@@ -138,10 +133,10 @@ class MockKit {
       return false;
     }
     let mockFuncResult = this.findMockedValue(this.mockFuncResultMap, obj, name);
-    if (mockFuncResult && this.stubs instanceof Map && this.stubs.has(mockFuncResult)) {
+    if (mockFuncResult !== MockKit.NOT_FOUND && this.stubs instanceof Map && this.stubs.has(mockFuncResult)) {
       return true;
     }
-    return this.findMockedValue(this.propertyValueMap, obj, name) !== null;
+    return this.findMockedValue(this.propertyValueMap, obj, name) !== MockKit.NOT_FOUND;
   }
 
   extend(dest, source) {

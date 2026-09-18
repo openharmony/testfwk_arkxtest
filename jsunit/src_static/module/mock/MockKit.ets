@@ -369,21 +369,18 @@ export class MockKit {
 
   isMocked(instance: object, name: string): boolean {
     if (!instance || !name) {
-      return false
+      return false;
     }
     let hashMap = this.hashMap
     for (const hashEntries of hashMap.entries()) {
-      if (!hashEntries) {
-        continue
-      }
       const key = hashEntries[0]
       const keyMethodName = key.methodName
       const keyClassObj = key.classObj
       if (instance === keyClassObj && name === keyMethodName) {
-        return true
+        return true;
       }
     }
-    return false
+    return false;
   }
 }
 

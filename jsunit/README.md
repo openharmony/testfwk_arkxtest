@@ -1720,7 +1720,7 @@ export default function staticTest() {
 }
 ```
 
-#### isMocked<sup>1.0.29<sup>
+#### isMocked<sup>1.0.29</sup>
 
 isMocked(obj: Object, name: String): boolean
 
