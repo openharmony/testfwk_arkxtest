@@ -634,7 +634,7 @@ MockKit是Mock的基础类，用于指定需要Mock的实例和方法。
 | 4 | verify | 验证函数在对应参数下的执行行为是否符合预期，返回一个VerificationMode类。 |
 | 5 | ignoreMock | 使用ignoreMock可以还原实例中被Mock后的函数/属性，对被Mock后的函数/属性有效。                                                                                                   |
 | 6 | clear | 用例执行完毕后，进行被Mock的实例进行还原处理（还原之后对象恢复被Mock之前的功能）。                                                                                                  |
-| 7 | clearAll | 用例执行完毕后，进行数据和内存清理,不会还原实例中被Mock后的函数。                                                                                                                  |  
+| 7 | clearAll | 用例执行完毕后，进行数据和内存清理，不会还原实例中被Mock后的函数。                                                                                                                 |
 | 8 | isMocked | @since1.0.29，查询实例上的指定方法或属性是否处于Mock状态（方法需已通过when设置桩行为；属性需已调用mockProperty，与设置值是否等于原始值无关）。为只读查询，不修改Mock状态。对系统API、未Mock对象、空或null的name返回false，不抛异常。 |
 
 **VerificationMode相关接口**
