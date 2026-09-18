@@ -133,7 +133,7 @@ class MockKit {
       return false;
     }
     let mockFuncResult = this.findMockedValue(this.mockFuncResultMap, obj, name);
-    if (mockFuncResult !== MockKit.NOT_FOUND && this.stubs instanceof Map && this.stubs.has(mockFuncResult)) {
+    if (mockFuncResult !== MockKit.NOT_FOUND && this.stubs.has(mockFuncResult)) {
       return true;
     }
     return this.findMockedValue(this.propertyValueMap, obj, name) !== MockKit.NOT_FOUND;
