@@ -171,6 +171,12 @@ namespace OHOS::uitest {
                 out[ATTR_NAMES[i].data()] = attributeVec_[i];
             }
         }
+        // extended attributes from AAMS standard interface
+        for (int i = UiAttr::ACCESSIBILITY_TEXT; i < UiAttr::MAX; ++i) {
+            if (extendedAttrs.find(ATTR_NAMES[i].data()) != std::string::npos) {
+                out[ATTR_NAMES[i].data()] = attributeVec_[i];
+            }
+        }
     }
 
     string WidgetHierarchyBuilder::Build(string_view parentWidgetHierarchy, uint32_t childIndex)
