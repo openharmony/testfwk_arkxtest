@@ -109,7 +109,11 @@ namespace OHOS::uitest {
         napi_value msgValue;
         napi_value errorValue;
         napi_create_uint32(env, code, &codeValue);
-        napi_create_string_utf8(env, msg.data(), NAPI_AUTO_LENGTH, &msgValue);
+        string message(msg);
+        if (code == ERR_INVALID_INPUT) {
+            message = "Parameter error. " + message;
+        }
+        napi_create_string_utf8(env, message.c_str(), NAPI_AUTO_LENGTH, &msgValue);
         napi_create_error(env, nullptr, msgValue, &errorValue);
         napi_set_named_property(env, errorValue, "code", codeValue);
         return errorValue;
