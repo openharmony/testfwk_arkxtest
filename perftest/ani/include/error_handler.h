@@ -20,6 +20,7 @@
 #include "hilog/log.h"
 #include <string>
 #include <cstdint>
+#include "frontend_api_defines.h"
 
 namespace OHOS::perftest {
     using namespace nlohmann;
@@ -32,7 +33,11 @@ namespace OHOS::perftest {
     public:
         static ani_status Throw(ani_env *env, int32_t code, const string &errMsg)
         {
-            return Throw(env, BUSINESS_ERROR_CLASS, code, errMsg);
+            string message = errMsg;
+            if (code == static_cast<int32_t>(ERR_INVALID_INPUT)) {
+                message = "Parameter error. " + message;
+            }
+            return Throw(env, BUSINESS_ERROR_CLASS, code, message);
         }
     private:
         static ani_object WrapError(ani_env *env, const std::string &msg)
