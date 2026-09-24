@@ -736,9 +736,6 @@ SuiteService.Suite = class {
                 await this.runAsyncHookFunc('beforeEachIt');
                 await this.runAsyncHookFunc('beforeEach');
                 await specItem.asyncRun(coreContext);
-                await this.runAfterItSpecified(this.afterItSpecified, specItem);
-                await this.runAsyncHookFunc('afterEach');
-                await this.runAsyncHookFunc('afterEachIt');
             } catch (e) {
                 console.error(`${TAG}stack:${e?.stack}`);
                 console.error(`${TAG}stack end`);
@@ -760,6 +757,23 @@ SuiteService.Suite = class {
                     specItem.error = e;
                 }
                 specService.setStatus(true);
+            } finally {
+                const savedFail = specItem.fail;
+                const savedError = specItem.error;
+                try {
+                    await this.runAfterItSpecified(this.afterItSpecified, specItem);
+                    await this.runAsyncHookFunc('afterEach');
+                    await this.runAsyncHookFunc('afterEachIt');
+                } catch (teardownError) {
+                    specItem.fail = savedFail;
+                    specItem.error = savedError;
+                    console.error(`${TAG}stack:${teardownError?.stack}`);
+                    console.error(`${TAG}stack end`);
+                    if (!savedFail && !savedError && !specItem.isSkip) {
+                        specItem.error = teardownError;
+                        specService.setStatus(true);
+                    }
+                }
             }
             specItem.setResult();
             await coreContext.fireEvents('spec', 'specDone', specItem);
