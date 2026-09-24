@@ -312,29 +312,6 @@ class StaticSuite {
               }
             }
             await specItem.asyncRun(coreContext);
-            await this.runAfterItSpecified(this.afterItSpecified, specItem);
-            for (const hookItem of this.afterEach) {
-              try {
-                await (hookItem as () => Promise<void>)();
-              } catch (error) {
-                if (error) {
-                  const err = error as Error;
-                  err.message += `, error in afterEach function`;
-                  throw err;
-                }
-              }
-            }
-            for (const hookItem of this.afterEachIt) {
-              try {
-                await (hookItem as () => Promise<void>)();
-              } catch (error) {
-                if (error) {
-                  const err = error as Error;
-                  err.message += `, error in afterEachIt function`;
-                  throw err;
-                }
-              }
-            }
           } catch (err) {
             if (err) {
               const e = err as Error;
@@ -350,6 +327,46 @@ class StaticSuite {
               }
             }
             specService.setStatus(true);
+          } finally {
+            const savedFail: Error | null = specItem.fail;
+            const savedError: Error | null = specItem.error;
+            try {
+              await this.runAfterItSpecified(this.afterItSpecified, specItem);
+              for (const hookItem of this.afterEach) {
+                try {
+                  await (hookItem as () => Promise<void>)();
+                } catch (error) {
+                  if (error) {
+                    const err = error as Error;
+                    err.message += `, error in afterEach function`;
+                    throw err;
+                  }
+                }
+              }
+              for (const hookItem of this.afterEachIt) {
+                try {
+                  await (hookItem as () => Promise<void>)();
+                } catch (error) {
+                  if (error) {
+                    const err = error as Error;
+                    err.message += `, error in afterEachIt function`;
+                    throw err;
+                  }
+                }
+              }
+            } catch (teardownError) {
+              if (teardownError) {
+                const e = teardownError as Error;
+                specItem.fail = savedFail;
+                specItem.error = savedError;
+                console.error(`${TAG}stack:${e.stack}`);
+                console.error(`${TAG}stack end`);
+                if (!savedFail && !savedError && !specItem.isSkip) {
+                  specItem.error = e;
+                  specService.setStatus(true);
+                }
+              }
+            }
           }
           specItem.setResult();
           await coreContext.fireEvents('spec', 'specDone');

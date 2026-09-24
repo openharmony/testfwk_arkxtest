@@ -174,7 +174,11 @@ function eqOfObj(a: object, b: object): boolean {
       return false;
     }
     const aValue = field.getValue(a);
-    if (!eq(aValue as Object, Class.of(b).getInstanceField(aKey)!.getValue(b) as Object)) {
+    const bField = Class.of(b).getInstanceField(aKey);
+    if (bField === null) {
+      return false;
+    }
+    if (!eq(aValue as Object, bField.getValue(b) as Object)) {
       return false;
     }
   }

@@ -31,6 +31,9 @@ export function getFuncWithArgsZero(func: () => Any, timeout: int, isStressTest:
       res = func();
     } catch (err) {
       console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
+      if (!!timer) {
+        clearTimeout(timer);
+      }
       reject(err as Error);
     }
     if (res instanceof Promise) {
@@ -41,6 +44,9 @@ export function getFuncWithArgsZero(func: () => Any, timeout: int, isStressTest:
         resolve(Promise.resolve());
       }).catch((err: Error) => {
         console.info(`${TAG} getFuncWithArgsZero Error: ${err.message}`);
+        if (!!timer) {
+          clearTimeout(timer);
+        }
         reject(err);
       });
     } else {
