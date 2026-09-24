@@ -112,6 +112,7 @@ ohos_static_library("uitest_record") {
     "hilog:libhilog",
     "input:libmmi-client",
     "ipc:ipc_single",
+    "c_utils:utils",
   ]
 
   subsystem_name = "testfwk"
