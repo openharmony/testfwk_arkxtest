@@ -207,6 +207,11 @@ class OhReport {
         messageCode += '\n';
       }
       messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=` + this.specService.currentRunningSpec.duration + '\n';
+      if (this.specService.currentRunningSpec.hookError.length > 0) {
+        for (const hookErr of this.specService.currentRunningSpec.hookError) {
+          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: hookError=` + hookErr?.message + '\n';
+        }
+      }
       if (SysTestKit.workerPort !== null) {
         messageCode += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
       }
