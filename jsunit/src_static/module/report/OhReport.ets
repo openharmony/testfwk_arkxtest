@@ -306,6 +306,9 @@ class OhReport {
               messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 0` + '\n';
             }
             messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=` + currentRunningSpec.duration + '\n';
+            for (const hookErr of currentRunningSpec.hookError) {
+              messageCode += `${PrintTag.OHOS_REPORT_STATUS}: hookError=` + hookErr.message + '\n';
+            }
           } else {
             messageCode += '\n';
           }

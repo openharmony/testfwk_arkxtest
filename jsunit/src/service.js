@@ -758,20 +758,28 @@ SuiteService.Suite = class {
                 }
                 specService.setStatus(true);
             } finally {
-                const savedFail = specItem.fail;
-                const savedError = specItem.error;
                 try {
                     await this.runAfterItSpecified(this.afterItSpecified, specItem);
-                    await this.runAsyncHookFunc('afterEach');
-                    await this.runAsyncHookFunc('afterEachIt');
-                } catch (teardownError) {
-                    specItem.fail = savedFail;
-                    specItem.error = savedError;
-                    console.error(`${TAG}stack:${teardownError?.stack}`);
-                    console.error(`${TAG}stack end`);
-                    if (!savedFail && !savedError && !specItem.isSkip) {
-                        specItem.error = teardownError;
-                        specService.setStatus(true);
+                } catch (e) {
+                    specItem.hookError.push(e);
+                    console.error(`${TAG}stack:${e?.stack}`);
+                }
+                for (const hookItem of this.afterEach) {
+                    try {
+                        await hookItem();
+                    } catch (e) {
+                        e['message'] += `, error in afterEach function`;
+                        specItem.hookError.push(e);
+                        console.error(`${TAG}stack:${e?.stack}`);
+                    }
+                }
+                for (const hookItem of this.afterEachIt) {
+                    try {
+                        await hookItem();
+                    } catch (e) {
+                        e['message'] += `, error in afterEachIt function`;
+                        specItem.hookError.push(e);
+                        console.error(`${TAG}stack:${e?.stack}`);
                     }
                 }
             }
@@ -1019,6 +1027,7 @@ SpecService.Spec = class {
         };
         this.fail = undefined;
         this.error = undefined;
+        this.hookError = [];
         this.pass = false;
         this.duration = 0;
         this.startTime = 0;
@@ -1064,7 +1073,11 @@ SpecService.Spec = class {
             }
             this.setResult();
         } catch (e) {
-            this.error = e;
+            if (e instanceof AssertException) {
+                this.fail = e;
+            } else {
+                this.error = e;
+            }
             specService.setStatus(true);
         }
         coreContext.fireEvents('spec', 'specDone', this);
@@ -1174,7 +1187,7 @@ class ExpectService {
                 result.checkFunc = matcherName;
                 if (!result.pass) {
                     const assertError = new AssertException(result.message);
-                    currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
+                    if (!currentRunningSpec) { currentRunningSuite.hookError = assertError; }
                     throw assertError;
                 }
             });
@@ -1193,7 +1206,7 @@ class ExpectService {
             result.checkFunc = matcherName;
             if (!result.pass) {
                 const assertError = new AssertException(result.message);
-                currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
+                if (!currentRunningSpec) { currentRunningSuite.hookError = assertError; }
                 throw assertError;
             }
         };
@@ -1279,6 +1292,9 @@ class ReportService {
         } else {
             this.formatPrint('pass', spec.description + ' ; consuming ' + spec.duration + 'ms');
         }
+        if (spec.hookError.length > 0) {
+            spec.hookError.forEach(e => this.formatPrint('hookError', e?.message));
+        }
         this.formatPrint(this.specService.currentRunningSpec.error, msg);
     }
 
@@ -1329,6 +1345,9 @@ class ReportService {
                 break;
             case 'errorDetail':
                 console.info(`${TAG}[errorDetail]${msg}`);
+                break;
+            case 'hookError':
+                console.info(`${TAG}[hookError]${msg}`);
                 break;
         }
     }
