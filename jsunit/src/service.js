@@ -761,25 +761,31 @@ SuiteService.Suite = class {
                 try {
                     await this.runAfterItSpecified(this.afterItSpecified, specItem);
                 } catch (e) {
-                    specItem.hookError.push(e);
-                    console.error(`${TAG}stack:${e?.stack}`);
+                    if (e) {
+                        specItem.hookError.push(e);
+                        console.error(`${TAG}stack:${e?.stack}`);
+                    }
                 }
                 for (const hookItem of this.afterEach) {
                     try {
                         await hookItem();
                     } catch (e) {
-                        e['message'] += `, error in afterEach function`;
-                        specItem.hookError.push(e);
-                        console.error(`${TAG}stack:${e?.stack}`);
+                        if (e) {
+                            e['message'] += `, error in afterEach function`;
+                            specItem.hookError.push(e);
+                            console.error(`${TAG}stack:${e?.stack}`);
+                        }
                     }
                 }
                 for (const hookItem of this.afterEachIt) {
                     try {
                         await hookItem();
                     } catch (e) {
-                        e['message'] += `, error in afterEachIt function`;
-                        specItem.hookError.push(e);
-                        console.error(`${TAG}stack:${e?.stack}`);
+                        if (e) {
+                            e['message'] += `, error in afterEachIt function`;
+                            specItem.hookError.push(e);
+                            console.error(`${TAG}stack:${e?.stack}`);
+                        }
                     }
                 }
             }
