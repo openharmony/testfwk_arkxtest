@@ -1193,6 +1193,14 @@ class ExpectService {
 
     }
 
+    throwAssertError(result, currentRunningSpec, currentRunningSuite) {
+        const assertError = new AssertException(result.message);
+        if (!currentRunningSpec) {
+            currentRunningSuite.hookError = assertError;
+        }
+        throw assertError;
+    }
+
     handleWithAssertPromise(_this, wrappedMatchers, matcherName, actualValue, currentRunningSpec, currentRunningSuite) {
         wrappedMatchers[matcherName] = async function (...args) {
             await _this.matchers[matcherName](actualValue, args).then(function (result) {
@@ -1202,11 +1210,7 @@ class ExpectService {
                 result.actualValue = actualValue;
                 result.checkFunc = matcherName;
                 if (!result.pass) {
-                    const assertError = new AssertException(result.message);
-                    if (!currentRunningSpec) {
-                        currentRunningSuite.hookError = assertError;
-                    }
-                    throw assertError;
+                    _this.throwAssertError(result, currentRunningSpec, currentRunningSuite);
                 }
             });
         };
@@ -1223,11 +1227,7 @@ class ExpectService {
             result.actualValue = actualValue;
             result.checkFunc = matcherName;
             if (!result.pass) {
-                const assertError = new AssertException(result.message);
-                if (!currentRunningSpec) {
-                    currentRunningSuite.hookError = assertError;
-                }
-                throw assertError;
+                _this.throwAssertError(result, currentRunningSpec, currentRunningSuite);
             }
         };
     }

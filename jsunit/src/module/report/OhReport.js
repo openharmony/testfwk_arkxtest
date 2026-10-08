@@ -165,50 +165,56 @@ class OhReport {
     }
   }
 
+  buildSpecResultMessage(spec) {
+    let messageStack = '';
+    let messageCode = '';
+    const MAX_MESSAGE_LENGTH = 9000;
+    if (spec.error) {
+      messageStack = `${PrintTag.OHOS_REPORT_STATUS}: stack=` + spec.error?.stack?.slice(0, -1);
+      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
+      let errorMessage = spec.error?.message?.slice(0, MAX_MESSAGE_LENGTH);
+      messageCode += spec.expectMsg !== '' ?
+        `message: ${spec.expectMsg}, Error in ${spec.description}, ${errorMessage}` :
+        `Error in ${spec.description}, ${errorMessage}`;
+      messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + spec.description;
+      messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -1` + '\n';
+    } else if (spec) {
+      if (spec.fail) {
+        messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + spec.fail?.stack?.slice(0, -1);
+        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
+        let failMessage = spec.fail?.message?.slice(0, MAX_MESSAGE_LENGTH);
+        messageCode += spec.expectMsg !== '' ?
+          `message: ${spec.expectMsg}, Error in ${spec.description}, ${failMessage}` :
+          `Error in ${spec.description}, ${failMessage}`;
+        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + spec.description;
+        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -2` + '\n';
+      } else if (spec.isSkip) {
+        messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
+        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + spec.description;
+        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -3` + '\n';
+        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + spec.skipReason + '\n';
+      } else {
+        messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
+        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + spec.description;
+        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 0` + '\n';
+      }
+    } else {
+      messageCode += '\n';
+    }
+    return { messageStack, messageCode };
+  }
+
   async specDone() {
     if (this.abilityDelegatorArguments !== null) {
       let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
       message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: current=` + (this.index);
       message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: id=JS`;
       message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + this.specService.getTestTotal();
-      let messageStack = '';
-      let messageCode = '';
-      const MAX_MESSAGE_LENGTH = 9000;
-      if (this.specService.currentRunningSpec.error) {
-        messageStack = `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.error?.stack?.slice(0, -1);
-        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-        let errorMessage = this.specService.currentRunningSpec.error?.message?.slice(0, MAX_MESSAGE_LENGTH);
-        messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
-          `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${errorMessage}` :
-          `Error in ${this.specService.currentRunningSpec.description}, ${errorMessage}`;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -1` + '\n';
-      } else if (this.specService.currentRunningSpec) {
-        if (this.specService.currentRunningSpec.fail) {
-          messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + this.specService.currentRunningSpec.fail?.stack?.slice(0, -1);
-          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-          let failMessage = this.specService.currentRunningSpec.fail?.message?.slice(0, MAX_MESSAGE_LENGTH);
-          messageCode += this.specService.currentRunningSpec.expectMsg !== '' ?
-            `message: ${this.specService.currentRunningSpec.expectMsg}, Error in ${this.specService.currentRunningSpec.description}, ${failMessage}` :
-            `Error in ${this.specService.currentRunningSpec.description}, ${failMessage}`;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -2` + '\n';
-        } else if (this.specService.currentRunningSpec.isSkip) {
-          messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -3` + '\n';
-          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + this.specService.currentRunningSpec.skipReason + '\n';
-        } else {
-          messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + this.specService.currentRunningSpec.description;
-          messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 0` + '\n';
-        }
-      } else {
-        messageCode += '\n';
-      }
-      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=` + this.specService.currentRunningSpec.duration + '\n';
-      if (this.specService.currentRunningSpec.hookError.length > 0) {
-        for (const hookErr of this.specService.currentRunningSpec.hookError) {
+      const spec = this.specService.currentRunningSpec;
+      let { messageStack, messageCode } = this.buildSpecResultMessage(spec);
+      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=` + spec.duration + '\n';
+      if (spec.hookError.length > 0) {
+        for (const hookErr of spec.hookError) {
           messageCode += `${PrintTag.OHOS_REPORT_STATUS}: hookError=` + hookErr?.message + '\n';
         }
       }
@@ -221,7 +227,7 @@ class OhReport {
       await SysTestKit.print(message);
       await SysTestKit.print(messageStack);
       await SysTestKit.print(messageCode);
-      console.info(`${TAG}${this.specService.currentRunningSpec.description} specDone end print success`);
+      console.info(`${TAG}${spec.description} specDone end print success`);
     }
   }
 }
