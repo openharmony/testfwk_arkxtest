@@ -324,8 +324,9 @@ do { \
         if (option.screenRotationLocked) {
             option.enableCanvasRotation = false;
         }
-        LOG_I("VirtualScreenOption: encoderQueueSize=%{public}d, refreshRate=%{public}u, screenRotationLocked=%{public}d",
-            option.encoderQueueSize, option.refreshRate, option.screenRotationLocked);
+        LOG_I("VirtualScreenOption: encoderQueueSize=%{public}d, refreshRate=%{public}u, "
+            "screenRotationLocked=%{public}d", option.encoderQueueSize, option.refreshRate,
+            option.screenRotationLocked);
         if (options.type() == nlohmann::detail::value_t::object && options.contains("skipPrivacyWindowsId")) {
             auto arr = options["skipPrivacyWindowsId"];
             if (arr.type() == nlohmann::detail::value_t::array) {
