@@ -1091,6 +1091,9 @@ SpecService.Spec = class {
         } catch (e) {
             if (e instanceof AssertException) {
                 this.fail = e;
+            } else if (e instanceof SkipError) {
+                this.isSkip = true;
+                this.skipReason = e.message;
             } else {
                 this.error = e;
             }
