@@ -210,10 +210,12 @@ class OhReport {
       message += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: numtests=` + this.specService.getTestTotal();
       const spec = this.specService.currentRunningSpec;
       let { messageStack, messageCode } = this.buildSpecResultMessage(spec);
-      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=` + spec.duration + '\n';
-      if (spec.hookError.length > 0) {
-        for (const hookErr of spec.hookError) {
-          messageCode += `${PrintTag.OHOS_REPORT_STATUS}: hookError=` + hookErr?.message + '\n';
+      if (spec) {
+        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=` + spec.duration + '\n';
+        if (spec.hookError.length > 0) {
+          for (const hookErr of spec.hookError) {
+            messageCode += `${PrintTag.OHOS_REPORT_STATUS}: hookError=` + hookErr?.message + '\n';
+          }
         }
       }
       if (SysTestKit.workerPort !== null) {
@@ -225,7 +227,9 @@ class OhReport {
       await SysTestKit.print(message);
       await SysTestKit.print(messageStack);
       await SysTestKit.print(messageCode);
-      console.info(`${TAG}${spec.description} specDone end print success`);
+      if (spec) {
+        console.info(`${TAG}${spec.description} specDone end print success`);
+      }
     }
   }
 }
