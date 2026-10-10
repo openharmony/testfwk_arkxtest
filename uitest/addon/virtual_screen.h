@@ -29,6 +29,8 @@ namespace OHOS::uitest {
     using ScreenId = uint64_t;
     // 本地无效虚拟屏标识（区别于 Rosen::SCREEN_ID_INVALID）
     constexpr ScreenId INVALID_SCREEN_ID = 0;
+    // 虚拟屏最大帧率，刷新间隔与帧率换算基准（与投屏工具 MAX_FRAME_RATE 保持一致）
+    constexpr uint32_t MAX_VIRTUAL_SCREEN_FPS = 120;
 
     // 虚拟屏创建参数。字段语义与 OHOS::Rosen::VirtualScreenOption 一一对应，
     // 并补充投屏场景迁移的刷新率/隐私豁免/画布旋转配置。
@@ -45,6 +47,10 @@ namespace OHOS::uitest {
         int32_t skipAppPid = -1;                         // 隐私豁免应用 pid，<0 表示不豁免
         std::vector<uint64_t> skipPrivacyWindowsId = {}; // 隐私豁免窗口
         bool enableCanvasRotation = true;                // 是否开启画布旋转
+        // 补充参数：投屏工具（scrcpy_server）start_record 新增的配置项
+        int32_t encoderQueueSize = 0;                    // 编码器输入队列深度（0=服务端默认）
+        uint32_t refreshRate = 0;                        // 刷新率 fps（0=不覆盖 refreshInterval）
+        bool screenRotationLocked = false;               // 锁定屏幕旋转（与 enableCanvasRotation 相互独立，互不影响）
     };
 
     // 虚拟屏创建与管理类
@@ -72,4 +78,4 @@ namespace OHOS::uitest {
     ScreenId GetRunningVirtualScreenId();
 } // namespace OHOS::uitest
 
-#endif // VIRTUAL_SCREEN_H
+#endif // VIRTUAL_SCREEN_
