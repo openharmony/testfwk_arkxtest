@@ -202,6 +202,16 @@ class OhReport {
     return { messageStack, messageCode };
   }
 
+  appendHookErrors(spec) {
+    let result = '';
+    if (spec.hookError.length > 0) {
+      for (const hookErr of spec.hookError) {
+        result += `${PrintTag.OHOS_REPORT_STATUS}: hookError=` + hookErr?.message + '\n';
+      }
+    }
+    return result;
+  }
+
   async specDone() {
     if (this.abilityDelegatorArguments !== null) {
       let message = '\n' + `${PrintTag.OHOS_REPORT_STATUS}: class=` + this.suiteService.getCurrentRunningSuiteDesc();
@@ -212,11 +222,7 @@ class OhReport {
       let { messageStack, messageCode } = this.buildSpecResultMessage(spec);
       if (spec) {
         messageCode += `${PrintTag.OHOS_REPORT_STATUS}: consuming=` + spec.duration + '\n';
-        if (spec.hookError.length > 0) {
-          for (const hookErr of spec.hookError) {
-            messageCode += `${PrintTag.OHOS_REPORT_STATUS}: hookError=` + hookErr?.message + '\n';
-          }
-        }
+        messageCode += this.appendHookErrors(spec);
       }
       if (SysTestKit.workerPort !== null) {
         messageCode += `${PrintTag.OHOS_REPORT_STATUS}: currentWorkerName=` + this.currentThreadName;
