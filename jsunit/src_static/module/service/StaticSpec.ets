@@ -21,6 +21,7 @@ import DataDriver from '../config/DataDriver';
 import { getFunctionArgumentsCount } from '../../util';
 import { AnyType, ItfnType } from '../types/common';
 import { AssertException } from './AssertException';
+import { SkipError } from './SkipError';
 class StaticSpec {
   public description: string;
   public fi: int;
@@ -89,6 +90,9 @@ class StaticSpec {
       } catch (e) {
         if (e instanceof AssertException) {
           this.fail = e;
+        } else if (e instanceof SkipError) {
+          this.isSkip = true;
+          this.skipReason = e.message;
         } else {
           this.error = e;
         }

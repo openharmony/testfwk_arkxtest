@@ -169,7 +169,9 @@ class OhReport {
     let messageStack = '';
     let messageCode = '';
     const MAX_MESSAGE_LENGTH = 9000;
-    if (spec.error) {
+    if (!spec) {
+      messageCode += '\n';
+    } else if (spec.error) {
       messageStack = `${PrintTag.OHOS_REPORT_STATUS}: stack=` + spec.error?.stack?.slice(0, -1);
       messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
       let errorMessage = spec.error?.message?.slice(0, MAX_MESSAGE_LENGTH);
@@ -178,28 +180,24 @@ class OhReport {
         `Error in ${spec.description}, ${errorMessage}`;
       messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + spec.description;
       messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -1` + '\n';
-    } else if (spec) {
-      if (spec.fail) {
-        messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + spec.fail?.stack?.slice(0, -1);
-        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-        let failMessage = spec.fail?.message?.slice(0, MAX_MESSAGE_LENGTH);
-        messageCode += spec.expectMsg !== '' ?
-          `message: ${spec.expectMsg}, Error in ${spec.description}, ${failMessage}` :
-          `Error in ${spec.description}, ${failMessage}`;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + spec.description;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -2` + '\n';
-      } else if (spec.isSkip) {
-        messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + spec.description;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -3` + '\n';
-        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + spec.skipReason + '\n';
-      } else {
-        messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
-        messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + spec.description;
-        messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 0` + '\n';
-      }
+    } else if (spec.fail) {
+      messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stack=` + spec.fail?.stack?.slice(0, -1);
+      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
+      let failMessage = spec.fail?.message?.slice(0, MAX_MESSAGE_LENGTH);
+      messageCode += spec.expectMsg !== '' ?
+        `message: ${spec.expectMsg}, Error in ${spec.description}, ${failMessage}` :
+        `Error in ${spec.description}, ${failMessage}`;
+      messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS}: test=` + spec.description;
+      messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -2` + '\n';
+    } else if (spec.isSkip) {
+      messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
+      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + spec.description;
+      messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: -3` + '\n';
+      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: skipReason=` + spec.skipReason + '\n';
     } else {
-      messageCode += '\n';
+      messageStack += `${PrintTag.OHOS_REPORT_STATUS}: stream=`;
+      messageCode += `${PrintTag.OHOS_REPORT_STATUS}: test=` + spec.description;
+      messageCode += '\n' + `${PrintTag.OHOS_REPORT_STATUS_CODE}: 0` + '\n';
     }
     return { messageStack, messageCode };
   }
