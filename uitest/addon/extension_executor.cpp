@@ -311,6 +311,21 @@ do { \
         option.refreshInterval = ReadArgFromJson<uint32_t>(options, "refreshInterval", 1);
         option.skipAppPid = ReadArgFromJson<int32_t>(options, "skipAppPid", -1);
         option.enableCanvasRotation = ReadArgFromJson<bool>(options, "enableCanvasRotation", true);
+        // 补充参数解析：投屏工具 start_record 传入的 encoder_queue_size / refresh_rate / screen_rotation_locked
+        option.encoderQueueSize = ReadArgFromJson<int32_t>(options, "encoder_queue_size", 0);
+        option.refreshRate = ReadArgFromJson<uint32_t>(options, "refresh_rate", 0);
+        option.screenRotationLocked = ReadArgFromJson<bool>(options, "screen_rotation_locked", false);
+        // refresh_rate 优先于 refreshInterval：帧率 = 120 / refreshInterval，故 refreshInterval = 120 / fps
+        if (option.refreshRate > 0) {
+            option.refreshInterval = MAX_VIRTUAL_SCREEN_FPS / option.refreshRate;
+            LOG_I("refresh_rate=%{public}u, refreshInterval=%{public}u", option.refreshRate, option.refreshInterval);
+        }
+        // screen_rotation_locked=true 时锁定旋转（enableCanvasRotation=false）
+        if (option.screenRotationLocked) {
+            option.enableCanvasRotation = false;
+        }
+        LOG_I("VirtualScreenOption: encoderQueueSize=%{public}d, refreshRate=%{public}u, screenRotationLocked=%{public}d",
+            option.encoderQueueSize, option.refreshRate, option.screenRotationLocked);
         if (options.type() == nlohmann::detail::value_t::object && options.contains("skipPrivacyWindowsId")) {
             auto arr = options["skipPrivacyWindowsId"];
             if (arr.type() == nlohmann::detail::value_t::array) {

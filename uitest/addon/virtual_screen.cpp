@@ -51,7 +51,7 @@ static void BuildNativeOption(const VirtualScreenOption &option, Rosen::VirtualS
     }
 }
 
-// 挂载 surface/设置刷新率/隐私豁免/开启画布旋转，任一步失败即返回失败（由调用方回滚销毁）
+// 挂载 surface/设置刷新率/隐私豁免/开启画布旋转/锁定屏幕旋转，任一步失败即返回失败（由调用方回滚销毁）
 static bool ConfigVirtualScreen(ScreenId screenId, const VirtualScreenOption &option)
 {
     // 挂载 surface，将虚拟屏内容输出到调用方提供的 surface（如编码器 surface）
@@ -86,6 +86,10 @@ static bool ConfigVirtualScreen(ScreenId screenId, const VirtualScreenOption &op
             LOG_E("Set virtual mirror screen canvas rotation failed, ret=%{public}d", static_cast<int32_t>(ret));
             return false;
         }
+    }
+    // 锁定屏幕旋转，与画布旋转相互独立，按需单独启用
+    if (option.screenRotationLocked) {
+        ScreenManager::GetInstance().SetScreenRotationLocked(true);
     }
     return true;
 }
