@@ -28,7 +28,7 @@
 #include "pasteboard_client.h"
 #include "paste_data.h"
 #endif
-#ifdef ARKXTEST_KNUCKLE_ACTION_ENABLE
+#if defined(ARKXTEST_KNUCKLE_ACTION_ENABLE) || defined(ARKXTEST_CELLULAR_ENABLE)
 #include "datashare_helper.h"
 #endif
 #include "session_manager_lite.h"
@@ -57,6 +57,18 @@
 #include "os_account_manager.h"
 #ifdef ARKXTEST_LOCATION_ENABLE
 #include "locator.h"
+#endif
+#ifdef ARKXTEST_WIFI_ENABLE
+#include "wifi_device.h"
+#include "define.h"
+#endif
+#ifdef ARKXTEST_CELLULAR_ENABLE
+#include "cellular_data_client.h"
+#include "core_service_client.h"
+#include "telephony_errors.h"
+#endif
+#ifdef ARKXTEST_AIRPLANE_ENABLE
+#include "net_conn_client.h"
 #endif
 
 namespace OHOS::testserver {
@@ -969,6 +981,144 @@ namespace OHOS::testserver {
         }
 #else
         HiLog::Warn(LABEL_SERVICE, "Location mock is not supported");
+        setResult = TEST_SERVER_NOT_SUPPORTED;
+#endif
+        return TEST_SERVER_OK;
+    }
+
+    ErrCode TestServerService::SetWifiState(bool enable, int32_t& setResult)
+    {
+        setResult = TEST_SERVER_OK;
+#ifdef ARKXTEST_WIFI_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called. enable=%{public}d", __func__, enable);
+        auto wifiDevice = Wifi::WifiDevice::GetInstance(WIFI_DEVICE_ABILITY_ID);
+        if (!wifiDevice) {
+            HiLog::Error(LABEL_SERVICE, "wifiDevice is nullptr");
+            setResult = TEST_SERVER_WIFI_FAILED;
+            return TEST_SERVER_OK;
+        }
+        Wifi::ErrCode ret = enable ? wifiDevice->EnableWifi() : wifiDevice->DisableWifi();
+        if (ret != Wifi::WIFI_OPT_SUCCESS) {
+            HiLog::Error(LABEL_SERVICE, "SetWifiState failed with error: %{public}d", ret);
+            setResult = TEST_SERVER_WIFI_FAILED;
+            return TEST_SERVER_OK;
+        }
+        HiLog::Info(LABEL_SERVICE, "SetWifiState completed successfully");
+#else
+        HiLog::Warn(LABEL_SERVICE, "WiFi control is not supported");
+        setResult = TEST_SERVER_NOT_SUPPORTED;
+#endif
+        return TEST_SERVER_OK;
+    }
+
+#ifdef ARKXTEST_CELLULAR_ENABLE
+    // Query airplane mode state. Fail-open design: query failure is treated as
+    // airplane mode off (proceed to enable cellular data), consistent with the
+    // degradation behavior when DataShare is unavailable.
+    bool TestServerService::QueryAirplaneMode()
+    {
+        auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+        if (samgr == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "QueryAirplaneMode: samgr is nullptr");
+            return false;
+        }
+        sptr<IRemoteObject> remoteObj = samgr->CheckSystemAbility(TEST_SERVER_SA_ID);
+        if (remoteObj == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "QueryAirplaneMode: remoteObj is nullptr");
+            return false;
+        }
+        const std::string airplaneUri =
+            "datashare:///com.ohos.settingsdata/entry/settingsdata/SETTINGSDATA?Proxy=true&key=airplane_mode";
+        auto createRet = DataShare::DataShareHelper::Create(remoteObj, airplaneUri, "");
+        auto helper = createRet.second;
+        if (createRet.first != DataShare::E_OK || helper == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "QueryAirplaneMode: create helper failed, ret=%{public}d",
+                createRet.first);
+            if (helper != nullptr) {
+                helper->Release();
+            }
+            return false;
+        }
+        std::vector<std::string> columns = { "VALUE" };
+        DataShare::DataSharePredicates predicates;
+        predicates.EqualTo("KEYWORD", "settings.telephony.airplanemode");
+        Uri queryUri(airplaneUri);
+        auto resultSet = helper->Query(queryUri, predicates, columns);
+        helper->Release();
+        if (resultSet == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "QueryAirplaneMode: resultSet is nullptr");
+            return false;
+        }
+        bool airplaneMode = false;
+        int32_t count = 0;
+        resultSet->GetRowCount(count);
+        if (count > 0) {
+            resultSet->GoToRow(0);
+            std::string airplaneValue;
+            if (resultSet->GetString(0, airplaneValue) == DataShare::E_OK) {
+                airplaneMode = (airplaneValue == "1");
+            }
+        }
+        resultSet->Close();
+        return airplaneMode;
+    }
+#endif
+
+    ErrCode TestServerService::SetCellularState(bool enable, int32_t& setResult)
+    {
+        setResult = TEST_SERVER_OK;
+#ifdef ARKXTEST_CELLULAR_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called. enable=%{public}d", __func__, enable);
+        if (enable) {
+            bool airplaneMode = QueryAirplaneMode();
+            HiLog::Info(LABEL_SERVICE, "Query airplane mode: %{public}d", airplaneMode);
+            bool hasSimCard = false;
+            int32_t maxSimCount = Telephony::CoreServiceClient::GetInstance().GetMaxSimCount();
+            for (int32_t slotId = 0; slotId < maxSimCount; slotId++) {
+                auto coreRet = Telephony::CoreServiceClient::GetInstance().HasSimCard(slotId, hasSimCard);
+                if (coreRet == Telephony::TELEPHONY_SUCCESS && hasSimCard) {
+                    break;
+                }
+            }
+            if (!hasSimCard) {
+                HiLog::Error(LABEL_SERVICE, "No SIM card detected");
+                setResult = TEST_SERVER_CELLULAR_NO_SIM;
+                return TEST_SERVER_OK;
+            }
+            if (airplaneMode) {
+                HiLog::Error(LABEL_SERVICE, "Airplane mode is on");
+                setResult = TEST_SERVER_CELLULAR_AIRPLANE_ON;
+                return TEST_SERVER_OK;
+            }
+        }
+        auto cellularRet = Telephony::CellularDataClient::GetInstance().EnableCellularData(enable);
+        if (cellularRet != Telephony::TELEPHONY_SUCCESS) {
+            HiLog::Error(LABEL_SERVICE, "SetCellularState failed with error: %{public}d", cellularRet);
+            setResult = TEST_SERVER_CELLULAR_FAILED;
+            return TEST_SERVER_OK;
+        }
+        HiLog::Info(LABEL_SERVICE, "SetCellularState completed successfully");
+#else
+        HiLog::Warn(LABEL_SERVICE, "Cellular data control is not supported");
+        setResult = TEST_SERVER_NOT_SUPPORTED;
+#endif
+        return TEST_SERVER_OK;
+    }
+
+    ErrCode TestServerService::SetAirplaneMode(bool enable, int32_t& setResult)
+    {
+        setResult = TEST_SERVER_OK;
+#ifdef ARKXTEST_AIRPLANE_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called. enable=%{public}d", __func__, enable);
+        auto netRet = NetManagerStandard::NetConnClient::GetInstance().SetAirplaneMode(enable);
+        if (netRet != NetManagerStandard::NETMANAGER_SUCCESS) {
+            HiLog::Error(LABEL_SERVICE, "SetAirplaneMode failed with error: %{public}d", netRet);
+            setResult = TEST_SERVER_AIRPLANE_FAILED;
+            return TEST_SERVER_OK;
+        }
+        HiLog::Info(LABEL_SERVICE, "SetAirplaneMode completed successfully");
+#else
+        HiLog::Warn(LABEL_SERVICE, "Airplane mode control is not supported");
         setResult = TEST_SERVER_NOT_SUPPORTED;
 #endif
         return TEST_SERVER_OK;
