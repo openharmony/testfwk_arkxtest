@@ -642,6 +642,27 @@ SuiteService.Suite = class {
         return breakOnError && isError;
     }
 
+    runChildSuitesSync(coreContext) {
+        const suiteService = coreContext.getDefaultService('suite');
+        let beforeEachItSize = this.beforeEachIt.length;
+        let afterEachItSize = this.afterEachIt.length;
+        for (let i = 0; i < this.childSuites.length; i++) {
+            let suite = this.childSuites[i];
+            for (let j = 1; j <= beforeEachItSize; j++) {
+                suite.beforeEachIt.splice(0, 0, this.beforeEachIt[beforeEachItSize - j]);
+            }
+            for (let j = 0; j < afterEachItSize; j++) {
+                suite.afterEachIt.push(this.afterEachIt[j]);
+            }
+            let isBreakOnError = this.isRun(coreContext);
+            if (isBreakOnError) {
+                break;
+            }
+            suite.run(coreContext);
+            suiteService.setCurrentRunningSuite(suite);
+        }
+    }
+
     run(coreContext) {
         const suiteService = coreContext.getDefaultService('suite');
         suiteService.setCurrentRunningSuite(this);
@@ -672,25 +693,7 @@ SuiteService.Suite = class {
                 }
             }
         }
-        if (this.childSuites.length > 0) {
-            let beforeEachItSize = this.beforeEachIt.length;
-            let afterEachItSize = this.afterEachIt.length;
-            for (let i = 0; i < this.childSuites.length; i++) {
-                let suite = this.childSuites[i];
-                for (let j = 1; j <= beforeEachItSize; j++) {
-                    suite.beforeEachIt.splice(0, 0, this.beforeEachIt[beforeEachItSize - j]);
-                }
-                for (let j = 0; j < afterEachItSize; j++) {
-                    suite.afterEachIt.push(this.afterEachIt[j]);
-                }
-                let isBreakOnError = this.isRun(coreContext);
-                if (isBreakOnError) {
-                    break;
-                }
-                suite.run(coreContext);
-                suiteService.setCurrentRunningSuite(suite);
-            }
-        }
+        this.runChildSuitesSync(coreContext);
         this.runHookFunc('afterAll');
         if (this.description !== '') {
             coreContext.fireEvents('suite', 'suiteDone');
