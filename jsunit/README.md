@@ -152,6 +152,9 @@ afterEach(func: Function): void
 
 在测试套内定义一个清理函数，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致。
 
+**说明：**
+从@ohos/hypium 1.0.30版本开始，afterEach 执行失败不影响用例结果。afterEach 中的异常会收集到 hookError 中单独报告，用例的 pass/fail 状态仅由用例本身的断言结果决定。
+
 **参数：**
 
 | 参数名 | 类型     | 必填    | 说明                          | 
@@ -234,6 +237,9 @@ export default function test() {
 export function afterEachIt(func: Function): void
 
 在测试套内定义一个单元预置条件，在每条测试用例结束后执行。外层测试套定义的afterEachIt会在内部测试套中的测试用例执行结束后执行。
+
+**说明：**
+从@ohos/hypium 1.0.30版本开始，afterEachIt 执行失败不影响用例结果。afterEachIt 中的异常会收集到 hookError 中单独报告，用例的 pass/fail 状态仅由用例本身的断言结果决定。
 
 **参数：**
 
@@ -388,6 +394,9 @@ export default function beforeItSpecifiedTest() {
 `afterItSpecified(testCaseNames: Array<string> | string, func: Function): void`
 
 在测试套内定义一个清理函数，仅在指定测试用例结束后执行。
+
+**说明：**
+从@ohos/hypium 1.0.30版本开始，afterItSpecified 执行失败不影响用例结果。afterItSpecified 中的异常会收集到 hookError 中单独报告，用例的 pass/fail 状态仅由用例本身的断言结果决定。
 
 **参数：**
 

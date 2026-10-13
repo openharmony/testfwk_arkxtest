@@ -664,9 +664,12 @@ SuiteService.Suite = class {
                 }
                 this.runHookFunc('beforeEachIt');
                 this.runHookFunc('beforeEach');
-                spec.run(coreContext);
-                this.runHookFunc('afterEach');
-                this.runHookFunc('afterEachIt');
+                try {
+                    spec.run(coreContext);
+                } finally {
+                    this.runHookFunc('afterEach');
+                    this.runHookFunc('afterEachIt');
+                }
             }
         }
         if (this.childSuites.length > 0) {
@@ -744,6 +747,7 @@ SuiteService.Suite = class {
             await this.runAfterItSpecified(this.afterItSpecified, specItem);
         } catch (e) {
             if (e) {
+                e.message += `, error in afterItSpecified function`;
                 specItem.hookError.push(e);
                 console.error(`${TAG}stack:${e?.stack}`);
             }
