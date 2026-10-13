@@ -39,6 +39,9 @@ namespace OHOS::testhelper {
         int32_t HandleEnableLocationMock();
         int32_t HandleDisableLocationMock();
         int32_t HandleSetMockedLocations(const std::string& gpxFile, int32_t timeInterval = 1);
+        int32_t HandleSetWifiState(bool enable);
+        int32_t HandleSetCellularState(bool enable);
+        int32_t HandleSetAirplaneMode(bool enable);
         int32_t ParseTimeToMs(const std::string& timeStr, int64_t& timeMs);
 
     private:

@@ -52,6 +52,9 @@ namespace OHOS::testserver {
         int32_t DisableLocationMock();
         int32_t SetMockedLocations(const std::vector<TestServerLocation>& locations,
                                    int32_t timeInterval);
+        int32_t SetWifiState(bool enable);
+        int32_t SetCellularState(bool enable);
+        int32_t SetAirplaneMode(bool enable);
     private:
         TestServerClient();
         ~TestServerClient() = default;
