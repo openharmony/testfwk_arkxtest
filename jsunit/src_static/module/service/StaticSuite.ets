@@ -138,25 +138,27 @@ class StaticSuite {
               }
             });
           }
-          spec.run(coreContext);
-
-          if (this.afterEach && this.afterEach.size > 0) {
-            this.afterEach.forEach((func: (() => void) | (() => Promise<void>)) => {
-              try {
-                (func as () => void)();
-              } catch (e) {
-                console.error(`${TAG}${e.stack}`);
-              }
-            });
-          }
-          if (this.afterEachIt && this.afterEachIt.size > 0) {
-            this.afterEachIt.forEach((func: (() => void) | (() => Promise<void>)) => {
-              try {
-                (func as () => void)();
-              } catch (e) {
-                console.error(`${TAG}${(e as Error).stack}`);
-              }
-            });
+          try {
+            spec.run(coreContext);
+          } finally {
+            if (this.afterEach && this.afterEach.size > 0) {
+              this.afterEach.forEach((func: (() => void) | (() => Promise<void>)) => {
+                try {
+                  (func as () => void)();
+                } catch (e) {
+                  console.error(`${TAG}${e.stack}`);
+                }
+              });
+            }
+            if (this.afterEachIt && this.afterEachIt.size > 0) {
+              this.afterEachIt.forEach((func: (() => void) | (() => Promise<void>)) => {
+                try {
+                  (func as () => void)();
+                } catch (e) {
+                  console.error(`${TAG}${(e as Error).stack}`);
+                }
+              });
+            }
           }
         }
       }
@@ -333,6 +335,7 @@ class StaticSuite {
             } catch (err) {
               if (err) {
                 const e = err as Error;
+                e.message += `, error in afterItSpecified function`;
                 specItem.hookError.push(e);
                 console.error(`${TAG}stack:${e.stack}`);
               }
