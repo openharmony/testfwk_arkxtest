@@ -141,23 +141,39 @@ class StaticSuite {
           try {
             spec.run(coreContext);
           } finally {
-            if (this.afterEach && this.afterEach.size > 0) {
-              this.afterEach.forEach((func: (() => void) | (() => Promise<void>)) => {
-                try {
-                  (func as () => void)();
-                } catch (e) {
-                  console.error(`${TAG}${e.stack}`);
-                }
-              });
+            try {
+              await this.runAfterItSpecified(this.afterItSpecified, spec);
+            } catch (err) {
+              if (err) {
+                const e = err as Error;
+                e.message += `, error in afterItSpecified function`;
+                spec.hookError.push(e);
+                console.error(`${TAG}stack:${e.stack}`);
+              }
             }
-            if (this.afterEachIt && this.afterEachIt.size > 0) {
-              this.afterEachIt.forEach((func: (() => void) | (() => Promise<void>)) => {
-                try {
-                  (func as () => void)();
-                } catch (e) {
-                  console.error(`${TAG}${(e as Error).stack}`);
+            for (const hookItem of this.afterEach) {
+              try {
+                await (hookItem as () => Promise<void>)();
+              } catch (error) {
+                if (error) {
+                  const err = error as Error;
+                  err.message += `, error in afterEach function`;
+                  spec.hookError.push(err);
+                  console.error(`${TAG}stack:${err.stack}`);
                 }
-              });
+              }
+            }
+            for (const hookItem of this.afterEachIt) {
+              try {
+                await (hookItem as () => Promise<void>)();
+              } catch (error) {
+                if (error) {
+                  const err = error as Error;
+                  err.message += `, error in afterEachIt function`;
+                  spec.hookError.push(err);
+                  console.error(`${TAG}stack:${err.stack}`);
+                }
+              }
             }
           }
         }

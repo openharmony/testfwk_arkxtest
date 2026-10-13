@@ -663,6 +663,40 @@ SuiteService.Suite = class {
         }
     }
 
+    runAfterHooksSync(spec) {
+        try {
+            this.runAfterItSpecified(this.afterItSpecified, spec);
+        } catch (e) {
+            if (e) {
+                e.message += `, error in afterItSpecified function`;
+                spec.hookError.push(e);
+                console.error(`${TAG}stack:${e?.stack}`);
+            }
+        }
+        for (const hookItem of this.afterEach) {
+            try {
+                hookItem();
+            } catch (e) {
+                if (e) {
+                    e.message += `, error in afterEach function`;
+                    spec.hookError.push(e);
+                    console.error(`${TAG}stack:${e?.stack}`);
+                }
+            }
+        }
+        for (const hookItem of this.afterEachIt) {
+            try {
+                hookItem();
+            } catch (e) {
+                if (e) {
+                    e.message += `, error in afterEachIt function`;
+                    spec.hookError.push(e);
+                    console.error(`${TAG}stack:${e?.stack}`);
+                }
+            }
+        }
+    }
+
     run(coreContext) {
         const suiteService = coreContext.getDefaultService('suite');
         suiteService.setCurrentRunningSuite(this);
@@ -688,8 +722,7 @@ SuiteService.Suite = class {
                 try {
                     spec.run(coreContext);
                 } finally {
-                    this.runHookFunc('afterEach');
-                    this.runHookFunc('afterEachIt');
+                    this.runAfterHooksSync(spec);
                 }
             }
         }
