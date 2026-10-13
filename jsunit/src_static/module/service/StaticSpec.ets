@@ -76,32 +76,6 @@ class StaticSpec {
     }
   }
 
-  run(coreContext: Core): void {
-    const sService = coreContext.getDefaultService('spec');
-
-    coreContext.fireEvents('spec', 'specStart');
-    if (sService !== null) {
-      const specService = sService as SpecService;
-      specService.setCurrentRunningSpec(this);
-      this.isExecuted = true;
-      try {
-        this.fn();
-        this.setResult();
-      } catch (e) {
-        if (e instanceof AssertException) {
-          this.fail = e;
-        } else if (e instanceof SkipError) {
-          this.isSkip = true;
-          this.skipReason = e.message;
-        } else {
-          this.error = e;
-        }
-        specService.setStatus(true);
-      }
-    }
-    coreContext.fireEvents('spec', 'specDone');
-  }
-
   async asyncRun(coreContext: Core): Promise<void> {
     const dataDriverMap = coreContext.getServices('dataDriver');
     if(dataDriverMap) {

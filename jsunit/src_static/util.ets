@@ -141,7 +141,6 @@ export function processFunc(
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
     const config = configService as ConfigService;
-    config.setSupportAsync(true);
     const runnerTimeout = !config.timeout ? 5000 : Number(config.timeout);
     let timeout = runnerTimeout;
     if (itTimeout !== undefined) {
@@ -168,7 +167,6 @@ export function processFuncWithArgOne(coreContext: Core, func: (done: () => void
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
     const config = configService as ConfigService;
-    config.setSupportAsync(true);
     const runnerTimeout = !config.timeout ? 5000 : Number(config.timeout);
     let timeout = runnerTimeout;
     if (itTimeout !== undefined) {
@@ -191,7 +189,6 @@ export function processFuncWithArgTwo(coreContext: Core, func: (param1: () => vo
   const configService = coreContext.getDefaultService('config');
   if (configService !== null) {
     const config = configService as ConfigService;
-    config.setSupportAsync(true);
     const runnerTimeout = !config.timeout ? 5000 : Number(config.timeout);
     let timeout = runnerTimeout;
     if (itTimeout !== undefined) {

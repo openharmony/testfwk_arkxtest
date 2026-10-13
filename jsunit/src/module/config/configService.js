@@ -20,7 +20,6 @@ const STRESS_RULE = /^[1-9]\d*$/;
 class ConfigService {
     constructor(attr) {
         this.id = attr.id;
-        this.supportAsync = true; // 默认异步处理测试用例
         this.random = false;
         this.filterValid = [];
         this.filter = 0;
@@ -332,14 +331,6 @@ class ConfigService {
 
     isBreakOnError() {
         return this.breakOnError !== 'true' ? false : true;
-    }
-
-    setSupportAsync(value) {
-        this.supportAsync = value;
-    }
-
-    isSupportAsync() {
-        return this.supportAsync;
     }
 
     translateParams(parameters) {
