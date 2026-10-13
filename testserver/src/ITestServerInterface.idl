@@ -43,4 +43,7 @@ interface OHOS.testserver.ITestServerInterface {
     void EnableLocationMock([out] int enableResult);
     void DisableLocationMock([out] int disableResult);
     void SetMockedLocations([in] TestServerLocation[] locations, [in] int timeInterval, [out] int setResult);
+    void SetWifiState([in] boolean enable, [out] int setResult);
+    void SetCellularState([in] boolean enable, [out] int setResult);
+    void SetAirplaneMode([in] boolean enable, [out] int setResult);
 }

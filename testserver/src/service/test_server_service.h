@@ -91,6 +91,12 @@ namespace OHOS::testserver {
 
         ErrCode SetMockedLocations(const std::vector<TestServerLocation>& locations, int32_t timeInterval,
                                    int32_t& setResult) override;
+
+        ErrCode SetWifiState(bool enable, int32_t& setResult) override;
+
+        ErrCode SetCellularState(bool enable, int32_t& setResult) override;
+
+        ErrCode SetAirplaneMode(bool enable, int32_t& setResult) override;
     protected:
         void OnStart() override;
         void OnStop() override;
@@ -103,6 +109,10 @@ namespace OHOS::testserver {
         bool RemoveTestServer();
 
     private:
+#ifdef ARKXTEST_CELLULAR_ENABLE
+        bool QueryAirplaneMode();
+#endif
+
         std::atomic<int> callerCount_{0};
 
         class TestServerProxyDeathRecipient : public IRemoteObject::DeathRecipient {

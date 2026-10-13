@@ -65,7 +65,10 @@
           "location",
           "libxml2",
           "node",
-          "bounds_checking_function"
+          "wifi",
+          "cellular_data",
+          "core_service",
+          "netmanager_base"
         ]
       },
       "build": {

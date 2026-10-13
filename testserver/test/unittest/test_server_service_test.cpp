@@ -93,11 +93,19 @@ protected:
             "ohos.permission.SET_TIME",
             "ohos.permission.SET_TIME_ZONE",
             "ohos.permission.CONNECT_IME_ABILITY",
+            "ohos.permission.SET_WIFI_INFO",
+            "ohos.permission.MANAGE_WIFI_CONNECTION",
+            "ohos.permission.SET_TELEPHONY_STATE",
+            "ohos.permission.CONNECTIVITY_INTERNAL",
         };
         static MockToken token(permissions, false);
         token.Grant("ohos.permission.SET_TIME");
         token.Grant("ohos.permission.SET_TIME_ZONE");
         token.Grant("ohos.permission.CONNECT_IME_ABILITY");
+        token.Grant("ohos.permission.SET_WIFI_INFO");
+        token.Grant("ohos.permission.MANAGE_WIFI_CONNECTION");
+        token.Grant("ohos.permission.SET_TELEPHONY_STATE");
+        token.Grant("ohos.permission.CONNECTIVITY_INTERNAL");
         samgr_ = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         testServerServiceMock_ = make_unique<TestServerServiceMock>(SYSTEM_ABILITY_ID, false);
     }
@@ -477,6 +485,84 @@ HWTEST_F(ServiceTest, testInstallFontNotSupported, TestSize.Level1)
     string fontPath = "/data/local/tmp/test.ttf";
     int32_t ret;
     int32_t resCode = testServerServiceMock_->InstallFont(fontPath, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_NOT_SUPPORTED);
+}
+#endif
+
+#ifdef ARKXTEST_WIFI_ENABLE
+HWTEST_F(ServiceTest, testSetWifiState, TestSize.Level1)
+{
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetWifiState(true, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_OK);
+}
+
+HWTEST_F(ServiceTest, testSetWifiStateDisable, TestSize.Level1)
+{
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetWifiState(false, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_OK);
+}
+#else
+HWTEST_F(ServiceTest, testSetWifiStateNotSupported, TestSize.Level1)
+{
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetWifiState(true, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_NOT_SUPPORTED);
+}
+#endif
+
+#ifdef ARKXTEST_CELLULAR_ENABLE
+HWTEST_F(ServiceTest, testSetCellularStateNoSim, TestSize.Level1)
+{
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetCellularState(true, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_CELLULAR_NO_SIM);
+}
+
+HWTEST_F(ServiceTest, testSetCellularStateDisable, TestSize.Level1)
+{
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetCellularState(false, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_OK);
+}
+#else
+HWTEST_F(ServiceTest, testSetCellularStateNotSupported, TestSize.Level1)
+{
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetCellularState(true, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_NOT_SUPPORTED);
+}
+#endif
+
+#ifdef ARKXTEST_AIRPLANE_ENABLE
+HWTEST_F(ServiceTest, testSetAirplaneMode, TestSize.Level1)
+{
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetAirplaneMode(true, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_OK);
+}
+
+HWTEST_F(ServiceTest, testSetAirplaneModeDisable, TestSize.Level1)
+{
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetAirplaneMode(false, ret);
+    EXPECT_EQ(resCode, 0);
+    EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_OK);
+}
+#else
+HWTEST_F(ServiceTest, testSetAirplaneModeNotSupported, TestSize.Level1)
+{
+    int32_t ret;
+    int32_t resCode = testServerServiceMock_->SetAirplaneMode(true, ret);
     EXPECT_EQ(resCode, 0);
     EXPECT_EQ(ret, OHOS::testserver::TEST_SERVER_NOT_SUPPORTED);
 }
