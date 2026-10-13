@@ -42,6 +42,9 @@
       OHOS::testserver::TestServerClient::EnableLocationMock*;
       OHOS::testserver::TestServerClient::DisableLocationMock*;
       OHOS::testserver::TestServerClient::SetMockedLocations*;
+      OHOS::testserver::TestServerClient::SetWifiState*;
+      OHOS::testserver::TestServerClient::SetCellularState*;
+      OHOS::testserver::TestServerClient::SetAirplaneMode*;
     };
   local:
     *;

@@ -421,6 +421,45 @@ namespace OHOS::testserver {
 
         return setResult;
     }
+
+    int32_t TestServerClient::SetWifiState(bool enable)
+    {
+        HiLog::Info(LABEL, "%{public}s called. enable=%{public}d", __func__, enable);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "iTestServerInterface_ is nullptr");
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t setResult = 0;
+        iTestServerInterface_->SetWifiState(enable, setResult);
+        HiLog::Debug(LABEL, "SetWifiState result: %{public}d", setResult);
+        return setResult;
+    }
+
+    int32_t TestServerClient::SetCellularState(bool enable)
+    {
+        HiLog::Info(LABEL, "%{public}s called. enable=%{public}d", __func__, enable);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "iTestServerInterface_ is nullptr");
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t setResult = 0;
+        iTestServerInterface_->SetCellularState(enable, setResult);
+        HiLog::Debug(LABEL, "SetCellularState result: %{public}d", setResult);
+        return setResult;
+    }
+
+    int32_t TestServerClient::SetAirplaneMode(bool enable)
+    {
+        HiLog::Info(LABEL, "%{public}s called. enable=%{public}d", __func__, enable);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "iTestServerInterface_ is nullptr");
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t setResult = 0;
+        iTestServerInterface_->SetAirplaneMode(enable, setResult);
+        HiLog::Debug(LABEL, "SetAirplaneMode result: %{public}d", setResult);
+        return setResult;
+    }
 } // namespace OHOS::testserver
 
 void FrequencyLockPlugin()

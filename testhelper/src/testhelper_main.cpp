@@ -23,7 +23,7 @@
 
 namespace OHOS::testhelper {
     // Constants
-    constexpr const char* VERSION = "1.0.1";
+    constexpr const char* VERSION = "1.1.0";
     constexpr const char* HELP_MSG = R"(
 Usage:
   testhelper <command> [options]
@@ -44,6 +44,12 @@ Commands:
   enable-location-mock     Enable location mock functionality
   disable-location-mock    Disable location mock and restore real location
   set-mocked-locations <path> [interval] Set mocked locations from GPX file
+  enable-wifi               Enable WiFi
+  disable-wifi              Disable WiFi
+  enable-cellular-data      Enable cellular data
+  disable-cellular-data     Disable cellular data
+  enable-airplane           Enable airplane mode
+  disable-airplane          Disable airplane mode
   help               Show this help message
   --version          Show version information
 )";
@@ -65,6 +71,12 @@ Commands:
         {"enable-location-mock", std::make_tuple(2, 2, "testhelper enable-location-mock")},
         {"disable-location-mock", std::make_tuple(2, 2, "testhelper disable-location-mock")},
         {"set-mocked-locations", std::make_tuple(3, 4, "testhelper set-mocked-locations <path>")},
+        {"enable-wifi", std::make_tuple(2, 2, "testhelper enable-wifi")},
+        {"disable-wifi", std::make_tuple(2, 2, "testhelper disable-wifi")},
+        {"enable-cellular-data", std::make_tuple(2, 2, "testhelper enable-cellular-data")},
+        {"disable-cellular-data", std::make_tuple(2, 2, "testhelper disable-cellular-data")},
+        {"enable-airplane", std::make_tuple(2, 2, "testhelper enable-airplane")},
+        {"disable-airplane", std::make_tuple(2, 2, "testhelper disable-airplane")},
         {"--version", std::make_tuple(2, 2, "testhelper --version")},
         {"help", std::make_tuple(2, 2, "testhelper help")},
     };
@@ -171,6 +183,30 @@ Commands:
                 }
             }
             return core.HandleSetMockedLocations(gpxFile, timeInterval);
+        }},
+        {"enable-wifi", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("enable-wifi", argc);
+            return core.HandleSetWifiState(true);
+        }},
+        {"disable-wifi", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("disable-wifi", argc);
+            return core.HandleSetWifiState(false);
+        }},
+        {"enable-cellular-data", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("enable-cellular-data", argc);
+            return core.HandleSetCellularState(true);
+        }},
+        {"disable-cellular-data", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("disable-cellular-data", argc);
+            return core.HandleSetCellularState(false);
+        }},
+        {"enable-airplane", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("enable-airplane", argc);
+            return core.HandleSetAirplaneMode(true);
+        }},
+        {"disable-airplane", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("disable-airplane", argc);
+            return core.HandleSetAirplaneMode(false);
         }},
     };
 
