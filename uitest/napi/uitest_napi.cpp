@@ -71,6 +71,7 @@ namespace OHOS::uitest {
     /**Lifecycle function, establish connection async, called externally.*/
     static napi_value ScheduleEstablishConnection(napi_env env, napi_callback_info info)
     {
+        fdsan_set_error_level(FDSAN_ERROR_LEVEL_FATAL);
         size_t argc = 1;
         napi_value value = nullptr;
         napi_value argv[1] = {0};
