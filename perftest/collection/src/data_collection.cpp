@@ -53,17 +53,19 @@ namespace OHOS::perftest {
                 return pid;
             }
         } else {
-            close(pipefd[1]);
+            fdsan_exchange_owner_tag(pipefd[1], 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+            fdsan_close_with_tag(pipefd[1], fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
             char buffer[128] = {0};
             string executeRes;
             ssize_t count;
+            fdsan_exchange_owner_tag(pipefd[0], 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
             while ((count = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
                 executeRes.append(buffer, count);
             }
             LOG_I("Pid of process %{public}s is %{public}s", bundleName_.c_str(), executeRes.c_str());
             stringstream pidStream(executeRes);
             pidStream >> pid;
-            close(pipefd[0]);
+            fdsan_close_with_tag(pipefd[0], fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
             waitpid(executePid, nullptr, 0);
         }
         return pid;
