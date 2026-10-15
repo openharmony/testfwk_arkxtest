@@ -1179,3 +1179,37 @@ TEST_F(UiDriverTest, UserSwitch_Count_LoopThroughUsers)
         EXPECT_EQ(controller_->GetCurrentUser(), userId);
     }
 }
+
+#ifdef ARKXTEST_KNUCKLE_ACTION_ENABLE
+#ifdef ARKXTEST_SIMULATOR_ENABLE
+TEST_F(UiDriverTest, PerformKnuckleAction_SimulatorReturns804)
+{
+    auto error = ApiCallErr(NO_ERROR);
+    GenericMultiClick touch({Point(100, 200)}, 1);
+    driver_->PerformKnuckleAction(touch, opt_, error);
+    EXPECT_EQ(error.code_, ERR_SIMULATOR_UNSUPPORTED);
+}
+#endif
+#endif
+
+#ifdef ARKXTEST_SIMULATOR_ENABLE
+#ifndef ARKXTEST_PC_FEATURE_ENABLE
+TEST_F(UiDriverTest, PerformTouchPadAction_SimulatorReturns17000005)
+{
+    auto error = ApiCallErr(NO_ERROR);
+    TouchPadAction touch(3, TO_LEFT, false);
+    driver_->PerformTouchPadAction(touch, opt_, error);
+    EXPECT_EQ(error.code_, ERR_OPERATION_UNSUPPORTED);
+}
+#endif
+#endif
+
+#ifndef ARKXTEST_SIMULATOR_ENABLE
+TEST_F(UiDriverTest, PerformTouchPadAction_NonSimulatorChecksTouchPadExist)
+{
+    auto error = ApiCallErr(NO_ERROR);
+    TouchPadAction touch(3, TO_LEFT, false);
+    driver_->PerformTouchPadAction(touch, opt_, error);
+    EXPECT_EQ(error.code_, ERR_OPERATION_UNSUPPORTED);
+}
+#endif
