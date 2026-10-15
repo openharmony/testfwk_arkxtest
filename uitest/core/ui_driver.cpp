@@ -677,6 +677,12 @@ namespace OHOS::uitest {
         if (!CheckStatus(false, error)) {
             return;
         }
+#ifdef ARKXTEST_SIMULATOR_ENABLE
+#ifndef ARKXTEST_PC_FEATURE_ENABLE
+        error = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This device can not support this action");
+        return;
+#endif
+#endif
         if (!uiController_->IsTouchPadExist()) {
             error = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This device can not support this action");
             return;
@@ -721,6 +727,10 @@ namespace OHOS::uitest {
     void UiDriver::PerformKnuckleAction(const TouchAction &touch, const UiOpArgs &opt, ApiCallErr &err)
     {
 #ifdef ARKXTEST_KNUCKLE_ACTION_ENABLE
+#ifdef ARKXTEST_SIMULATOR_ENABLE
+        err = ApiCallErr(ERR_SIMULATOR_UNSUPPORTED, "Simulator does not support knuckle action.");
+        return;
+#endif
         if (!CheckStatus(false, err)) {
             return;
         }

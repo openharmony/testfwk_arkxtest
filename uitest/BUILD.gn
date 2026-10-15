@@ -63,6 +63,9 @@ ohos_static_library("uitest_core") {
       arkxtest_product_feature == "tablet") {
     defines += [ "ARKXTEST_KNUCKLE_ACTION_ENABLE" ]
   }
+  if (is_emulator) {
+    defines += [ "ARKXTEST_SIMULATOR_ENABLE" ]
+  }
   subsystem_name = "testfwk"
   part_name = "arkxtest"
 }
