@@ -155,7 +155,6 @@ function processFunc(coreContext, func, itTimeout) {
     let funcLen = func.length;
     let processedFunc;
     const config = coreContext.getDefaultService('config');
-    config.setSupportAsync(true);
     const runnerTimeout = + (config.timeout === undefined ? 5000 : config.timeout);
     let timeout = runnerTimeout;
     if (itTimeout !== undefined) {
@@ -546,21 +545,14 @@ class SuiteService {
             });
             this.currentRunningSuite = this.rootSuite.childSuites[0];
         }
-        if (configService.isSupportAsync()) {
-            console.info(`${TAG} rootSuite:` + JSON.stringify(this.rootSuite));
-            let asyncExecute = async () => {
-                await this.coreContext.fireEvents('task', 'taskStart');
-                await this.rootSuite.asyncRun(this.coreContext);
-            };
-            asyncExecute().then(async () => {
-                await this.coreContext.fireEvents('task', 'taskDone');
-            });
-        } else {
-            console.info('${TAG} rootSuite:' + JSON.stringify(this.rootSuite));
-            this.coreContext.fireEvents('task', 'taskStart');
-            this.rootSuite.run(this.coreContext);
-            this.coreContext.fireEvents('task', 'taskDone');
-        }
+        console.info(`${TAG} rootSuite:` + JSON.stringify(this.rootSuite));
+        let asyncExecute = async () => {
+            await this.coreContext.fireEvents('task', 'taskStart');
+            await this.rootSuite.asyncRun(this.coreContext);
+        };
+        asyncExecute().then(async () => {
+            await this.coreContext.fireEvents('task', 'taskDone');
+        });
     }
 
     apis() {
@@ -642,58 +634,6 @@ SuiteService.Suite = class {
         return breakOnError && isError;
     }
 
-    run(coreContext) {
-        const suiteService = coreContext.getDefaultService('suite');
-        suiteService.setCurrentRunningSuite(this);
-        if (this.description !== '') {
-            coreContext.fireEvents('suite', 'suiteStart', this);
-        }
-        this.runHookFunc('beforeAll');
-        if (this.specs.length > 0) {
-            const configService = coreContext.getDefaultService('config');
-            if (configService.isRandom()) {
-                this.specs.sort(function () {
-                    return +('0.' + (+ new Date() + '').split('').reverse().join('')) > 0.5 ? -1 : 1;
-                });
-            }
-            for (let i = 0; i < this.specs.length; i++) {
-                let spec = this.specs[i];
-                let isBreakOnError = this.isRun(coreContext);
-                if (isBreakOnError) {
-                    break;
-                }
-                this.runHookFunc('beforeEachIt');
-                this.runHookFunc('beforeEach');
-                spec.run(coreContext);
-                this.runHookFunc('afterEach');
-                this.runHookFunc('afterEachIt');
-            }
-        }
-        if (this.childSuites.length > 0) {
-            let beforeEachItSize = this.beforeEachIt.length;
-            let afterEachItSize = this.afterEachIt.length;
-            for (let i = 0; i < this.childSuites.length; i++) {
-                let suite = this.childSuites[i];
-                for (let j = 1; j <= beforeEachItSize; j++) {
-                    suite.beforeEachIt.splice(0, 0, this.beforeEachIt[beforeEachItSize - j]);
-                }
-                for (let j = 0; j < afterEachItSize; j++) {
-                    suite.afterEachIt.push(this.afterEachIt[j]);
-                }
-                let isBreakOnError = this.isRun(coreContext);
-                if (isBreakOnError) {
-                    break;
-                }
-                suite.run(coreContext);
-                suiteService.setCurrentRunningSuite(suite);
-            }
-        }
-        this.runHookFunc('afterAll');
-        if (this.description !== '') {
-            coreContext.fireEvents('suite', 'suiteDone');
-        }
-    }
-
     async runBeforeItSpecified(beforeItSpecified, specItem) {
         for (const [itNames, hookFunc] of beforeItSpecified) {
             if ((Object.prototype.toString.call(itNames) === '[object Array]' && itNames.includes(specItem.description)) ||
@@ -711,6 +651,65 @@ SuiteService.Suite = class {
                 await Reflect.apply(hookFunc, null, []);
             }
             break;
+        }
+    }
+
+    async handleSpecError(specItem, e, coreContext) {
+        const configService = coreContext.getDefaultService('config');
+        const specService = coreContext.getDefaultService('spec');
+        console.error(`${TAG}stack:${e?.stack}`);
+        console.error(`${TAG}stack end`);
+        if (configService.enableFailureCapture) {
+            const suiteName = this.description;
+            const specName = specItem.description;
+            try {
+                await FailureCaptureService.captureOnFailure(suiteName, specName, e);
+            } catch (captureError) {
+                console.error(`${TAG}Failed to capture screenshot: ${captureError.message}`);
+            }
+        }
+        if (e instanceof AssertException) {
+            specItem.fail = e;
+        } else if (e instanceof SkipError) {
+            specItem.isSkip = true;
+            specItem.skipReason = e.message;
+        } else {
+            specItem.error = e;
+        }
+        specService.setStatus(true);
+    }
+
+    async runAfterHooks(specItem) {
+        try {
+            await this.runAfterItSpecified(this.afterItSpecified, specItem);
+        } catch (e) {
+            if (e) {
+                e.message += `, error in afterItSpecified function`;
+                specItem.hookError.push(e);
+                console.error(`${TAG}stack:${e?.stack}`);
+            }
+        }
+        for (const hookItem of this.afterEach) {
+            try {
+                await hookItem();
+            } catch (e) {
+                if (e) {
+                    e.message += `, error in afterEach function`;
+                    specItem.hookError.push(e);
+                    console.error(`${TAG}stack:${e?.stack}`);
+                }
+            }
+        }
+        for (const hookItem of this.afterEachIt) {
+            try {
+                await hookItem();
+            } catch (e) {
+                if (e) {
+                    e.message += `, error in afterEachIt function`;
+                    specItem.hookError.push(e);
+                    console.error(`${TAG}stack:${e?.stack}`);
+                }
+            }
         }
     }
 
@@ -736,30 +735,10 @@ SuiteService.Suite = class {
                 await this.runAsyncHookFunc('beforeEachIt');
                 await this.runAsyncHookFunc('beforeEach');
                 await specItem.asyncRun(coreContext);
-                await this.runAfterItSpecified(this.afterItSpecified, specItem);
-                await this.runAsyncHookFunc('afterEach');
-                await this.runAsyncHookFunc('afterEachIt');
             } catch (e) {
-                console.error(`${TAG}stack:${e?.stack}`);
-                console.error(`${TAG}stack end`);
-                if (configService.enableFailureCapture) {
-                    const suiteName = this.description;
-                    const specName = specItem.description;
-                    try {
-                        await FailureCaptureService.captureOnFailure(suiteName, specName, e);
-                    } catch (captureError) {
-                        console.error(`${TAG}Failed to capture screenshot: ${captureError.message}`);
-                    }
-                }
-                if (e instanceof AssertException) {
-                    specItem.fail = e;
-                } else if (e instanceof SkipError) {
-                    specItem.isSkip = true;
-                    specItem.skipReason = e.message;
-                } else {
-                    specItem.error = e;
-                }
-                specService.setStatus(true);
+                await this.handleSpecError(specItem, e, coreContext);
+            } finally {
+                await this.runAfterHooks(specItem);
             }
             specItem.setResult();
             await coreContext.fireEvents('spec', 'specDone', specItem);
@@ -831,18 +810,6 @@ SuiteService.Suite = class {
             let currentRunningSuite = suiteService.suitesStack.pop();
             suiteService.setCurrentRunningSuite(currentRunningSuite);
             suiteService.suitesStack.push(currentRunningSuite);
-        }
-    }
-
-    runHookFunc(hookName) {
-        if (this[hookName] && this[hookName].length > 0) {
-            this[hookName].forEach(func => {
-                try {
-                    func();
-                } catch (e) {
-                    console.error(`${TAG}${e.stack}`);
-                }
-            });
         }
     }
 
@@ -1005,6 +972,7 @@ SpecService.Spec = class {
         };
         this.fail = undefined;
         this.error = undefined;
+        this.hookError = [];
         this.pass = false;
         this.duration = 0;
         this.startTime = 0;
@@ -1024,36 +992,6 @@ SpecService.Spec = class {
         } else {
             this.pass = true;
         }
-    }
-
-    run(coreContext) {
-        const specService = coreContext.getDefaultService('spec');
-        specService.setCurrentRunningSpec(this);
-        coreContext.fireEvents('spec', 'specStart', this);
-        this.isExecuted = true;
-        try {
-            let dataDriver = coreContext.getServices('dataDriver');
-            if (typeof dataDriver === 'undefined') {
-                this.fn();
-            } else {
-                let suiteParams = dataDriver.dataDriver.getSuiteParams();
-                let specParams = dataDriver.dataDriver.getSpecParams();
-                console.info(`${TAG}[suite params] ${JSON.stringify(suiteParams)}`);
-                console.info(`${TAG}[spec params] ${JSON.stringify(specParams)}`);
-                if (this.fn.length === 0) {
-                    this.fn();
-                } else if (specParams.length === 0) {
-                    this.fn(suiteParams);
-                } else {
-                    specParams.forEach(paramItem => this.fn(Object.assign({}, paramItem, suiteParams)));
-                }
-            }
-            this.setResult();
-        } catch (e) {
-            this.error = e;
-            specService.setStatus(true);
-        }
-        coreContext.fireEvents('spec', 'specDone', this);
     }
 
     async asyncRun(coreContext) {
@@ -1150,6 +1088,14 @@ class ExpectService {
 
     }
 
+    throwAssertError(result, currentRunningSpec, currentRunningSuite) {
+        const assertError = new AssertException(result.message);
+        if (!currentRunningSpec) {
+            currentRunningSuite.hookError = assertError;
+        }
+        throw assertError;
+    }
+
     handleWithAssertPromise(_this, wrappedMatchers, matcherName, actualValue, currentRunningSpec, currentRunningSuite) {
         wrappedMatchers[matcherName] = async function (...args) {
             await _this.matchers[matcherName](actualValue, args).then(function (result) {
@@ -1159,9 +1105,7 @@ class ExpectService {
                 result.actualValue = actualValue;
                 result.checkFunc = matcherName;
                 if (!result.pass) {
-                    const assertError = new AssertException(result.message);
-                    currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
-                    throw assertError;
+                    _this.throwAssertError(result, currentRunningSpec, currentRunningSuite);
                 }
             });
         };
@@ -1178,9 +1122,7 @@ class ExpectService {
             result.actualValue = actualValue;
             result.checkFunc = matcherName;
             if (!result.pass) {
-                const assertError = new AssertException(result.message);
-                currentRunningSpec ? currentRunningSpec.fail = assertError : currentRunningSuite.hookError = assertError;
-                throw assertError;
+                _this.throwAssertError(result, currentRunningSpec, currentRunningSuite);
             }
         };
     }
@@ -1265,6 +1207,9 @@ class ReportService {
         } else {
             this.formatPrint('pass', spec.description + ' ; consuming ' + spec.duration + 'ms');
         }
+        if (spec.hookError.length > 0) {
+            spec.hookError.forEach(e => this.formatPrint('hookError', e?.message));
+        }
         this.formatPrint(this.specService.currentRunningSpec.error, msg);
     }
 
@@ -1315,6 +1260,9 @@ class ReportService {
                 break;
             case 'errorDetail':
                 console.info(`${TAG}[errorDetail]${msg}`);
+                break;
+            case 'hookError':
+                console.info(`${TAG}[hookError]${msg}`);
                 break;
         }
     }

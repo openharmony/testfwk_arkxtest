@@ -20,6 +20,8 @@ import { SpecService } from './SpecService';
 import DataDriver from '../config/DataDriver';
 import { getFunctionArgumentsCount } from '../../util';
 import { AnyType, ItfnType } from '../types/common';
+import { AssertException } from './AssertException';
+import { SkipError } from './SkipError';
 class StaticSpec {
   public description: string;
   public fi: int;
@@ -28,6 +30,7 @@ class StaticSpec {
   public isSkip: boolean;
   public skipReason: string;
   public fail: Error | null;
+  public hookError: Error[];
   public pass: boolean;
   public isExecuted: boolean;
   public error: Error | null;
@@ -38,6 +41,7 @@ class StaticSpec {
     this.description = attrs.description;
     this.fi = attrs.fi;
     this.fail = null;
+    this.hookError = [];
     this.pass = true;
     this.error = null;
     this.duration = 0;
@@ -70,25 +74,6 @@ class StaticSpec {
     } else {
       this.pass = true;
     }
-  }
-
-  run(coreContext: Core): void {
-    const sService = coreContext.getDefaultService('spec');
-
-    coreContext.fireEvents('spec', 'specStart');
-    if (sService !== null) {
-      const specService = sService as SpecService;
-      specService.setCurrentRunningSpec(this);
-      this.isExecuted = true;
-      try {
-        this.fn();
-        this.setResult();
-      } catch (e) {
-        this.error = e;
-        specService.setStatus(true);
-      }
-    }
-    coreContext.fireEvents('spec', 'specDone');
   }
 
   async asyncRun(coreContext: Core): Promise<void> {
