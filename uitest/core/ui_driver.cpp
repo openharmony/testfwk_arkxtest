@@ -728,7 +728,7 @@ namespace OHOS::uitest {
     {
 #ifdef ARKXTEST_KNUCKLE_ACTION_ENABLE
 #ifdef ARKXTEST_SIMULATOR_ENABLE
-        err = ApiCallErr(ERR_SIMULATOR_UNSUPPORTED, "Simulator does not support knuckle action.");
+        err = ApiCallErr(ERR_SIMULATOR_UNSUPPORTED, "The capability is not supported on the emulator at this time.");
         return;
 #endif
         if (!CheckStatus(false, err)) {
