@@ -1197,7 +1197,7 @@ TEST_F(UiDriverTest, PerformKnuckleAction_SimulatorReturns804)
 TEST_F(UiDriverTest, PerformTouchPadAction_SimulatorReturns17000005)
 {
     auto error = ApiCallErr(NO_ERROR);
-    TouchPadAction touch(3, TO_LEFT, false);
+    TouchPadAction touch(THREE, TO_LEFT, false);
     driver_->PerformTouchPadAction(touch, opt_, error);
     EXPECT_EQ(error.code_, ERR_OPERATION_UNSUPPORTED);
 }
@@ -1208,7 +1208,7 @@ TEST_F(UiDriverTest, PerformTouchPadAction_SimulatorReturns17000005)
 TEST_F(UiDriverTest, PerformTouchPadAction_NonSimulatorChecksTouchPadExist)
 {
     auto error = ApiCallErr(NO_ERROR);
-    TouchPadAction touch(3, TO_LEFT, false);
+    TouchPadAction touch(THREE, TO_LEFT, false);
     driver_->PerformTouchPadAction(touch, opt_, error);
     EXPECT_EQ(error.code_, ERR_OPERATION_UNSUPPORTED);
 }
