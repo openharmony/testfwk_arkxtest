@@ -216,6 +216,60 @@ namespace OHOS::uitest {
         return false;
     }
 
+    static std::string SerializeActions(const AccessibilityElementInfo &element)
+    {
+        const auto &actions = element.GetActionList();
+        nlohmann::ordered_json arr = nlohmann::ordered_json::array();
+        for (const auto &action : actions) {
+            nlohmann::ordered_json obj = nlohmann::ordered_json::object();
+            obj["type"] = std::to_string(static_cast<int32_t>(action.GetActionType()));
+            obj["desc"] = action.GetDescriptionInfo();
+            arr.push_back(std::move(obj));
+        }
+        return arr.dump();
+    }
+
+    static std::string SerializeCustomActions(const AccessibilityElementInfo &element)
+    {
+        std::vector<std::string> customActions;
+        element.GetCustomActionList(customActions);
+        nlohmann::ordered_json arr = nlohmann::ordered_json::array();
+        for (const auto &action : customActions) {
+            arr.push_back(action);
+        }
+        return arr.dump();
+    }
+
+    void ElementNodeIteratorImpl::SetNeedActionSerialization(bool needed)
+    {
+        needActionSerialization_ = needed;
+    }
+
+    void ElementNodeIteratorImpl::SetExtendedAttrs(Widget &widget, const AccessibilityElementInfo &element)
+    {
+        widget.SetAttr(UiAttr::ACCESSIBILITY_TEXT, element.GetAccessibilityText());
+        widget.SetAttr(UiAttr::ACCESSIBILITY_LEVEL, element.GetAccessibilityLevel());
+        widget.SetAttr(UiAttr::ACCESSIBILITY_GROUP,
+            element.GetAccessibilityGroup() ? "true" : "false");
+        widget.SetAttr(UiAttr::ACCESSIBILITY_NEXT_FOCUS_ID,
+            std::to_string(element.GetAccessibilityNextFocusId()));
+        widget.SetAttr(UiAttr::ACCESSIBILITY_PREVIOUS_FOCUS_ID,
+            std::to_string(element.GetAccessibilityPreviousFocusId()));
+        widget.SetAttr(UiAttr::ACCESSIBILITY_SCROLLABLE,
+            element.GetAccessibilityScrollable() ? "true" : "false");
+        widget.SetAttr(UiAttr::ACCESSIBILITY_STATE_DESCRIPTION,
+            element.GetAccessibilityStateDescription());
+        if (needActionSerialization_) {
+            widget.SetAttr(UiAttr::ACCESSIBILITY_CUSTOM_ACTIONS, SerializeCustomActions(element));
+            widget.SetAttr(UiAttr::ACCESSIBILITY_ACTIONS, SerializeActions(element));
+        } else {
+            widget.SetAttr(UiAttr::ACCESSIBILITY_CUSTOM_ACTIONS, "");
+            widget.SetAttr(UiAttr::ACCESSIBILITY_ACTIONS, "");
+        }
+        widget.SetAttr(UiAttr::ACCESSIBILITY_CUSTOM_COMPONENT_TYPE,
+            element.GetCustomComponentType());
+    }
+
     void ElementNodeIteratorImpl::WrapperNodeAttrToVec(Widget &widget, const AccessibilityElementInfo &element)
     {
         Accessibility::Rect nodeOriginRect = element.GetRectInScreen();
@@ -259,9 +313,10 @@ namespace OHOS::uitest {
             LOG_D("widget %{public}s is not visible", widget.GetAttr(UiAttr::ACCESSIBILITY_ID).data());
         }
         widget.SetAttr(UiAttr::VISIBLE, element.IsVisible() ? "true" : "false");
-        const auto app = element.GetBundleName();
-        widget.SetAttr(UiAttr::BUNDLENAME, app);
+        widget.SetAttr(UiAttr::BUNDLENAME, element.GetBundleName());
         widget.SetAttr(UiAttr::HINT, element.GetHint());
+        // extended attributes from AAMS standard interface
+        SetExtendedAttrs(widget, element);
         WrapperNodeActionAttrToVec(widget, element);
     }
 

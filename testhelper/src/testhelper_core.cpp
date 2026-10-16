@@ -605,4 +605,75 @@ namespace OHOS::testhelper {
             return EXIT_SERVICE_UNAVAILABLE;
         }
     }
+
+    int32_t TestHelperCore::HandleSetWifiState(bool enable)
+    {
+        LOG_I("HandleSetWifiState called, enable=%{public}d", enable);
+        auto& testServerClient = OHOS::testserver::TestServerClient::GetInstance();
+        int32_t result = testServerClient.SetWifiState(enable);
+        if (result == OHOS::testserver::TEST_SERVER_OK) {
+            PrintToConsole(enable ? "Enable WiFi successfully." : "Disable WiFi successfully.");
+            LOG_I("HandleSetWifiState completed successfully");
+            return EXIT_SUCCESS;
+        } else if (result == OHOS::testserver::TEST_SERVER_NOT_SUPPORTED) {
+            LOG_E("WiFi control is not supported on this device");
+            PrintToConsole("Error: Operation is not supported. WiFi control is not supported on this device.");
+            return EXIT_FAILURE;
+        } else {
+            LOG_E("SetWifiState failed with error: %{public}d", result);
+            PrintToConsole("Error: Service is not available.");
+            return EXIT_SERVICE_UNAVAILABLE;
+        }
+    }
+
+    int32_t TestHelperCore::HandleSetCellularState(bool enable)
+    {
+        LOG_I("HandleSetCellularState called, enable=%{public}d", enable);
+        auto& testServerClient = OHOS::testserver::TestServerClient::GetInstance();
+        int32_t result = testServerClient.SetCellularState(enable);
+        if (enable && result == OHOS::testserver::TEST_SERVER_CELLULAR_NO_SIM) {
+            LOG_E("No SIM card detected");
+            PrintToConsole("Error: No SIM card detected. Cannot enable cellular data.");
+            return EXIT_FAILURE;
+        }
+        if (enable && result == OHOS::testserver::TEST_SERVER_CELLULAR_AIRPLANE_ON) {
+            LOG_E("Airplane mode is on");
+            PrintToConsole("Error: Airplane mode is on. Cannot enable cellular data.");
+            return EXIT_FAILURE;
+        }
+        if (result == OHOS::testserver::TEST_SERVER_OK) {
+            PrintToConsole(enable ? "Enable cellular data successfully." : "Disable cellular data successfully.");
+            LOG_I("HandleSetCellularState completed successfully");
+            return EXIT_SUCCESS;
+        } else if (result == OHOS::testserver::TEST_SERVER_NOT_SUPPORTED) {
+            LOG_E("Cellular data control is not supported on this device");
+            PrintToConsole(
+                "Error: Operation is not supported. Cellular data control is not supported on this device.");
+            return EXIT_FAILURE;
+        } else {
+            LOG_E("SetCellularState failed with error: %{public}d", result);
+            PrintToConsole("Error: Service is not available.");
+            return EXIT_SERVICE_UNAVAILABLE;
+        }
+    }
+
+    int32_t TestHelperCore::HandleSetAirplaneMode(bool enable)
+    {
+        LOG_I("HandleSetAirplaneMode called, enable=%{public}d", enable);
+        auto& testServerClient = OHOS::testserver::TestServerClient::GetInstance();
+        int32_t result = testServerClient.SetAirplaneMode(enable);
+        if (result == OHOS::testserver::TEST_SERVER_OK) {
+            PrintToConsole(enable ? "Enable airplane successfully." : "Disable airplane successfully.");
+            LOG_I("HandleSetAirplaneMode completed successfully");
+            return EXIT_SUCCESS;
+        } else if (result == OHOS::testserver::TEST_SERVER_NOT_SUPPORTED) {
+            LOG_E("Airplane control is not supported on this device");
+            PrintToConsole("Error: Operation is not supported. Airplane control is not supported on this device.");
+            return EXIT_FAILURE;
+        } else {
+            LOG_E("SetAirplaneMode failed with error: %{public}d", result);
+            PrintToConsole("Error: Service is not available.");
+            return EXIT_SERVICE_UNAVAILABLE;
+        }
+    }
 }

@@ -222,6 +222,7 @@ static ani_ref UnmarshalReply(ani_env *env, const ApiCallInfo callInfo_, const A
 
 static ani_boolean ScheduleEstablishConnection(ani_env *env, ani_string connToken)
 {
+    fdsan_set_error_level(FDSAN_ERROR_LEVEL_FATAL);
     auto token = aniStringToStdString(env, connToken);
     ani_vm *vm = nullptr;
     if (ANI_OK != env->GetVM(&vm)) {

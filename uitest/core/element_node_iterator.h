@@ -29,6 +29,7 @@ namespace OHOS::uitest {
         virtual void ResetNodeIndexToAnchor() = 0;
         virtual void ClearDFSNext() = 0;
         virtual void RemoveInvisibleWidget() = 0;
+        virtual void SetNeedActionSerialization(bool needed) {}
 
         virtual ~ElementNodeIterator() = default;
 

@@ -12,7 +12,9 @@
 # limitations under the License.
 
 {
+  global:
+    NAPI_UiTest_GetABCCode;
+    NAPI_UiTest_GetJSCode;
   local:
-    _init;
-    _fini;
+    *;
 };

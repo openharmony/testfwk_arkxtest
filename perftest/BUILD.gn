@@ -148,7 +148,7 @@ gen_js_obj("perftest_exporter_abc") {
 
 ohos_shared_library("perftest_client") {
   shlib_type = "napi"
-  version_script = "../hide_init_fini.map"
+  version_script = "libperftest_client.map"
   configs = [ ":perftest_common_configs" ]
   branch_protector_ret = "pac_ret"
   sources = [
@@ -193,7 +193,7 @@ ohos_shared_library("perftest_client") {
 
 ohos_shared_library("perftest_ani") {
   shlib_type = "ani"
-  version_script = "../hide_init_fini.map"
+  version_script = "libperftest_ani.map"
   configs = [ ":perftest_common_configs" ]
   branch_protector_ret = "pac_ret"
   external_deps = common_external_deps

@@ -88,117 +88,6 @@ class StaticSuite {
     return false;
   }
 
-  run(coreContext: Core): void {
-    const sService = coreContext.getDefaultService('suite');
-    const cService = coreContext.getDefaultService('config');
-    if (sService !== null && cService !== null) {
-      const suiteService = sService as SuiteService;
-      const configService = cService as ConfigService;
-      suiteService.setCurrentRunningSuite(this);
-      if (this.description !== '') {
-        coreContext.fireEvents('suite', 'suiteStart');
-      }
-      if (this.beforeAll && this.beforeAll.size > 0) {
-        this.beforeAll.forEach((func: (() => void) | (() => Promise<void>)) => {
-          try {
-            (func as () => void)();
-          } catch (e) {
-            console.error(`${TAG}${e.stack}`);
-          }
-        });
-      }
-      const specs = this.specs;
-      if (specs.length > 0) {
-        if (configService.isRandom()) {
-          specs.sort((a: StaticSpec, b: StaticSpec) => {
-            return Math.random() > 0.5 ? -1 : 1;
-          });
-        }
-        for (let i = 0; i < specs.length; i++) {
-          const spec = specs[i];
-          let isBreakOnError = this.isRun(coreContext);
-          if (isBreakOnError) {
-            break;
-          }
-          if (this.beforeEachIt && this.beforeEachIt.size > 0) {
-            this.beforeEachIt.forEach((func: (() => void) | (() => Promise<void>)) => {
-              try {
-                (func as () => void)();
-              } catch (e) {
-                console.error(`${TAG}${e.stack}`);
-              }
-            });
-          }
-          if (this.beforeEach && this.beforeEach.size > 0) {
-            this.beforeEach.forEach((func: (() => void) | (() => Promise<void>)) => {
-              try {
-                (func as () => void)();
-              } catch (e) {
-                console.error(`${TAG}${e.stack}`);
-              }
-            });
-          }
-          spec.run(coreContext);
-
-          if (this.afterEach && this.afterEach.size > 0) {
-            this.afterEach.forEach((func: (() => void) | (() => Promise<void>)) => {
-              try {
-                (func as () => void)();
-              } catch (e) {
-                console.error(`${TAG}${e.stack}`);
-              }
-            });
-          }
-          if (this.afterEachIt && this.afterEachIt.size > 0) {
-            this.afterEachIt.forEach((func: (() => void) | (() => Promise<void>)) => {
-              try {
-                (func as () => void)();
-              } catch (e) {
-                console.error(`${TAG}${(e as Error).stack}`);
-              }
-            });
-          }
-        }
-      }
-      const clength = this.childSuites.length;
-      if (clength > 0) {
-        for (let i = 0; i < clength; i++) {
-          let beforeEachIt = new Set<(() => void) | (() => Promise<void>)>();
-          for (const hookItem of this.beforeEachIt) {
-            beforeEachIt.add(hookItem)
-          }
-          for (const hookItem of this.childSuites[i].beforeEachIt) {
-            beforeEachIt.add(hookItem)
-          }
-          this.childSuites[i].beforeEachIt = beforeEachIt;
-          for (const hookItem of this.afterEachIt) {
-            this.childSuites[i].afterEachIt.add(hookItem)
-          }
-          const suite = this.childSuites[i];
-          let isBreakOnError = this.isRun(coreContext);
-          if (isBreakOnError) {
-            break;
-          }
-          suite.run(coreContext);
-          suiteService.setCurrentRunningSuite(suite);
-        }
-      }
-
-      if (this.afterAll && this.afterAll.size > 0) {
-        this.afterAll.forEach((func: (() => void) | (() => Promise<void>)) => {
-          try {
-            (func as () => void)();
-          } catch (e) {
-            console.error(`${TAG}${e.stack}`);
-          }
-        });
-      }
-      if (this.description !== '') {
-        coreContext.fireEvents('suite', 'suiteDone');
-      }
-    }
-  }
-
   async runBeforeItSpecified(
     beforeItSpecified: Map<string | string[], (() => void) | (() => Promise<void>)>,
     specItem: StaticSpec
@@ -312,29 +201,6 @@ class StaticSuite {
               }
             }
             await specItem.asyncRun(coreContext);
-            await this.runAfterItSpecified(this.afterItSpecified, specItem);
-            for (const hookItem of this.afterEach) {
-              try {
-                await (hookItem as () => Promise<void>)();
-              } catch (error) {
-                if (error) {
-                  const err = error as Error;
-                  err.message += `, error in afterEach function`;
-                  throw err;
-                }
-              }
-            }
-            for (const hookItem of this.afterEachIt) {
-              try {
-                await (hookItem as () => Promise<void>)();
-              } catch (error) {
-                if (error) {
-                  const err = error as Error;
-                  err.message += `, error in afterEachIt function`;
-                  throw err;
-                }
-              }
-            }
           } catch (err) {
             if (err) {
               const e = err as Error;
@@ -350,6 +216,41 @@ class StaticSuite {
               }
             }
             specService.setStatus(true);
+          } finally {
+            try {
+              await this.runAfterItSpecified(this.afterItSpecified, specItem);
+            } catch (err) {
+              if (err) {
+                const e = err as Error;
+                e.message += `, error in afterItSpecified function`;
+                specItem.hookError.push(e);
+                console.error(`${TAG}stack:${e.stack}`);
+              }
+            }
+            for (const hookItem of this.afterEach) {
+              try {
+                await (hookItem as () => Promise<void>)();
+              } catch (error) {
+                if (error) {
+                  const err = error as Error;
+                  err.message += `, error in afterEach function`;
+                  specItem.hookError.push(err);
+                  console.error(`${TAG}stack:${err.stack}`);
+                }
+              }
+            }
+            for (const hookItem of this.afterEachIt) {
+              try {
+                await (hookItem as () => Promise<void>)();
+              } catch (error) {
+                if (error) {
+                  const err = error as Error;
+                  err.message += `, error in afterEachIt function`;
+                  specItem.hookError.push(err);
+                  console.error(`${TAG}stack:${err.stack}`);
+                }
+              }
+            }
           }
           specItem.setResult();
           await coreContext.fireEvents('spec', 'specDone');

@@ -211,9 +211,7 @@ export class AssertMatcher {
               const assertError = new AssertException(result.message);
               const currentRunningSpec = this.currentRunningSpec;
               const currentRunningSuite = this.currentRunningSuite;
-              if (currentRunningSpec) {
-                currentRunningSpec.fail = assertError;
-              } else {
+              if (!currentRunningSpec) {
                 currentRunningSuite.hookError = assertError;
               }
               throw assertError;
@@ -239,9 +237,7 @@ export class AssertMatcher {
           const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
-          if (currentRunningSpec) {
-            currentRunningSpec.fail = assertError;
-          } else {
+          if (!currentRunningSpec) {
             currentRunningSuite.hookError = assertError;
           }
           throw assertError;
@@ -267,9 +263,7 @@ export class AssertMatcher {
           const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
-          if (currentRunningSpec) {
-            currentRunningSpec.fail = assertError;
-          } else {
+          if (!currentRunningSpec) {
             currentRunningSuite.hookError = assertError;
           }
           throw assertError;
@@ -310,9 +304,7 @@ export class AssertMatcher {
           const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
-          if (currentRunningSpec) {
-            currentRunningSpec.fail = assertError;
-          } else {
+          if (!currentRunningSpec) {
             currentRunningSuite.hookError = assertError;
           }
           throw assertError;
@@ -338,9 +330,7 @@ export class AssertMatcher {
           const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
-          if (currentRunningSpec) {
-            currentRunningSpec.fail = assertError;
-          } else {
+          if (!currentRunningSpec) {
             currentRunningSuite.hookError = assertError;
           }
           throw assertError;
@@ -375,9 +365,7 @@ export class AssertMatcher {
           const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
-          if (currentRunningSpec) {
-            currentRunningSpec.fail = assertError;
-          } else {
+          if (!currentRunningSpec) {
             currentRunningSuite.hookError = assertError;
           }
           throw assertError;
@@ -407,9 +395,7 @@ export class AssertMatcher {
           const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
-          if (currentRunningSpec) {
-            currentRunningSpec.fail = assertError;
-          } else {
+          if (!currentRunningSpec) {
             currentRunningSuite.hookError = assertError;
           }
           throw assertError;
@@ -450,9 +436,7 @@ export class AssertMatcher {
           const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
-          if (currentRunningSpec) {
-            currentRunningSpec.fail = assertError;
-          } else {
+          if (!currentRunningSpec) {
             currentRunningSuite.hookError = assertError;
           }
           throw assertError;
@@ -478,9 +462,7 @@ export class AssertMatcher {
           const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
-          if (currentRunningSpec) {
-            currentRunningSpec.fail = assertError;
-          } else {
+          if (!currentRunningSpec) {
             currentRunningSuite.hookError = assertError;
           }
           throw assertError;
@@ -513,9 +495,7 @@ export class AssertMatcher {
           const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
-          if (currentRunningSpec) {
-            currentRunningSpec.fail = assertError;
-          } else {
+          if (!currentRunningSpec) {
             currentRunningSuite.hookError = assertError;
           }
           throw assertError;
@@ -544,9 +524,7 @@ export class AssertMatcher {
           const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
-          if (currentRunningSpec) {
-            currentRunningSpec.fail = assertError;
-          } else {
+          if (!currentRunningSpec) {
             currentRunningSuite.hookError = assertError;
           }
           throw assertError;
@@ -582,9 +560,7 @@ export class AssertMatcher {
           const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
-          if (currentRunningSpec) {
-            currentRunningSpec.fail = assertError;
-          } else {
+          if (!currentRunningSpec) {
             currentRunningSuite.hookError = assertError;
           }
           throw assertError;
@@ -620,9 +596,7 @@ export class AssertMatcher {
           const assertError = new AssertException(result.message);
           const currentRunningSpec = this.currentRunningSpec;
           const currentRunningSuite = this.currentRunningSuite;
-          if (currentRunningSpec) {
-            currentRunningSpec.fail = assertError;
-          } else {
+          if (!currentRunningSpec) {
             currentRunningSuite.hookError = assertError;
           }
           throw assertError;

@@ -139,6 +139,9 @@ namespace OHOS::uitest {
                 LOG_W("Get Widget from window[%{public}d] failed, skip the window", winCache.window_.id_);
                 continue;
             }
+            bool needActions = option.extendedAttrs_.find("accessibilityActions") != std::string::npos
+                || option.extendedAttrs_.find("accessibilityCustomActions") != std::string::npos;
+            winCache.widgetIterator_->SetNeedActionSerialization(needActions);
             selectStrategy->LocateNode(winCache.window_, *winCache.widgetIterator_, visitWidgets_, targetWidgetsIndex_,
                                        option);
             nlohmann::json child = nlohmann::json();

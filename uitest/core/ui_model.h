@@ -71,6 +71,17 @@ namespace OHOS::uitest {
         PAGEPATH,
         DUMMY_ATTRNAME_SELECTION,
         HINT,
+        // extended attributes from AAMS standard interface, naming aligns with accessibility framework
+        ACCESSIBILITY_TEXT,
+        ACCESSIBILITY_LEVEL,
+        ACCESSIBILITY_GROUP,
+        ACCESSIBILITY_NEXT_FOCUS_ID,
+        ACCESSIBILITY_PREVIOUS_FOCUS_ID,
+        ACCESSIBILITY_SCROLLABLE,
+        ACCESSIBILITY_STATE_DESCRIPTION,
+        ACCESSIBILITY_CUSTOM_ACTIONS,
+        ACCESSIBILITY_ACTIONS,
+        ACCESSIBILITY_CUSTOM_COMPONENT_TYPE,
         MAX, // mark the max length
     };
 
@@ -124,6 +135,17 @@ namespace OHOS::uitest {
         "pagePath",      // PAGEPATH
         "dummyAttrnameSelection", // DUMMY_ATTRNAME_SELECTION
         "hint", // HINT
+        // extended attributes from AAMS standard interface, naming aligns with accessibility framework
+        "accessibilityText", // ACCESSIBILITY_TEXT
+        "accessibilityLevel", // ACCESSIBILITY_LEVEL
+        "accessibilityGroup", // ACCESSIBILITY_GROUP
+        "accessibilityNextFocusId", // ACCESSIBILITY_NEXT_FOCUS_ID
+        "accessibilityPreviousFocusId", // ACCESSIBILITY_PREVIOUS_FOCUS_ID
+        "accessibilityScrollable", // ACCESSIBILITY_SCROLLABLE
+        "accessibilityStateDescription", // ACCESSIBILITY_STATE_DESCRIPTION
+        "accessibilityCustomActions", // ACCESSIBILITY_CUSTOM_ACTIONS
+        "accessibilityActions", // ACCESSIBILITY_ACTIONS
+        "accessibilityCustomComponentType", // ACCESSIBILITY_CUSTOM_COMPONENT_TYPE
     };
 
     struct Point {

@@ -32,7 +32,7 @@ ohpm i @ohos/hypium
 - 工程级oh-package.json5内配置:
 ```json
 "dependencies": {
-    "@ohos/hypium": "1.0.25"
+    "@ohos/hypium": "1.0.30"
 }
 ```
 注：
@@ -152,6 +152,9 @@ afterEach(func: Function): void
 
 在测试套内定义一个清理函数，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致。
 
+**说明：**
+从@ohos/hypium 1.0.30版本开始，afterEach 执行失败不影响用例结果。afterEach 中的异常会收集到 hookError 中单独报告，用例的 pass/fail 状态仅由用例本身的断言结果决定。
+
 **参数：**
 
 | 参数名 | 类型     | 必填    | 说明                          | 
@@ -234,6 +237,9 @@ export default function test() {
 export function afterEachIt(func: Function): void
 
 在测试套内定义一个单元预置条件，在每条测试用例结束后执行。外层测试套定义的afterEachIt会在内部测试套中的测试用例执行结束后执行。
+
+**说明：**
+从@ohos/hypium 1.0.30版本开始，afterEachIt 执行失败不影响用例结果。afterEachIt 中的异常会收集到 hookError 中单独报告，用例的 pass/fail 状态仅由用例本身的断言结果决定。
 
 **参数：**
 
@@ -388,6 +394,9 @@ export default function beforeItSpecifiedTest() {
 `afterItSpecified(testCaseNames: Array<string> | string, func: Function): void`
 
 在测试套内定义一个清理函数，仅在指定测试用例结束后执行。
+
+**说明：**
+从@ohos/hypium 1.0.30版本开始，afterItSpecified 执行失败不影响用例结果。afterItSpecified 中的异常会收集到 hookError 中单独报告，用例的 pass/fail 状态仅由用例本身的断言结果决定。
 
 **参数：**
 
@@ -1720,6 +1729,85 @@ export default function staticTest() {
 }
 ```
 
+#### isMocked<sup>1.0.29</sup>
+
+isMocked(obj: Object, name: String): boolean
+
+查询实例上的指定方法或属性是否处于 Mock 状态（方法需通过 when 设置桩行为；属性需调用 mockProperty，与设置值是否等于原始值无关）。该接口为只读查询，不会修改任何 Mock 状态。
+
+**参数：**
+
+| 参数名  | 类型   | 必填 | 说明                       |
+|---------|--------|----|----------------------------|
+| obj     | Object | 是  | 某个类的实例。               |
+| name    | String | 是  | 类的实例上的方法名或属性名。 |
+
+**返回值：**
+
+| 类型    | 说明                                            |
+|---------|-------------------------------------------------|
+| boolean | true：方法已通过 when 设置桩行为，或属性已调用 mockProperty；false：未 Mock 或已被还原。 |
+
+**说明：**
+
+- **方法 Mock**：需先调用 [mockFunc](#mockfunc) 并通过 [when](#when) 设置桩行为后，isMocked 才返回 true；仅调用 mockFunc 但未调用 when 时返回 false。
+- **属性 Mock**：调用 [mockProperty](#mockproperty) 后即返回 true。
+- **还原后**：调用 [clear](#clear) 或 [ignoreMock](#ignoremock) 还原后返回 false。
+- **异常输入处理**：对系统模块 API、从未 Mock 的对象、不存在的方法/属性名，以及 name 为空字符串或 null 时，均返回 false，不抛异常。
+
+**示例：**
+```javascript
+import { describe, expect, it, MockKit, when } from '@ohos/hypium';
+
+class ClassName {
+    constructor() {}
+
+    count = 0;
+
+    greet(name: string) {
+        return 'hello ' + name;
+    }
+}
+
+export default function isMockedTest() {
+    describe('isMockedTest', () => {
+        it('isMocked_method', 0, () => {
+            let claser: ClassName = new ClassName();
+            let mocker: MockKit = new MockKit();
+            // 1.Mock ClassName 实例的 greet 方法并设置桩行为
+            let mockfunc: Function = mocker.mockFunc(claser, claser.greet);
+            when(mockfunc)('world').afterReturn('mocked');
+            // 2.查询 greet 是否处于 Mock 状态
+            expect(mocker.isMocked(claser, 'greet')).assertTrue(); // true
+            // 3.还原后查询
+            mocker.clear(claser);
+            expect(mocker.isMocked(claser, 'greet')).assertFalse(); // false
+        })
+
+        it('isMocked_property', 0, () => {
+            let claser: ClassName = new ClassName();
+            let mocker: MockKit = new MockKit();
+            // 1.Mock ClassName 实例的 count 属性
+            mocker.mockProperty(claser, 'count', 999);
+            expect(mocker.isMocked(claser, 'count')).assertTrue(); // true
+            // 2.还原后查询
+            mocker.ignoreMock(claser, 'count');
+            expect(mocker.isMocked(claser, 'count')).assertFalse(); // false
+        })
+
+        it('isMocked_neverMocked', 0, () => {
+            let claser: ClassName = new ClassName();
+            let mocker: MockKit = new MockKit();
+            // 从未 Mock 的对象/方法名返回 false
+            expect(mocker.isMocked(claser, 'greet')).assertFalse();
+            // name 为空或 null 安全降级返回 false
+            expect(mocker.isMocked(claser, '')).assertFalse();
+            expect(mocker.isMocked(claser, null)).assertFalse();
+        })
+    })
+}
+```
+
 #### verify
 
 `verify(methodName: String, argsArray: Array<any>): VerificationMode`
@@ -2354,7 +2442,7 @@ ArgumentMatchers用于在Mock函数时自定义函数参数，它的接口以枚
 | notFunction | - | @since1.0.28，设定用户传任何非function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notFunction方式调用。 |
 | notMatchRegexs | - | @since1.0.28，设定用户传任何不符合正则表达式验证的参数，执行的结果都是预期的值，使用ArgumentMatchers.notMatchRegexs(RegExp)方式调用。 |
 | containSubstring | - | @since1.0.28，设定用户传任何包含特定子串的字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.containSubstring(subString)方式调用。 |
-| notContainSubstring | - | @since1.0.28，设定用户传任何不包含特定子串的字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainSubArray(subString)方式调用。 |
+| notContainSubstring | - | @since1.0.28，设定用户传任何不包含特定子串的字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainSubstring(subString)方式调用。 |
 | containSubArray | - | @since1.0.28，设定用户传任何包含特定数组的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.containSubArray(subArray)方式调用。 |
 | notContainSubArray | - | @since1.0.28，设定用户传任何不包含特定数组的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainSubArray(subArray)方式调用。 |
 | containValue | - | @since1.0.28，设定用户传任何包含特定值的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.containValue(value)方式调用。 |

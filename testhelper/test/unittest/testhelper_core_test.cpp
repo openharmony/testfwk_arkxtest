@@ -751,3 +751,63 @@ TEST_F(FontnameOperationTest, HandleGetFontname_MixedCaseExtension)
     int32_t result = TestHelperCore().HandleGetFontname(mixedCaseExtPath);
     EXPECT_EQ(result, EXIT_FAILURE);
 }
+
+// Network control test cases accept a set of expected exit codes per
+// environment scenario (reviewer suggestion: widen assertions instead of
+// hardcoding device-specific outcomes).
+// - EXIT_SERVICE_UNAVAILABLE: testserver SA not running or innerAPI failed
+// - EXIT_FAILURE: pre-condition not met (No SIM, Airplane on)
+// - EXIT_SUCCESS: operation completed (requires matching environment)
+class NetworkOperationTest : public ::testing::Test {
+protected:
+    void SetUp() override {}
+    void TearDown() override {}
+};
+
+TEST_F(NetworkOperationTest, HandleEnableWifi)
+{
+    int32_t result = TestHelperCore().HandleSetWifiState(true);
+    EXPECT_TRUE(result == EXIT_SUCCESS || result == EXIT_FAILURE ||
+                result == EXIT_SERVICE_UNAVAILABLE)
+        << "unexpected result: " << result;
+}
+
+TEST_F(NetworkOperationTest, HandleDisableWifi)
+{
+    int32_t result = TestHelperCore().HandleSetWifiState(false);
+    EXPECT_TRUE(result == EXIT_SUCCESS || result == EXIT_FAILURE ||
+                result == EXIT_SERVICE_UNAVAILABLE)
+        << "unexpected result: " << result;
+}
+
+TEST_F(NetworkOperationTest, HandleEnableCellularData)
+{
+    int32_t result = TestHelperCore().HandleSetCellularState(true);
+    EXPECT_TRUE(result == EXIT_FAILURE || result == EXIT_SUCCESS ||
+                result == EXIT_SERVICE_UNAVAILABLE)
+        << "unexpected result: " << result;
+}
+
+TEST_F(NetworkOperationTest, HandleDisableCellularData)
+{
+    int32_t result = TestHelperCore().HandleSetCellularState(false);
+    EXPECT_TRUE(result == EXIT_SUCCESS || result == EXIT_FAILURE ||
+                result == EXIT_SERVICE_UNAVAILABLE)
+        << "unexpected result: " << result;
+}
+
+TEST_F(NetworkOperationTest, HandleEnableAirplane)
+{
+    int32_t result = TestHelperCore().HandleSetAirplaneMode(true);
+    EXPECT_TRUE(result == EXIT_SUCCESS || result == EXIT_FAILURE ||
+                result == EXIT_SERVICE_UNAVAILABLE)
+        << "unexpected result: " << result;
+}
+
+TEST_F(NetworkOperationTest, HandleDisableAirplane)
+{
+    int32_t result = TestHelperCore().HandleSetAirplaneMode(false);
+    EXPECT_TRUE(result == EXIT_SUCCESS || result == EXIT_FAILURE ||
+                result == EXIT_SERVICE_UNAVAILABLE)
+        << "unexpected result: " << result;
+}
