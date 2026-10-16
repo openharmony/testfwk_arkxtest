@@ -297,6 +297,28 @@ do { \
         return RETCODE_SUCCESS;
     }
 
+    // refresh_rate（fps）换算为刷新间隔：非法值（>MAX_VIRTUAL_SCREEN_FPS）拒绝，
+    // 非 MAX 的约数打 W 级日志提示实际帧率；refreshRate_ 为 0 表示不覆盖 refreshInterval_
+    static bool ConvertRefreshRateToInterval(VirtualScreenOption &option)
+    {
+        if (option.refreshRate_ == 0) {
+            return true;
+        }
+        if (option.refreshRate_ > MAX_VIRTUAL_SCREEN_FPS) {
+            LOG_E("Illegal refresh_rate=%{public}u, exceeds max fps %{public}u",
+                option.refreshRate_, MAX_VIRTUAL_SCREEN_FPS);
+            return false;
+        }
+        const uint32_t interval = MAX_VIRTUAL_SCREEN_FPS / option.refreshRate_;
+        option.refreshInterval_ = interval > 0 ? interval : 1; // clamp 下限 1，避免非法刷新间隔
+        if (MAX_VIRTUAL_SCREEN_FPS % option.refreshRate_ != 0) {
+            LOG_W("refresh_rate=%{public}u is not a divisor of %{public}u, actual fps=%{public}u",
+                option.refreshRate_, MAX_VIRTUAL_SCREEN_FPS, MAX_VIRTUAL_SCREEN_FPS / option.refreshInterval_);
+        }
+        LOG_I("refresh_rate=%{public}u, refreshInterval=%{public}u", option.refreshRate_, option.refreshInterval_);
+        return true;
+    }
+
     // 虚拟屏创建参数通过 optJson 传入，参考 copyScreen 的暴露方式
     static RetCode StartVirtualScreenCapture(const nlohmann::json &options, DataCallback callback)
     {
@@ -314,20 +336,8 @@ do { \
         option.refreshRate_ = ReadArgFromJson<uint32_t>(options, "refresh_rate", 0);
         option.screenRotationLocked_ = ReadArgFromJson<bool>(options, "screen_rotation_locked", false);
         // refresh_rate 优先于 refreshInterval：帧率 = 120 / refreshInterval，故 refreshInterval = 120 / fps
-        if (option.refreshRate_ > 0) {
-            if (option.refreshRate_ > MAX_VIRTUAL_SCREEN_FPS) {
-                LOG_E("Illegal refresh_rate=%{public}u, exceeds max fps %{public}u",
-                    option.refreshRate_, MAX_VIRTUAL_SCREEN_FPS);
-                return RETCODE_FAIL;
-            }
-            const uint32_t interval = MAX_VIRTUAL_SCREEN_FPS / option.refreshRate_;
-            option.refreshInterval_ = interval > 0 ? interval : 1; // clamp 下限 1，避免非法刷新间隔
-            if (MAX_VIRTUAL_SCREEN_FPS % option.refreshRate_ != 0) {
-                LOG_W("refresh_rate=%{public}u is not a divisor of %{public}u, actual fps=%{public}u",
-                    option.refreshRate_, MAX_VIRTUAL_SCREEN_FPS, MAX_VIRTUAL_SCREEN_FPS / option.refreshInterval_);
-            }
-            LOG_I("refresh_rate=%{public}u, refreshInterval=%{public}u", option.refreshRate_,
-                option.refreshInterval_);
+        if (!ConvertRefreshRateToInterval(option)) {
+            return RETCODE_FAIL;
         }
         // screen_rotation_locked=true 时锁定旋转，并强制关闭画布旋转
         if (option.screenRotationLocked_) {
