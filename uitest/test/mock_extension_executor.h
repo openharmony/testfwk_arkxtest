@@ -27,6 +27,7 @@
 #include "ui_driver.h"
 #include "ui_record.h"
 #include "screen_copy.h"
+#include "virtual_screen.h"
 #include "extension_c_api.h"
 
 namespace OHOS::uitest {
@@ -104,6 +105,8 @@ RetCode StopCapture(Text name)
     }
     if (strcmp(name.data, "copyScreen") == 0) {
         StopScreenCopy();
+    } else if (strcmp(name.data, "virtualScreen") == 0) {
+        StopVirtualScreen();
     } else if (strcmp(name.data, "recordUiAction") == 0) {
         UiDriverRecordStop();
         unique_lock<mutex> lock(g_recordRunningLock);
@@ -198,6 +201,18 @@ RetCode StartCapture(Text name, DataCallback callback, Text optJson)
             callback(Text{reinterpret_cast<const char *>(data), len});
             free(data);
         });
+    } else if (strcmp(name.data, "virtualScreen") == 0) {
+        // 与真实 executor 的 virtualScreen 分支保持一致：解析关键参数并委托真实 virtual_screen 模块
+        VirtualScreenOption option;
+        option.width_ = ReadArgFromJson<uint32_t>(options, "width", 0);
+        option.height_ = ReadArgFromJson<uint32_t>(options, "height", 0);
+        if (!StartVirtualScreen(option, INVALID_SCREEN_ID)) {
+            g_runningCaptures.erase(name.data);
+            return RETCODE_FAIL;
+        }
+        const auto vsId = GetRunningVirtualScreenId();
+        auto idJson = "{\"virtualScreenId\":" + std::to_string(vsId) + "}";
+        callback(Text{idJson.c_str(), idJson.length()});
     } else if (strcmp(name.data, "recordUiAction") == 0) {
         UiDriverRecordStop();
         unique_lock<mutex> lock(g_recordRunningLock);
