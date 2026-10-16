@@ -35,22 +35,23 @@ namespace OHOS::uitest {
 
     // 虚拟屏创建参数。字段语义与 OHOS::Rosen::VirtualScreenOption 一一对应，
     // 并补充投屏场景迁移的刷新率/隐私豁免/画布旋转/旋转锁定配置。
+    // 命名：普通结构体数据字段按仓内约定用 camelBack（无尾下划线），区别于类成员变量
     struct VirtualScreenOption {
-        std::string name_ = "uitest";
-        uint32_t width_ = 0;
-        uint32_t height_ = 0;
-        float density_ = 0;                               // 密度，<=0 时自动取默认屏 DPI
-        Surface* surface_ = nullptr;                      // 虚拟屏输出 surface（如编码器 surface），调用方保证生命周期
-        int32_t flags_ = 0;
-        bool isForShot_ = false;
-        std::vector<uint64_t> missionIds_ = {};
-        uint32_t refreshInterval_ = 1;                    // 帧刷新间隔，帧率 = 120 / refreshInterval
-        int32_t skipAppPid_ = -1;                         // 隐私豁免应用 pid，<0 表示不豁免
-        std::vector<uint64_t> skipPrivacyWindowsId_ = {}; // 隐私豁免窗口
-        bool enableCanvasRotation_ = true;                // 是否开启画布旋转
+        std::string name = "uitest";
+        uint32_t width = 0;
+        uint32_t height = 0;
+        float density = 0;                               // 密度，<=0 时自动取默认屏 DPI
+        Surface* surface = nullptr;                      // 虚拟屏输出 surface（如编码器 surface），调用方保证生命周期
+        int32_t flags = 0;
+        bool isForShot = false;
+        std::vector<uint64_t> missionIds = {};
+        uint32_t refreshInterval = 1;                    // 帧刷新间隔，帧率 = 120 / refreshInterval
+        int32_t skipAppPid = -1;                         // 隐私豁免应用 pid，<0 表示不豁免
+        std::vector<uint64_t> skipPrivacyWindowsId = {}; // 隐私豁免窗口
+        bool enableCanvasRotation = true;                // 是否开启画布旋转
         // 补充参数：投屏工具（scrcpy_server）start_record 新增的配置项
-        uint32_t refreshRate_ = 0;                        // 刷新率 fps（0=不覆盖 refreshInterval_）
-        bool screenRotationLocked_ = false;               // 锁定整机屏幕旋转；true 时强制关闭画布旋转（enableCanvasRotation_ 失效）
+        uint32_t refreshRate = 0;                        // 刷新率 fps（0=不覆盖 refreshInterval）
+        bool screenRotationLocked = false;               // 锁定整机屏幕旋转；true 时强制关闭画布旋转（enableCanvasRotation 失效）
     };
 
     // 虚拟屏创建与管理类
