@@ -162,6 +162,48 @@ RetCode GetDumpInfo(nlohmann::json &options, nlohmann::json &tree, ApiCallErr &e
     return RETCODE_SUCCESS;
 }
 
+// dumpLayout 为同步一次性 capture：转储布局并经回调返回（与真实 executor 的 DumpLayoutOnce 一致）
+RetCode DumpLayoutOnce(nlohmann::json &options, DataCallback callback)
+{
+    nlohmann::json tree;
+    ApiCallErr err(NO_ERROR);
+    if (!ExtensionApiCheck(GetDumpInfo(options, tree, err) == RETCODE_SUCCESS)) {
+        return RETCODE_FAIL;
+    }
+    g_runningCaptures.erase("dumpLayout"); // dumpLayout is sync&once
+    if (!ExtensionApiCheck(err.code_ == NO_ERROR)) {
+        return RETCODE_FAIL;
+    }
+    auto layout = tree.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
+    callback(Text{layout.c_str(), layout.length()});
+    return RETCODE_SUCCESS;
+}
+
+// 与真实 executor 的 StartVirtualScreenCapture 保持一致：解析关键参数并委托真实 virtual_screen 模块
+RetCode StartVirtualScreenCapture(const nlohmann::json &options, DataCallback callback)
+{
+    VirtualScreenOption option;
+    option.width_ = ReadArgFromJson<uint32_t>(options, "width", 0);
+    option.height_ = ReadArgFromJson<uint32_t>(options, "height", 0);
+    if (!StartVirtualScreen(option, INVALID_SCREEN_ID)) {
+        return RETCODE_FAIL;
+    }
+    const auto vsId = GetRunningVirtualScreenId();
+    auto idJson = "{\"virtualScreenId\":" + std::to_string(vsId) + "}";
+    callback(Text{idJson.c_str(), idJson.length()});
+    return RETCODE_SUCCESS;
+}
+
+void StartRecordUiAction(DataCallback callback)
+{
+    UiDriverRecordStop();
+    unique_lock<mutex> lock(g_recordRunningLock); // wait for running thread terminates
+    auto recordThread = thread([callback]() {
+        unique_lock<mutex> lock(g_recordRunningLock);
+    });
+    recordThread.detach();
+}
+
 RetCode StartCapture(Text name, DataCallback callback, Text optJson)
 {
     static auto driver = MockDriver();
@@ -183,17 +225,7 @@ RetCode StartCapture(Text name, DataCallback callback, Text optJson)
     g_runningCaptures.insert(name.data);
     guard.unlock();
     if (strcmp(name.data, "dumpLayout") == 0) {
-        nlohmann::json tree;
-        ApiCallErr err(NO_ERROR);
-        if (!ExtensionApiCheck(GetDumpInfo(options, tree, err) == RETCODE_SUCCESS)) {
-            return RETCODE_FAIL;
-        }
-        g_runningCaptures.erase("dumpLayout"); // dumpLayout is sync&once
-        if (!ExtensionApiCheck(err.code_ == NO_ERROR)) {
-            return RETCODE_FAIL;
-        }
-        auto layout = tree.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
-        callback(Text{layout.c_str(), layout.length()});
+        return DumpLayoutOnce(options, callback);
     } else if (strcmp(name.data, "copyScreen") == 0) {
         float scale = ReadArgFromJson<float>(options, "scale", 1.0f);
         int32_t displayId = ReadArgFromJson<int32_t>(options, "displayId", UNASSIGNED);
@@ -202,24 +234,12 @@ RetCode StartCapture(Text name, DataCallback callback, Text optJson)
             free(data);
         });
     } else if (strcmp(name.data, "virtualScreen") == 0) {
-        // 与真实 executor 的 virtualScreen 分支保持一致：解析关键参数并委托真实 virtual_screen 模块
-        VirtualScreenOption option;
-        option.width_ = ReadArgFromJson<uint32_t>(options, "width", 0);
-        option.height_ = ReadArgFromJson<uint32_t>(options, "height", 0);
-        if (!StartVirtualScreen(option, INVALID_SCREEN_ID)) {
+        if (StartVirtualScreenCapture(options, callback) != RETCODE_SUCCESS) {
             g_runningCaptures.erase(name.data);
             return RETCODE_FAIL;
         }
-        const auto vsId = GetRunningVirtualScreenId();
-        auto idJson = "{\"virtualScreenId\":" + std::to_string(vsId) + "}";
-        callback(Text{idJson.c_str(), idJson.length()});
     } else if (strcmp(name.data, "recordUiAction") == 0) {
-        UiDriverRecordStop();
-        unique_lock<mutex> lock(g_recordRunningLock);
-        auto recordThread = thread([callback]() {
-            unique_lock<mutex> lock(g_recordRunningLock);
-        });
-        recordThread.detach();
+        StartRecordUiAction(callback);
     } else {
         return RETCODE_FAIL;
     }
