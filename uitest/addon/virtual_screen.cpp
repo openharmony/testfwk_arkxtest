@@ -39,14 +39,14 @@ VirtualScreen::~VirtualScreen()
 // 组装原生 VirtualScreenOption，语义与投屏工具 ScreenEncoder::Run 中的创建参数一致
 static void BuildNativeOption(const VirtualScreenOption &option, Rosen::VirtualScreenOption &nativeOption)
 {
-    nativeOption.name_ = option.name_;
-    nativeOption.width_ = option.width_;
-    nativeOption.height_ = option.height_;
-    nativeOption.density_ = option.density_;
-    nativeOption.surface_ = sptr<Surface>(option.surface_);
-    nativeOption.flags_ = option.flags_;
-    nativeOption.isForShot_ = option.isForShot_;
-    nativeOption.missionIds_ = option.missionIds_;
+    nativeOption.name_ = option.name;
+    nativeOption.width_ = option.width;
+    nativeOption.height_ = option.height;
+    nativeOption.density_ = option.density;
+    nativeOption.surface_ = sptr<Surface>(option.surface);
+    nativeOption.flags_ = option.flags;
+    nativeOption.isForShot_ = option.isForShot;
+    nativeOption.missionIds_ = option.missionIds;
     if (nativeOption.density_ <= 0) {
         auto defaultDisplay = DisplayManager::GetInstance().GetDefaultDisplay();
         if (defaultDisplay != nullptr) {
@@ -60,32 +60,32 @@ static void BuildNativeOption(const VirtualScreenOption &option, Rosen::VirtualS
 static bool ConfigVirtualScreen(ScreenId screenId, const VirtualScreenOption &option)
 {
     // 挂载 surface，将虚拟屏内容输出到调用方提供的 surface（如编码器 surface）
-    if (option.surface_ != nullptr) {
+    if (option.surface != nullptr) {
         auto ret = ScreenManager::GetInstance().SetVirtualScreenSurface(screenId,
-            sptr<Surface>(option.surface_));
+            sptr<Surface>(option.surface));
         if (ret != DMError::DM_OK) {
             LOG_E("Set virtual screen surface failed, ret=%{public}d", static_cast<int32_t>(ret));
             return false;
         }
     }
     // 设置刷新率（帧率 = 120 / refreshInterval）
-    auto ret = ScreenManager::GetInstance().SetVirtualScreenRefreshRate(screenId, option.refreshInterval_);
+    auto ret = ScreenManager::GetInstance().SetVirtualScreenRefreshRate(screenId, option.refreshInterval);
     if (ret != DMError::DM_OK) {
         LOG_E("Set virtual screen refresh rate failed, ret=%{public}d", static_cast<int32_t>(ret));
         return false;
     }
     // 隐私豁免：跳过指定应用的隐私窗口
-    if (option.skipAppPid_ >= 0 && !option.skipPrivacyWindowsId_.empty()) {
-        std::vector<uint64_t> skipPrivacyWindowsId = option.skipPrivacyWindowsId_;
+    if (option.skipAppPid >= 0 && !option.skipPrivacyWindowsId.empty()) {
+        std::vector<uint64_t> skipPrivacyWindowsId = option.skipPrivacyWindowsId;
         ret = DisplayManager::GetInstance().SetVirtualScreenSecurityExemption(
-            screenId, option.skipAppPid_, skipPrivacyWindowsId);
+            screenId, option.skipAppPid, skipPrivacyWindowsId);
         if (ret != DMError::DM_OK) {
             LOG_E("Set virtual screen security exemption failed, ret=%{public}d", static_cast<int32_t>(ret));
             return false;
         }
     }
     // 开启画布旋转，保证镜像画面方向正确
-    if (option.enableCanvasRotation_) {
+    if (option.enableCanvasRotation) {
         ret = ScreenManager::GetInstance().SetVirtualMirrorScreenCanvasRotation(screenId, true);
         if (ret != DMError::DM_OK) {
             LOG_E("Set virtual mirror screen canvas rotation failed, ret=%{public}d", static_cast<int32_t>(ret));
@@ -97,8 +97,8 @@ static bool ConfigVirtualScreen(ScreenId screenId, const VirtualScreenOption &op
 
 bool VirtualScreen::Setup(const VirtualScreenOption &option)
 {
-    if (option.width_ == 0 || option.height_ == 0) {
-        LOG_E("Illegal virtual screen size, width=%{public}u, height=%{public}u", option.width_, option.height_);
+    if (option.width == 0 || option.height == 0) {
+        LOG_E("Illegal virtual screen size, width=%{public}u, height=%{public}u", option.width, option.height);
         return false;
     }
     if (isRunning_) {
@@ -118,7 +118,7 @@ bool VirtualScreen::Setup(const VirtualScreenOption &option)
         return false;
     }
     // 锁定整机屏幕旋转（全局状态，非虚拟屏自身配置），Stop 时对称恢复
-    if (option.screenRotationLocked_) {
+    if (option.screenRotationLocked) {
         ScreenManager::GetInstance().SetScreenRotationLocked(true);
         rotationLocked_ = true;
     }

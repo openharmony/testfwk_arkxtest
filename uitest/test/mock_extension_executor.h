@@ -183,8 +183,8 @@ RetCode DumpLayoutOnce(nlohmann::json &options, DataCallback callback)
 RetCode StartVirtualScreenCapture(const nlohmann::json &options, DataCallback callback)
 {
     VirtualScreenOption option;
-    option.width_ = ReadArgFromJson<uint32_t>(options, "width", 0);
-    option.height_ = ReadArgFromJson<uint32_t>(options, "height", 0);
+    option.width = ReadArgFromJson<uint32_t>(options, "width", 0);
+    option.height = ReadArgFromJson<uint32_t>(options, "height", 0);
     if (!StartVirtualScreen(option, INVALID_SCREEN_ID)) {
         return RETCODE_FAIL;
     }
