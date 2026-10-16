@@ -84,6 +84,11 @@ class ReportService {
       } else {
         this.formatPrint('pass', spec.description + ' ; consuming ' + spec.duration + 'ms');
       }
+      if (spec.hookError.length > 0) {
+        spec.hookError.forEach((e: Error) => {
+          this.formatPrint('hookError', e.message);
+        });
+      }
     }
   }
 
@@ -142,6 +147,9 @@ class ReportService {
         break;
       case 'errorDetail':
         console.info(`${TAG}[errorDetail]${msg}`);
+        break;
+      case 'hookError':
+        console.info(`${TAG}[hookError]${msg}`);
         break;
     }
   }

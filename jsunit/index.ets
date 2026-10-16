@@ -151,6 +151,7 @@ export declare class MockKit {
     clearAll(): void
     mockPrivateFunc(originalObject: Object, method: String): Function
     mockProperty(obj: Object, propertyName: String, value: allExpectType): void
+    isMocked(obj: Object, name: String): boolean
 }
 
 export declare class SysTestKit {

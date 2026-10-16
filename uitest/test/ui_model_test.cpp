@@ -271,3 +271,44 @@ TEST(DumpHandlerTest, DumpWindowInfoToJson_FieldsNotChanged)
     auto& rootAttrsNoExtended = jsonWithoutExtended["attributes"];
     ASSERT_TRUE(rootAttrsNoExtended.contains("hashcode"));
 }
+
+TEST(DumpHandlerTest, DumpWindowInfoToJson_AccessibilityExtendedAttrs)
+{
+    std::vector<Widget> allWidget;
+    Widget rootWidget("ROOT");
+    rootWidget.SetBounds(Rect(0, 0, 100, 200));
+    rootWidget.SetAttr(UiAttr::ACCESSIBILITY_ID, "root_accessibility");
+    rootWidget.SetAttr(UiAttr::TYPE, "Window");
+    rootWidget.SetAttr(UiAttr::TEXT, "RootWidget");
+    rootWidget.SetAttr(UiAttr::HINT, "Root Hint");
+    rootWidget.SetAttr(UiAttr::ACCESSIBILITY_TEXT, "a11y text");
+    rootWidget.SetAttr(UiAttr::ACCESSIBILITY_LEVEL, "yes");
+    rootWidget.SetAttr(UiAttr::ACCESSIBILITY_GROUP, "true");
+    rootWidget.SetAttr(UiAttr::ACCESSIBILITY_NEXT_FOCUS_ID, "10");
+    rootWidget.SetAttr(UiAttr::ACCESSIBILITY_PREVIOUS_FOCUS_ID, "20");
+    rootWidget.SetAttr(UiAttr::ACCESSIBILITY_SCROLLABLE, "false");
+    rootWidget.SetAttr(UiAttr::ACCESSIBILITY_STATE_DESCRIPTION, "state desc");
+    rootWidget.SetAttr(UiAttr::ACCESSIBILITY_CUSTOM_ACTIONS, "[\"act1\"]");
+    rootWidget.SetAttr(UiAttr::ACCESSIBILITY_ACTIONS, "[{\"type\":\"1\",\"desc\":\"click\"}]");
+    rootWidget.SetAttr(UiAttr::ACCESSIBILITY_CUSTOM_COMPONENT_TYPE, "customType");
+    allWidget.push_back(move(rootWidget));
+    nlohmann::json rootJson;
+    DumpOption option;
+    option.extendedAttrs_ = "accessibilityText accessibilityLevel accessibilityGroup "
+        "accessibilityNextFocusId accessibilityPreviousFocusId accessibilityScrollable "
+        "accessibilityStateDescription accessibilityCustomActions accessibilityActions "
+        "accessibilityCustomComponentType";
+    DumpHandler::DumpWindowInfoToJson(option, allWidget, rootJson);
+    ASSERT_TRUE(rootJson.contains("attributes"));
+    auto& attrs = rootJson["attributes"];
+    ASSERT_EQ(attrs["accessibilityText"], "a11y text");
+    ASSERT_EQ(attrs["accessibilityLevel"], "yes");
+    ASSERT_EQ(attrs["accessibilityGroup"], "true");
+    ASSERT_EQ(attrs["accessibilityNextFocusId"], "10");
+    ASSERT_EQ(attrs["accessibilityPreviousFocusId"], "20");
+    ASSERT_EQ(attrs["accessibilityScrollable"], "false");
+    ASSERT_EQ(attrs["accessibilityStateDescription"], "state desc");
+    ASSERT_EQ(attrs["accessibilityCustomActions"], "[\"act1\"]");
+    ASSERT_EQ(attrs["accessibilityActions"], "[{\"type\":\"1\",\"desc\":\"click\"}]");
+    ASSERT_EQ(attrs["accessibilityCustomComponentType"], "customType");
+}

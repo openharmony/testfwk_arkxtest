@@ -70,7 +70,7 @@ namespace OHOS::uitest {
     "  -w <windowId>                                                specifies the window id of the target window\n"
     "  -m <true/false>          whether merge windows, true means to merge, set it true when not use this option\n"
     "  -d <displayId>                                           specifies the locate screen of the target window\n"
-    "  -e <attributeName>                                               extend by adding the specified attribute\n"
+    "  -e <attributeName>                            extend by adding the specified attribute (uniqueId, accessibility)\n"
     "start-daemon <token>                                                                 start the test process\n"
     "uiRecord                                                                            recording Ui Operations\n"
     "  record                                                           Write Ui event information into csv file\n"
@@ -281,6 +281,7 @@ namespace OHOS::uitest {
             err = ApiCallErr(ERR_INVALID_INPUT, "Error path:" + string(option.savePath_) + strerror(errno));
             return;
         }
+        fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         if (initController) {
             auto controller = make_unique<SysUiController>();
 #ifdef ARKXTEST_MULTI_USER_ENABLE
@@ -296,7 +297,7 @@ namespace OHOS::uitest {
         auto data = nlohmann::json();
         driver.DumpUiHierarchy(data, option, err);
         if (err.code_ != NO_ERROR) {
-            close(fd);
+            fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
             return;
         }
         string dumpStr = data.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
@@ -308,7 +309,7 @@ namespace OHOS::uitest {
         if (fsync(fd) == -1) {
             LOG_E("fsync failed, errno: %{public}s", strerror(errno));
         }
-        close(fd);
+        fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         return;
     }
 
@@ -331,6 +332,31 @@ namespace OHOS::uitest {
         }
     }
 
+    static bool ParseExtendedAttrs(const string &attrsStr, DumpOption &option)
+    {
+        const vector<string> knownAttrs = {"uniqueId", "accessibility"};
+        std::vector<std::string> amsAttrs;
+        for (int i = static_cast<int>(UiAttr::ACCESSIBILITY_TEXT); i < static_cast<int>(UiAttr::MAX); ++i) {
+            amsAttrs.emplace_back(std::string(ATTR_NAMES[i]));
+        }
+        std::vector<std::string> argvVec;
+        StringSplit(attrsStr, ',', argvVec);
+        for (auto &argv : argvVec) {
+            if (std::find(knownAttrs.begin(), knownAttrs.end(), argv) == knownAttrs.end()) {
+                PrintToConsole("Invalid attribute name, currently supported names are 'uniqueId, accessibility'.");
+                return false;
+            }
+            if (argv == "accessibility") {
+                for (const auto &attr : amsAttrs) {
+                    option.extendedAttrs_ += attr + " ";
+                }
+            } else {
+                option.extendedAttrs_ += argv + " ";
+            }
+        }
+        return true;
+    }
+
     static bool ParseDumpOption(const map<char, string> &params, DumpOption &option)
     {
         option.listWindows_ = params.find('i') != params.end();
@@ -350,17 +376,9 @@ namespace OHOS::uitest {
         auto iter5 = params.find('d');
         option.displayId_ = (iter5 != params.end()) ? std::atoi(iter5->second.c_str()): 0;
         auto iter6 = params.find('e');
-        const vector<string> extendedAttrsVec = {"uniqueId"};
         if (iter6 != params.end()) {
-            std::vector<std::string> argvVec;
-            StringSplit(iter6->second, ',', argvVec);
-            for (auto argv : argvVec) {
-                if (std::find(extendedAttrsVec.begin(), extendedAttrsVec.end(), argv) == extendedAttrsVec.end()) {
-                    PrintToConsole("Invalid attribute name, currently supported names are 'uniqueId'.");
-                    return false;
-                } else {
-                    option.extendedAttrs_ += argv + " ";
-                }
+            if (!ParseExtendedAttrs(iter6->second, option)) {
+                return false;
             }
         }
         return true;
@@ -438,6 +456,7 @@ namespace OHOS::uitest {
         fdsan_exchange_owner_tag(fd, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
         if (!controller.TakeScreenCap(fd, errorRecv, displayId)) {
             PrintToConsole("ScreenCap failed: " + errorRecv.str());
+            fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
             return EXIT_FAILURE;
         }
         fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
@@ -584,6 +603,7 @@ namespace OHOS::uitest {
 
     extern "C" int32_t main(int32_t argc, char *argv[])
     {
+        fdsan_set_error_level(FDSAN_ERROR_LEVEL_FATAL);
         if (argc < TWO) {
             PrintToConsole("Missing argument");
             PrintToConsole(HELP_MSG);

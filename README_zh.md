@@ -45,11 +45,11 @@ arkxtest
 | 2   | beforeAll         | 在测试套内定义一个预置条件，在所有测试用例开始前执行且仅执行一次，支持一个参数：预置动作函数。                        |
 | 3   | beforeEach        | 在测试套内定义一个单元预置条件，在每条测试用例开始前执行，执行次数与it定义的测试用例数一致，支持一个参数：预置动作函数。          |
 | 4 | beforeEachIt | @since1.0.25 在测试套内定义一个单元预置条件，在每条测试用例开始前执行，支持一个参数：预置动作函数。<br />外层测试套定义的beforeEachIt会在内部测试套中的测试用例执行前执行。 |
-| 5   | afterEach         | 在测试套内定义一个单元清理条件，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致，支持一个参数：清理动作函数。          |
-| 6 | afterEachIt | @since1.0.25 在测试套内定义一个单元预置条件，在每条测试用例结束后执行，支持一个参数：预置动作函数。<br />外层测试套定义的afterEachIt会在内部测试套中的测试用例执行结束后执行。 |
+| 5   | afterEach         | 在测试套内定义一个单元清理条件，在每条测试用例结束后执行，执行次数与it定义的测试用例数一致，支持一个参数：清理动作函数。**说明：**从@ohos/hypium 1.0.30版本开始，afterEach 执行失败不影响用例结果，异常收集到 hookError 中单独报告。          |
+| 6 | afterEachIt | @since1.0.25 在测试套内定义一个单元预置条件，在每条测试用例结束后执行，支持一个参数：预置动作函数。<br />外层测试套定义的afterEachIt会在内部测试套中的测试用例执行结束后执行。**说明：**从@ohos/hypium 1.0.30版本开始，afterEachIt 执行失败不影响用例结果，异常收集到 hookError 中单独报告。 |
 | 7   | afterAll          | 在测试套内定义一个清理条件，在所有测试用例结束后执行且仅执行一次，支持一个参数：清理动作函数。                        |
 | 8   | beforeItSpecified | @since1.0.15在测试套内定义一个单元预置条件，仅在指定测试用例开始前执行，支持两个参数：单个用例名称或用例名称数组、预置动作函数。 |
-| 9   | afterItSpecified  | @since1.0.15在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行，支持两个参数：单个用例名称或用例名称数组、清理动作函数。 |
+| 9   | afterItSpecified  | @since1.0.15在测试套内定义一个单元清理条件，仅在指定测试用例结束后执行，支持两个参数：单个用例名称或用例名称数组、清理动作函数。**说明：**从@ohos/hypium 1.0.30版本开始，afterItSpecified 执行失败不影响用例结果，异常收集到 hookError 中单独报告。 |
 | 10  | it                | 定义一条测试用例，支持三个参数：用例名称，过滤参数和用例函数。                                        |
 | 11  | expect            | 支持bool类型判断等多种断言方法。                                                     |
 | 12 | xdescribe    | @since1.0.17定义一个跳过的测试套，支持两个参数：测试套名称和测试套函数。                             |
@@ -634,7 +634,8 @@ MockKit是Mock的基础类，用于指定需要Mock的实例和方法。
 | 4 | verify | 验证函数在对应参数下的执行行为是否符合预期，返回一个VerificationMode类。 |
 | 5 | ignoreMock | 使用ignoreMock可以还原实例中被Mock后的函数/属性，对被Mock后的函数/属性有效。                                                                                                   |
 | 6 | clear | 用例执行完毕后，进行被Mock的实例进行还原处理（还原之后对象恢复被Mock之前的功能）。                                                                                                  |
-| 7 | clearAll | 用例执行完毕后，进行数据和内存清理,不会还原实例中被Mock后的函数。                                                                                                                  |  
+| 7 | clearAll | 用例执行完毕后，进行数据和内存清理，不会还原实例中被Mock后的函数。                                                                                                                 |
+| 8 | isMocked | @since1.0.29，查询实例上的指定方法或属性是否处于Mock状态（方法需已通过when设置桩行为；属性需已调用mockProperty，与设置值是否等于原始值无关）。为只读查询，不修改Mock状态。对系统API、未Mock对象、空或null的name返回false，不抛异常。 |
 
 **VerificationMode相关接口**
 
@@ -681,7 +682,7 @@ ArgumentMatchers用于用户自定义函数参数，它的接口以枚举值或�
 | 12 | notFunction | @since1.0.28，设定用户传任何非function类型参数，执行的结果都是预期的值，使用ArgumentMatchers.notFunction方式调用。 |
 | 13 | notMatchRegexs | @since1.0.28，设定用户传任何不符合正则表达式验证的参数，执行的结果都是预期的值，使用ArgumentMatchers.notMatchRegexs(RegExp)方式调用。 |
 | 14 | containSubstring | @since1.0.28，设定用户传任何包含特定子串的字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.containSubstring(subString)方式调用。 |
-| 15 | notContainSubstring | @since1.0.28，设定用户传任何不包含特定子串的字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainSubArray(subString)方式调用。 |
+| 15 | notContainSubstring | @since1.0.28，设定用户传任何不包含特定子串的字符串参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainSubstring(subString)方式调用。 |
 | 16 | containSubArray | @since1.0.28，设定用户传任何包含特定数组的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.containSubArray(subArray)方式调用。 |
 | 17 | notContainSubArray | @since1.0.28，设定用户传任何不包含特定数组的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.notContainSubArray(subArray)方式调用。 |
 | 18 | containValue | @since1.0.28，设定用户传任何包含特定值的数组参数，执行的结果都是预期的值，使用ArgumentMatchers.containValue(value)方式调用。 |
@@ -1300,6 +1301,66 @@ export default function staticTest() {
       expect(really_result).assertEqual(1);
       let really_private_result = claser.method();
       expect(really_private_result).assertEqual(2);
+    })
+  })
+}
+```
+
+**示例15：isMocked(obj, name) 查询Mock状态的使用**
+
+> @since1.0.29 支持
+
+```javascript
+import { describe, expect, it, MockKit, when } from '@ohos/hypium';
+
+class ClassName {
+  constructor() {
+  }
+  count = 0;
+  method_1(arg: string) {
+    return '888888';
+  }
+}
+
+export default function isMockedTest() {
+  describe('isMockedTest', () => {
+    it('isMocked_method', 0, () => {
+      // 1.创建一个Mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
+      // 2.创建一个对象claser
+      let claser: ClassName = new ClassName();
+      // 3.进行Mock操作，对ClassName类的method_1函数进行Mock并设置桩行为
+      let mockfunc: Function = mocker.mockFunc(claser, claser.method_1);
+      when(mockfunc)('test').afterReturn('1');
+      // 4.查询method_1是否处于Mock状态，返回true
+      expect(mocker.isMocked(claser, 'method_1')).assertTrue();
+      // 5.clear还原后查询，返回false
+      mocker.clear(claser);
+      expect(mocker.isMocked(claser, 'method_1')).assertFalse();
+    })
+
+    it('isMocked_property', 0, () => {
+      // 1.创建一个Mock能力的对象MockKit
+      let mocker: MockKit = new MockKit();
+      // 2.创建一个对象claser
+      let claser: ClassName = new ClassName();
+      // 3.Mock ClassName对象的成员变量count
+      mocker.mockProperty(claser, "count", 999);
+      // 4.查询count是否处于Mock状态，返回true
+      expect(mocker.isMocked(claser, 'count')).assertTrue();
+      // 5.ignoreMock还原后查询，返回false
+      mocker.ignoreMock(claser, "count");
+      expect(mocker.isMocked(claser, 'count')).assertFalse();
+    })
+
+    it('isMocked_neverMocked', 0, () => {
+      let mocker: MockKit = new MockKit();
+      let claser: ClassName = new ClassName();
+      // 从未Mock的对象/方法名返回false
+      expect(mocker.isMocked(claser, 'method_1')).assertFalse();
+      // name为空或null安全降级返回false，不抛异常
+      expect(mocker.isMocked(claser, '')).assertFalse();
+      expect(mocker.isMocked(claser, null)).assertFalse();
     })
   })
 }

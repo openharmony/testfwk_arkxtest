@@ -23,7 +23,6 @@ const STRESS_RULE = new RegExp('^[1-9]\\d*$');
 
 class ConfigService {
   public id: string;
-  public supportAsync: boolean;
   public random: boolean;
   public filterValid: Array<string>;
   public filter: int;
@@ -48,7 +47,6 @@ class ConfigService {
   public testTag: Array<Array<string>> = []
   constructor(attr: ServiceAttrIF) {
     this.id = attr.id;
-    this.supportAsync = true; // 默认异步处理测试用例
     this.random = false;
     this.filterValid = new Array<string>();
     this.filter = 0;
@@ -454,14 +452,6 @@ class ConfigService {
 
   isBreakOnError(): boolean {
     return this.breakOnError !== 'true' ? false : true;
-  }
-
-  setSupportAsync(value: boolean): void {
-    this.supportAsync = value;
-  }
-
-  isSupportAsync(): boolean {
-    return this.supportAsync;
   }
 
   translateParams(parameters: Record<string, string>): ConfigIf {

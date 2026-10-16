@@ -562,19 +562,13 @@ class SuiteService {
           });
           this.currentRunningSuite = this.rootSuite.childSuites[0];
         }
-        if (configService.isSupportAsync()) {
-          let asyncExecute = async () => {
-            await core.fireEvents('task', 'taskStart');
-            await this.rootSuite.asyncRun(core);
-          };
-          asyncExecute().then(async () => {
-            await core.fireEvents('task', 'taskDone');
-          });
-        } else {
-          core.fireEvents('task', 'taskStart');
-          this.rootSuite.run(core);
-          core.fireEvents('task', 'taskDone');
-        }
+        let asyncExecute = async () => {
+          await core.fireEvents('task', 'taskStart');
+          await this.rootSuite.asyncRun(core);
+        };
+        asyncExecute().then(async () => {
+          await core.fireEvents('task', 'taskDone');
+        });
       }
     }
   }

@@ -112,6 +112,7 @@ ohos_static_library("uitest_record") {
     "hilog:libhilog",
     "input:libmmi-client",
     "ipc:ipc_single",
+    "c_utils:utils",
   ]
 
   subsystem_name = "testfwk"
@@ -280,7 +281,7 @@ gen_js_obj("uitest_exporter_abc") {
 
 ohos_shared_library("uitest_client") {
   shlib_type = "napi"
-  version_script = "../hide_init_fini.map"
+  version_script = "libuitest_client.map"
   configs = [ ":uitest_common_configs" ]
   branch_protector_ret = "pac_ret"
   sources = [
@@ -352,7 +353,7 @@ ohos_unittest("uitest_core_unittest") {
 
 ohos_shared_library("uitest_ani") {
   shlib_type = "ani"
-  version_script = "../hide_init_fini.map"
+  version_script = "libuitest_ani.map"
   configs = [ ":uitest_common_configs" ]
   branch_protector_ret = "pac_ret"
   external_deps = common_external_deps
