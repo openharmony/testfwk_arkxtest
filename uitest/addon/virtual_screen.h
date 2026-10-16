@@ -78,4 +78,4 @@ namespace OHOS::uitest {
     ScreenId GetRunningVirtualScreenId();
 } // namespace OHOS::uitest
 
-#endif // VIRTUAL_SCREEN_
+#endif // VIRTUAL_SCREEN_H
