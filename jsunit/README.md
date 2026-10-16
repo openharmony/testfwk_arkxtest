@@ -32,7 +32,7 @@ ohpm i @ohos/hypium
 - 工程级oh-package.json5内配置:
 ```json
 "dependencies": {
-    "@ohos/hypium": "1.0.29"
+    "@ohos/hypium": "1.0.30"
 }
 ```
 注：
