@@ -16,7 +16,6 @@
 #include <csignal>
 #include <dlfcn.h>
 #include <file_ex.h>
-#include <limits>
 #include <mutex>
 #include <securec.h>
 #include <set>
@@ -282,7 +281,7 @@ do { \
             dumpOption.displayId_ = val.get<int>();
         }
         driver.DumpUiHierarchy(tree, dumpOption, err);
-    return RETCODE_SUCCESS;
+        return RETCODE_SUCCESS;
     }
 
     // dumpLayout 为同步一次性 capture：转储布局并经回调返回
@@ -302,46 +301,54 @@ do { \
     static RetCode StartVirtualScreenCapture(const nlohmann::json &options, DataCallback callback)
     {
         VirtualScreenOption option;
-        option.name = ReadArgFromJson<string>(options, "screenName", "uitest");
-        option.width = ReadArgFromJson<uint32_t>(options, "width", 0);
-        option.height = ReadArgFromJson<uint32_t>(options, "height", 0);
-        option.density = ReadArgFromJson<float>(options, "density", 0);
-        option.flags = ReadArgFromJson<int32_t>(options, "flags", 0);
-        option.isForShot = ReadArgFromJson<bool>(options, "isForShot", false);
-        option.refreshInterval = ReadArgFromJson<uint32_t>(options, "refreshInterval", 1);
-        option.skipAppPid = ReadArgFromJson<int32_t>(options, "skipAppPid", -1);
-        option.enableCanvasRotation = ReadArgFromJson<bool>(options, "enableCanvasRotation", true);
-        // 补充参数解析：投屏工具 start_record 传入的 encoder_queue_size / refresh_rate / screen_rotation_locked
-        option.encoderQueueSize = ReadArgFromJson<int32_t>(options, "encoder_queue_size", 0);
-        option.refreshRate = ReadArgFromJson<uint32_t>(options, "refresh_rate", 0);
-        option.screenRotationLocked = ReadArgFromJson<bool>(options, "screen_rotation_locked", false);
+        option.name_ = ReadArgFromJson<string>(options, "screenName", "uitest");
+        option.width_ = ReadArgFromJson<uint32_t>(options, "width", 0);
+        option.height_ = ReadArgFromJson<uint32_t>(options, "height", 0);
+        option.density_ = ReadArgFromJson<float>(options, "density", 0);
+        option.flags_ = ReadArgFromJson<int32_t>(options, "flags", 0);
+        option.isForShot_ = ReadArgFromJson<bool>(options, "isForShot", false);
+        option.refreshInterval_ = ReadArgFromJson<uint32_t>(options, "refreshInterval", 1);
+        option.skipAppPid_ = ReadArgFromJson<int32_t>(options, "skipAppPid", -1);
+        option.enableCanvasRotation_ = ReadArgFromJson<bool>(options, "enableCanvasRotation", true);
+        // 补充参数解析：投屏工具 start_record 传入的 refresh_rate / screen_rotation_locked
+        option.refreshRate_ = ReadArgFromJson<uint32_t>(options, "refresh_rate", 0);
+        option.screenRotationLocked_ = ReadArgFromJson<bool>(options, "screen_rotation_locked", false);
         // refresh_rate 优先于 refreshInterval：帧率 = 120 / refreshInterval，故 refreshInterval = 120 / fps
-        if (option.refreshRate > 0) {
-            option.refreshInterval = MAX_VIRTUAL_SCREEN_FPS / option.refreshRate;
-            LOG_I("refresh_rate=%{public}u, refreshInterval=%{public}u", option.refreshRate, option.refreshInterval);
+        if (option.refreshRate_ > 0) {
+            if (option.refreshRate_ > MAX_VIRTUAL_SCREEN_FPS) {
+                LOG_E("Illegal refresh_rate=%{public}u, exceeds max fps %{public}u",
+                    option.refreshRate_, MAX_VIRTUAL_SCREEN_FPS);
+                return RETCODE_FAIL;
+            }
+            const uint32_t interval = MAX_VIRTUAL_SCREEN_FPS / option.refreshRate_;
+            option.refreshInterval_ = interval > 0 ? interval : 1; // clamp 下限 1，避免非法刷新间隔
+            if (MAX_VIRTUAL_SCREEN_FPS % option.refreshRate_ != 0) {
+                LOG_W("refresh_rate=%{public}u is not a divisor of %{public}u, actual fps=%{public}u",
+                    option.refreshRate_, MAX_VIRTUAL_SCREEN_FPS, MAX_VIRTUAL_SCREEN_FPS / option.refreshInterval_);
+            }
+            LOG_I("refresh_rate=%{public}u, refreshInterval=%{public}u", option.refreshRate_,
+                option.refreshInterval_);
         }
-        // screen_rotation_locked=true 时锁定旋转（enableCanvasRotation=false）
-        if (option.screenRotationLocked) {
-            option.enableCanvasRotation = false;
+        // screen_rotation_locked=true 时锁定旋转，并强制关闭画布旋转
+        if (option.screenRotationLocked_) {
+            option.enableCanvasRotation_ = false;
         }
-        LOG_I("VirtualScreenOption: encoderQueueSize=%{public}d, refreshRate=%{public}u, "
-            "screenRotationLocked=%{public}d", option.encoderQueueSize, option.refreshRate,
-            option.screenRotationLocked);
+        LOG_I("VirtualScreenOption: refreshRate=%{public}u, screenRotationLocked=%{public}d",
+            option.refreshRate_, option.screenRotationLocked_);
         if (options.type() == nlohmann::detail::value_t::object && options.contains("skipPrivacyWindowsId")) {
             auto arr = options["skipPrivacyWindowsId"];
             if (arr.type() == nlohmann::detail::value_t::array) {
                 for (auto &item : arr) {
-                    option.skipPrivacyWindowsId.push_back(item.get<uint64_t>());
+                    option.skipPrivacyWindowsId_.push_back(item.get<uint64_t>());
                 }
             }
         }
-        // mainScreenId 缺省时传 UINT64_MAX（即 Rosen::SCREEN_ID_INVALID），内部解析为默认屏
-        const auto mainScreenId = ReadArgFromJson<uint64_t>(options, "mainScreenId",
-            std::numeric_limits<uint64_t>::max());
+        // mainScreenId 缺省时传 INVALID_SCREEN_ID（与 Rosen::SCREEN_ID_INVALID 同值），内部解析为默认屏
+        const auto mainScreenId = ReadArgFromJson<uint64_t>(options, "mainScreenId", INVALID_SCREEN_ID);
         // 同进程场景：调用方可经 optJson 传入 surface 裸指针（uint64），由 uitest 完成 surface 绑定
         const auto surfacePtr = ReadArgFromJson<uint64_t>(options, "surfacePtr", 0);
         if (surfacePtr != 0) {
-            option.surface = reinterpret_cast<Surface*>(surfacePtr);
+            option.surface_ = reinterpret_cast<Surface*>(surfacePtr);
         }
         if (!StartVirtualScreen(option, mainScreenId)) {
             return RETCODE_FAIL;
