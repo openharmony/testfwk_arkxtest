@@ -155,6 +155,7 @@ ohos_static_library("uitest_addon") {
   sources = [
     "${source_root}/addon/extension_executor.cpp",
     "${source_root}/addon/screen_copy.cpp",
+    "${source_root}/addon/virtual_screen.cpp"
   ]
   include_dirs = [
     "${source_root}/core",

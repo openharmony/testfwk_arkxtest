@@ -19,6 +19,7 @@
 #include <mutex>
 #include <securec.h>
 #include <set>
+#include <string>
 #include <string_view>
 #include "common_utilities_hpp.h"
 #include "frontend_api_handler.h"
@@ -26,6 +27,7 @@
 #include "ui_driver.h"
 #include "ui_record.h"
 #include "screen_copy.h"
+#include "virtual_screen.h"
 #include "extension_c_api.h"
 #include "extension_executor.h"
 
@@ -236,6 +238,8 @@ do { \
         }
         if (strcmp(name.data, "copyScreen") == 0) {
             StopScreenCopy();
+        } else if (strcmp(name.data, "virtualScreen") == 0) {
+            StopVirtualScreen();
         } else if (strcmp(name.data, "recordUiAction") == 0) {
             UiDriverRecordStop();
             g_recordRunningLock.lock(); // this cause waiting for recordThread exit
@@ -280,6 +284,108 @@ do { \
         return RETCODE_SUCCESS;
     }
 
+    // dumpLayout 为同步一次性 capture：转储布局并经回调返回
+    static RetCode DumpLayoutOnce(nlohmann::json &options, DataCallback callback)
+    {
+        nlohmann::json tree;
+        ApiCallErr err(NO_ERROR);
+        EXTENSION_API_CHECK(GetDumpInfo(options, tree, err) == RETCODE_SUCCESS, "Illegal options", ERR_BAD_ARG);
+        g_runningCaptures.erase("dumpLayout"); // dumpLayout is sync&once
+        EXTENSION_API_CHECK(err.code_ == NO_ERROR, err.message_, err.code_);
+        auto layout = tree.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
+        callback(Text{layout.c_str(), layout.length()});
+        return RETCODE_SUCCESS;
+    }
+
+    // refresh_rate（fps）换算为刷新间隔：非法值（>MAX_VIRTUAL_SCREEN_FPS）拒绝，
+    // 非 MAX 的约数打 W 级日志提示实际帧率；refreshRate_ 为 0 表示不覆盖 refreshInterval_
+    static bool ConvertRefreshRateToInterval(VirtualScreenOption &option)
+    {
+        if (option.refreshRate == 0) {
+            return true;
+        }
+        if (option.refreshRate > MAX_VIRTUAL_SCREEN_FPS) {
+            LOG_E("Illegal refresh_rate=%{public}u, exceeds max fps %{public}u",
+                option.refreshRate, MAX_VIRTUAL_SCREEN_FPS);
+            return false;
+        }
+        const uint32_t interval = MAX_VIRTUAL_SCREEN_FPS / option.refreshRate;
+        option.refreshInterval = interval > 0 ? interval : 1; // clamp 下限 1，避免非法刷新间隔
+        if (MAX_VIRTUAL_SCREEN_FPS % option.refreshRate != 0) {
+            LOG_W("refresh_rate=%{public}u is not a divisor of %{public}u, actual fps=%{public}u",
+                option.refreshRate, MAX_VIRTUAL_SCREEN_FPS, MAX_VIRTUAL_SCREEN_FPS / option.refreshInterval);
+        }
+        LOG_I("refresh_rate=%{public}u, refreshInterval=%{public}u", option.refreshRate, option.refreshInterval);
+        return true;
+    }
+
+    // 虚拟屏创建参数通过 optJson 传入，参考 copyScreen 的暴露方式
+    static RetCode StartVirtualScreenCapture(const nlohmann::json &options, DataCallback callback)
+    {
+        VirtualScreenOption option;
+        option.name = ReadArgFromJson<string>(options, "screenName", "uitest");
+        option.width = ReadArgFromJson<uint32_t>(options, "width", 0);
+        option.height = ReadArgFromJson<uint32_t>(options, "height", 0);
+        option.density = ReadArgFromJson<float>(options, "density", 0);
+        option.flags = ReadArgFromJson<int32_t>(options, "flags", 0);
+        option.isForShot = ReadArgFromJson<bool>(options, "isForShot", false);
+        option.refreshInterval = ReadArgFromJson<uint32_t>(options, "refreshInterval", 1);
+        option.skipAppPid = ReadArgFromJson<int32_t>(options, "skipAppPid", -1);
+        option.enableCanvasRotation = ReadArgFromJson<bool>(options, "enableCanvasRotation", true);
+        // 补充参数解析：投屏工具 start_record 传入的 refresh_rate / screen_rotation_locked
+        option.refreshRate = ReadArgFromJson<uint32_t>(options, "refresh_rate", 0);
+        option.screenRotationLocked = ReadArgFromJson<bool>(options, "screen_rotation_locked", false);
+        // refresh_rate 优先于 refreshInterval：帧率 = 120 / refreshInterval，故 refreshInterval = 120 / fps
+        if (!ConvertRefreshRateToInterval(option)) {
+            return RETCODE_FAIL;
+        }
+        // screen_rotation_locked=true 时锁定旋转，并强制关闭画布旋转
+        if (option.screenRotationLocked) {
+            option.enableCanvasRotation = false;
+        }
+        LOG_I("VirtualScreenOption: refreshRate=%{public}u, screenRotationLocked=%{public}d",
+            option.refreshRate, option.screenRotationLocked);
+        if (options.type() == nlohmann::detail::value_t::object && options.contains("skipPrivacyWindowsId")) {
+            auto arr = options["skipPrivacyWindowsId"];
+            if (arr.type() == nlohmann::detail::value_t::array) {
+                for (auto &item : arr) {
+                    option.skipPrivacyWindowsId.push_back(item.get<uint64_t>());
+                }
+            }
+        }
+        // mainScreenId 缺省时传 INVALID_SCREEN_ID（与 Rosen::SCREEN_ID_INVALID 同值），内部解析为默认屏
+        const auto mainScreenId = ReadArgFromJson<uint64_t>(options, "mainScreenId", INVALID_SCREEN_ID);
+        // 同进程场景：调用方可经 optJson 传入 surface 裸指针（uint64），由 uitest 完成 surface 绑定
+        const auto surfacePtr = ReadArgFromJson<uint64_t>(options, "surfacePtr", 0);
+        if (surfacePtr != 0) {
+            option.surface = reinterpret_cast<Surface*>(surfacePtr);
+        }
+        if (!StartVirtualScreen(option, mainScreenId)) {
+            return RETCODE_FAIL;
+        }
+        // 创建成功后回传虚拟屏 id，供调用方（如投屏工具）绑定 surface 等后续操作
+        const auto vsId = GetRunningVirtualScreenId();
+        auto idJson = "{\"virtualScreenId\":" + std::to_string(vsId) + "}";
+        callback(Text{idJson.c_str(), idJson.length()});
+        return RETCODE_SUCCESS;
+    }
+
+    static void StartRecordUiAction(DataCallback callback)
+    {
+        UiDriverRecordStop();
+        g_recordRunningLock.lock(); // wait for running thread terminates
+        g_recordRunningLock.unlock();
+        auto recordThread = thread([callback]() {
+            g_recordRunningLock.lock();
+            UiDriverRecordStart([callback](nlohmann::json record) {
+                auto data = record.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
+                callback(Text{data.c_str(), data.length()});
+                }, "");
+            g_recordRunningLock.unlock();
+        });
+        recordThread.detach();
+    }
+
     static RetCode StartCapture(Text name, DataCallback callback, Text optJson)
     {
         static auto driver = UiDriver();
@@ -295,13 +401,7 @@ do { \
         g_runningCaptures.insert(name.data);
         guard.unlock();
         if (strcmp(name.data, "dumpLayout") == 0) {
-            nlohmann::json tree;
-            ApiCallErr err(NO_ERROR);
-            EXTENSION_API_CHECK(GetDumpInfo(options, tree, err) == RETCODE_SUCCESS, "Illegal options", ERR_BAD_ARG);
-            g_runningCaptures.erase("dumpLayout"); // dumpLayout is sync&once
-            EXTENSION_API_CHECK(err.code_ == NO_ERROR, err.message_, err.code_);
-            auto layout = tree.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
-            callback(Text{layout.c_str(), layout.length()});
+            return DumpLayoutOnce(options, callback);
         } else if (strcmp(name.data, "copyScreen") == 0) {
             float scale = ReadArgFromJson<float>(options, "scale", 0.5f);
             if (scale <= 0 || scale >= 1.0f) {
@@ -313,19 +413,15 @@ do { \
                 callback(Text{reinterpret_cast<const char *>(data), len});
                 free(data);
             });
+        } else if (strcmp(name.data, "virtualScreen") == 0) {
+            if (StartVirtualScreenCapture(options, callback) != RETCODE_SUCCESS) {
+                unique_lock<mutex> lock(g_captureLock);
+                g_runningCaptures.erase(name.data);
+                lock.unlock();
+                EXTENSION_API_CHECK(false, "Start virtual screen failed", ERR_BAD_ARG);
+            }
         } else if (strcmp(name.data, "recordUiAction") == 0) {
-            UiDriverRecordStop();
-            g_recordRunningLock.lock(); // wait for running thread terminates
-            g_recordRunningLock.unlock();
-            auto recordThread = thread([callback]() {
-                g_recordRunningLock.lock();
-                UiDriverRecordStart([callback](nlohmann::json record) {
-                    auto data = record.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
-                    callback(Text{data.c_str(), data.length()});
-                    }, "");
-                g_recordRunningLock.unlock();
-            });
-            recordThread.detach();
+            StartRecordUiAction(callback);
         } else {
             EXTENSION_API_CHECK(false, string("Illegal capture type: ") + name.data, ERR_BAD_ARG);
         }
