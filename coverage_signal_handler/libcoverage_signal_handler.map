@@ -4,7 +4,6 @@ LIBCOVERAGE_SIGNAL_HANDLER {
     __gcov_reset;
     writeout_fn_list;
     reset_fn_list;
-    __cfi_check;
 
     local:
         *;
