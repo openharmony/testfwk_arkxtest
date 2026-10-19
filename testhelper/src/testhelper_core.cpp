@@ -663,12 +663,12 @@ namespace OHOS::testhelper {
         auto& testServerClient = OHOS::testserver::TestServerClient::GetInstance();
         int32_t result = testServerClient.SetAirplaneMode(enable);
         if (result == OHOS::testserver::TEST_SERVER_OK) {
-            PrintToConsole(enable ? "Enable airplane successfully." : "Disable airplane successfully.");
+            PrintToConsole(enable ? "Enable airplane mode successfully." : "Disable airplane mode successfully.");
             LOG_I("HandleSetAirplaneMode completed successfully");
             return EXIT_SUCCESS;
         } else if (result == OHOS::testserver::TEST_SERVER_NOT_SUPPORTED) {
             LOG_E("Airplane control is not supported on this device");
-            PrintToConsole("Error: Operation is not supported. Airplane control is not supported on this device.");
+            PrintToConsole("Error: Operation is not supported. Airplane mode control is not supported on this device.");
             return EXIT_FAILURE;
         } else {
             LOG_E("SetAirplaneMode failed with error: %{public}d", result);

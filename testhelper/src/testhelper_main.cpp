@@ -48,8 +48,8 @@ Commands:
   disable-wifi              Disable WiFi
   enable-cellular-data      Enable cellular data
   disable-cellular-data     Disable cellular data
-  enable-airplane           Enable airplane mode
-  disable-airplane          Disable airplane mode
+  enable-airplane-mode       Enable airplane mode
+  disable-airplane-mode      Disable airplane mode
   help               Show this help message
   --version          Show version information
 )";
@@ -75,8 +75,8 @@ Commands:
         {"disable-wifi", std::make_tuple(2, 2, "testhelper disable-wifi")},
         {"enable-cellular-data", std::make_tuple(2, 2, "testhelper enable-cellular-data")},
         {"disable-cellular-data", std::make_tuple(2, 2, "testhelper disable-cellular-data")},
-        {"enable-airplane", std::make_tuple(2, 2, "testhelper enable-airplane")},
-        {"disable-airplane", std::make_tuple(2, 2, "testhelper disable-airplane")},
+        {"enable-airplane-mode", std::make_tuple(2, 2, "testhelper enable-airplane-mode")},
+        {"disable-airplane-mode", std::make_tuple(2, 2, "testhelper disable-airplane-mode")},
         {"--version", std::make_tuple(2, 2, "testhelper --version")},
         {"help", std::make_tuple(2, 2, "testhelper help")},
     };
@@ -200,12 +200,12 @@ Commands:
             ValidateArgCount("disable-cellular-data", argc);
             return core.HandleSetCellularState(false);
         }},
-        {"enable-airplane", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
-            ValidateArgCount("enable-airplane", argc);
+        {"enable-airplane-mode", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("enable-airplane-mode", argc);
             return core.HandleSetAirplaneMode(true);
         }},
-        {"disable-airplane", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
-            ValidateArgCount("disable-airplane", argc);
+        {"disable-airplane-mode", [](TestHelperCore& core, int32_t argc, char** argv) -> int32_t {
+            ValidateArgCount("disable-airplane-mode", argc);
             return core.HandleSetAirplaneMode(false);
         }},
     };
