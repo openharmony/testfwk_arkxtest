@@ -5,6 +5,7 @@ LIBCOVERAGE_SIGNAL_HANDLER {
     writeout_fn_list;
     reset_fn_list;
     __cfi_check;
+
     local:
         *;
 };
