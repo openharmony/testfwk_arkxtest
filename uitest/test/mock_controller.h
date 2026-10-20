@@ -72,6 +72,16 @@ namespace OHOS::uitest {
             return false;
         }
 
+        bool IsTouchPadExist() const override
+        {
+            return touchPadExist_;
+        }
+
+        void SetTouchPadExist(bool exist)
+        {
+            touchPadExist_ = exist;
+        }
+
         void InjectTouchEventSequence(const PointerMatrix &events) const override
         {
             touch_event_records_ = std::make_unique<PointerMatrix>(events.GetFingers(), events.GetSteps());
@@ -130,6 +140,7 @@ namespace OHOS::uitest {
         std::map<int, std::vector<MockAccessibilityElementInfo>> windowNodeMap;
         std::map<int32_t, int32_t> displayToUserMap_ = {{0, -1}, {1, -1}};
         int32_t currentUser_ = -1;
+        bool touchPadExist_ = false;
     };
 } // namespace OHOS::uitest
 #endif

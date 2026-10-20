@@ -1196,6 +1196,7 @@ TEST_F(UiDriverTest, PerformKnuckleAction_SimulatorReturns804)
 #ifndef ARKXTEST_PC_FEATURE_ENABLE
 TEST_F(UiDriverTest, PerformTouchPadAction_SimulatorReturns17000005)
 {
+    controller_->SetTouchPadExist(true);
     auto error = ApiCallErr(NO_ERROR);
     TouchPadAction touch(THREE, TO_LEFT, false);
     driver_->PerformTouchPadAction(touch, opt_, error);
@@ -1207,6 +1208,7 @@ TEST_F(UiDriverTest, PerformTouchPadAction_SimulatorReturns17000005)
 #ifndef ARKXTEST_SIMULATOR_ENABLE
 TEST_F(UiDriverTest, PerformTouchPadAction_NonSimulatorChecksTouchPadExist)
 {
+    controller_->SetTouchPadExist(false);
     auto error = ApiCallErr(NO_ERROR);
     TouchPadAction touch(THREE, TO_LEFT, false);
     driver_->PerformTouchPadAction(touch, opt_, error);
