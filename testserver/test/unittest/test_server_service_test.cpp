@@ -205,6 +205,36 @@ HWTEST_F(ServiceTest, testSetPasteData, TestSize.Level1)
 #endif
 }
 
+HWTEST_F(ServiceTest, testSetPasteDataForUser, TestSize.Level1)
+{
+#ifdef ARKXTEST_PASTEBOARD_ENABLE
+    string text = "中文文本";
+    int32_t ret = 0;
+    int32_t resCode1 = testServerServiceMock_->SetPasteDataForUser(text, 100, ret);
+    EXPECT_EQ(resCode1, 0);
+    EXPECT_EQ(ret, TEST_SERVER_OK);
+#else
+    int32_t ret = 0;
+    int32_t resCode1 = testServerServiceMock_->SetPasteDataForUser("text", 100, ret);
+    EXPECT_EQ(resCode1, 0);
+    EXPECT_EQ(ret, TEST_SERVER_NOT_SUPPORTED);
+#endif
+}
+
+HWTEST_F(ServiceTest, testSetPasteDataForUserInvalidUserId, TestSize.Level1)
+{
+#ifdef ARKXTEST_PASTEBOARD_ENABLE
+    string text = "中文文本";
+    int32_t ret = 0;
+    int32_t resCode1 = testServerServiceMock_->SetPasteDataForUser(text, 0, ret);
+    EXPECT_EQ(resCode1, 0);
+    EXPECT_EQ(ret, TEST_SERVER_SET_PASTE_DATA_FAILED);
+    int32_t resCode2 = testServerServiceMock_->SetPasteDataForUser(text, -1, ret);
+    EXPECT_EQ(resCode2, 0);
+    EXPECT_EQ(ret, TEST_SERVER_SET_PASTE_DATA_FAILED);
+#endif
+}
+
 HWTEST_F(ServiceTest, testPublishEvent, TestSize.Level1)
 {
     OHOS::EventFwk::CommonEventData event;

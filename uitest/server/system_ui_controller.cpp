@@ -1019,9 +1019,18 @@ namespace OHOS::uitest {
         }
     }
 
-    void SysUiController::PutTextToClipboard(string_view text, ApiCallErr &error) const
+    void SysUiController::PutTextToClipboard(string_view text, ApiCallErr &error, int32_t displayId) const
     {
-        auto ret = OHOS::testserver::TestServerClient::GetInstance().SetPasteData(string(text));
+        int32_t targetDisplayId = GetValidDisplayId(displayId);
+        int32_t userId = OHOS::testserver::TestServerClient::GetInstance().GetUserIdByDisplayId(targetDisplayId);
+        int32_t ret;
+        if (userId > 0) {
+            LOG_I("Set pasteBoard data for user %{public}d of display %{public}d", userId, targetDisplayId);
+            ret = OHOS::testserver::TestServerClient::GetInstance().SetPasteDataForUser(string(text), userId);
+        } else {
+            LOG_I("Set pasteBoard data with inferred user, display %{public}d", targetDisplayId);
+            ret = OHOS::testserver::TestServerClient::GetInstance().SetPasteData(string(text));
+        }
         if (ret != OHOS::testserver::TEST_SERVER_OK) {
             LOG_E("Set pasteBoard data failed.");
             error = ApiCallErr(ERR_INTERNAL, "Set pasteBoard data failed.");
