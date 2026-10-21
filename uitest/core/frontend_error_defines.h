@@ -48,6 +48,8 @@ namespace OHOS::uitest {
         ERR_NO_SYSTEM_CAPABILITY = 801,
         /**Invalid input parameter.*/
         ERR_INVALID_PARAM = 17000007,
+        /**The capability is not supported on the emulator at this time.*/
+        ERR_SIMULATOR_UNSUPPORTED = 804,
     };
 
     const std::map<ErrCode, std::string> ErrDescMap = {
@@ -61,6 +63,7 @@ namespace OHOS::uitest {
         {ERR_INTERNAL, "Internal error."},
         {ERR_NO_SYSTEM_CAPABILITY, "Capability not supported."},
         {ERR_INVALID_INPUT, "Invalid input parameter."},
+        {ERR_SIMULATOR_UNSUPPORTED, "The capability is not supported on the emulator at this time."},
     };
 
     /**API invocation error detail wrapper.*/

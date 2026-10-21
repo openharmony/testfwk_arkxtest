@@ -677,6 +677,12 @@ namespace OHOS::uitest {
         if (!CheckStatus(false, error)) {
             return;
         }
+#ifdef ARKXTEST_SIMULATOR_ENABLE
+#ifndef ARKXTEST_PC_FEATURE_ENABLE
+        error = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This device can not support this action");
+        return;
+#endif
+#endif
         if (!uiController_->IsTouchPadExist()) {
             error = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This device can not support this action");
             return;
@@ -724,6 +730,10 @@ namespace OHOS::uitest {
         if (!CheckStatus(false, err)) {
             return;
         }
+#ifdef ARKXTEST_SIMULATOR_ENABLE
+        err = ApiCallErr(ERR_SIMULATOR_UNSUPPORTED, "The capability is not supported on the emulator at this time.");
+        return;
+#endif
         PointerMatrix events;
         touch.Decompose(events, opt);
         if (events.Empty()) {
