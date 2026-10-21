@@ -63,6 +63,9 @@ ohos_static_library("uitest_core") {
       arkxtest_product_feature == "tablet") {
     defines += [ "ARKXTEST_KNUCKLE_ACTION_ENABLE" ]
   }
+  if (is_emulator) {
+    defines += [ "ARKXTEST_SIMULATOR_ENABLE" ]
+  }
   subsystem_name = "testfwk"
   part_name = "arkxtest"
 }
@@ -345,6 +348,23 @@ ohos_unittest("uitest_core_unittest") {
   cflags = [ "-g" ]
   cflags_cc = [ "-g" ]
   use_exceptions = true
+  defines = [
+    "__OHOS__=1",
+    "LOG_TAG=\"UiTestKit_Base\"",
+  ]
+  if (arkxtest_product_feature == "tablet") {
+    defines += [ "ARKXTEST_TABLET_FEATURE_ENABLE" ]
+  }
+  if (arkxtest_product_feature == "pc") {
+    defines += [ "ARKXTEST_PC_FEATURE_ENABLE" ]
+  }
+  if (arkxtest_product_feature == "phone" ||
+      arkxtest_product_feature == "tablet") {
+    defines += [ "ARKXTEST_KNUCKLE_ACTION_ENABLE" ]
+  }
+  if (is_emulator) {
+    defines += [ "ARKXTEST_SIMULATOR_ENABLE" ]
+  }
   module_out_path = "arkxtest/uitest"
   testonly = true
   subsystem_name = "testfwk"
