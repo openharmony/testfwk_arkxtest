@@ -1,4 +1,10 @@
 LIBCOVERAGE_SIGNAL_HANDLER {
+    global:
+    __gcov_dump;
+    __gcov_reset;
+    writeout_fn_list;
+    reset_fn_list;
+
     local:
         *;
 };
