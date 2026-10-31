@@ -398,7 +398,7 @@ export class VerificationMode {
     expect(count).assertEqual(this.doTimes);
   }
 
-  never(): void {
+  neverCalled(): void {
     expect(0).assertEqual(this.doTimes);
   }
 

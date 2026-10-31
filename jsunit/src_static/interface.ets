@@ -226,7 +226,7 @@ export interface whenResult {
 
 export interface VerificationMode {
   times(count: Number): void;
-  never(): void;
+  neverCalled(): void;
   once(): void;
   atLeast(count: Number): void;
   atMost(count: Number): void;
