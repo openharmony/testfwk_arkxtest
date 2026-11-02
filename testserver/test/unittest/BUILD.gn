@@ -48,12 +48,13 @@ ohos_unittest("TestSA_unittest") {
     "udmf:udmf_client",
   ]
 
+  defines = []
   if (defined(global_parts_info) && defined(global_parts_info.distributeddatamgr_pasteboard)) {
     external_deps += [
       "pasteboard:pasteboard_client",
       "pasteboard:pasteboard_data",
     ]
-    defines = [ "ARKXTEST_PASTEBOARD_ENABLE"]
+    defines += [ "ARKXTEST_PASTEBOARD_ENABLE" ]
   }
 
   if ((arkxtest_product_feature == "pc" ||
