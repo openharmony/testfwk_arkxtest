@@ -198,7 +198,9 @@ HWTEST_F(ServiceTest, testSetPasteData, TestSize.Level1)
     ASSERT_TRUE(primaryText != nullptr);
     ASSERT_TRUE(*primaryText == text);
 #else
-    int32_t resCode1 = testServerServiceMock_->SetPasteData("text");
+    string text = "text";
+    int32_t ret;
+    int32_t resCode1 = testServerServiceMock_->SetPasteData(text, ret);
     EXPECT_EQ(resCode1, 0);
 #endif
 }
