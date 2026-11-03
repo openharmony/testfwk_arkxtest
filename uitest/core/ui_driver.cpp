@@ -254,6 +254,29 @@ namespace OHOS::uitest {
         return "";
     }
 
+    static const Widget *CheckRetrievedWidget(const Widget &widget, const std::vector<Widget> &visitWidgets,
+        const std::vector<int> &targetWidgetsIndex, ApiCallErr &err)
+    {
+        stringstream msg;
+        msg << "Widget: " << widget.GetAttr(UiAttr::DUMMY_ATTRNAME_SELECTION);
+        msg << "dose not exist on current UI! Check if the UI has changed after you got the widget object";
+        if (targetWidgetsIndex.empty()) {
+            msg << "(NoCandidates)";
+            err = ApiCallErr(ERR_COMPONENT_LOST, msg.str());
+            LOG_W("%{public}s", err.message_.c_str());
+            return nullptr;
+        }
+        DCHECK(targetWidgetsIndex.size() == 1);
+        // confirm type
+        if (widget.GetAttr(UiAttr::TYPE) != visitWidgets[targetWidgetsIndex[0]].GetAttr(UiAttr::TYPE)) {
+            msg << " (CompareEqualsFailed)";
+            err = ApiCallErr(ERR_COMPONENT_LOST, msg.str());
+            LOG_W("%{public}s", err.message_.c_str());
+            return nullptr;
+        }
+        return &visitWidgets[targetWidgetsIndex[0]];
+    }
+
     const Widget *UiDriver::RetrieveWidget(const Widget &widget, ApiCallErr &err, bool updateUi)
     {
         if (updateUi) {
@@ -267,7 +290,13 @@ namespace OHOS::uitest {
             targetWidgetsIndex_.clear();
         }
         std::unique_ptr<SelectStrategy> selectStrategy = ConstructSelectStrategyByRetrieve(widget);
-        auto &windowCacheVec = displayToWindowCacheMap_.find(widget.GetDisplayId())->second;
+        auto cacheIter = displayToWindowCacheMap_.find(widget.GetDisplayId());
+        if (cacheIter == displayToWindowCacheMap_.end()) {
+            LOG_E("No window cache for display %{public}d", widget.GetDisplayId());
+            err = ApiCallErr(ERR_COMPONENT_LOST, "Component does not exist on current UI");
+            return nullptr;
+        }
+        auto &windowCacheVec = cacheIter->second;
         for (auto &curWinCache : windowCacheVec) {
             if (widget.GetAttr(UiAttr::HOST_WINDOW_ID) != std::to_string(curWinCache.window_.id_)) {
                 continue;
@@ -287,24 +316,7 @@ namespace OHOS::uitest {
                 break;
             }
         }
-        stringstream msg;
-        msg << "Widget: " << widget.GetAttr(UiAttr::DUMMY_ATTRNAME_SELECTION);
-        msg << "dose not exist on current UI! Check if the UI has changed after you got the widget object";
-        if (targetWidgetsIndex_.empty()) {
-            msg << "(NoCandidates)";
-            err = ApiCallErr(ERR_COMPONENT_LOST, msg.str());
-            LOG_W("%{public}s", err.message_.c_str());
-            return nullptr;
-        }
-        DCHECK(targetWidgetsIndex_.size() == 1);
-        // confirm type
-        if (widget.GetAttr(UiAttr::TYPE) != visitWidgets_[targetWidgetsIndex_[0]].GetAttr(UiAttr::TYPE)) {
-            msg << " (CompareEqualsFailed)";
-            err = ApiCallErr(ERR_COMPONENT_LOST, msg.str());
-            LOG_W("%{public}s", err.message_.c_str());
-            return nullptr;
-        }
-        return &visitWidgets_[targetWidgetsIndex_[0]];
+        return CheckRetrievedWidget(widget, visitWidgets_, targetWidgetsIndex_, err);
     }
 
     void UiDriver::TriggerKey(const KeyAction &key, const UiOpArgs &opt, ApiCallErr &error, int32_t displayId)

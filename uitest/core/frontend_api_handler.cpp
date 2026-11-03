@@ -18,6 +18,7 @@
 #include <regex.h>
 #include <cstdio>
 #include <cstdlib>
+#include <mutex>
 #include "ui_driver.h"
 #include "widget_operator.h"
 #include "window_operator.h"
@@ -91,8 +92,15 @@ namespace OHOS::uitest {
             in.callerObjRef_ = observerRef;
             in.paramList_.push_back(uiElementInfo);
             in.paramList_.push_back(callbackRef);
-            in.paramList_.push_back(DecAndGetRef(observerRef) == 0);
-            in.paramList_.push_back(DecAndGetRef(callbackRef) == 0);
+            uint32_t observerRefCount = 0;
+            uint32_t callbackRefCount = 0;
+            {
+                lock_guard<mutex> guard(refMtx_);
+                observerRefCount = DecAndGetRef(observerRef);
+                callbackRefCount = DecAndGetRef(callbackRef);
+            }
+            in.paramList_.push_back(observerRefCount == 0);
+            in.paramList_.push_back(callbackRefCount == 0);
             server.Callback(in, out);
         }
 
@@ -143,38 +151,46 @@ namespace OHOS::uitest {
         void OnEvent(const std::string &event, const UiEventSourceInfo &source, Widget* widget = nullptr) override
         {
             const auto currentTime = GetCurrentMillisecond();
-            auto range = callBackInfos_.equal_range(event);
-            for (auto it = range.first; it != range.second;) {
-                const auto& [observerRef, callbackRef, eventOptions] = it->second;
-                bool shouldTrigger = true;
-                bool shouldRemove = false;
-                if (eventOptions.timeOut > 0 &&
-                    currentTime > (eventOptions.registerTime + eventOptions.timeOut)) {
-                    shouldRemove = true;
-                    shouldTrigger = false;
+            vector<tuple<string, string, UiEventSourceInfo>> pendingTriggers;
+            {
+                lock_guard<mutex> guard(refMtx_);
+                auto range = callBackInfos_.equal_range(event);
+                for (auto it = range.first; it != range.second;) {
+                    const auto& [observerRef, callbackRef, eventOptions] = it->second;
+                    bool shouldTrigger = true;
+                    bool shouldRemove = false;
+                    if (eventOptions.timeOut > 0 &&
+                        currentTime > (eventOptions.registerTime + eventOptions.timeOut)) {
+                        shouldRemove = true;
+                        shouldTrigger = false;
+                    }
+
+                    if (shouldTrigger) {
+                        shouldTrigger = ShouldTriggerEvent(event, source, eventOptions, widget);
+                    }
+                    LOG_I("testfwk OnEvent shouldRemove: %{public}d, shouldTrigger: %{public}d.",
+                        shouldRemove, shouldTrigger);
+                    if (shouldRemove) {
+                        it = callBackInfos_.erase(it);
+                        DecAndGetRef(observerRef);
+                        DecAndGetRef(callbackRef);
+                    } else if (shouldTrigger) {
+                        pendingTriggers.emplace_back(observerRef, callbackRef, source);
+                        it = callBackInfos_.erase(it);
+                    } else {
+                        ++it;
+                    }
                 }
-                
-                if (shouldTrigger) {
-                    shouldTrigger = ShouldTriggerEvent(event, source, eventOptions, widget);
-                }
-                LOG_I("testfwk OnEvent shouldRemove: %{public}d, shouldTrigger: %{public}d.",
-                    shouldRemove, shouldTrigger);
-                if (shouldRemove) {
-                    it = callBackInfos_.erase(it);
-                    DecAndGetRef(observerRef);
-                    DecAndGetRef(callbackRef);
-                } else if (shouldTrigger) {
-                    TriggerCallback(observerRef, callbackRef, source);
-                    it = callBackInfos_.erase(it);
-                } else {
-                    ++it;
-                }
+            }
+            for (const auto& [observerRef, callbackRef, triggerSource] : pendingTriggers) {
+                TriggerCallback(observerRef, callbackRef, triggerSource);
             }
         }
 
         void AddCallbackInfo(const string &&event, const string &observerRef, const string &&cbRef,
             EventOptionsInfo&& eventOptions)
         {
+            lock_guard<mutex> guard(refMtx_);
             LOG_D("testfwk AddCallbackInfo begin. event: %{public}s, observerRef: %{public}s, cbRef: %{public}s.",
                 event.c_str(), observerRef.c_str(), cbRef.c_str());
             auto count = callBackInfos_.count(event);
@@ -196,6 +212,7 @@ namespace OHOS::uitest {
     private:
         multimap<string, tuple<string, string, EventOptionsInfo>> callBackInfos_;
         map<string, int> refCountMap_;
+        mutex refMtx_;
     };
 
     struct ApiMethod {
@@ -685,6 +702,12 @@ namespace OHOS::uitest {
         auto find = sBackendObjects.find(string(ref));
         DCHECK(find != sBackendObjects.end() && find->second != nullptr);
         return *(reinterpret_cast<T *>(find->second.get()));
+    }
+
+    static string GetDriverBindRef(string_view ref)
+    {
+        auto find = sDriverBindingMap.find(string(ref));
+        return find == sDriverBindingMap.end() ? "" : find->second;
     }
 
     static UiDriver &GetBoundUiDriver(string_view ref)
@@ -2196,7 +2219,7 @@ static void RegisterExtensionHandler()
                 }
                 auto res = wOp.ScrollFindWidget(selector, vertical, out.exception_);
                 if (res != nullptr) {
-                    out.resultValue_ = StoreBackendObject(move(res), sDriverBindingMap.find(in.callerObjRef_)->second);
+                    out.resultValue_ = StoreBackendObject(move(res), GetDriverBindRef(in.callerObjRef_));
                 }
             }
         };

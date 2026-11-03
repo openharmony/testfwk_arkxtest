@@ -188,16 +188,17 @@ static ani_boolean ScheduleEstablishConnection(ani_env *env, ani_string connToke
     ani_vm *vm = nullptr;
     if (env->GetVM(&vm) != ANI_OK) {
         HiLog::Error(LABEL, "%{public}s GetVM failed", __func__);
+        return false;
     }
-    bool result = false;
-    g_establishConnectionFuture = async(launch::async, [vm, token, &result]() {
+    auto result = make_shared<bool>(false);
+    g_establishConnectionFuture = async(launch::async, [vm, token, result]() {
         using namespace std::placeholders;
         auto &instance = CallbackCodeAni::Get();
         auto callbackHandler = std::bind(&CallbackCodeAni::HandleCallbackEvent, &instance, vm, _1, _2);
-        result = g_apiCallerClient.InitAndConnectPeer(token, callbackHandler);
-        HiLog::Info(LABEL, "End setup transaction connection, result=%{public}d", result);
+        *result = g_apiCallerClient.InitAndConnectPeer(token, callbackHandler);
+        HiLog::Info(LABEL, "End setup transaction connection, result=%{public}d", *result);
     });
-    return result;
+    return *result;
 }
 
 static ani_int GetConnectionStat(ani_env *env)
