@@ -20,6 +20,8 @@
 #include <sstream>
 #include <iostream>
 #include <thread>
+#include <atomic>
+#include <mutex>
 #include "nlohmann/json.hpp"
 #include "common_utils.h"
 #include "callback_code_ani.h"
@@ -41,7 +43,31 @@ namespace OHOS::perftest {
     }
 
     static map<string, ani_ref> g_jsRefs;
-    static size_t g_incJsCbId = 0;
+    static mutex g_jsRefsMtx;
+    static atomic<size_t> g_incJsCbId { 0 };
+    static mutex g_inflightMtx;
+    static map<string, int> g_inflightCallbackCounts;
+    static set<string> g_pendingDeleteIds;
+
+    static void ReleaseInflightCallback(const string &callbackId, ani_env *env)
+    {
+        lock_guard<mutex> guard(g_jsRefsMtx);
+        lock_guard<mutex> inflightGuard(g_inflightMtx);
+        auto inflight = g_inflightCallbackCounts.find(callbackId);
+        if (inflight != g_inflightCallbackCounts.end()) {
+            inflight->second--;
+            if (inflight->second <= 0) {
+                g_inflightCallbackCounts.erase(inflight);
+            }
+        }
+        if (g_pendingDeleteIds.erase(callbackId) > 0 && env != nullptr) {
+            auto findCallback = g_jsRefs.find(callbackId);
+            if (findCallback != g_jsRefs.end()) {
+                env->GlobalReference_Delete(findCallback->second);
+                g_jsRefs.erase(findCallback);
+            }
+        }
+    }
 
     CallbackCodeAni &CallbackCodeAni::Get()
     {
@@ -72,7 +98,10 @@ namespace OHOS::perftest {
             return "";
         }
         HiLog::Info(LABEL, "CbId = %{public}s, CbRef = %{public}p", jsCbId.c_str(), globalCallbackRef);
-        g_jsRefs.insert({ jsCbId, globalCallbackRef });
+        {
+            lock_guard<mutex> guard(g_jsRefsMtx);
+            g_jsRefs.insert({ jsCbId, globalCallbackRef });
+        }
         return jsCbId;
     }
 
@@ -87,12 +116,24 @@ namespace OHOS::perftest {
         auto callbackId = in.paramList_.at(INDEX_ZERO).get<string>();
         auto timeout = in.paramList_.at(INDEX_ONE).get<uint32_t>();
         HiLog::Info(LABEL, "Begin to callback function: callback=%{public}s", callbackId.c_str());
-        auto findCallback = g_jsRefs.find(callbackId);
-        if (findCallback == g_jsRefs.end()) {
+        ani_ref callbackRef = nullptr;
+        {
+            lock_guard<mutex> guard(g_jsRefsMtx);
+            auto findCallback = g_jsRefs.find(callbackId);
+            if (findCallback != g_jsRefs.end()) {
+                callbackRef = findCallback->second;
+                lock_guard<mutex> inflightGuard(g_inflightMtx);
+                g_inflightCallbackCounts[callbackId]++;
+            }
+        }
+        if (callbackRef == nullptr) {
             out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, "JsCallbackFunction is not referenced: " + callbackId);
             HiLog::Error(LABEL, "%{public}s", out.exception_.message_.c_str());
             return;
         }
+        ctx->env = env;
+        ctx->callbackId = callbackId;
+        ctx->callbackRef = callbackRef;
         ani_status res;
         auto className = Builder::BuildClass({"@ohos", "test", "PerfTest", "FinishCallback"}).Descriptor();
         ani_object classObj = {};
@@ -107,9 +148,6 @@ namespace OHOS::perftest {
             HiLog::Error(LABEL, "Can not find fieldName: finish, %{public}d", res);
             return;
         }
-        ctx->env = env;
-        ctx->callbackId = callbackId;
-        ctx->callbackRef = findCallback->second;
         ctx->timeout = timeout;
         ctx->cb = cb;
     }
@@ -146,18 +184,21 @@ namespace OHOS::perftest {
         shared_ptr<CodeCallbackContext> context = make_shared<CodeCallbackContext>();
         InitCallbackContext(env, in, out, context);
         if (out.exception_.code_ != NO_ERROR) {
+            ReleaseInflightCallback(context->callbackId, env);
             HiLog::Warn(LABEL, "InitCallbackContext failed, cannot perform callback");
             return;
         }
         threadLock_ = make_shared<ThreadLock>();
+        auto threadLock = threadLock_;
 
-        thread executethread = thread([this, context, vm] {
+        thread executethread = thread([context, vm, threadLock] {
             ani_env *env = nullptr;
             ani_options aniArgs {0, nullptr};
             auto re = vm->AttachCurrentThread(&aniArgs, ANI_VERSION_1, &env);
             if (re != ANI_OK) {
                 HiLog::Error(LABEL, "AttachCurrentThread fail, result: %{public}d", re);
-                this->threadLock_->LockRelease("Execute js_cb_function failed");
+                ReleaseInflightCallback(context->callbackId, nullptr);
+                threadLock->LockRelease("Execute js_cb_function failed");
                 return;
             }
 
@@ -168,12 +209,13 @@ namespace OHOS::perftest {
             if (res != ANI_OK) {
                 env->DescribeError();
                 HiLog::Error(LABEL, "FunctionalObject_Call failed, %{public}d", res);
-                this->threadLock_->LockRelease("Exception raised during call js_cb_function");
+                threadLock->LockRelease("Exception raised during call js_cb_function");
             }
+            ReleaseInflightCallback(context->callbackId, env);
             vm->DetachCurrentThread();
         });
         executethread.detach();
-        WaitforCallbackFinish(env, context, threadLock_, out);
+        WaitforCallbackFinish(env, context, threadLock, out);
     }
 
     void CallbackCodeAni::DestroyCallbacks(ani_env *env, const ApiCallInfo &in, ApiReplyInfo &out)
@@ -181,13 +223,22 @@ namespace OHOS::perftest {
         HiLog::Debug(LABEL, "%{public}s called", __func__);
         DCHECK(in.paramList_.size() == ONE);
         DCHECK(in.paramList_.at(INDEX_ZERO).type() == detail::value_t::array);
+        lock_guard<mutex> guard(g_jsRefsMtx);
         for (auto& callbackId : in.paramList_.at(INDEX_ZERO)) {
             auto findCallback = g_jsRefs.find(callbackId);
             if (findCallback == g_jsRefs.end()) {
                 continue;
             }
+            {
+                lock_guard<mutex> inflightGuard(g_inflightMtx);
+                auto inflight = g_inflightCallbackCounts.find(callbackId);
+                if (inflight != g_inflightCallbackCounts.end() && inflight->second > 0) {
+                    g_pendingDeleteIds.insert(callbackId);
+                    continue;
+                }
+            }
             env->GlobalReference_Delete(findCallback->second);
-            g_jsRefs.erase(callbackId);
+            g_jsRefs.erase(findCallback);
         }
     }
 
@@ -197,6 +248,7 @@ namespace OHOS::perftest {
         ani_env *env;
         if (vm->GetEnv(ANI_VERSION_1, &env) != ANI_OK) {
             HiLog::Error(LABEL, "%{public}s PerfTest: Unsupported ANI_VERSION_1", __func__);
+            out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, "Callback thread is not attached to ANI environment");
             return;
         }
         if (in.apiId_ == "PerfTest.run") {

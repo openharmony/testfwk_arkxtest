@@ -17,6 +17,8 @@
 #include <string>
 #include <securec.h>
 #include <functional>
+#include <atomic>
+#include <mutex>
 #include "nlohmann/json.hpp"
 #include "common_utilities_hpp.h"
 #include "ui_event_observer_impl.h"
@@ -27,7 +29,8 @@ namespace OHOS::uitest {
 using namespace nlohmann;
 using namespace std;
 static map<string, shared_ptr<function<void(CUIElementInfo)>>> g_callbacks;
-static size_t g_incCbId = 0;
+static mutex g_callbacksMtx;
+static atomic<size_t> g_incCbId { 0 };
 
 UiEventObserverImpl &UiEventObserverImpl::Get()
 {
@@ -58,7 +61,10 @@ void UiEventObserverImpl::PreprocessCallOnce(ApiCallInfo &call, int64_t callback
     auto key = string("cj_callback#") + to_string(++g_incCbId);
     LOG_I("CbId = %{public}s, CbRef = %{public}p", key.c_str(), sp.get());
     LOG_D("Hold reference of %{public}s", key.c_str());
-    g_callbacks.insert({key, sp});
+    {
+        lock_guard<mutex> guard(g_callbacksMtx);
+        g_callbacks.insert({key, sp});
+    }
     paramList.at(1) = key;
 }
 
@@ -87,15 +93,22 @@ static void InitCallbackContext(const ApiCallInfo &in, ApiReplyInfo &out, EventC
     auto callbackId = in.paramList_.at(INDEX_ONE).get<string>();
     LOG_I("[UiEventObserverImpl]Begin to callback UiEvent: observer=%{public}s, callback=%{public}s",
           observerId.c_str(), callbackId.c_str());
-    auto findCallback = g_callbacks.find(callbackId);
-    if (findCallback == g_callbacks.end()) {
+    shared_ptr<function<void(CUIElementInfo)>> callbackRef;
+    {
+        lock_guard<mutex> guard(g_callbacksMtx);
+        auto findCallback = g_callbacks.find(callbackId);
+        if (findCallback != g_callbacks.end()) {
+            callbackRef = findCallback->second;
+        }
+    }
+    if (callbackRef == nullptr) {
         out.exception_ = ApiCallErr(INTERNAL_ERROR, "JsCallbackFunction is not referenced: " + callbackId);
         LOG_E("%{public}s", out.exception_.message_.c_str());
         return;
     }
     ctx.observerId = observerId;
     ctx.callbackId = callbackId;
-    ctx.callbackRef = findCallback->second;
+    ctx.callbackRef = callbackRef;
     ctx.elmentInfo = move(elementInfo);
     ctx.releaseCallback = in.paramList_.at(INDEX_THREE).get<bool>();
 }
@@ -183,9 +196,16 @@ void UiEventObserverImpl::HandleEventCallback(const ApiCallInfo &in, ApiReplyInf
         return;
     }
     auto callback = context->callbackRef.lock();
+    if (callback == nullptr) {
+        LOG_W("[UiEventObserverImpl]Callback is no longer referenced: %{public}s", context->callbackId.c_str());
+        DestructElementInfo(info);
+        delete context;
+        return;
+    }
     callback->operator()(info);
     if (context->releaseCallback) {
         LOG_D("[UiEventObserverImpl]Unref callback: %{public}s", context->callbackId.c_str());
+        lock_guard<mutex> guard(g_callbacksMtx);
         g_callbacks.erase(context->callbackId);
     }
     DestructElementInfo(info);

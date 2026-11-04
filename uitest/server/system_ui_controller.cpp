@@ -20,6 +20,7 @@
 #include <iostream>
 #include <thread>
 #include <utility>
+#include <mutex>
 #include <condition_variable>
 #include <sys/mman.h>
 #ifdef HIDUMPER_ENABLED
@@ -93,6 +94,7 @@ namespace OHOS::uitest {
         atomic<uint64_t> lastScrollBeginEventMillis_ = 0;
         atomic<bool> scrollCompelete_ = true;
         vector<shared_ptr<UiEventListener>> listeners_;
+        mutex listenersMtx_;
         
         // Helper functions
         void NotifyListeners(const std::string& capturedEvent, const UiEventSourceInfo& uiEventSourceInfo,
@@ -268,6 +270,7 @@ namespace OHOS::uitest {
 
     void UiEventMonitor::RegisterUiEventListener(std::shared_ptr<UiEventListener> listerner)
     {
+        lock_guard<mutex> guard(listenersMtx_);
         listeners_.emplace_back(listerner);
     }
 
@@ -382,7 +385,12 @@ namespace OHOS::uitest {
         const UiEventSourceInfo& uiEventSourceInfo, Widget* widget)
     {
         LOG_D("testfwk NotifyListeners capturedEvent: %{public}s", capturedEvent.c_str());
-        for (auto &listener : listeners_) {
+        vector<shared_ptr<UiEventListener>> listenersSnapshot;
+        {
+            lock_guard<mutex> guard(listenersMtx_);
+            listenersSnapshot = listeners_;
+        }
+        for (auto &listener : listenersSnapshot) {
             listener->OnEvent(capturedEvent, uiEventSourceInfo, widget);
         }
     }

@@ -17,6 +17,8 @@
 #include <string>
 #include <unistd.h>
 #include <uv.h>
+#include <atomic>
+#include <mutex>
 #include "nlohmann/json.hpp"
 #include "common_utils.h"
 #include "callback_code_napi.h"
@@ -37,7 +39,8 @@ namespace OHOS::perftest {
 
     /** Cached reference of callbackId and JsCallbackFunction, key is the unique id.*/
     static map<string, napi_ref> g_jsRefs;
-    static size_t g_incJsCbId = 0;
+    static mutex g_jsRefsMtx;
+    static atomic<size_t> g_incJsCbId { 0 };
 
     CallbackCodeNapi &CallbackCodeNapi::Get()
     {
@@ -67,7 +70,10 @@ namespace OHOS::perftest {
             napi_ref ref = nullptr;
             NAPI_CALL_RETURN_VOID(env, napi_create_reference(env, funcValue, 1, &ref));
             LOG_I("CbId = %{public}s, CbRef = %{public}p", jsCbId.c_str(), ref);
-            g_jsRefs.insert({ jsCbId, ref }); // store jsCbId instread of the function body
+            {
+                lock_guard<mutex> guard(g_jsRefsMtx);
+                g_jsRefs.insert({ jsCbId, ref }); // store jsCbId instread of the function body
+            }
             param[funcName] = jsCbId;
         }
     }
@@ -103,8 +109,15 @@ namespace OHOS::perftest {
         auto callbackId = in.paramList_.at(INDEX_ZERO).get<string>();
         auto timeout = in.paramList_.at(INDEX_ONE).get<uint32_t>();
         LOG_I("Begin to callback function: callback=%{public}s", callbackId.c_str());
-        auto findCallback = g_jsRefs.find(callbackId);
-        if (findCallback == g_jsRefs.end()) {
+        napi_ref callbackRef = nullptr;
+        {
+            lock_guard<mutex> guard(g_jsRefsMtx);
+            auto findCallback = g_jsRefs.find(callbackId);
+            if (findCallback != g_jsRefs.end()) {
+                callbackRef = findCallback->second;
+            }
+        }
+        if (callbackRef == nullptr) {
             out.exception_ = ApiCallErr(ERR_CALLBACK_FAILED, "JsCallbackFunction is not referenced: " + callbackId);
             LOG_E("%{public}s", out.exception_.message_.c_str());
             return;
@@ -127,7 +140,7 @@ namespace OHOS::perftest {
         };
         ctx->env = env;
         ctx->callbackId = callbackId;
-        ctx->callbackRef = findCallback->second;
+        ctx->callbackRef = callbackRef;
         ctx->timeout = timeout;
         ctx->cb = cb;
     }
@@ -232,13 +245,28 @@ namespace OHOS::perftest {
     {
         DCHECK(in.paramList_.size() == ONE);
         DCHECK(in.paramList_.at(INDEX_ZERO).type() == detail::value_t::array);
-        for (auto& callbackId : in.paramList_.at(INDEX_ZERO)) {
-            auto findCallback = g_jsRefs.find(callbackId);
-            if (findCallback == g_jsRefs.end()) {
-                continue;
+        vector<napi_ref> refs;
+        {
+            lock_guard<mutex> guard(g_jsRefsMtx);
+            for (auto& callbackId : in.paramList_.at(INDEX_ZERO)) {
+                auto findCallback = g_jsRefs.find(callbackId);
+                if (findCallback == g_jsRefs.end()) {
+                    continue;
+                }
+                refs.push_back(findCallback->second);
+                g_jsRefs.erase(findCallback);
             }
-            napi_delete_reference(env, findCallback->second);
-            g_jsRefs.erase(callbackId);
+        }
+        if (refs.empty()) {
+            return;
+        }
+        auto task = [env, refs]() {
+            for (auto ref : refs) {
+                napi_delete_reference(env, ref);
+            }
+        };
+        if (napi_send_event(env, task, napi_eprio_immediate) != napi_status::napi_ok) {
+            LOG_E("Failed to post destroy callbacks to js thread");
         }
     }
 
