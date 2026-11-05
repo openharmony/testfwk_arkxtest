@@ -46,7 +46,7 @@ namespace OHOS::uitest {
 
         void InjectTouchPadEventSequence(const vector<TouchPadEvent>& events) const override;
 
-        void PutTextToClipboard(std::string_view text, ApiCallErr &error) const override;
+        void PutTextToClipboard(std::string_view text, ApiCallErr &error, int32_t displayId) const override;
 
         bool TakeScreenCap(int32_t fd, std::stringstream &errReceiver, int32_t displayId, Rect rect = {0, 0, 0, 0})
             const override;

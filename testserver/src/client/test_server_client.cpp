@@ -156,6 +156,18 @@ namespace OHOS::testserver {
         return setResult;
     }
 
+    int32_t TestServerClient::SetPasteDataForUser(std::string text, int32_t userId)
+    {
+        HiLog::Info(LABEL, "%{public}s called. userId=%{public}d", __func__, userId);
+        if (iTestServerInterface_ == nullptr) {
+            HiLog::Error(LABEL, "%{public}s. Get iTestServerInterface FAILED", __func__);
+            return TEST_SERVER_GET_INTERFACE_FAILED;
+        }
+        int32_t setResult = 0;
+        iTestServerInterface_->SetPasteDataForUser(text, userId, setResult);
+        return setResult;
+    }
+
     int32_t TestServerClient::ChangeWindowMode(int windowId, uint32_t mode)
     {
         HiLog::Info(LABEL, "%{public}s called.", __func__);

@@ -198,6 +198,44 @@ namespace OHOS::testserver {
 #endif
     }
 
+    ErrCode TestServerService::SetPasteDataForUser(const std::string& text, int32_t userId, int32_t& setResult)
+    {
+#ifdef ARKXTEST_PASTEBOARD_ENABLE
+        HiLog::Info(LABEL_SERVICE, "%{public}s called. userId=%{public}d", __func__, userId);
+        if (userId <= 0) {
+            HiLog::Error(LABEL_SERVICE, "invalid userId");
+            setResult = TEST_SERVER_SET_PASTE_DATA_FAILED;
+            return TEST_SERVER_OK;
+        }
+        auto pasteBoardMgr = MiscServices::PasteboardClient::GetInstance();
+        if (!pasteBoardMgr) {
+            HiLog::Error(LABEL_SERVICE, "pasteBoardMgr is nullptr");
+            setResult = TEST_SERVER_PASTEBOARD_FAILED;
+            return TEST_SERVER_OK;
+        }
+        auto pasteData = pasteBoardMgr->CreatePlainTextData(text);
+        if (pasteData == nullptr) {
+            HiLog::Error(LABEL_SERVICE, "CreatePlainTextData failed");
+            setResult = TEST_SERVER_CREATE_PASTE_DATA_FAILED;
+            return TEST_SERVER_OK;
+        }
+        int32_t ret = pasteBoardMgr->SetPasteDataByUser(userId, *pasteData);
+        int32_t successErrCode = 27787264;
+        if (ret == successErrCode) {
+            setResult = TEST_SERVER_OK;
+            return TEST_SERVER_OK;
+        } else {
+            HiLog::Error(LABEL_SERVICE, "SetPasteDataByUser failed with error: %{public}d", ret);
+            setResult = TEST_SERVER_SET_PASTE_DATA_FAILED;
+            return TEST_SERVER_OK;
+        }
+#else
+        HiLog::Warn(LABEL_SERVICE, "pasteboard is not supported");
+        setResult = TEST_SERVER_NOT_SUPPORTED;
+        return TEST_SERVER_OK;
+#endif
+    }
+
     ErrCode TestServerService::PublishCommonEvent(const EventFwk::CommonEventData &event, bool &re)
     {
         if (!EventFwk::CommonEventManager::PublishCommonEvent(event)) {

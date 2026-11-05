@@ -29,6 +29,7 @@ namespace OHOS::testserver {
         static TestServerClient &GetInstance();
         sptr<ITestServerInterface> LoadTestServer();
         int32_t SetPasteData(std::string text);
+        int32_t SetPasteDataForUser(std::string text, int32_t userId);
         int32_t ChangeWindowMode(int windowId, uint32_t mode);
         int32_t TerminateWindow(int windowId);
         int32_t MinimizeWindow(int windowId);

@@ -47,6 +47,8 @@ namespace OHOS::testserver {
         // Declare the logical interfaces here
         ErrCode SetPasteData(const std::string& text, int32_t& setResult) override;
 
+        ErrCode SetPasteDataForUser(const std::string& text, int32_t userId, int32_t& setResult) override;
+
         ErrCode ChangeWindowMode(int windowId, uint32_t mode) override;
 
         ErrCode TerminateWindow(int windowId) override;
