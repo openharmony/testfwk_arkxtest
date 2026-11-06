@@ -689,12 +689,6 @@ namespace OHOS::uitest {
         if (!CheckStatus(false, error)) {
             return;
         }
-#ifdef ARKXTEST_SIMULATOR_ENABLE
-#ifndef ARKXTEST_PC_FEATURE_ENABLE
-        error = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This device can not support this action");
-        return;
-#endif
-#endif
         if (!uiController_->IsTouchPadExist()) {
             error = ApiCallErr(ERR_OPERATION_UNSUPPORTED, "This device can not support this action");
             return;
