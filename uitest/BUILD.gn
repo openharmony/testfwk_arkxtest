@@ -260,6 +260,12 @@ ohos_executable("uitest_server") {
   if (arkxtest_product_feature == "car") {
     defines += [ "ARKXTEST_MULTI_USER_ENABLE" ]
   }
+  if (is_emulator) {
+    defines += [ "ARKXTEST_SIMULATOR_ENABLE" ]
+  }
+  if (arkxtest_product_feature == "pc") {
+    defines += [ "ARKXTEST_PC_FEATURE_ENABLE" ]
+  }
 }
 
 es2abc_gen_abc("gen_uitest_exporter_abc") {

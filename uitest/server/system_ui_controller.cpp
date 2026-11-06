@@ -954,6 +954,11 @@ namespace OHOS::uitest {
 
     bool SysUiController::IsTouchPadExist() const
     {
+#ifdef ARKXTEST_SIMULATOR_ENABLE
+#ifndef ARKXTEST_PC_FEATURE_ENABLE
+        return false;
+#endif
+#endif
         std::vector<int32_t> inputDeviceIdList;
         auto getDeviceIdsCallback = [&inputDeviceIdList](std::vector<int32_t>& deviceIds) {
             inputDeviceIdList = deviceIds;
