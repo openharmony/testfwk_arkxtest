@@ -1767,7 +1767,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
   功能说明：
 
   当启用 `snapshotWhenFail` 后，如果测试用例执行失败，框架会自动执行以下操作：
-  
+
   屏幕截图：将失败时的屏幕信息截图保存为PNG图片，保存路径：`/data/storage/el2/base/{测试套名}_{用例名}_{时间戳}.png`
 
   UI布局导出：将失败时的UI组件树导出为JSON文件，保存路径：`/data/storage/el2/base/{测试套名}_{用例名}_{时间戳}.json`
@@ -1778,6 +1778,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
   - 文件保存路径为应用的内部存储目录，需要设备具备相应的存储权限；
   - 如果截图或导出布局失败，会在日志中输出错误信息，但不会影响测试结果；
   - 建议在UI测试或需要排查界面问题时启用此功能，以快速定位问题；
+  - 不支持多线程场景使用；
 
 - **@since1.0.28 根据用例标签筛选用例**
 
