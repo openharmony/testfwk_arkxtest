@@ -14,28 +14,17 @@
  */
 
 import { TAG } from '../../Constant';
-import SysTestKit from '../kit/SysTestKit';
-import lazy { Driver } from '@ohos.UiTest';
+import { Driver } from '@ohos.UiTest';
 
 class FailureCaptureService {
     static async captureOnFailure(suiteName, specName, error) {
-        if (SysTestKit.workerPort !== null && SysTestKit.workerPort !== undefined) {
-            console.info(`${TAG}FailureCapture is not supported in worker thread, skip capture.`);
-            return;
-        }
         const timestamp = Date.now();
         const sanitizeName = (name) => name.replace(/[\/\\:*?"<>|]/g, '_');
         const safeSuiteName = sanitizeName(suiteName);
         const safeSpecName = sanitizeName(specName);
         const screenshotPath = `/data/storage/el2/base/${safeSuiteName}_${safeSpecName}_${timestamp}.png`;
         const layoutDumpPath = `/data/storage/el2/base/${safeSuiteName}_${safeSpecName}_${timestamp}.json`;
-        let driver;
-        try {
-            driver = Driver.create();
-        } catch (e) {
-            console.error(`${TAG}Failed to create UiTest Driver: ${e.message}`);
-            return;
-        }
+        const driver = Driver.create()
         try {
             console.info(`${TAG}Capturing screenshot to: ${screenshotPath}`);
             const resultForScreenCap = await driver.screenCap(screenshotPath);
