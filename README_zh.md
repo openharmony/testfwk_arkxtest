@@ -1778,6 +1778,7 @@ Hypium.hypiumTest(abilityDelegator, abilityDelegatorArguments, testsuite);
   - 文件保存路径为应用的内部存储目录，需要设备具备相应的存储权限；
   - 如果截图或导出布局失败，会在日志中输出错误信息，但不会影响测试结果；
   - 建议在UI测试或需要排查界面问题时启用此功能，以快速定位问题；
+  - 不支持多线程场景使用；
 
 - **@since1.0.28 根据用例标签筛选用例**
 
