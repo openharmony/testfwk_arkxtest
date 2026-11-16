@@ -83,16 +83,22 @@ namespace OHOS::perftest {
         }
         DCHECK(remoteCaller_ != nullptr);
         // check concurrent call
-        if (!processingApi_.empty()) {
-            constexpr auto msg = "perftest-api dose not allow calling concurrently, current processing:";
-            reply.exception_.code_ = ERR_API_USAGE;
-            reply.exception_.message_ = string(msg) + processingApi_ + ", incoming: " + call.apiId_;
-            return;
+        {
+            std::lock_guard<std::mutex> lock(processingApiMutex_);
+            if (!processingApi_.empty()) {
+                constexpr auto msg = "perftest-api dose not allow calling concurrently, current processing:";
+                reply.exception_.code_ = ERR_API_USAGE;
+                reply.exception_.message_ = string(msg) + processingApi_ + ", incoming: " + call.apiId_;
+                return;
+            }
+            processingApi_ = call.apiId_;
         }
-        processingApi_ = call.apiId_;
         // forward to peer
         remoteCaller_->Call(call, reply);
-        processingApi_.clear();
+        {
+            std::lock_guard<std::mutex> lock(processingApiMutex_);
+            processingApi_.clear();
+        }
     }
 
     void ApiCallerClient::SetDeathCallback(function<void()> callback)
@@ -102,7 +108,7 @@ namespace OHOS::perftest {
 
     ConnectionStat ApiCallerClient::GetConnectionStat() const
     {
-        return connectState_;
+        return connectState_.load();
     }
 
     sptr<IRemoteObject> ApiCallerClient::WaitForPublishedCaller(string_view token)

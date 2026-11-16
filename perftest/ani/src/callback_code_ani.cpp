@@ -37,6 +37,7 @@ namespace OHOS::perftest {
 
     void ThreadLock::LockRelease(string errorMessage)
     {
+        std::lock_guard<std::mutex> lock(mutex);
         errMsg = errorMessage;
         ready = true;
         condition.notify_all();
@@ -150,12 +151,26 @@ namespace OHOS::perftest {
         }
         ctx->timeout = timeout;
         ctx->cb = cb;
+        ctx->classObj = classObj;
     }
 
-    void CallbackCodeAni::FinishCallback(bool res)
+    void CallbackCodeAni::FinishCallback(int32_t id, bool res)
     {
-        threadLock_->res = res;
-        threadLock_->LockRelease("");
+        shared_ptr<ThreadLock> threadLock;
+        {
+            std::lock_guard<std::mutex> guard(threadLockMutex_);
+            auto it = threadLocks_.find(id);
+            if (it == threadLocks_.end()) {
+                return;
+            }
+            threadLock = it->second;
+            threadLocks_.erase(it);
+        }
+        {
+            std::lock_guard<std::mutex> lock(threadLock->mutex);
+            threadLock->res = res;
+        }
+        threadLock->LockRelease("");
     }
 
     void CallbackCodeAni::WaitforCallbackFinish(ani_env *env, shared_ptr<CodeCallbackContext> context,
@@ -177,6 +192,31 @@ namespace OHOS::perftest {
         }
     }
 
+    static void RunCallbackThread(ani_vm *vm, shared_ptr<CodeCallbackContext> context,
+                                  shared_ptr<ThreadLock> threadLock)
+    {
+        ani_env *env = nullptr;
+        ani_options aniArgs {0, nullptr};
+        auto re = vm->AttachCurrentThread(&aniArgs, ANI_VERSION_1, &env);
+        if (re != ANI_OK) {
+            HiLog::Error(LABEL, "AttachCurrentThread fail, result: %{public}d", re);
+            ReleaseInflightCallback(context->callbackId, nullptr);
+            threadLock->LockRelease("Execute js_cb_function failed");
+            return;
+        }
+        ani_fn_object fnObject = reinterpret_cast<ani_fn_object>(context->callbackRef);
+        std::vector<ani_ref> argvRef = { context->cb };
+        ani_ref executeResult;
+        ani_status res = env->FunctionalObject_Call(fnObject, argvRef.size(), argvRef.data(), &executeResult);
+        if (res != ANI_OK) {
+            env->DescribeError();
+            HiLog::Error(LABEL, "FunctionalObject_Call failed, %{public}d", res);
+            threadLock->LockRelease("Exception raised during call js_cb_function");
+        }
+        ReleaseInflightCallback(context->callbackId, env);
+        vm->DetachCurrentThread();
+    }
+
     /**Handle api callback from server end.*/
     void CallbackCodeAni::ExecuteCallback(ani_vm *vm, ani_env *env, const ApiCallInfo &in, ApiReplyInfo &out)
     {
@@ -188,34 +228,31 @@ namespace OHOS::perftest {
             HiLog::Warn(LABEL, "InitCallbackContext failed, cannot perform callback");
             return;
         }
-        threadLock_ = make_shared<ThreadLock>();
-        auto threadLock = threadLock_;
-
-        thread executethread = thread([context, vm, threadLock] {
-            ani_env *env = nullptr;
-            ani_options aniArgs {0, nullptr};
-            auto re = vm->AttachCurrentThread(&aniArgs, ANI_VERSION_1, &env);
-            if (re != ANI_OK) {
-                HiLog::Error(LABEL, "AttachCurrentThread fail, result: %{public}d", re);
-                ReleaseInflightCallback(context->callbackId, nullptr);
-                threadLock->LockRelease("Execute js_cb_function failed");
-                return;
-            }
-
-            ani_fn_object fnObject = reinterpret_cast<ani_fn_object>(context->callbackRef);
-            std::vector<ani_ref> argvRef = { context->cb };
-            ani_ref executeResult;
-            ani_status res = env->FunctionalObject_Call(fnObject, argvRef.size(), argvRef.data(), &executeResult);
-            if (res != ANI_OK) {
-                env->DescribeError();
-                HiLog::Error(LABEL, "FunctionalObject_Call failed, %{public}d", res);
-                threadLock->LockRelease("Exception raised during call js_cb_function");
+        auto threadLock = make_shared<ThreadLock>();
+        int32_t lockId = 0;
+        {
+            std::lock_guard<std::mutex> guard(threadLockMutex_);
+            lockId = ++threadLockId_;
+            threadLocks_[lockId] = threadLock;
+        }
+        if (context->classObj == nullptr ||
+            env->Object_SetFieldByName_Int(context->classObj, "id", lockId) != ANI_OK) {
+            {
+                std::lock_guard<std::mutex> guard(threadLockMutex_);
+                threadLocks_.erase(lockId);
             }
             ReleaseInflightCallback(context->callbackId, env);
-            vm->DetachCurrentThread();
-        });
+            out.exception_ = ApiCallErr(ERR_INTERNAL, "Set callback id failed");
+            return;
+        }
+
+        thread executethread(RunCallbackThread, vm, context, threadLock);
         executethread.detach();
         WaitforCallbackFinish(env, context, threadLock, out);
+        {
+            std::lock_guard<std::mutex> guard(threadLockMutex_);
+            threadLocks_.erase(lockId);
+        }
     }
 
     void CallbackCodeAni::DestroyCallbacks(ani_env *env, const ApiCallInfo &in, ApiReplyInfo &out)

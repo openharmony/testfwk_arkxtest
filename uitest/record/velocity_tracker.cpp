@@ -52,16 +52,22 @@ void VelocityTracker::UpdateVelocity()
     // the velocity is 2 * a2 * x + a1;
     static const int32_t linearParam = 2;
     std::vector<double> xAxis { 3, 0 };
-    auto xValue = xAxis_.GetTVals().back();
+    double xValue = 0.0;
     double xVelocity = 0.0;
-    if (xAxis_.GetLSMParams(xAxis)) {
-        xVelocity = linearParam * xAxis[ZERO] * xValue + xAxis[ONE];
+    if (!xAxis_.GetTVals().empty()) {
+        xValue = xAxis_.GetTVals().back();
+        if (xAxis_.GetLSMParams(xAxis)) {
+            xVelocity = linearParam * xAxis[ZERO] * xValue + xAxis[ONE];
+        }
     }
     std::vector<double> yAxis { 3, 0 };
-    auto yValue = yAxis_.GetTVals().back();
+    double yValue = 0.0;
     double yVelocity = 0.0;
-    if (yAxis_.GetLSMParams(yAxis)) {
-        yVelocity = linearParam * yAxis[ZERO] * yValue + yAxis[ONE];
+    if (!yAxis_.GetTVals().empty()) {
+        yValue = yAxis_.GetTVals().back();
+        if (yAxis_.GetLSMParams(yAxis)) {
+            yVelocity = linearParam * yAxis[ZERO] * yValue + yAxis[ONE];
+        }
     }
     velocity_.SetOffsetPerSecond({ xVelocity, yVelocity });
     isVelocityDone_ = true;

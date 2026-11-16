@@ -17,6 +17,7 @@
 #define TEST_SERVER_SERVICE_H
 
 #include <string>
+#include <atomic>
 #include <mutex>
 #include <thread>
 #include <chrono>
@@ -116,6 +117,7 @@ namespace OHOS::testserver {
 #endif
 
         std::atomic<int> callerCount_{0};
+        std::mutex sessionMutex_;
 
         class TestServerProxyDeathRecipient : public IRemoteObject::DeathRecipient {
         public:
@@ -138,7 +140,7 @@ namespace OHOS::testserver {
         private:
             std::thread thread_;
             sptr<TestServerService> testServerService_;
-            bool testServerExit_;
+            std::atomic<bool> testServerExit_;
         };
 
         CallerDetectTimer* callerDetectTimer_;

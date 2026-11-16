@@ -205,6 +205,7 @@ namespace OHOS::perftest {
     static map<string, unique_ptr<BackendClass>> sBackendObjects;
     /** PerfTest binding map.*/
     static map<string, string> sPerfTestBindingMap;
+    static std::mutex g_backendObjectsMutex;
 
 
 #define CHECK_CALL_ARG(condition, code, message, error) \
@@ -225,8 +226,12 @@ namespace OHOS::perftest {
         }
         const auto type = value.type();
         CHECK_CALL_ARG(type == value_t::string, ERR_INVALID_INPUT, "Expect " + string(expect), error);
-        const auto findRef = sBackendObjects.find(value.get<string>());
-        CHECK_CALL_ARG(findRef != sBackendObjects.end(), ERR_INVALID_INPUT, "Bad object ref", error);
+        bool objectExists = false;
+        {
+            std::lock_guard<std::mutex> lock(g_backendObjectsMutex);
+            objectExists = sBackendObjects.find(value.get<string>()) != sBackendObjects.end();
+        }
+        CHECK_CALL_ARG(objectExists, ERR_INVALID_INPUT, "Bad object ref", error);
         return true;
     }
 
@@ -362,6 +367,7 @@ namespace OHOS::perftest {
     {
         static map<string, uint32_t> sObjectCounts;
         DCHECK(ptr != nullptr);
+        std::lock_guard<std::mutex> lock(g_backendObjectsMutex);
         const auto typeName = string(ptr->GetFrontendClassDef().name_);
         auto find = sObjectCounts.find(typeName);
         uint32_t index = 0;
@@ -382,6 +388,7 @@ namespace OHOS::perftest {
     template <typename T, typename = enable_if<is_base_of_v<BackendClass, T>>>
     static T *GetBackendObject(string_view ref, ApiCallErr &error)
     {
+        std::lock_guard<std::mutex> lock(g_backendObjectsMutex);
         auto find = sBackendObjects.find(string(ref));
         if (find == sBackendObjects.end() || find->second == nullptr) {
             error = ApiCallErr(ERR_INTERNAL, "Object does not exist");
@@ -393,6 +400,7 @@ namespace OHOS::perftest {
     /** Delete stored backend objects.*/
     static void BackendObjectsCleaner(const ApiCallInfo &in, ApiReplyInfo &out)
     {
+        std::lock_guard<std::mutex> lock(g_backendObjectsMutex);
         stringstream ss("Deleted objects[");
         DCHECK(in.paramList_.type() == value_t::array);
         for (const auto &item : in.paramList_) {

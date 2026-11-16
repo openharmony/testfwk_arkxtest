@@ -16,6 +16,9 @@
 #ifndef CALLBACK_CODE_ANI_H
 #define CALLBACK_CODE_ANI_H
 
+#include <map>
+#include <mutex>
+
 #include "ani.h"
 #include "frontend_api_defines.h"
 
@@ -40,6 +43,7 @@ namespace OHOS::perftest {
         ani_ref callbackRef;
         uint32_t timeout;
         ani_ref cb;
+        ani_object classObj = nullptr;
     };
 
     class CallbackCodeAni {
@@ -47,7 +51,7 @@ namespace OHOS::perftest {
         string PreprocessCallback(ani_env *env, ani_ref callbackRef, ApiReplyInfo &out);
         void InitCallbackContext(ani_env *env, const ApiCallInfo &in, ApiReplyInfo &out,
                                  shared_ptr<CodeCallbackContext> ctx);
-        void FinishCallback(bool res);
+        void FinishCallback(int32_t id, bool res);
         void WaitforCallbackFinish(ani_env *env, shared_ptr<CodeCallbackContext> context,
                                    shared_ptr<ThreadLock> threadLock, ApiReplyInfo &out);
         void ExecuteCallback(ani_vm *vm, ani_env *env, const ApiCallInfo &in, ApiReplyInfo &out);
@@ -59,7 +63,9 @@ namespace OHOS::perftest {
         CallbackCodeAni() = default;
         ani_class finishCallbackClass_;
         ani_method finishCallbackCtor_;
-        shared_ptr<ThreadLock> threadLock_;
+        std::mutex threadLockMutex_;
+        std::map<int32_t, shared_ptr<ThreadLock>> threadLocks_;
+        int32_t threadLockId_ = 0;
     };
 }
 

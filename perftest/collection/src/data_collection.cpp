@@ -132,7 +132,10 @@ namespace OHOS::perftest {
             LOG_I("Not the specific bundlename");
             return;
         }
-        lastEvent_ = record;
+        {
+            std::lock_guard<std::mutex> lock(eventMutex_);
+            lastEvent_ = record;
+        }
     }
 
     void TimeListener::OnServiceDied()
@@ -142,6 +145,7 @@ namespace OHOS::perftest {
     
     shared_ptr<HiviewDFX::HiSysEventRecord> TimeListener::GetEvent()
     {
+        std::lock_guard<std::mutex> lock(eventMutex_);
         return lastEvent_;
     }
 } // namespace OHOS::perftest

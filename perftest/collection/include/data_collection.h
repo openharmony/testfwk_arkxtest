@@ -16,6 +16,8 @@
 #ifndef DATA_COLLECTION_H
 #define DATA_COLLECTION_H
 
+#include <mutex>
+
 #include "common_utils.h"
 #include "frontend_api_defines.h"
 #include "hisysevent_manager.h"
@@ -66,6 +68,7 @@ namespace OHOS::perftest {
     private:
         string bundleName_;
         shared_ptr<HiviewDFX::HiSysEventRecord> lastEvent_ = nullptr;
+        std::mutex eventMutex_;
     };
 } // namespace OHOS::perftest
 

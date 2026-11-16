@@ -24,6 +24,7 @@
 #include <string_view>
 #include <functional>
 #include <future>
+#include <mutex>
 #include "frontend_api_defines.h"
 
 namespace OHOS::uitest {
@@ -93,10 +94,12 @@ namespace OHOS::uitest {
         bool singlenessMode_ = false;
         // for concurrent invocation detect
         std::string processingApi_ = "";
+        std::mutex processingApiMutex_;
         sptr<ApiCaller> caller_ = nullptr;
         // ipc objects
         sptr<ApiCallerProxy> remoteCaller_ = nullptr;
         sptr<OHOS::IRemoteObject::DeathRecipient> peerDeathCallback_ = nullptr;
+        std::mutex deathCallbackMutex_;
         std::function<void()> onDeathCallback_ = nullptr;
         void OnPeerDeath();
     };

@@ -91,7 +91,7 @@ namespace OHOS::perftest {
 
     ConnectionStat ApiCallerServer::GetConnectionStat() const
     {
-        return connectState_;
+        return connectState_.load();
     }
 
     void ApiCallerServer::Finalize() {}

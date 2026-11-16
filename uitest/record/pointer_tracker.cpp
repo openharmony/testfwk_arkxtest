@@ -135,15 +135,19 @@ namespace OHOS::uitest {
             currentFingerNum--;
             // 最后一个抬起的手指,快照+复位
             if (currentFingerNum == 0) {
-                snapshootPointerInfo = BuildPointerInfo();
+                PointerInfo snapshot = BuildPointerInfo();
                 isNeedWrite = true;
-                if (snapshootPointerInfo.GetTouchOpt() == OP_CLICK &&
+                if (snapshot.GetTouchOpt() == OP_CLICK &&
                     isLastClickInTracker && GetInterVal() < INTERVAL_THRESHOLD) { // doubleClick
-                    snapshootPointerInfo.SetTouchOpt(OP_DOUBLE_CLICK);
+                    snapshot.SetTouchOpt(OP_DOUBLE_CLICK);
                     isLastClickInTracker = false;
-                } else if (snapshootPointerInfo.GetTouchOpt() == OP_CLICK) { // click
-                    lastClickInfo = snapshootPointerInfo;
+                } else if (snapshot.GetTouchOpt() == OP_CLICK) {
+                    lastClickInfo = snapshot;
                     isLastClickInTracker = true;
+                }
+                {
+                    std::lock_guard<std::mutex> lock(snapshootMutex_);
+                    snapshootPointerInfo = std::move(snapshot);
                 }
                 maxFingerNum = 0;
                 isUpStage = false;

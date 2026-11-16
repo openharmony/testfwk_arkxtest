@@ -17,6 +17,8 @@
 #define API_CALLER_CLIENT_H
 
 #include <string>
+#include <atomic>
+#include <mutex>
 #include <string_view>
 #include <functional>
 #include <common_event_subscribe_info.h>
@@ -43,9 +45,10 @@ namespace OHOS::perftest {
         void OnPeerDeath();
 
     private:
-        ConnectionStat connectState_ = UNINIT;
+        std::atomic<ConnectionStat> connectState_{UNINIT};
         // for concurrent invocation detect
         string processingApi_ = "";
+        std::mutex processingApiMutex_;
         // ipc objects
         sptr<ApiCallerStub> caller_ = nullptr;
         sptr<ApiCallerProxy> remoteCaller_ = nullptr;

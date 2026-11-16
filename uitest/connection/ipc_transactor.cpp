@@ -15,8 +15,11 @@
 
 #include <common_event_manager.h>
 #include <common_event_subscribe_info.h>
+#include <chrono>
 #include <functional>
 #include <future>
+#include <mutex>
+#include <vector>
 #include <unistd.h>
 #include "common_utilities_hpp.h"
 #include "test_server_client.h"
@@ -264,6 +267,7 @@ namespace OHOS::uitest {
             LOG_E("Cannot SetDeathCallback in singleness mode");
             return;
         }
+        std::lock_guard<std::mutex> lock(deathCallbackMutex_);
         onDeathCallback_ = callback;
     }
 
@@ -271,8 +275,13 @@ namespace OHOS::uitest {
     {
         LOG_W("Connection with peer died!");
         connectState_ = DISCONNECTED;
-        if (onDeathCallback_ != nullptr) {
-            onDeathCallback_();
+        function<void()> callback;
+        {
+            std::lock_guard<std::mutex> lock(deathCallbackMutex_);
+            callback = onDeathCallback_;
+        }
+        if (callback != nullptr) {
+            callback();
         }
     }
 
@@ -350,22 +359,30 @@ namespace OHOS::uitest {
             return;
         }
         // check concurrent call
-        if (!processingApi_.empty()) {
-            constexpr auto msg = "uitest-api dose not allow calling concurrently, current processing:";
-            reply.exception_.code_ = ERR_API_USAGE;
-            reply.exception_.message_ = string(msg) + processingApi_ + ", incoming: " + call.apiId_;
-            return;
+        {
+            std::lock_guard<std::mutex> lock(processingApiMutex_);
+            if (!processingApi_.empty()) {
+                constexpr auto msg = "uitest-api dose not allow calling concurrently, current processing:";
+                reply.exception_.code_ = ERR_API_USAGE;
+                reply.exception_.message_ = string(msg) + processingApi_ + ", incoming: " + call.apiId_;
+                return;
+            }
+            processingApi_ = call.apiId_;
         }
-        processingApi_ = call.apiId_;
         // forward to peer
         DCHECK(remoteCaller_ != nullptr);
         remoteCaller_->Call(call, reply);
-        processingApi_.clear();
+        {
+            std::lock_guard<std::mutex> lock(processingApiMutex_);
+            processingApi_.clear();
+        }
     }
 
     // functions for sending/handling broadcast commands
     BroadcastCommandHandler g_broadcastCommandHandler = nullptr;
     shared_ptr<CommonEventForwarder> g_broadcastCommandSubscriber = nullptr;
+    static std::mutex g_broadcastCommandMutex;
+    static std::vector<std::future<void>> g_broadcastFutures;
     void ApiTransactor::SendBroadcastCommand(const OHOS::AAFwk::Want &cmd, ApiCallErr &err)
     {
         LOG_I("Send uitest.broadcast.command begin");
@@ -402,13 +419,60 @@ namespace OHOS::uitest {
         LOG_I("Receive uitest.broadcast.command.reply end");
     }
 
+    static void HandleBroadcastCommandOnce(const OHOS::AAFwk::Want &commandWant)
+    {
+        LOG_I("HandleBroadcastCommand begin");
+        auto replyWant = OHOS::AAFwk::Want();
+        ApiCallErr err = ApiCallErr(NO_ERROR);
+        BroadcastCommandHandler handler = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(g_broadcastCommandMutex);
+            handler = g_broadcastCommandHandler;
+        }
+        if (handler == nullptr) {
+            err = ApiCallErr(INTERNAL_ERROR, "Received uitest.broadcast.command but handler is null!");
+        } else {
+            handler(commandWant, err);
+        }
+        if (err.code_ != NO_ERROR) {
+            LOG_E("Cannot handle this.");
+            return;
+        }
+        replyWant.SetAction("uitest.broadcast.command.reply");
+        replyWant.SetParam("code", (int)(err.code_));
+        replyWant.SetParam("message", err.message_);
+        CommonEventData replyData;
+        replyData.SetWant(replyWant);
+        if (!CommonEventManager::PublishCommonEvent(replyData)) {
+            LOG_E("Fail to publish uitest.broadcast.command.reply");
+        }
+        LOG_I("HandleBroadcastCommand end");
+    }
+
+    static void PostBroadcastCommandTask(const OHOS::AAFwk::Want &commandWant)
+    {
+        auto task = async(launch::async, [commandWant]() { HandleBroadcastCommandOnce(commandWant); });
+        std::lock_guard<std::mutex> lock(g_broadcastCommandMutex);
+        for (auto it = g_broadcastFutures.begin(); it != g_broadcastFutures.end();) {
+            if (it->wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+                it = g_broadcastFutures.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        g_broadcastFutures.emplace_back(std::move(task));
+    }
+
     void ApiTransactor::SetBroadcastCommandHandler(BroadcastCommandHandler handler)
     {
         if (handler == nullptr) {
             LOG_W("BroadcastCommandHandler is null");
             return;
         }
-        g_broadcastCommandHandler = handler;
+        {
+            std::lock_guard<std::mutex> lock(g_broadcastCommandMutex);
+            g_broadcastCommandHandler = handler;
+        }
         if (g_broadcastCommandSubscriber != nullptr) {
             return;
         }
@@ -416,31 +480,9 @@ namespace OHOS::uitest {
         matchingSkills.AddEvent("uitest.broadcast.command");
         CommonEventSubscribeInfo info(matchingSkills);
         auto onEvent = [](const CommonEventData &commandData) {
-            auto commandWant = OHOS::AAFwk::Want(commandData.GetWant());
             // handle command in new thread, do not block in CommonEvent dispatching thread
-            auto _ = async(launch::async, [&commandWant]() {
-                LOG_I("HandleBroadcastCommand begin");
-                auto replyWant = OHOS::AAFwk::Want();
-                ApiCallErr err = ApiCallErr(NO_ERROR);
-                if (g_broadcastCommandHandler == nullptr) {
-                    err = ApiCallErr(INTERNAL_ERROR, "Received uitest.broadcast.command but handler is null!");
-                } else {
-                    g_broadcastCommandHandler(commandWant, err);
-                }
-                if (err.code_ != NO_ERROR) {
-                    LOG_E("Cannot handle this.");
-                    return;
-                }
-                replyWant.SetAction("uitest.broadcast.command.reply");
-                replyWant.SetParam("code", (int)(err.code_));
-                replyWant.SetParam("message", err.message_);
-                CommonEventData replyData;
-                replyData.SetWant(replyWant);
-                if (!CommonEventManager::PublishCommonEvent(replyData)) {
-                    LOG_E("Fail to publish uitest.broadcast.command.reply");
-                }
-                LOG_I("HandleBroadcastCommand end");
-            });
+            auto commandWant = OHOS::AAFwk::Want(commandData.GetWant());
+            PostBroadcastCommandTask(commandWant);
         };
         g_broadcastCommandSubscriber = make_shared<CommonEventForwarder>(info, onEvent);
         if (!CommonEventManager::SubscribeCommonEvent(g_broadcastCommandSubscriber)) {
@@ -453,8 +495,16 @@ namespace OHOS::uitest {
         if (g_broadcastCommandSubscriber != nullptr) {
             CommonEventManager::UnSubscribeCommonEvent(g_broadcastCommandSubscriber);
         }
-        if (g_broadcastCommandHandler != nullptr) {
+        vector<future<void>> pending;
+        {
+            std::lock_guard<std::mutex> lock(g_broadcastCommandMutex);
             g_broadcastCommandHandler = nullptr;
+            pending.swap(g_broadcastFutures);
+        }
+        for (auto &item : pending) {
+            if (item.valid()) {
+                item.wait();
+            }
         }
     }
 } // namespace OHOS::uitest

@@ -16,6 +16,7 @@
 #include "test_server_service.h"
 #include <spawn.h>
 #include <csignal>
+#include <cstdlib>
 #include <unistd.h>
 #include "iremote_object.h"
 #include "system_ability_definition.h"
@@ -146,6 +147,7 @@ namespace OHOS::testserver {
     ErrCode TestServerService::CreateSession(const SessionToken &sessionToken)
     {
         HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
+        AddCaller();
         bool result = true;
         try {
             result = sessionToken.AddDeathRecipient(
@@ -155,10 +157,10 @@ namespace OHOS::testserver {
         }
         if (!result) {
             HiLog::Error(LABEL_SERVICE, "%{public}s. AddDeathRecipient FAILD.", __func__);
+            RemoveCaller();
             DestorySession();
             return TEST_SERVER_ADD_DEATH_RECIPIENT_FAILED;
         }
-        AddCaller();
         HiLog::Debug(LABEL_SERVICE, "%{public}s. Create session SUCCESS. callerCount=%{public}d",
             __func__, GetCallerCount());
         return TEST_SERVER_OK;
@@ -249,11 +251,13 @@ namespace OHOS::testserver {
 
     void TestServerService::AddCaller()
     {
+        std::lock_guard<std::mutex> lock(sessionMutex_);
         callerCount_++;
     }
 
     void TestServerService::RemoveCaller()
     {
+        std::lock_guard<std::mutex> lock(sessionMutex_);
         callerCount_--;
     }
 
@@ -265,6 +269,7 @@ namespace OHOS::testserver {
     void TestServerService::DestorySession()
     {
         HiLog::Debug(LABEL_SERVICE, "%{public}s called.", __func__);
+        std::lock_guard<std::mutex> lock(sessionMutex_);
         if (callerCount_ == 0) {
             HiLog::Debug(LABEL_SERVICE, "%{public}s. No proxy exists. Remove the TestServer", __func__);
             RemoveTestServer();
@@ -399,40 +404,37 @@ namespace OHOS::testserver {
 
     void TestServerService::KillProcess(const std::string& processName)
     {
-        std::string cmd = "ps -ef | grep -v grep | grep " + processName;
-        if (cmd.empty()) {
+        if (processName.empty()) {
             return;
         }
-        FILE *fd = popen(cmd.c_str(), "r");
+        FILE *fd = popen("ps -ef", "r");
         if (fd == nullptr) {
             return;
         }
         char buf[4096] = {'\0'};
-        while ((fgets(buf, sizeof(buf), fd)) != nullptr) {
+        while (fgets(buf, sizeof(buf), fd) != nullptr) {
             std::string line(buf);
-            HiLog::Debug(LABEL_SERVICE, "line %s", line.c_str());
-            std::istringstream iss(line);
-            std::string field;
-            std::string pid = "-1";
-            int count = 0;
-            while (iss >> field) {
-                if (count == 1) {
-                    pid = field;
-                    break;
-                }
-                count++;
+            if (line.find(processName) == std::string::npos) {
+                continue;
             }
-            HiLog::Debug(LABEL_SERVICE, "pid %s", pid.c_str());
-            cmd = "kill " + pid;
-            FILE *fpd = popen(cmd.c_str(), "r");
-            if (pclose(fpd) == -1) {
-                HiLog::Debug(LABEL_SERVICE, "Error: Failed to close file");
-                return;
+            std::istringstream iss(line);
+            std::string uidField;
+            std::string pidField;
+            if (!(iss >> uidField >> pidField)) {
+                continue;
+            }
+            char *endPtr = nullptr;
+            long pidValue = std::strtol(pidField.c_str(), &endPtr, 10);
+            if (endPtr == pidField.c_str() || *endPtr != '\0' || pidValue <= 0) {
+                continue;
+            }
+            int pid = static_cast<int>(pidValue);
+            if (kill(pid, SIGTERM) != 0) {
+                HiLog::Debug(LABEL_SERVICE, "kill pid %{public}d failed", pid);
             }
         }
         if (pclose(fd) == -1) {
             HiLog::Debug(LABEL_SERVICE, "Error: Failed to close file");
-            return;
         }
     }
 

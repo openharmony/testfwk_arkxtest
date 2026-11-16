@@ -16,6 +16,8 @@
 #ifndef SYSTEM_UI_CONTROLLER_H
 #define SYSTEM_UI_CONTROLLER_H
 
+#include <atomic>
+#include <mutex>
 #include "ui_controller.h"
 
 namespace OHOS::uitest {
@@ -105,10 +107,11 @@ namespace OHOS::uitest {
 
     private:
         void  InjectMouseEvent(const MouseEvent &event) const;
-        bool connected_ = false;
+        std::atomic<bool> connected_{false};
         std::mutex dumpMtx;
         mutable std::vector<int32_t> downKeys_;
-        int32_t currentUser_ = -1;
+        std::atomic<int32_t> currentUser_{-1};
+        std::mutex userMutex_;
         bool ConvertAAMS(int32_t displayId, ApiCallErr &error);
         bool isSingleUser_ = true;
     };

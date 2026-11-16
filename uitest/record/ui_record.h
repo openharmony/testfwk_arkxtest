@@ -84,19 +84,19 @@ namespace OHOS::uitest {
         {
             return abcCallBack;
         }
-        void WriteLayout(nlohmann::json layout) const;
+        void WriteLayout(nlohmann::json layout, int32_t operationIndex) const;
         void OnInputEventUp(std::shared_ptr<MMI::KeyEvent> keyEvent, KeyEventInfo &info) const;
         void OnInputEventDown(std::shared_ptr<MMI::KeyEvent> keyEvent, KeyEventInfo &info) const;
         static constexpr int TIMEINTERVAL = 5000;
         static constexpr int KEY_DOWN_DURATION = 0;
         static const std::string DEFAULT_DIR;
         mutable volatile int touchTime = 0;
-        mutable volatile bool isLastClick_ = false;
+        mutable bool isLastClick_ = false;
         mutable shared_ptr<mutex> cout_lock = make_shared<std::mutex>();
         mutable shared_ptr<mutex> csv_lock = make_shared<std::mutex>();
         mutable std::mutex g_clickMut;
         mutable std::condition_variable clickCon;
-        mutable volatile bool findWidgetsAllow_ = false;
+        mutable bool findWidgetsAllow_ = false;
         mutable std::mutex widgetsMut;
         mutable std::condition_variable widgetsCon;
         bool stopFlag = false;
