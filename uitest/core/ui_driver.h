@@ -16,6 +16,8 @@
 #ifndef UI_DRIVER_H
 #define UI_DRIVER_H
 
+#include <atomic>
+
 #include "ui_controller.h"
 #include "ui_action.h"
 #include "widget_selector.h"
@@ -151,20 +153,11 @@ namespace OHOS::uitest {
         bool IsPcWindowMode() const;
 
     private:
-        // Struct to group timeout-related parameters
-        struct TimeoutParams {
-            int32_t startTime;
-            int32_t totalTimeout;
-            int32_t operationTime;
-            const UiOpArgs& uiOpArgs;
-            
-            TimeoutParams(int32_t start, int32_t total, int32_t operation, const UiOpArgs& args)
-                : startTime(start), totalTimeout(total), operationTime(operation), uiOpArgs(args) {}
-        };
-        
-        // Common helper methods for component presence checking
-        bool CheckComponentPresenceWithTimeout(const WidgetSelector& selector,
-            const TimeoutParams& timeoutParams, ApiCallErr& error);
+        bool CheckComponentPresenceWithTimeout(const WidgetSelector& selector, int32_t startTime,
+            int32_t totalTimeout, const UiOpArgs& uiOpArgs, const std::atomic<bool>& operationDone,
+            ApiCallErr& error);
+        bool CheckPresenceWhenOperation(const WidgetSelector& selector, const TouchAction& action,
+            const UiOpArgs& uiOpArgs, const char* opName, ApiCallErr& error);
         int32_t CalculateOperationTime(const Point& from, const Point& to,
             int32_t speed, const UiOpArgs& uiOpArgs) const;
         bool TextToKeyEvents(string_view text, std::vector<KeyEvent> &events, ApiCallErr &error);

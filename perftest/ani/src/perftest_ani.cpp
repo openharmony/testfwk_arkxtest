@@ -416,7 +416,16 @@ static void Destroy(ani_env *env, ani_object obj)
 static void FinishCallback(ani_env *env, ani_object obj, ani_boolean res)
 {
     HiLog::Info(LABEL, "%{public}s called, res = %{public}d", __func__, res);
-    CallbackCodeAni::Get().FinishCallback(static_cast<bool>(res));
+    if (obj == nullptr) {
+        HiLog::Error(LABEL, "%{public}s callback object is null", __func__);
+        return;
+    }
+    ani_int id = 0;
+    if (env->Object_GetFieldByName_Int(obj, "id", &id) != ANI_OK) {
+        HiLog::Error(LABEL, "%{public}s get callback id failed", __func__);
+        return;
+    }
+    CallbackCodeAni::Get().FinishCallback(static_cast<int32_t>(id), static_cast<bool>(res));
 }
 
 static ani_boolean BindPerfTest(ani_env *env)

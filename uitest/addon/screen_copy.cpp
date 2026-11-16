@@ -78,13 +78,16 @@ private:
 sptr<ScreenChangeListener> ScreenCopy::screenChangeListener_ = nullptr;
 static unique_ptr<ScreenCopy> g_screenCopy = nullptr;
 static ScreenCopyHandler g_screenCopyHandler = nullptr;
+static std::mutex g_screenCopyMutex;
+static std::mutex g_screenCopyHandlerMutex;
+static std::mutex g_screenCopyListenerMutex;
 
 static void AdapteScreenChange(int32_t displayId)
 {
+    std::lock_guard<std::mutex> lock(g_screenCopyMutex);
     if (g_screenCopy == nullptr) {
         return;
     }
-    // destrory current one and create a new one
     LOG_D("Screen changed, auto restart ScreenCopy");
     const auto scale = g_screenCopy->scale_;
     g_screenCopy->Destroy();
@@ -115,10 +118,14 @@ bool ScreenCopy::Run(int32_t displayId)
         return false;
     }
     // listen screen changes for auto-adapting
-    if (screenChangeListener_ == nullptr) {
-        screenChangeListener_ = new ScreenChangeListener([displayId]() { AdapteScreenChange(displayId); }, displayId);
-        auto ret = ScreenManager::GetInstance().RegisterScreenListener(screenChangeListener_);
-        LOG_D("Register ScreenListener, ret=%{public}d", ret);
+    {
+        std::lock_guard<std::mutex> listenerLock(g_screenCopyListenerMutex);
+        if (screenChangeListener_ == nullptr) {
+            screenChangeListener_ = new ScreenChangeListener([displayId]() { AdapteScreenChange(displayId); },
+                                                              displayId);
+            auto ret = ScreenManager::GetInstance().RegisterScreenListener(screenChangeListener_);
+            LOG_D("Register ScreenListener, ret=%{public}d", ret);
+        }
     }
     // run snapshot thread and encode thread
     snapshotThread = make_unique<thread>([this, displayId]() { this->PollAndNotifyFrames(displayId); });
@@ -263,8 +270,13 @@ void ScreenCopy::WaitAndConsumeFrames()
             continue;
         }
         LOG_D("ConsumeFrame_End, size=%{public}lu", imgSize);
-        if (g_screenCopyHandler != nullptr) {
-            g_screenCopyHandler(imgBuf, imgSize);
+        ScreenCopyHandler handler = nullptr;
+        {
+            std::lock_guard<std::mutex> handlerLock(g_screenCopyHandlerMutex);
+            handler = g_screenCopyHandler;
+        }
+        if (handler != nullptr) {
+            handler(imgBuf, imgSize);
         } else {
             free(imgBuf);
         }
@@ -336,32 +348,47 @@ bool StartScreenCopy(float scale, int32_t displayId, ScreenCopyHandler handler)
         LOG_E("Illegal arguments");
         return false;
     }
-    StopScreenCopy();
-    g_screenCopyHandler = handler;
-    g_screenCopy = make_unique<ScreenCopy>(scale);
-    bool success = g_screenCopy != nullptr && g_screenCopy->Run(displayId);
+    std::unique_lock<std::mutex> lock(g_screenCopyMutex);
+    if (g_screenCopy != nullptr) {
+        g_screenCopy->Destroy();
+        g_screenCopy = nullptr;
+    }
+    {
+        std::lock_guard<std::mutex> handlerLock(g_screenCopyHandlerMutex);
+        g_screenCopyHandler = handler;
+    }
+    auto copy = make_unique<ScreenCopy>(scale);
+    bool success = copy != nullptr && copy->Run(displayId);
     if (!success) {
         constexpr size_t BUF_SIZE = 128;
         auto buf = (uint8_t *)malloc(BUF_SIZE);
         if (buf == nullptr) {
             LOG_E("malloc failed");
+            if (copy != nullptr) {
+                copy->Destroy();
+            }
             return false;
         }
         memset_s(buf, BUF_SIZE, 0, BUF_SIZE);
-        if (g_screenCopy->pendingError_ != nullptr) {
-            g_screenCopy->pendingError_ = "Failed to run ScreenCopy, unknown error";
+        if (copy->pendingError_ == nullptr) {
+            copy->pendingError_ = "Failed to run ScreenCopy, unknown error";
         }
-        memcpy_s(buf, BUF_SIZE, g_screenCopy->pendingError_, strlen(g_screenCopy->pendingError_));
+        const size_t errorLen = strlen(copy->pendingError_);
+        const size_t copyLen = errorLen < BUF_SIZE ? errorLen : BUF_SIZE - 1;
+        memcpy_s(buf, BUF_SIZE, copy->pendingError_, copyLen);
         LOG_E("The error message is %{public}s", buf);
-        handler(buf, strlen(g_screenCopy->pendingError_));
-        g_screenCopy->pendingError_ = nullptr;
-        StopScreenCopy();
+        lock.unlock();
+        handler(buf, copyLen);
+        copy->Destroy();
+        return false;
     }
-    return success;
+    g_screenCopy = std::move(copy);
+    return true;
 }
 
 void StopScreenCopy()
 {
+    std::lock_guard<std::mutex> lock(g_screenCopyMutex);
     if (g_screenCopy != nullptr) {
         g_screenCopy->Destroy();
         g_screenCopy = nullptr;

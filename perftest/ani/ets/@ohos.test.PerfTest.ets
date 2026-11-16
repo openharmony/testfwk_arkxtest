@@ -136,6 +136,7 @@ export class PerfTest {
 }
 
 class FinishCallback {
+    id: int = 0;
     finish: Callback<boolean> = (res: boolean) => {
         this.finishCallback(res);
     };

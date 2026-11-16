@@ -15,6 +15,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <mutex>
 #include <fstream>
 #include <memory>
 #include <iostream>
@@ -90,6 +91,7 @@ namespace OHOS::uitest {
     private:
         function<void()> onConnectCallback_ = nullptr;
         function<void()> onDisConnectCallback_ = nullptr;
+        std::mutex callbackMutex_;
         atomic<uint64_t> lastEventMillis_ = 0;
         atomic<uint64_t> lastScrollBeginEventMillis_ = 0;
         atomic<bool> scrollCompelete_ = true;
@@ -236,25 +238,37 @@ namespace OHOS::uitest {
 
     void UiEventMonitor::SetOnAbilityConnectCallback(function<void()> onConnectCb)
     {
+        std::lock_guard<std::mutex> lock(callbackMutex_);
         onConnectCallback_ = std::move(onConnectCb);
     }
 
     void UiEventMonitor::SetOnAbilityDisConnectCallback(function<void()> onDisConnectCb)
     {
+        std::lock_guard<std::mutex> lock(callbackMutex_);
         onDisConnectCallback_ = std::move(onDisConnectCb);
     }
 
     void UiEventMonitor::OnAbilityConnected()
     {
-        if (onConnectCallback_ != nullptr) {
-            onConnectCallback_();
+        function<void()> callback;
+        {
+            std::lock_guard<std::mutex> lock(callbackMutex_);
+            callback = onConnectCallback_;
+        }
+        if (callback != nullptr) {
+            callback();
         }
     }
 
     void UiEventMonitor::OnAbilityDisconnected()
     {
-        if (onDisConnectCallback_ != nullptr) {
-            onDisConnectCallback_();
+        function<void()> callback;
+        {
+            std::lock_guard<std::mutex> lock(callbackMutex_);
+            callback = onDisConnectCallback_;
+        }
+        if (callback != nullptr) {
+            callback();
         }
     }
 
@@ -1200,12 +1214,12 @@ namespace OHOS::uitest {
             return false;
         }
         auto ret = RET_OK;
-        if (isSingleUser_ || currentUser_ == -1) {
+        if (isSingleUser_ || currentUser_.load() == -1) {
             ret = ability->Connect();
         } else {
-            ret = ability->Connect(currentUser_);
+            ret = ability->Connect(currentUser_.load());
         }
-        LOG_I("Connect to AAMS in user %{public}d, result: %{public}d", currentUser_, ret);
+        LOG_I("Connect to AAMS in user %{public}d, result: %{public}d", currentUser_.load(), ret);
         if (ret != RET_OK) {
             error = ApiCallErr(ERR_INITIALIZE_FAILED, "Can not connect to AAMS");
             if (ret == RET_ERR_CONNECTION_EXIST) {
@@ -1223,7 +1237,7 @@ namespace OHOS::uitest {
         }
         connected_ = true;
         currentUser_ = ability->GetCurrentUserId();
-        LOG_I("connect to AAMS in user %{public}d successful", currentUser_);
+        LOG_I("connect to AAMS in user %{public}d successful", currentUser_.load());
         return true;
     }
 
@@ -1245,24 +1259,27 @@ namespace OHOS::uitest {
         connected_ = false;
         mutex mtx;
         unique_lock<mutex> uLock(mtx);
-        condition_variable condition;
-        auto onDisConnectCallback = [&condition]() {
+        auto condition = make_shared<condition_variable>();
+        auto onDisConnectCallback = [condition]() {
             LOG_I("Success disconnect from AccessibilityUITestAbility");
-            condition.notify_all();
+            condition->notify_all();
         };
         g_monitorInstance_->SetOnAbilityDisConnectCallback(onDisConnectCallback);
         auto ability = AccessibilityUITestAbility::GetInstance();
-        LOG_I("Start disconnect from AccessibilityUITestAbility in user %{public}d", currentUser_);
-        auto ret = ability->Disconnect(currentUser_);
+        LOG_I("Start disconnect from AccessibilityUITestAbility in user %{public}d", currentUser_.load());
+        auto ret = ability->Disconnect(currentUser_.load());
         if (ret != RET_OK) {
             LOG_E("Failed to disconnect from AccessibilityUITestAbility, ret: %{public}d", ret);
+            g_monitorInstance_->SetOnAbilityDisConnectCallback(nullptr);
             return;
         }
         const auto timeout = chrono::milliseconds(200);
-        if (condition.wait_for(uLock, timeout) == cv_status::timeout) {
+        if (condition->wait_for(uLock, timeout) == cv_status::timeout) {
             LOG_E("Wait disconnection from AccessibilityUITestAbility timed out");
+            g_monitorInstance_->SetOnAbilityDisConnectCallback(nullptr);
             return;
         }
+        g_monitorInstance_->SetOnAbilityDisConnectCallback(nullptr);
     }
 
     void SysUiController::SetDisplayRotation(DisplayRotation rotation) const
@@ -1561,7 +1578,8 @@ namespace OHOS::uitest {
 
     void SysUiController::SetActiveUser(int32_t userId)
     {
-        LOG_I("Set currentUser_ from %{public}d to %{public}d", currentUser_, userId);
+        std::lock_guard<std::mutex> lock(userMutex_);
+        LOG_I("Set currentUser_ from %{public}d to %{public}d", currentUser_.load(), userId);
         currentUser_ = userId;
     }
 
@@ -1570,16 +1588,17 @@ namespace OHOS::uitest {
         if (isSingleUser_) {
             return true;
         }
+        std::lock_guard<std::mutex> lock(userMutex_);
         int32_t userId = OHOS::testserver::TestServerClient::GetInstance().GetUserIdByDisplayId(displayId);
         LOG_I("display %{public}d belongs to user %{public}d", displayId, userId);
-        if (userId == currentUser_) {
+        if (userId == currentUser_.load()) {
             return true;
         }
         if (userId == -1) {
             LOG_E("Invalid userId for displayId %{public}d", displayId);
             return false;
         }
-        LOG_W("Switch from user %{public}d to user %{public}d", currentUser_, userId);
+        LOG_W("Switch from user %{public}d to user %{public}d", currentUser_.load(), userId);
         DisConnectFromSysAbility();
         currentUser_ = userId;
         return ConnectToSysAbility(error);

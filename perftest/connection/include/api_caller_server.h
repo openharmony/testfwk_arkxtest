@@ -18,6 +18,7 @@
 
 #include <string>
 #include <string_view>
+#include <atomic>
 #include <functional>
 #include <future>
 #include "frontend_api_defines.h"
@@ -39,7 +40,7 @@ namespace OHOS::perftest {
         void OnPeerDeath();
 
     private:
-        ConnectionStat connectState_ = UNINIT;
+        std::atomic<ConnectionStat> connectState_{UNINIT};
         // ipc objects
         sptr<ApiCallerStub> caller_ = nullptr;
         sptr<ApiCallerProxy> remoteCaller_ = nullptr;

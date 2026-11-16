@@ -16,8 +16,10 @@
 #ifndef POINTER_TRACKER_H
 #define POINTER_TRACKER_H
 
+#include <atomic>
 #include <map>
 #include <chrono>
+#include <mutex>
 #include <utility>
 #include <functional>
 #include <algorithm>
@@ -106,9 +108,16 @@ namespace OHOS::uitest {
             return lastClickInfo;
         }
 
-        PointerInfo& GetSnapshootPointerInfo()
+        PointerInfo GetSnapshootPointerInfo() const
         {
+            std::lock_guard<std::mutex> lock(snapshootMutex_);
             return snapshootPointerInfo;
+        }
+
+        void SetSnapshootTouchOpt(TouchOpt touchOpt)
+        {
+            std::lock_guard<std::mutex> lock(snapshootMutex_);
+            snapshootPointerInfo.SetTouchOpt(touchOpt);
         }
 
         void SetLastClickInTracker(bool isLastClick)
@@ -160,10 +169,11 @@ namespace OHOS::uitest {
         std::vector<TouchOpt> pointerTypeJudgChain_;
         bool isUpStage = false;
         bool isNeedWrite = false;
-        bool isLastClickInTracker = false;
+        std::atomic<bool> isLastClickInTracker{false};
         TouchEventInfo firstTrackPoint_;
         PointerInfo lastClickInfo; // for doubleclick
         PointerInfo snapshootPointerInfo;
+        mutable std::mutex snapshootMutex_;
         bool isStartRecent = false;
         
     private:

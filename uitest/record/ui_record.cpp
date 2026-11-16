@@ -12,7 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <atomic>
 #include <chrono>
+#include <mutex>
 #include <thread>
 #include "external_calls.h"
 #include "ui_record.h"
@@ -25,7 +27,15 @@ namespace OHOS::uitest {
     static bool g_uiRecordRun = false;
     std::string ts;
     std::string savePath;
-    int operationCount = 0;
+    std::atomic<int> g_operationCount{0};
+    static std::mutex g_savePathMutex;
+    static void SetPredicateAndNotify(std::mutex &mutex, bool &predicate, std::condition_variable &cv)
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        predicate = true;
+        cv.notify_all();
+    }
+
     int g_callBackId = -1;
     int64_t g_downTime = 0;
     static std::shared_ptr<InputEventCallback> g_uiCallBackInstance = nullptr;
@@ -116,19 +126,24 @@ namespace OHOS::uitest {
             inFile.close();
         }
     }
-    void InputEventCallback::WriteLayout(nlohmann::json layout) const
+    void InputEventCallback::WriteLayout(nlohmann::json layout, int32_t operationIndex) const
     {
-        savePath = "/data/local/tmp/layout_" + ts + "_" + to_string(operationCount) + ".json";
+        std::string path;
+        {
+            std::lock_guard<std::mutex> lock(g_savePathMutex);
+            savePath = "/data/local/tmp/layout_" + ts + "_" + to_string(operationIndex) + ".json";
+            path = savePath;
+        }
         ofstream fout;
-        fout.open(savePath, ios::out | ios::binary);
+        fout.open(path, ios::out | ios::binary);
         if (!fout) {
-            LOG_E("Layout save to %{public}s failed: open failed!", savePath.c_str());
+            LOG_E("Layout save to %{public}s failed: open failed!", path.c_str());
             fout.close();
         } else {
             fout << layout.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
             fout.close();
-            std::cout << "Layout saved to :" + savePath << std::endl;
-            LOG_I("Layout saved to : %{public}s", savePath.c_str());
+            std::cout << "Layout saved to :" + path << std::endl;
+            LOG_I("Layout saved to : %{public}s", path.c_str());
         }
     }
 
@@ -162,19 +177,24 @@ namespace OHOS::uitest {
             auto layout = nlohmann::json();
             ApiCallErr err(NO_ERROR);
             driver.DumpUiHierarchy(layout, option, err);
-            operationCount++;
+            const int32_t operationIndex = g_operationCount.fetch_add(1) + 1;
             if (recordMode.saveLayout && err.code_ == NO_ERROR) {
-                WriteLayout(layout);
+                WriteLayout(layout, operationIndex);
             } else if (err.code_ != NO_ERROR) {
                 LOG_E("DumpLayout failed");
             }
+        }
+        std::string path;
+        {
+            std::lock_guard<std::mutex> lock(g_savePathMutex);
+            path = savePath;
         }
         if (!KeyeventTracker::IsCombinationKey(info.GetKeyCode())) {
             KeyeventTracker snapshootKeyTracker = keyeventTracker_.GetSnapshootKey(info);
             if (recordMode.terminalCout) {
                 snapshootKeyTracker.WriteSingleData(info, cout_lock);
             }
-            auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock, savePath);
+            auto json = snapshootKeyTracker.WriteSingleData(info, outFile, csv_lock, path);
             DoAbcCallBack(json);
         }
         if (keyeventTracker_.IsNeedRecord()) {
@@ -183,7 +203,7 @@ namespace OHOS::uitest {
             if (recordMode.terminalCout) {
                 snapshootKeyTracker.WriteCombinationData(cout_lock);
             }
-            auto json = snapshootKeyTracker.WriteCombinationData(outFile, csv_lock, savePath);
+            auto json = snapshootKeyTracker.WriteCombinationData(outFile, csv_lock, path);
             DoAbcCallBack(json);
         }
         keyeventTracker_.AddUpKeyEvent(info);
@@ -227,10 +247,8 @@ namespace OHOS::uitest {
             if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_DOWN) {
                 return true;
             } else if (keyEvent->GetKeyAction() == MMI::KeyEvent::KEY_ACTION_UP) {
-                PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
-                info.SetTouchOpt(touchOpt);
-                findWidgetsAllow_ = true;
-                widgetsCon.notify_all();
+                pointerTracker_.SetSnapshootTouchOpt(touchOpt);
+                SetPredicateAndNotify(widgetsMut, findWidgetsAllow_, widgetsCon);
                 pointerTracker_.SetLastClickInTracker(false);
                 return true;
             }
@@ -255,8 +273,7 @@ namespace OHOS::uitest {
             if (isLastClick_) {
                 isLastClick_ = false;
                 pointerTracker_.SetLastClickInTracker(false);
-                findWidgetsAllow_ = true;
-                widgetsCon.notify_all();
+                SetPredicateAndNotify(widgetsMut, findWidgetsAllow_, widgetsCon);
             }
         }
     }
@@ -294,16 +311,21 @@ namespace OHOS::uitest {
             auto layout = nlohmann::json();
             DumpOption option;
             driver.DumpUiHierarchy(layout, option, err);
-            operationCount++;
+            const int32_t operationIndex = g_operationCount.fetch_add(1) + 1;
             if (recordMode.saveLayout && err.code_ == NO_ERROR) {
-                WriteLayout(layout);
+                WriteLayout(layout, operationIndex);
             } else if (err.code_ != NO_ERROR) {
                 LOG_E("DumpLayout failed");
             }
             selector.SetWantMulti(true);
             driver.FindWidgets(selector, rev, err, true);
-            PointerInfo& info = pointerTracker_.GetSnapshootPointerInfo();
-            info.SetSavePath(savePath);
+            PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
+            std::string path;
+            {
+                std::lock_guard<std::mutex> lock(g_savePathMutex);
+                path = savePath;
+            }
+            info.SetSavePath(path);
             if (recordMode.terminalCout) {
                 pointerTracker_.WriteData(info, cout_lock); // Terminal
             }
@@ -325,13 +347,14 @@ namespace OHOS::uitest {
         if (pointerTracker_.IsNeedWrite()) {
             PointerInfo info = pointerTracker_.GetSnapshootPointerInfo();
             if (info.GetTouchOpt() != OP_CLICK) {
-                isLastClick_ = false;
-                findWidgetsAllow_ = true;
-                widgetsCon.notify_all();
+                {
+                    std::lock_guard<std::mutex> lock(g_clickMut);
+                    isLastClick_ = false;
+                }
+                SetPredicateAndNotify(widgetsMut, findWidgetsAllow_, widgetsCon);
             }
             if (info.GetTouchOpt() == OP_CLICK) {
-                isLastClick_ = true;
-                clickCon.notify_all();
+                SetPredicateAndNotify(g_clickMut, isLastClick_, clickCon);
             }
             pointerTracker_.SetNeedWrite(false);
         }
@@ -501,12 +524,12 @@ namespace OHOS::uitest {
     {
         g_uiRecordRun = false;
         if (g_uiCallBackInstance != nullptr) {
-            g_uiCallBackInstance->isLastClick_ = true;
-            g_uiCallBackInstance->findWidgetsAllow_ = true;
-            g_uiCallBackInstance->stopFlag = true;
-            g_uiCallBackInstance->widgetsCon.notify_all();
-            g_uiCallBackInstance->clickCon.notify_all();
-            g_uiCallBackInstance->timerCon.notify_all();
+            SetPredicateAndNotify(g_uiCallBackInstance->g_clickMut,
+                g_uiCallBackInstance->isLastClick_, g_uiCallBackInstance->clickCon);
+            SetPredicateAndNotify(g_uiCallBackInstance->widgetsMut,
+                g_uiCallBackInstance->findWidgetsAllow_, g_uiCallBackInstance->widgetsCon);
+            SetPredicateAndNotify(g_uiCallBackInstance->timerMut,
+                g_uiCallBackInstance->stopFlag, g_uiCallBackInstance->timerCon);
             g_uiCallBackInstance->SubscribeMonitorCancel();
             MMI::InputManager::GetInstance()->RemoveMonitor(g_callBackId);
             g_callBackId = -1;

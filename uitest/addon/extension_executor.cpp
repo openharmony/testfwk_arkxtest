@@ -39,6 +39,7 @@ namespace OHOS::uitest {
     static string_view g_version = "";
     static string g_lastErrorMessage = "";
     static int32_t g_lastErrorCode = 0;
+    static mutex g_lastErrorMutex;
     static mutex g_callThroughLock;
     static mutex g_captureLock;
     static mutex g_recordRunningLock;
@@ -47,6 +48,7 @@ namespace OHOS::uitest {
 #define EXTENSION_API_CHECK(cond, errorMessage, errorCode) \
 do { \
     if (!(cond)) { \
+        std::lock_guard<std::mutex> errorLock(g_lastErrorMutex); \
         g_lastErrorMessage = (errorMessage); \
         g_lastErrorCode = static_cast<int32_t>(errorCode); \
         LOG_E("EXTENSION_API_CHECK failed: %{public}s", g_lastErrorMessage.c_str()); \
@@ -94,11 +96,17 @@ do { \
             LOG_E("Code receiver is nullptr, cannot write error");
             return RETCODE_FAIL;
         }
-        *codeOut = g_lastErrorCode;
-        auto ret = WriteToBuffer(msgOut, g_lastErrorMessage);
-        // clear error
-        g_lastErrorCode = ErrCode::NO_ERROR;
-        g_lastErrorMessage = "";
+        int32_t code = 0;
+        std::string message;
+        {
+            std::lock_guard<std::mutex> errorLock(g_lastErrorMutex);
+            code = g_lastErrorCode;
+            message = g_lastErrorMessage;
+            g_lastErrorCode = ErrCode::NO_ERROR;
+            g_lastErrorMessage = "";
+        }
+        *codeOut = code;
+        auto ret = WriteToBuffer(msgOut, message);
         return ret;
     }
 
