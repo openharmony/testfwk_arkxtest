@@ -127,6 +127,7 @@ ohos_unittest("testhelper_unittest") {
     "ability_runtime:wantagent_innerkits",
     "libxml2:libxml2",
     "ability_base:configuration",
+    "samgr:samgr_proxy",
   ]
   if ((arkxtest_product_feature == "pc" ||
        arkxtest_product_feature == "tablet" ||
